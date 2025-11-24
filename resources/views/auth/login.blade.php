@@ -7,6 +7,8 @@
     <title>CuanFlow - Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet">
+    {{-- favicon --}}
+    <link rel="shortcut icon" href="{{ asset('assets/image/logo.svg') }}" type="image/x-icon">
     <style>
         body {
             font-family: 'Satoshi', sans-serif;
@@ -64,7 +66,11 @@
         <div class="w-full max-w-md">
             <!-- Header -->
             <div class="mb-6">
-                <h2 class="text-3xl font-bold text-gray-900">CuanFlow</h2>
+                <img 
+                    src="{{ asset('assets/image/full-logo.svg') }}" 
+                    alt="Logo"
+                    class="w-full max-w-[180px] h-auto"
+                />
             </div>
             
             <h3 class="text-3xl font-bold text-gray-900 mb-2">Selamat Datang!</h3>

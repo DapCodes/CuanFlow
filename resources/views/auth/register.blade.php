@@ -89,14 +89,14 @@
         }
     </script>
 </head>
-<body class="overflow-x-hidden">
+<body class="overflow-x-hidden" style="overflow-x: hidden">
     
     <!-- Navigation -->
     <nav class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm" id="navbar">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
-                    <img class="logo w-8 h-8" src="{{ asset('assets/image/logo.svg') }}" alt="CuanFlow Logo">
+                    {{-- <img class="logo w-8 h-8" src="{{ asset('assets/image/logo.svg') }}" alt="CuanFlow Logo"> --}}
                     <span class="text-2xl font-bold text-cuan-dark">CuanFlow</span>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
@@ -109,69 +109,69 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="hero" class="hero-gradient min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
-        <!-- Animated Background Elements -->
-        <div class="absolute inset-0 pattern-dots opacity-30"></div>
-        <div class="absolute top-20 left-10 w-64 h-64 bg-cuan-yellow opacity-20 blob"></div>
-        <div class="absolute bottom-20 right-10 w-96 h-96 bg-cuan-olive opacity-20 blob" style="animation-delay: -4s;"></div>
-        
-        <div class="container mx-auto px-6 relative z-10">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div data-aos="fade-right" data-aos-duration="1000">
-                    <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-                        Kelola Bisnis<br/>
-                        <span class="text-gradient">Lebih Mudah</span>
-                    </h1>
-                    <p class="text-xl text-white/90 mb-8 leading-relaxed">
-                        Platform manajemen bisnis all-in-one untuk mengatur stok, penjualan, keuangan, dan operasional outlet Anda dengan lebih efisien.
-                    </p>
-                    <div class="flex flex-wrap gap-4">
-                        <a href="#register" class="px-8 py-4 bg-white text-cuan-dark font-semibold rounded-lg hover:bg-cuan-yellow transition shadow-lg">
-                            Mulai Gratis
-                        </a>
-                        <a href="#features" class="px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-cuan-dark transition">
-                            Pelajari Lebih Lanjut
-                        </a>
+<!-- Hero Section -->
+<section id="hero" class="hero-gradient min-h-screen flex items-center justify-center relative overflow-hidden pt-20 px-4 sm:px-6">
+    <!-- Animated Background Elements -->
+    <div class="absolute inset-0 pattern-dots opacity-30"></div>
+    <div class="absolute top-20 left-10 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-cuan-yellow opacity-20 blob"></div>
+    <div class="absolute bottom-20 right-10 w-48 h-48 sm:w-64 sm:h-64 md:w-96 md:h-96 bg-cuan-olive opacity-20 blob" style="animation-delay: -4s;"></div>
+    
+    <div class="container mx-auto px-4 sm:px-6 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <div data-aos="fade-right" data-aos-duration="1000" class="text-center lg:text-left">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+                    Kelola Bisnis<br/>
+                    <span class="text-gradient">Lebih Mudah</span>
+                </h1>
+                <p class="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                    Platform manajemen bisnis all-in-one untuk mengatur stok, penjualan, keuangan, dan operasional outlet Anda dengan lebih efisien.
+                </p>
+                <div class="flex flex-col sm:flex-row flex-wrap gap-4 justify-center lg:justify-start">
+                    <a href="#register" class="px-6 sm:px-8 py-3 sm:py-4 bg-white text-cuan-dark font-semibold rounded-lg hover:bg-cuan-yellow transition shadow-lg text-center">
+                        Mulai Gratis
+                    </a>
+                    <a href="#features" class="px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-cuan-dark transition text-center">
+                        Pelajari Lebih Lanjut
+                    </a>
+                </div>
+            </div>
+            
+            <div class="relative mt-8 lg:mt-0 hidden lg:block" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                <div class="floating">
+                    <img src="/images/dashboard-preview.png" alt="Dashboard Preview" class="rounded-2xl shadow-2xl w-full" onerror="this.src='https://placehold.co/600x400/31694E/FFFFFF?text=Dashboard+Preview'">
+                </div>
+                <!-- Floating Cards -->
+                <div class="absolute -top-6 -left-4 sm:-top-10 sm:-left-10 bg-white p-3 sm:p-4 rounded-xl shadow-xl" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-gray-500">Transaksi Hari Ini</p>
+                            <p class="text-lg sm:text-xl font-bold text-cuan-dark">+245</p>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="relative" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
-                    <div class="floating">
-                        <img src="/images/dashboard-preview.png" alt="Dashboard Preview" class="rounded-2xl shadow-2xl" onerror="this.src='https://placehold.co/600x400/31694E/FFFFFF?text=Dashboard+Preview'">
-                    </div>
-                    <!-- Floating Cards -->
-                    <div class="absolute -top-10 -left-10 bg-white p-4 rounded-xl shadow-xl" data-aos="zoom-in" data-aos-delay="400">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-500">Transaksi Hari Ini</p>
-                                <p class="text-xl font-bold text-cuan-dark">+245</p>
-                            </div>
+                <div class="absolute -bottom-6 -right-4 sm:-bottom-10 sm:-right-10 bg-white p-3 sm:p-4 rounded-xl shadow-xl" data-aos="zoom-in" data-aos-delay="600">
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
                         </div>
-                    </div>
-                    
-                    <div class="absolute -bottom-10 -right-10 bg-white p-4 rounded-xl shadow-xl" data-aos="zoom-in" data-aos-delay="600">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-500">Pendapatan</p>
-                                <p class="text-xl font-bold text-cuan-dark">Rp 45.2 Jt</p>
-                            </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-gray-500">Pendapatan</p>
+                            <p class="text-lg sm:text-xl font-bold text-cuan-dark">Rp 45.2 Jt</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Features Section -->
     <section id="features" class="py-20 bg-gray-50">
@@ -252,7 +252,7 @@
     </section>
 
     <!-- Benefits Section -->
-    <section id="benefits" class="py-20 bg-white">
+    <section id="benefits" class="py-20 bg-gradient-to-l from-cuan-dark to-cuan-green relative overflow-hidden">
         <div class="container mx-auto px-6">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div data-aos="fade-right">
@@ -260,7 +260,7 @@
                 </div>
                 
                 <div data-aos="fade-left">
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Mengapa Memilih CuanFlow?</h2>
+                    <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Mengapa Memilih CuanFlow?</h2>
                     <div class="space-y-6">
                         <div class="flex items-start space-x-4">
                             <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
@@ -269,8 +269,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">Hemat Waktu & Biaya</h3>
-                                <p class="text-gray-600">Otomatisasi proses bisnis menghemat waktu hingga 70% dan mengurangi biaya operasional.</p>
+                                <h3 class="text-xl font-bold text-white mb-2">Hemat Waktu & Biaya</h3>
+                                <p class="text-gray-100">Otomatisasi proses bisnis menghemat waktu hingga 70% dan mengurangi biaya operasional.</p>
                             </div>
                         </div>
                         
@@ -281,8 +281,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">Data Real-time</h3>
-                                <p class="text-gray-600">Akses informasi bisnis kapan saja, dimana saja dengan sinkronisasi real-time.</p>
+                                <h3 class="text-xl font-bold text-white mb-2">Aman & Terpercaya</h3>
+                                <p class="text-gray-100">Data bisnis Anda tersimpan aman dengan enkripsi tingkat enterprise.</p>
                             </div>
                         </div>
                         
@@ -293,47 +293,11 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">Aman & Terpercaya</h3>
-                                <p class="text-gray-600">Data bisnis Anda tersimpan aman dengan enkripsi tingkat enterprise.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start space-x-4">
-                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">Support 24/7</h3>
-                                <p class="text-gray-600">Tim support kami siap membantu Anda kapan pun dibutuhkan.</p>
+                                <h3 class="text-xl font-bold text-white mb-2">Support 24/7</h3>
+                                <p class="text-gray-100">Tim support kami siap membantu Anda kapan pun dibutuhkan.</p>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="py-20 bg-cuan-dark">
-        <div class="container mx-auto px-6">
-            <div class="grid md:grid-cols-4 gap-8 text-center">
-                <div data-aos="fade-up" data-aos-delay="100">
-                    <div class="text-5xl font-bold text-cuan-yellow mb-2" id="users-count">0</div>
-                    <p class="text-white text-lg">Pengguna Aktif</p>
-                </div>
-                <div data-aos="fade-up" data-aos-delay="200">
-                    <div class="text-5xl font-bold text-cuan-yellow mb-2" id="outlets-count">0</div>
-                    <p class="text-white text-lg">Outlet Terdaftar</p>
-                </div>
-                <div data-aos="fade-up" data-aos-delay="300">
-                    <div class="text-5xl font-bold text-cuan-yellow mb-2" id="transactions-count">0</div>
-                    <p class="text-white text-lg">Transaksi/Hari</p>
-                </div>
-                <div data-aos="fade-up" data-aos-delay="400">
-                    <div class="text-5xl font-bold text-cuan-yellow mb-2">4.9</div>
-                    <p class="text-white text-lg">Rating Pengguna</p>
                 </div>
             </div>
         </div>
@@ -657,13 +621,9 @@
     <footer class="bg-gray-900 text-white py-12">
         <div class="container mx-auto px-6">
             <div class="grid md:grid-cols-4 gap-8 mb-8">
-                <!-- Brand -->
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
-                        <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#F0E491" stroke-width="6" stroke-linecap="round"/>
-                        </svg>
-                        <span class="text-2xl font-bold">CuanFlow</span>
+                        <img class="logo" src="{{ asset('assets/image/full-logo-white.svg') }}" alt="CuanFlow Logo" style="width: 150px">
                     </div>
                     <p class="text-gray-400 text-sm leading-relaxed">
                         Platform manajemen bisnis terpercaya untuk mengembangkan usaha Anda.
@@ -782,18 +742,6 @@
                 }
             }, stepTime);
         }
-        
-        // Trigger counter animation when stats section is visible
-        ScrollTrigger.create({
-            trigger: '#users-count',
-            start: 'top 80%',
-            onEnter: () => {
-                animateCounter('users-count', 0, 5000, 2000);
-                animateCounter('outlets-count', 0, 1200, 2000);
-                animateCounter('transactions-count', 0, 50000, 2000);
-            },
-            once: true
-        });
         
         // Hero section animations
         gsap.from('#hero h1', {
