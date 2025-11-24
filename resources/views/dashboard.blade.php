@@ -53,14 +53,14 @@
             <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Stok Bahan</span>
         </a>
 
-        <a href="#" class="group block text-center p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+        <a href="{{ route('products-hpp.index') }}" class="group block text-center p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-md transition-shadow">
                 <i class="fa-solid fa-utensils text-4xl sm:text-5xl text-white"></i>
             </div>
-            <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Menu & Resep</span>
+            <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Produk & Resep</span>
         </a>
         
-        <a href="#" class="group block text-center p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+        {{-- <a href="#" class="group block text-center p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-md transition-shadow">
                 <i class="fa-solid fa-truck-fast text-4xl sm:text-5xl text-white"></i>
             </div>
@@ -72,7 +72,7 @@
                 <i class="fa-solid fa-screwdriver-wrench text-4xl sm:text-5xl text-white"></i>
             </div>
             <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pemeliharaan</span>
-        </a>
+        </a> --}}
 
         <a href="#" class="group block text-center p-2 hover:bg-gray-50 rounded-lg transition-colors duration-200">
             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-md transition-shadow">

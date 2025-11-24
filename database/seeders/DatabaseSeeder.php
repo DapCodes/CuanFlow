@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
             ExpenseCategorySeeder::class,
             SettingSeeder::class,
             KeyboardShortcutSeeder::class,
+            SupplierSeeder::class,
+            RawMaterialSeeder::class,
         ]);
     }
 }

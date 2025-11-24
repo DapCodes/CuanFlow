@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.card-header,
+.card-section {
+    @apply p-8 border-b border-gray-200;
+}
+
+.card-footer {
+    @apply px-8 py-6 bg-gray-50 border-t border-gray-200;
+}

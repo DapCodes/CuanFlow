@@ -12,6 +12,23 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+
+    Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
+        // Route generate harus SEBELUM route resource/dynamic parameter
+        Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');
+        Route::get('/generate-barcode', [App\Http\Controllers\ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
+        Route::get('/ajax/raw-material-price', [App\Http\Controllers\ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
+        
+        // Route CRUD
+        Route::get('/', [App\Http\Controllers\ProductHppController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\ProductHppController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\ProductHppController::class, 'store'])->name('store');
+        Route::get('/{product}', [App\Http\Controllers\ProductHppController::class, 'show'])->name('show');
+        Route::get('/{product}/edit', [App\Http\Controllers\ProductHppController::class, 'edit'])->name('edit');
+        Route::put('/{product}', [App\Http\Controllers\ProductHppController::class, 'update'])->name('update');
+        Route::delete('/{product}', [App\Http\Controllers\ProductHppController::class, 'destroy'])->name('destroy');
+    });
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
