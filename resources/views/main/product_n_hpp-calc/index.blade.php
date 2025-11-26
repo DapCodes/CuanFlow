@@ -43,7 +43,7 @@
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-cube text-cuan-green mr-3"></i>
+                            <i class="fas fa-utensils text-cuan-green mr-3"></i>
                             Daftar Produk & Resep
                         </h2>
                         <p class="text-sm text-gray-600 mt-1">Kelola produk dan resep dengan perhitungan HPP otomatis</p>

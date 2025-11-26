@@ -31,6 +31,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/{product}/edit', [App\Http\Controllers\ProductHppController::class, 'edit'])->name('edit');
         Route::put('/{product}', [App\Http\Controllers\ProductHppController::class, 'update'])->name('update');
         Route::delete('/{product}', [App\Http\Controllers\ProductHppController::class, 'destroy'])->name('destroy');
+
+        Route::get('/sales-analytics', [ProductHppController::class, 'getSalesAnalytics'])
+            ->name('sales-analytics');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

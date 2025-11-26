@@ -63,4 +63,16 @@ class Product extends Model
 
     public function scopeActive($q) { return $q->where('is_active', true); }
     public function scopeSellable($q) { return $q->where('is_sellable', true)->where('is_active', true); }
+
+    public function salesTargets(): HasMany 
+    { 
+        return $this->hasMany(ProductSalesTarget::class); 
+    }
+
+    public function activeSalesTarget(): HasOne 
+    { 
+        return $this->hasOne(ProductSalesTarget::class)
+            ->where('is_active', true)
+            ->latest();
+    }
 }

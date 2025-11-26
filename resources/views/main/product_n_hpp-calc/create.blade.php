@@ -527,6 +527,187 @@
                     </div>
                 </div>
 
+                <!-- Step 6: Sales Target & Analysis -->
+                <div class="step-content p-6 hidden" id="step6">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-chart-line text-cuan-green mr-2"></i>
+                            Analisis Target Penjualan
+                        </h3>
+                        <p class="text-sm text-gray-500 mt-1">Tentukan target omzet dan lihat proyeksi penjualan berdasarkan data historis</p>
+                    </div>
+
+                    <!-- Toggle Enable Target -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-6">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" name="enable_sales_target" id="enableSalesTarget" class="w-5 h-5 text-cuan-green rounded focus:ring-2 focus:ring-green-500">
+                            <span class="ml-3 text-sm font-semibold text-gray-800">
+                                <i class="fas fa-bullseye mr-2 text-cuan-green"></i>
+                                Aktifkan Target Penjualan untuk Produk Ini
+                            </span>
+                        </label>
+                        <p class="text-xs text-gray-600 ml-8 mt-1">Pantau pencapaian penjualan dan dapatkan insights bisnis yang lebih baik</p>
+                    </div>
+
+                    <div id="salesTargetContent" class="hidden">
+                        <!-- Historical Sales Analysis -->
+                        <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 mb-6 border border-purple-200">
+                            <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-history text-purple-600 mr-2"></i>
+                                Analisis Penjualan Historis (30 Hari Terakhir)
+                            </h4>
+                            
+                            <div id="historicalDataLoading" class="text-center py-8">
+                                <i class="fas fa-spinner fa-spin text-3xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-600">Memuat data penjualan...</p>
+                            </div>
+
+                            <div id="historicalDataContent" class="hidden">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <p class="text-xs text-gray-500 mb-1">Total Terjual</p>
+                                        <p class="text-2xl font-bold text-purple-600" id="totalSold30Days">0 pcs</p>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <p class="text-xs text-gray-500 mb-1">Rata-rata/Hari</p>
+                                        <p class="text-2xl font-bold text-blue-600" id="avgDailySales">0 pcs</p>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <p class="text-xs text-gray-500 mb-1">Hari Terbaik</p>
+                                        <p class="text-2xl font-bold text-green-600" id="bestSalesDay">-</p>
+                                    </div>
+                                </div>
+
+                                <!-- Charts Container -->
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <!-- Weekly Trend Chart -->
+                                    <div class="bg-white rounded-lg p-5 shadow-sm">
+                                        <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                            <i class="fas fa-chart-bar text-blue-500 mr-2"></i>
+                                            Tren Penjualan Mingguan
+                                        </h5>
+                                        <canvas id="weeklyTrendChart" height="250"></canvas>
+                                    </div>
+
+                                    <!-- Daily Pattern Chart -->
+                                    <div class="bg-white rounded-lg p-5 shadow-sm">
+                                        <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                            <i class="fas fa-calendar-week text-purple-500 mr-2"></i>
+                                            Pola Penjualan Harian
+                                        </h5>
+                                        <canvas id="dailyPatternChart" height="250"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="noHistoricalData" class="hidden text-center py-8">
+                                <i class="fas fa-inbox text-5xl text-gray-300 mb-3"></i>
+                                <p class="text-gray-600 font-medium">Belum ada data penjualan historis</p>
+                                <p class="text-sm text-gray-500 mt-1">Data akan tersedia setelah produk terjual</p>
+                            </div>
+                        </div>
+
+                        <!-- Target Revenue Input -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-money-bill-wave text-gray-400 mr-1"></i>
+                                    Target Omzet Per Bulan (Rp) <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" step="0.01" name="monthly_target_revenue" id="monthlyTargetRevenue"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="100000000">
+                                <p class="text-xs text-gray-500 mt-1">Berapa target pendapatan per bulan dari produk ini?</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-calendar-alt text-gray-400 mr-1"></i>
+                                    Tanggal Mulai Target
+                                </label>
+                                <input type="date" name="target_start_date" id="targetStartDate" value="{{ date('Y-m-d') }}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Sales Target Calculation Result -->
+                        <div id="targetCalculationResult" class="hidden">
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-300 mb-6">
+                                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                    <i class="fas fa-calculator text-green-600 mr-2"></i>
+                                    Perhitungan Target Penjualan
+                                </h4>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <p class="text-xs text-gray-600 mb-1">Target Penjualan/Bulan</p>
+                                        <p class="text-2xl font-bold text-green-600" id="monthlySalesTarget">0 pcs</p>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <p class="text-xs text-gray-600 mb-1">Target Penjualan/Hari</p>
+                                        <p class="text-2xl font-bold text-blue-600" id="dailySalesTarget">0 pcs</p>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <p class="text-xs text-gray-600 mb-1">Revenue Harian Target</p>
+                                        <p class="text-xl font-bold text-purple-600" id="dailyRevenueTarget">Rp 0</p>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                                        <p class="text-xs text-gray-600 mb-1">Profit Bulanan Target</p>
+                                        <p class="text-xl font-bold text-emerald-600" id="monthlyProfitTarget">Rp 0</p>
+                                    </div>
+                                </div>
+
+                                <!-- Achievement Indicator -->
+                                <div class="bg-white rounded-lg p-5 shadow-sm">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm font-semibold text-gray-700">Perbandingan dengan Performa Saat Ini</span>
+                                        <span id="achievementPercent" class="text-lg font-bold text-gray-800">0%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                        <div id="achievementBar" class="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500" style="width: 0%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-2" id="achievementNote">Berdasarkan rata-rata penjualan 30 hari terakhir</p>
+                                </div>
+                            </div>
+
+                            <!-- Projection Chart -->
+                            <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                    <i class="fas fa-chart-area text-indigo-600 mr-2"></i>
+                                    Proyeksi Pencapaian Target
+                                </h4>
+                                <div style="position: relative; height: 250px; width: 100%;">
+                                    <canvas id="projectionChart"></canvas>
+                                </div>
+                                
+                                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                                        <p class="text-xs text-gray-600 mb-1">Scenario Optimis</p>
+                                        <p class="text-xl font-bold text-blue-600" id="optimisticScenario">0 hari</p>
+                                        <p class="text-xs text-gray-500">+20% dari rata-rata</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                                        <p class="text-xs text-gray-600 mb-1">Scenario Realistis</p>
+                                        <p class="text-xl font-bold text-gray-600" id="realisticScenario">0 hari</p>
+                                        <p class="text-xs text-gray-500">Sesuai rata-rata</p>
+                                    </div>
+                                    <div class="bg-red-50 rounded-lg p-4 text-center">
+                                        <p class="text-xs text-gray-600 mb-1">Scenario Pesimis</p>
+                                        <p class="text-xl font-bold text-red-600" id="pessimisticScenario">0 hari</p>
+                                        <p class="text-xs text-gray-500">-20% dari rata-rata</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hidden inputs for form submission -->
+                            <input type="hidden" name="daily_sales_target" id="hiddenDailySalesTarget">
+                            <input type="hidden" name="monthly_sales_target" id="hiddenMonthlySalesTarget">
+                            <input type="hidden" name="daily_revenue_target" id="hiddenDailyRevenueTarget">
+                            <input type="hidden" name="sales_pattern" id="hiddenSalesPattern">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Navigation Buttons -->
                 <div class="px-8 py-6 bg-gray-50 border-t border-gray-200 flex justify-between">
                     <button type="button" id="prevBtn" class="px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold flex items-center" style="display: none;">
@@ -554,11 +735,16 @@
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let currentStep = 1;
-const totalSteps = 5;
+const totalSteps = 6;
 let recipeItemIndex = 1;
 let totalMaterialCostValue = 0;
+let historicalSalesData = null;
+let weeklyTrendChart = null;
+let dailyPatternChart = null;
+let projectionChart = null;
 
 const imageInput = document.getElementById('imageInput');
 const imagePreview = document.getElementById('imagePreview');
@@ -736,6 +922,17 @@ document.getElementById('generateBarcode').addEventListener('click', function() 
     calculateItemCost(document.querySelector('.recipe-item'));
 });
 
+// Toggle Sales Target
+document.getElementById('enableSalesTarget').addEventListener('change', function() {
+    const content = document.getElementById('salesTargetContent');
+    if (this.checked) {
+        content.classList.remove('hidden');
+        loadHistoricalData();
+    } else {
+        content.classList.add('hidden');
+    }
+});
+
 function showStep(step) {
     // Hide all steps
     document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
@@ -807,6 +1004,17 @@ function validateStep(step) {
         }
     }
     
+    if (step === 6) {
+        const enableTarget = document.getElementById('enableSalesTarget').checked;
+        if (enableTarget) {
+            const targetRevenue = document.getElementById('monthlyTargetRevenue').value;
+            if (!targetRevenue || targetRevenue <= 0) {
+                alert('Mohon masukkan target omzet bulanan');
+                return false;
+            }
+        }
+    }
+
     return true;
 }
 
@@ -975,6 +1183,437 @@ function calculateMargin() {
         marginEl.className = 'text-2xl font-bold text-red-600';
     }
 }
+
+// Load Historical Sales Data
+function loadHistoricalData() {
+    document.getElementById('historicalDataLoading').classList.remove('hidden');
+    document.getElementById('historicalDataContent').classList.add('hidden');
+    document.getElementById('noHistoricalData').classList.add('hidden');
+
+    // Simulasi - ganti dengan AJAX call ke backend
+    setTimeout(() => {
+        // Untuk produk baru, tampilkan no data
+        // Jika ada data, fetch dari API
+        fetch(`/products-hpp/sales-analytics?product_id=new`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.total_sold_30days > 0) {
+                    historicalSalesData = data;
+                    displayHistoricalData(data);
+                } else {
+                    showNoHistoricalData();
+                }
+            })
+            .catch(() => showNoHistoricalData());
+    }, 1000);
+}
+
+function showNoHistoricalData() {
+    document.getElementById('historicalDataLoading').classList.add('hidden');
+    document.getElementById('noHistoricalData').classList.remove('hidden');
+}
+
+function displayHistoricalData(data) {
+    document.getElementById('historicalDataLoading').classList.add('hidden');
+    document.getElementById('historicalDataContent').classList.remove('hidden');
+
+    document.getElementById('totalSold30Days').textContent = data.total_sold_30days + ' pcs';
+    document.getElementById('avgDailySales').textContent = data.avg_daily_sales.toFixed(1) + ' pcs';
+    document.getElementById('bestSalesDay').textContent = data.best_day;
+
+    renderWeeklyTrendChart(data.weekly_trend);
+    renderDailyPatternChart(data.daily_pattern);
+}
+
+// Calculate Sales Target
+// Calculate Sales Target
+document.getElementById('monthlyTargetRevenue').addEventListener('input', debounce(calculateSalesTarget, 500));
+
+function calculateSalesTarget() {
+    const targetRevenue = parseFloat(document.getElementById('monthlyTargetRevenue').value || 0);
+    const sellingPrice = parseFloat(document.getElementById('sellingPriceInput').value || 0);
+    const hppPerUnit = window.hppPerUnitValue || 0;
+
+    if (targetRevenue > 0 && sellingPrice > 0) {
+        const monthlySalesTarget = Math.ceil(targetRevenue / sellingPrice);
+        const dailySalesTarget = Math.ceil(monthlySalesTarget / 30);
+        const dailyRevenueTarget = dailySalesTarget * sellingPrice;
+        const profitPerUnit = sellingPrice - hppPerUnit;
+        const monthlyProfitTarget = monthlySalesTarget * profitPerUnit;
+
+        // Display results
+        document.getElementById('monthlySalesTarget').textContent = monthlySalesTarget.toLocaleString('id-ID') + ' pcs';
+        document.getElementById('dailySalesTarget').textContent = dailySalesTarget.toLocaleString('id-ID') + ' pcs';
+        document.getElementById('dailyRevenueTarget').textContent = 'Rp ' + dailyRevenueTarget.toLocaleString('id-ID');
+        document.getElementById('monthlyProfitTarget').textContent = 'Rp ' + monthlyProfitTarget.toLocaleString('id-ID');
+
+        // Hidden inputs
+        document.getElementById('hiddenMonthlySalesTarget').value = monthlySalesTarget;
+        document.getElementById('hiddenDailySalesTarget').value = dailySalesTarget;
+        document.getElementById('hiddenDailyRevenueTarget').value = dailyRevenueTarget;
+
+        // Calculate achievement vs historical
+        if (historicalSalesData) {
+            const currentDailySales = historicalSalesData.avg_daily_sales;
+            const achievementPercent = (currentDailySales / dailySalesTarget) * 100;
+            
+            document.getElementById('achievementPercent').textContent = achievementPercent.toFixed(1) + '%';
+            document.getElementById('achievementBar').style.width = Math.min(achievementPercent, 100) + '%';
+            
+            if (achievementPercent >= 100) {
+                document.getElementById('achievementNote').textContent = '✨ Target sudah tercapai dengan performa saat ini!';
+            } else {
+                const gap = dailySalesTarget - currentDailySales;
+                document.getElementById('achievementNote').textContent = `Perlu peningkatan ${gap.toFixed(1)} pcs/hari untuk mencapai target`;
+            }
+        }
+
+        // Render projection chart
+        renderProjectionChart(dailySalesTarget);
+
+        document.getElementById('targetCalculationResult').classList.remove('hidden');
+    }
+}
+
+// Chart.js renderers
+function renderWeeklyTrendChart(weeklyData) {
+    const ctx = document.getElementById('weeklyTrendChart').getContext('2d');
+    
+    if (weeklyTrendChart) weeklyTrendChart.destroy();
+    
+    weeklyTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: weeklyData.map(w => w.week),
+            datasets: [{
+                label: 'Penjualan (pcs)',
+                data: weeklyData.map(w => w.sales),
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `${context.parsed.y} pcs`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+}
+
+function renderDailyPatternChart(dailyPattern) {
+    const ctx = document.getElementById('dailyPatternChart').getContext('2d');
+    
+    if (dailyPatternChart) dailyPatternChart.destroy();
+    
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const indonesianDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    
+    dailyPatternChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: indonesianDays,
+            datasets: [{
+                label: 'Penjualan',
+                data: days.map(day => dailyPattern[day] || 0),
+                backgroundColor: 'rgba(147, 51, 234, 0.7)',
+                borderColor: 'rgb(147, 51, 234)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+
+    // Save pattern for submission
+    document.getElementById('hiddenSalesPattern').value = JSON.stringify(dailyPattern);
+}
+
+function renderProjectionChart(dailyTarget) {
+    const ctx = document.getElementById('projectionChart').getContext('2d');
+    
+    if (projectionChart) projectionChart.destroy();
+
+    const currentAvg = historicalSalesData ? historicalSalesData.avg_daily_sales : 0;
+    
+    // Calculate scenarios (handle zero case)
+    const optimistic = currentAvg > 0 ? currentAvg * 1.2 : dailyTarget * 1.2;
+    const realistic = currentAvg > 0 ? currentAvg : dailyTarget;
+    const pessimistic = currentAvg > 0 ? currentAvg * 0.8 : dailyTarget * 0.8;
+
+    // Helper to format days or show message
+    const formatDays = (val) => {
+        if (!isFinite(val) || val <= 0) return 'Data tidak cukup';
+        if (val > 180) return '> 6 bulan';
+        if (val > 30) return Math.ceil(val / 30) + ' bulan';
+        return Math.ceil(val) + ' hari';
+    };
+
+    // Calculate days to target (capped at 180 days / 6 months)
+    const monthlyTargetQty = dailyTarget * 30;
+    const daysToTargetOptimistic = optimistic > 0 ? Math.min(Math.ceil(monthlyTargetQty / optimistic), 180) : 180;
+    const daysToTargetRealistic = realistic > 0 ? Math.min(Math.ceil(monthlyTargetQty / realistic), 180) : 180;
+    const daysToTargetPessimistic = pessimistic > 0 ? Math.min(Math.ceil(monthlyTargetQty / pessimistic), 180) : 180;
+
+    document.getElementById('optimisticScenario').textContent = formatDays(daysToTargetOptimistic);
+    document.getElementById('realisticScenario').textContent = formatDays(daysToTargetRealistic);
+    document.getElementById('pessimisticScenario').textContent = formatDays(daysToTargetPessimistic);
+
+    // Create projection data - max 6 months (180 days), show per month
+    const labels = [];
+    const targetData = [];
+    const optimisticData = [];
+    const realisticData = [];
+    const pessimisticData = [];
+
+    // Calculate for 6 months (show monthly cumulative)
+    const maxMonths = 6;
+    const monthlyTarget = dailyTarget * 30;
+    
+    for (let month = 1; month <= maxMonths; month++) {
+        labels.push('Bulan ' + month);
+        targetData.push(monthlyTarget * month);
+        optimisticData.push(optimistic * 30 * month);
+        realisticData.push(realistic * 30 * month);
+        pessimisticData.push(pessimistic * 30 * month);
+    }
+
+    projectionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Target',
+                    data: targetData,
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 3,
+                    borderDash: [5, 5]
+                },
+                {
+                    label: 'Optimis (+20%)',
+                    data: optimisticData,
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                    tension: 0.4
+                },
+                {
+                label: 'Realistis',
+                data: realisticData,
+                borderColor: 'rgb(107, 114, 128)',
+                backgroundColor: 'rgba(107, 114, 128, 0.05)',
+                tension: 0.4
+            },
+            {
+                label: 'Pesimis (-20%)',
+                data: pessimisticData,
+                borderColor: 'rgb(239, 68, 68)',
+                backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                tension: 0.4
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
+        plugins: {
+            legend: {
+                position: 'top'
+            },
+            tooltip: {
+                callbacks: {
+                    label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(0)} pcs`
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: (value) => value.toLocaleString('id-ID') + ' pcs'
+                }
+            }
+        }
+    }
+});
+}
+
+</script>
+<script>
+    // Form Persistence Logic
+    const STORAGE_KEY = 'cuanflow_product_create_form_v1';
+    const form = document.getElementById('productForm');
+
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    function saveFormData() {
+        const formData = {};
+        
+        // Save standard inputs
+        const inputs = form.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            if (input.name && !input.name.startsWith('recipe_items')) {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    formData[input.name] = input.checked;
+                } else if (input.type !== 'file') {
+                    formData[input.name] = input.value;
+                }
+            }
+        });
+
+        // Save recipe items
+        const recipeItems = [];
+        document.querySelectorAll('.recipe-item').forEach((item, index) => {
+            const rmSelect = item.querySelector('.raw-material-select');
+            const qtyInput = item.querySelector('.quantity-input');
+            const noteInput = item.querySelector('input[name*="[notes]"]');
+            
+            if (rmSelect && qtyInput) {
+                recipeItems.push({
+                    raw_material_id: $(rmSelect).val(),
+                    quantity: qtyInput.value,
+                    notes: noteInput ? noteInput.value : ''
+                });
+            }
+        });
+        formData['recipe_items'] = recipeItems;
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    }
+
+    function loadFormData() {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (!savedData) return;
+
+        // Don't restore if Laravel validation errors exist (old input present)
+        const hasOldInput = "{{ old('code') }}" !== "";
+        if (hasOldInput) return;
+
+        try {
+            const formData = JSON.parse(savedData);
+
+            // Restore standard inputs
+            Object.keys(formData).forEach(key => {
+                if (key === 'recipe_items') return;
+
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.checked = formData[key];
+                        input.dispatchEvent(new Event('change')); 
+                    } else if (input.tagName === 'SELECT') {
+                        if ($(input).hasClass('select2-hidden-accessible')) {
+                            $(input).val(formData[key]).trigger('change');
+                        } else {
+                            input.value = formData[key];
+                        }
+                    } else {
+                        input.value = formData[key];
+                    }
+                }
+            });
+
+            // Restore recipe items
+            if (formData.recipe_items && Array.isArray(formData.recipe_items)) {
+                // First item (index 0)
+                if (formData.recipe_items.length > 0) {
+                    const firstItemData = formData.recipe_items[0];
+                    const firstItem = document.querySelector('.recipe-item');
+                    if (firstItem) {
+                        const select = $(firstItem).find('.raw-material-select');
+                        const qty = firstItem.querySelector('.quantity-input');
+                        const note = firstItem.querySelector('input[name*="[notes]"]');
+
+                        if (select) select.val(firstItemData.raw_material_id).trigger('change');
+                        if (qty) qty.value = firstItemData.quantity;
+                        if (note) note.value = firstItemData.notes;
+                    }
+                }
+
+                // Additional items
+                for (let i = 1; i < formData.recipe_items.length; i++) {
+                    addRecipeItem(); // Add new item to DOM
+                    
+                    const items = document.querySelectorAll('.recipe-item');
+                    const newItem = items[items.length - 1];
+                    const itemData = formData.recipe_items[i];
+
+                    const select = $(newItem).find('.raw-material-select');
+                    const qty = newItem.querySelector('.quantity-input');
+                    const note = newItem.querySelector('input[name*="[notes]"]');
+
+                    if (select) select.val(itemData.raw_material_id).trigger('change');
+                    if (qty) qty.value = itemData.quantity;
+                    if (note) note.value = itemData.notes;
+                }
+                
+                calculateTotalMaterialCost();
+            }
+            
+            // Trigger calculations
+            if (typeof updateHppSummary === 'function') updateHppSummary();
+            if (typeof updateFinalPricing === 'function') updateFinalPricing();
+
+        } catch (e) {
+            console.error('Error loading form data', e);
+        }
+    }
+
+    // Event Listeners
+    const debouncedSave = debounce(saveFormData, 1000);
+    form.addEventListener('input', debouncedSave);
+    form.addEventListener('change', saveFormData);
+    
+    // Select2 events
+    $(document).on('select2:select select2:unselect', '.select2, .select2-category, .select2-unit, .raw-material-select', saveFormData);
+
+    // Clear on submit
+    form.addEventListener('submit', function() {
+        localStorage.removeItem(STORAGE_KEY);
+    });
+
+    // Load data on init
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadFormData);
+    } else {
+        loadFormData();
+    }
 </script>
 @endpush
 

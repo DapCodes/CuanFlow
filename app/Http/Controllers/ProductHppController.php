@@ -385,4 +385,96 @@ class ProductHppController extends Controller
             'barcode' => $barcode
         ]);
     }
+
+    public function getSalesAnalytics(Request $request)
+    {
+        $productId = $request->product_id;
+        $outletId = auth()->user()->outlet_id;
+
+        // Handle new product case
+        if ($productId === 'new' || !$productId) {
+            return response()->json([
+                'daily_pattern' => [
+                    'Monday' => 0, 'Tuesday' => 0, 'Wednesday' => 0, 
+                    'Thursday' => 0, 'Friday' => 0, 'Saturday' => 0, 'Sunday' => 0
+                ],
+                'avg_daily_sales' => 0,
+                'total_sold_30days' => 0,
+                'weekly_trend' => [],
+                'best_day' => '-',
+                'worst_day' => '-',
+            ]);
+        }
+        
+        // Ambil data penjualan 30 hari terakhir
+        $salesHistory = Sale::byOutlet($outletId)
+            ->completed()
+            ->whereBetween('created_at', [now()->subDays(30), now()])
+            ->whereHas('items', function($q) use ($productId) {
+                $q->where('product_id', $productId);
+            })
+            ->with(['items' => function($q) use ($productId) {
+                $q->where('product_id', $productId);
+            }])
+            ->get();
+
+        // Hitung pola penjualan per hari dalam seminggu
+        $dailyPattern = [
+            'Monday' => 0, 'Tuesday' => 0, 'Wednesday' => 0, 
+            'Thursday' => 0, 'Friday' => 0, 'Saturday' => 0, 'Sunday' => 0
+        ];
+        
+        $totalSold = 0;
+        foreach ($salesHistory as $sale) {
+            $dayName = $sale->created_at->format('l');
+            $quantity = $sale->items->sum('quantity');
+            $dailyPattern[$dayName] += $quantity;
+            $totalSold += $quantity;
+        }
+
+        // Rata-rata penjualan per hari
+        $avgDailySales = $totalSold / 30;
+
+        // Trend penjualan mingguan
+        $weeklyTrend = [];
+        for ($i = 3; $i >= 0; $i--) {
+            $weekStart = now()->subWeeks($i)->startOfWeek();
+            $weekEnd = now()->subWeeks($i)->endOfWeek();
+            
+            $weekSales = Sale::byOutlet($outletId)
+                ->completed()
+                ->whereBetween('created_at', [$weekStart, $weekEnd])
+                ->whereHas('items', function($q) use ($productId) {
+                    $q->where('product_id', $productId);
+                })
+                ->with(['items' => function($q) use ($productId) {
+                    $q->where('product_id', $productId);
+                }])
+                ->get()
+                ->sum(fn($s) => $s->items->sum('quantity'));
+            
+            $weeklyTrend[] = [
+                'week' => 'Week ' . (4 - $i),
+                'sales' => $weekSales,
+                'date_range' => $weekStart->format('M d') . ' - ' . $weekEnd->format('M d')
+            ];
+        }
+
+        // Determine best and worst day
+        $bestDay = '-';
+        $worstDay = '-';
+        if ($totalSold > 0) {
+            $bestDay = array_keys($dailyPattern, max($dailyPattern))[0];
+            $worstDay = array_keys($dailyPattern, min($dailyPattern))[0];
+        }
+
+        return response()->json([
+            'daily_pattern' => $dailyPattern,
+            'avg_daily_sales' => round($avgDailySales, 2),
+            'total_sold_30days' => $totalSold,
+            'weekly_trend' => $weeklyTrend,
+            'best_day' => $bestDay,
+            'worst_day' => $worstDay,
+        ]);
+    }
 }

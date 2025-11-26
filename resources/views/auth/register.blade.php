@@ -740,8 +740,8 @@
                 confirmButton: 'swal2-confirm'
             },
             buttonsStyling: false,
-            heightAuto: false, // Added
-            scrollbarPadding: false // Added
+            heightAuto: false,
+            scrollbarPadding: false 
         });
 
         // Show custom alert
