@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('address')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
+            $table->decimal('longtitude', 11, 8)->nullable();
             $table->string('phone', 20)->nullable();
             $table->string('email')->nullable();
             $table->string('logo')->nullable();

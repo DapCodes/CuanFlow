@@ -39,6 +39,8 @@ class User extends Authenticatable
     public function sales(): HasMany { return $this->hasMany(Sale::class, 'cashier_id'); }
     public function cashRegisters(): HasMany { return $this->hasMany(CashRegister::class); }
     public function aiChatSessions(): HasMany { return $this->hasMany(AiChatSession::class); }
+    
+    public function outletsOwned(): HasMany { return $this->hasMany(Outlet::class, 'owner_id'); } 
 
     public function scopeActive($q) { return $q->where('is_active', true); }
     public function scopeByOutlet($q, $outletId) { return $q->where('outlet_id', $outletId); }

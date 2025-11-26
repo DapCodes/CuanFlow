@@ -450,15 +450,22 @@
                 </div>
 
                 <!-- Remember Me -->
-                <div class="flex items-center">
-                    <input 
-                        type="checkbox" 
-                        name="remember" 
-                        id="remember"
-                        class="w-4 h-4 text-cuan-dark border-gray-300 rounded focus:ring-cuan-dark"
-                    />
-                    <label for="remember" class="ml-2 text-sm text-gray-600">Ingat Saya</label>
-                </div>
+               <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            name="remember" 
+                            id="remember"
+                            class="w-4 h-4 text-cuan-dark border-gray-300 rounded focus:ring-cuan-dark"
+                        />
+                        <label for="remember" class="ml-2 text-sm text-gray-600">Ingat Saya</label>
+                    </div>
+
+                    <p class="text-center text-gray-600 text-sm pt-2">
+                        Lupa Password?
+                        <a href="{{ route('password.request') }}" class="forgot-link text-gray-900 font-semibold underline hover:text-cuan-green transition-colors">Klik Disini</a>
+                    </p>
+               </div>
                 
                 <!-- Login Button -->
                 <button 
@@ -467,12 +474,7 @@
                 >
                     Masuk
                 </button>
-                
-                <!-- Forgot Password -->
-                <p class="text-center text-gray-600 text-sm pt-2">
-                    Lupa Password?
-                    <a href="{{ route('password.request') }}" class="forgot-link text-gray-900 font-semibold underline hover:text-cuan-green transition-colors">Klik Disini</a>
-                </p>
+
             </form>
         </div>
     </div>

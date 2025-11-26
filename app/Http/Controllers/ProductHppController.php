@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Recipe;
 use App\Models\RecipeItem;
-use App\Models\HppCalculation;
+use App\Models\HppCalculation; 
 use App\Models\RawMaterial;
 use App\Models\Category;
 use App\Models\Unit;
+use App\Models\Sale;
+use App\Models\SaleItem;
+use App\Models\ProductSalesTarget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -66,6 +69,15 @@ class ProductHppController extends Controller
             'promo_price' => 'nullable|numeric|min:0',
             'min_stock' => 'nullable|numeric|min:0',
             'shelf_life_days' => 'nullable|integer|min:1',
+
+            // Step 6: Sales Target (opsional)
+            'enable_sales_target'   => 'nullable|boolean',
+            'monthly_target_revenue'=> 'nullable|numeric|min:0',
+            'daily_sales_target'    => 'nullable|integer|min:0',
+            'monthly_sales_target'  => 'nullable|integer|min:0',
+            'daily_revenue_target'  => 'nullable|numeric|min:0',
+            'sales_pattern'         => 'nullable|string', // JSON string dari hidden input
+            'target_start_date'     => 'nullable|date',
         ]);
 
         DB::beginTransaction();
@@ -107,7 +119,7 @@ class ProductHppController extends Controller
                 'is_default' => true,
             ]);
 
-            // Create Recipe Items
+            // Create Recipe Items & hitung biaya bahan baku
             $rawMaterialCost = 0;
             foreach ($validated['recipe_items'] as $index => $item) {
                 $rawMaterial = RawMaterial::find($item['raw_material_id']);
@@ -153,6 +165,52 @@ class ProductHppController extends Controller
                 'margin_percent' => round($marginPercent, 2),
             ]);
 
+            /**
+             * SIMPAN PRODUCT SALES TARGET (Step 6)
+             * hanya jika checkbox "enable_sales_target" dicentang
+             * dan monthly_target_revenue > 0
+             */
+            if ($request->boolean('enable_sales_target') && !empty($validated['monthly_target_revenue']) && $validated['monthly_target_revenue'] > 0) {
+                $monthlyTargetRevenue = (float) $validated['monthly_target_revenue'];
+                $sellingPrice = (float) $validated['selling_price'];
+
+                if ($sellingPrice > 0) {
+                    // Hitung ulang di backend (tidak tergantung JS)
+                    $monthlySalesTarget = (int) ceil($monthlyTargetRevenue / $sellingPrice);
+                    $dailySalesTarget   = (int) ceil($monthlySalesTarget / 30);
+                    $dailyRevenueTarget = $dailySalesTarget * $sellingPrice;
+                    $profitPerUnit      = $sellingPrice - $hppPerUnit;
+                    $monthlyProfitTarget = $monthlySalesTarget * $profitPerUnit;
+
+                    // Decode pola penjualan harian kalau ada (dari chart Step 6)
+                    $salesPattern = null;
+                    if (!empty($validated['sales_pattern'])) {
+                        $decoded = json_decode($validated['sales_pattern'], true);
+                        if (json_last_error() === JSON_ERROR_NONE) {
+                            $salesPattern = $decoded;
+                        }
+                    }
+
+                    ProductSalesTarget::create([
+                        'product_id'            => $product->id,
+                        'outlet_id'             => Auth::user()->outlet_id,
+                        'monthly_target_revenue'=> $monthlyTargetRevenue,
+                        'hpp_per_unit'          => $hppPerUnit,
+                        'selling_price'         => $sellingPrice,
+                        'daily_sales_target'    => $dailySalesTarget,
+                        'monthly_sales_target'  => $monthlySalesTarget,
+                        'daily_revenue_target'  => $dailyRevenueTarget,
+                        'profit_per_unit'       => $profitPerUnit,
+                        'monthly_profit_target' => $monthlyProfitTarget,
+                        'sales_pattern'         => $salesPattern,
+                        'target_start_date'     => $validated['target_start_date'] ?? now()->toDateString(),
+                        'target_end_date'       => null,
+                        'is_active'             => true,
+                        'created_by'            => Auth::id(),
+                    ]);
+                }
+            }
+
             DB::commit();
 
             return redirect()->route('products-hpp.show', $product->id)
@@ -163,6 +221,7 @@ class ProductHppController extends Controller
             return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
 
     public function show(Product $product)
     {

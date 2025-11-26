@@ -16,7 +16,8 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             KeyboardShortcutSeeder::class,
             SupplierSeeder::class,
-            // RawMaterialSeeder::class,
+            OutletSeeder::class,
+            RawMaterialSeeder::class,
         ]);
     }
 }

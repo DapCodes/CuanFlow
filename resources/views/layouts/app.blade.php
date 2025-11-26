@@ -13,7 +13,7 @@
     
     <!-- Satoshi Font -->
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <script>
         tailwind.config = {
@@ -156,7 +156,14 @@
                         <!-- Logo / Outlet -->
                         @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
                             @php
-                                $userOutlets = auth()->user()->outlets ?? collect([auth()->user()->outlet]);
+                                // START: LOGIC BARU UNTUK MULTI-OUTLET
+                                // Jika user adalah Owner, ambil SEMUA outlet yang dia miliki (outletsOwned)
+                                // Jika tidak (misal Kasir), hanya tampilkan outlet yang sedang aktif (outlet)
+                                $userOutlets = auth()->user()->isOwner() 
+                                    ? auth()->user()->outletsOwned->sortBy('name') 
+                                    : collect([auth()->user()->outlet]);
+                                    
+                                // Cek apakah ada lebih dari satu outlet yang perlu ditampilkan di dropdown
                                 $hasMultipleOutlets = $userOutlets->count() > 1;
                             @endphp
                             
@@ -194,7 +201,7 @@
                                         </div>
 
                                         @foreach($userOutlets as $outlet)
-                                            <a href="{{ route('outlets.switch', $outlet->id) }}" 
+                                            <a href="#" 
                                                 class="outlet-switch-link block px-4 py-3 hover:bg-cuan-yellow/20 transition {{ auth()->user()->outlet_id == $outlet->id ? 'bg-cuan-yellow/30' : '' }}">
                                                 <div class="flex items-center space-x-3">
                                                     @if($outlet->logo)
@@ -330,7 +337,7 @@
         </main>
     </div>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         // Global Page Loader Handler
         const globalLoader = document.getElementById('global-page-loader');

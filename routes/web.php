@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/sales-analytics', [ProductHppController::class, 'getSalesAnalytics'])
             ->name('sales-analytics');
+
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -540,7 +540,7 @@
                     <!-- Toggle Enable Target -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-6">
                         <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" name="enable_sales_target" id="enableSalesTarget" class="w-5 h-5 text-cuan-green rounded focus:ring-2 focus:ring-green-500">
+                            <input type="checkbox" name="enable_sales_target" value="1" id="enableSalesTarget" class="w-5 h-5 text-cuan-green rounded focus:ring-2 focus:ring-green-500">
                             <span class="ml-3 text-sm font-semibold text-gray-800">
                                 <i class="fas fa-bullseye mr-2 text-cuan-green"></i>
                                 Aktifkan Target Penjualan untuk Produk Ini
@@ -860,63 +860,63 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-// Generate Code Button
-document.getElementById('generateCode').addEventListener('click', function() {
-    const btn = this;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Loading...';
-    
-    fetch('{{ route("products-hpp.generate-code") }}')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            document.getElementById('productCode').value = data.code;
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Gagal generate kode: ' + error.message);
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
-        });
-});
+    // Generate Code Button
+    document.getElementById('generateCode').addEventListener('click', function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Loading...';
+        
+        fetch('{{ route("products-hpp.generate-code") }}')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                document.getElementById('productCode').value = data.code;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Gagal generate kode: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
+            });
+    });
 
-// Generate Barcode Button
-document.getElementById('generateBarcode').addEventListener('click', function() {
-    const btn = this;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Loading...';
-    
-    fetch('{{ route("products-hpp.generate-barcode") }}')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            document.getElementById('productBarcode').value = data.barcode;
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Gagal generate barcode: ' + error.message);
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
-        });
-});
+    // Generate Barcode Button
+    document.getElementById('generateBarcode').addEventListener('click', function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Loading...';
+        
+        fetch('{{ route("products-hpp.generate-barcode") }}')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                document.getElementById('productBarcode').value = data.barcode;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Gagal generate barcode: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
+            });
+    });
     
     // Initial calculation
     calculateItemCost(document.querySelector('.recipe-item'));
@@ -982,14 +982,14 @@ function showStep(step) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-
-
 function validateStep(step) {
     const currentStepEl = document.getElementById('step' + step);
+    if (!currentStepEl) return false;
+    
     const requiredInputs = currentStepEl.querySelectorAll('[required]');
     
     for (let input of requiredInputs) {
-        if (!input.value) {
+        if (!input.value || input.value.trim() === '') {
             alert('Mohon lengkapi semua field yang wajib diisi (*)');
             input.focus();
             return false;
@@ -1004,17 +1004,6 @@ function validateStep(step) {
         }
     }
     
-    if (step === 6) {
-        const enableTarget = document.getElementById('enableSalesTarget').checked;
-        if (enableTarget) {
-            const targetRevenue = document.getElementById('monthlyTargetRevenue').value;
-            if (!targetRevenue || targetRevenue <= 0) {
-                alert('Mohon masukkan target omzet bulanan');
-                return false;
-            }
-        }
-    }
-
     return true;
 }
 
@@ -1156,7 +1145,7 @@ function updateFinalPricing() {
     document.getElementById('finalHppPerUnit').textContent = 'Rp ' + hppPerUnit.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     document.getElementById('marginHpp').textContent = 'Rp ' + hppPerUnit.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     
-    // Store for margin calculation
+    // Store for margin calculation & sales target
     window.hppPerUnitValue = hppPerUnit;
     
     calculateMargin();
@@ -1190,22 +1179,25 @@ function loadHistoricalData() {
     document.getElementById('historicalDataContent').classList.add('hidden');
     document.getElementById('noHistoricalData').classList.add('hidden');
 
-    // Simulasi - ganti dengan AJAX call ke backend
-    setTimeout(() => {
-        // Untuk produk baru, tampilkan no data
-        // Jika ada data, fetch dari API
-        fetch(`/products-hpp/sales-analytics?product_id=new`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.total_sold_30days > 0) {
-                    historicalSalesData = data;
-                    displayHistoricalData(data);
-                } else {
-                    showNoHistoricalData();
-                }
-            })
-            .catch(() => showNoHistoricalData());
-    }, 1000);
+    fetch('/products-hpp/sales-analytics?product_id=new')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.total_sold_30days > 0) {
+                historicalSalesData = data;
+                displayHistoricalData(data);
+            } else {
+                showNoHistoricalData();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading historical data:', error);
+            showNoHistoricalData();
+        });
 }
 
 function showNoHistoricalData() {
@@ -1225,9 +1217,11 @@ function displayHistoricalData(data) {
     renderDailyPatternChart(data.daily_pattern);
 }
 
-// Calculate Sales Target
-// Calculate Sales Target
-document.getElementById('monthlyTargetRevenue').addEventListener('input', debounce(calculateSalesTarget, 500));
+// === PERBAIKAN PENTING ===
+// Sebelumnya di sini pakai debounce() yang belum didefinisikan
+// sehingga script error dan perhitungan target + chart tidak jalan.
+// Sekarang langsung pakai calculateSalesTarget saja.
+document.getElementById('monthlyTargetRevenue').addEventListener('input', calculateSalesTarget);
 
 function calculateSalesTarget() {
     const targetRevenue = parseFloat(document.getElementById('monthlyTargetRevenue').value || 0);
@@ -1247,7 +1241,7 @@ function calculateSalesTarget() {
         document.getElementById('dailyRevenueTarget').textContent = 'Rp ' + dailyRevenueTarget.toLocaleString('id-ID');
         document.getElementById('monthlyProfitTarget').textContent = 'Rp ' + monthlyProfitTarget.toLocaleString('id-ID');
 
-        // Hidden inputs
+        // Hidden inputs untuk dikirim ke backend (kalau mau dipakai)
         document.getElementById('hiddenMonthlySalesTarget').value = monthlySalesTarget;
         document.getElementById('hiddenDailySalesTarget').value = dailySalesTarget;
         document.getElementById('hiddenDailyRevenueTarget').value = dailyRevenueTarget;
@@ -1272,6 +1266,11 @@ function calculateSalesTarget() {
         renderProjectionChart(dailySalesTarget);
 
         document.getElementById('targetCalculationResult').classList.remove('hidden');
+    } else if (targetRevenue > 0 && sellingPrice <= 0) {
+        alert('Mohon isi "Harga Jual" di Step 5 terlebih dahulu untuk menghitung target penjualan.');
+        document.getElementById('targetCalculationResult').classList.add('hidden');
+    } else {
+        document.getElementById('targetCalculationResult').classList.add('hidden');
     }
 }
 
@@ -1355,26 +1354,29 @@ function renderDailyPatternChart(dailyPattern) {
 }
 
 function renderProjectionChart(dailyTarget) {
-    const ctx = document.getElementById('projectionChart').getContext('2d');
+    const ctx = document.getElementById('projectionChart');
+    if (!ctx) return;
     
-    if (projectionChart) projectionChart.destroy();
+    const context = ctx.getContext('2d');
+    
+    if (projectionChart) {
+        projectionChart.destroy();
+    }
 
     const currentAvg = historicalSalesData ? historicalSalesData.avg_daily_sales : 0;
     
-    // Calculate scenarios (handle zero case)
+    // Calculate scenarios with safety checks
     const optimistic = currentAvg > 0 ? currentAvg * 1.2 : dailyTarget * 1.2;
     const realistic = currentAvg > 0 ? currentAvg : dailyTarget;
     const pessimistic = currentAvg > 0 ? currentAvg * 0.8 : dailyTarget * 0.8;
 
-    // Helper to format days or show message
     const formatDays = (val) => {
-        if (!isFinite(val) || val <= 0) return 'Data tidak cukup';
+        if (!isFinite(val) || val <= 0) return 'N/A';
         if (val > 180) return '> 6 bulan';
         if (val > 30) return Math.ceil(val / 30) + ' bulan';
         return Math.ceil(val) + ' hari';
     };
 
-    // Calculate days to target (capped at 180 days / 6 months)
     const monthlyTargetQty = dailyTarget * 30;
     const daysToTargetOptimistic = optimistic > 0 ? Math.min(Math.ceil(monthlyTargetQty / optimistic), 180) : 180;
     const daysToTargetRealistic = realistic > 0 ? Math.min(Math.ceil(monthlyTargetQty / realistic), 180) : 180;
@@ -1384,14 +1386,12 @@ function renderProjectionChart(dailyTarget) {
     document.getElementById('realisticScenario').textContent = formatDays(daysToTargetRealistic);
     document.getElementById('pessimisticScenario').textContent = formatDays(daysToTargetPessimistic);
 
-    // Create projection data - max 6 months (180 days), show per month
     const labels = [];
     const targetData = [];
     const optimisticData = [];
     const realisticData = [];
     const pessimisticData = [];
 
-    // Calculate for 6 months (show monthly cumulative)
     const maxMonths = 6;
     const monthlyTarget = dailyTarget * 30;
     
@@ -1403,7 +1403,7 @@ function renderProjectionChart(dailyTarget) {
         pessimisticData.push(pessimistic * 30 * month);
     }
 
-    projectionChart = new Chart(ctx, {
+    projectionChart = new Chart(context, {
         type: 'line',
         data: {
             labels: labels,
@@ -1414,61 +1414,69 @@ function renderProjectionChart(dailyTarget) {
                     borderColor: 'rgb(34, 197, 94)',
                     backgroundColor: 'rgba(34, 197, 94, 0.1)',
                     borderWidth: 3,
-                    borderDash: [5, 5]
+                    borderDash: [5, 5],
+                    tension: 0
                 },
                 {
                     label: 'Optimis (+20%)',
                     data: optimisticData,
                     borderColor: 'rgb(59, 130, 246)',
                     backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                    tension: 0.4
+                    tension: 0.4,
+                    fill: true
                 },
                 {
-                label: 'Realistis',
-                data: realisticData,
-                borderColor: 'rgb(107, 114, 128)',
-                backgroundColor: 'rgba(107, 114, 128, 0.05)',
-                tension: 0.4
-            },
-            {
-                label: 'Pesimis (-20%)',
-                data: pessimisticData,
-                borderColor: 'rgb(239, 68, 68)',
-                backgroundColor: 'rgba(239, 68, 68, 0.05)',
-                tension: 0.4
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-            mode: 'index',
-            intersect: false
-        },
-        plugins: {
-            legend: {
-                position: 'top'
-            },
-            tooltip: {
-                callbacks: {
-                    label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(0)} pcs`
+                    label: 'Realistis',
+                    data: realisticData,
+                    borderColor: 'rgb(107, 114, 128)',
+                    backgroundColor: 'rgba(107, 114, 128, 0.05)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Pesimis (-20%)',
+                    data: pessimisticData,
+                    borderColor: 'rgb(239, 68, 68)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                    tension: 0.4,
+                    fill: true
                 }
-            }
+            ]
         },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: (value) => value.toLocaleString('id-ID') + ' pcs'
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + Math.round(context.parsed.y).toLocaleString('id-ID') + ' pcs';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return Math.round(value).toLocaleString('id-ID') + ' pcs';
+                        }
+                    }
                 }
             }
         }
-    }
-});
+    });
 }
-
 </script>
+
 <script>
     // Form Persistence Logic
     const STORAGE_KEY = 'cuanflow_product_create_form_v1';

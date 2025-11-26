@@ -6,19 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Outlet extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'code', 'name', 'address', 'latitude', 'longtitude', 'phone', 'email', 'logo', 'settings', 'is_active'
+        'code', 'name', 'address', 'latitude', 'longtitude', 'phone', 'email', 'logo', 'settings', 'is_active',
+        'owner_id'
     ];
 
     protected $casts = [
         'settings' => 'array',
         'is_active' => 'boolean',
     ];
+    
+    // Relasi ke User yang menjadi owner outlet ini
+    public function owner(): BelongsTo { return $this->belongsTo(User::class, 'owner_id'); }
 
     public function users(): HasMany { return $this->hasMany(User::class); }
     public function rawMaterialStocks(): HasMany { return $this->hasMany(RawMaterialStock::class); }
