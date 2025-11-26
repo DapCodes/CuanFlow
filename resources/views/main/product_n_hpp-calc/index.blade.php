@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Produk & Resep - CuanFlow')
+@section('title', 'Produk & Resep - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
 <li class="flex items-center">

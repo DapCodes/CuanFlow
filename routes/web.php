@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegisterOutletController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -13,13 +14,16 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
 
+    Route::prefix('outlets/register')->name('outlets.register.')->group(function () {
+        Route::get('/', [RegisterOutletController::class, 'index'])->name('index');
+        Route::post('/', [RegisterOutletController::class, 'store'])->name('store');
+    });
+
     Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
-        // Route generate harus SEBELUM route resource/dynamic parameter
         Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');
         Route::get('/generate-barcode', [App\Http\Controllers\ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
         Route::get('/ajax/raw-material-price', [App\Http\Controllers\ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
         
-        // Route CRUD
         Route::get('/', [App\Http\Controllers\ProductHppController::class, 'index'])->name('index');
         Route::get('/create', [App\Http\Controllers\ProductHppController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\ProductHppController::class, 'store'])->name('store');
