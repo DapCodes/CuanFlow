@@ -121,10 +121,7 @@
             transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .step-content[data-step="1"] {
-            display: block !important;
-            opacity: 1 !important;
-        }
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col">

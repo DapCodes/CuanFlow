@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterOutletController;
+use App\Http\Controllers\OutletInformationController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,6 +20,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [RegisterOutletController::class, 'index'])->name('index');
         Route::post('/', [RegisterOutletController::class, 'store'])->name('store');
     });
+
+    Route::resource('outlets', OutletInformationController::class);
+    Route::post('outlets/{outlet}/toggle-status', [OutletInformationController::class, 'toggleStatus'])
+        ->name('outlets.toggle-status');
 
     Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
         Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');

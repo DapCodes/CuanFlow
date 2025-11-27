@@ -235,7 +235,14 @@ class ProductHppController extends Controller
         $categories = Category::where('type', 'product')->get();
         $units = Unit::all();
         $rawMaterials = RawMaterial::with('unit')->active()->get();
-        $product->load(['defaultRecipe.items']);
+        
+        // Load relasi yang diperlukan
+        $product->load([
+            'category', 
+            'unit', 
+            'defaultRecipe.items.rawMaterial.unit',
+            'latestHppCalculation'
+        ]);
         
         return view('main.product_n_hpp-calc.edit', compact('product', 'categories', 'units', 'rawMaterials'));
     }
@@ -243,6 +250,7 @@ class ProductHppController extends Controller
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
+            // Step 1: Basic Info
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:30|unique:products,code,' . $product->id,
             'barcode' => 'nullable|string|max:50',
@@ -250,15 +258,23 @@ class ProductHppController extends Controller
             'unit_id' => 'required|exists:units,id',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
+            
+            // Step 2: Recipe Info
             'recipe_name' => 'required|string|max:255',
             'output_quantity' => 'required|numeric|min:0.01',
             'estimated_time_minutes' => 'nullable|integer|min:1',
             'instructions' => 'nullable|string',
+            
+            // Step 3: Recipe Items
             'recipe_items' => 'required|array|min:1',
             'recipe_items.*.raw_material_id' => 'required|exists:raw_materials,id',
             'recipe_items.*.quantity' => 'required|numeric|min:0.01',
             'recipe_items.*.notes' => 'nullable|string',
+            
+            // Step 4: Additional Costs
             'additional_cost' => 'nullable|numeric|min:0',
+            
+            // Step 5: Pricing
             'selling_price' => 'required|numeric|min:0',
             'reseller_price' => 'nullable|numeric|min:0',
             'promo_price' => 'nullable|numeric|min:0',
@@ -268,13 +284,16 @@ class ProductHppController extends Controller
 
         DB::beginTransaction();
         try {
+            // Handle image upload
             if ($request->hasFile('image')) {
-                if ($product->image) {
+                // Hapus gambar lama jika ada
+                if ($product->image && \Storage::disk('public')->exists($product->image)) {
                     \Storage::disk('public')->delete($product->image);
                 }
                 $validated['image'] = $request->file('image')->store('products', 'public');
             }
 
+            // Update Product
             $product->update([
                 'code' => $validated['code'],
                 'name' => $validated['name'],
@@ -290,6 +309,7 @@ class ProductHppController extends Controller
                 'shelf_life_days' => $validated['shelf_life_days'] ?? null,
             ]);
 
+            // Update atau Create Recipe
             $recipe = $product->defaultRecipe;
             if ($recipe) {
                 $recipe->update([
@@ -299,8 +319,10 @@ class ProductHppController extends Controller
                     'instructions' => $validated['instructions'] ?? null,
                 ]);
 
+                // Hapus recipe items lama
                 $recipe->items()->delete();
             } else {
+                // Buat recipe baru jika belum ada
                 $recipe = Recipe::create([
                     'product_id' => $product->id,
                     'name' => $validated['recipe_name'],
@@ -312,6 +334,7 @@ class ProductHppController extends Controller
                 ]);
             }
 
+            // Create Recipe Items & hitung biaya bahan baku
             $rawMaterialCost = 0;
             foreach ($validated['recipe_items'] as $index => $item) {
                 $rawMaterial = RawMaterial::find($item['raw_material_id']);
@@ -327,10 +350,12 @@ class ProductHppController extends Controller
                 $rawMaterialCost += ($item['quantity'] * $rawMaterial->purchase_price);
             }
 
+            // Calculate HPP
             $additionalCost = $validated['additional_cost'] ?? 0;
             $totalHpp = $rawMaterialCost + $additionalCost;
             $hppPerUnit = $totalHpp / $validated['output_quantity'];
 
+            // Create HPP Calculation (history baru)
             HppCalculation::create([
                 'product_id' => $product->id,
                 'recipe_id' => $recipe->id,
@@ -346,10 +371,12 @@ class ProductHppController extends Controller
                 'calculated_by' => Auth::id(),
             ]);
 
+            // Calculate margin
             $marginPercent = $hppPerUnit > 0 
                 ? (($validated['selling_price'] - $hppPerUnit) / $hppPerUnit) * 100 
                 : 0;
 
+            // Update HPP dan margin di product
             $product->update([
                 'hpp' => $hppPerUnit,
                 'margin_percent' => round($marginPercent, 2),
@@ -358,7 +385,7 @@ class ProductHppController extends Controller
             DB::commit();
 
             return redirect()->route('products-hpp.show', $product->id)
-                ->with('success', 'Produk berhasil diperbarui');
+                ->with('success', 'Produk berhasil diperbarui dengan HPP: Rp ' . number_format($hppPerUnit, 2, ',', '.'));
 
         } catch (\Exception $e) {
             DB::rollBack();

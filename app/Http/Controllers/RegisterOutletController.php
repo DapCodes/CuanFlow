@@ -32,6 +32,8 @@ class RegisterOutletController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'business_type' => 'required|string|max:100',
             'business_category' => 'required|string|max:100',
+            'latitude' => 'nullable|numeric',
+            'longtitude' => 'nullable|numeric',
         ]);
 
         try {
@@ -50,7 +52,10 @@ class RegisterOutletController extends Controller
             $outlet = Outlet::create([
                 'code' => $code,
                 'name' => $request->name,
+                'owner_id' => Auth::id(),
                 'address' => $request->address,
+                'latitude' => $request->latitude,
+                'longtitude' => $request->longtitude,
                 'phone' => $request->phone,
                 'email' => $request->email,
                 'logo' => $logoPath,
