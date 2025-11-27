@@ -21,6 +21,7 @@ class ProductHppController extends Controller
     public function index()
     {
         $products = Product::with(['category', 'unit', 'defaultRecipe', 'latestHppCalculation'])
+            ->where('outlet_id', Auth::user()->outlet_id)
             ->latest()
             ->paginate(20);
         
@@ -95,6 +96,7 @@ class ProductHppController extends Controller
                 'barcode' => $validated['barcode'] ?? null,
                 'category_id' => $validated['category_id'] ?? null,
                 'unit_id' => $validated['unit_id'],
+                'outlet_id' => Auth::user()->outlet_id,
                 'description' => $validated['description'] ?? null,
                 'image' => $validated['image'] ?? null,
                 'selling_price' => $validated['selling_price'],
@@ -225,6 +227,11 @@ class ProductHppController extends Controller
 
     public function show(Product $product)
     {
+        // Validasi outlet_id
+        if ($product->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
         $product->load(['category', 'unit', 'recipes.items.rawMaterial.unit', 'hppCalculations.calculatedBy']);
         
         return view('main.product_n_hpp-calc.show', compact('product'));
@@ -232,6 +239,11 @@ class ProductHppController extends Controller
 
     public function edit(Product $product)
     {
+        // Validasi outlet_id
+        if ($product->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
         $categories = Category::where('type', 'product')->get();
         $units = Unit::all();
         $rawMaterials = RawMaterial::with('unit')->active()->get();
@@ -249,6 +261,11 @@ class ProductHppController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        // Validasi outlet_id
+        if ($product->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
         $validated = $request->validate([
             // Step 1: Basic Info
             'name' => 'required|string|max:255',
@@ -395,6 +412,11 @@ class ProductHppController extends Controller
 
     public function destroy(Product $product)
     {
+        // Validasi outlet_id
+        if ($product->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
         try {
             if ($product->image) {
                 \Storage::disk('public')->delete($product->image);
@@ -490,6 +512,12 @@ class ProductHppController extends Controller
                 'best_day' => '-',
                 'worst_day' => '-',
             ]);
+        }
+
+        // Validasi apakah product milik outlet user
+        $product = Product::find($productId);
+        if (!$product || $product->outlet_id !== $outletId) {
+            return response()->json(['error' => 'Product not found'], 404);
         }
         
         // Ambil data penjualan 30 hari terakhir

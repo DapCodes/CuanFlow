@@ -201,27 +201,37 @@
                                         </div>
 
                                         @foreach($userOutlets as $outlet)
-                                            <a href="#" 
-                                                class="outlet-switch-link block px-4 py-3 hover:bg-cuan-yellow/20 transition {{ auth()->user()->outlet_id == $outlet->id ? 'bg-cuan-yellow/30' : '' }}">
-                                                <div class="flex items-center space-x-3">
-                                                    @if($outlet->logo)
-                                                        <img src="{{ Storage::url($outlet->logo) }}" 
-                                                            alt="{{ $outlet->name }}" 
-                                                            class="h-8 w-8 object-contain rounded">
-                                                    @else
-                                                        <div class="h-8 w-8 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
-                                                            {{ substr($outlet->name, 0, 1) }}
+                                           <form method="POST" action="{{ route('change.outlet') }}">
+                                            @csrf
+                                            <input type="hidden" name="outlet_id" value="{{ $outlet->id }}">
+
+                                            <button type="submit" 
+                                                class="w-full text-left block px-4 py-3 hover:bg-cuan-yellow/20 transition 
+                                                {{ auth()->user()->outlet_id == $outlet->id ? 'bg-cuan-yellow/30' : '' }}">
+        
+                                                    <div class="flex items-center space-x-3">
+                                                        @if($outlet->logo)
+                                                            <img src="{{ Storage::url($outlet->logo) }}" 
+                                                                alt="{{ $outlet->name }}" 
+                                                                class="h-8 w-8 object-contain rounded">
+                                                        @else
+                                                            <div class="h-8 w-8 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
+                                                                {{ substr($outlet->name, 0, 1) }}
+                                                            </div>
+                                                        @endif
+
+                                                        <div class="flex-1">
+                                                            <p class="text-sm font-medium text-gray-900">{{ $outlet->name }}</p>
+                                                            <p class="text-xs text-gray-500">{{ $outlet->business_category }}</p>
                                                         </div>
-                                                    @endif
-                                                    <div class="flex-1">
-                                                        <p class="text-sm font-medium text-gray-900">{{ $outlet->name }}</p>
-                                                        <p class="text-xs text-gray-500">{{ $outlet->business_category }}</p>
+
+                                                        @if(auth()->user()->outlet_id == $outlet->id)
+                                                            <i class="fa-solid fa-check text-cuan-green"></i>
+                                                        @endif
                                                     </div>
-                                                    @if(auth()->user()->outlet_id == $outlet->id)
-                                                        <i class="fa-solid fa-check text-cuan-green"></i>
-                                                    @endif
-                                                </div>
-                                            </a>
+
+                                                </button>
+                                            </form>
                                         @endforeach
                                     </div>
                                 </div>

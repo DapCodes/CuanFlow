@@ -33,6 +33,7 @@ class OutletInformationController extends Controller
             return redirect('/')->with('error', 'Anda tidak terhubung dengan outlet manapun.');
         }
     }
+
     public function create()
     {
         $owners = User::role(['owner', 'admin'])->get();
@@ -76,8 +77,19 @@ class OutletInformationController extends Controller
 
     public function show(Outlet $outlet)
     {
-        if ($outlet->owner_id !== auth()->id()) {
-            abort(403);
+        // Validasi akses berdasarkan role dan outlet_id
+        $user = Auth::user();
+        
+        if ($user->hasRole('owner')) {
+            // Owner hanya bisa akses outlet miliknya
+            if ($outlet->owner_id !== $user->id) {
+                abort(404);
+            }
+        } else {
+            // User lain hanya bisa akses outlet tempat mereka terdaftar
+            if ($outlet->id !== $user->outlet_id) {
+                abort(404);
+            }
         }
 
         $outlet->load('owner', 'users');
@@ -94,8 +106,19 @@ class OutletInformationController extends Controller
 
     public function edit(Outlet $outlet)
     {
-        if ($outlet->owner_id !== auth()->id()) {
-            abort(403);
+        // Validasi akses berdasarkan role dan outlet_id
+        $user = Auth::user();
+        
+        if ($user->hasRole('owner')) {
+            // Owner hanya bisa edit outlet miliknya
+            if ($outlet->owner_id !== $user->id) {
+                abort(404);
+            }
+        } else {
+            // User lain hanya bisa edit outlet tempat mereka terdaftar
+            if ($outlet->id !== $user->outlet_id) {
+                abort(404);
+            }
         }
 
         $owners = User::role(['owner', 'admin'])->get();
@@ -104,8 +127,19 @@ class OutletInformationController extends Controller
 
     public function update(Request $request, Outlet $outlet)
     {
-        if ($outlet->owner_id !== auth()->id()) {
-            abort(403);
+        // Validasi akses berdasarkan role dan outlet_id
+        $user = Auth::user();
+        
+        if ($user->hasRole('owner')) {
+            // Owner hanya bisa update outlet miliknya
+            if ($outlet->owner_id !== $user->id) {
+                abort(404);
+            }
+        } else {
+            // User lain hanya bisa update outlet tempat mereka terdaftar
+            if ($outlet->id !== $user->outlet_id) {
+                abort(404);
+            }
         }
 
         $validated = $request->validate([
@@ -134,8 +168,11 @@ class OutletInformationController extends Controller
 
     public function destroy(Outlet $outlet)
     {
-        if ($outlet->owner_id !== auth()->id()) {
-            abort(403);
+        // Hanya owner yang bisa menghapus outlet miliknya
+        $user = Auth::user();
+        
+        if (!$user->hasRole('owner') || $outlet->owner_id !== $user->id) {
+            abort(404);
         }
 
         // Check if outlet has related data
@@ -161,8 +198,11 @@ class OutletInformationController extends Controller
 
     public function toggleStatus(Outlet $outlet)
     {
-        if ($outlet->owner_id !== auth()->id()) {
-            abort(403);
+        // Hanya owner yang bisa toggle status outlet miliknya
+        $user = Auth::user();
+        
+        if (!$user->hasRole('owner') || $outlet->owner_id !== $user->id) {
+            abort(404);
         }
 
         $outlet->update(['is_active' => !$outlet->is_active]);

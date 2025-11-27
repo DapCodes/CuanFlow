@@ -3,11 +3,13 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\OutletInformationController;
+use App\Http\Controllers\ChangeOutletController;
+use App\Http\Controllers\RawMaterialAndSupplierController;
 
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('register');
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', function () {
@@ -20,6 +22,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [RegisterOutletController::class, 'index'])->name('index');
         Route::post('/', [RegisterOutletController::class, 'store'])->name('store');
     });
+
+    Route::post('/change-outlet', [ChangeOutletController::class, 'switch'])
+    ->name('change.outlet')
+    ->middleware('auth');
 
     Route::resource('outlets', OutletInformationController::class);
     Route::post('outlets/{outlet}/toggle-status', [OutletInformationController::class, 'toggleStatus'])
@@ -41,8 +47,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/sales-analytics', [ProductHppController::class, 'getSalesAnalytics'])
             ->name('sales-analytics');
 
-    });
+            
+        });
 
+    Route::prefix('raw-materials')->name('raw-materials.')->group(function () {
+        Route::get('/', [RawMaterialAndSupplierController::class, 'indexRawMaterial'])
+            ->name('index');
+        Route::get('/suppliers', [RawMaterialAndSupplierController::class, 'indexSupplier'])
+            ->name('suppliers');
+    });
+        
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

@@ -37,6 +37,7 @@ class Outlet extends Model
     public function dailySummaries(): HasMany { return $this->hasMany(DailySummary::class); }
     public function settings(): HasMany { return $this->hasMany(Setting::class); }
     public function stockNotifications(): HasMany { return $this->hasMany(StockNotification::class); }
+    public function products(): HasMany { return $this->hasMany(Product::class); }
 
     public function scopeActive($q) { return $q->where('is_active', true); }
 

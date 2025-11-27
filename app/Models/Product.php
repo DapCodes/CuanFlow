@@ -20,7 +20,7 @@ class Product extends Model
         'code', 'name', 'barcode', 'category_id', 'unit_id',
         'hpp', 'selling_price', 'reseller_price', 'promo_price', 'margin_percent',
         'min_stock', 'shelf_life_days', 'image', 'description',
-        'is_active', 'is_sellable', 'track_stock'
+        'is_active', 'is_sellable', 'track_stock', 'outlet_id'
     ];
 
     protected $casts = [
@@ -28,6 +28,7 @@ class Product extends Model
         'reseller_price' => 'decimal:2', 'promo_price' => 'decimal:2',
         'margin_percent' => 'decimal:4', 'min_stock' => 'decimal:4',
         'is_active' => 'boolean', 'is_sellable' => 'boolean', 'track_stock' => 'boolean',
+        'outlet_id' => 'integer',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -37,6 +38,7 @@ class Product extends Model
 
     public function category(): BelongsTo { return $this->belongsTo(Category::class); }
     public function unit(): BelongsTo { return $this->belongsTo(Unit::class); }
+    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
     public function stocks(): HasMany { return $this->hasMany(ProductStock::class); }
     public function stockMovements(): MorphMany { return $this->morphMany(StockMovement::class, 'stockable'); }
     public function recipes(): HasMany { return $this->hasMany(Recipe::class); }

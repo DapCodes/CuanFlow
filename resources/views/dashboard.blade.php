@@ -103,6 +103,7 @@
     .menu-card:nth-child(12) { animation-delay: 0.6s; }
     .menu-card:nth-child(13) { animation-delay: 0.65s; }
     .menu-card:nth-child(14) { animation-delay: 0.7s; }
+    .menu-card:nth-child(15) { animation-delay: 0.75s; }
 
     /* Backdrop blur effect */
     .backdrop-blur-effect {
@@ -150,14 +151,21 @@
                     <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
                         <i class="fa-solid fa-flask text-4xl sm:text-5xl text-white"></i>
                     </div>
-                    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Produksi & Stok</span>
+                    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Produksi</span>
                 </a>
 
                 <a href="#" class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300">
+                    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-green-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+                        <i class="fa-solid fa-boxes-packing text-4xl sm:text-5xl text-white"></i>
+                    </div>
+                    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Stock Opname</span>
+                </a>
+
+                <a href="{{ route('raw-materials.index') }}" class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300">
                     <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
                         <i class="fa-solid fa-boxes-stacked text-4xl sm:text-5xl text-white"></i>
                     </div>
-                    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Bahan Baku</span>
+                    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Bahan Baku & Supplier</span>
                 </a>
 
                 <a href="{{ route('products-hpp.index') }}" class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300">
