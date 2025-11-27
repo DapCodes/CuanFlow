@@ -106,7 +106,7 @@
     <div class="max-w-7xl mx-auto">
         <x-card-container>
             <!-- Header -->
-            <div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
+            <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 flex items-center">
@@ -390,7 +390,7 @@
                         Batal
                     </a>
                     <button type="submit" 
-                            class="px-6 py-2.5 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition-colors shadow-md hover:shadow-lg">
+                            class="px-6 py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-cuan-olive transition-colors shadow-md hover:shadow-lg">
                         <i class="fas fa-save mr-2"></i>
                         Update Outlet
                     </button>

@@ -7,19 +7,32 @@ use App\Models\Outlet;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class OutletInformationController extends Controller
 {
     public function index()
     {
-        $outlets = Outlet::with('owner')
-            ->where('owner_id', auth()->id())
-            ->latest()
-            ->paginate(10);
-            
-        return view('main.outlets.outlet_informations.index', compact('outlets'));
-    }
+        $user = Auth::user();
 
+        if ($user->hasRole('owner')) {
+            
+            $outlets = Outlet::with('owner')
+                ->where('owner_id', $user->id)
+                ->latest()
+                ->paginate(10);
+                
+            return view('main.outlets.outlet_informations.index', compact('outlets'));
+            
+        } else {
+            
+            if ($user->outlet_id) {
+                return redirect()->route('outlets.show', $user->outlet_id);
+            }
+            
+            return redirect('/')->with('error', 'Anda tidak terhubung dengan outlet manapun.');
+        }
+    }
     public function create()
     {
         $owners = User::role(['owner', 'admin'])->get();
