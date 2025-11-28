@@ -39,16 +39,16 @@
 
         <x-card-container>
             <!-- Header -->
-            <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
+            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-store text-cuan-green mr-3"></i>
+                            <i class="fas fa-store text-orange-500 mr-3"></i>
                             Informasi Outlet
                         </h2>
                         <p class="text-sm text-gray-600 mt-1">Kelola informasi dan pengaturan outlet Anda</p>
                     </div>
-                    <a href="{{ route('outlets.create') }}" class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-cuan-olive transition-all duration-200 shadow-md hover:shadow-lg">
+                    <a href="{{ route('outlets.create') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg">
                         <i class="fas fa-plus-circle mr-2"></i>
                         Tambah Outlet
                     </a>
@@ -120,7 +120,7 @@
                                     @if($outlet->logo)
                                     <img src="{{ Storage::url($outlet->logo) }}" alt="{{ $outlet->name }}" class="h-12 w-12 rounded-lg object-cover mr-3 border-2 border-gray-200 shadow-sm">
                                     @else
-                                    <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center mr-3 shadow-sm">
+                                    <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mr-3 shadow-sm">
                                         <i class="fas fa-store text-white text-lg"></i>
                                     </div>
                                     @endif
@@ -160,8 +160,8 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($outlet->owner)
                                 <div class="flex items-center">
-                                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center mr-2 shadow-sm">
-                                        <span class="text-white text-xs font-semibold">{{ strtoupper(substr($outlet->owner->name, 0, 2)) }}</span>
+                                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold mr-2">
+                                        {{ substr(auth()->user()->name, 0, 1) }}
                                     </div>
                                     <div>
                                         <div class="text-sm font-medium text-gray-900">{{ $outlet->owner->name }}</div>
@@ -254,7 +254,7 @@
             @endif
 
             <!-- Summary Statistics -->
-            <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-t border-gray-200">
+            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-t border-gray-200">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                         <div class="flex items-center justify-between">

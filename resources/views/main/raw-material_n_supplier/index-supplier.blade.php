@@ -39,17 +39,17 @@
 
         <x-card-container>
             <!-- Header -->
-            <div class="bg-gradient-to-br from-orange-400 to-red-500 p-6 border-b border-gray-200">
+            <div class="bg-gradient-to-br from-orange-50 to-red-50 p-6 border-b border-gray-200">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-white flex items-center">
-                            <i class="fas fa-truck text-white mr-3"></i>
+                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                            <i class="fas fa-truck text-red-400 mr-3"></i>
                             Daftar Supplier
                         </h2>
-                        <p class="text-sm text-orange-50 mt-1">Kelola informasi supplier bahan baku Anda</p>
+                        <p class="text-sm text-gray-500 mt-1">Kelola informasi supplier bahan baku Anda</p>
                     </div>
                     <div class="flex gap-2">
-                        <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center px-5 py-3 bg-orange-700 text-white rounded-lg font-semibold hover:bg-orange-800 transition-all duration-200 shadow-md hover:shadow-lg">
+                        <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center px-5 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-500 transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fas fa-boxes mr-2"></i>
                             Kelola Stok
                         </a>

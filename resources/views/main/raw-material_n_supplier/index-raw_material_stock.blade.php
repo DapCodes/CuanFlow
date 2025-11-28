@@ -49,7 +49,7 @@
                         <p class="text-sm text-gray-500 mt-1">Kelola dan monitor stok bahan baku Anda</p>
                     </div>
                     <div class="flex gap-2">
-                        <a href="{{ route('raw-materials.suppliers') }}" class="inline-flex items-center px-5 py-3 bg-orange-700 text-white rounded-lg font-semibold hover:bg-orange-800 transition-all duration-200 shadow-md hover:shadow-lg">
+                        <a href="{{ route('raw-materials.suppliers') }}" class="inline-flex items-center px-5 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-500 transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fas fa-truck mr-2"></i>
                             Kelola Supplier
                         </a>
@@ -293,18 +293,8 @@
             @if($rawMaterials->hasPages())
             <div class="px-6 py-4 bg-white border-t border-gray-200">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="text-sm text-gray-700">
-                        Menampilkan 
-                        <span class="font-semibold">{{ $rawMaterials->firstItem() }}</span>
-                        sampai
-                        <span class="font-semibold">{{ $rawMaterials->lastItem() }}</span>
-                        dari
-                        <span class="font-semibold">{{ $rawMaterials->total() }}</span>
-                        bahan baku
                     </div>
-                    <div>
-                        {{ $rawMaterials->links() }}
-                    </div>
+                <div class="mt-4"> {{ $rawMaterials->links() }}
                 </div>
             </div>
             @endif

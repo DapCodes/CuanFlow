@@ -79,10 +79,10 @@
     /* Toggle Switch Styles */
     .toggle-checkbox:checked {
         right: 0;
-        border-color: #10b981;
+        border-color: #f97316;
     }
     .toggle-checkbox:checked + .toggle-label {
-        background-color: #10b981;
+        background-color: #f97316;
     }
 
     /* Current Logo Badge */
@@ -106,7 +106,7 @@
     <div class="max-w-7xl mx-auto">
         <x-card-container>
             <!-- Header -->
-            <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
+            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 flex items-center">
@@ -207,7 +207,7 @@
                         <!-- Status Toggle -->
                         <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-toggle-on text-green-500 mr-2"></i>
+                                <i class="fas fa-toggle-on text-orange-500 mr-2"></i>
                                 Status Outlet
                             </h3>
                             
@@ -390,7 +390,7 @@
                         Batal
                     </a>
                     <button type="submit" 
-                            class="px-6 py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-cuan-olive transition-colors shadow-md hover:shadow-lg">
+                            class="px-6 py-2.5 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-colors shadow-md hover:shadow-lg">
                         <i class="fas fa-save mr-2"></i>
                         Update Outlet
                     </button>

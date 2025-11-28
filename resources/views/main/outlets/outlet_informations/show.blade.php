@@ -21,48 +21,33 @@
 <main class="flex-grow py-8 px-4">
     <div class="max-w-7xl mx-auto">
 
-        <!-- Header Actions -->
-        <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-                    <i class="fas fa-store text-cuan-green mr-3"></i>
-                    {{ $outlet->name }}
-                </h1>
-                <p class="text-sm text-gray-600 mt-1">Detail informasi outlet</p>
-            </div>
-            <div class="flex gap-2">
-                <a href="{{ route('outlets.edit', $outlet->id) }}" 
-                   class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition-colors">
-                    <i class="fas fa-edit mr-2"></i>
-                    Edit
-                </a>
-                <a href="{{ route('outlets.index') }}" 
-                   class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    Kembali
-                </a>
-            </div>
-        </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Information -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Basic Info Card -->
                 <x-card-container>
-                    <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                            Informasi Dasar
-                        </h2>
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                                    {{ $outlet->name }}
+                                </h2>
+                                <p class="text-sm text-gray-600 mt-1">Detail informasi outlet</p>
+                            </div>
+                            <a href="{{ route('outlets.index') }}" class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Kembali
+                            </a>
+                        </div>
                     </div>
-                    
+                            
                     <div class="p-6 space-y-6">
                         <!-- Logo & Name -->
                         <div class="flex items-start gap-4">
                             @if($outlet->logo)
                             <img src="{{ Storage::url($outlet->logo) }}" alt="{{ $outlet->name }}" class="h-24 w-24 rounded-lg object-cover border-2 border-gray-200 shadow-md">
                             @else
-                            <div class="h-24 w-24 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center shadow-md">
+                            <div class="h-24 w-24 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center shadow-md">
                                 <i class="fas fa-store text-white text-3xl"></i>
                             </div>
                             @endif
@@ -110,7 +95,7 @@
 
                 <!-- Contact Info Card -->
                 <x-card-container>
-                    <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
                         <h2 class="text-xl font-bold text-gray-900 flex items-center">
                             <i class="fas fa-address-book text-green-500 mr-2"></i>
                             Informasi Kontak
@@ -139,7 +124,7 @@
 
                 <!-- Location Card -->
                 <x-card-container>
-                    <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
                         <h2 class="text-xl font-bold text-gray-900 flex items-center">
                             <i class="fas fa-map-marked-alt text-red-500 mr-2"></i>
                             Lokasi
@@ -187,7 +172,7 @@
             <div class="space-y-6">
                 <!-- Owner Card -->
                 <x-card-container>
-                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 border-b border-gray-200">
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
                         <h2 class="text-lg font-bold text-gray-900 flex items-center">
                             <i class="fas fa-user-tie text-purple-500 mr-2"></i>
                             Owner
@@ -197,8 +182,8 @@
                     <div class="p-6">
                         @if($outlet->owner)
                         <div class="flex items-center gap-3">
-                            <div class="h-16 w-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-md">
-                                <span class="text-white text-xl font-semibold">{{ strtoupper(substr($outlet->owner->name, 0, 2)) }}</span>
+                            <div class="h-16 w-16 rounded-full bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center shadow-md">
+                                <span class="text-white text-4xl font-semibold">{{ strtoupper(substr($outlet->owner->name, 0, 1)) }}</span>
                             </div>
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900">{{ $outlet->owner->name }}</h3>
@@ -216,7 +201,7 @@
 
                 <!-- Statistics Card -->
                 <x-card-container>
-                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-gray-200">
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
                         <h2 class="text-lg font-bold text-gray-900 flex items-center">
                             <i class="fas fa-chart-bar text-blue-500 mr-2"></i>
                             Statistik
@@ -276,7 +261,7 @@
 
                 <!-- Quick Actions -->
                 <x-card-container>
-                    <div class="bg-gradient-to-r from-orange-50 to-red-50 p-6 border-b border-gray-200">
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
                         <h2 class="text-lg font-bold text-gray-900 flex items-center">
                             <i class="fas fa-bolt text-orange-500 mr-2"></i>
                             Aksi Cepat
