@@ -46,15 +46,27 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/sales-analytics', [ProductHppController::class, 'getSalesAnalytics'])
             ->name('sales-analytics');
-
-            
-        });
+    });
 
     Route::prefix('raw-materials')->name('raw-materials.')->group(function () {
         Route::get('/', [RawMaterialAndSupplierController::class, 'indexRawMaterial'])
             ->name('index');
+
         Route::get('/suppliers', [RawMaterialAndSupplierController::class, 'indexSupplier'])
             ->name('suppliers');
+
+        Route::get('/create', [RawMaterialAndSupplierController::class, 'createRawMaterial'])
+            ->name('create');
+        Route::post('/', [RawMaterialAndSupplierController::class, 'storeRawMaterial'])
+            ->name('store');
+        Route::get('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'showRawMaterial'])
+            ->name('show');
+        Route::get('/{rawMaterial}/edit', [RawMaterialAndSupplierController::class, 'editRawMaterial'])
+            ->name('edit');
+        Route::put('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'updateRawMaterial'])
+            ->name('update');
+        Route::delete('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'destroyRawMaterial'])
+            ->name('destroy');    
     });
         
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

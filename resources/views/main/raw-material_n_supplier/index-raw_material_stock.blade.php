@@ -53,7 +53,7 @@
                             <i class="fas fa-truck mr-2"></i>
                             Kelola Supplier
                         </a>
-                        <a href="#" class="inline-flex items-center px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
+                        <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fas fa-plus-circle mr-2"></i>
                             Tambah Bahan Baku
                         </a>
@@ -243,17 +243,17 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <a href="#" 
+                                    <a href="{{ route('raw-materials.show', $material) }}" 
                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors" 
                                        title="Detail">
                                         <i class="fas fa-eye text-sm"></i>
                                     </a>
-                                    <a href="#" 
+                                    <a href="{{ route('raw-materials.edit', $material) }}" 
                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition-colors" 
                                        title="Edit">
                                         <i class="fas fa-edit text-sm"></i>
                                     </a>
-                                    <form action="#" 
+                                    <form action="{{ route('raw-materials.destroy', $material) }}" 
                                           method="POST" 
                                           class="inline-block" 
                                           onsubmit="return confirm('Yakin ingin menghapus bahan baku {{ $material->name }}?')">
@@ -277,7 +277,7 @@
                                     </div>
                                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Bahan Baku</h3>
                                     <p class="text-sm text-gray-500 mb-6">Mulai dengan menambahkan bahan baku pertama Anda</p>
-                                    <a href="#" class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
+                                    <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
                                         <i class="fas fa-plus-circle mr-2"></i>
                                         Tambah Bahan Baku
                                     </a>
@@ -293,8 +293,12 @@
             @if($rawMaterials->hasPages())
             <div class="px-6 py-4 bg-white border-t border-gray-200">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="text-sm text-gray-700">
+                        Menampilkan {{ $rawMaterials->firstItem() }} - {{ $rawMaterials->lastItem() }} dari {{ $rawMaterials->total() }} bahan baku
                     </div>
-                <div class="mt-4"> {{ $rawMaterials->links() }}
+                    <div>
+                        {{ $rawMaterials->links() }}
+                    </div>
                 </div>
             </div>
             @endif
