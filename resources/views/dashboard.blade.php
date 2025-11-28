@@ -338,6 +338,59 @@
         .driver-popover.cuanflow-popover .driver-popover-progress-text { align-self: flex-end; }
     }
 </style>
+
+<style>
+    /* Smooth Blur Animation untuk Welcome Modal */
+    #welcomeTourModal {
+        transition: opacity 0.4s ease-out, backdrop-filter 0.4s ease-out;
+    }
+
+    #welcomeTourModal.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    #welcomeTourModal:not(.hidden) {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Backdrop dengan smooth blur */
+    #welcomeTourModal .backdrop-blur-effect {
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        transition: backdrop-filter 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #welcomeTourModal:not(.hidden) .backdrop-blur-effect {
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Modal content smooth entrance */
+    #welcomeTourModal .modal-content {
+        transform: scale(0.95) translateY(20px);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #welcomeTourModal:not(.hidden) .modal-content {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+
+    /* Exit animation */
+    #welcomeTourModal.modal-exit .backdrop-blur-effect {
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+    }
+
+    #welcomeTourModal.modal-exit .modal-content {
+        transform: scale(0.95) translateY(20px);
+        opacity: 0;
+    }
+    
+</style>
 @endpush
 
 @section('content')
@@ -350,7 +403,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="1"
        data-title="Point of Sale"
-       data-intro="Si Paling Sat Set! Menu andalan buat kamu yang mau ngegas transaksi secepat kilat. Catat semua penjualan dengan akurat, bye-bye antrian panjang!">
+       data-intro="<strong>Transaksi Sat-Set!</strong> Menu wajib untuk <strong>mencatat semua penjualan</strong> secara cepat dan akurat. Tingkatkan efisiensi kasir Anda dan hindari antrian panjang!">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-cash-register text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -363,7 +416,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="2"
        data-title="Dashboard & Statistik"
-       data-intro="Jagoan Baca Pikiran Outlet! Lihat performa bisnismu kayak nonton film di bioskop - jelas & full colour! Pantau penjualan, tren, dan data-data penting lainnya buat ambil keputusan terbaik.">
+       data-intro="<strong>Monitor Performa Real-Time!</strong> Lihat ringkasan dan tren bisnis Anda dalam visual yang <strong>mudah dipahami</strong>. Siap mengambil <strong>keputusan strategis</strong> berdasarkan data terbaru.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-chart-line text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -376,7 +429,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="3"
        data-title="Laporan Keseluruhan"
-       data-intro="Koleksi Lengkap Rahasia Sukses! Mau laporan harian, mingguan, atau bulanan? Semuanya ada di sini! Tinggal download, analisis, dan siap-siap cuan bertubi-tubi!">
+       data-intro="<strong>Koleksi Laporan Lengkap!</strong> Tempat untuk <strong>mengakses dan mengunduh</strong> semua laporan (harian, mingguan, bulanan). Lakukan analisis mendalam untuk <strong>strategi cuan</strong> bisnis Anda.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-file-invoice text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -389,7 +442,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="4"
        data-title="Keuangan"
-       data-intro="Bodyguard Dompet Outlet! Atur arus kas, catat masuk-keluar uang, dan pastikan keuangan bisnismu selalu sehat. Cash flow aman, tidur pun nyenyak.">
+       data-intro="<strong>Kontrol Arus Kas Total!</strong> Catat semua transaksi <strong>masuk dan keluar</strong> uang. Pastikan <strong>kondisi keuangan</strong> bisnis Anda selalu sehat dan terkendali. Tidur pun nyenyak!">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-wallet text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -402,7 +455,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="5"
        data-title="Produksi"
-       data-intro="Laboratorium Cuan! Dari bahan mentah jadi produk siap jual, semua proses diatur di sini. Efisienkan produksi, hasilkan lebih banyak tanpa pusing.">
+       data-intro="<strong>Pusat Efisiensi Produksi!</strong> Kelola alur kerja dari bahan mentah hingga produk akhir. <strong>Tingkatkan hasil produksi</strong> tanpa pusing dengan manajemen yang teratur.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-flask text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -415,7 +468,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="6"
        data-title="Stock Opname"
-       data-intro="Detektif Stok Sejati! Waktunya cocokkin stok fisik dengan data sistem! Pastikan semua barang matching. Stok akurat = anti rugi!">
+       data-intro="<strong>Detektif Stok Anti Rugi!</strong> Lakukan pencocokan <strong>stok fisik dengan data sistem</strong> secara berkala. Pastikan akurasi inventaris Anda <strong>100% *matching*</strong>.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-green-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-boxes-packing text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -428,7 +481,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="7"
        data-title="Bahan Baku & Supplier"
-       data-intro="Pusat Logistik Anti Kehabisan! Kelola semua bahan baku dan kontak supplier andalanmu. Dijamin, dapur nggak akan stuck karena kehabisan stok penting!">
+       data-intro="<strong>Logistik Anti Kehabisan!</strong> Kelola detail <strong>bahan baku dan kontak supplier</strong> andalan Anda. Dijamin, operasional dapur Anda <strong>tidak akan pernah *stuck*</strong> karena kehabisan stok.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-boxes-stacked text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -441,7 +494,7 @@
        class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="8"
        data-title="Produk & Resep"
-       data-intro="Dapur Rahasia HPP Terbaik! Atur daftar produk kerenmu plus resep rahasia dengan hitungan HPP yang pas. Tentukan harga jual yang bikin pelanggan senang, kamu cuan!">
+       data-intro="<strong>Dapur Rahasia Cuan!</strong> Atur daftar produk dan resep, plus <strong>hitung Harga Pokok Penjualan (HPP)</strong> yang akurat. Tentukan harga jual optimal agar <strong>pelanggan senang, Anda cuan</strong>!">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-utensils text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -454,7 +507,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="9"
        data-title="Informasi Outlet"
-       data-intro="The Base Camp Bisnismu! Atur semua data penting outlet - alamat, jam buka, dan info lainnya. Pastikan pelanggan tahu di mana menemukan kamu!">
+       data-intro="<strong>Base Camp Bisnis Anda!</strong> Kelola semua <strong>data penting outlet</strong> (alamat, jam buka, dll.). Pastikan pelanggan selalu tahu di mana menemukan Anda!">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-store text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -467,7 +520,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="10"
        data-title="Pegawai & Hak Akses"
-       data-intro="Kapten dan Kru Terbaikmu! Tambah tim andalanmu, lalu atur siapa boleh pegang apa. Sistem aman, kerjaan pun lancar terkendali.">
+       data-intro="<strong>Kelola Tim Terbaik!</strong> Tambah data tim andalan dan atur <strong>siapa boleh mengakses apa</strong> di sistem. Kerja aman, kerjaan lancar terkendali.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-users text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -480,7 +533,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="11"
        data-title="Penjualan & Diskon"
-       data-intro="Mesin Gimmick Cuan! Bikin promo heboh, diskon menggiurkan, dan strategi jualan yang bikin pelanggan balik lagi. Gaspol omzet!">
+       data-intro="<strong>Mesin Gimmick Peningkat Omzet!</strong> Buat dan atur promo heboh, diskon menarik, dan strategi jualan yang membuat <strong>pelanggan balik lagi</strong>.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-tags text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -493,7 +546,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="12"
        data-title="Kebijakan Outlet"
-       data-intro="Kitab Suci SOP! Tempat mendokumentasikan semua aturan main dan standar operasional. Konsistensi terjamin, semua berjalan sesuai rencana.">
+       data-intro="<strong>Kitab Suci SOP Bisnis!</strong> Tempat <strong>mendokumentasikan semua aturan</strong> dan standar operasional. Pastikan <strong>konsistensi</strong> dan kualitas layanan Anda terjamin.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-clipboard-list text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -506,7 +559,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="13"
        data-title="Pengaturan Akun"
-       data-intro="My Self-Care Digital! Atur profile kamu sendiri. Ganti password, update kontak, dan sesuaikan preferensi akun. Keep your digital life fresh!">
+       data-intro="<strong>Kontrol Akun Pribadi Anda!</strong> Atur profil, ganti <strong>password</strong>, update kontak, dan sesuaikan preferensi akun. Jaga keamanan data digital Anda!">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-500 to-gray-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-user-gear text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -519,7 +572,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="14"
        data-title="Bantuan & FAQ"
-       data-intro="Siap Sedia 24 Jam! Ada pertanyaan? Cari jawabannya di sini! Panduan lengkap dan tips-tips biar kamu makin jago pakai CuanFlow.">
+       data-intro="<strong>Pusat Solusi Cepat!</strong> Temukan jawaban atas pertanyaan umum dan <strong>panduan lengkap</strong> agar Anda semakin jago menggunakan sistem.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-circle-question text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -532,7 +585,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="15"
        data-title="AI Assisten"
-       data-intro="Si Paling Bisa Diajak Ngobrol! Partner diskusi kamu tentang performa bisnis, analisa data, dan strategi cuan. Tanya apa aja, dia siap kasih insight cerdas!">
+       data-intro="<strong>Partner Analisis Cerdas!</strong> Siap diajak diskusi tentang performa bisnis, analisis data, dan <strong>strategi cuan</strong>. Tanya apa saja, AI siap kasih <i>insight</i> tajam!">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-robot text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -543,6 +596,36 @@
 
 </div>
         </div>
+<!-- Modal Sapaan Selamat Datang (tambahkan sebelum modal noOutlet) -->
+<div id="welcomeTourModal" class="hidden modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-effect"></div>
+    
+    <div class="modal-content relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-8 text-center transform">
+        <div class="mb-6">
+            <div class="flex items-center justify-center mb-4 ">
+                <img src="{{ asset('assets/image/full-logo.svg') }}" alt="Logo CuanFlow" style="width: 150px; height: 150px;">
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-3">Selamat Datang di CuanFlow!</h2>
+            <p class="text-gray-600 leading-relaxed mb-4">
+                Outlet Anda sudah berhasil terdaftar!
+            </p>
+            <p class="text-sm text-gray-500">
+                Ingin kami tunjukkan cara menggunakan menu-menu di CuanFlow?
+            </p>
+        </div>
+        
+        <div class="flex gap-3">
+            <button id="skipTourBtn" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-200">
+                <i class="fa-solid fa-times mr-2"></i>
+                Nanti Saja
+            </button>
+            <button id="startWelcomeTourBtn" class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <i class="fa-solid fa-play mr-2"></i>
+                Ya, Mulai!
+            </button>
+        </div>
+    </div>
+</div>
     </div>
 </main>
 
@@ -571,10 +654,9 @@
 @endif
 @endsection
 
-@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  /* ====== MODAL LOGIC (tetap seperti sebelumnya) ====== */
+  /* ====== MODAL NO OUTLET LOGIC ====== */
   const modal = document.getElementById('noOutletModal');
   const registerBtn = document.getElementById('registerOutletBtn');
   if (modal && registerBtn) {
@@ -594,10 +676,55 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  /* ====== TOUR CORE (no dependency) ====== */
-  const TOUR_KEY = 'cuanflow_menu_tour_done';
+/* ====== WELCOME TOUR MODAL LOGIC ====== */
+const welcomeModal = document.getElementById('welcomeTourModal');
+const startWelcomeTourBtn = document.getElementById('startWelcomeTourBtn');
+const skipTourBtn = document.getElementById('skipTourBtn');
+const WELCOME_KEY = 'cuanflow_show_welcome';
 
-  // Create overlay + popover container once
+// Cek dari session Laravel ATAU localStorage
+const shouldShowWelcome = @json(session('show_welcome_tour', false)) || 
+                         localStorage.getItem(WELCOME_KEY) === '1';
+
+if (shouldShowWelcome && welcomeModal && !modal) {
+  // Jika dari session, set ke localStorage juga untuk persistensi
+  if (@json(session('show_welcome_tour', false))) {
+    localStorage.setItem(WELCOME_KEY, '1');
+  }
+  
+  // Tampilkan modal dengan smooth animation
+  setTimeout(() => {
+    welcomeModal.classList.remove('hidden');
+    // Force reflow untuk smooth transition
+    welcomeModal.offsetHeight;
+  }, 600);
+}
+
+// Handler tombol "Ya, Mulai!"
+if (startWelcomeTourBtn) {
+  startWelcomeTourBtn.addEventListener('click', function() {
+    welcomeModal.classList.add('modal-exit');
+    setTimeout(() => {
+      welcomeModal.classList.add('hidden');
+      welcomeModal.classList.remove('modal-exit');
+      startTour({auto: true, fromWelcome: true});
+    }, 500); // Ubah jadi 500ms untuk smooth exit
+  });
+}
+
+// Handler tombol "Nanti Saja"
+if (skipTourBtn) {
+  skipTourBtn.addEventListener('click', function() {
+    localStorage.removeItem(WELCOME_KEY);
+    welcomeModal.classList.add('modal-exit');
+    setTimeout(() => {
+      welcomeModal.classList.add('hidden');
+      welcomeModal.classList.remove('modal-exit');
+    }, 500); // Ubah jadi 500ms untuk smooth exit
+  });
+}
+
+  /* ====== TOUR CORE ====== */
   const overlay = document.createElement('div');
   overlay.className = 'tour-overlay';
   overlay.setAttribute('aria-hidden', 'true');
@@ -639,7 +766,6 @@ document.addEventListener('DOMContentLoaded', function() {
   pop.append(titleEl, descEl, footer);
   document.body.append(overlay, pop);
 
-  // helper “tour selesai” toast
   const note = document.createElement('div');
   note.className = 'tour-note';
   note.innerHTML = '<strong>Tour Selesai!</strong> Anda siap menggunakan CuanFlow.';
@@ -658,7 +784,7 @@ document.addEventListener('DOMContentLoaded', function() {
       el,
       title: el.dataset.title || ('Langkah ' + (i+1)),
       desc:  el.dataset.intro || '',
-      side:  'bottom' // simple heuristic; kita auto-posisikan
+      side:  'bottom'
     }));
   }
 
@@ -668,61 +794,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const s = steps[idx];
     if (!s) return;
 
-    // scroll element ke tengah viewport
     s.el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 
-    // setelah scroll settle, posisikan spotlight
     requestAnimationFrame(() => {
       const r = s.el.getBoundingClientRect();
       const cx = r.left + r.width/2;
       const cy = r.top  + r.height/2;
-      const rad = Math.ceil(Math.hypot(r.width/2, r.height/2) + 18); // sedikit padding
+      const rad = Math.ceil(Math.hypot(r.width/2, r.height/2) + 18);
 
       overlay.style.setProperty('--spot-x', `${cx}px`);
       overlay.style.setProperty('--spot-y', `${cy}px`);
       overlay.style.setProperty('--spot-r', `${rad}px`);
 
-      // posisikan popover: prefer bawah, fallback atas, lalu samping
-      // ukur popover terlebih dulu (set invisible enter=0, lalu kalkulasi)
       pop.style.visibility = 'hidden';
       pop.dataset.enter = '0';
       titleEl.textContent = s.title;
-      descEl.textContent  = s.desc;
+      descEl.innerHTML  = s.desc;
       progressEl.textContent = `${idx+1} dari ${steps.length}`;
 
-      // ukur
       pop.style.left = '0px';
       pop.style.top  = '0px';
       pop.style.display = 'block';
       const pw = pop.offsetWidth;
       const ph = pop.offsetHeight;
 
-      const gap = 14; // jarak dari target
+      const gap = 14;
       let left = cx - pw/2;
       let top  = r.bottom + gap;
 
-      // jika tidak muat bawah, coba atas
       if (top + ph > window.innerHeight - 8) {
         top = r.top - ph - gap;
       }
-      // jika tetap tidak muat, geser ke samping kanan
       if (top < 8) {
         top = clamp(cy - ph/2, 8, window.innerHeight - ph - 8);
         left = r.right + gap;
         if (left + pw > window.innerWidth - 8) {
-          // samping kiri
           left = r.left - pw - gap;
         }
       }
 
-      // clamp ke viewport
       left = clamp(left, 8, window.innerWidth - pw - 8);
       top  = clamp(top,  8, window.innerHeight - ph - 8);
 
       pop.style.left = `${left}px`;
       pop.style.top  = `${top}px`;
       pop.style.visibility = 'visible';
-      // anim show
       requestAnimationFrame(() => { pop.dataset.enter = '1'; });
     });
   }
@@ -736,7 +852,6 @@ document.addEventListener('DOMContentLoaded', function() {
     pop.style.display = 'block';
     overlay.setAttribute('aria-hidden', 'false');
 
-    // state tombol
     prevBtn.disabled = (idx === 0);
     nextBtn.textContent = (idx === steps.length - 1) ? 'Selesai ✓' : 'Lanjut →';
 
@@ -751,9 +866,10 @@ document.addEventListener('DOMContentLoaded', function() {
     pop.style.display = 'none';
     overlay.setAttribute('aria-hidden', 'true');
 
+    // Hapus localStorage setelah tour selesai
+    localStorage.removeItem(WELCOME_KEY);
+
     if (autoMode) {
-      localStorage.setItem(TOUR_KEY, '1');
-      // toast
       note.style.display = 'block';
       setTimeout(() => { note.style.display = 'none'; }, 3500);
     }
@@ -762,25 +878,22 @@ document.addEventListener('DOMContentLoaded', function() {
     window.removeEventListener('scroll', updateLayout, true);
   }
 
-  function startTour({auto=false, force=false} = {}) {
-    // jangan auto start jika masih ada modal outlet, kecuali force (testing)
-    if (!force && document.getElementById('noOutletModal')) return;
+  function startTour({auto=false, force=false, fromWelcome=false} = {}) {
+    if (!force && !fromWelcome && document.getElementById('noOutletModal')) return;
 
     collectSteps();
     if (!steps.length) return;
 
     autoMode = !!auto;
 
-    // events
     window.addEventListener('resize', updateLayout);
     window.addEventListener('scroll', updateLayout, true);
 
-    overlay.onclick = next;        // klik dim area = Next
+    overlay.onclick = next;
     prevBtn.onclick = prev;
     nextBtn.onclick = next;
     closeBtn.onclick = endTour;
 
-    // keyboard
     document.addEventListener('keydown', onKey, { passive: false });
 
     function onKey(e){
@@ -793,24 +906,20 @@ document.addEventListener('DOMContentLoaded', function() {
     showStep(0);
   }
 
-  // Auto start untuk first-time users
-  if (!localStorage.getItem(TOUR_KEY)) {
-    setTimeout(() => startTour({auto:true}), 900);
-  }
-
   // Tombol manual (kalau ada)
   const startTourBtn = document.getElementById('startTourBtn');
   if (startTourBtn) startTourBtn.addEventListener('click', () => startTour());
 
-  // ====== HOTKEY TESTING: Ctrl/⌘ + H untuk FORCE start ======
+  // Hotkey testing: Ctrl/⌘ + H
   document.addEventListener('keydown', function(e) {
     const isCtrlOrMeta = e.ctrlKey || e.metaKey;
     if (isCtrlOrMeta && e.key.toLowerCase() === 'h') {
-      e.preventDefault();                   // cegah History
-      localStorage.removeItem(TOUR_KEY);    // reset progress agar selalu dari awal
-      startTour({auto:false, force:true});  // paksa tampil meski ada modal
+      e.preventDefault();
+      localStorage.setItem(WELCOME_KEY, '1');
+      if (welcomeModal) {
+        welcomeModal.classList.remove('hidden');
+      }
     }
   });
 });
 </script>
-@endpush

@@ -197,6 +197,14 @@
                                        title="Edit">
                                         <i class="fas fa-edit text-sm"></i>
                                     </a>
+                                    @if(auth()->user()->outlet_id === $outlet->id)
+                                    <button type="button" 
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed" 
+                                            title="Outlet aktif tidak dapat dihapus"
+                                            disabled>
+                                        <i class="fas fa-trash text-sm"></i>
+                                    </button>
+                                    @else
                                     <form action="{{ route('outlets.destroy', $outlet->id) }}" 
                                           method="POST" 
                                           class="inline-block" 
@@ -209,6 +217,7 @@
                                             <i class="fas fa-trash text-sm"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

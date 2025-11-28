@@ -81,7 +81,8 @@ class RegisterOutletController extends Controller
             DB::commit();
 
             return redirect()->route('dashboard')
-                ->with('success', 'Outlet berhasil didaftarkan! Selamat datang di CuanFlow.');
+                ->with('success', 'Outlet berhasil didaftarkan! Selamat datang di CuanFlow.')
+                ->with('show_welcome_tour', true);
 
         } catch (\Exception $e) {
             DB::rollBack();
