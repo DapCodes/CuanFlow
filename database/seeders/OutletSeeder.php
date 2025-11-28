@@ -19,7 +19,7 @@ class OutletSeeder extends Seeder
         $outletsData = [
             [
                 'code' => 'TKY',
-                'name' => 'Outlet Takoyaki',
+                'name' => 'Takoyaki D&D',
                 'address' => 'Jl. Merdeka No. 12, Jakarta Pusat',
                 'latitude' => -6.1754,
                 'longtitude' => 106.8270,
@@ -27,26 +27,26 @@ class OutletSeeder extends Seeder
                 'email' => 'takoyaki.pusat@outlet.com',
                 'is_active' => true,
             ],
-            [
-                'code' => 'CMB',
-                'name' => 'Outlet Cimol Bojot',
-                'address' => 'Jl. Asia Afrika No. 45, Bandung Selatan',
-                'latitude' => -6.9217,
-                'longtitude' => 107.6100,
-                'phone' => '082233445566',
-                'email' => 'cimol.bojot@outlet.com',
-                'is_active' => true,
-            ],
-            [
-                'code' => 'JSK',
-                'name' => 'Outlet Jasuke Baper',
-                'address' => 'Jl. Dharmawangsa No. 78, Surabaya Timur',
-                'latitude' => -7.2755,
-                'longtitude' => 112.7533,
-                'phone' => '083344556677',
-                'email' => 'jasuke.baper@outlet.com',
-                'is_active' => true,
-            ],
+            // [
+            //     'code' => 'CMB',
+            //     'name' => 'Outlet Cimol Bojot',
+            //     'address' => 'Jl. Asia Afrika No. 45, Bandung Selatan',
+            //     'latitude' => -6.9217,
+            //     'longtitude' => 107.6100,
+            //     'phone' => '082233445566',
+            //     'email' => 'cimol.bojot@outlet.com',
+            //     'is_active' => true,
+            // ],
+            // [
+            //     'code' => 'JSK',
+            //     'name' => 'Outlet Jasuke Baper',
+            //     'address' => 'Jl. Dharmawangsa No. 78, Surabaya Timur',
+            //     'latitude' => -7.2755,
+            //     'longtitude' => 112.7533,
+            //     'phone' => '083344556677',
+            //     'email' => 'jasuke.baper@outlet.com',
+            //     'is_active' => true,
+            // ],
         ];
 
         $outlets = [];

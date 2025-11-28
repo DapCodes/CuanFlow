@@ -32,7 +32,10 @@ class ProductHppController extends Controller
     {
         $categories = Category::where('type', 'product')->get();
         $units = Unit::all();
-        $rawMaterials = RawMaterial::with('unit')->active()->get();
+        $rawMaterials = RawMaterial::with('unit')
+            ->where('outlet_id', Auth::user()->outlet_id)
+            ->active()
+            ->get();
         
         return view('main.product_n_hpp-calc.create', compact('categories', 'units', 'rawMaterials'));
     }
@@ -126,6 +129,11 @@ class ProductHppController extends Controller
             foreach ($validated['recipe_items'] as $index => $item) {
                 $rawMaterial = RawMaterial::find($item['raw_material_id']);
                 
+                // Verify raw material belongs to outlet
+                if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+                    throw new \Exception("Bahan baku tidak valid untuk outlet ini.");
+                }
+
                 RecipeItem::create([
                     'recipe_id' => $recipe->id,
                     'raw_material_id' => $item['raw_material_id'],
@@ -246,7 +254,10 @@ class ProductHppController extends Controller
 
         $categories = Category::where('type', 'product')->get();
         $units = Unit::all();
-        $rawMaterials = RawMaterial::with('unit')->active()->get();
+        $rawMaterials = RawMaterial::with('unit')
+            ->where('outlet_id', Auth::user()->outlet_id)
+            ->active()
+            ->get();
         
         // Load relasi yang diperlukan
         $product->load([
@@ -356,6 +367,11 @@ class ProductHppController extends Controller
             foreach ($validated['recipe_items'] as $index => $item) {
                 $rawMaterial = RawMaterial::find($item['raw_material_id']);
                 
+                // Verify raw material belongs to outlet
+                if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+                    throw new \Exception("Bahan baku tidak valid untuk outlet ini.");
+                }
+
                 RecipeItem::create([
                     'recipe_id' => $recipe->id,
                     'raw_material_id' => $item['raw_material_id'],
@@ -435,7 +451,7 @@ class ProductHppController extends Controller
     {
         $rawMaterial = RawMaterial::find($request->raw_material_id);
         
-        if (!$rawMaterial) {
+        if (!$rawMaterial || $rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             return response()->json(['error' => 'Bahan baku tidak ditemukan'], 404);
         }
         

@@ -16,7 +16,7 @@ class RawMaterial extends Model
     use HasFactory, SoftDeletes, LogsActivity;
 
     protected $fillable = [
-        'code', 'name', 'barcode', 'category_id', 'unit_id', 'supplier_id',
+        'code', 'name', 'barcode', 'category_id', 'outlet_id', 'unit_id', 'supplier_id',
         'purchase_price', 'min_stock', 'shelf_life_days', 'image', 'description', 'is_active'
     ];
 
@@ -32,6 +32,7 @@ class RawMaterial extends Model
     }
 
     public function category(): BelongsTo { return $this->belongsTo(Category::class); }
+    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
     public function unit(): BelongsTo { return $this->belongsTo(Unit::class); }
     public function supplier(): BelongsTo { return $this->belongsTo(Supplier::class); }
     public function stocks(): HasMany { return $this->hasMany(RawMaterialStock::class); }

@@ -18,9 +18,10 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function indexRawMaterial(Request $request)
     {
-        $query = RawMaterial::with(['category', 'unit', 'supplier', 'stocks' => function($q) {
-            $q->where('outlet_id', Auth::user()->outlet_id);
-        }]);
+        $query = RawMaterial::where('outlet_id', Auth::user()->outlet_id)
+            ->with(['category', 'unit', 'supplier', 'stocks' => function($q) {
+                $q->where('outlet_id', Auth::user()->outlet_id);
+            }]);
 
         // Search
         if ($request->filled('search')) {
@@ -120,6 +121,7 @@ class RawMaterialAndSupplierController extends Controller
         }
 
         $validated['is_active'] = $request->has('is_active');
+        $validated['outlet_id'] = Auth::user()->outlet_id;
 
         $rawMaterial = RawMaterial::create($validated);
 
@@ -139,6 +141,10 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function showRawMaterial(RawMaterial $rawMaterial)
     {
+        if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
         $rawMaterial->load(['category', 'unit', 'supplier', 'stocks' => function($q) {
             $q->where('outlet_id', Auth::user()->outlet_id);
         }]);
@@ -151,6 +157,10 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function editRawMaterial(RawMaterial $rawMaterial)
     {
+        if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
         $categories = Category::orderBy('name')->get();
         $units = Unit::orderBy('name')->get();
         $suppliers = Supplier::active()->orderBy('name')->get();
@@ -168,6 +178,10 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function updateRawMaterial(Request $request, RawMaterial $rawMaterial)
     {
+        if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
         $validated = $request->validate([
             'code' => 'required|string|max:30|unique:raw_materials,code,' . $rawMaterial->id,
             'name' => 'required|string|max:255',
@@ -215,6 +229,10 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function destroyRawMaterial(RawMaterial $rawMaterial)
     {
+        if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
         // Delete image if exists
         if ($rawMaterial->image) {
             Storage::disk('public')->delete($rawMaterial->image);

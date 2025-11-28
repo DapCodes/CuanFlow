@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('barcode', 50)->nullable()->index();
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('outlet_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('unit_id')->constrained();
             $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('purchase_price', 15, 2)->default(0);

@@ -352,23 +352,32 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Global Page Loader Handler
-        const globalLoader = document.getElementById('global-page-loader');
-        
-        // Function to show loader and navigate
-        function navigateWithLoader(url, event) {
-            if (event) {
-                event.preventDefault();
+            // Global Page Loader Handler
+            const globalLoader = document.getElementById('global-page-loader');
+            
+            // Function to show loader and navigate
+            function navigateWithLoader(url, event) {
+                if (event) {
+                    event.preventDefault();
+                }
+                
+                // Show loader
+                globalLoader.classList.add('active');
+                
+                // Catat waktu mulai
+                const startTime = Date.now();
+                const minLoadingTime = 1000; // 1 detik dalam milidetik
+                
+                // Navigate setelah minimal 1 detik
+                setTimeout(() => {
+                    const elapsedTime = Date.now() - startTime;
+                    const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+                    
+                    setTimeout(() => {
+                        window.location.href = url;
+                    }, remainingTime);
+                }, 0);
             }
-            
-            // Show loader
-            globalLoader.classList.add('active');
-            
-            // Navigate after animation
-            setTimeout(() => {
-                window.location.href = url;
-            }, 800);
-        }
         
         // Handle all navigation links
         document.addEventListener('DOMContentLoaded', function() {
