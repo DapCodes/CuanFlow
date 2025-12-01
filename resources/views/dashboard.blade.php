@@ -451,7 +451,7 @@
         </span>
     </a>
 
-    <a href="#"
+    <a href="{{ route('production.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="5"
        data-title="Produksi"

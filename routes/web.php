@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\OutletInformationController;
 use App\Http\Controllers\ChangeOutletController;
+use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\RawMaterialAndSupplierController;
 
 use Illuminate\Support\Facades\Route;
@@ -89,6 +90,17 @@ Route::middleware('auth')->group(function () {
             ->name('suppliers.update');
         Route::delete('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'destroySupplier'])
             ->name('suppliers.destroy');
+    });
+
+    Route::prefix('production')->name('production.')->group(function () {
+        Route::get('/', [ProductionController::class, 'index'])->name('index');
+        Route::get('/create', [ProductionController::class, 'create'])->name('create');
+        Route::post('/', [ProductionController::class, 'store'])->name('store');
+        Route::get('/{production}', [ProductionController::class, 'show'])->name('show');
+        Route::post('/{production}/start', [ProductionController::class, 'start'])->name('start');
+        Route::post('/{production}/complete', [ProductionController::class, 'complete'])->name('complete');
+        Route::post('/{production}/cancel', [ProductionController::class, 'cancel'])->name('cancel');
+        Route::get('/api/recipe-details/{product}', [ProductionController::class, 'getRecipeDetails'])->name('recipe-details');
     });
         
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
