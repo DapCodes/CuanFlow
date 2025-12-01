@@ -66,7 +66,29 @@ Route::middleware('auth')->group(function () {
         Route::put('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'updateRawMaterial'])
             ->name('update');
         Route::delete('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'destroyRawMaterial'])
-            ->name('destroy');    
+            ->name('destroy');
+        
+        // Route untuk kelola stok
+        Route::get('/{rawMaterial}/manage-stock', [RawMaterialAndSupplierController::class, 'manageStock'])
+            ->name('manage-stock');
+        Route::post('/{rawMaterial}/update-stock', [RawMaterialAndSupplierController::class, 'updateStock'])
+            ->name('update-stock');
+        Route::get('/{rawMaterial}/stock-history', [RawMaterialAndSupplierController::class, 'stockHistory'])
+            ->name('stock-history');
+        
+        // Route untuk supplier CRUD
+        Route::get('/suppliers/create', [RawMaterialAndSupplierController::class, 'createSupplier'])
+            ->name('suppliers.create');
+        Route::post('/suppliers', [RawMaterialAndSupplierController::class, 'storeSupplier'])
+            ->name('suppliers.store');
+        Route::get('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'showSupplier'])
+            ->name('suppliers.show');
+        Route::get('/suppliers/{supplier}/edit', [RawMaterialAndSupplierController::class, 'editSupplier'])
+            ->name('suppliers.edit');
+        Route::put('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'updateSupplier'])
+            ->name('suppliers.update');
+        Route::delete('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'destroySupplier'])
+            ->name('suppliers.destroy');
     });
         
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -50,12 +50,12 @@
                             </p>
                         </div>
                     </div>
-                    <div class="flex gap-2">
-                        <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Kembali
                         </a>
-                        <a href="{{ route('raw-materials.edit', $rawMaterial) }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all duration-200 shadow-md">
+                        <a href="{{ route('raw-materials.edit', $rawMaterial) }}" class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all duration-200 shadow-md">
                             <i class="fas fa-edit mr-2"></i>
                             Edit
                         </a>
@@ -299,25 +299,30 @@
                             </h3>
                             
                             <div class="space-y-3">
-                                <a href="{{ route('raw-materials.edit', $rawMaterial) }}" class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
+                                <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
+                                    <i class="fas fa-box-open mr-2"></i>
+                                    Kelola Stok
+                                </a>
+                                
+                                <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}?type=add" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-all border-2 border-green-300 hover:border-green-400">
+                                    <i class="fas fa-plus-circle mr-2"></i>
+                                    Tambah Stok
+                                </a>
+                                
+                                <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}?type=reduce" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-all border-2 border-red-300 hover:border-red-400">
+                                    <i class="fas fa-minus-circle mr-2"></i>
+                                    Kurangi Stok
+                                </a>
+                                
+                                <a href="{{ route('raw-materials.stock-history', $rawMaterial) }}" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all border border-gray-300">
+                                    <i class="fas fa-history mr-2"></i>
+                                    Riwayat Pergerakan
+                                </a>
+
+                                <a href="{{ route('raw-materials.edit', $rawMaterial) }}" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-orange-600 rounded-lg font-semibold hover:bg-orange-50 transition-all border-2 border-orange-300 hover:border-orange-400">
                                     <i class="fas fa-edit mr-2"></i>
                                     Edit Bahan Baku
                                 </a>
-                                
-                                <button class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all border border-gray-300">
-                                    <i class="fas fa-plus-circle mr-2"></i>
-                                    Tambah Stok
-                                </button>
-                                
-                                <button class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all border border-gray-300">
-                                    <i class="fas fa-minus-circle mr-2"></i>
-                                    Kurangi Stok
-                                </button>
-                                
-                                <button class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all border border-gray-300">
-                                    <i class="fas fa-history mr-2"></i>
-                                    Riwayat Pergerakan
-                                </button>
                             </div>
                         </div>
 

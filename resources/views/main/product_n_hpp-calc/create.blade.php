@@ -45,6 +45,67 @@
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
         background-color: #3b82f6;
     }
+
+    /* Modal Animation Styles */
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes modalSlideUp {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @keyframes iconBounce {
+        0% {
+            transform: scale(0);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .modal-show .modal-overlay {
+        animation: modalFadeIn 0.3s ease-out forwards;
+    }
+
+    .modal-show .modal-panel {
+        animation: modalSlideUp 0.3s ease-out forwards;
+    }
+
+    .modal-show .modal-icon {
+        animation: iconBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.2s forwards;
+    }
+
+    /* Smooth hide animation */
+    .modal-hide {
+        pointer-events: none;
+    }
+
+    .modal-hide .modal-overlay {
+        opacity: 0;
+        transition: opacity 0.2s ease-in;
+    }
+
+    .modal-hide .modal-panel {
+        opacity: 0;
+        transform: scale(0.95);
+        transition: all 0.2s ease-in;
+    }
 </style>
 @endpush
 
@@ -133,17 +194,18 @@
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Code -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-barcode text-gray-400 mr-1"></i>
                                 Kode Produk <span class="text-red-500">*</span>
                             </label>
-                            <div class="relative">
+                            <div class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" name="code" id="productCode" value="{{ old('code') }}" 
-                                    class="w-full px-4 py-3 pr-28 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
                                     placeholder="Contoh: PRD001" required>
-                                <button type="button" id="generateCode" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors">
-                                    <i class="fas fa-magic mr-1"></i>
+                                <button type="button" id="generateCode" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap">
+                                    <i class="fas fa-magic mr-2"></i>
                                     Buat Kode
                                 </button>
                             </div>
@@ -159,17 +221,18 @@
                                 placeholder="Masukkan nama produk" required>
                         </div>
 
+                        <!-- Barcode -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-qrcode text-gray-400 mr-1"></i>
                                 Barcode
                             </label>
-                            <div class="relative">
+                            <div class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" name="barcode" id="productBarcode" value="{{ old('barcode') }}" 
-                                    class="w-full px-4 py-3 pr-28 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
                                     placeholder="Opsional">
-                                <button type="button" id="generateBarcode" class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors">
-                                    <i class="fas fa-magic mr-1"></i>
+                                <button type="button" id="generateBarcode" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap">
+                                    <i class="fas fa-magic mr-2"></i>
                                     Buat Kode
                                 </button>
                             </div>
@@ -351,7 +414,7 @@
                         </div>
                     </div>
 
-                    <button type="button" id="addRecipeItem" class="mt-4 px-5 py-2.5 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-colors flex items-center text-sm font-medium">
+                    <button type="button" id="addRecipeItem" class="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-colors text-sm font-medium">
                         <i class="fas fa-plus mr-2"></i>
                         Tambah Bahan
                     </button>
@@ -709,20 +772,24 @@
                 </div>
 
                 <!-- Navigation Buttons -->
-                <div class="px-8 py-6 bg-gray-50 border-t border-gray-200 flex justify-between">
-                    <button type="button" id="prevBtn" class="px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold flex items-center" style="display: none;">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Sebelumnya
-                    </button>
-                    <div></div>
-                    <button type="button" id="nextBtn" class="px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-all font-semibold flex items-center shadow-md hover:shadow-lg">
-                        Selanjutnya
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                    <button type="submit" id="submitBtn" class="px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-green-700 transition-all font-semibold flex items-center shadow-md hover:shadow-lg" style="display: none;">
-                        <i class="fas fa-save mr-2"></i>
-                        Simpan Produk
-                    </button>
+                <div class="px-6 py-6 bg-gray-50 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                        <button type="button" id="prevBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold" style="display: none;">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Sebelumnya
+                        </button>
+                        <div class="hidden sm:block"></div>
+                        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                            <button type="button" id="nextBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-all font-semibold shadow-md hover:shadow-lg order-2 sm:order-1">
+                                Selanjutnya
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                            <button type="submit" id="submitBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-green-700 transition-all font-semibold shadow-md hover:shadow-lg order-1 sm:order-2" style="display: none;">
+                                <i class="fas fa-save mr-2"></i>
+                                Simpan Produk
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
             </form>
@@ -736,6 +803,101 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div id="draftModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity duration-300 ease-out modal-overlay" style="opacity: 0;"></div>
+    
+    <div class="flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <div class="relative transform overflow-hidden rounded-xl bg-white shadow-xl transition-all duration-300 ease-out w-full max-w-sm modal-panel" style="opacity: 0; transform: scale(0.95);">
+            
+            <div class="p-6 text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-cuan-olive/20 text-cuan-dark mb-4 modal-icon" style="transform: scale(0);">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                    </svg>
+                </div>
+                
+                <h3 class="text-xl font-semibold text-gray-900 mb-2" id="modal-title">
+                    Draft Ditemukan
+                </h3>
+                <p class="text-sm text-gray-600">
+                    Anda memiliki draft yang belum selesai. Lanjutkan pengisian?
+                </p>
+                
+                <div class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-cuan-yellow/50 border border-cuan-olive/50">
+                    <svg class="w-3 h-3 text-cuan-dark mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-xs font-medium text-cuan-dark" id="draftTimestamp">Disimpan 10 menit lalu</span>
+                </div>
+            </div>
+            
+            <div class="px-6 pb-6 space-y-3">
+                <button id="loadDraftBtn" class="w-full inline-flex items-center justify-center px-4 py-3 bg-cuan-dark hover:bg-cuan-green text-white font-medium rounded-lg transition-colors duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Lanjutkan Draft
+                </button>
+                
+                <button id="discardDraftBtn" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Mulai dari Awal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="exitModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="exit-modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity duration-300 ease-out modal-overlay" style="opacity: 0;"></div>
+    
+    <div class="flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <div class="relative transform overflow-hidden rounded-xl bg-white shadow-xl transition-all duration-300 ease-out w-full max-w-sm modal-panel" style="opacity: 0; transform: scale(0.95);">
+            
+            <div class="p-6 text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-cuan-yellow/40 text-cuan-olive mb-4 modal-icon" style="transform: scale(0);">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                
+                <h3 class="text-xl font-semibold text-gray-900 mb-2" id="exit-modal-title">
+                    Simpan Perubahan?
+                </h3>
+                <p class="text-sm text-gray-600">
+                    Anda memiliki perubahan yang belum disimpan. Pilih tindakan yang ingin dilakukan.
+                </p>
+            </div>
+            
+            <div class="px-6 pb-6 space-y-3">
+                <button id="saveDraftExitBtn" class="w-full inline-flex items-center justify-center px-4 py-3 bg-cuan-dark hover:bg-cuan-green text-white font-medium rounded-lg transition-colors duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                    </svg>
+                    Simpan Draft
+                </button>
+                
+                <button id="discardExitBtn" class="w-full inline-flex items-center justify-center px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Buang Perubahan
+                </button>
+                
+                <button id="cancelExitBtn" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 let currentStep = 1;
 const totalSteps = 6;
@@ -746,31 +908,37 @@ let weeklyTrendChart = null;
 let dailyPatternChart = null;
 let projectionChart = null;
 
+// Draft Management Variables
+const STORAGE_KEY = 'cuanflow_product_create_form_v1';
+const DRAFT_TIMESTAMP_KEY = 'cuanflow_product_draft_timestamp';
+let isDraftLoaded = false;
+let formHasChanges = false;
+let isNavigatingAway = false;
+let pendingNavigation = null;
+
 const imageInput = document.getElementById('imageInput');
 const imagePreview = document.getElementById('imagePreview');
 const previewImg = document.getElementById('previewImg');
 const removeImageBtn = document.getElementById('removeImage');
 
+// Image handling code (sama seperti sebelumnya)
 if (imageInput) {
     imageInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         
         if (file) {
-            // Validasi ukuran file (max 2MB)
             if (file.size > 2 * 1024 * 1024) {
                 alert('Ukuran file terlalu besar! Maksimal 2MB');
                 imageInput.value = '';
                 return;
             }
             
-            // Validasi tipe file
             if (!file.type.match('image.*')) {
                 alert('File harus berupa gambar (JPG, JPEG, PNG)');
                 imageInput.value = '';
                 return;
             }
             
-            // Tampilkan preview
             const reader = new FileReader();
             reader.onload = function(e) {
                 previewImg.src = e.target.result;
@@ -789,7 +957,267 @@ if (removeImageBtn) {
     });
 }
 
+// ============================================
+// DRAFT MANAGEMENT FUNCTIONS
+// ============================================
+
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+function checkForDraft() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    const hasOldInput = "{{ old('code') }}" !== "";
+    
+    if (savedData && !hasOldInput) {
+        showDraftModal();
+    }
+}
+
+function showDraftModal() {
+    const modal = document.getElementById('draftModal');
+    modal.classList.remove('hidden', 'modal-hide');
+    
+    // Update timestamp if available
+    const timestamp = localStorage.getItem(DRAFT_TIMESTAMP_KEY);
+    if (timestamp) {
+        const draftDate = new Date(timestamp);
+        const now = new Date();
+        const diffMinutes = Math.floor((now - draftDate) / 1000 / 60);
+        
+        let timeText;
+        if (diffMinutes < 1) {
+            timeText = 'Baru saja';
+        } else if (diffMinutes < 60) {
+            timeText = `${diffMinutes} menit lalu`;
+        } else if (diffMinutes < 1440) {
+            const hours = Math.floor(diffMinutes / 60);
+            timeText = `${hours} jam lalu`;
+        } else {
+            const days = Math.floor(diffMinutes / 1440);
+            timeText = `${days} hari lalu`;
+        }
+        
+        document.getElementById('draftTimestamp').textContent = timeText;
+    }
+    
+    // Trigger animation
+    requestAnimationFrame(() => {
+        modal.classList.add('modal-show');
+    });
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+}
+
+function hideDraftModal() {
+    const modal = document.getElementById('draftModal');
+    modal.classList.remove('modal-show');
+    modal.classList.add('modal-hide');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('modal-hide');
+        document.body.style.overflow = '';
+    }, 200);
+}
+
+function showExitModal() {
+    const modal = document.getElementById('exitModal');
+    modal.classList.remove('hidden', 'modal-hide');
+    
+    requestAnimationFrame(() => {
+        modal.classList.add('modal-show');
+    });
+    
+    document.body.style.overflow = 'hidden';
+}
+
+function hideExitModal() {
+    const modal = document.getElementById('exitModal');
+    modal.classList.remove('modal-show');
+    modal.classList.add('modal-hide');
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('modal-hide');
+        document.body.style.overflow = '';
+    }, 200);
+}
+
+// Close modal when clicking outside
+document.getElementById('draftModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        // Optional: allow closing by clicking outside
+        // hideDraftModal();
+    }
+});
+
+document.getElementById('exitModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        // Optional: allow closing by clicking outside
+        // hideExitModal();
+    }
+});
+
+// ESC key to close
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        if (!document.getElementById('draftModal').classList.contains('hidden')) {
+            // hideDraftModal();
+        }
+        if (!document.getElementById('exitModal').classList.contains('hidden')) {
+            hideExitModal();
+        }
+    }
+});
+
+function saveFormData() {
+    const formData = {};
+    const form = document.getElementById('productForm');
+    
+    // Save standard inputs
+    const inputs = form.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        if (input.name && !input.name.startsWith('recipe_items')) {
+            if (input.type === 'checkbox' || input.type === 'radio') {
+                formData[input.name] = input.checked;
+            } else if (input.type !== 'file') {
+                formData[input.name] = input.value;
+            }
+        }
+    });
+
+    // Save recipe items
+    const recipeItems = [];
+    document.querySelectorAll('.recipe-item').forEach((item, index) => {
+        const rmSelect = item.querySelector('.raw-material-select');
+        const qtyInput = item.querySelector('.quantity-input');
+        const noteInput = item.querySelector('input[name*="[notes]"]');
+        
+        if (rmSelect && qtyInput) {
+            recipeItems.push({
+                raw_material_id: $(rmSelect).val(),
+                quantity: qtyInput.value,
+                notes: noteInput ? noteInput.value : ''
+            });
+        }
+    });
+    formData['recipe_items'] = recipeItems;
+    formData['current_step'] = currentStep;
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    localStorage.setItem(DRAFT_TIMESTAMP_KEY, new Date().toISOString());
+    formHasChanges = true;
+}
+
+function loadFormData() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (!savedData) return;
+
+    try {
+        const formData = JSON.parse(savedData);
+        const form = document.getElementById('productForm');
+
+        // Restore standard inputs
+        Object.keys(formData).forEach(key => {
+            if (key === 'recipe_items' || key === 'current_step') return;
+
+            const input = form.querySelector(`[name="${key}"]`);
+            if (input) {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = formData[key];
+                    input.dispatchEvent(new Event('change')); 
+                } else if (input.tagName === 'SELECT') {
+                    if ($(input).hasClass('select2-hidden-accessible')) {
+                        $(input).val(formData[key]).trigger('change');
+                    } else {
+                        input.value = formData[key];
+                    }
+                } else {
+                    input.value = formData[key];
+                }
+            }
+        });
+
+        // Restore recipe items
+        if (formData.recipe_items && Array.isArray(formData.recipe_items)) {
+            // Clear existing items first (except first one)
+            const existingItems = document.querySelectorAll('.recipe-item');
+            for (let i = existingItems.length - 1; i > 0; i--) {
+                existingItems[i].remove();
+            }
+            recipeItemIndex = 1;
+
+            // First item (index 0)
+            if (formData.recipe_items.length > 0) {
+                const firstItemData = formData.recipe_items[0];
+                const firstItem = document.querySelector('.recipe-item');
+                if (firstItem) {
+                    const select = $(firstItem).find('.raw-material-select');
+                    const qty = firstItem.querySelector('.quantity-input');
+                    const note = firstItem.querySelector('input[name*="[notes]"]');
+
+                    if (select) select.val(firstItemData.raw_material_id).trigger('change');
+                    if (qty) qty.value = firstItemData.quantity;
+                    if (note) note.value = firstItemData.notes;
+                }
+            }
+
+            // Additional items
+            for (let i = 1; i < formData.recipe_items.length; i++) {
+                addRecipeItem();
+                
+                const items = document.querySelectorAll('.recipe-item');
+                const newItem = items[items.length - 1];
+                const itemData = formData.recipe_items[i];
+
+                const select = $(newItem).find('.raw-material-select');
+                const qty = newItem.querySelector('.quantity-input');
+                const note = newItem.querySelector('input[name*="[notes]"]');
+
+                if (select) select.val(itemData.raw_material_id).trigger('change');
+                if (qty) qty.value = itemData.quantity;
+                if (note) note.value = itemData.notes;
+            }
+            
+            calculateTotalMaterialCost();
+        }
+        
+        // Restore step
+        if (formData.current_step) {
+            currentStep = formData.current_step;
+            showStep(currentStep);
+        }
+
+        // Trigger calculations
+        if (typeof updateHppSummary === 'function') updateHppSummary();
+        if (typeof updateFinalPricing === 'function') updateFinalPricing();
+
+        isDraftLoaded = true;
+        formHasChanges = false; // Reset after loading
+
+    } catch (e) {
+        console.error('Error loading form data', e);
+    }
+}
+
+function clearDraft() {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(DRAFT_TIMESTAMP_KEY);
+    formHasChanges = false;
+}
+
+// ============================================
+// EVENT LISTENERS FOR DRAFT
+// ============================================
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Select2
     $('.select2-category').select2({
         theme: 'default',
         width: '100%',
@@ -802,11 +1230,48 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder: '- Pilih Satuan -'
     });
     
-    // Initialize Select2 untuk raw material (item pertama)
     $('.raw-material-select').select2({
         theme: 'default',
         width: '100%',
         placeholder: '- Pilih Bahan -'
+    });
+    
+    // Check for draft on page load
+    checkForDraft();
+    
+    // Draft Modal Handlers
+    document.getElementById('loadDraftBtn').addEventListener('click', function() {
+        loadFormData();
+        hideDraftModal();
+    });
+
+    document.getElementById('discardDraftBtn').addEventListener('click', function() {
+        clearDraft();
+        hideDraftModal();
+    });
+
+    // Exit Modal Handlers
+    document.getElementById('saveDraftExitBtn').addEventListener('click', function() {
+        saveFormData();
+        hideExitModal();
+        if (pendingNavigation) {
+            isNavigatingAway = true;
+            window.location.href = pendingNavigation;
+        }
+    });
+
+    document.getElementById('discardExitBtn').addEventListener('click', function() {
+        clearDraft();
+        hideExitModal();
+        if (pendingNavigation) {
+            isNavigatingAway = true;
+            window.location.href = pendingNavigation;
+        }
+    });
+
+    document.getElementById('cancelExitBtn').addEventListener('click', function() {
+        pendingNavigation = null;
+        hideExitModal();
     });
     
     showStep(currentStep);
@@ -822,6 +1287,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             currentStep++;
             showStep(currentStep);
+            saveFormData(); // Auto-save on step change
         }
     });
     
@@ -856,6 +1322,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.remove();
                 calculateTotalMaterialCost();
                 updateRemoveButtons();
+                saveFormData(); // Auto-save after removing item
             }
         }
     });
@@ -867,19 +1334,13 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Loading...';
         
         fetch('{{ route("products-hpp.generate-code") }}')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                if (data.error) throw new Error(data.error);
                 document.getElementById('productCode').value = data.code;
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
+                saveFormData();
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -896,19 +1357,13 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Loading...';
         
         fetch('{{ route("products-hpp.generate-barcode") }}')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                if (data.error) throw new Error(data.error);
                 document.getElementById('productBarcode').value = data.barcode;
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
+                saveFormData();
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -917,10 +1372,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Buat Kode';
             });
     });
+
+    // Auto-save on input with debounce
+    const debouncedSave = debounce(saveFormData, 1000);
+    const form = document.getElementById('productForm');
+    form.addEventListener('input', debouncedSave);
+    form.addEventListener('change', saveFormData);
     
+    // Select2 events
+    $(document).on('select2:select select2:unselect', '.select2, .select2-category, .select2-unit, .raw-material-select', saveFormData);
+
+    // Form submit - clear draft
+    form.addEventListener('submit', function() {
+        isNavigatingAway = true;
+        clearDraft();
+    });
+
     // Initial calculation
     calculateItemCost(document.querySelector('.recipe-item'));
 });
+
+// ============================================
+// NAVIGATION GUARD (Beforeunload & Click)
+// ============================================
+
+// Prevent leaving page with unsaved changes
+window.addEventListener('beforeunload', function(e) {
+    if (formHasChanges && !isNavigatingAway) {
+        e.preventDefault();
+        e.returnValue = 'Anda memiliki perubahan yang belum disimpan. Yakin ingin meninggalkan halaman?';
+        return e.returnValue;
+    }
+});
+
+// Intercept all navigation links
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    
+    if (link && link.href && !link.target && formHasChanges && !isNavigatingAway) {
+        // Skip if it's anchor link or javascript:
+        if (link.href.startsWith('#') || link.href.startsWith('javascript:')) return;
+        
+        e.preventDefault();
+        pendingNavigation = link.href;
+        showExitModal();
+    }
+});
+
+// Intercept browser back/forward buttons
+window.addEventListener('popstate', function(e) {
+    if (formHasChanges && !isNavigatingAway) {
+        e.preventDefault();
+        history.pushState(null, '', window.location.href);
+        pendingNavigation = document.referrer || '{{ route("products-hpp.index") }}';
+        showExitModal();
+    }
+});
+
+// Push initial state to enable popstate detection
+history.pushState(null, '', window.location.href);
 
 // Toggle Sales Target
 document.getElementById('enableSalesTarget').addEventListener('change', function() {
@@ -931,54 +1441,46 @@ document.getElementById('enableSalesTarget').addEventListener('change', function
     } else {
         content.classList.add('hidden');
     }
+    saveFormData();
 });
 
+// ... (Semua fungsi lainnya tetap sama seperti sebelumnya)
+// showStep, validateStep, addRecipeItem, updateRemoveButtons, calculateItemCost, 
+// calculateTotalMaterialCost, updateHppSummary, updateFinalPricing, calculateMargin,
+// loadHistoricalData, dll.
+
+// Saya skip fungsi-fungsi yang sama untuk menghemat space
+// Pastikan semua fungsi dari kode asli tetap ada di sini
+
 function showStep(step) {
-    // Hide all steps
     document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-    
-    // Show current step
     document.getElementById('step' + step).classList.remove('hidden');
     
-    // Update progress indicators
     document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
         const stepNum = index + 1;
         const circle = indicator.querySelector('div');
         const icon = circle ? circle.querySelector('i') : null;
         
-        if (!circle) return; // Skip jika elemen tidak ditemukan
+        if (!circle) return;
         
         if (stepNum < step) {
-            // Completed step
             circle.className = 'w-10 h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-2 shadow-md';
-            if (icon) {
-                icon.className = 'fas fa-check text-white';
-            }
+            if (icon) icon.className = 'fas fa-check text-white';
         } else if (stepNum === step) {
-            // Current step
             circle.className = 'w-10 h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-2 shadow-md ring-4 ring-green-200';
-            if (icon) {
-                icon.className = icon.className; // Keep original icon
-            }
         } else {
-            // Future step
             circle.className = 'w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2';
-            if (icon) {
-                icon.className = icon.className.replace('text-white', 'text-gray-400');
-            }
+            if (icon) icon.className = icon.className.replace('text-white', 'text-gray-400');
         }
     });
     
-    // Update progress line
     const progressPercent = ((step - 1) / (totalSteps - 1)) * 100;
     document.getElementById('progressLine').style.width = progressPercent + '%';
     
-    // Show/hide buttons
     document.getElementById('prevBtn').style.display = step > 1 ? 'flex' : 'none';
     document.getElementById('nextBtn').style.display = step < totalSteps ? 'flex' : 'none';
     document.getElementById('submitBtn').style.display = step === totalSteps ? 'flex' : 'none';
     
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1065,7 +1567,6 @@ function addRecipeItem() {
     
     container.appendChild(newItem);
     
-    // Initialize Select2 for new item
     $(newItem).find('.select2').select2({
         theme: 'default',
         width: '100%',
@@ -1145,7 +1646,6 @@ function updateFinalPricing() {
     document.getElementById('finalHppPerUnit').textContent = 'Rp ' + hppPerUnit.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     document.getElementById('marginHpp').textContent = 'Rp ' + hppPerUnit.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0});
     
-    // Store for margin calculation & sales target
     window.hppPerUnitValue = hppPerUnit;
     
     calculateMargin();
@@ -1163,7 +1663,6 @@ function calculateMargin() {
     const marginEl = document.getElementById('marginPercent');
     marginEl.textContent = marginPercent.toFixed(1) + '%';
     
-    // Color coding for margin
     if (marginPercent >= 30) {
         marginEl.className = 'text-2xl font-bold text-green-600';
     } else if (marginPercent >= 15) {
@@ -1173,7 +1672,6 @@ function calculateMargin() {
     }
 }
 
-// Load Historical Sales Data
 function loadHistoricalData() {
     document.getElementById('historicalDataLoading').classList.remove('hidden');
     document.getElementById('historicalDataContent').classList.add('hidden');
@@ -1181,9 +1679,7 @@ function loadHistoricalData() {
 
     fetch('/products-hpp/sales-analytics?product_id=new')
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
         })
         .then(data => {
@@ -1217,10 +1713,6 @@ function displayHistoricalData(data) {
     renderDailyPatternChart(data.daily_pattern);
 }
 
-// === PERBAIKAN PENTING ===
-// Sebelumnya di sini pakai debounce() yang belum didefinisikan
-// sehingga script error dan perhitungan target + chart tidak jalan.
-// Sekarang langsung pakai calculateSalesTarget saja.
 document.getElementById('monthlyTargetRevenue').addEventListener('input', calculateSalesTarget);
 
 function calculateSalesTarget() {
@@ -1235,18 +1727,15 @@ function calculateSalesTarget() {
         const profitPerUnit = sellingPrice - hppPerUnit;
         const monthlyProfitTarget = monthlySalesTarget * profitPerUnit;
 
-        // Display results
         document.getElementById('monthlySalesTarget').textContent = monthlySalesTarget.toLocaleString('id-ID') + ' pcs';
         document.getElementById('dailySalesTarget').textContent = dailySalesTarget.toLocaleString('id-ID') + ' pcs';
         document.getElementById('dailyRevenueTarget').textContent = 'Rp ' + dailyRevenueTarget.toLocaleString('id-ID');
         document.getElementById('monthlyProfitTarget').textContent = 'Rp ' + monthlyProfitTarget.toLocaleString('id-ID');
 
-        // Hidden inputs untuk dikirim ke backend (kalau mau dipakai)
         document.getElementById('hiddenMonthlySalesTarget').value = monthlySalesTarget;
         document.getElementById('hiddenDailySalesTarget').value = dailySalesTarget;
         document.getElementById('hiddenDailyRevenueTarget').value = dailyRevenueTarget;
 
-        // Calculate achievement vs historical
         if (historicalSalesData) {
             const currentDailySales = historicalSalesData.avg_daily_sales;
             const achievementPercent = (currentDailySales / dailySalesTarget) * 100;
@@ -1262,7 +1751,6 @@ function calculateSalesTarget() {
             }
         }
 
-        // Render projection chart
         renderProjectionChart(dailySalesTarget);
 
         document.getElementById('targetCalculationResult').classList.remove('hidden');
@@ -1274,7 +1762,6 @@ function calculateSalesTarget() {
     }
 }
 
-// Chart.js renderers
 function renderWeeklyTrendChart(weeklyData) {
     const ctx = document.getElementById('weeklyTrendChart').getContext('2d');
     
@@ -1349,7 +1836,6 @@ function renderDailyPatternChart(dailyPattern) {
         }
     });
 
-    // Save pattern for submission
     document.getElementById('hiddenSalesPattern').value = JSON.stringify(dailyPattern);
 }
 
@@ -1359,13 +1845,10 @@ function renderProjectionChart(dailyTarget) {
     
     const context = ctx.getContext('2d');
     
-    if (projectionChart) {
-        projectionChart.destroy();
-    }
+    if (projectionChart) projectionChart.destroy();
 
     const currentAvg = historicalSalesData ? historicalSalesData.avg_daily_sales : 0;
     
-    // Calculate scenarios with safety checks
     const optimistic = currentAvg > 0 ? currentAvg * 1.2 : dailyTarget * 1.2;
     const realistic = currentAvg > 0 ? currentAvg : dailyTarget;
     const pessimistic = currentAvg > 0 ? currentAvg * 0.8 : dailyTarget * 0.8;
@@ -1475,153 +1958,7 @@ function renderProjectionChart(dailyTarget) {
         }
     });
 }
-</script>
 
-<script>
-    // Form Persistence Logic
-    const STORAGE_KEY = 'cuanflow_product_create_form_v1';
-    const form = document.getElementById('productForm');
-
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-    }
-
-    function saveFormData() {
-        const formData = {};
-        
-        // Save standard inputs
-        const inputs = form.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            if (input.name && !input.name.startsWith('recipe_items')) {
-                if (input.type === 'checkbox' || input.type === 'radio') {
-                    formData[input.name] = input.checked;
-                } else if (input.type !== 'file') {
-                    formData[input.name] = input.value;
-                }
-            }
-        });
-
-        // Save recipe items
-        const recipeItems = [];
-        document.querySelectorAll('.recipe-item').forEach((item, index) => {
-            const rmSelect = item.querySelector('.raw-material-select');
-            const qtyInput = item.querySelector('.quantity-input');
-            const noteInput = item.querySelector('input[name*="[notes]"]');
-            
-            if (rmSelect && qtyInput) {
-                recipeItems.push({
-                    raw_material_id: $(rmSelect).val(),
-                    quantity: qtyInput.value,
-                    notes: noteInput ? noteInput.value : ''
-                });
-            }
-        });
-        formData['recipe_items'] = recipeItems;
-        
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-    }
-
-    function loadFormData() {
-        const savedData = localStorage.getItem(STORAGE_KEY);
-        if (!savedData) return;
-
-        // Don't restore if Laravel validation errors exist (old input present)
-        const hasOldInput = "{{ old('code') }}" !== "";
-        if (hasOldInput) return;
-
-        try {
-            const formData = JSON.parse(savedData);
-
-            // Restore standard inputs
-            Object.keys(formData).forEach(key => {
-                if (key === 'recipe_items') return;
-
-                const input = form.querySelector(`[name="${key}"]`);
-                if (input) {
-                    if (input.type === 'checkbox' || input.type === 'radio') {
-                        input.checked = formData[key];
-                        input.dispatchEvent(new Event('change')); 
-                    } else if (input.tagName === 'SELECT') {
-                        if ($(input).hasClass('select2-hidden-accessible')) {
-                            $(input).val(formData[key]).trigger('change');
-                        } else {
-                            input.value = formData[key];
-                        }
-                    } else {
-                        input.value = formData[key];
-                    }
-                }
-            });
-
-            // Restore recipe items
-            if (formData.recipe_items && Array.isArray(formData.recipe_items)) {
-                // First item (index 0)
-                if (formData.recipe_items.length > 0) {
-                    const firstItemData = formData.recipe_items[0];
-                    const firstItem = document.querySelector('.recipe-item');
-                    if (firstItem) {
-                        const select = $(firstItem).find('.raw-material-select');
-                        const qty = firstItem.querySelector('.quantity-input');
-                        const note = firstItem.querySelector('input[name*="[notes]"]');
-
-                        if (select) select.val(firstItemData.raw_material_id).trigger('change');
-                        if (qty) qty.value = firstItemData.quantity;
-                        if (note) note.value = firstItemData.notes;
-                    }
-                }
-
-                // Additional items
-                for (let i = 1; i < formData.recipe_items.length; i++) {
-                    addRecipeItem(); // Add new item to DOM
-                    
-                    const items = document.querySelectorAll('.recipe-item');
-                    const newItem = items[items.length - 1];
-                    const itemData = formData.recipe_items[i];
-
-                    const select = $(newItem).find('.raw-material-select');
-                    const qty = newItem.querySelector('.quantity-input');
-                    const note = newItem.querySelector('input[name*="[notes]"]');
-
-                    if (select) select.val(itemData.raw_material_id).trigger('change');
-                    if (qty) qty.value = itemData.quantity;
-                    if (note) note.value = itemData.notes;
-                }
-                
-                calculateTotalMaterialCost();
-            }
-            
-            // Trigger calculations
-            if (typeof updateHppSummary === 'function') updateHppSummary();
-            if (typeof updateFinalPricing === 'function') updateFinalPricing();
-
-        } catch (e) {
-            console.error('Error loading form data', e);
-        }
-    }
-
-    // Event Listeners
-    const debouncedSave = debounce(saveFormData, 1000);
-    form.addEventListener('input', debouncedSave);
-    form.addEventListener('change', saveFormData);
-    
-    // Select2 events
-    $(document).on('select2:select select2:unselect', '.select2, .select2-category, .select2-unit, .raw-material-select', saveFormData);
-
-    // Clear on submit
-    form.addEventListener('submit', function() {
-        localStorage.removeItem(STORAGE_KEY);
-    });
-
-    // Load data on init
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadFormData);
-    } else {
-        loadFormData();
-    }
 </script>
 @endpush
 

@@ -602,9 +602,9 @@
     
     <div class="modal-content relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-8 text-center transform">
         <div class="mb-6">
-            <div class="flex items-center justify-center mb-4 ">
-                <img src="{{ asset('assets/image/full-logo.svg') }}" alt="Logo CuanFlow" style="width: 150px; height: 150px;">
-            </div>
+            <!-- <div class="flex items-center justify-center mb-4 "> -->
+                <!-- <img src="{{ asset('assets/image/full-logo.svg') }}" alt="Logo CuanFlow" style="width: 150px; height: 150px;">
+            </div> -->
             <h2 class="text-2xl font-bold text-gray-900 mb-3">Selamat Datang di CuanFlow!</h2>
             <p class="text-gray-600 leading-relaxed mb-4">
                 Outlet Anda sudah berhasil terdaftar!

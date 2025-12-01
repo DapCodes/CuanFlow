@@ -36,17 +36,17 @@
             <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                       <h2 class="text-2xl font-bold text-gray-900 flex items-center">
                             Detail Produk & Resep
                         </h2>
                         <p class="text-gray-600 text-sm">Informasi produk dan resep, serta statistik HPP per unit</p>
                     </div>
-                    <div class="flex gap-3 justify-center">
-                        <a href="{{ route('products-hpp.edit', $product->id) }}" class="inline-flex items-center px-6 py-3 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition-all duration-200 shadow-md hover:shadow-lg">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <a href="{{ route('products-hpp.edit', $product->id) }}" class="inline-flex items-center justify-center px-6 py-3 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fas fa-edit mr-2"></i>
                             Ubah
                         </a>
-                        <a href="{{ route('products-hpp.index') }}" class="inline-flex items-center px-6 py-3 bg-slate-600 text-white rounded-lg font-semibold hover:bg-slate-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                        <a href="{{ route('products-hpp.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Kembali
                         </a>

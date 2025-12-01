@@ -100,7 +100,7 @@
                         </h2>
                         <p class="text-sm text-gray-600 mt-1">Lengkapi informasi outlet yang akan ditambahkan</p>
                     </div>
-                    <a href="{{ route('outlets.index') }}" class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                    <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
                     </a>

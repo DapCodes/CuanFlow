@@ -83,14 +83,14 @@
         <x-card-container>
             <!-- Header -->
             <div class="bg-gradient-to-br from-orange-50 to-red-50 p-6 border-b border-gray-200">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 flex items-center">
                             Edit Bahan Baku
                         </h2>
                         <p class="text-sm text-gray-500 mt-1">Perbarui informasi bahan baku: <span class="font-semibold">{{ $rawMaterial->name }}</span></p>
                     </div>
-                    <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
+                    <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
                     </a>
@@ -306,7 +306,7 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
                                     Gambar Bahan Baku
                                 </label>
-                                <div class="flex items-start gap-4">
+                                <div class="flex flex-col sm:flex-row items-start gap-4">
                                     <div class="flex-shrink-0">
                                         <div id="image-preview" class="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
                                             @if($rawMaterial->image)
@@ -316,20 +316,22 @@
                                             @endif
                                         </div>
                                     </div>
-                                    <div class="flex-1">
+                                    <div class="flex-1 w-full sm:w-auto">
                                         <input type="file" 
-                                               name="image" 
-                                               id="image" 
-                                               accept="image/*"
-                                               class="hidden">
-                                        <label for="image" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                                            <i class="fas fa-upload mr-2"></i>
-                                            {{ $rawMaterial->image ? 'Ganti Gambar' : 'Pilih Gambar' }}
-                                        </label>
-                                        <button type="button" id="remove-image" class="ml-2 inline-flex items-center px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors {{ $rawMaterial->image ? '' : 'hidden' }}">
-                                            <i class="fas fa-trash mr-2"></i>
-                                            Hapus
-                                        </button>
+                                            name="image" 
+                                            id="image" 
+                                            accept="image/*"
+                                            class="hidden">
+                                        <div class="flex flex-col sm:flex-row gap-2">
+                                            <label for="image" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                                <i class="fas fa-upload mr-2"></i>
+                                                {{ $rawMaterial->image ? 'Ganti Gambar' : 'Pilih Gambar' }}
+                                            </label>
+                                            <button type="button" id="remove-image" class="inline-flex items-center justify-center px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors {{ $rawMaterial->image ? '' : 'hidden' }}">
+                                                <i class="fas fa-trash mr-2"></i>
+                                                Hapus
+                                            </button>
+                                        </div>
                                         <input type="hidden" name="remove_image" id="remove-image-flag" value="0">
                                         <p class="text-xs text-gray-500 mt-2">Format: JPG, PNG (Max: 2MB)</p>
                                         @error('image')
@@ -377,12 +379,12 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-                    <a href="{{ route('raw-materials.index') }}" class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                <div class="flex flex-col sm:flex-row items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+                    <a href="{{ route('raw-materials.index') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
                         <i class="fas fa-times mr-2"></i>
                         Batal
                     </a>
-                    <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
+                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
                         <i class="fas fa-save mr-2"></i>
                         Update Bahan Baku
                     </button>

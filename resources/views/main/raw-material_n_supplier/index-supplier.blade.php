@@ -48,12 +48,12 @@
                         </h2>
                         <p class="text-sm text-gray-500 mt-1">Kelola informasi supplier bahan baku Anda</p>
                     </div>
-                    <div class="flex gap-2">
-                        <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center px-5 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-500 transition-all duration-200 shadow-md hover:shadow-lg">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center justify-center px-5 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-500 transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fas fa-boxes mr-2"></i>
                             Kelola Stok
                         </a>
-                        <a href="#" class="inline-flex items-center px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
+                        <a href="{{ route('raw-materials.suppliers.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fas fa-plus-circle mr-2"></i>
                             Tambah Supplier
                         </a>
@@ -194,20 +194,20 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <a href="#" 
-                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors" 
-                                       title="Detail">
+                                    <a href="{{ route('raw-materials.suppliers.show', $supplier) }}" 
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors" 
+                                    title="Detail">
                                         <i class="fas fa-eye text-sm"></i>
                                     </a>
-                                    <a href="#" 
-                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition-colors" 
-                                       title="Edit">
+                                    <a href="{{ route('raw-materials.suppliers.edit', $supplier) }}" 
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition-colors" 
+                                    title="Edit">
                                         <i class="fas fa-edit text-sm"></i>
                                     </a>
-                                    <form action="#" 
-                                          method="POST" 
-                                          class="inline-block" 
-                                          onsubmit="return confirm('Yakin ingin menghapus supplier {{ $supplier->name }}?')">
+                                    <form action="{{ route('raw-materials.suppliers.destroy', $supplier) }}" 
+                                        method="POST" 
+                                        class="inline-block" 
+                                        onsubmit="return confirm('Yakin ingin menghapus supplier {{ $supplier->name }}?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" 
@@ -228,7 +228,7 @@
                                     </div>
                                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Supplier</h3>
                                     <p class="text-sm text-gray-500 mb-6">Mulai dengan menambahkan supplier pertama Anda</p>
-                                    <a href="#" class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
+                                    <a href="{{ route('raw-materials.suppliers.create') }}" class="inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
                                         <i class="fas fa-plus-circle mr-2"></i>
                                         Tambah Supplier
                                     </a>

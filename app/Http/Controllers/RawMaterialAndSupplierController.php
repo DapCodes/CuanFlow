@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\RawMaterial;
+use App\Models\RawMaterialStock;
+use App\Models\StockMovement;
 use App\Models\Supplier;
 use App\Models\Category;
 use App\Models\Unit;
@@ -245,6 +247,118 @@ class RawMaterialAndSupplierController extends Controller
     }
 
     /**
+     * Show the form for managing stock (add/reduce)
+    */
+    public function manageStock(RawMaterial $rawMaterial)
+    {
+        if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
+        $rawMaterial->load(['category', 'unit', 'supplier', 'stocks' => function($q) {
+            $q->where('outlet_id', Auth::user()->outlet_id);
+        }]);
+
+        $stock = $rawMaterial->stocks->first();
+        $currentStock = $stock ? $stock->quantity : 0;
+
+        return view('main.raw-material_n_supplier.manage-raw_material_stock', compact(
+            'rawMaterial',
+            'currentStock'
+        ));
+    }
+
+    /**
+     * Process stock adjustment (add/reduce)
+     */
+    public function updateStock(Request $request, RawMaterial $rawMaterial)
+    {
+        if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'type' => 'required|in:add,reduce',
+            'quantity' => 'required|numeric|min:0.01',
+            'notes' => 'nullable|string|max:500',
+            'batch_number' => 'nullable|string|max:50',
+            'expired_at' => 'nullable|date|after:today',
+        ]);
+
+        $stock = $rawMaterial->stocks()
+            ->where('outlet_id', Auth::user()->outlet_id)
+            ->first();
+
+        if (!$stock) {
+            $stock = $rawMaterial->stocks()->create([
+                'outlet_id' => Auth::user()->outlet_id,
+                'quantity' => 0,
+                'avg_purchase_price' => $rawMaterial->purchase_price,
+            ]);
+        }
+
+        $quantityBefore = $stock->quantity;
+        
+        if ($validated['type'] === 'add') {
+            $quantityAfter = $quantityBefore + $validated['quantity'];
+            $movementType = 'in';
+            $message = 'Stok berhasil ditambahkan!';
+        } else {
+            if ($quantityBefore < $validated['quantity']) {
+                return redirect()->back()
+                    ->withErrors(['quantity' => 'Jumlah pengurangan melebihi stok tersedia!'])
+                    ->withInput();
+            }
+            $quantityAfter = $quantityBefore - $validated['quantity'];
+            $movementType = 'out';
+            $message = 'Stok berhasil dikurangi!';
+        }
+
+        $stock->update(['quantity' => $quantityAfter]);
+
+        StockMovement::create([
+            'outlet_id' => Auth::user()->outlet_id,
+            'stockable_type' => RawMaterial::class,
+            'stockable_id' => $rawMaterial->id,
+            'type' => $movementType,
+            'quantity' => $validated['quantity'],
+            'quantity_before' => $quantityBefore,
+            'quantity_after' => $quantityAfter,
+            'unit_price' => $rawMaterial->purchase_price,
+            'reference_type' => 'manual_adjustment',
+            'reference_id' => null,
+            'notes' => $validated['notes'],
+            'batch_number' => $validated['batch_number'] ?? null,
+            'expired_at' => $validated['expired_at'] ?? null,
+            'created_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('raw-materials.index')
+            ->with('success', $message);
+    }
+
+    /**
+     * Show stock movement history for a raw material
+     */
+    public function stockHistory(RawMaterial $rawMaterial)
+    {
+        if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
+        $movements = $rawMaterial->stockMovements()
+            ->where('outlet_id', Auth::user()->outlet_id)
+            ->with('createdBy')
+            ->latest()
+            ->paginate(20);
+
+        return view('main.raw-material_n_supplier.stock-history', compact(
+            'rawMaterial',
+            'movements'
+        ));
+    }
+
+    /**
      * Display listing of suppliers
      */
     public function indexSupplier(Request $request)
@@ -270,5 +384,107 @@ class RawMaterialAndSupplierController extends Controller
         $suppliers = $query->latest()->paginate(15);
 
         return view('main.raw-material_n_supplier.index-supplier', compact('suppliers'));
+    }
+
+    /**
+     * Show the form for creating a new supplier
+     */
+    public function createSupplier()
+    {
+        // Generate unique supplier code
+        $lastSupplier = Supplier::orderBy('id', 'desc')->first();
+        $nextNumber = $lastSupplier ? (int)substr($lastSupplier->code, 4) + 1 : 1;
+        $code = 'SUP-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        return view('main.raw-material_n_supplier.create-supplier', compact('code'));
+    }
+
+    /**
+     * Store a newly created supplier
+     */
+    public function storeSupplier(Request $request)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:20|unique:suppliers,code',
+            'name' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'address' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $validated['is_active'] = $request->has('is_active');
+
+        Supplier::create($validated);
+
+        return redirect()->route('raw-materials.suppliers')
+            ->with('success', 'Supplier berhasil ditambahkan!');
+    }
+
+    /**
+     * Display the specified supplier
+     */
+    public function showSupplier(Supplier $supplier)
+    {
+        $supplier->loadCount('rawMaterials');
+        $supplier->load(['rawMaterials' => function($query) {
+            $query->where('outlet_id', Auth::user()->outlet_id)
+                ->with(['unit', 'stocks' => function($q) {
+                    $q->where('outlet_id', Auth::user()->outlet_id);
+                }]);
+        }]);
+
+        return view('main.raw-material_n_supplier.show-supplier', compact('supplier'));
+    }
+
+    /**
+     * Show the form for editing the specified supplier
+     */
+    public function editSupplier(Supplier $supplier)
+    {
+        return view('main.raw-material_n_supplier.edit-supplier', compact('supplier'));
+    }
+
+    /**
+     * Update the specified supplier
+     */
+    public function updateSupplier(Request $request, Supplier $supplier)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|max:20|unique:suppliers,code,' . $supplier->id,
+            'name' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'address' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $validated['is_active'] = $request->has('is_active');
+
+        $supplier->update($validated);
+
+        return redirect()->route('raw-materials.suppliers')
+            ->with('success', 'Supplier berhasil diperbarui!');
+    }
+
+    /**
+     * Remove the specified supplier
+     */
+    public function destroySupplier(Supplier $supplier)
+    {
+        // Check if supplier has raw materials
+        if ($supplier->rawMaterials()->count() > 0) {
+            return redirect()->back()
+                ->with('error', 'Supplier tidak dapat dihapus karena masih memiliki bahan baku terkait!');
+        }
+
+        $supplier->delete();
+
+        return redirect()->route('raw-materials.suppliers')
+            ->with('success', 'Supplier berhasil dihapus!');
     }
 }

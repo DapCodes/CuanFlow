@@ -5,15 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'CuanFlow')</title>
     
+    <!-- Preload Critical Resources -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://api.fontshare.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     {{-- favicon --}}
     <link rel="shortcut icon" href="{{ asset('assets/image/logo.svg') }}" type="image/x-icon">
     
-    <!-- Satoshi Font -->
+    <!-- Satoshi Font - Optimized with font-display: swap -->
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     
     <script>
         tailwind.config = {
@@ -35,7 +40,7 @@
             font-family: 'Satoshi', sans-serif;
         }
 
-        /* Global Page Loader */
+        /* Optimized Global Page Loader - Using transform and will-change for GPU acceleration */
         .global-page-loader {
             position: fixed;
             top: 0;
@@ -50,7 +55,8 @@
             z-index: 99999;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            will-change: opacity, visibility;
         }
         
         .global-page-loader.active {
@@ -58,11 +64,12 @@
             visibility: visible;
         }
         
-        /* Spinning Asterisk Loader - Green */
+        /* Optimized Spinning Asterisk - GPU Accelerated */
         .global-loader-asterisk {
-            width: 80px;
-            height: 80px;
-            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            will-change: transform;
         }
         
         @keyframes spin {
@@ -70,34 +77,35 @@
                 transform: rotate(0deg) scale(1);
             }
             50% {
-                transform: rotate(180deg) scale(1.2);
+                transform: rotate(180deg) scale(1.15);
             }
             100% {
                 transform: rotate(360deg) scale(1);
             }
         }
         
-        /* Pulsing dots - Green */
+        /* Optimized Pulsing dots */
         .global-loader-dots {
             display: flex;
-            gap: 8px;
-            margin-top: 20px;
+            gap: 6px;
+            margin-top: 16px;
         }
         
         .global-loader-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             background: #31694E;
             border-radius: 50%;
-            animation: pulse 1.4s ease-in-out infinite;
+            animation: pulse 1.2s ease-in-out infinite;
+            will-change: transform, opacity;
         }
         
         .global-loader-dot:nth-child(2) {
-            animation-delay: 0.2s;
+            animation-delay: 0.15s;
         }
         
         .global-loader-dot:nth-child(3) {
-            animation-delay: 0.4s;
+            animation-delay: 0.3s;
         }
         
         @keyframes pulse {
@@ -111,13 +119,13 @@
             }
         }
         
-        /* Loading text - Green */
+        /* Loading text */
         .global-loader-text {
             color: #31694E;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
-            margin-top: 16px;
-            animation: fadeInOut 2s ease-in-out infinite;
+            margin-top: 12px;
+            animation: fadeInOut 1.5s ease-in-out infinite;
         }
         
         @keyframes fadeInOut {
@@ -134,7 +142,7 @@
 </head>
 <body class="antialiased bg-gray-50">
     
-    <!-- Global Page Loader -->
+    <!-- Optimized Global Page Loader -->
     <div id="global-page-loader" class="global-page-loader">
         <svg class="global-loader-asterisk" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#31694E" stroke-width="8" stroke-linecap="round"/>
@@ -156,14 +164,10 @@
                         <!-- Logo / Outlet -->
                         @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
                             @php
-                                // START: LOGIC BARU UNTUK MULTI-OUTLET
-                                // Jika user adalah Owner, ambil SEMUA outlet yang dia miliki (outletsOwned)
-                                // Jika tidak (misal Kasir), hanya tampilkan outlet yang sedang aktif (outlet)
                                 $userOutlets = auth()->user()->isOwner() 
                                     ? auth()->user()->outletsOwned->sortBy('name') 
                                     : collect([auth()->user()->outlet]);
                                     
-                                // Cek apakah ada lebih dari satu outlet yang perlu ditampilkan di dropdown
                                 $hasMultipleOutlets = $userOutlets->count() > 1;
                             @endphp
                             
@@ -347,112 +351,79 @@
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Defer non-critical scripts -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
-            // Global Page Loader Handler
-            const globalLoader = document.getElementById('global-page-loader');
+        // Optimized Page Loader Handler - Runs immediately
+        (function() {
+            const loader = document.getElementById('global-page-loader');
+            let isNavigating = false;
             
-            // Function to show loader and navigate
-            function navigateWithLoader(url, event) {
-                if (event) {
-                    event.preventDefault();
-                }
+            // Optimized navigation function - minimal delay
+            function navigate(url, e) {
+                if (e) e.preventDefault();
+                if (isNavigating) return;
                 
-                // Show loader
-                globalLoader.classList.add('active');
+                isNavigating = true;
+                loader.classList.add('active');
                 
-                // Catat waktu mulai
-                const startTime = Date.now();
-                const minLoadingTime = 1000; // 1 detik dalam milidetik
-                
-                // Navigate setelah minimal 1 detik
+                // Navigate immediately after brief visual feedback (300ms)
                 setTimeout(() => {
-                    const elapsedTime = Date.now() - startTime;
-                    const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
-                    
-                    setTimeout(() => {
-                        window.location.href = url;
-                    }, remainingTime);
-                }, 0);
-            }
-        
-        // Handle all navigation links
-        document.addEventListener('DOMContentLoaded', function() {
-            // Handle regular navigation links
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const url = this.getAttribute('href');
-                    if (url && url !== '#' && !url.startsWith('javascript:')) {
-                        navigateWithLoader(url, e);
-                    }
-                });
-            });
-            
-            // Handle outlet switch links
-            const outletSwitchLinks = document.querySelectorAll('.outlet-switch-link');
-            outletSwitchLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const url = this.getAttribute('href');
-                    navigateWithLoader(url, e);
-                });
-            });
-            
-            // Handle logout button
-            const logoutBtn = document.querySelector('.logout-btn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    globalLoader.classList.add('active');
-                    setTimeout(() => {
-                        this.closest('form').submit();
-                    }, 800);
-                });
+                    window.location.href = url;
+                }, 300);
             }
             
-            // Handle browser back/forward buttons
-            window.addEventListener('pageshow', function(event) {
-                // Hide loader when page is restored from cache
-                globalLoader.classList.remove('active');
-            });
-            
-            // Show loader when page is about to unload
-            window.addEventListener('beforeunload', function() {
-                globalLoader.classList.add('active');
-            });
-        });
-
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', function() {
-                const mobileMenu = document.getElementById('mobile-menu');
-                mobileMenu.classList.toggle('hidden');
-            });
-        }
-
-        // User dropdown toggle (Desktop)
-        const userMenuButton = document.getElementById('user-menu-button');
-        if (userMenuButton) {
-            userMenuButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const dropdown = document.getElementById('user-dropdown');
-                dropdown.classList.toggle('hidden');
-            });
-
-            // Close dropdown when clicking outside
+            // Use event delegation for better performance
             document.addEventListener('click', function(e) {
-                const dropdown = document.getElementById('user-dropdown');
-                const button = document.getElementById('user-menu-button');
+                const link = e.target.closest('.nav-link');
+                if (link) {
+                    const url = link.getAttribute('href');
+                    if (url && url !== '#' && !url.startsWith('javascript:')) {
+                        navigate(url, e);
+                    }
+                }
                 
-                if (button && dropdown && !button.contains(e.target) && !dropdown.contains(e.target)) {
-                    dropdown.classList.add('hidden');
+                const logoutBtn = e.target.closest('.logout-btn');
+                if (logoutBtn) {
+                    e.preventDefault();
+                    if (isNavigating) return;
+                    
+                    isNavigating = true;
+                    loader.classList.add('active');
+                    setTimeout(() => {
+                        logoutBtn.closest('form').submit();
+                    }, 300);
                 }
             });
-        }
+            
+            // Handle form submissions for outlet switching
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form.querySelector('input[name="outlet_id"]')) {
+                    if (isNavigating) return;
+                    
+                    isNavigating = true;
+                    loader.classList.add('active');
+                }
+            });
+            
+            // Handle back/forward navigation
+            window.addEventListener('pageshow', function(e) {
+                loader.classList.remove('active');
+                isNavigating = false;
+            });
+            
+            // Prevent loader from staying visible if navigation is cancelled
+            window.addEventListener('beforeunload', function() {
+                if (!isNavigating) {
+                    loader.classList.add('active');
+                }
+            });
+        })();
     </script>
     
     @stack('scripts')

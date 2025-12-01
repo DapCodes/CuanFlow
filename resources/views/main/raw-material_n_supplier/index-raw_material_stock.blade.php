@@ -48,12 +48,12 @@
                         </h2>
                         <p class="text-sm text-gray-500 mt-1">Kelola dan monitor stok bahan baku Anda</p>
                     </div>
-                    <div class="flex gap-2">
-                        <a href="{{ route('raw-materials.suppliers') }}" class="inline-flex items-center px-5 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-500 transition-all duration-200 shadow-md hover:shadow-lg">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <a href="{{ route('raw-materials.suppliers') }}" class="inline-flex items-center justify-center px-5 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-500 transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fas fa-truck mr-2"></i>
                             Kelola Supplier
                         </a>
-                        <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
+                        <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fas fa-plus-circle mr-2"></i>
                             Tambah Bahan Baku
                         </a>
@@ -244,19 +244,24 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-2">
                                     <a href="{{ route('raw-materials.show', $material) }}" 
-                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors" 
-                                       title="Detail">
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors" 
+                                    title="Detail">
                                         <i class="fas fa-eye text-sm"></i>
                                     </a>
+                                    <a href="{{ route('raw-materials.manage-stock', $material) }}" 
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors" 
+                                    title="Kelola Stok">
+                                        <i class="fas fa-box-open text-sm"></i>
+                                    </a>
                                     <a href="{{ route('raw-materials.edit', $material) }}" 
-                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition-colors" 
-                                       title="Edit">
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition-colors" 
+                                    title="Edit">
                                         <i class="fas fa-edit text-sm"></i>
                                     </a>
                                     <form action="{{ route('raw-materials.destroy', $material) }}" 
-                                          method="POST" 
-                                          class="inline-block" 
-                                          onsubmit="return confirm('Yakin ingin menghapus bahan baku {{ $material->name }}?')">
+                                        method="POST" 
+                                        class="inline-block" 
+                                        onsubmit="return confirm('Yakin ingin menghapus bahan baku {{ $material->name }}?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" 
