@@ -39,11 +39,11 @@
 
         <!-- Products Stock Overview -->
         <x-card-container>
-            <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-industry text-cuan-green mr-3"></i>
+                            <i class="fas fa-industry text-blue-600 mr-3"></i>
                             Stok Produk
                         </h2>
                         <p class="text-sm text-gray-600 mt-1">Kelola produksi dan stok produk jadi</p>
@@ -176,7 +176,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 @if($product['has_recipe'])
                                 <a href="{{ route('production.create', ['product_id' => $product['id']]) }}" 
-                                   class="inline-flex items-center justify-center px-4 py-2 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-colors text-sm font-medium shadow-sm" 
+                                   class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-br from-blue-400 to-blue-700 text-white rounded-lg hover:from-blue-500 hover:to-blue-800 transition-all text-sm font-medium shadow-sm"  
                                    title="Produksi">
                                     <i class="fas fa-plus-circle mr-2"></i>
                                     Produksi
@@ -211,9 +211,9 @@
         <!-- Recent Productions -->
         @if($recentProductions->count() > 0)
         <x-card-container class="mt-6">
-            <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 border-b border-gray-200">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
                 <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                    <i class="fas fa-history text-purple-600 mr-3"></i>
+                    <i class="fas fa-history text-blue-600 mr-3"></i>
                     Riwayat Produksi Terbaru
                 </h3>
             </div>
@@ -223,7 +223,7 @@
                     @foreach($recentProductions as $production)
                     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                         <div class="flex items-center space-x-4 flex-1">
-                            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-sm">
+                            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-sm">
                                 <i class="fas fa-industry text-white text-lg"></i>
                             </div>
                             <div class="flex-1">
@@ -234,7 +234,7 @@
                                 <div class="flex items-center gap-4 mt-1">
                                     <p class="text-xs text-gray-600">
                                         <i class="fas fa-cubes mr-1"></i>
-                                        {{ number_format($production->planned_quantity, 2) }} {{ $production->product->unit->name ?? '' }}
+                                        {{ number_format($production->actual_quantity, 2) }} {{ $production->product->unit->name ?? '' }}
                                     </p>
                                     <p class="text-xs text-gray-500">
                                         <i class="fas fa-user mr-1"></i>
@@ -262,7 +262,7 @@
                                 {{ $config['text'] }}
                             </span>
                             <a href="{{ route('production.show', $production->id) }}" 
-                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors" 
+                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"  
                                title="Detail">
                                 <i class="fas fa-eye text-sm"></i>
                             </a>

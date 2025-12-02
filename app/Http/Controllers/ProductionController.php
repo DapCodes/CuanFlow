@@ -284,26 +284,34 @@ class ProductionController extends Controller
             $actualQty = $validated['actual_quantity'];
             $wasteQty = $validated['waste_quantity'] ?? 0;
 
+            // Validate waste quantity
+            if ($wasteQty > $actualQty) {
+                return back()->with('error', 'Jumlah waste tidak boleh melebihi jumlah aktual produksi.');
+            }
+
+            // Calculate net quantity for stock (actual - waste)
+            $netStockQuantity = $actualQty - $wasteQty;
+
+            // Update production items with actual quantities
+            foreach ($production->items as $item) {
+                $item->update([
+                    'actual_quantity' => $item->planned_quantity
+                ]);
+            }
+
             // Update production
             $completionNotes = $validated['notes'] ? "\n\nCatatan Penyelesaian:\n" . $validated['notes'] : '';
             $production->update([
                 'status' => 'completed',
-                'actual_quantity' => $actualQty,
+                'actual_quantity' => $netStockQuantity, // Store net quantity (after waste deduction)
                 'waste_quantity' => $wasteQty,
                 'completed_at' => now(),
                 'completed_by' => Auth::id(),
                 'notes' => $production->notes . $completionNotes,
             ]);
 
-            // Update production items with actual quantities
-            foreach ($production->items as $item) {
-                $item->update([
-                    'actual_quantity' => $item->planned_quantity,
-                ]);
-            }
-
-            // Add product stock
-            if ($actualQty > 0) {
+            // Add product stock using net quantity
+            if ($netStockQuantity > 0) {
                 $productStock = ProductStock::firstOrCreate(
                     [
                         'product_id' => $production->product_id,
@@ -313,8 +321,11 @@ class ProductionController extends Controller
                 );
 
                 $quantityBefore = $productStock->quantity;
-                $productStock->increment('quantity', $actualQty);
+                $productStock->increment('quantity', $netStockQuantity);
                 $quantityAfter = $productStock->quantity;
+
+                // Calculate unit price based on net quantity
+                $unitPrice = $netStockQuantity > 0 ? ($production->total_cost / $netStockQuantity) : 0;
 
                 // Record stock movement
                 StockMovement::create([
@@ -322,13 +333,14 @@ class ProductionController extends Controller
                     'stockable_type' => Product::class,
                     'stockable_id' => $production->product_id,
                     'type' => 'production',
-                    'quantity' => $actualQty,
+                    'quantity' => $netStockQuantity,
                     'quantity_before' => $quantityBefore,
                     'quantity_after' => $quantityAfter,
-                    'unit_price' => $production->total_cost > 0 ? ($production->total_cost / $actualQty) : 0,
+                    'unit_price' => $unitPrice,
                     'reference_type' => Production::class,
                     'reference_id' => $production->id,
-                    'notes' => "Produksi selesai #{$production->batch_number}",
+                    'notes' => "Produksi selesai #{$production->batch_number}" . 
+                            ($wasteQty > 0 ? " (Waste: {$wasteQty})" : ""),
                     'created_by' => Auth::id(),
                 ]);
             }

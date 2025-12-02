@@ -80,16 +80,16 @@
 
         <x-card-container>
             <!-- Progress Steps -->
-            <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-6 border-b border-gray-200">
                 <div class="flex justify-between items-center relative">
                     <!-- Progress Line -->
                     <div class="absolute top-5 left-0 right-0 h-0.5 bg-gray-200" style="z-index: 0;">
-                        <div id="progressLine" class="h-full bg-cuan-green transition-all duration-300" style="width: 0%;"></div>
+                        <div id="progressLine" class="h-full bg-gradient-to-br from-blue-400 to-blue-700 transition-all duration-300" style="width: 0%;"></div>
                     </div>
 
                     <!-- Step 1 -->
                     <div class="flex-1 text-center step-indicator active relative z-10" data-step="1">
-                        <div class="w-10 h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-2 shadow-md">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-2 shadow-md">
                             <i class="fas fa-box text-white"></i>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
                 <div class="step-content p-6" id="step1">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-box text-cuan-green mr-2"></i>
+                            <i class="fas fa-box text-blue-600 mr-2"></i>
                             Pilih Produk
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">Pilih produk yang akan diproduksi</p>
@@ -173,7 +173,7 @@
                 <div class="step-content p-6 hidden" id="step2">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-list-ul text-cuan-green mr-2"></i>
+                            <i class="fas fa-list-ul text-blue-600 mr-2"></i>
                             Bahan Baku yang Dibutuhkan
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">Periksa ketersediaan bahan baku untuk produksi</p>
@@ -200,7 +200,7 @@
                 <div class="step-content p-6 hidden" id="step3">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-calculator text-cuan-green mr-2"></i>
+                            <i class="fas fa-calculator text-blue-600 mr-2"></i>
                             Detail Produksi
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">Tentukan jumlah yang akan diproduksi</p>
@@ -241,9 +241,9 @@
                         </div>
                     </div>
 
-                    <div class="mt-6 bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
+                    <div class="mt-6 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6">
                         <h4 class="text-base font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
+                            <i class="fas fa-clipboard-list text-blue-600 mr-2"></i>
                             Kebutuhan Bahan Baku
                         </h4>
                         <div id="materialRequirements" class="space-y-3">
@@ -256,13 +256,13 @@
                 <div class="step-content p-6 hidden" id="step4">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-check-circle text-cuan-green mr-2"></i>
+                            <i class="fas fa-check-circle text-blue-600 mr-2"></i>
                             Konfirmasi Produksi
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">Periksa kembali detail produksi sebelum menyimpan</p>
                     </div>
 
-                    <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-300">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border-2 border-blue-300">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-white rounded-lg p-4 shadow-sm">
                                 <p class="text-xs text-gray-600 mb-1">Produk</p>
@@ -292,10 +292,10 @@
 
                     <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                         <label class="flex items-start cursor-pointer">
-                            <input type="checkbox" name="start_production" value="1" id="startProductionCheck" class="mt-1 w-5 h-5 text-cuan-green rounded focus:ring-2 focus:ring-green-500">
+                            <input type="checkbox" name="start_production" value="1" id="startProductionCheck" class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
                             <span class="ml-3">
                                 <span class="block text-sm font-semibold text-gray-800">
-                                    <i class="fas fa-play-circle mr-1 text-cuan-green"></i>
+                                    <i class="fas fa-play-circle mr-1 text-blue-600"></i>
                                     Mulai Produksi Sekarang
                                 </span>
                                 <span class="block text-xs text-gray-600 mt-1">
@@ -316,11 +316,11 @@
                         </button>
                         <div class="hidden sm:block"></div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <button type="button" id="nextBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-all font-semibold shadow-md hover:shadow-lg">
+                            <button type="button" id="nextBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-br from-blue-400 to-blue-700 text-white rounded-lg hover:from-blue-500 hover:to-blue-800 transition-all font-semibold shadow-md hover:shadow-lg">
                                 Selanjutnya
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </button>
-                            <button type="submit" id="submitBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-green-700 transition-all font-semibold shadow-md hover:shadow-lg" style="display: none;">
+                            <button type="submit" id="submitBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-br from-blue-400 to-blue-700 text-white rounded-lg hover:from-blue-500 hover:to-blue-800 transition-all font-semibold shadow-md hover:shadow-lg" style="display: none;">
                                 <i class="fas fa-save mr-2"></i>
                                 Buat Produksi
                             </button>
@@ -482,7 +482,7 @@ function calculateMaterialRequirements() {
         const statusIcon = isSufficient ? 'fa-check-circle text-green-600' : 'fa-times-circle text-red-600';
         
         const html = `
-            <div class="flex justify-between items-center py-2 border-b border-green-100">
+            <div class="flex justify-between items-center py-2 border-b border-blue-100">
                 <div class="flex items-center gap-2">
                     <i class="fas ${statusIcon}"></i>
                     <span class="text-sm font-medium text-gray-900">${material.name}</span>
@@ -497,7 +497,7 @@ function calculateMaterialRequirements() {
     });
     
     container.append(`
-        <div class="flex justify-between items-center pt-3 mt-3 border-t-2 border-green-300">
+        <div class="flex justify-between items-center pt-3 mt-3 border-t-2 border-blue-300">
             <span class="font-bold text-gray-900">Total Estimasi Biaya:</span>
             <span class="text-xl font-bold text-green-600">Rp ${formatNumber(totalCost)}</span>
         </div>
@@ -592,13 +592,13 @@ function showStep(step) {
         const icon = circle.find('i');
         
         if (stepNum < step) {
-            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-cuan-green shadow-md');
+            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-gradient-to-br from-blue-400 to-blue-700 shadow-md');
             icon.removeClass('text-gray-400').addClass('text-white');
         } else if (stepNum === step) {
-            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-cuan-green shadow-md ring-4 ring-green-200');
+            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-gradient-to-br from-blue-400 to-blue-700 shadow-md ring-4 ring-blue-200');
             icon.removeClass('text-gray-400').addClass('text-white');
         } else {
-            circle.removeClass('bg-cuan-green shadow-md ring-4 ring-green-200').addClass('bg-white border-2 border-gray-300');
+            circle.removeClass('bg-gradient-to-br from-blue-400 to-blue-700 shadow-md ring-4 ring-blue-200').addClass('bg-white border-2 border-gray-300');
             icon.removeClass('text-white').addClass('text-gray-400');
         }
     });
