@@ -194,12 +194,14 @@ class RawMaterialSeeder extends Seeder
             $unitAbbreviation = DB::table('units')->where('id', $rawMaterial->unit_id)->value('abbreviation');
 
             $initialStock = match ($unitAbbreviation) {
-                'kg', 'L' => fake()->randomFloat(4, 30, 100),
-                'g', 'ml' => fake()->randomFloat(4, 3000, 15000), 
-                'pcs' => fake()->numberBetween(200, 2000),
-                'sct', 'btl' => fake()->numberBetween(100, 500),
-                'box' => fake()->numberBetween(5, 30),
-                default => fake()->randomFloat(4, 10, 100),
+                'kg' => fake()->numberBetween(10, 50),           // Tepung, gurita: 10-50 kg
+                'L' => fake()->numberBetween(15, 40),            // Minyak, air: 15-40 liter
+                'g' => fake()->numberBetween(500, 3000),         // Bumbu, topping: 500-3000 gram
+                'ml' => fake()->numberBetween(1000, 5000),       // Saus, kecap: 1-5 liter
+                'pcs' => fake()->numberBetween(150, 500),        // Telur, kemasan: 150-500 pcs
+                'sct', 'btl' => fake()->numberBetween(50, 200),  // Sachet/botol: 50-200
+                'box' => fake()->numberBetween(10, 50),          // Box: 10-50
+                default => fake()->numberBetween(20, 100),
             };
 
             $avgPurchasePrice = $rawMaterial->purchase_price;
@@ -207,7 +209,7 @@ class RawMaterialSeeder extends Seeder
             $rawMaterialStocks[] = [
                 'raw_material_id' => $rawMaterial->id,
                 'outlet_id' => $targetOutletId,
-                'quantity' => round($initialStock, 4), 
+                'quantity' => $initialStock,  // Sudah angka bulat dari numberBetween
                 'avg_purchase_price' => round($avgPurchasePrice, 2), 
                 'created_at' => now(),
                 'updated_at' => now(),
