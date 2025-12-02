@@ -6,6 +6,11 @@ use App\Http\Controllers\OutletInformationController;
 use App\Http\Controllers\ChangeOutletController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\RawMaterialAndSupplierController;
+use App\Http\Controllers\PointOfSaleController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\SaleController;
+use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\ProductHppController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -102,10 +107,46 @@ Route::middleware('auth')->group(function () {
         Route::post('/{production}/cancel', [ProductionController::class, 'cancel'])->name('cancel');
         Route::get('/api/recipe-details/{product}', [ProductionController::class, 'getRecipeDetails'])->name('recipe-details');
     });
+
+    Route::get('/api/sale/{sale}', [SaleController::class, 'showJson'])->name('sale.api.show');
         
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth'])->prefix('pos')->name('pos.')->group(function () {
+    Route::get('/', [PointOfSaleController::class, 'index'])->name('index');
+    
+    // Cart management
+    Route::post('/cart/add', [PointOfSaleController::class, 'addToCart'])->name('cart.add');
+    Route::post('/cart/update', [PointOfSaleController::class, 'updateCartItem'])->name('cart.update');
+    Route::delete('/cart/remove', [PointOfSaleController::class, 'removeCartItem'])->name('cart.remove');
+    Route::post('/cart/clear', [PointOfSaleController::class, 'clearCart'])->name('cart.clear');
+    
+    // Discount & Customer
+    Route::post('/discount/apply', [PointOfSaleController::class, 'applyDiscount'])->name('discount.apply');
+    Route::post('/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('customer.set');
+});
+
+// Payment Routes
+Route::middleware(['auth'])->prefix('payment')->name('payment.')->group(function () {
+    Route::post('/cash', [PaymentController::class, 'processCashPayment'])->name('cash');
+    Route::post('/transfer', [PaymentController::class, 'processTransferPayment'])->name('transfer');
+    Route::post('/midtrans/token', [PaymentController::class, 'createMidtransToken'])->name('midtrans.token');
+    Route::get('/midtrans/finish', [PaymentController::class, 'midtransFinish'])->name('midtrans.finish');
+});
+
+Route::middleware(['auth'])->prefix('sales')->name('sales.')->group(function () {
+    Route::get('/', [SaleController::class, 'index'])->name('index');
+    Route::get('/{sale}', [SaleController::class, 'show'])->name('show');
+    Route::get('/{sale}/print', [SaleController::class, 'printReceipt'])->name('print');
+});
+
+Route::middleware(['auth'])->prefix('receipt')->name('receipt.')->group(function () {
+    Route::get('print/{id}', [ReceiptController::class, 'printReceipt'])->name('print');
+    Route::get('download/{id}', [ReceiptController::class, 'downloadReceipt'])->name('download');
+    Route::get('preview/{id}', [ReceiptController::class, 'previewReceipt'])->name('preview');
 });
 
 require __DIR__.'/auth.php';

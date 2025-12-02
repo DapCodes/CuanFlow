@@ -399,7 +399,7 @@
         <div class="flex justify-center p-4">
 <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-6 max-w-6xl w-full">
 
-    <a href="#"
+    <a href="{{ route('pos.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="1"
        data-title="Point of Sale"
@@ -584,13 +584,13 @@
     <a href="#"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="15"
-       data-title="AI Assisten"
+       data-title="Clara AI"
        data-intro="<strong>Partner Analisis Cerdas!</strong> Siap diajak diskusi tentang performa bisnis, analisis data, dan <strong>strategi cuan</strong>. Tanya apa saja, AI siap kasih <i>insight</i> tajam!">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-robot text-4xl sm:text-5xl text-white"></i>
         </div>
         <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
-            AI Assisten
+            Clara AI
         </span>
     </a>
 
