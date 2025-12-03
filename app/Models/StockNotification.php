@@ -14,7 +14,7 @@ class StockNotification extends Model
     protected $fillable = [
         'outlet_id', 'stockable_type', 'stockable_id', 'type',
         'title', 'message', 'current_stock', 'min_stock', 'days_until_expiry',
-        'is_read', 'is_sent_email', 'is_sent_wa', 'read_at'
+        'is_read', 'is_sent_email', 'is_sent_wa', 'read_at',
     ];
 
     protected $casts = [
@@ -22,12 +22,33 @@ class StockNotification extends Model
         'is_read' => 'boolean', 'is_sent_email' => 'boolean', 'is_sent_wa' => 'boolean', 'read_at' => 'datetime',
     ];
 
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
-    public function stockable(): MorphTo { return $this->morphTo(); }
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
 
-    public function markAsRead(): void { $this->update(['is_read' => true, 'read_at' => now()]); }
+    public function stockable(): MorphTo
+    {
+        return $this->morphTo();
+    }
 
-    public function scopeUnread($q) { return $q->where('is_read', false); }
-    public function scopeByType($q, $t) { return $q->where('type', $t); }
-    public function scopeByOutlet($q, $id) { return $q->where('outlet_id', $id); }
+    public function markAsRead(): void
+    {
+        $this->update(['is_read' => true, 'read_at' => now()]);
+    }
+
+    public function scopeUnread($q)
+    {
+        return $q->where('is_read', false);
+    }
+
+    public function scopeByType($q, $t)
+    {
+        return $q->where('type', $t);
+    }
+
+    public function scopeByOutlet($q, $id)
+    {
+        return $q->where('outlet_id', $id);
+    }
 }

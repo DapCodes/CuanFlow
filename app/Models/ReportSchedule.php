@@ -13,16 +13,22 @@ class ReportSchedule extends Model
     protected $fillable = [
         'outlet_id', 'name', 'report_type', 'frequency',
         'day_of_week', 'day_of_month', 'send_time', 'recipients',
-        'format', 'is_active', 'last_sent_at'
+        'format', 'is_active', 'last_sent_at',
     ];
 
     protected $casts = ['recipients' => 'array', 'send_time' => 'datetime:H:i', 'is_active' => 'boolean', 'last_sent_at' => 'datetime'];
 
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
 
     public function shouldRunToday(): bool
     {
-        if (!$this->is_active) return false;
+        if (! $this->is_active) {
+            return false;
+        }
+
         return match ($this->frequency) {
             'daily' => true,
             'weekly' => now()->dayOfWeek == $this->day_of_week,
@@ -31,6 +37,13 @@ class ReportSchedule extends Model
         };
     }
 
-    public function markAsSent(): void { $this->update(['last_sent_at' => now()]); }
-    public function scopeActive($q) { return $q->where('is_active', true); }
+    public function markAsSent(): void
+    {
+        $this->update(['last_sent_at' => now()]);
+    }
+
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
+    }
 }

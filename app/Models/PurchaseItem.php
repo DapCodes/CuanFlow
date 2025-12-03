@@ -13,7 +13,7 @@ class PurchaseItem extends Model
     protected $fillable = [
         'purchase_id', 'raw_material_id', 'quantity', 'received_quantity',
         'unit_price', 'discount_percent', 'discount_amount', 'subtotal',
-        'expired_at', 'batch_number', 'notes'
+        'expired_at', 'batch_number', 'notes',
     ];
 
     protected $casts = [
@@ -25,12 +25,26 @@ class PurchaseItem extends Model
     protected static function boot()
     {
         parent::boot();
-        static::saving(fn($m) => $m->subtotal = ($m->quantity * $m->unit_price) - $m->discount_amount);
+        static::saving(fn ($m) => $m->subtotal = ($m->quantity * $m->unit_price) - $m->discount_amount);
     }
 
-    public function purchase(): BelongsTo { return $this->belongsTo(Purchase::class); }
-    public function rawMaterial(): BelongsTo { return $this->belongsTo(RawMaterial::class); }
+    public function purchase(): BelongsTo
+    {
+        return $this->belongsTo(Purchase::class);
+    }
 
-    public function isFullyReceived(): bool { return $this->received_quantity >= $this->quantity; }
-    public function getRemainingQuantity(): float { return max(0, $this->quantity - $this->received_quantity); }
+    public function rawMaterial(): BelongsTo
+    {
+        return $this->belongsTo(RawMaterial::class);
+    }
+
+    public function isFullyReceived(): bool
+    {
+        return $this->received_quantity >= $this->quantity;
+    }
+
+    public function getRemainingQuantity(): float
+    {
+        return max(0, $this->quantity - $this->received_quantity);
+    }
 }

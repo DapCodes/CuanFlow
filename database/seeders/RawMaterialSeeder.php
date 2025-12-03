@@ -7,7 +7,6 @@ use App\Models\RawMaterial;
 use App\Models\RawMaterialStock;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class RawMaterialSeeder extends Seeder
 {
@@ -16,11 +15,12 @@ class RawMaterialSeeder extends Seeder
         $units = DB::table('units')->pluck('id', 'abbreviation')->toArray();
         $categories = Category::where('type', 'raw_material')->pluck('id', 'slug')->toArray();
         $supplierIds = DB::table('suppliers')->pluck('id')->toArray();
-        
-        $targetOutletId = 1; 
+
+        $targetOutletId = 1;
 
         if (empty($units) || empty($categories) || empty($supplierIds)) {
             echo "Pastikan UnitSeeder, CategorySeeder, dan SupplierSeeder sudah dijalankan.\n";
+
             return;
         }
 
@@ -46,21 +46,21 @@ class RawMaterialSeeder extends Seeder
                 'category_slug' => 'tepung', 'unit_abbreviation' => 'kg', 'purchase_price' => 12000.00,
                 'min_stock' => 20.0, 'shelf_life_days' => 240,
             ],
-            
+
             // Telur
             [
                 'code' => 'RM003', 'name' => 'Telur Ayam (per butir)', 'barcode' => '89900020001',
                 'category_slug' => 'telur', 'unit_abbreviation' => 'pcs', 'purchase_price' => 2500.00,
                 'min_stock' => 100.0, 'shelf_life_days' => 14,
             ],
-            
+
             // Dashi & Kaldu
             [
                 'code' => 'RM004', 'name' => 'Dashi Powder (Kaldu Ikan)', 'barcode' => '89900030001',
                 'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 150.00,
                 'min_stock' => 500.0, 'shelf_life_days' => 365,
             ],
-            
+
             // Bumbu & Perasa
             [
                 'code' => 'RM005', 'name' => 'Penyedap Rasa (MSG)', 'barcode' => '89900030002',
@@ -82,7 +82,7 @@ class RawMaterialSeeder extends Seeder
                 'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'ml', 'purchase_price' => 80.00,
                 'min_stock' => 1000.0, 'shelf_life_days' => 365,
             ],
-            
+
             // Isian Takoyaki
             [
                 'code' => 'RM009', 'name' => 'Gurita Beku (Octopus)', 'barcode' => '89900040001',
@@ -99,7 +99,7 @@ class RawMaterialSeeder extends Seeder
                 'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 50.00,
                 'min_stock' => 500.0, 'shelf_life_days' => 14,
             ],
-            
+
             // Topping & Saus
             [
                 'code' => 'RM012', 'name' => 'Katsuobushi (Bonito Flakes)', 'barcode' => '89900050001',
@@ -126,21 +126,21 @@ class RawMaterialSeeder extends Seeder
                 'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 80.00,
                 'min_stock' => 500.0, 'shelf_life_days' => 365,
             ],
-            
+
             // Minyak untuk Memasak
             [
                 'code' => 'RM017', 'name' => 'Minyak Goreng', 'barcode' => '89900060001',
                 'category_slug' => 'minyak-lemak', 'unit_abbreviation' => 'L', 'purchase_price' => 15000.00,
                 'min_stock' => 20.0, 'shelf_life_days' => 365,
             ],
-            
+
             // Air/Cairan
             [
                 'code' => 'RM018', 'name' => 'Air Mineral Galon', 'barcode' => '89900070001',
                 'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'L', 'purchase_price' => 20000.00,
                 'min_stock' => 10.0, 'shelf_life_days' => 180,
             ],
-            
+
             // Kemasan
             [
                 'code' => 'RM019', 'name' => 'Box Takoyaki (isi 6)', 'barcode' => '89900080001',
@@ -163,12 +163,13 @@ class RawMaterialSeeder extends Seeder
         foreach ($rawMaterialsData as $data) {
             $category_id = $categories[$data['category_slug']] ?? null;
             $unit_id = $units[$data['unit_abbreviation']] ?? null;
-            
-            if (!$category_id || !$unit_id) {
+
+            if (! $category_id || ! $unit_id) {
                 echo "Warning: Category atau Unit tidak ditemukan untuk {$data['name']}\n";
+
                 continue;
             }
-            
+
             $supplier_id = $supplierIds[array_rand($supplierIds)];
 
             unset($data['category_slug'], $data['unit_abbreviation']);
@@ -184,7 +185,7 @@ class RawMaterialSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
-        
+
         RawMaterial::insert($rawMaterialRecords);
 
         $rawMaterials = RawMaterial::all();
@@ -210,14 +211,14 @@ class RawMaterialSeeder extends Seeder
                 'raw_material_id' => $rawMaterial->id,
                 'outlet_id' => $targetOutletId,
                 'quantity' => $initialStock,  // Sudah angka bulat dari numberBetween
-                'avg_purchase_price' => round($avgPurchasePrice, 2), 
+                'avg_purchase_price' => round($avgPurchasePrice, 2),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
         }
 
         RawMaterialStock::insert($rawMaterialStocks);
-        
+
         echo "Seeder bahan baku Takoyaki berhasil dijalankan!\n";
     }
 }

@@ -2,33 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Production;
 use App\Models\Product;
-use App\Models\Recipe;
-use App\Models\RawMaterial;
+use App\Models\Production;
 use App\Models\ProductionItem;
 use App\Models\ProductStock;
+use App\Models\RawMaterial;
 use App\Models\RawMaterialStock;
+use App\Models\Recipe;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProductionController extends Controller
 {
     public function index()
     {
         $outletId = Auth::user()->outlet_id;
-        
+
         // Get products with stock info
         $products = Product::with(['unit', 'category', 'defaultRecipe'])
             ->where('outlet_id', $outletId)
             ->where('is_active', true)
             ->get()
-            ->map(function($product) use ($outletId) {
+            ->map(function ($product) use ($outletId) {
                 $stock = $product->getStockQuantity($outletId);
                 $isLowStock = $product->isLowStock($outletId);
-                
+
                 return [
                     'id' => $product->id,
                     'code' => $product->code,
@@ -73,13 +73,14 @@ class ProductionController extends Controller
         if ($productId) {
             $selectedProduct = Product::with(['unit', 'defaultRecipe.items.rawMaterial.unit', 'defaultRecipe.additionalCosts'])
                 ->findOrFail($productId);
-            
+
             $recipe = $selectedProduct->defaultRecipe;
-            
+
             if ($recipe) {
                 // Get raw materials with current stock
-                $rawMaterials = $recipe->items->map(function($item) use ($outletId) {
+                $rawMaterials = $recipe->items->map(function ($item) use ($outletId) {
                     $stock = $item->rawMaterial->getStockQuantity($outletId);
+
                     return [
                         'id' => $item->raw_material_id,
                         'name' => $item->rawMaterial->name,
@@ -122,7 +123,7 @@ class ProductionController extends Controller
         foreach ($recipe->items as $item) {
             $required = $item->quantity * $multiplier;
             $available = $item->rawMaterial->getStockQuantity($outletId);
-            
+
             if ($available < $required) {
                 $insufficientMaterials[] = [
                     'name' => $item->rawMaterial->name,
@@ -134,7 +135,7 @@ class ProductionController extends Controller
         }
 
         // Only check if starting production immediately
-        if ($request->boolean('start_production') && !empty($insufficientMaterials)) {
+        if ($request->boolean('start_production') && ! empty($insufficientMaterials)) {
             return back()
                 ->withInput()
                 ->with('error', 'Stok bahan baku tidak mencukupi!')
@@ -161,7 +162,7 @@ class ProductionController extends Controller
             foreach ($recipe->items as $item) {
                 $quantity = $item->quantity * $multiplier;
                 $unitPrice = $item->rawMaterial->purchase_price;
-                
+
                 ProductionItem::create([
                     'production_id' => $production->id,
                     'raw_material_id' => $item->raw_material_id,
@@ -208,7 +209,7 @@ class ProductionController extends Controller
             $totalAdditionalCost = 0;
             if ($recipe->additionalCosts) {
                 foreach ($recipe->additionalCosts as $cost) {
-                    $amount = match($cost->cost_type) {
+                    $amount = match ($cost->cost_type) {
                         'fixed' => $cost->amount,
                         'per_unit' => $cost->amount * $validated['planned_quantity'],
                         'percentage' => $totalMaterialCost * ($cost->amount / 100),
@@ -229,13 +230,14 @@ class ProductionController extends Controller
 
             return redirect()
                 ->route('production.show', $production->id)
-                ->with('success', 'Produksi berhasil dibuat! Batch: ' . $production->batch_number);
+                ->with('success', 'Produksi berhasil dibuat! Batch: '.$production->batch_number);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()
                 ->withInput()
-                ->with('error', 'Gagal membuat produksi: ' . $e->getMessage());
+                ->with('error', 'Gagal membuat produksi: '.$e->getMessage());
         }
     }
 
@@ -252,7 +254,7 @@ class ProductionController extends Controller
             'items.rawMaterial.unit',
             'createdBy',
             'completedBy',
-            'outlet'
+            'outlet',
         ]);
 
         return view('main.production.show', compact('production'));
@@ -295,19 +297,19 @@ class ProductionController extends Controller
             // Update production items with actual quantities
             foreach ($production->items as $item) {
                 $item->update([
-                    'actual_quantity' => $item->planned_quantity
+                    'actual_quantity' => $item->planned_quantity,
                 ]);
             }
 
             // Update production
-            $completionNotes = $validated['notes'] ? "\n\nCatatan Penyelesaian:\n" . $validated['notes'] : '';
+            $completionNotes = $validated['notes'] ? "\n\nCatatan Penyelesaian:\n".$validated['notes'] : '';
             $production->update([
                 'status' => 'completed',
                 'actual_quantity' => $netStockQuantity, // Store net quantity (after waste deduction)
                 'waste_quantity' => $wasteQty,
                 'completed_at' => now(),
                 'completed_by' => Auth::id(),
-                'notes' => $production->notes . $completionNotes,
+                'notes' => $production->notes.$completionNotes,
             ]);
 
             // Add product stock using net quantity
@@ -339,8 +341,8 @@ class ProductionController extends Controller
                     'unit_price' => $unitPrice,
                     'reference_type' => Production::class,
                     'reference_id' => $production->id,
-                    'notes' => "Produksi selesai #{$production->batch_number}" . 
-                            ($wasteQty > 0 ? " (Waste: {$wasteQty})" : ""),
+                    'notes' => "Produksi selesai #{$production->batch_number}".
+                            ($wasteQty > 0 ? " (Waste: {$wasteQty})" : ''),
                     'created_by' => Auth::id(),
                 ]);
             }
@@ -353,7 +355,8 @@ class ProductionController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyelesaikan produksi: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menyelesaikan produksi: '.$e->getMessage());
         }
     }
 
@@ -374,7 +377,7 @@ class ProductionController extends Controller
 
         foreach ($production->items as $item) {
             $available = $item->rawMaterial->getStockQuantity($outletId);
-            
+
             if ($available < $item->planned_quantity) {
                 $insufficientMaterials[] = [
                     'name' => $item->rawMaterial->name,
@@ -385,7 +388,7 @@ class ProductionController extends Controller
             }
         }
 
-        if (!empty($insufficientMaterials)) {
+        if (! empty($insufficientMaterials)) {
             return back()
                 ->with('error', 'Stok bahan baku tidak mencukupi!')
                 ->with('insufficient_materials', $insufficientMaterials);
@@ -437,7 +440,8 @@ class ProductionController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal memulai produksi: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal memulai produksi: '.$e->getMessage());
         }
     }
 
@@ -495,8 +499,8 @@ class ProductionController extends Controller
 
             DB::commit();
 
-            $message = $production->status === 'in_progress' 
-                ? 'Produksi berhasil dibatalkan dan bahan baku dikembalikan.' 
+            $message = $production->status === 'in_progress'
+                ? 'Produksi berhasil dibatalkan dan bahan baku dikembalikan.'
                 : 'Produksi berhasil dibatalkan.';
 
             return redirect()
@@ -505,7 +509,8 @@ class ProductionController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal membatalkan produksi: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal membatalkan produksi: '.$e->getMessage());
         }
     }
 
@@ -516,13 +521,14 @@ class ProductionController extends Controller
             ->where('outlet_id', $outletId)
             ->findOrFail($productId);
 
-        if (!$product->defaultRecipe) {
+        if (! $product->defaultRecipe) {
             return response()->json(['error' => 'Produk tidak memiliki resep'], 404);
         }
 
         $recipe = $product->defaultRecipe;
-        $materials = $recipe->items->map(function($item) use ($outletId) {
+        $materials = $recipe->items->map(function ($item) use ($outletId) {
             $stock = $item->rawMaterial->getStockQuantity($outletId);
+
             return [
                 'id' => $item->raw_material_id,
                 'name' => $item->rawMaterial->name,
@@ -546,7 +552,7 @@ class ProductionController extends Controller
     public function history(Request $request)
     {
         $outletId = Auth::user()->outlet_id;
-        
+
         $query = Production::with(['product.unit', 'recipe', 'createdBy', 'completedBy'])
             ->where('outlet_id', $outletId);
 
@@ -566,11 +572,11 @@ class ProductionController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('batch_number', 'like', "%{$search}%")
-                  ->orWhereHas('product', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('product', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 

@@ -20,9 +20,16 @@ class ProductionItem extends Model
     protected static function boot()
     {
         parent::boot();
-        static::saving(fn($m) => $m->total_price = ($m->actual_quantity ?? $m->planned_quantity) * $m->unit_price);
+        static::saving(fn ($m) => $m->total_price = ($m->actual_quantity ?? $m->planned_quantity) * $m->unit_price);
     }
 
-    public function production(): BelongsTo { return $this->belongsTo(Production::class); }
-    public function rawMaterial(): BelongsTo { return $this->belongsTo(RawMaterial::class); }
+    public function production(): BelongsTo
+    {
+        return $this->belongsTo(Production::class);
+    }
+
+    public function rawMaterial(): BelongsTo
+    {
+        return $this->belongsTo(RawMaterial::class);
+    }
 }

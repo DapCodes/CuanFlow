@@ -27,6 +27,8 @@ class KeyboardShortcutSeeder extends Seeder
             ['action' => 'new', 'shortcut' => 'Ctrl+N', 'description' => 'Baru', 'context' => 'general'],
             ['action' => 'refresh', 'shortcut' => 'Ctrl+R', 'description' => 'Refresh', 'context' => 'general'],
         ];
-        foreach ($shortcuts as $s) KeyboardShortcut::create(array_merge($s, ['user_id' => null]));
+        foreach ($shortcuts as $s) {
+            KeyboardShortcut::create(array_merge($s, ['user_id' => null]));
+        }
     }
 }

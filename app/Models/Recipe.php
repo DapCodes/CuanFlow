@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Recipe extends Model
 {
@@ -14,7 +14,7 @@ class Recipe extends Model
 
     protected $fillable = [
         'product_id', 'name', 'output_quantity', 'instructions',
-        'estimated_time_minutes', 'is_active', 'is_default'
+        'estimated_time_minutes', 'is_active', 'is_default',
     ];
 
     protected $casts = [
@@ -33,11 +33,30 @@ class Recipe extends Model
         });
     }
 
-    public function product(): BelongsTo { return $this->belongsTo(Product::class); }
-    public function items(): HasMany { return $this->hasMany(RecipeItem::class)->orderBy('sort_order'); }
-    public function additionalCosts(): HasMany { return $this->hasMany(AdditionalCost::class); }
-    public function hppCalculations(): HasMany { return $this->hasMany(HppCalculation::class); }
-    public function productions(): HasMany { return $this->hasMany(Production::class); }
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(RecipeItem::class)->orderBy('sort_order');
+    }
+
+    public function additionalCosts(): HasMany
+    {
+        return $this->hasMany(AdditionalCost::class);
+    }
+
+    public function hppCalculations(): HasMany
+    {
+        return $this->hasMany(HppCalculation::class);
+    }
+
+    public function productions(): HasMany
+    {
+        return $this->hasMany(Production::class);
+    }
 
     public function calculateHpp(): array
     {
@@ -82,6 +101,13 @@ class Recipe extends Model
         ];
     }
 
-    public function scopeActive($q) { return $q->where('is_active', true); }
-    public function scopeDefault($q) { return $q->where('is_default', true); }
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
+    }
+
+    public function scopeDefault($q)
+    {
+        return $q->where('is_default', true);
+    }
 }

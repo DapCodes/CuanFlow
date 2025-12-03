@@ -24,6 +24,8 @@ class CategorySeeder extends Seeder
             ['name' => 'Minuman', 'slug' => 'minuman', 'type' => 'product'],
             ['name' => 'Snack', 'slug' => 'snack', 'type' => 'product'],
         ];
-        foreach ($categories as $i => $c) Category::create(array_merge($c, ['sort_order' => $i]));
+        foreach ($categories as $i => $c) {
+            Category::create(array_merge($c, ['sort_order' => $i]));
+        }
     }
 }

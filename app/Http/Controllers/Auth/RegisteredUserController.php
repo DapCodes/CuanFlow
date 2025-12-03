@@ -8,8 +8,8 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -62,10 +62,10 @@ class RegisteredUserController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return back()
                 ->withInput($request->except('password', 'password_confirmation'))
-                ->withErrors(['error' => 'Terjadi kesalahan saat membuat akun. Silakan coba lagi. Error: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Terjadi kesalahan saat membuat akun. Silakan coba lagi. Error: '.$e->getMessage()]);
         }
     }
 }

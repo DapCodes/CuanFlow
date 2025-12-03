@@ -12,16 +12,27 @@ class StockOpnameItem extends Model
     use HasFactory;
 
     protected $fillable = ['stock_opname_id', 'stockable_type', 'stockable_id', 'system_quantity', 'physical_quantity', 'difference', 'notes'];
+
     protected $casts = ['system_quantity' => 'decimal:4', 'physical_quantity' => 'decimal:4', 'difference' => 'decimal:4'];
 
     protected static function boot()
     {
         parent::boot();
-        static::saving(fn($m) => $m->difference = $m->physical_quantity !== null ? $m->physical_quantity - $m->system_quantity : null);
+        static::saving(fn ($m) => $m->difference = $m->physical_quantity !== null ? $m->physical_quantity - $m->system_quantity : null);
     }
 
-    public function stockOpname(): BelongsTo { return $this->belongsTo(StockOpname::class); }
-    public function stockable(): MorphTo { return $this->morphTo(); }
+    public function stockOpname(): BelongsTo
+    {
+        return $this->belongsTo(StockOpname::class);
+    }
 
-    public function hasDiscrepancy(): bool { return $this->difference != 0; }
+    public function stockable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function hasDiscrepancy(): bool
+    {
+        return $this->difference != 0;
+    }
 }

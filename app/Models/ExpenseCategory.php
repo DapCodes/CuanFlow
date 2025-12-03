@@ -11,8 +11,16 @@ class ExpenseCategory extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'code', 'description', 'is_active'];
+
     protected $casts = ['is_active' => 'boolean'];
 
-    public function expenses(): HasMany { return $this->hasMany(Expense::class); }
-    public function scopeActive($q) { return $q->where('is_active', true); }
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
+    }
 }

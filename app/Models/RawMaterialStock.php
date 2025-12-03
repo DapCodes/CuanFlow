@@ -11,10 +11,18 @@ class RawMaterialStock extends Model
     use HasFactory;
 
     protected $fillable = ['raw_material_id', 'outlet_id', 'quantity', 'avg_purchase_price'];
+
     protected $casts = ['quantity' => 'decimal:4', 'avg_purchase_price' => 'decimal:2'];
 
-    public function rawMaterial(): BelongsTo { return $this->belongsTo(RawMaterial::class); }
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
+    public function rawMaterial(): BelongsTo
+    {
+        return $this->belongsTo(RawMaterial::class);
+    }
+
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
 
     public function addStock(float $qty, float $price = 0): void
     {
@@ -29,8 +37,11 @@ class RawMaterialStock extends Model
 
     public function reduceStock(float $qty): bool
     {
-        if ($this->quantity < $qty) return false;
+        if ($this->quantity < $qty) {
+            return false;
+        }
         $this->decrement('quantity', $qty);
+
         return true;
     }
 }

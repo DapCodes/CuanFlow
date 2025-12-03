@@ -1,17 +1,16 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RegisterOutletController;
-use App\Http\Controllers\OutletInformationController;
 use App\Http\Controllers\ChangeOutletController;
-use App\Http\Controllers\ProductionController;
-use App\Http\Controllers\RawMaterialAndSupplierController;
-use App\Http\Controllers\PointOfSaleController;
+use App\Http\Controllers\OutletInformationController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\SaleController;
-use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\PointOfSaleController;
 use App\Http\Controllers\ProductHppController;
-
+use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RawMaterialAndSupplierController;
+use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\RegisterOutletController;
+use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -30,8 +29,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::post('/change-outlet', [ChangeOutletController::class, 'switch'])
-    ->name('change.outlet')
-    ->middleware('auth');
+        ->name('change.outlet')
+        ->middleware('auth');
 
     Route::resource('outlets', OutletInformationController::class);
     Route::post('outlets/{outlet}/toggle-status', [OutletInformationController::class, 'toggleStatus'])
@@ -41,7 +40,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');
         Route::get('/generate-barcode', [App\Http\Controllers\ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
         Route::get('/ajax/raw-material-price', [App\Http\Controllers\ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
-        
+
         Route::get('/', [App\Http\Controllers\ProductHppController::class, 'index'])->name('index');
         Route::get('/create', [App\Http\Controllers\ProductHppController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\ProductHppController::class, 'store'])->name('store');
@@ -73,7 +72,7 @@ Route::middleware('auth')->group(function () {
             ->name('update');
         Route::delete('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'destroyRawMaterial'])
             ->name('destroy');
-        
+
         // Route untuk kelola stok
         Route::get('/{rawMaterial}/manage-stock', [RawMaterialAndSupplierController::class, 'manageStock'])
             ->name('manage-stock');
@@ -81,7 +80,7 @@ Route::middleware('auth')->group(function () {
             ->name('update-stock');
         Route::get('/{rawMaterial}/stock-history', [RawMaterialAndSupplierController::class, 'stockHistory'])
             ->name('stock-history');
-        
+
         // Route untuk supplier CRUD
         Route::get('/suppliers/create', [RawMaterialAndSupplierController::class, 'createSupplier'])
             ->name('suppliers.create');
@@ -109,7 +108,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/api/sale/{sale}', [SaleController::class, 'showJson'])->name('sale.api.show');
-        
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -117,13 +116,13 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth'])->prefix('pos')->name('pos.')->group(function () {
     Route::get('/', [PointOfSaleController::class, 'index'])->name('index');
-    
+
     // Cart management
     Route::post('/cart/add', [PointOfSaleController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/update', [PointOfSaleController::class, 'updateCartItem'])->name('cart.update');
     Route::delete('/cart/remove', [PointOfSaleController::class, 'removeCartItem'])->name('cart.remove');
     Route::post('/cart/clear', [PointOfSaleController::class, 'clearCart'])->name('cart.clear');
-    
+
     // Discount & Customer
     Route::post('/discount/apply', [PointOfSaleController::class, 'applyDiscount'])->name('discount.apply');
     Route::post('/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('customer.set');

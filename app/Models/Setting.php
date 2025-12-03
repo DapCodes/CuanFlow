@@ -13,7 +13,10 @@ class Setting extends Model
 
     protected $fillable = ['outlet_id', 'group', 'key', 'value', 'type', 'description'];
 
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
 
     public function getTypedValue()
     {
@@ -29,9 +32,13 @@ class Setting extends Model
     public static function getValue(string $group, string $key, $default = null, ?int $outletId = null)
     {
         $cacheKey = "setting:{$outletId}:{$group}:{$key}";
+
         return Cache::remember($cacheKey, 3600, function () use ($group, $key, $default, $outletId) {
             $s = static::where('group', $group)->where('key', $key)->where('outlet_id', $outletId)->first();
-            if (!$s && $outletId) $s = static::where('group', $group)->where('key', $key)->whereNull('outlet_id')->first();
+            if (! $s && $outletId) {
+                $s = static::where('group', $group)->where('key', $key)->whereNull('outlet_id')->first();
+            }
+
             return $s ? $s->getTypedValue() : $default;
         });
     }
@@ -43,13 +50,14 @@ class Setting extends Model
             ['value' => is_array($value) ? json_encode($value) : $value, 'type' => $type]
         );
         Cache::forget("setting:{$outletId}:{$group}:{$key}");
+
         return $s;
     }
 
     public static function getGroup(string $group, ?int $outletId = null): array
     {
         return static::where('group', $group)
-            ->where(fn($q) => $q->where('outlet_id', $outletId)->orWhereNull('outlet_id'))
-            ->get()->mapWithKeys(fn($s) => [$s->key => $s->getTypedValue()])->toArray();
+            ->where(fn ($q) => $q->where('outlet_id', $outletId)->orWhereNull('outlet_id'))
+            ->get()->mapWithKeys(fn ($s) => [$s->key => $s->getTypedValue()])->toArray();
     }
 }

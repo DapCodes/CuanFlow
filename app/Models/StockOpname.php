@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StockOpname extends Model
 {
@@ -14,7 +14,7 @@ class StockOpname extends Model
 
     protected $fillable = [
         'opname_number', 'outlet_id', 'type', 'status',
-        'started_at', 'completed_at', 'notes', 'created_by', 'approved_by'
+        'started_at', 'completed_at', 'notes', 'created_by', 'approved_by',
     ];
 
     protected $casts = ['started_at' => 'datetime', 'completed_at' => 'datetime'];
@@ -22,16 +22,38 @@ class StockOpname extends Model
     protected static function boot()
     {
         parent::boot();
-        static::creating(fn($m) => $m->opname_number = $m->opname_number ?: 'SO-' . date('Ymd') . '-' . str_pad(static::whereDate('created_at', today())->count() + 1, 3, '0', STR_PAD_LEFT));
+        static::creating(fn ($m) => $m->opname_number = $m->opname_number ?: 'SO-'.date('Ymd').'-'.str_pad(static::whereDate('created_at', today())->count() + 1, 3, '0', STR_PAD_LEFT));
     }
 
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
-    public function items(): HasMany { return $this->hasMany(StockOpnameItem::class); }
-    public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
-    public function approvedBy(): BelongsTo { return $this->belongsTo(User::class, 'approved_by'); }
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
 
-    public function start(): void { $this->update(['status' => 'in_progress', 'started_at' => now()]); }
-    public function complete(?int $by = null): void { $this->update(['status' => 'completed', 'completed_at' => now(), 'approved_by' => $by]); }
+    public function items(): HasMany
+    {
+        return $this->hasMany(StockOpnameItem::class);
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function start(): void
+    {
+        $this->update(['status' => 'in_progress', 'started_at' => now()]);
+    }
+
+    public function complete(?int $by = null): void
+    {
+        $this->update(['status' => 'completed', 'completed_at' => now(), 'approved_by' => $by]);
+    }
 
     public function getTotalDifference(): array
     {

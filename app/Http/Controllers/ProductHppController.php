@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
+use App\Models\HppCalculation;
 use App\Models\Product;
+use App\Models\ProductSalesTarget;
+use App\Models\RawMaterial;
 use App\Models\Recipe;
 use App\Models\RecipeItem;
-use App\Models\HppCalculation; 
-use App\Models\RawMaterial;
-use App\Models\Category;
-use App\Models\Unit;
 use App\Models\Sale;
-use App\Models\SaleItem;
-use App\Models\ProductSalesTarget;
+use App\Models\Unit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProductHppController extends Controller
 {
@@ -24,7 +23,7 @@ class ProductHppController extends Controller
             ->where('outlet_id', Auth::user()->outlet_id)
             ->latest()
             ->paginate(20);
-        
+
         return view('main.product_n_hpp-calc.index', compact('products'));
     }
 
@@ -36,7 +35,7 @@ class ProductHppController extends Controller
             ->where('outlet_id', Auth::user()->outlet_id)
             ->active()
             ->get();
-        
+
         return view('main.product_n_hpp-calc.create', compact('categories', 'units', 'rawMaterials'));
     }
 
@@ -51,22 +50,22 @@ class ProductHppController extends Controller
             'unit_id' => 'required|exists:units,id',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-            
+
             // Step 2: Recipe Info
             'recipe_name' => 'required|string|max:255',
             'output_quantity' => 'required|numeric|min:0.01',
             'estimated_time_minutes' => 'nullable|integer|min:1',
             'instructions' => 'nullable|string',
-            
+
             // Step 3: Recipe Items
             'recipe_items' => 'required|array|min:1',
             'recipe_items.*.raw_material_id' => 'required|exists:raw_materials,id',
             'recipe_items.*.quantity' => 'required|numeric|min:0.01',
             'recipe_items.*.notes' => 'nullable|string',
-            
+
             // Step 4: Additional Costs
             'additional_cost' => 'nullable|numeric|min:0',
-            
+
             // Step 5: Pricing
             'selling_price' => 'required|numeric|min:0',
             'reseller_price' => 'nullable|numeric|min:0',
@@ -75,13 +74,13 @@ class ProductHppController extends Controller
             'shelf_life_days' => 'nullable|integer|min:1',
 
             // Step 6: Sales Target (opsional)
-            'enable_sales_target'   => 'nullable|boolean',
-            'monthly_target_revenue'=> 'nullable|numeric|min:0',
-            'daily_sales_target'    => 'nullable|integer|min:0',
-            'monthly_sales_target'  => 'nullable|integer|min:0',
-            'daily_revenue_target'  => 'nullable|numeric|min:0',
-            'sales_pattern'         => 'nullable|string', // JSON string dari hidden input
-            'target_start_date'     => 'nullable|date',
+            'enable_sales_target' => 'nullable|boolean',
+            'monthly_target_revenue' => 'nullable|numeric|min:0',
+            'daily_sales_target' => 'nullable|integer|min:0',
+            'monthly_sales_target' => 'nullable|integer|min:0',
+            'daily_revenue_target' => 'nullable|numeric|min:0',
+            'sales_pattern' => 'nullable|string', // JSON string dari hidden input
+            'target_start_date' => 'nullable|date',
         ]);
 
         DB::beginTransaction();
@@ -128,10 +127,10 @@ class ProductHppController extends Controller
             $rawMaterialCost = 0;
             foreach ($validated['recipe_items'] as $index => $item) {
                 $rawMaterial = RawMaterial::find($item['raw_material_id']);
-                
+
                 // Verify raw material belongs to outlet
                 if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
-                    throw new \Exception("Bahan baku tidak valid untuk outlet ini.");
+                    throw new \Exception('Bahan baku tidak valid untuk outlet ini.');
                 }
 
                 RecipeItem::create([
@@ -166,8 +165,8 @@ class ProductHppController extends Controller
                 'calculated_by' => Auth::id(),
             ]);
 
-            $marginPercent = $hppPerUnit > 0 
-                ? (($validated['selling_price'] - $hppPerUnit) / $hppPerUnit) * 100 
+            $marginPercent = $hppPerUnit > 0
+                ? (($validated['selling_price'] - $hppPerUnit) / $hppPerUnit) * 100
                 : 0;
 
             $product->update([
@@ -180,21 +179,21 @@ class ProductHppController extends Controller
              * hanya jika checkbox "enable_sales_target" dicentang
              * dan monthly_target_revenue > 0
              */
-            if ($request->boolean('enable_sales_target') && !empty($validated['monthly_target_revenue']) && $validated['monthly_target_revenue'] > 0) {
+            if ($request->boolean('enable_sales_target') && ! empty($validated['monthly_target_revenue']) && $validated['monthly_target_revenue'] > 0) {
                 $monthlyTargetRevenue = (float) $validated['monthly_target_revenue'];
                 $sellingPrice = (float) $validated['selling_price'];
 
                 if ($sellingPrice > 0) {
                     // Hitung ulang di backend (tidak tergantung JS)
                     $monthlySalesTarget = (int) ceil($monthlyTargetRevenue / $sellingPrice);
-                    $dailySalesTarget   = (int) ceil($monthlySalesTarget / 30);
+                    $dailySalesTarget = (int) ceil($monthlySalesTarget / 30);
                     $dailyRevenueTarget = $dailySalesTarget * $sellingPrice;
-                    $profitPerUnit      = $sellingPrice - $hppPerUnit;
+                    $profitPerUnit = $sellingPrice - $hppPerUnit;
                     $monthlyProfitTarget = $monthlySalesTarget * $profitPerUnit;
 
                     // Decode pola penjualan harian kalau ada (dari chart Step 6)
                     $salesPattern = null;
-                    if (!empty($validated['sales_pattern'])) {
+                    if (! empty($validated['sales_pattern'])) {
                         $decoded = json_decode($validated['sales_pattern'], true);
                         if (json_last_error() === JSON_ERROR_NONE) {
                             $salesPattern = $decoded;
@@ -202,21 +201,21 @@ class ProductHppController extends Controller
                     }
 
                     ProductSalesTarget::create([
-                        'product_id'            => $product->id,
-                        'outlet_id'             => Auth::user()->outlet_id,
-                        'monthly_target_revenue'=> $monthlyTargetRevenue,
-                        'hpp_per_unit'          => $hppPerUnit,
-                        'selling_price'         => $sellingPrice,
-                        'daily_sales_target'    => $dailySalesTarget,
-                        'monthly_sales_target'  => $monthlySalesTarget,
-                        'daily_revenue_target'  => $dailyRevenueTarget,
-                        'profit_per_unit'       => $profitPerUnit,
+                        'product_id' => $product->id,
+                        'outlet_id' => Auth::user()->outlet_id,
+                        'monthly_target_revenue' => $monthlyTargetRevenue,
+                        'hpp_per_unit' => $hppPerUnit,
+                        'selling_price' => $sellingPrice,
+                        'daily_sales_target' => $dailySalesTarget,
+                        'monthly_sales_target' => $monthlySalesTarget,
+                        'daily_revenue_target' => $dailyRevenueTarget,
+                        'profit_per_unit' => $profitPerUnit,
                         'monthly_profit_target' => $monthlyProfitTarget,
-                        'sales_pattern'         => $salesPattern,
-                        'target_start_date'     => $validated['target_start_date'] ?? now()->toDateString(),
-                        'target_end_date'       => null,
-                        'is_active'             => true,
-                        'created_by'            => Auth::id(),
+                        'sales_pattern' => $salesPattern,
+                        'target_start_date' => $validated['target_start_date'] ?? now()->toDateString(),
+                        'target_end_date' => null,
+                        'is_active' => true,
+                        'created_by' => Auth::id(),
                     ]);
                 }
             }
@@ -224,14 +223,14 @@ class ProductHppController extends Controller
             DB::commit();
 
             return redirect()->route('products-hpp.show', $product->id)
-                ->with('success', 'Produk dan resep berhasil dibuat dengan HPP: Rp ' . number_format($hppPerUnit, 2));
+                ->with('success', 'Produk dan resep berhasil dibuat dengan HPP: Rp '.number_format($hppPerUnit, 2));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
-
 
     public function show(Product $product)
     {
@@ -241,7 +240,7 @@ class ProductHppController extends Controller
         }
 
         $product->load(['category', 'unit', 'recipes.items.rawMaterial.unit', 'hppCalculations.calculatedBy']);
-        
+
         return view('main.product_n_hpp-calc.show', compact('product'));
     }
 
@@ -258,15 +257,15 @@ class ProductHppController extends Controller
             ->where('outlet_id', Auth::user()->outlet_id)
             ->active()
             ->get();
-        
+
         // Load relasi yang diperlukan
         $product->load([
-            'category', 
-            'unit', 
+            'category',
+            'unit',
             'defaultRecipe.items.rawMaterial.unit',
-            'latestHppCalculation'
+            'latestHppCalculation',
         ]);
-        
+
         return view('main.product_n_hpp-calc.edit', compact('product', 'categories', 'units', 'rawMaterials'));
     }
 
@@ -280,28 +279,28 @@ class ProductHppController extends Controller
         $validated = $request->validate([
             // Step 1: Basic Info
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:30|unique:products,code,' . $product->id,
+            'code' => 'required|string|max:30|unique:products,code,'.$product->id,
             'barcode' => 'nullable|string|max:50',
             'category_id' => 'nullable|exists:categories,id',
             'unit_id' => 'required|exists:units,id',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-            
+
             // Step 2: Recipe Info
             'recipe_name' => 'required|string|max:255',
             'output_quantity' => 'required|numeric|min:0.01',
             'estimated_time_minutes' => 'nullable|integer|min:1',
             'instructions' => 'nullable|string',
-            
+
             // Step 3: Recipe Items
             'recipe_items' => 'required|array|min:1',
             'recipe_items.*.raw_material_id' => 'required|exists:raw_materials,id',
             'recipe_items.*.quantity' => 'required|numeric|min:0.01',
             'recipe_items.*.notes' => 'nullable|string',
-            
+
             // Step 4: Additional Costs
             'additional_cost' => 'nullable|numeric|min:0',
-            
+
             // Step 5: Pricing
             'selling_price' => 'required|numeric|min:0',
             'reseller_price' => 'nullable|numeric|min:0',
@@ -366,10 +365,10 @@ class ProductHppController extends Controller
             $rawMaterialCost = 0;
             foreach ($validated['recipe_items'] as $index => $item) {
                 $rawMaterial = RawMaterial::find($item['raw_material_id']);
-                
+
                 // Verify raw material belongs to outlet
                 if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
-                    throw new \Exception("Bahan baku tidak valid untuk outlet ini.");
+                    throw new \Exception('Bahan baku tidak valid untuk outlet ini.');
                 }
 
                 RecipeItem::create([
@@ -405,8 +404,8 @@ class ProductHppController extends Controller
             ]);
 
             // Calculate margin
-            $marginPercent = $hppPerUnit > 0 
-                ? (($validated['selling_price'] - $hppPerUnit) / $hppPerUnit) * 100 
+            $marginPercent = $hppPerUnit > 0
+                ? (($validated['selling_price'] - $hppPerUnit) / $hppPerUnit) * 100
                 : 0;
 
             // Update HPP dan margin di product
@@ -418,11 +417,12 @@ class ProductHppController extends Controller
             DB::commit();
 
             return redirect()->route('products-hpp.show', $product->id)
-                ->with('success', 'Produk berhasil diperbarui dengan HPP: Rp ' . number_format($hppPerUnit, 2, ',', '.'));
+                ->with('success', 'Produk berhasil diperbarui dengan HPP: Rp '.number_format($hppPerUnit, 2, ',', '.'));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -437,24 +437,24 @@ class ProductHppController extends Controller
             if ($product->image) {
                 \Storage::disk('public')->delete($product->image);
             }
-            
+
             $product->delete();
-            
+
             return redirect()->route('products-hpp.index')
                 ->with('success', 'Produk berhasil dihapus');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus produk: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus produk: '.$e->getMessage());
         }
     }
 
     public function getRawMaterialPrice(Request $request)
     {
         $rawMaterial = RawMaterial::find($request->raw_material_id);
-        
-        if (!$rawMaterial || $rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+
+        if (! $rawMaterial || $rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             return response()->json(['error' => 'Bahan baku tidak ditemukan'], 404);
         }
-        
+
         return response()->json([
             'price' => $rawMaterial->purchase_price,
             'unit' => $rawMaterial->unit->name ?? '',
@@ -465,13 +465,13 @@ class ProductHppController extends Controller
     {
         // Generate kode produk format: PRD + YYYYMMDD + 3 digit angka
         $date = now()->format('Ymd');
-        $prefix = 'PRD' . $date;
-        
+        $prefix = 'PRD'.$date;
+
         // Cari kode terakhir dengan prefix yang sama
-        $lastProduct = Product::where('code', 'LIKE', $prefix . '%')
+        $lastProduct = Product::where('code', 'LIKE', $prefix.'%')
             ->orderBy('code', 'desc')
             ->first();
-        
+
         if ($lastProduct) {
             // Ambil 3 digit terakhir dan tambah 1
             $lastNumber = intval(substr($lastProduct->code, -3));
@@ -479,9 +479,9 @@ class ProductHppController extends Controller
         } else {
             $newNumber = '001';
         }
-        
+
         return response()->json([
-            'code' => $prefix . $newNumber
+            'code' => $prefix.$newNumber,
         ]);
     }
 
@@ -489,24 +489,24 @@ class ProductHppController extends Controller
     {
         // Generate barcode 13 digit (EAN-13 format)
         // Format: 899 (Indonesia) + 9 digit random + 1 digit checksum
-        
+
         do {
-            $barcode = '899' . str_pad(rand(0, 999999999), 9, '0', STR_PAD_LEFT);
-            
+            $barcode = '899'.str_pad(rand(0, 999999999), 9, '0', STR_PAD_LEFT);
+
             // Hitung checksum EAN-13
             $sum = 0;
             for ($i = 0; $i < 12; $i++) {
-                $sum += ($i % 2 == 0) ? (int)$barcode[$i] : (int)$barcode[$i] * 3;
+                $sum += ($i % 2 == 0) ? (int) $barcode[$i] : (int) $barcode[$i] * 3;
             }
             $checksum = (10 - ($sum % 10)) % 10;
             $barcode .= $checksum;
-            
+
             // Cek apakah barcode sudah ada
             $exists = Product::where('barcode', $barcode)->exists();
         } while ($exists);
-        
+
         return response()->json([
-            'barcode' => $barcode
+            'barcode' => $barcode,
         ]);
     }
 
@@ -516,11 +516,11 @@ class ProductHppController extends Controller
         $outletId = auth()->user()->outlet_id;
 
         // Handle new product case
-        if ($productId === 'new' || !$productId) {
+        if ($productId === 'new' || ! $productId) {
             return response()->json([
                 'daily_pattern' => [
-                    'Monday' => 0, 'Tuesday' => 0, 'Wednesday' => 0, 
-                    'Thursday' => 0, 'Friday' => 0, 'Saturday' => 0, 'Sunday' => 0
+                    'Monday' => 0, 'Tuesday' => 0, 'Wednesday' => 0,
+                    'Thursday' => 0, 'Friday' => 0, 'Saturday' => 0, 'Sunday' => 0,
                 ],
                 'avg_daily_sales' => 0,
                 'total_sold_30days' => 0,
@@ -532,28 +532,28 @@ class ProductHppController extends Controller
 
         // Validasi apakah product milik outlet user
         $product = Product::find($productId);
-        if (!$product || $product->outlet_id !== $outletId) {
+        if (! $product || $product->outlet_id !== $outletId) {
             return response()->json(['error' => 'Product not found'], 404);
         }
-        
+
         // Ambil data penjualan 30 hari terakhir
         $salesHistory = Sale::byOutlet($outletId)
             ->completed()
             ->whereBetween('created_at', [now()->subDays(30), now()])
-            ->whereHas('items', function($q) use ($productId) {
+            ->whereHas('items', function ($q) use ($productId) {
                 $q->where('product_id', $productId);
             })
-            ->with(['items' => function($q) use ($productId) {
+            ->with(['items' => function ($q) use ($productId) {
                 $q->where('product_id', $productId);
             }])
             ->get();
 
         // Hitung pola penjualan per hari dalam seminggu
         $dailyPattern = [
-            'Monday' => 0, 'Tuesday' => 0, 'Wednesday' => 0, 
-            'Thursday' => 0, 'Friday' => 0, 'Saturday' => 0, 'Sunday' => 0
+            'Monday' => 0, 'Tuesday' => 0, 'Wednesday' => 0,
+            'Thursday' => 0, 'Friday' => 0, 'Saturday' => 0, 'Sunday' => 0,
         ];
-        
+
         $totalSold = 0;
         foreach ($salesHistory as $sale) {
             $dayName = $sale->created_at->format('l');
@@ -570,23 +570,23 @@ class ProductHppController extends Controller
         for ($i = 3; $i >= 0; $i--) {
             $weekStart = now()->subWeeks($i)->startOfWeek();
             $weekEnd = now()->subWeeks($i)->endOfWeek();
-            
+
             $weekSales = Sale::byOutlet($outletId)
                 ->completed()
                 ->whereBetween('created_at', [$weekStart, $weekEnd])
-                ->whereHas('items', function($q) use ($productId) {
+                ->whereHas('items', function ($q) use ($productId) {
                     $q->where('product_id', $productId);
                 })
-                ->with(['items' => function($q) use ($productId) {
+                ->with(['items' => function ($q) use ($productId) {
                     $q->where('product_id', $productId);
                 }])
                 ->get()
-                ->sum(fn($s) => $s->items->sum('quantity'));
-            
+                ->sum(fn ($s) => $s->items->sum('quantity'));
+
             $weeklyTrend[] = [
-                'week' => 'Week ' . (4 - $i),
+                'week' => 'Week '.(4 - $i),
                 'sales' => $weekSales,
-                'date_range' => $weekStart->format('M d') . ' - ' . $weekEnd->format('M d')
+                'date_range' => $weekStart->format('M d').' - '.$weekEnd->format('M d'),
             ];
         }
 

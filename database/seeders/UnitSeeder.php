@@ -23,6 +23,8 @@ class UnitSeeder extends Seeder
             ['name' => 'Butir', 'abbreviation' => 'btr', 'base_unit_id' => null, 'conversion_factor' => 1],
             ['name' => 'Sachet', 'abbreviation' => 'sct', 'base_unit_id' => null, 'conversion_factor' => 1],
         ];
-        foreach ($units as $u) Unit::create($u);
+        foreach ($units as $u) {
+            Unit::create($u);
+        }
     }
 }

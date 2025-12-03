@@ -13,7 +13,7 @@ class CashRegister extends Model
     protected $fillable = [
         'outlet_id', 'user_id', 'opening_amount', 'closing_amount', 'expected_amount', 'difference',
         'total_transactions', 'total_sales', 'total_cash', 'total_qris', 'total_transfer',
-        'opened_at', 'closed_at', 'status', 'notes'
+        'opened_at', 'closed_at', 'status', 'notes',
     ];
 
     protected $casts = [
@@ -23,8 +23,15 @@ class CashRegister extends Model
         'opened_at' => 'datetime', 'closed_at' => 'datetime',
     ];
 
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function close(float $amt, ?string $notes = null): void
     {
@@ -53,6 +60,13 @@ class CashRegister extends Model
         $this->expected_amount = $this->opening_amount + $this->total_cash;
     }
 
-    public function scopeOpen($q) { return $q->where('status', 'open'); }
-    public function scopeByUser($q, $id) { return $q->where('user_id', $id); }
+    public function scopeOpen($q)
+    {
+        return $q->where('status', 'open');
+    }
+
+    public function scopeByUser($q, $id)
+    {
+        return $q->where('user_id', $id);
+    }
 }

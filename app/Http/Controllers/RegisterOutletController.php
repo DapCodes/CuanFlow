@@ -74,7 +74,7 @@ class RegisterOutletController extends Controller
             $user->save();
 
             // Assign owner role if using Spatie Permission
-            if (!$user->hasRole('owner')) {
+            if (! $user->hasRole('owner')) {
                 $user->assignRole('owner');
             }
 
@@ -86,7 +86,7 @@ class RegisterOutletController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             // Delete uploaded logo if exists
             if (isset($logoPath) && $logoPath) {
                 Storage::disk('public')->delete($logoPath);
@@ -94,14 +94,14 @@ class RegisterOutletController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat mendaftarkan outlet: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat mendaftarkan outlet: '.$e->getMessage());
         }
     }
 
     private function generateOutletCode()
     {
         do {
-            $code = 'OUT-' . strtoupper(Str::random(8));
+            $code = 'OUT-'.strtoupper(Str::random(8));
         } while (Outlet::where('code', $code)->exists());
 
         return $code;

@@ -18,6 +18,8 @@ class ExpenseCategorySeeder extends Seeder
             ['code' => 'MARK', 'name' => 'Marketing', 'description' => 'Promosi & iklan'],
             ['code' => 'MISC', 'name' => 'Lain-lain', 'description' => 'Pengeluaran lainnya'],
         ];
-        foreach ($cats as $c) ExpenseCategory::create($c);
+        foreach ($cats as $c) {
+            ExpenseCategory::create($c);
+        }
     }
 }

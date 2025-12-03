@@ -10,7 +10,7 @@ class ChangeOutletController extends Controller
     public function switch(Request $request)
     {
         $request->validate([
-            'outlet_id' => 'required|integer'
+            'outlet_id' => 'required|integer',
         ]);
 
         $user = Auth::user();
@@ -22,7 +22,7 @@ class ChangeOutletController extends Controller
 
         // Update outlet aktif user
         $user->update([
-            'outlet_id' => $request->outlet_id
+            'outlet_id' => $request->outlet_id,
         ]);
 
         // Mengubah 'return back()' menjadi redirect ke route 'dashboard'

@@ -13,7 +13,7 @@ class HppCalculation extends Model
     protected $fillable = [
         'product_id', 'recipe_id', 'raw_material_cost', 'additional_cost',
         'total_hpp', 'hpp_per_unit', 'output_quantity', 'calculation_details',
-        'notes', 'calculated_by'
+        'notes', 'calculated_by',
     ];
 
     protected $casts = [
@@ -22,9 +22,20 @@ class HppCalculation extends Model
         'output_quantity' => 'decimal:4', 'calculation_details' => 'array',
     ];
 
-    public function product(): BelongsTo { return $this->belongsTo(Product::class); }
-    public function recipe(): BelongsTo { return $this->belongsTo(Recipe::class); }
-    public function calculatedBy(): BelongsTo { return $this->belongsTo(User::class, 'calculated_by'); }
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function recipe(): BelongsTo
+    {
+        return $this->belongsTo(Recipe::class);
+    }
+
+    public function calculatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'calculated_by');
+    }
 
     public function applyToProduct(): void
     {

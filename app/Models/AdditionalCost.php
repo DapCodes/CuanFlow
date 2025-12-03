@@ -11,9 +11,13 @@ class AdditionalCost extends Model
     use HasFactory;
 
     protected $fillable = ['recipe_id', 'name', 'cost_type', 'amount', 'notes'];
+
     protected $casts = ['amount' => 'decimal:2'];
 
-    public function recipe(): BelongsTo { return $this->belongsTo(Recipe::class); }
+    public function recipe(): BelongsTo
+    {
+        return $this->belongsTo(Recipe::class);
+    }
 
     public function calculateCost(float $matCost, float $outputQty): float
     {

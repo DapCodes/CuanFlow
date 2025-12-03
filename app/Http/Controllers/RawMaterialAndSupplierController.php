@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\RawMaterial;
-use App\Models\RawMaterialStock;
 use App\Models\StockMovement;
 use App\Models\Supplier;
-use App\Models\Category;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,17 +20,17 @@ class RawMaterialAndSupplierController extends Controller
     public function indexRawMaterial(Request $request)
     {
         $query = RawMaterial::where('outlet_id', Auth::user()->outlet_id)
-            ->with(['category', 'unit', 'supplier', 'stocks' => function($q) {
+            ->with(['category', 'unit', 'supplier', 'stocks' => function ($q) {
                 $q->where('outlet_id', Auth::user()->outlet_id);
             }]);
 
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('barcode', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%");
             });
         }
 
@@ -54,14 +53,14 @@ class RawMaterialAndSupplierController extends Controller
         if ($request->filled('stock_status')) {
             $outletId = Auth::user()->outlet_id;
             if ($request->stock_status === 'low') {
-                $query->whereHas('stocks', function($q) use ($outletId) {
+                $query->whereHas('stocks', function ($q) use ($outletId) {
                     $q->where('outlet_id', $outletId)
-                      ->whereRaw('quantity <= raw_materials.min_stock');
+                        ->whereRaw('quantity <= raw_materials.min_stock');
                 });
             } elseif ($request->stock_status === 'out') {
-                $query->whereHas('stocks', function($q) use ($outletId) {
+                $query->whereHas('stocks', function ($q) use ($outletId) {
                     $q->where('outlet_id', $outletId)
-                      ->where('quantity', '<=', 0);
+                        ->where('quantity', '<=', 0);
                 });
             }
         }
@@ -118,7 +117,7 @@ class RawMaterialAndSupplierController extends Controller
         // Handle image upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $filename = time() . '_' . Str::slug($request->name) . '.' . $image->getClientOriginalExtension();
+            $filename = time().'_'.Str::slug($request->name).'.'.$image->getClientOriginalExtension();
             $validated['image'] = $image->storeAs('raw-materials', $filename, 'public');
         }
 
@@ -147,7 +146,7 @@ class RawMaterialAndSupplierController extends Controller
             abort(404);
         }
 
-        $rawMaterial->load(['category', 'unit', 'supplier', 'stocks' => function($q) {
+        $rawMaterial->load(['category', 'unit', 'supplier', 'stocks' => function ($q) {
             $q->where('outlet_id', Auth::user()->outlet_id);
         }]);
 
@@ -185,7 +184,7 @@ class RawMaterialAndSupplierController extends Controller
         }
 
         $validated = $request->validate([
-            'code' => 'required|string|max:30|unique:raw_materials,code,' . $rawMaterial->id,
+            'code' => 'required|string|max:30|unique:raw_materials,code,'.$rawMaterial->id,
             'name' => 'required|string|max:255',
             'barcode' => 'nullable|string|max:50',
             'category_id' => 'nullable|exists:categories,id',
@@ -212,9 +211,9 @@ class RawMaterialAndSupplierController extends Controller
             if ($rawMaterial->image) {
                 Storage::disk('public')->delete($rawMaterial->image);
             }
-            
+
             $image = $request->file('image');
-            $filename = time() . '_' . Str::slug($request->name) . '.' . $image->getClientOriginalExtension();
+            $filename = time().'_'.Str::slug($request->name).'.'.$image->getClientOriginalExtension();
             $validated['image'] = $image->storeAs('raw-materials', $filename, 'public');
         }
 
@@ -248,14 +247,14 @@ class RawMaterialAndSupplierController extends Controller
 
     /**
      * Show the form for managing stock (add/reduce)
-    */
+     */
     public function manageStock(RawMaterial $rawMaterial)
     {
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
 
-        $rawMaterial->load(['category', 'unit', 'supplier', 'stocks' => function($q) {
+        $rawMaterial->load(['category', 'unit', 'supplier', 'stocks' => function ($q) {
             $q->where('outlet_id', Auth::user()->outlet_id);
         }]);
 
@@ -289,7 +288,7 @@ class RawMaterialAndSupplierController extends Controller
             ->where('outlet_id', Auth::user()->outlet_id)
             ->first();
 
-        if (!$stock) {
+        if (! $stock) {
             $stock = $rawMaterial->stocks()->create([
                 'outlet_id' => Auth::user()->outlet_id,
                 'quantity' => 0,
@@ -298,7 +297,7 @@ class RawMaterialAndSupplierController extends Controller
         }
 
         $quantityBefore = $stock->quantity;
-        
+
         if ($validated['type'] === 'add') {
             $quantityAfter = $quantityBefore + $validated['quantity'];
             $movementType = 'in';
@@ -368,11 +367,11 @@ class RawMaterialAndSupplierController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('contact_person', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('contact_person', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -393,8 +392,8 @@ class RawMaterialAndSupplierController extends Controller
     {
         // Generate unique supplier code
         $lastSupplier = Supplier::orderBy('id', 'desc')->first();
-        $nextNumber = $lastSupplier ? (int)substr($lastSupplier->code, 4) + 1 : 1;
-        $code = 'SUP-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        $nextNumber = $lastSupplier ? (int) substr($lastSupplier->code, 4) + 1 : 1;
+        $code = 'SUP-'.str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
         return view('main.raw-material_n_supplier.create-supplier', compact('code'));
     }
@@ -429,9 +428,9 @@ class RawMaterialAndSupplierController extends Controller
     public function showSupplier(Supplier $supplier)
     {
         $supplier->loadCount('rawMaterials');
-        $supplier->load(['rawMaterials' => function($query) {
+        $supplier->load(['rawMaterials' => function ($query) {
             $query->where('outlet_id', Auth::user()->outlet_id)
-                ->with(['unit', 'stocks' => function($q) {
+                ->with(['unit', 'stocks' => function ($q) {
                     $q->where('outlet_id', Auth::user()->outlet_id);
                 }]);
         }]);
@@ -453,7 +452,7 @@ class RawMaterialAndSupplierController extends Controller
     public function updateSupplier(Request $request, Supplier $supplier)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:20|unique:suppliers,code,' . $supplier->id,
+            'code' => 'required|string|max:20|unique:suppliers,code,'.$supplier->id,
             'name' => 'required|string|max:255',
             'contact_person' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',

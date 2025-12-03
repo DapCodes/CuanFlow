@@ -14,7 +14,7 @@ class StockMovement extends Model
     protected $fillable = [
         'outlet_id', 'stockable_type', 'stockable_id', 'type',
         'quantity', 'quantity_before', 'quantity_after', 'unit_price',
-        'reference_type', 'reference_id', 'notes', 'expired_at', 'batch_number', 'created_by'
+        'reference_type', 'reference_id', 'notes', 'expired_at', 'batch_number', 'created_by',
     ];
 
     protected $casts = [
@@ -25,12 +25,38 @@ class StockMovement extends Model
         'expired_at' => 'date',
     ];
 
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
-    public function stockable(): MorphTo { return $this->morphTo(); }
-    public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
 
-    public function scopeByOutlet($q, $id) { return $q->where('outlet_id', $id); }
-    public function scopeByType($q, $type) { return $q->where('type', $type); }
-    public function scopeIncoming($q) { return $q->whereIn('type', ['in', 'return', 'production']); }
-    public function scopeOutgoing($q) { return $q->whereIn('type', ['out', 'sale', 'waste', 'transfer']); }
+    public function stockable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function scopeByOutlet($q, $id)
+    {
+        return $q->where('outlet_id', $id);
+    }
+
+    public function scopeByType($q, $type)
+    {
+        return $q->where('type', $type);
+    }
+
+    public function scopeIncoming($q)
+    {
+        return $q->whereIn('type', ['in', 'return', 'production']);
+    }
+
+    public function scopeOutgoing($q)
+    {
+        return $q->whereIn('type', ['out', 'sale', 'waste', 'transfer']);
+    }
 }

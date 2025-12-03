@@ -11,7 +11,11 @@ class AiChatMessage extends Model
     use HasFactory;
 
     protected $fillable = ['ai_chat_session_id', 'role', 'content', 'metadata', 'tokens_used'];
+
     protected $casts = ['metadata' => 'array'];
 
-    public function session(): BelongsTo { return $this->belongsTo(AiChatSession::class, 'ai_chat_session_id'); }
+    public function session(): BelongsTo
+    {
+        return $this->belongsTo(AiChatSession::class, 'ai_chat_session_id');
+    }
 }

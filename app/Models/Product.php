@@ -4,23 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Product extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'code', 'name', 'barcode', 'category_id', 'unit_id',
         'hpp', 'selling_price', 'reseller_price', 'promo_price', 'margin_percent',
         'min_stock', 'shelf_life_days', 'image', 'description',
-        'is_active', 'is_sellable', 'track_stock', 'outlet_id'
+        'is_active', 'is_sellable', 'track_stock', 'outlet_id',
     ];
 
     protected $casts = [
@@ -36,25 +36,82 @@ class Product extends Model
         return LogOptions::defaults()->logOnly(['name', 'hpp', 'selling_price'])->logOnlyDirty();
     }
 
-    public function category(): BelongsTo { return $this->belongsTo(Category::class); }
-    public function unit(): BelongsTo { return $this->belongsTo(Unit::class); }
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
-    public function stocks(): HasMany { return $this->hasMany(ProductStock::class); }
-    public function stockMovements(): MorphMany { return $this->morphMany(StockMovement::class, 'stockable'); }
-    public function recipes(): HasMany { return $this->hasMany(Recipe::class); }
-    public function defaultRecipe(): HasOne { return $this->hasOne(Recipe::class)->where('is_default', true); }
-    public function hppCalculations(): HasMany { return $this->hasMany(HppCalculation::class); }
-    public function latestHppCalculation(): HasOne { return $this->hasOne(HppCalculation::class)->latestOfMany(); }
-    public function productions(): HasMany { return $this->hasMany(Production::class); }
-    public function saleItems(): HasMany { return $this->hasMany(SaleItem::class); }
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
 
-    public function getStockByOutlet($id) { return $this->stocks()->where('outlet_id', $id)->first(); }
-    public function getStockQuantity($id): float { return $this->getStockByOutlet($id)?->quantity ?? 0; }
-    public function isLowStock($id): bool { return $this->getStockQuantity($id) <= $this->min_stock; }
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class);
+    }
+
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
+
+    public function stocks(): HasMany
+    {
+        return $this->hasMany(ProductStock::class);
+    }
+
+    public function stockMovements(): MorphMany
+    {
+        return $this->morphMany(StockMovement::class, 'stockable');
+    }
+
+    public function recipes(): HasMany
+    {
+        return $this->hasMany(Recipe::class);
+    }
+
+    public function defaultRecipe(): HasOne
+    {
+        return $this->hasOne(Recipe::class)->where('is_default', true);
+    }
+
+    public function hppCalculations(): HasMany
+    {
+        return $this->hasMany(HppCalculation::class);
+    }
+
+    public function latestHppCalculation(): HasOne
+    {
+        return $this->hasOne(HppCalculation::class)->latestOfMany();
+    }
+
+    public function productions(): HasMany
+    {
+        return $this->hasMany(Production::class);
+    }
+
+    public function saleItems(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
+    public function getStockByOutlet($id)
+    {
+        return $this->stocks()->where('outlet_id', $id)->first();
+    }
+
+    public function getStockQuantity($id): float
+    {
+        return $this->getStockByOutlet($id)?->quantity ?? 0;
+    }
+
+    public function isLowStock($id): bool
+    {
+        return $this->getStockQuantity($id) <= $this->min_stock;
+    }
 
     public function getPriceForCustomer(?Customer $c = null): float
     {
-        if ($c && $c->type === 'reseller' && $this->reseller_price) return $this->reseller_price;
+        if ($c && $c->type === 'reseller' && $this->reseller_price) {
+            return $this->reseller_price;
+        }
+
         return $this->promo_price ?? $this->selling_price;
     }
 
@@ -63,16 +120,23 @@ class Product extends Model
         return $this->hpp > 0 ? (($this->selling_price - $this->hpp) / $this->hpp) * 100 : 0;
     }
 
-    public function scopeActive($q) { return $q->where('is_active', true); }
-    public function scopeSellable($q) { return $q->where('is_sellable', true)->where('is_active', true); }
-
-    public function salesTargets(): HasMany 
-    { 
-        return $this->hasMany(ProductSalesTarget::class); 
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
     }
 
-    public function activeSalesTarget(): HasOne 
-    { 
+    public function scopeSellable($q)
+    {
+        return $q->where('is_sellable', true)->where('is_active', true);
+    }
+
+    public function salesTargets(): HasMany
+    {
+        return $this->hasMany(ProductSalesTarget::class);
+    }
+
+    public function activeSalesTarget(): HasOne
+    {
         return $this->hasOne(ProductSalesTarget::class)
             ->where('is_active', true)
             ->latest();

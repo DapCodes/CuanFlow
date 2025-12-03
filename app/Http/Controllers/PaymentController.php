@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Midtrans\Config;
-use Midtrans\Snap;
 use Midtrans\Notification;
+use Midtrans\Snap;
 
 class PaymentController extends Controller
 {
@@ -22,35 +22,35 @@ class PaymentController extends Controller
         Config::$isSanitized = true;
         Config::$is3ds = true;
     }
-    
+
     /**
      * Proses pembayaran tunai (cash)
      */
     public function processCashPayment(Request $request)
     {
         $request->validate([
-            'paid_amount' => 'required|numeric|min:0'
+            'paid_amount' => 'required|numeric|min:0',
         ]);
-        
+
         $cart = Session::get('pos_cart', []);
-        
+
         if (empty($cart)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Keranjang kosong'
+                'message' => 'Keranjang kosong',
             ], 400);
         }
-        
+
         $summary = $this->calculateCartSummary($cart);
-        
+
         // Validasi jumlah bayar
         if ($request->paid_amount < $summary['grand_total']) {
             return response()->json([
                 'success' => false,
-                'message' => 'Jumlah pembayaran kurang dari total'
+                'message' => 'Jumlah pembayaran kurang dari total',
             ], 400);
         }
-        
+
         DB::beginTransaction();
         try {
             // Buat transaksi penjualan
@@ -60,7 +60,7 @@ class PaymentController extends Controller
                 'change_amount' => $request->paid_amount - $summary['grand_total'],
                 'payment_status' => 'paid',
                 'status' => 'completed',
-                'completed_at' => now()
+                'completed_at' => now(),
             ]);
 
             // Simpan ke sale_payments
@@ -71,9 +71,9 @@ class PaymentController extends Controller
                 'reference_number' => null,
                 'payment_details' => json_encode([
                     'paid_amount' => $request->paid_amount,
-                    'change_amount' => $request->paid_amount - $summary['grand_total']
+                    'change_amount' => $request->paid_amount - $summary['grand_total'],
                 ]),
-                'received_by' => auth()->id()
+                'received_by' => auth()->id(),
             ]);
 
             // load items
@@ -99,23 +99,24 @@ class PaymentController extends Controller
                     'items' => $sale->items->map(function ($item) {
                         return [
                             'product_id' => $item->product_id,
-                            'quantity'   => $item->quantity,
+                            'quantity' => $item->quantity,
                         ];
                     })->values(),
                 ],
-                'change' => $request->paid_amount - $summary['grand_total']
+                'change' => $request->paid_amount - $summary['grand_total'],
             ]);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Cash Payment Error: ' . $e->getMessage());
+            \Log::error('Cash Payment Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memproses pembayaran: ' . $e->getMessage()
+                'message' => 'Gagal memproses pembayaran: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Proses pembayaran transfer manual (via QR di toko)
      */
@@ -123,20 +124,20 @@ class PaymentController extends Controller
     {
         $request->validate([
             'transfer_method' => 'required|string', // BCA, BRI, QRIS, dll
-            'reference_number' => 'nullable|string'
+            'reference_number' => 'nullable|string',
         ]);
-        
+
         $cart = Session::get('pos_cart', []);
-        
+
         if (empty($cart)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Keranjang kosong'
+                'message' => 'Keranjang kosong',
             ], 400);
         }
-        
+
         $summary = $this->calculateCartSummary($cart);
-        
+
         DB::beginTransaction();
         try {
             // Buat transaksi penjualan
@@ -145,12 +146,12 @@ class PaymentController extends Controller
                 'paid_amount' => $summary['grand_total'],
                 'payment_status' => 'paid',
                 'status' => 'completed',
-                'notes' => 'Transfer via ' . $request->transfer_method,
-                'completed_at' => now()
+                'notes' => 'Transfer via '.$request->transfer_method,
+                'completed_at' => now(),
             ]);
 
             $sale->load('items');
-            
+
             // Simpan detail pembayaran ke sale_payments
             SalePayment::create([
                 'sale_id' => $sale->id,
@@ -158,18 +159,18 @@ class PaymentController extends Controller
                 'amount' => $summary['grand_total'],
                 'reference_number' => $request->reference_number,
                 'payment_details' => json_encode([
-                    'transfer_method' => $request->transfer_method
+                    'transfer_method' => $request->transfer_method,
                 ]),
-                'received_by' => auth()->id()
+                'received_by' => auth()->id(),
             ]);
-            
+
             // Kurangi stok
             $this->reduceStock($cart);
-            
+
             // Clear cart
             Session::forget('pos_cart');
             Session::forget('pos_customer_id');
-            
+
             DB::commit();
 
             return response()->json([
@@ -183,38 +184,39 @@ class PaymentController extends Controller
                     'items' => $sale->items->map(function ($item) {
                         return [
                             'product_id' => $item->product_id,
-                            'quantity'   => $item->quantity,
+                            'quantity' => $item->quantity,
                         ];
                     })->values(),
-                ]
+                ],
             ]);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Transfer Payment Error: ' . $e->getMessage());
+            \Log::error('Transfer Payment Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memproses pembayaran: ' . $e->getMessage()
+                'message' => 'Gagal memproses pembayaran: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Generate Midtrans Snap Token
      */
     public function createMidtransToken(Request $request)
     {
         $cart = Session::get('pos_cart', []);
-        
+
         if (empty($cart)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Keranjang kosong'
+                'message' => 'Keranjang kosong',
             ], 400);
         }
-        
+
         $summary = $this->calculateCartSummary($cart);
-        
+
         DB::beginTransaction();
         try {
             // Buat transaksi dengan status pending
@@ -222,12 +224,12 @@ class PaymentController extends Controller
                 'payment_method' => 'qris',
                 'payment_status' => 'pending',
                 'status' => 'draft',
-                'paid_amount' => 0
+                'paid_amount' => 0,
             ]);
-            
+
             // Generate order ID untuk Midtrans
-            $orderId = 'ORDER-' . $sale->invoice_number;
-            
+            $orderId = 'ORDER-'.$sale->invoice_number;
+
             // Prepare item details untuk Midtrans
             $itemDetails = [];
             foreach ($cart as $item) {
@@ -235,115 +237,117 @@ class PaymentController extends Controller
                     'id' => $item['product_code'],
                     'price' => (int) $item['unit_price'],
                     'quantity' => (int) $item['quantity'],
-                    'name' => $item['product_name']
+                    'name' => $item['product_name'],
                 ];
             }
-            
+
             // Add discount as item if exists
             if ($summary['total_discount'] > 0) {
                 $itemDetails[] = [
                     'id' => 'DISCOUNT',
                     'price' => -(int) $summary['total_discount'],
                     'quantity' => 1,
-                    'name' => 'Diskon'
+                    'name' => 'Diskon',
                 ];
             }
-            
+
             // Add tax if exists
             if ($summary['tax'] > 0) {
                 $itemDetails[] = [
                     'id' => 'TAX',
                     'price' => (int) $summary['tax'],
                     'quantity' => 1,
-                    'name' => 'Pajak'
+                    'name' => 'Pajak',
                 ];
             }
-            
+
             $transactionDetails = [
                 'order_id' => $orderId,
-                'gross_amount' => (int) $summary['grand_total']
+                'gross_amount' => (int) $summary['grand_total'],
             ];
-            
+
             $customerDetails = [
                 'first_name' => auth()->user()->name,
                 'email' => auth()->user()->email,
-                'phone' => auth()->user()->phone ?? '08123456789'
+                'phone' => auth()->user()->phone ?? '08123456789',
             ];
-            
+
             $params = [
                 'transaction_details' => $transactionDetails,
                 'item_details' => $itemDetails,
                 'customer_details' => $customerDetails,
                 'enabled_payments' => ['gopay', 'shopeepay', 'other_qris', 'bca_va', 'bni_va', 'bri_va'],
                 'callbacks' => [
-                    'finish' => route('payment.midtrans.finish')
-                ]
+                    'finish' => route('payment.midtrans.finish'),
+                ],
             ];
-            
+
             // Get Snap Token
             $snapToken = Snap::getSnapToken($params);
-            
+
             // Update sale dengan midtrans order ID
             $sale->update([
-                'midtrans_order_id' => $orderId
+                'midtrans_order_id' => $orderId,
             ]);
-            
+
             DB::commit();
-            
+
             return response()->json([
                 'success' => true,
                 'snap_token' => $snapToken,
-                'sale_id' => $sale->id
+                'sale_id' => $sale->id,
             ]);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Create Midtrans Token Error: ' . $e->getMessage());
+            \Log::error('Create Midtrans Token Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat token pembayaran: ' . $e->getMessage()
+                'message' => 'Gagal membuat token pembayaran: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Handle Midtrans notification callback
      */
     public function handleMidtransNotification(Request $request)
     {
         \Log::info('=== Midtrans Notification Received ===');
-        \Log::info('Request Method: ' . $request->method());
+        \Log::info('Request Method: '.$request->method());
         \Log::info('Request Body: ', $request->all());
-        
+
         try {
-            $notification = new Notification();
-            
+            $notification = new Notification;
+
             $transactionStatus = $notification->transaction_status;
             $fraudStatus = $notification->fraud_status ?? null;
             $orderId = $notification->order_id;
             $transactionId = $notification->transaction_id;
             $paymentType = $notification->payment_type;
-            
+
             \Log::info('Parsed Notification: ', [
                 'order_id' => $orderId,
                 'transaction_status' => $transactionStatus,
                 'fraud_status' => $fraudStatus,
                 'payment_type' => $paymentType,
             ]);
-            
+
             // Cari sale berdasarkan midtrans_order_id
             $sale = Sale::where('midtrans_order_id', $orderId)->first();
-            
-            if (!$sale) {
-                \Log::warning('Sale not found for order_id: ' . $orderId);
+
+            if (! $sale) {
+                \Log::warning('Sale not found for order_id: '.$orderId);
+
                 return response()->json(['message' => 'Sale not found'], 404);
             }
-            
+
             DB::beginTransaction();
             try {
                 // Cek apakah stok sudah dikurangi sebelumnya
                 $shouldReduceStock = ($sale->payment_status !== 'paid' && $sale->status !== 'completed');
-                
+
                 // Update sale berdasarkan status
                 if ($transactionStatus == 'capture') {
                     if ($fraudStatus == 'accept') {
@@ -354,19 +358,19 @@ class PaymentController extends Controller
                             'midtrans_payment_type' => $paymentType,
                             'midtrans_response' => json_encode($notification->getResponse()),
                             'completed_at' => now(),
-                            'paid_amount' => $sale->grand_total
+                            'paid_amount' => $sale->grand_total,
                         ]);
-                        
+
                         // Simpan ke sale_payments jika belum ada
                         $this->createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification);
-                        
+
                         // Kurangi stok hanya jika belum pernah dikurangi
                         if ($shouldReduceStock) {
                             $this->reduceStockFromSale($sale);
-                            \Log::info('Stock reduced for order: ' . $orderId);
+                            \Log::info('Stock reduced for order: '.$orderId);
                         }
-                        
-                        \Log::info('Payment captured and accepted for order: ' . $orderId);
+
+                        \Log::info('Payment captured and accepted for order: '.$orderId);
                     }
                 } elseif ($transactionStatus == 'settlement') {
                     $sale->update([
@@ -376,69 +380,70 @@ class PaymentController extends Controller
                         'midtrans_payment_type' => $paymentType,
                         'midtrans_response' => json_encode($notification->getResponse()),
                         'completed_at' => now(),
-                        'paid_amount' => $sale->grand_total
+                        'paid_amount' => $sale->grand_total,
                     ]);
-                    
+
                     // Simpan ke sale_payments jika belum ada
                     $this->createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification);
-                    
+
                     // Kurangi stok hanya jika belum pernah dikurangi
                     if ($shouldReduceStock) {
                         $this->reduceStockFromSale($sale);
-                        \Log::info('Stock reduced for order: ' . $orderId);
+                        \Log::info('Stock reduced for order: '.$orderId);
                     } else {
-                        \Log::info('Stock already reduced, skipping for order: ' . $orderId);
+                        \Log::info('Stock already reduced, skipping for order: '.$orderId);
                     }
-                    
-                    \Log::info('Payment settled for order: ' . $orderId);
-                    
+
+                    \Log::info('Payment settled for order: '.$orderId);
+
                 } elseif ($transactionStatus == 'pending') {
                     $sale->update([
                         'payment_status' => 'pending',
                         'midtrans_transaction_id' => $transactionId,
                         'midtrans_payment_type' => $paymentType,
-                        'midtrans_response' => json_encode($notification->getResponse())
+                        'midtrans_response' => json_encode($notification->getResponse()),
                     ]);
-                    
-                    \Log::info('Payment pending for order: ' . $orderId);
-                    
+
+                    \Log::info('Payment pending for order: '.$orderId);
+
                 } elseif ($transactionStatus == 'deny' || $transactionStatus == 'expire' || $transactionStatus == 'cancel') {
                     $sale->update([
                         'payment_status' => 'cancelled',
                         'status' => 'cancelled',
                         'midtrans_transaction_id' => $transactionId,
                         'midtrans_payment_type' => $paymentType,
-                        'midtrans_response' => json_encode($notification->getResponse())
+                        'midtrans_response' => json_encode($notification->getResponse()),
                     ]);
-                    
-                    \Log::info('Payment cancelled/expired/denied for order: ' . $orderId);
+
+                    \Log::info('Payment cancelled/expired/denied for order: '.$orderId);
                 }
-                
+
                 DB::commit();
-                
+
                 return response()->json([
                     'success' => true,
-                    'message' => 'Notification handled successfully'
+                    'message' => 'Notification handled successfully',
                 ], 200);
-                
+
             } catch (\Exception $e) {
                 DB::rollBack();
-                \Log::error('Failed to update sale: ' . $e->getMessage());
-                \Log::error('Stack trace: ' . $e->getTraceAsString());
+                \Log::error('Failed to update sale: '.$e->getMessage());
+                \Log::error('Stack trace: '.$e->getTraceAsString());
+
                 return response()->json(['message' => 'Failed to update sale'], 500);
             }
-            
+
         } catch (\Exception $e) {
-            \Log::error('Midtrans Notification Error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            
+            \Log::error('Midtrans Notification Error: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid notification'
+                'message' => 'Invalid notification',
             ], 400);
         }
     }
-    
+
     /**
      * Halaman finish setelah Midtrans payment
      */
@@ -446,18 +451,18 @@ class PaymentController extends Controller
     {
         $orderId = $request->order_id;
         $sale = Sale::where('midtrans_order_id', $orderId)->first();
-        
-        if (!$sale) {
+
+        if (! $sale) {
             return redirect()->route('pos.index')->with('error', 'Transaksi tidak ditemukan');
         }
-        
+
         // Clear cart
         Session::forget('pos_cart');
         Session::forget('pos_customer_id');
-        
-        return redirect()->route('pos.index')->with('success', 'Pembayaran berhasil diproses. Invoice: ' . $sale->invoice_number);
+
+        return redirect()->route('pos.index')->with('success', 'Pembayaran berhasil diproses. Invoice: '.$sale->invoice_number);
     }
-    
+
     /**
      * Clear cart (untuk dipanggil dari frontend setelah payment berhasil)
      */
@@ -465,13 +470,13 @@ class PaymentController extends Controller
     {
         Session::forget('pos_cart');
         Session::forget('pos_customer_id');
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Cart cleared'
+            'message' => 'Cart cleared',
         ]);
     }
-    
+
     /**
      * Helper: Simpan atau update sale payment untuk Midtrans
      */
@@ -481,7 +486,7 @@ class PaymentController extends Controller
         $salePayment = SalePayment::where('sale_id', $sale->id)
             ->where('midtrans_transaction_id', $transactionId)
             ->first();
-        
+
         $paymentDetails = [
             'payment_type' => $paymentType,
             'transaction_id' => $transactionId,
@@ -489,26 +494,26 @@ class PaymentController extends Controller
             'settlement_time' => $notification->settlement_time ?? null,
             'gross_amount' => $notification->gross_amount ?? null,
         ];
-        
+
         // Tambahkan detail VA jika ada
         if (isset($notification->va_numbers)) {
             $paymentDetails['va_numbers'] = $notification->va_numbers;
         }
-        
+
         // Tambahkan detail bill key jika ada
         if (isset($notification->bill_key)) {
             $paymentDetails['bill_key'] = $notification->bill_key;
             $paymentDetails['biller_code'] = $notification->biller_code ?? null;
         }
-        
+
         if ($salePayment) {
             // Update existing payment
             $salePayment->update([
                 'amount' => $sale->grand_total,
-                'payment_details' => json_encode($paymentDetails)
+                'payment_details' => json_encode($paymentDetails),
             ]);
-            
-            \Log::info('Updated sale_payment record for sale_id: ' . $sale->id);
+
+            \Log::info('Updated sale_payment record for sale_id: '.$sale->id);
         } else {
             // Create new payment record
             SalePayment::create([
@@ -518,20 +523,20 @@ class PaymentController extends Controller
                 'reference_number' => null,
                 'midtrans_transaction_id' => $transactionId,
                 'payment_details' => json_encode($paymentDetails),
-                'received_by' => $sale->cashier_id
+                'received_by' => $sale->cashier_id,
             ]);
-            
-            \Log::info('Created sale_payment record for sale_id: ' . $sale->id);
+
+            \Log::info('Created sale_payment record for sale_id: '.$sale->id);
         }
     }
-    
+
     /**
      * Helper: Buat transaksi sale
      */
     private function createSale($cart, $summary, $additionalData = [])
     {
         $customerId = Session::get('pos_customer_id');
-        
+
         $saleData = array_merge([
             'outlet_id' => auth()->user()->outlet_id,
             'customer_id' => $customerId,
@@ -542,11 +547,11 @@ class PaymentController extends Controller
             'tax_percent' => $summary['tax_percent'],
             'grand_total' => $summary['grand_total'],
             'paid_amount' => 0,
-            'change_amount' => 0
+            'change_amount' => 0,
         ], $additionalData);
-        
+
         $sale = Sale::create($saleData);
-        
+
         // Buat sale items
         foreach ($cart as $item) {
             SaleItem::create([
@@ -558,13 +563,13 @@ class PaymentController extends Controller
                 'discount_percent' => $item['discount_percent'],
                 'discount_amount' => $item['discount_amount'],
                 'subtotal' => $item['subtotal'],
-                'hpp' => $item['hpp']
+                'hpp' => $item['hpp'],
             ]);
         }
-        
+
         return $sale->fresh();
     }
-    
+
     /**
      * Helper: Kurangi stok dari cart
      */
@@ -572,26 +577,26 @@ class PaymentController extends Controller
     {
         foreach ($cart as $item) {
             $product = \App\Models\Product::find($item['product_id']);
-            
+
             if ($product && $product->track_stock) {
                 $stock = $product->stocks()
                     ->where('outlet_id', auth()->user()->outlet_id)
                     ->first();
-                    
+
                 if ($stock) {
                     $reduced = $stock->reduceStock($item['quantity']);
-                    
-                    if (!$reduced) {
+
+                    if (! $reduced) {
                         \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$item['quantity']}");
                     }
                 } else {
                     \App\Models\ProductStock::create([
                         'product_id' => $product->id,
                         'outlet_id' => auth()->user()->outlet_id,
-                        'quantity' => 0
+                        'quantity' => 0,
                     ]);
-                    
-                    \Log::warning("No stock record found for product {$product->id} at outlet " . auth()->user()->outlet_id);
+
+                    \Log::warning("No stock record found for product {$product->id} at outlet ".auth()->user()->outlet_id);
                 }
             }
         }
@@ -604,31 +609,31 @@ class PaymentController extends Controller
     {
         foreach ($sale->items as $item) {
             $product = $item->product;
-            
+
             if ($product && $product->track_stock) {
                 $stock = $product->stocks()
                     ->where('outlet_id', $sale->outlet_id)
                     ->first();
-                    
+
                 if ($stock) {
                     $reduced = $stock->reduceStock($item->quantity);
-                    
-                    if (!$reduced) {
+
+                    if (! $reduced) {
                         \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$item->quantity}");
                     }
                 } else {
                     \App\Models\ProductStock::create([
                         'product_id' => $product->id,
                         'outlet_id' => $sale->outlet_id,
-                        'quantity' => 0
+                        'quantity' => 0,
                     ]);
-                    
+
                     \Log::warning("No stock record found for product {$product->id} at outlet {$sale->outlet_id}");
                 }
             }
         }
     }
-    
+
     /**
      * Helper: Hitung ringkasan keranjang
      */
@@ -637,25 +642,25 @@ class PaymentController extends Controller
         $subtotal = 0;
         $totalDiscount = 0;
         $totalItems = 0;
-        
+
         foreach ($cart as $item) {
             $subtotal += ($item['unit_price'] * $item['quantity']);
             $totalDiscount += $item['discount_amount'];
             $totalItems += $item['quantity'];
         }
-        
+
         $tax = 0;
         $taxPercent = 0;
-        
+
         $grandTotal = $subtotal - $totalDiscount + $tax;
-        
+
         return [
             'subtotal' => $subtotal,
             'total_discount' => $totalDiscount,
             'tax' => $tax,
             'tax_percent' => $taxPercent,
             'grand_total' => $grandTotal,
-            'total_items' => $totalItems
+            'total_items' => $totalItems,
         ];
     }
 }

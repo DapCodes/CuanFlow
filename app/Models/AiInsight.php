@@ -12,17 +12,38 @@ class AiInsight extends Model
 
     protected $fillable = [
         'outlet_id', 'type', 'title', 'content', 'data',
-        'severity', 'is_read', 'is_dismissed', 'insight_date'
+        'severity', 'is_read', 'is_dismissed', 'insight_date',
     ];
 
     protected $casts = ['data' => 'array', 'is_read' => 'boolean', 'is_dismissed' => 'boolean', 'insight_date' => 'date'];
 
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
 
-    public function markAsRead(): void { $this->update(['is_read' => true]); }
-    public function dismiss(): void { $this->update(['is_dismissed' => true]); }
+    public function markAsRead(): void
+    {
+        $this->update(['is_read' => true]);
+    }
 
-    public function scopeUnread($q) { return $q->where('is_read', false); }
-    public function scopeActive($q) { return $q->where('is_dismissed', false); }
-    public function scopeBySeverity($q, $s) { return $q->where('severity', $s); }
+    public function dismiss(): void
+    {
+        $this->update(['is_dismissed' => true]);
+    }
+
+    public function scopeUnread($q)
+    {
+        return $q->where('is_read', false);
+    }
+
+    public function scopeActive($q)
+    {
+        return $q->where('is_dismissed', false);
+    }
+
+    public function scopeBySeverity($q, $s)
+    {
+        return $q->where('severity', $s);
+    }
 }

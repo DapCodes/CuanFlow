@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Outlet;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
 
 class OutletInformationController extends Controller
 {
@@ -16,20 +16,20 @@ class OutletInformationController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('owner')) {
-            
+
             $outlets = Outlet::with('owner')
                 ->where('owner_id', $user->id)
                 ->latest()
                 ->paginate(10);
-                
+
             return view('main.outlets.outlet_informations.index', compact('outlets'));
-            
+
         } else {
-            
+
             if ($user->outlet_id) {
                 return redirect()->route('outlets.show', $user->outlet_id);
             }
-            
+
             return redirect('/')->with('error', 'Anda tidak terhubung dengan outlet manapun.');
         }
     }
@@ -37,9 +37,9 @@ class OutletInformationController extends Controller
     public function create()
     {
         $owners = User::role(['owner', 'admin'])->get();
+
         return view('main.outlets.outlet_informations.create', compact('owners'));
     }
-
 
     public function store(Request $request)
     {
@@ -51,12 +51,12 @@ class OutletInformationController extends Controller
             'latitude' => 'nullable|numeric',
             'longtitude' => 'nullable|numeric',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         $validated['owner_id'] = auth()->user()->id;
 
-        $validated['code'] = 'OUT-' . strtoupper(Str::random(6));
+        $validated['code'] = 'OUT-'.strtoupper(Str::random(6));
 
         if ($request->hasFile('logo')) {
             $validated['logo'] = $request->file('logo')->store('outlets/logos', 'public');
@@ -66,7 +66,7 @@ class OutletInformationController extends Controller
             'timezone' => 'Asia/Jakarta',
             'currency' => 'IDR',
             'tax_enabled' => false,
-            'tax_percentage' => 0
+            'tax_percentage' => 0,
         ];
 
         Outlet::create($validated);
@@ -79,7 +79,7 @@ class OutletInformationController extends Controller
     {
         // Validasi akses berdasarkan role dan outlet_id
         $user = Auth::user();
-        
+
         if ($user->hasRole('owner')) {
             // Owner hanya bisa akses outlet miliknya
             if ($outlet->owner_id !== $user->id) {
@@ -93,14 +93,14 @@ class OutletInformationController extends Controller
         }
 
         $outlet->load('owner', 'users');
-        
+
         $stats = [
             'total_products' => $outlet->productStocks()->count(),
             'total_raw_materials' => $outlet->rawMaterialStocks()->count(),
             'total_sales' => $outlet->sales()->count(),
             'total_employees' => $outlet->users()->count(),
         ];
-        
+
         return view('main.outlets.outlet_informations.show', compact('outlet', 'stats'));
     }
 
@@ -108,7 +108,7 @@ class OutletInformationController extends Controller
     {
         // Validasi akses berdasarkan role dan outlet_id
         $user = Auth::user();
-        
+
         if ($user->hasRole('owner')) {
             // Owner hanya bisa edit outlet miliknya
             if ($outlet->owner_id !== $user->id) {
@@ -122,6 +122,7 @@ class OutletInformationController extends Controller
         }
 
         $owners = User::role(['owner', 'admin'])->get();
+
         return view('main.outlets.outlet_informations.edit', compact('outlet', 'owners'));
     }
 
@@ -129,7 +130,7 @@ class OutletInformationController extends Controller
     {
         // Validasi akses berdasarkan role dan outlet_id
         $user = Auth::user();
-        
+
         if ($user->hasRole('owner')) {
             // Owner hanya bisa update outlet miliknya
             if ($outlet->owner_id !== $user->id) {
@@ -150,7 +151,7 @@ class OutletInformationController extends Controller
             'latitude' => 'nullable|numeric',
             'longtitude' => 'nullable|numeric',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         if ($request->hasFile('logo')) {
@@ -170,13 +171,13 @@ class OutletInformationController extends Controller
     {
         // Hanya owner yang bisa menghapus outlet miliknya
         $user = Auth::user();
-        
-        if (!$user->hasRole('owner') || $outlet->owner_id !== $user->id) {
+
+        if (! $user->hasRole('owner') || $outlet->owner_id !== $user->id) {
             abort(404);
         }
 
         // Check if outlet has related data
-        $hasRelations = $outlet->sales()->exists() 
+        $hasRelations = $outlet->sales()->exists()
             || $outlet->purchases()->exists()
             || $outlet->productions()->exists();
 
@@ -200,15 +201,15 @@ class OutletInformationController extends Controller
     {
         // Hanya owner yang bisa toggle status outlet miliknya
         $user = Auth::user();
-        
-        if (!$user->hasRole('owner') || $outlet->owner_id !== $user->id) {
+
+        if (! $user->hasRole('owner') || $outlet->owner_id !== $user->id) {
             abort(404);
         }
 
-        $outlet->update(['is_active' => !$outlet->is_active]);
+        $outlet->update(['is_active' => ! $outlet->is_active]);
 
         $status = $outlet->is_active ? 'diaktifkan' : 'dinonaktifkan';
-        
+
         return redirect()->route('outlets.index')
             ->with('success', "Outlet berhasil {$status}!");
     }

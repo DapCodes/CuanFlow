@@ -11,8 +11,16 @@ class DebtPayment extends Model
     use HasFactory;
 
     protected $fillable = ['customer_debt_id', 'amount', 'payment_method', 'reference_number', 'notes', 'received_by'];
+
     protected $casts = ['amount' => 'decimal:2'];
 
-    public function customerDebt(): BelongsTo { return $this->belongsTo(CustomerDebt::class); }
-    public function receivedBy(): BelongsTo { return $this->belongsTo(User::class, 'received_by'); }
+    public function customerDebt(): BelongsTo
+    {
+        return $this->belongsTo(CustomerDebt::class);
+    }
+
+    public function receivedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'received_by');
+    }
 }

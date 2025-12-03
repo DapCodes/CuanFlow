@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -54,7 +54,9 @@ class RolePermissionSeeder extends Seeder
             'view_activity_log',
         ];
 
-        foreach ($permissions as $p) Permission::create(['name' => $p]);
+        foreach ($permissions as $p) {
+            Permission::create(['name' => $p]);
+        }
 
         // Owner - Full Access
         Role::create(['name' => 'owner'])->givePermissionTo(Permission::all());

@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductSalesTarget extends Model
 {
@@ -14,8 +14,8 @@ class ProductSalesTarget extends Model
         'product_id', 'outlet_id', 'monthly_target_revenue', 'hpp_per_unit',
         'selling_price', 'daily_sales_target', 'monthly_sales_target',
         'daily_revenue_target', 'profit_per_unit', 'monthly_profit_target',
-        'sales_pattern', 'target_start_date', 'target_end_date', 
-        'is_active', 'created_by'
+        'sales_pattern', 'target_start_date', 'target_end_date',
+        'is_active', 'created_by',
     ];
 
     protected $casts = [
@@ -31,19 +31,19 @@ class ProductSalesTarget extends Model
         'is_active' => 'boolean',
     ];
 
-    public function product(): BelongsTo 
-    { 
-        return $this->belongsTo(Product::class); 
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
-    public function outlet(): BelongsTo 
-    { 
-        return $this->belongsTo(Outlet::class); 
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
     }
 
-    public function creator(): BelongsTo 
-    { 
-        return $this->belongsTo(User::class, 'created_by'); 
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     // Helper methods

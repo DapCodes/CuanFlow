@@ -13,9 +13,20 @@ class AiChatSession extends Model
 
     protected $fillable = ['user_id', 'outlet_id', 'title'];
 
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
-    public function messages(): HasMany { return $this->hasMany(AiChatMessage::class)->orderBy('created_at'); }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(AiChatMessage::class)->orderBy('created_at');
+    }
 
     public function addMessage(string $role, string $content, ?array $meta = null): AiChatMessage
     {
@@ -24,6 +35,6 @@ class AiChatSession extends Model
 
     public function getConversationHistory(): array
     {
-        return $this->messages->map(fn($m) => ['role' => $m->role, 'content' => $m->content])->toArray();
+        return $this->messages->map(fn ($m) => ['role' => $m->role, 'content' => $m->content])->toArray();
     }
 }

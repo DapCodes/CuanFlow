@@ -16,7 +16,7 @@ class DailySummary extends Model
         'cash_sales', 'qris_sales', 'transfer_sales', 'debt_sales',
         'total_hpp', 'gross_profit', 'total_expenses', 'net_profit',
         'products_sold', 'top_products', 'hourly_sales',
-        'total_customers', 'new_customers'
+        'total_customers', 'new_customers',
     ];
 
     protected $casts = [
@@ -28,7 +28,10 @@ class DailySummary extends Model
         'top_products' => 'array', 'hourly_sales' => 'array',
     ];
 
-    public function outlet(): BelongsTo { return $this->belongsTo(Outlet::class); }
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
 
     public static function generateForDate(int $outletId, $date): self
     {
@@ -37,13 +40,15 @@ class DailySummary extends Model
         $expenses = Expense::where('outlet_id', $outletId)->whereDate('expense_date', $date)->where('status', 'approved')->sum('amount');
 
         $hourly = [];
-        for ($h = 0; $h < 24; $h++) $hourly[$h] = $sales->filter(fn($s) => $s->created_at->hour === $h)->sum('grand_total');
+        for ($h = 0; $h < 24; $h++) {
+            $hourly[$h] = $sales->filter(fn ($s) => $s->created_at->hour === $h)->sum('grand_total');
+        }
 
         $topProducts = SaleItem::whereIn('sale_id', $sales->pluck('id'))
             ->selectRaw('product_id, product_name, SUM(quantity) as qty, SUM(subtotal) as total')
             ->groupBy('product_id', 'product_name')->orderByDesc('total')->limit(10)->get()->toArray();
 
-        $totalHpp = $sales->sum(fn($s) => $s->getTotalHpp());
+        $totalHpp = $sales->sum(fn ($s) => $s->getTotalHpp());
         $grossProfit = $sales->sum('grand_total') - $totalHpp;
 
         return static::updateOrCreate(
@@ -71,7 +76,18 @@ class DailySummary extends Model
         );
     }
 
-    public function scopeByOutlet($q, $id) { return $q->where('outlet_id', $id); }
-    public function scopeThisMonth($q) { return $q->whereMonth('summary_date', now()->month)->whereYear('summary_date', now()->year); }
-    public function scopeDateRange($q, $s, $e) { return $q->whereBetween('summary_date', [$s, $e]); }
+    public function scopeByOutlet($q, $id)
+    {
+        return $q->where('outlet_id', $id);
+    }
+
+    public function scopeThisMonth($q)
+    {
+        return $q->whereMonth('summary_date', now()->month)->whereYear('summary_date', now()->year);
+    }
+
+    public function scopeDateRange($q, $s, $e)
+    {
+        return $q->whereBetween('summary_date', [$s, $e]);
+    }
 }
