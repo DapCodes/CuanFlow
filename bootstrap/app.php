@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*', // Semua route API
         ]);
     })
+    ->withSchedule(function ($schedule) {
+        // Schedule sudah didefinisikan di routes/console.php
+        // Tapi bisa juga ditambahkan di sini jika diperlukan
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

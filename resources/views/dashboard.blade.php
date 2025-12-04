@@ -337,6 +337,144 @@
         .driver-popover.cuanflow-popover .driver-popover-footer { flex-direction: column; align-items: stretch; }
         .driver-popover.cuanflow-popover .driver-popover-progress-text { align-self: flex-end; }
     }
+
+    .insights-modal-backdrop {
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .insights-modal-content {
+        animation: modalSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .insights-modal-exit .insights-modal-content {
+        animation: modalExit 0.3s ease-in forwards;
+    }
+
+    .severity-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .severity-info {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+    }
+
+    .severity-warning {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+
+    .severity-critical {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .8; }
+    }
+
+    .insight-type-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .type-sales_trend { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .type-stock_prediction { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .type-product_recommendation { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+    .type-anomaly { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .type-general { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+
+    .insight-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        min-height: 280px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .insight-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 50%;
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+
+    .carousel-btn:hover {
+        background: #f9fafb;
+        border-color: #10b981;
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .carousel-btn.prev { left: -1rem; }
+    .carousel-btn.next { right: -1rem; }
+
+    .carousel-dots {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .carousel-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: #d1d5db;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .carousel-dot.active {
+        background: #10b981;
+        width: 1.5rem;
+        border-radius: 0.25rem;
+    }
+
+    @media (max-width: 640px) {
+        .insights-modal-content {
+            max-width: 95vw;
+            padding: 1rem;
+        }
+        .carousel-btn.prev { left: 0.5rem; }
+        .carousel-btn.next { right: 0.5rem; }
+    }
 </style>
 
 <style>
@@ -438,7 +576,7 @@
         </span>
     </a>
 
-    <a href="#"
+    <a href="{{ route('finance.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="4"
        data-title="Keuangan"
@@ -587,7 +725,8 @@
        data-title="Clara AI"
        data-intro="<strong>Partner Analisis Cerdas!</strong> Siap diajak diskusi tentang performa bisnis, analisis data, dan <strong>strategi cuan</strong>. Tanya apa saja, AI siap kasih <i>insight</i> tajam!">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
-            <i class="fa-solid fa-robot text-4xl sm:text-5xl text-white"></i>
+            <!-- <i class="fa-solid fa-robot text-4xl sm:text-5xl text-white"></i> -->
+            <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-2" alt="">
         </div>
         <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
             Clara AI
@@ -654,6 +793,123 @@
 @endif
 @endsection
 
+@if(isset($unreadInsights) && $unreadInsights->isNotEmpty())
+<div id="insightsModal" class="hidden insights-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-gray-900 bg-opacity-70"></div>
+    
+    <div class="insights-modal-content relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full mx-4 p-6">
+        <!-- Header -->
+        <div class="flex items-start justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-lightbulb text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Insight Baru dari Clara AI</h2>
+                    <p class="text-sm text-gray-500">{{ $unreadInsights->count() }} insight untuk Anda</p>
+                </div>
+            </div>
+            <button onclick="closeInsightsModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Carousel Container -->
+        <div class="relative mb-6">
+            <div id="insightsCarousel" class="overflow-hidden">
+                <div id="carouselTrack" class="flex transition-transform duration-300 ease-in-out">
+                    @foreach($unreadInsights as $index => $insight)
+                    <div class="carousel-slide w-full flex-shrink-0 px-2">
+                        <div class="insight-card">
+                            <!-- Header Card -->
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="insight-type-icon type-{{ $insight->type }}">
+                                        <i class="fa-solid fa-{{ $insight->type === 'sales_trend' ? 'chart-line' : 
+                                            ($insight->type === 'stock_prediction' ? 'boxes-stacked' : 
+                                            ($insight->type === 'product_recommendation' ? 'star' : 
+                                            ($insight->type === 'anomaly' ? 'exclamation-triangle' : 'lightbulb'))) }} text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-lg text-gray-900">{{ $insight->title }}</h3>
+                                        <p class="text-xs text-gray-500">{{ $insight->insight_date->format('d M Y') }}</p>
+                                    </div>
+                                </div>
+                                <span class="severity-badge severity-{{ $insight->severity }}">
+                                    @if($insight->severity === 'critical')
+                                        <i class="fa-solid fa-circle-exclamation"></i>
+                                    @elseif($insight->severity === 'warning')
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    @else
+                                        <i class="fa-solid fa-circle-info"></i>
+                                    @endif
+                                    {{ ucfirst($insight->severity) }}
+                                </span>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="flex-grow mb-4">
+                                <div class="text-gray-700 leading-relaxed prose prose-sm max-w-none" style="max-height: 200px; overflow-y: auto;">
+                                    {!! nl2br(e($insight->content)) !!}
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex gap-2 pt-4 border-t border-gray-100">
+                                <button onclick="markAsRead({{ $insight->id }})" 
+                                        class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200">
+                                    <i class="fa-solid fa-check mr-2"></i>
+                                    Tandai Sudah Baca
+                                </button>
+                                <button onclick="dismissInsight({{ $insight->id }})" 
+                                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-all duration-200">
+                                    <i class="fa-solid fa-eye-slash mr-2"></i>
+                                    Dismiss
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            @if($unreadInsights->count() > 1)
+            <button onclick="prevSlide()" class="carousel-btn prev">
+                <i class="fa-solid fa-chevron-left text-gray-600"></i>
+            </button>
+            <button onclick="nextSlide()" class="carousel-btn next">
+                <i class="fa-solid fa-chevron-right text-gray-600"></i>
+            </button>
+            @endif
+        </div>
+
+        <!-- Dots Navigation -->
+        @if($unreadInsights->count() > 1)
+        <div class="carousel-dots">
+            @foreach($unreadInsights as $index => $insight)
+            <div class="carousel-dot {{ $index === 0 ? 'active' : '' }}" onclick="goToSlide({{ $index }})"></div>
+            @endforeach
+        </div>
+        @endif
+
+        <!-- Footer -->
+        <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+            <a href="{{ route('ai-insights.index') }}" class="text-emerald-600 hover:text-emerald-700 font-semibold text-sm">
+                <i class="fa-solid fa-list mr-1"></i>
+                Lihat Semua Insight
+            </a>
+            <button onclick="markAllAsRead()" class="text-gray-600 hover:text-gray-800 font-semibold text-sm">
+                <i class="fa-solid fa-check-double mr-1"></i>
+                Tandai Semua Sudah Baca
+            </button>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- GANTI SELURUH SCRIPT DI BAGIAN BAWAH DENGAN INI --}}
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   /* ====== MODAL NO OUTLET LOGIC ====== */
@@ -676,53 +932,47 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-/* ====== WELCOME TOUR MODAL LOGIC ====== */
-const welcomeModal = document.getElementById('welcomeTourModal');
-const startWelcomeTourBtn = document.getElementById('startWelcomeTourBtn');
-const skipTourBtn = document.getElementById('skipTourBtn');
-const WELCOME_KEY = 'cuanflow_show_welcome';
+  /* ====== WELCOME TOUR MODAL LOGIC ====== */
+  const welcomeModal = document.getElementById('welcomeTourModal');
+  const startWelcomeTourBtn = document.getElementById('startWelcomeTourBtn');
+  const skipTourBtn = document.getElementById('skipTourBtn');
+  const WELCOME_KEY = 'cuanflow_show_welcome';
 
-// Cek dari session Laravel ATAU localStorage
-const shouldShowWelcome = @json(session('show_welcome_tour', false)) || 
-                         localStorage.getItem(WELCOME_KEY) === '1';
+  const shouldShowWelcome = @json(session('show_welcome_tour', false)) || 
+                           localStorage.getItem(WELCOME_KEY) === '1';
 
-if (shouldShowWelcome && welcomeModal && !modal) {
-  // Jika dari session, set ke localStorage juga untuk persistensi
-  if (@json(session('show_welcome_tour', false))) {
-    localStorage.setItem(WELCOME_KEY, '1');
+  if (shouldShowWelcome && welcomeModal && !modal) {
+    if (@json(session('show_welcome_tour', false))) {
+      localStorage.setItem(WELCOME_KEY, '1');
+    }
+    
+    setTimeout(() => {
+      welcomeModal.classList.remove('hidden');
+      welcomeModal.offsetHeight;
+    }, 600);
   }
-  
-  // Tampilkan modal dengan smooth animation
-  setTimeout(() => {
-    welcomeModal.classList.remove('hidden');
-    // Force reflow untuk smooth transition
-    welcomeModal.offsetHeight;
-  }, 600);
-}
 
-// Handler tombol "Ya, Mulai!"
-if (startWelcomeTourBtn) {
-  startWelcomeTourBtn.addEventListener('click', function() {
-    welcomeModal.classList.add('modal-exit');
-    setTimeout(() => {
-      welcomeModal.classList.add('hidden');
-      welcomeModal.classList.remove('modal-exit');
-      startTour({auto: true, fromWelcome: true});
-    }, 500); // Ubah jadi 500ms untuk smooth exit
-  });
-}
+  if (startWelcomeTourBtn) {
+    startWelcomeTourBtn.addEventListener('click', function() {
+      welcomeModal.classList.add('modal-exit');
+      setTimeout(() => {
+        welcomeModal.classList.add('hidden');
+        welcomeModal.classList.remove('modal-exit');
+        startTour({auto: true, fromWelcome: true});
+      }, 500);
+    });
+  }
 
-// Handler tombol "Nanti Saja"
-if (skipTourBtn) {
-  skipTourBtn.addEventListener('click', function() {
-    localStorage.removeItem(WELCOME_KEY);
-    welcomeModal.classList.add('modal-exit');
-    setTimeout(() => {
-      welcomeModal.classList.add('hidden');
-      welcomeModal.classList.remove('modal-exit');
-    }, 500); // Ubah jadi 500ms untuk smooth exit
-  });
-}
+  if (skipTourBtn) {
+    skipTourBtn.addEventListener('click', function() {
+      localStorage.removeItem(WELCOME_KEY);
+      welcomeModal.classList.add('modal-exit');
+      setTimeout(() => {
+        welcomeModal.classList.add('hidden');
+        welcomeModal.classList.remove('modal-exit');
+      }, 500);
+    });
+  }
 
   /* ====== TOUR CORE ====== */
   const overlay = document.createElement('div');
@@ -866,7 +1116,6 @@ if (skipTourBtn) {
     pop.style.display = 'none';
     overlay.setAttribute('aria-hidden', 'true');
 
-    // Hapus localStorage setelah tour selesai
     localStorage.removeItem(WELCOME_KEY);
 
     if (autoMode) {
@@ -906,11 +1155,9 @@ if (skipTourBtn) {
     showStep(0);
   }
 
-  // Tombol manual (kalau ada)
   const startTourBtn = document.getElementById('startTourBtn');
   if (startTourBtn) startTourBtn.addEventListener('click', () => startTour());
 
-  // Hotkey testing: Ctrl/⌘ + H
   document.addEventListener('keydown', function(e) {
     const isCtrlOrMeta = e.ctrlKey || e.metaKey;
     if (isCtrlOrMeta && e.key.toLowerCase() === 'h') {
@@ -921,5 +1168,206 @@ if (skipTourBtn) {
       }
     }
   });
+});
+</script>
+
+<script>
+let currentSlide = 0;
+let totalSlides = {{ isset($unreadInsights) ? $unreadInsights->count() : 0 }};
+
+// Ambil CSRF langsung dari Blade
+const CSRF_TOKEN = '{{ csrf_token() }}';
+
+// Helper notification function
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${
+        type === 'success' ? 'bg-emerald-500' : 'bg-red-500'
+    } text-white font-semibold transform transition-all duration-300`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+function updateCarousel() {
+    const track = document.getElementById('carouselTrack');
+    const dots  = document.querySelectorAll('.carousel-dot');
+    
+    if (track) {
+        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    }
+    
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentSlide);
+    });
+}
+
+window.nextSlide = function() {
+    if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateCarousel();
+    }
+};
+
+window.prevSlide = function() {
+    if (currentSlide > 0) {
+        currentSlide--;
+        updateCarousel();
+    }
+};
+
+window.goToSlide = function(index) {
+    currentSlide = index;
+    updateCarousel();
+};
+
+window.closeInsightsModal = function() {
+    const insightsModal = document.getElementById('insightsModal');
+    if (insightsModal) {
+        insightsModal.classList.add('insights-modal-exit');
+        setTimeout(() => {
+            insightsModal.classList.add('hidden');
+            insightsModal.classList.remove('insights-modal-exit');
+        }, 300);
+    }
+};
+
+// MARK AS READ
+window.markAsRead = function(insightId) {
+    // URL pake named route (lebih aman kalau suatu saat prefix/prefix group berubah)
+    const url = `{{ route('ai-insights.mark-read', ':id') }}`.replace(':id', insightId);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': CSRF_TOKEN,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({})
+    })
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP ${response.status}`);
+        }
+        if (data.success) {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots   = document.querySelectorAll('.carousel-dot');
+
+            if (slides[currentSlide]) {
+                slides[currentSlide].remove();
+                if (dots[currentSlide]) dots[currentSlide].remove();
+            }
+
+            const remainingSlides = document.querySelectorAll('.carousel-slide');
+            totalSlides = remainingSlides.length;
+
+            if (totalSlides === 0) {
+                closeInsightsModal();
+                showNotification('Semua insight sudah dibaca!', 'success');
+            } else {
+                if (currentSlide >= totalSlides) {
+                    currentSlide = totalSlides - 1;
+                }
+                updateCarousel();
+            }
+        } else {
+            showNotification(data.message || 'Gagal menandai insight', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('markAsRead error:', error);
+        showNotification(error.message || 'Gagal menandai insight', 'error');
+    });
+};
+
+// DISMISS
+window.dismissInsight = function(insightId) {
+    if (!confirm('Yakin ingin dismiss insight ini?')) return;
+
+    const url = `{{ route('ai-insights.dismiss', ':id') }}`.replace(':id', insightId);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': CSRF_TOKEN,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({})
+    })
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP ${response.status}`);
+        }
+        if (data.success) {
+            // Setelah dismiss di server, treat sama seperti read di UI
+            window.markAsRead(insightId);
+        } else {
+            showNotification(data.message || 'Gagal dismiss insight', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('dismissInsight error:', error);
+        showNotification(error.message || 'Gagal dismiss insight', 'error');
+    });
+};
+
+// MARK ALL AS READ
+window.markAllAsRead = function() {
+    const url = `{{ route('ai-insights.mark-all-read') }}`;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': CSRF_TOKEN,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({})
+    })
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP ${response.status}`);
+        }
+        if (data.success) {
+            closeInsightsModal();
+            showNotification('Semua insight ditandai sudah baca!', 'success');
+        } else {
+            showNotification(data.message || 'Gagal menandai semua insight', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('markAllAsRead error:', error);
+        showNotification(error.message || 'Gagal menandai semua insight', 'error');
+    });
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const insightsModal = document.getElementById('insightsModal');
+    
+    if (insightsModal && !document.getElementById('noOutletModal')) {
+        setTimeout(() => {
+            insightsModal.classList.remove('hidden');
+        }, 800);
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        if (!insightsModal || insightsModal.classList.contains('hidden')) return;
+        
+        if (e.key === 'ArrowRight') nextSlide();
+        else if (e.key === 'ArrowLeft') prevSlide();
+        else if (e.key === 'Escape') closeInsightsModal();
+    });
 });
 </script>

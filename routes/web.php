@@ -12,15 +12,18 @@ use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ClaraAiController;
+use App\Http\Controllers\AiInsightController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\FinanceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [MenuController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
 
@@ -119,6 +122,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/clara-ai/new-session', [ClaraAiController::class, 'newSession'])->name('clara-ai.new-session');
 });
 
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::prefix('ai-insights')->name('ai-insights.')->group(function () {
+        Route::get('/', [AiInsightController::class, 'index'])->name('index');
+        Route::get('/{id}', [AiInsightController::class, 'show'])->name('show');
+        Route::post('/{id}/read', [AiInsightController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/{id}/dismiss', [AiInsightController::class, 'dismiss'])->name('dismiss');
+        Route::post('/mark-all-read', [AiInsightController::class, 'markAllAsRead'])->name('mark-all-read');
+    });
+});
+
 Route::middleware(['auth'])->prefix('pos')->name('pos.')->group(function () {
     Route::get('/', [PointOfSaleController::class, 'index'])->name('index');
 
@@ -151,6 +164,16 @@ Route::middleware(['auth'])->prefix('receipt')->name('receipt.')->group(function
     Route::get('print/{id}', [ReceiptController::class, 'printReceipt'])->name('print');
     Route::get('download/{id}', [ReceiptController::class, 'downloadReceipt'])->name('download');
     Route::get('preview/{id}', [ReceiptController::class, 'previewReceipt'])->name('preview');
+});
+
+Route::middleware(['auth'])->prefix('finance')->name('finance.')->group(function () {
+    Route::get('/', [FinanceController::class, 'index'])->name('index');
+    Route::get('/income/create', [FinanceController::class, 'createIncome'])->name('income.create');
+    Route::post('/income', [FinanceController::class, 'storeIncome'])->name('income.store');
+    Route::get('/expense/create', [FinanceController::class, 'createExpense'])->name('expense.create');
+    Route::post('/expense', [FinanceController::class, 'storeExpense'])->name('expense.store');
+    Route::post('/validate-revenue', [FinanceController::class, 'validateRevenue'])->name('validate-revenue');
+    Route::get('/daily', [FinanceController::class, 'daily'])->name('daily');
 });
 
 require __DIR__.'/auth.php';

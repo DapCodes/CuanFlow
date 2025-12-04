@@ -43,7 +43,7 @@
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-industry text-blue-600 mr-3"></i>
+                            <i class="fas fa-flask text-blue-600 mr-3"></i>
                             Stok Produk
                         </h2>
                         <p class="text-sm text-gray-600 mt-1">Kelola produksi dan stok produk jadi</p>
@@ -120,7 +120,7 @@
                                     <img src="{{ Storage::url($product['image']) }}" alt="{{ $product['name'] }}" class="h-12 w-12 rounded-lg object-cover mr-3 border-2 border-gray-200 shadow-sm">
                                     @else
                                     <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center mr-3 shadow-sm">
-                                        <i class="fas fa-industry text-white text-lg"></i>
+                                        <i class="fas fa-flask text-white text-lg"></i>
                                     </div>
                                     @endif
                                     <div>
@@ -224,7 +224,7 @@
                     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                         <div class="flex items-center space-x-4 flex-1">
                             <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-sm">
-                                <i class="fas fa-industry text-white text-lg"></i>
+                                <i class="fas fa-flask text-white text-lg"></i>
                             </div>
                             <div class="flex-1">
                                 <div class="flex items-center gap-3">
