@@ -581,7 +581,7 @@
         </span>
     </a>
 
-    <a href="#"
+    <a href="{{ route('clara-ai.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="15"
        data-title="Clara AI"

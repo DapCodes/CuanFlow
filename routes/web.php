@@ -11,6 +11,7 @@ use App\Http\Controllers\RawMaterialAndSupplierController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\ClaraAiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -112,6 +113,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/clara-ai', [ClaraAiController::class, 'index'])->name('clara-ai.index');
+    Route::post('/clara-ai/chat', [ClaraAiController::class, 'chat'])->name('clara-ai.chat');
+    Route::get('/clara-ai/new-session', [ClaraAiController::class, 'newSession'])->name('clara-ai.new-session');
 });
 
 Route::middleware(['auth'])->prefix('pos')->name('pos.')->group(function () {
