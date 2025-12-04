@@ -1194,6 +1194,8 @@ function loadFormData() {
             showStep(currentStep);
         }
 
+        updateAvailableRawMaterials();
+
         // Trigger calculations
         if (typeof updateHppSummary === 'function') updateHppSummary();
         if (typeof updateFinalPricing === 'function') updateFinalPricing();
@@ -1210,6 +1212,40 @@ function clearDraft() {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(DRAFT_TIMESTAMP_KEY);
     formHasChanges = false;
+}
+
+function updateAvailableRawMaterials() {
+    // Ambil semua ID yang sudah dipilih
+    const selectedIds = [];
+    document.querySelectorAll('.raw-material-select').forEach(select => {
+        const val = $(select).val();
+        if (val) selectedIds.push(val);
+    });
+
+    // Update setiap select2
+    document.querySelectorAll('.raw-material-select').forEach(select => {
+        const currentVal = $(select).val();
+        
+        // Destroy dan reinit select2
+        $(select).select2('destroy');
+        
+        // Disable options yang sudah dipilih di select lain
+        $(select).find('option').each(function() {
+            const optionVal = $(this).val();
+            if (optionVal && selectedIds.includes(optionVal) && optionVal !== currentVal) {
+                $(this).prop('disabled', true);
+            } else {
+                $(this).prop('disabled', false);
+            }
+        });
+        
+        // Reinit select2
+        $(select).select2({
+            theme: 'default',
+            width: '100%',
+            placeholder: '- Pilih Bahan -'
+        });
+    });
 }
 
 // ============================================
@@ -1322,6 +1358,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.remove();
                 calculateTotalMaterialCost();
                 updateRemoveButtons();
+                updateAvailableRawMaterials();
                 saveFormData(); // Auto-save after removing item
             }
         }
@@ -1380,7 +1417,12 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('change', saveFormData);
     
     // Select2 events
-    $(document).on('select2:select select2:unselect', '.select2, .select2-category, .select2-unit, .raw-material-select', saveFormData);
+    $(document).on('select2:select select2:unselect', '.raw-material-select', function() {
+        calculateItemCost($(this).closest('.recipe-item')[0]);
+        calculateTotalMaterialCost();
+        updateAvailableRawMaterials(); // Tambahkan ini
+        saveFormData();
+    });
 
     // Form submit - clear draft
     form.addEventListener('submit', function() {
@@ -1575,6 +1617,7 @@ function addRecipeItem() {
     
     recipeItemIndex++;
     updateRemoveButtons();
+    updateAvailableRawMaterials();
 }
 
 function updateRemoveButtons() {

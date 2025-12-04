@@ -19,7 +19,7 @@ class ClaraAiController extends Controller
     {
         $user = auth()->user();
 
-        // Ambil semua session user (untuk sidebar riwayat)
+        // Ambil semua session user untuk sidebar
         $sessions = AiChatSession::where('user_id', $user->id)
             ->where('outlet_id', $user->outlet_id)
             ->orderBy('created_at', 'desc')
@@ -27,17 +27,20 @@ class ClaraAiController extends Controller
 
         $session = null;
 
-        // Kalau ada session_id di query, pakai itu
-        if ($request->filled('session_id')) {
-            $session = $sessions->firstWhere('id', $request->session_id);
+        // Cek apakah ada session_id di query string
+        if ($request->has('session_id')) {
+            $session = AiChatSession::where('id', $request->session_id)
+                ->where('user_id', $user->id)
+                ->where('outlet_id', $user->outlet_id)
+                ->first();
         }
 
-        // Kalau tidak ada / tidak ketemu, pakai session terbaru
-        if (!$session) {
+        // Jika tidak ada atau tidak valid, ambil session terbaru
+        if (!$session && $sessions->isNotEmpty()) {
             $session = $sessions->first();
         }
 
-        // Kalau sama sekali belum punya session, buat baru
+        // Jika sama sekali belum ada session, buat baru
         if (!$session) {
             $session = AiChatSession::create([
                 'user_id'   => $user->id,
@@ -45,11 +48,14 @@ class ClaraAiController extends Controller
                 'title'     => 'Chat dengan Clara AI',
             ]);
 
-            // refresh collection biar sidebar ada item
-            $sessions->prepend($session);
+            // Refresh collection
+            $sessions = $sessions->prepend($session);
         }
 
-        $messages = $session->messages()->orderBy('created_at')->get();
+        // Ambil messages dari session yang aktif
+        $messages = $session->messages()
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         return view('clara-ai.index', compact('session', 'sessions', 'messages'));
     }
@@ -63,14 +69,15 @@ class ClaraAiController extends Controller
 
         $session = AiChatSession::findOrFail($request->session_id);
 
-        // Check authorization
+        // Verifikasi kepemilikan session
         if ($session->user_id !== auth()->id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized',
+                'message' => 'Anda tidak memiliki akses ke sesi chat ini.',
             ], 403);
         }
 
+        // Proses chat melalui service
         $result = $this->claraAi->chat($session, $request->message);
 
         return response()->json($result);
@@ -80,13 +87,14 @@ class ClaraAiController extends Controller
     {
         $user = auth()->user();
 
+        // Buat session baru
         $session = AiChatSession::create([
             'user_id'   => $user->id,
             'outlet_id' => $user->outlet_id,
             'title'     => 'Chat Baru - ' . now()->format('d M Y H:i'),
         ]);
 
-        // Langsung redirect ke session baru
+        // Redirect ke session baru dengan query parameter
         return redirect()->route('clara-ai.index', ['session_id' => $session->id]);
     }
 }
