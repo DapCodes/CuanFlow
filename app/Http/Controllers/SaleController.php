@@ -33,6 +33,12 @@ class SaleController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $totalTransactions = $sales->count();
+        $totalRefunds = Sale::where('outlet_id', $outletId)
+            ->where('status', 'refunded')
+            ->whereBetween('created_at', [$startOfDay, $endOfDay])
+            ->sum('grand_total');
+
         // Calculate payment method totals
         $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
         $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
@@ -101,7 +107,9 @@ class SaleController extends Controller
             'expenseCategories',
             'expensePeriod',
             'expenseStartDate',
-            'expenseEndDate'
+            'expenseEndDate',
+            'totalRefunds',
+            'totalTransactions'
         ));
     }
 
@@ -238,11 +246,13 @@ class SaleController extends Controller
         return response()->json([
             'selectedDate' => $selectedDate,
             'sales' => $sales->map(fn($s) => [
+                'id'             => $s->id,
                 'invoice_number' => $s->invoice_number,
                 'time'           => $s->created_at->format('H:i'),
                 'cashier'        => $s->cashier?->name,
-                'payment_method' => $s->payment_method,   // 'cash' | 'qris' | 'transfer'
+                'payment_method' => $s->payment_method,
                 'grand_total'    => (int) $s->grand_total,
+                'status'         => $s->status, // TAMBAHKAN ini
             ]),
             'totals' => [
                 'cash'     => (int) $cashTotal,
@@ -251,13 +261,49 @@ class SaleController extends Controller
                 'revenue'  => (int) $totalRevenue,
             ],
             'summary' => [
-                'profit'   => (int) $dailyProfit,
-                'expenses' => (int) $dailyExpenses,
-                'net'      => (int) $dailyNetIncome,
+                'revenue'      => (int) $totalRevenue,
+                'transactions' => $sales->count(),
+                'profit'       => (int) $dailyProfit,
+                'expenses'     => (int) $dailyExpenses,
+                'refunds'      => (int) Sale::where('outlet_id', $outletId)
+                                        ->where('status', 'refunded')
+                                        ->whereBetween('created_at', [$startOfDay, $endOfDay])
+                                        ->sum('grand_total'),
             ],
         ]);
     }
 
+    public function refund(Sale $sale)
+    {
+        if ($sale->outlet_id !== auth()->user()->outlet_id && !auth()->user()->isOwner()) {
+            abort(403, 'Akses ditolak');
+        }
+
+        if ($sale->status !== 'completed') {
+            return back()->with('error', 'Hanya transaksi selesai yang bisa di-refund');
+        }
+
+        if (!in_array($sale->payment_method, ['cash', 'transfer'])) {
+            return back()->with('error', 'Hanya transaksi Cash/Transfer yang bisa di-refund');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Kembalikan stok
+            foreach ($sale->items as $item) {
+                $item->product->increment('stock', $item->quantity);
+            }
+
+            // Update status
+            $sale->update(['status' => 'refunded']);
+
+            DB::commit();
+            return back()->with('success', 'Refund berhasil. Stok telah dikembalikan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Refund gagal: ' . $e->getMessage());
+        }
+    }
     /**
      * Tampilkan detail penjualan
      */

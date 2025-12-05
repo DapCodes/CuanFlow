@@ -15,6 +15,7 @@ use App\Http\Controllers\ClaraAiController;
 use App\Http\Controllers\AiInsightController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\CashRegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -120,6 +121,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/clara-ai', [ClaraAiController::class, 'index'])->name('clara-ai.index');
     Route::post('/clara-ai/chat', [ClaraAiController::class, 'chat'])->name('clara-ai.chat');
     Route::get('/clara-ai/new-session', [ClaraAiController::class, 'newSession'])->name('clara-ai.new-session');
+
+    Route::get('sales/daily', [SaleController::class, 'daily'])->name('sales.daily');
+    Route::post('sales/{sale}/refund', [SaleController::class, 'refund'])->name('sales.refund');
+    Route::get('sales/{sale}', [SaleController::class, 'show'])->name('sales.show');
 });
 
 Route::middleware(['web', 'auth'])->group(function () {
@@ -132,18 +137,39 @@ Route::middleware(['web', 'auth'])->group(function () {
     });
 });
 
-Route::middleware(['auth'])->prefix('pos')->name('pos.')->group(function () {
-    Route::get('/', [PointOfSaleController::class, 'index'])->name('index');
-
-    // Cart management
-    Route::post('/cart/add', [PointOfSaleController::class, 'addToCart'])->name('cart.add');
-    Route::post('/cart/update', [PointOfSaleController::class, 'updateCartItem'])->name('cart.update');
-    Route::delete('/cart/remove', [PointOfSaleController::class, 'removeCartItem'])->name('cart.remove');
-    Route::post('/cart/clear', [PointOfSaleController::class, 'clearCart'])->name('cart.clear');
-
-    // Discount & Customer
-    Route::post('/discount/apply', [PointOfSaleController::class, 'applyDiscount'])->name('discount.apply');
-    Route::post('/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('customer.set');
+// POS Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/pos', [PointOfSaleController::class, 'index'])->name('pos.index');
+    Route::get('/pos/check-register', [PointOfSaleController::class, 'checkCashRegister'])->name('cash-register.check');
+    Route::post('/pos/start-register', [PointOfSaleController::class, 'startCashRegister'])->name('cash-register.start');
+    Route::post('/pos/cart/add', [PointOfSaleController::class, 'addToCart'])->name('pos.cart.add');
+    Route::post('/pos/cart/update', [PointOfSaleController::class, 'updateCartItem'])->name('pos.cart.update');
+    Route::delete('/pos/cart/remove', [PointOfSaleController::class, 'removeCartItem'])->name('pos.cart.remove');
+    Route::post('/pos/cart/clear', [PointOfSaleController::class, 'clearCart'])->name('pos.cart.clear');
+    Route::post('/pos/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('pos.customer.set');
+    
+    // Cash Register Routes
+    Route::get('/cash-register/close', [CashRegisterController::class, 'showClosePage'])->name('cash-register.close');
+    Route::post('/cash-register/process-close', [CashRegisterController::class, 'processClose'])->name('cash-register.process-close');
+    Route::get('/cash-register/history', [CashRegisterController::class, 'history'])->name('cash-register.history');
+    Route::get('/cash-register/{id}', [CashRegisterController::class, 'show'])->name('cash-register.show');
+    
+    // Payment Routes
+    Route::post('/payment/cash', [PaymentController::class, 'processCashPayment'])->name('payment.cash');
+    Route::post('/payment/transfer', [PaymentController::class, 'processTransferPayment'])->name('payment.transfer');
+    Route::post('/payment/midtrans/token', [PaymentController::class, 'createMidtransToken'])->name('payment.midtrans.token');
+    Route::post('/payment/midtrans/notification', [PaymentController::class, 'handleMidtransNotification'])->name('payment.midtrans.notification');
+    Route::get('/payment/midtrans/finish', [PaymentController::class, 'midtransFinish'])->name('payment.midtrans.finish');
+    
+    // API untuk get sale detail (untuk Midtrans success callback)
+    Route::get('/api/sale/{id}', function($id) {
+        $sale = \App\Models\Sale::with('items')->findOrFail($id);
+        return response()->json($sale);
+    });
+    
+    // Receipt Routes
+    Route::get('/receipt/print/{id}', [ReceiptController::class, 'print'])->name('receipt.print');
+    Route::get('/receipt/download/{id}', [ReceiptController::class, 'download'])->name('receipt.download');
 });
 
 // Payment Routes
@@ -158,6 +184,8 @@ Route::middleware(['auth'])->prefix('sales')->name('sales.')->group(function () 
     Route::get('/', [SaleController::class, 'index'])->name('index');
     Route::get('/{sale}', [SaleController::class, 'show'])->name('show');
     Route::get('/{sale}/print', [SaleController::class, 'printReceipt'])->name('print');
+    Route::post('/{sale}/refund', [SaleController::class, 'refund'])->name('refund');
+    Route::get('/daily', [SaleController::class, 'daily'])->name('daily');
 });
 
 Route::middleware(['auth'])->prefix('receipt')->name('receipt.')->group(function () {

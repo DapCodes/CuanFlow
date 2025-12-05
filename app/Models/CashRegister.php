@@ -54,7 +54,7 @@ class CashRegister extends Model
 
         $this->total_transactions = $sales->count();
         $this->total_sales = $sales->sum('grand_total');
-        $this->total_cash = $sales->where('payment_method', 'cash')->sum('paid_amount');
+        $this->total_cash = $sales->where('payment_method', 'cash')->sum('grand_total');
         $this->total_qris = $sales->where('payment_method', 'qris')->sum('grand_total');
         $this->total_transfer = $sales->where('payment_method', 'transfer')->sum('grand_total');
         $this->expected_amount = $this->opening_amount + $this->total_cash;

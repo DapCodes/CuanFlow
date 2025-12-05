@@ -2,347 +2,555 @@
 
 @section('title', 'Point of Sale - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
-@section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Point of Sale</span>
-</li>
-@endsection
-
 @push('styles')
 <style>
-    /* Custom scrollbar */
+    html, body { 
+        height: 100%; 
+        overflow: hidden;
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .pos-container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* Header kompak */
+    .pos-header {
+        background: white;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0.75rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+
+    /* Main content area */
+    .pos-main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    /* Left panel - Products */
+    .products-panel {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    .products-toolbar {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        flex-shrink: 0;
+    }
+
+    .products-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        min-height: 0;
+    }
+
+    /* Product Grid - Compact */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .product-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        border-color: #6366f1;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-placeholder {
+        width: 100%;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-name {
+        font-size: 0.813rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-price {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #6366f1;
+        margin-top: auto;
+    }
+
+    .product-stock {
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Right panel - Order Summary */
+    .order-panel {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    .order-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #e5e7eb;
+        flex-shrink: 0;
+    }
+
+    .order-items {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem 1.25rem;
+        min-height: 0;
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .order-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .order-item-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .order-item-price {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .qty-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 0.125rem;
+    }
+
+    .qty-btn {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .qty-btn:hover {
+        background: #f3f4f6;
+        color: #1f2937;
+    }
+
+    .qty-input {
+        width: 40px;
+        height: 24px;
+        border: none;
+        text-align: center;
+        font-size: 0.813rem;
+        font-weight: 600;
+        color: #1f2937;
+        background: transparent;
+    }
+
+    .qty-input:focus {
+        outline: none;
+    }
+
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .qty-input[type=number] {
+        -moz-appearance: textfield;
+    }
+
+    .order-footer {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid #e5e7eb;
+        flex-shrink: 0;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.75rem;
+        margin-top: 0.75rem;
+        border-top: 2px solid #e5e7eb;
+        font-size: 1.125rem;
+        font-weight: 700;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        width: 100%;
+        padding: 0.875rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.938rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        width: 100%;
+        padding: 0.75rem;
+        background: white;
+        color: #6b7280;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+    }
+
+    /* Search & Filter */
+    .search-box {
+        position: relative;
+        flex: 1;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.875rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 0.875rem;
+    }
+
+    .filter-select {
+        padding: 0.625rem 0.875rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 140px;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    /* Category Tabs */
+    .category-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .category-tab {
+        padding: 0.5rem 1rem;
+        background: #f3f4f6;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.813rem;
+        font-weight: 500;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .category-tab.active {
+        background: #6366f1;
+        color: white;
+    }
+
+    .category-tab:hover:not(.active) {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    /* Custom Scrollbar */
     .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
         height: 6px;
     }
+
     .custom-scrollbar::-webkit-scrollbar-track {
-        background: #f1f1f1;
+        background: #f3f4f6;
         border-radius: 10px;
     }
+
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #888;
+        background: #d1d5db;
         border-radius: 10px;
     }
+
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #555;
+        background: #9ca3af;
     }
-    
-    /* Product card hover */
-    .product-card {
-        transition: all 0.2s ease;
+
+    /* Payment Views */
+    .payment-view {
+        padding: 1.5rem;
+        max-width: 400px;
+        margin: 0 auto;
     }
-    .product-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+    .payment-methods {
+        display: grid;
+        gap: 0.75rem;
     }
-    
-    /* Subtle gradient background */
-    .pos-gradient-bg {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(168, 85, 247, 0.05) 100%);
+
+    .payment-method {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .payment-method:hover {
+        border-color: #6366f1;
+        background: #f9fafb;
+    }
+
+    .payment-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 1.25rem;
+        color: white;
+    }
+
+    .payment-info {
+        flex: 1;
+    }
+
+    .payment-title {
+        font-size: 0.938rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.125rem;
+    }
+
+    .payment-subtitle {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 1280px) {
+        .pos-main {
+            grid-template-columns: 1fr 380px;
+        }
+        
+        .product-grid {
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .pos-main {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr auto;
+        }
+        
+        .order-panel {
+            max-height: 400px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        body {
+            overflow: auto;
+        }
+        
+        .pos-container {
+            height: auto;
+            min-height: 100vh;
+        }
+        
+        .pos-main {
+            display: flex;
+            flex-direction: column;
+            height: auto;
+        }
+        
+        .products-panel,
+        .order-panel {
+            height: auto;
+        }
+        
+        .product-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
     }
 </style>
 @endpush
 
 @section('content')
-<div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
-        
-        <!-- Header -->
-        <!-- <div class="mb-6">
-            <div class="bg-gradient-to-br from-indigo-100 to-purple-10 p-6 rounded-2xl border border-indigo-100">
-                <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-                    <i class="fas fa-cash-register text-indigo-600 mr-3"></i>
-                    Point of Sale
-                </h1>
-                <p class="text-gray-600 mt-1">Proses transaksi penjualan dengan cepat dan mudah</p>
+<!-- Modal: Mulai Penjualan -->
+<div id="startSalesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 lg:p-8">
+        <div class="text-center mb-5">
+            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
             </div>
-        </div> -->
-        
-        <!-- Bento Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- LEFT SECTION: Products -->
-            <div class="lg:col-span-2 space-y-6">
-                
-                <!-- Search & Filter Bar -->
-                <div class="bg-white rounded-2xl shadow-sm p-4">
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <div class="flex-1">
-                            <input 
-                                type="text" 
-                                id="searchProduct" 
-                                placeholder="Cari produk (nama atau kode)..."
-                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            >
-                        </div>
-                        <select 
-                            id="filterCategory" 
-                            class="px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        >
-                            <option value="">Semua Kategori</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- Products Grid -->
-                <div class="bg-white rounded-2xl shadow-sm p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Daftar Produk</h2>
-                    
-                    <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
-                        @forelse($products as $product)
-                        <div class="product-card bg-white border border-gray-200 rounded-xl p-4 cursor-pointer" 
-                             data-product-id="{{ $product->id }}"
-                             data-product-name="{{ $product->name }}"
-                             data-product-code="{{ $product->code }}"
-                             data-product-price="{{ $product->selling_price }}"
-                             data-product-hpp="{{ $product->hpp }}"
-                             onclick="addProductToCart(this)">
-                            
-                            @if($product->image)
-                            <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-24 object-cover rounded-lg mb-3">
-                            @else
-                            <div class="w-full h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg mb-3 flex items-center justify-center">
-                                <i class="fas fa-image text-3xl text-indigo-300"></i>
-                            </div>
-                            @endif
-                            
-                            <h3 class="font-semibold text-sm text-gray-900 mb-1 line-clamp-2">{{ $product->name }}</h3>
-                            <p class="text-xs text-gray-500 mb-2">{{ $product->code }}</p>
-                            
-                            <div class="mt-auto">
-                                <span class="text-sm font-bold text-gray-900">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</span>
-                            </div>
-                            
-                            @if($product->track_stock)
-                            @php
-                                $stock = $product->stocks->where('outlet_id', auth()->user()->outlet_id)->first();
-                                $stockQty = $stock ? $stock->quantity : 0;
-                            @endphp
-                            <p class="text-xs mt-2 stock-display {{ $stockQty > 0 ? 'text-green-600' : 'text-red-600' }}" data-product-id="{{ $product->id }}">
-                                Stok: <span class="stock-qty">{{ number_format($stockQty, 0, ',', '.') }}</span>
-                            </p>
-                            @endif
-                        </div>
-                        @empty
-                        <div class="col-span-full text-center py-12">
-                            <i class="fas fa-box-open text-5xl text-gray-300 mb-3"></i>
-                            <p class="text-gray-500">Belum ada produk tersedia</p>
-                        </div>
-                        @endforelse
-                    </div>
-                </div>
-                
-            </div>
-            
-            <!-- RIGHT SECTION: Cart & Payment -->
-            <div class="space-y-6">
-                
-                <!-- Customer Selection -->
-                <div class="bg-white rounded-2xl shadow-sm p-4" hidden>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Pelanggan (Opsional)</label>
-                    <select 
-                        id="selectCustomer" 
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        onchange="setCustomer(this.value)"
-                    >
-                        <option value="">Umum / Walk-in</option>
-                        @foreach($customers as $customer)
-                        <option value="{{ $customer->id }}">{{ $customer->name }} - {{ $customer->phone }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                
-                <!-- Cart -->
-                <div class="bg-white rounded-2xl shadow-sm p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-gray-900">Keranjang</h2>
-                        <button onclick="clearCart()" class="text-sm text-red-600 hover:text-red-700 font-medium">
-                            <i class="fas fa-trash-alt mr-1"></i> Kosongkan
-                        </button>
-                    </div>
-                    
-                    <div id="cartItems" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2 mb-4">
-                        <div class="text-center py-8 text-gray-400" id="emptyCartMessage">
-                            <i class="fas fa-shopping-cart text-4xl mb-2"></i>
-                            <p>Keranjang masih kosong</p>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-gray-200 pt-4 space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Subtotal:</span>
-                            <span class="font-medium" id="cartSubtotal">Rp 0</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Diskon:</span>
-                            <span class="font-medium text-red-600" id="cartDiscount">- Rp 0</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Pajak:</span>
-                            <span class="font-medium" id="cartTax">Rp 0</span>
-                        </div>
-                        <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2 mt-2">
-                            <span>Total:</span>
-                            <span class="text-indigo-600" id="cartGrandTotal">Rp 0</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Payment Methods -->
-                <div class="bg-white rounded-2xl shadow-sm p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Metode Pembayaran</h2>
-                    
-                    <div class="space-y-3">
-                        <button 
-                            onclick="openCashPaymentModal()" 
-                            class="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200"
-                        >
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-money-bill-wave text-white text-xl"></i>
-                                </div>
-                                <div class="text-left">
-                                    <p class="font-semibold text-gray-900">Bayar Tunai</p>
-                                    <p class="text-xs text-gray-500">Pembayaran cash langsung</p>
-                                </div>
-                            </div>
-                            <i class="fas fa-chevron-right text-gray-400"></i>
-                        </button>
-                        
-                        <button 
-                            onclick="openTransferPaymentModal()" 
-                            class="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200"
-                        >
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-building-columns text-white text-xl"></i>
-                                </div>
-                                <div class="text-left">
-                                    <p class="font-semibold text-gray-900">Bayar Transfer</p>
-                                    <p class="text-xs text-gray-500">Transfer via QR / Bank</p>
-                                </div>
-                            </div>
-                            <i class="fas fa-chevron-right text-gray-400"></i>
-                        </button>
-                        
-                        <button 
-                            onclick="openMidtransPayment()" 
-                            class="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200"
-                        >
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-qrcode text-white text-xl"></i>
-                                </div>
-                                <div class="text-left">
-                                    <p class="font-semibold text-gray-900">Bayar via Midtrans</p>
-                                    <p class="text-xs text-gray-500">QRIS, E-Wallet, VA</p>
-                                </div>
-                            </div>
-                            <i class="fas fa-chevron-right text-gray-400"></i>
-                        </button>
-                    </div>
-                </div>
-                
-            </div>
-            
+            <h3 class="text-xl font-bold text-gray-900 mb-1">Selamat Datang!</h3>
+            <p class="text-gray-600 text-sm">Mulai penjualan Anda hari ini</p>
         </div>
-        
-    </div>
-</main>
-
-<!-- Modal: Cash Payment -->
-<div id="cashPaymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">Pembayaran Tunai</h3>
-        
-        <div class="mb-6">
-            <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
-                <p class="text-sm text-gray-600 mb-1">Total yang harus dibayar:</p>
-                <p class="text-2xl font-bold text-indigo-600" id="cashModalTotal">Rp 0</p>
-            </div>
-            
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Uang Diterima:</label>
-            <input 
-                type="number" 
-                id="cashPaidAmount" 
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-lg font-semibold"
-                placeholder="0"
-                onkeyup="calculateChange()"
-            >
-            
-            <div class="mt-4 p-4 bg-gray-50 rounded-xl">
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-600">Kembalian:</span>
-                    <span class="text-2xl font-bold text-green-600" id="changeAmount">Rp 0</span>
-                </div>
-            </div>
+        <div class="bg-indigo-50 rounded-xl p-3 mb-5">
+            <p class="text-xs sm:text-sm text-gray-700 text-center">
+                <i class="fas fa-info-circle text-indigo-600 mr-1.5"></i>
+                Sistem akan mencatat semua transaksi Anda hari ini
+            </p>
         </div>
-        
-        <div class="flex gap-3">
-            <button onclick="closeCashPaymentModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
-                Batal
+        <div class="flex gap-2.5">
+            <button onclick="closeStartSalesModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                Tidak
             </button>
-            <button onclick="processCashPayment()" class="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl">
-                Proses Pembayaran
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Transfer Payment -->
-<div id="transferPaymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">Pembayaran Transfer</h3>
-        
-        <div class="mb-6">
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                <p class="text-sm text-gray-600 mb-1">Total yang harus dibayar:</p>
-                <p class="text-2xl font-bold text-blue-600" id="transferModalTotal">Rp 0</p>
-            </div>
-            
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Metode Transfer:</label>
-            <select 
-                id="transferMethod" 
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
-            >
-                <option value="">-- Pilih Metode --</option>
-                <option value="BCA">Bank BCA</option>
-                <option value="BRI">Bank BRI</option>
-                <option value="BNI">Bank BNI</option>
-                <option value="Mandiri">Bank Mandiri</option>
-                <option value="QRIS">QRIS</option>
-                <option value="GoPay">GoPay</option>
-                <option value="OVO">OVO</option>
-                <option value="DANA">DANA</option>
-            </select>
-            
-            <label class="block text-sm font-semibold text-gray-700 mb-2">No. Referensi (Opsional):</label>
-            <input 
-                type="text" 
-                id="transferReference" 
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Masukkan nomor referensi"
-            >
-            
-            <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-                <p class="text-sm text-gray-700">
-                    <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
-                    Pastikan pelanggan telah melakukan pembayaran via QR Code atau transfer bank yang tersedia di kasir.
-                </p>
-            </div>
-        </div>
-        
-        <div class="flex gap-3">
-            <button onclick="closeTransferPaymentModal()" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
-                Batal
-            </button>
-            <button onclick="processTransferPayment()" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl">
-                Konfirmasi Pembayaran
+            <button onclick="startCashRegister()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg">
+                Ya, Mulai
             </button>
         </div>
     </div>
@@ -350,32 +558,27 @@
 
 <!-- Modal: Payment Success -->
 <div id="paymentSuccessModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 transform transition-all">
-        <!-- Success Icon Animation -->
-        <div class="flex justify-center mb-6">
-            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-                <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 lg:p-8">
+        <div class="flex justify-center mb-5">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                 </svg>
             </div>
         </div>
-        
-        <!-- Success Message -->
-        <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">Pembayaran Berhasil!</h3>
-        <p class="text-gray-600 text-center mb-6">Transaksi telah berhasil diproses</p>
-        
-        <!-- Transaction Details -->
-        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-4 mb-6">
-            <div class="space-y-2">
-                <div class="flex justify-between text-sm">
+        <h3 class="text-xl font-bold text-gray-900 text-center mb-1.5">Pembayaran Berhasil!</h3>
+        <p class="text-gray-600 text-sm text-center mb-5">Transaksi telah berhasil diproses</p>
+        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-4 mb-5">
+            <div class="space-y-1.5 text-sm">
+                <div class="flex justify-between">
                     <span class="text-gray-600">No. Invoice:</span>
                     <span class="font-bold text-gray-900" id="successInvoiceNumber">-</span>
                 </div>
-                <div class="flex justify-between text-sm">
+                <div class="flex justify-between">
                     <span class="text-gray-600">Tanggal:</span>
-                    <span class="font-medium text-gray-900" id="successDate">-</span>
+                    <span class="text-gray-900 font-medium" id="successDate">-</span>
                 </div>
-                <div class="flex justify-between text-lg font-bold border-t border-indigo-200 pt-2 mt-2">
+                <div class="flex justify-between text-base font-bold border-t border-indigo-200 pt-2 mt-2">
                     <span class="text-gray-700">Total:</span>
                     <span class="text-indigo-600" id="successTotal">Rp 0</span>
                 </div>
@@ -385,639 +588,753 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Action Buttons -->
-        <div class="space-y-3">
-            <!-- Print Receipt Button -->
-            <button 
-                onclick="printReceipt()" 
-                class="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
-            >
+        <div class="space-y-2.5">
+            <button onclick="printReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                 </svg>
                 <span>Cetak Struk</span>
             </button>
-            
-            <!-- Download Receipt Button -->
-            <button 
-                onclick="downloadReceipt()" 
-                class="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-indigo-200 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition-all"
-            >
+            <button onclick="downloadReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-indigo-200 text-indigo-600 rounded-xl text-sm font-semibold hover:bg-indigo-50 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 <span>Download Struk (PDF)</span>
             </button>
-            
-            <!-- Close Button -->
-            <button 
-                onclick="closePaymentSuccessModal()" 
-                class="w-full px-6 py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
-            >
+            <button onclick="closePaymentSuccessModal()" class="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-all">
                 Selesai
             </button>
         </div>
     </div>
 </div>
 
+<div class="pos-container">
+    <!-- Header -->
+    <div class="pos-header">
+        <div>
+            <h1 class="text-lg font-bold text-gray-900">Point of Sale</h1>
+            <p class="text-xs text-gray-500">{{ auth()->user()->outlet->name ?? 'CuanFlow' }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('cash-register.close') }}" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition-all">
+                <i class="fas fa-sign-out-alt mr-1.5"></i> Tutup Toko
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="pos-main">
+        <!-- Left Panel: Products -->
+        <div class="products-panel">
+            <div class="products-toolbar">
+                <div class="flex gap-2">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input 
+                            type="text" 
+                            id="searchProduct" 
+                            class="search-input" 
+                            placeholder="Cari produk...">
+                    </div>
+                    <select id="filterCategory" class="filter-select">
+                        <option value="">Semua Kategori</option>
+                    </select>
+                </div>
+                <div class="category-tabs" id="categoryTabs">
+                    <button class="category-tab active" data-category="">Semua</button>
+                    <button class="category-tab" data-category="food">Makanan</button>
+                    <button class="category-tab" data-category="drink">Minuman</button>
+                    <button class="category-tab" data-category="snack">Snack</button>
+                </div>
+            </div>
+
+            <div class="products-content custom-scrollbar">
+                <!-- Browse Products View -->
+                <div id="view-browse">
+                    <div class="product-grid" id="productGrid">
+                        @forelse($products as $product)
+                        <div class="product-card"
+                             data-product-id="{{ $product->id }}"
+                             data-product-name="{{ $product->name }}"
+                             data-product-code="{{ $product->code }}"
+                             data-product-price="{{ $product->selling_price }}"
+                             data-product-hpp="{{ $product->hpp }}"
+                             onclick="addProductToCart(this)">
+                            @if($product->image)
+                                <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="product-image">
+                            @else
+                                <div class="product-placeholder">
+                                    <i class="fas fa-utensils text-white text-2xl"></i>
+                                </div>
+                            @endif
+                            <div class="product-name">{{ $product->name }}</div>
+                            <div class="product-price">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</div>
+                            @if($product->track_stock)
+                                @php
+                                    $stock = $product->stocks->where('outlet_id', auth()->user()->outlet_id)->first();
+                                    $stockQty = $stock ? $stock->quantity : 0;
+                                @endphp
+                                <div class="product-stock {{ $stockQty > 0 ? 'text-green-600' : 'text-red-600' }}" data-product-id="{{ $product->id }}">
+                                    Stok: <span class="stock-qty">{{ number_format($stockQty, 0, ',', '.') }}</span>
+                                </div>
+                            @endif
+                        </div>
+                        @empty
+                        <div class="empty-state" style="grid-column: 1/-1;">
+                            <i class="fas fa-box-open"></i>
+                            <p>Belum ada produk tersedia</p>
+                        </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <!-- Payment Selection View -->
+                <div id="view-select" class="hidden payment-view">
+                    <button onclick="backToBrowse()" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 text-sm">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </button>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Pilih Metode Pembayaran</h3>
+                    <div class="payment-methods">
+                        <div class="payment-method" onclick="setUIState('cash')">
+                            <div class="payment-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="payment-info">
+                                <div class="payment-title">Tunai</div>
+                                <div class="payment-subtitle">Pembayaran cash</div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="payment-method" onclick="setUIState('transfer')">
+                            <div class="payment-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                                <i class="fas fa-building-columns"></i>
+                            </div>
+                            <div class="payment-info">
+                                <div class="payment-title">Transfer</div>
+                                <div class="payment-subtitle">Transfer Bank / QR</div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="payment-method" onclick="setUIState('midtrans')">
+                            <div class="payment-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <div class="payment-info">
+                                <div class="payment-title">Midtrans</div>
+                                <div class="payment-subtitle">QRIS, E-Wallet, VA</div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cash Payment View -->
+                <div id="view-cash" class="hidden payment-view">
+                    <button onclick="setUIState('select')" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 text-sm">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Metode
+                    </button>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Pembayaran Tunai</h3>
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                        <p class="text-xs text-gray-600 mb-1">Total:</p>
+                        <p class="text-2xl font-bold text-green-600" id="cashTotal">Rp 0</p>
+                    </div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Uang:</label>
+                    <input type="number" id="cashPaidAmount" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-base font-semibold mb-4 qty-input" placeholder="0" onkeyup="calculateChange()">
+                    <div class="p-4 bg-gray-50 rounded-xl mb-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Kembalian:</span>
+                            <span class="text-lg font-bold text-green-600" id="changeAmount">Rp 0</span>
+                        </div>
+                    </div>
+                    <button onclick="processCashPayment()" class="btn-primary">
+                        <i class="fas fa-check-circle"></i>
+                        Proses Pembayaran
+                    </button>
+                </div>
+
+                <!-- Transfer Payment View -->
+                <div id="view-transfer" class="hidden payment-view">
+                    <button onclick="setUIState('select')" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 text-sm">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Metode
+                    </button>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Pembayaran Transfer</h3>
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                        <p class="text-xs text-gray-600 mb-1">Total:</p>
+                        <p class="text-2xl font-bold text-blue-600" id="transferTotal">Rp 0</p>
+                    </div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Metode Transfer:</label>
+                    <select id="transferMethod" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-sm">
+                        <option value="">-- Pilih --</option>
+                        <option value="BCA">Bank BCA</option>
+                        <option value="BRI">Bank BRI</option>
+                        <option value="BNI">Bank BNI</option>
+                        <option value="Mandiri">Bank Mandiri</option>
+                        <option value="QRIS">QRIS</option>
+                        <option value="GoPay">GoPay</option>
+                        <option value="OVO">OVO</option>
+                        <option value="DANA">DANA</option>
+                    </select>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">No. Referensi (Opsional):</label>
+                    <input type="text" id="transferReference" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-sm" placeholder="Nomor referensi">
+                    <button onclick="processTransferPayment()" class="btn-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <i class="fas fa-check-circle"></i>
+                        Konfirmasi Pembayaran
+                    </button>
+                </div>
+
+                <!-- Midtrans Payment View -->
+                <div id="view-midtrans" class="hidden payment-view">
+                    <button onclick="setUIState('select')" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 text-sm">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Metode
+                    </button>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Pembayaran via Midtrans</h3>
+                    <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-4">
+                        <p class="text-xs text-gray-600 mb-1">Total:</p>
+                        <p class="text-2xl font-bold text-purple-600" id="midtransTotal">Rp 0</p>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Klik tombol di bawah untuk membuka Snap (QRIS / E-Wallet / VA).</p>
+                    <button onclick="openMidtransPayment()" class="btn-primary" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <i class="fas fa-qrcode"></i>
+                        Bayar via Midtrans
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Order Summary -->
+        <div class="order-panel">
+            <div class="order-header">
+                <h2 class="text-base font-bold text-gray-900">Ringkasan Pesanan</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Total Item: <span id="totalItems" class="font-semibold text-gray-900">0</span></p>
+            </div>
+
+            <div class="order-items custom-scrollbar">
+                <div id="cartItemsPreview">
+                    <div class="empty-state" id="emptyCartPreview">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Keranjang kosong</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-footer">
+                <div class="summary-row">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span class="font-semibold text-gray-900" id="summarySubtotal">Rp 0</span>
+                </div>
+                <div class="summary-row">
+                    <span class="text-gray-600">Diskon:</span>
+                    <span class="font-semibold text-red-600" id="summaryDiscount">- Rp 0</span>
+                </div>
+                <div class="summary-total">
+                    <span class="text-gray-900">Total:</span>
+                    <span class="text-indigo-600" id="summaryGrandTotal">Rp 0</span>
+                </div>
+
+                <div id="actionsControls" class="mt-4">
+                    <button id="btnBayar" onclick="showPaymentSelection()" class="btn-primary">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Bayar Sekarang</span>
+                    </button>
+                    <button id="btnClearCart" onclick="clearCart()" class="btn-secondary text-red-600 hover:bg-red-50">
+                        <i class="fas fa-trash-alt mr-2"></i>
+                        Kosongkan Keranjang
+                    </button>
+                </div>
+
+                <div id="actionsPayflowSummary" class="hidden mt-4">
+                    <div class="w-full px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-semibold flex items-center justify-between">
+                        <span id="payflowSummaryLabel">0 item · Rp 0</span>
+                        <button class="text-xs underline hover:no-underline" onclick="backToBrowse()">Ubah Pesanan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
-
 <script>
-let cart = {};
-let cartSummary = {
-    subtotal: 0,
-    total_discount: 0,
-    tax: 0,
-    grand_total: 0
-};
+let UI_STATE = 'browse';
+let cart = @json($cart ?? []);
+let cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0 };
 let currentSaleId = null;
-let currentSaleItems = [];
 
-// Simple Toast
+document.addEventListener('DOMContentLoaded', function() {
+    checkCashRegister();
+    renderCart();
+    setUIState('browse');
+    initCategoryTabs();
+});
+
+function initCategoryTabs() {
+    const tabs = document.querySelectorAll('.category-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+}
+
+function checkCashRegister() {
+    fetch('{{ route("cash-register.check") }}')
+        .then(r => r.json())
+        .then(data => { 
+            if (!data.is_open) document.getElementById('startSalesModal').classList.remove('hidden'); 
+        });
+}
+
+function closeStartSalesModal() { 
+    document.getElementById('startSalesModal').classList.add('hidden'); 
+}
+
+function startCashRegister() {
+    fetch('{{ route("cash-register.start") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r=>r.json()).then(data=>{
+        if(data.success){ 
+            showToast('success','Sesi penjualan dimulai'); 
+            closeStartSalesModal(); 
+        } else { 
+            showToast('error', data.message); 
+        }
+    }).catch(()=>showToast('error','Gagal memulai penjualan'));
+}
+
 function showToast(type, message) {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
-    
-    const colors = {
-        success: 'bg-green-500',
-        error: 'bg-red-500',
-        info: 'bg-blue-500',
-        warning: 'bg-orange-500'
+    const colors = { 
+        success:'bg-green-500', 
+        error:'bg-red-500', 
+        info:'bg-blue-500', 
+        warning:'bg-orange-500' 
     };
-    
     toast.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg text-sm`;
     toast.textContent = message;
-    
     container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s';
-        setTimeout(() => toast.remove(), 300);
+    setTimeout(()=>{ 
+        toast.style.opacity='0'; 
+        toast.style.transition='opacity 0.3s'; 
+        setTimeout(()=>toast.remove(),300); 
     }, 2500);
 }
 
-function addProductToCart(element) {
-    const productId = element.dataset.productId;
-    
+function addProductToCart(el) {
+    const productId = el.dataset.productId;
     fetch('{{ route("pos.cart.add") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            product_id: productId,
-            quantity: 1
-        })
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
+        body: JSON.stringify({ product_id: productId, quantity: 1 })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            cart = data.cart;
+    .then(r=>r.json()).then(data=>{
+        if(data.success){
+            cart = data.cart; 
             cartSummary = data.cart_summary;
-            renderCart();
-            showToast('success', 'Ditambahkan ke keranjang');
-        } else {
-            showToast('error', data.message);
+            renderCart(); 
+            showToast('success','Ditambahkan ke keranjang');
+        } else { 
+            showToast('error', data.message); 
         }
-    })
-    .catch(error => {
-        showToast('error', 'Terjadi kesalahan');
-        console.error(error);
-    });
+    }).catch(()=>showToast('error','Terjadi kesalahan'));
 }
 
-function renderCart() {
-    const cartItemsContainer = document.getElementById('cartItems');
-    
-    if (!cartItemsContainer) return;
+function updateCartQuantity(cartKey, newQty) {
+    let qty = parseFloat(newQty);
+    if (isNaN(qty) || qty < 0) qty = 0;
 
-    if (Object.keys(cart).length === 0) {
-        cartItemsContainer.innerHTML = `
-            <div class="text-center py-8 text-gray-400">
-                <i class="fas fa-shopping-cart text-4xl mb-2"></i>
-                <p>Keranjang masih kosong</p>
-            </div>
-        `;
-    } else {
-        let html = '';
-        for (const [key, item] of Object.entries(cart)) {
-            html += `
-                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <div class="flex-1 min-w-0">
-                        <p class="font-semibold text-sm text-gray-900 truncate">${item.product_name}</p>
-                        <p class="text-xs text-gray-500">${item.product_code}</p>
-                        <p class="text-sm font-bold text-indigo-600 mt-1">Rp ${formatNumber(item.unit_price)}</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="updateQuantity('${key}', ${item.quantity - 1})" 
-                                class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-100">
-                            <i class="fas fa-minus text-xs"></i>
-                        </button>
-                        <input type="number" 
-                               value="${item.quantity}" 
-                               onchange="updateQuantity('${key}', this.value)"
-                               class="w-16 text-center font-semibold border border-gray-300 rounded-lg py-1 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                               min="1">
-                        <button onclick="updateQuantity('${key}', ${item.quantity + 1})" 
-                                class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-100">
-                            <i class="fas fa-plus text-xs"></i>
-                        </button>
-                    </div>
-                    <button onclick="removeItem('${key}')" 
-                            class="text-red-600 hover:text-red-700 p-2">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            `;
-        }
-        cartItemsContainer.innerHTML = html;
-    }
-
-    const subtotalEl = document.getElementById('cartSubtotal');
-    const discountEl = document.getElementById('cartDiscount');
-    const taxEl = document.getElementById('cartTax');
-    const grandTotalEl = document.getElementById('cartGrandTotal');
-    
-    if (subtotalEl) subtotalEl.textContent = 'Rp ' + formatNumber(cartSummary.subtotal);
-    if (discountEl) discountEl.textContent = '- Rp ' + formatNumber(cartSummary.total_discount);
-    if (taxEl) taxEl.textContent = 'Rp ' + formatNumber(cartSummary.tax);
-    if (grandTotalEl) grandTotalEl.textContent = 'Rp ' + formatNumber(cartSummary.grand_total);
-}
-
-function updateQuantity(cartKey, newQuantity) {
-    newQuantity = parseInt(newQuantity);
-    
-    if (isNaN(newQuantity) || newQuantity < 0) {
-        showToast('warning', 'Jumlah tidak valid');
-        renderCart(); // refresh untuk reset input
-        return;
-    }
-    
-    if (newQuantity === 0) {
-        removeItem(cartKey);
-        return;
-    }
-    
     fetch('{{ route("pos.cart.update") }}', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            cart_key: cartKey,
-            quantity: newQuantity
-        })
+        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ cart_key: cartKey, quantity: qty })
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
         if (data.success) {
-            cart = data.cart;
+            cart = data.cart; 
             cartSummary = data.cart_summary;
             renderCart();
         } else {
-            showToast('error', data.message);
-            renderCart(); // refresh untuk reset input
+            showToast('error', data.message || 'Gagal update item');
         }
     })
-    .catch(error => {
-        showToast('error', 'Gagal update');
-        renderCart(); // refresh untuk reset input
-        console.error(error);
-    });
+    .catch(() => showToast('error', 'Gagal update item'));
 }
 
-function removeItem(cartKey) {
-    if (!confirm('Hapus item?')) return;
-    
+function removeCartItem(cartKey) {
     fetch('{{ route("pos.cart.remove") }}', {
         method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            cart_key: cartKey
-        })
+        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ cart_key: cartKey })
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
         if (data.success) {
-            cart = data.cart;
+            cart = data.cart; 
             cartSummary = data.cart_summary;
             renderCart();
             showToast('success', 'Item dihapus');
         } else {
-            showToast('error', data.message);
+            showToast('error', data.message || 'Gagal menghapus item');
         }
     })
-    .catch(error => {
-        showToast('error', 'Gagal menghapus');
-        console.error(error);
-    });
+    .catch(() => showToast('error', 'Gagal menghapus item'));
 }
 
 function clearCart() {
     if (!confirm('Kosongkan keranjang?')) return;
-    
     fetch('{{ route("pos.cart.clear") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}
+    }).then(r=>r.json()).then(data=>{
+        if(data.success){
+            cart = {}; 
+            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0 };
+            renderCart(); 
+            setUIState('browse'); 
+            showToast('success','Keranjang dikosongkan');
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            cart = {};
-            cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0 };
-            renderCart();
-            showToast('success', 'Keranjang dikosongkan');
-        }
-    })
-    .catch(error => {
-        showToast('error', 'Gagal');
-        console.error(error);
-    });
+    }).catch(()=>showToast('error','Gagal'));
 }
 
-function setCustomer(customerId) {
-    fetch('{{ route("pos.customer.set") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            customer_id: customerId || null
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success && customerId) {
-            showToast('info', 'Customer dipilih');
-        }
-    });
-}
+function renderCart() {
+    const preview = document.getElementById('cartItemsPreview');
+    const totalItems = Object.values(cart).reduce((s,i)=>s+Number(i.quantity||0),0);
+    document.getElementById('totalItems').textContent = totalItems;
 
-function openCashPaymentModal() {
-    if (Object.keys(cart).length === 0) {
-        showToast('warning', 'Keranjang kosong');
-        return;
+    const isPayflow = (UI_STATE !== 'browse');
+
+    if (!cart || Object.keys(cart).length === 0) {
+        preview.innerHTML = `
+            <div class="empty-state" id="emptyCartPreview">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Keranjang kosong</p>
+            </div>`;
+    } else {
+        let html = '';
+        for (const [key, item] of Object.entries(cart)) {
+            const subtotal = Number(item.subtotal || (item.unit_price * item.quantity));
+            const formattedPrice = formatNumber(item.unit_price);
+            const formattedSubtotal = formatNumber(subtotal);
+
+            html += `
+            <div class="order-item">
+                <div class="order-item-info">
+                    <div class="order-item-name" title="${item.product_name}">${item.product_name}</div>
+                    <div class="order-item-price">@ Rp ${formattedPrice} = <span class="font-semibold text-indigo-600">Rp ${formattedSubtotal}</span></div>
+                </div>
+
+                ${!isPayflow 
+                    ? `
+                    <div class="flex items-center gap-2">
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="decrementQty('${key}')">−</button>
+                            <input type="number" min="0" step="1" value="${Number(item.quantity)}"
+                                    class="qty-input"
+                                    onblur="onQtyBlur('${key}', this.value)"
+                                    onkeydown="if(event.key==='Enter'){onQtyBlur('${key}', this.value)}">
+                            <button class="qty-btn" onclick="incrementQty('${key}')">+</button>
+                        </div>
+                        <button class="text-red-500 hover:text-red-700" title="Hapus" onclick="removeCartItem('${key}')">
+                            <i class="fas fa-trash-alt text-sm"></i>
+                        </button>
+                    </div>
+                    `
+                    : `
+                    <div class="text-sm font-bold text-gray-700">x${Number(item.quantity)}</div>
+                    `
+                }
+            </div>`;
+        }
+        preview.innerHTML = html;
     }
-    
-    document.getElementById('cashModalTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total);
-    document.getElementById('cashPaidAmount').value = '';
-    document.getElementById('changeAmount').textContent = 'Rp 0';
-    document.getElementById('cashPaymentModal').classList.remove('hidden');
-    
-    setTimeout(() => document.getElementById('cashPaidAmount').focus(), 100);
+
+    document.getElementById('summarySubtotal').textContent = 'Rp ' + formatNumber(cartSummary.subtotal || 0);
+    document.getElementById('summaryDiscount').textContent = '- Rp ' + formatNumber(cartSummary.total_discount || 0);
+    document.getElementById('summaryGrandTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
+
+    document.getElementById('cashTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
+    document.getElementById('transferTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
+    document.getElementById('midtransTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
+
+    const payLabel = `${totalItems} item · Rp ${formatNumber(cartSummary.grand_total || 0)}`;
+    const labelEl = document.getElementById('payflowSummaryLabel');
+    if (labelEl) labelEl.textContent = payLabel;
 }
 
-function closeCashPaymentModal() {
-    document.getElementById('cashPaymentModal').classList.add('hidden');
+function incrementQty(cartKey) {
+    const item = cart[cartKey]; 
+    if (!item) return;
+    const newQty = Number(item.quantity) + 1;
+    updateCartQuantity(cartKey, newQty);
+}
+
+function decrementQty(cartKey) {
+    const item = cart[cartKey]; 
+    if (!item) return;
+    const newQty = Math.max(0, Number(item.quantity) - 1);
+    updateCartQuantity(cartKey, newQty);
+}
+
+function onQtyBlur(cartKey, value) {
+    let v = value === '' ? 0 : value;
+    updateCartQuantity(cartKey, v);
+}
+
+function setUIState(state) {
+    UI_STATE = state;
+    const views = ['browse','select','cash','transfer','midtrans'];
+    views.forEach(v => document.getElementById(`view-${v}`).classList.add('hidden'));
+    document.getElementById(`view-${state}`).classList.remove('hidden');
+
+    updateRightActions();
+    renderCart();
+
+    if (state === 'cash') setTimeout(()=>document.getElementById('cashPaidAmount').focus(), 120);
+}
+
+function updateRightActions(){
+    const isPayflow = (UI_STATE !== 'browse');
+    const controls = document.getElementById('actionsControls');
+    const badge = document.getElementById('actionsPayflowSummary');
+    if (isPayflow) {
+        controls.classList.add('hidden');
+        badge.classList.remove('hidden');
+    } else {
+        controls.classList.remove('hidden');
+        badge.classList.add('hidden');
+    }
+}
+
+function backToBrowse(){
+    setUIState('browse');
+}
+
+function showPaymentSelection() {
+    if (!cart || Object.keys(cart).length === 0) { 
+        showToast('warning','Keranjang kosong'); 
+        return; 
+    }
+    setUIState('select');
 }
 
 function calculateChange() {
-    const paidAmount = parseFloat(document.getElementById('cashPaidAmount').value) || 0;
-    const change = paidAmount - cartSummary.grand_total;
+    const paid = parseFloat(document.getElementById('cashPaidAmount').value) || 0;
+    const change = paid - (cartSummary.grand_total || 0);
     document.getElementById('changeAmount').textContent = 'Rp ' + formatNumber(Math.max(0, change));
 }
 
 function processCashPayment() {
-    const paidAmount = parseFloat(document.getElementById('cashPaidAmount').value) || 0;
-    
-    if (paidAmount < cartSummary.grand_total) {
-        showToast('error', 'Jumlah kurang');
-        return;
+    const paid = parseFloat(document.getElementById('cashPaidAmount').value) || 0;
+    if (paid < (cartSummary.grand_total || 0)) { 
+        showToast('error','Jumlah kurang'); 
+        return; 
     }
-    
-    closeCashPaymentModal();
-    
+
     fetch('{{ route("payment.cash") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            paid_amount: paidAmount
-        })
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
+        body: JSON.stringify({ paid_amount: paid })
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(r=>r.json()).then(async data=>{
         if (data.success) {
-            // Update stok produk di UI
-            if (data.sale && data.sale.items) {
-                updateProductStockFromSaleItems(data.sale.items);
+            if (data.sale && data.sale.items) { 
+                updateProductStockFromSaleItems(data.sale.items); 
             }
-
-            // Clear cart di backend (session) secara eksplisit
-            return fetch('{{ route("pos.cart.clear") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(() => {
-                // Reset cart di frontend SETELAH backend clear
-                cart = {};
-                cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0 };
-                renderCart();
-                
-                // Tampilkan modal success dengan data sale
-                openPaymentSuccessModal({
-                    sale_id: data.sale.id,
-                    invoice_number: data.sale.invoice_number,
-                    created_at: data.sale.created_at,
-                    grand_total: data.sale.grand_total,
-                    change_amount: data.change
-                });
+            await fetch('{{ route("pos.cart.clear") }}', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
             });
-        } else {
-            showToast('error', data.message);
+            cart = {}; 
+            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0 };
+            renderCart(); 
+            setUIState('browse');
+            openPaymentSuccessModal({
+                sale_id: data.sale.id,
+                invoice_number: data.sale.invoice_number,
+                created_at: data.sale.created_at,
+                grand_total: data.sale.grand_total,
+                change_amount: data.change
+            });
+        } else { 
+            showToast('error', data.message); 
         }
-    })
-    .catch(error => {
-        showToast('error', 'Gagal proses pembayaran');
-        console.error(error);
-    });
-}
-
-function openTransferPaymentModal() {
-    if (Object.keys(cart).length === 0) {
-        showToast('warning', 'Keranjang kosong');
-        return;
-    }
-    
-    document.getElementById('transferModalTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total);
-    document.getElementById('transferMethod').value = '';
-    document.getElementById('transferReference').value = '';
-    document.getElementById('transferPaymentModal').classList.remove('hidden');
-}
-
-function closeTransferPaymentModal() {
-    document.getElementById('transferPaymentModal').classList.add('hidden');
+    }).catch(()=>showToast('error','Gagal proses pembayaran'));
 }
 
 function processTransferPayment() {
-    const transferMethod = document.getElementById('transferMethod').value;
-    const referenceNumber = document.getElementById('transferReference').value;
-    
-    if (!transferMethod) {
-        showToast('warning', 'Pilih metode transfer');
-        return;
+    const method = document.getElementById('transferMethod').value;
+    const ref = document.getElementById('transferReference').value;
+    if (!method) { 
+        showToast('warning','Pilih metode transfer'); 
+        return; 
     }
-    
-    closeTransferPaymentModal();
-    
-    fetch('{{ route("payment.transfer") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            transfer_method: transferMethod,
-            reference_number: referenceNumber
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update stok produk di UI
-            if (data.sale && data.sale.items) {
-                updateProductStockFromSaleItems(data.sale.items);
-            }
 
-            // Clear cart di backend (session) secara eksplisit
-            return fetch('{{ route("pos.cart.clear") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(() => {
-                // Reset cart di frontend SETELAH backend clear
-                cart = {};
-                cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0 };
-                renderCart();
-                
-                openPaymentSuccessModal({
-                    sale_id: data.sale.id,
-                    invoice_number: data.sale.invoice_number,
-                    created_at: data.sale.created_at,
-                    grand_total: data.sale.grand_total
-                });
-            });
-        } else {
-            showToast('error', data.message);
-        }
+    fetch('{{ route("payment.transfer") }}', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
+        body: JSON.stringify({ transfer_method: method, reference_number: ref })
     })
-    .catch(error => {
-        showToast('error', 'Gagal proses pembayaran');
-        console.error(error);
-    });
+    .then(r=>r.json()).then(async data=>{
+        if (data.success) {
+            if (data.sale && data.sale.items) { 
+                updateProductStockFromSaleItems(data.sale.items); 
+            }
+            await fetch('{{ route("pos.cart.clear") }}', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
+            });
+            cart = {}; 
+            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0 };
+            renderCart(); 
+            setUIState('browse');
+            openPaymentSuccessModal({
+                sale_id: data.sale.id,
+                invoice_number: data.sale.invoice_number,
+                created_at: data.sale.created_at,
+                grand_total: data.sale.grand_total
+            });
+        } else { 
+            showToast('error', data.message); 
+        }
+    }).catch(()=>showToast('error','Gagal proses pembayaran'));
 }
 
 function openMidtransPayment() {
-    if (Object.keys(cart).length === 0) {
-        showToast('warning', 'Keranjang kosong');
-        return;
+    if (!cart || Object.keys(cart).length === 0) { 
+        showToast('warning','Keranjang kosong'); 
+        return; 
     }
-    
+
     fetch('{{ route("payment.midtrans.token") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}
     })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success) {
-            showToast('error', data.message || 'Gagal membuat token Midtrans');
-            return;
+    .then(r=>r.json()).then(data=>{
+        if (!data.success) { 
+            showToast('error', data.message || 'Gagal membuat token Midtrans'); 
+            return; 
         }
 
-        // Buka Snap Midtrans
         snap.pay(data.snap_token, {
-            onSuccess: function(result) {
-                // Setelah pembayaran sukses di Midtrans,
-                // ambil data sale lengkap dari backend
+            onSuccess: function() {
                 fetch('/api/sale/' + data.sale_id)
-                    .then(res => res.json())
-                    .then(saleData => {
-                        // Kalau API /api/sale/{id} balikin items, update stok di UI
-                        if (saleData.items) {
-                            updateProductStockFromSaleItems(saleData.items);
+                    .then(res=>res.json())
+                    .then(async saleData=>{
+                        if (saleData.items) { 
+                            updateProductStockFromSaleItems(saleData.items); 
                         }
-
-                        // Clear cart di backend (session) secara eksplisit
-                        return fetch('{{ route("pos.cart.clear") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            }
-                        })
-                        .then(() => {
-                            // Reset cart di frontend SETELAH backend clear
-                            cart = {};
-                            cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0 };
-                            renderCart();
-                            
-                            // Tampilkan modal success dengan data sale
-                            openPaymentSuccessModal({
-                                sale_id: saleData.id,
-                                invoice_number: saleData.invoice_number,
-                                created_at: saleData.created_at,
-                                grand_total: saleData.grand_total
-                            });
+                        await fetch('{{ route("pos.cart.clear") }}', { 
+                            method:'POST', 
+                            headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
+                        });
+                        cart = {}; 
+                        cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0 };
+                        renderCart(); 
+                        setUIState('browse');
+                        openPaymentSuccessModal({
+                            sale_id: saleData.id,
+                            invoice_number: saleData.invoice_number,
+                            created_at: saleData.created_at,
+                            grand_total: saleData.grand_total
                         });
                     })
-                    .catch(err => {
-                        console.error(err);
-                        showToast('error', 'Pembayaran berhasil, tapi gagal mengambil data transaksi');
-                    });
+                    .catch(()=>showToast('error','Pembayaran berhasil, tapi gagal mengambil data transaksi'));
             },
-            onPending: function(result) {
-                showToast('info', 'Menunggu pembayaran');
-            },
-            onError: function(result) {
-                console.error(result);
-                showToast('error', 'Pembayaran via Midtrans gagal');
-            },
-            onClose: function() {
-                showToast('info', 'Jendela pembayaran ditutup sebelum selesai');
-            }
+            onPending: function(){ showToast('info','Menunggu pembayaran'); },
+            onError: function(){ showToast('error','Pembayaran via Midtrans gagal'); },
+            onClose: function(){ showToast('info','Jendela pembayaran ditutup'); }
         });
-    })
-    .catch(error => {
-        console.error(error);
-        showToast('error', 'Gagal membuat token');
+    }).catch(()=>showToast('error','Gagal membuat token'));
+}
+
+function formatNumber(num){ 
+    num = Number(num||0); 
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
+}
+
+function formatDateTime(s){
+    const d = new Date(s); 
+    const day=String(d.getDate()).padStart(2,'0'); 
+    const month=String(d.getMonth()+1).padStart(2,'0');
+    const year=d.getFullYear(); 
+    const h=String(d.getHours()).padStart(2,'0'); 
+    const m=String(d.getMinutes()).padStart(2,'0');
+    return `${day}/${month}/${year} ${h}:${m}`;
+}
+
+function updateProductStockFromSaleItems(items){
+    if (!items || !items.length) return;
+    items.forEach(item=>{
+        const wrap = document.querySelector(`.product-stock[data-product-id="${item.product_id}"]`);
+        if (!wrap) return;
+        const qtySpan = wrap.querySelector('.stock-qty');
+        let currentQty = parseInt((qtySpan.textContent||'0').replace(/\./g,'')) || 0;
+        let newQty = currentQty - item.quantity; 
+        if (newQty < 0) newQty = 0;
+        qtySpan.textContent = formatNumber(newQty);
+        wrap.classList.toggle('text-green-600', newQty>0);
+        wrap.classList.toggle('text-red-600', newQty<=0);
     });
 }
 
-function formatNumber(num) {
-    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
-function openPaymentSuccessModal(saleData) {
-    currentSaleId = saleData.sale_id || saleData.id;
-    
-    // Update konten modal
-    document.getElementById('successInvoiceNumber').textContent = saleData.invoice_number || '-';
-    document.getElementById('successDate').textContent = formatDateTime(saleData.created_at || new Date());
-    document.getElementById('successTotal').textContent = 'Rp ' + formatNumber(saleData.grand_total || 0);
-    
-    // Tampilkan kembalian jika cash payment
-    if (saleData.change_amount && saleData.change_amount > 0) {
+function openPaymentSuccessModal(data){
+    currentSaleId = data.sale_id || data.id;
+    document.getElementById('successInvoiceNumber').textContent = data.invoice_number || '-';
+    document.getElementById('successDate').textContent = formatDateTime(data.created_at || new Date());
+    document.getElementById('successTotal').textContent = 'Rp ' + formatNumber(data.grand_total || 0);
+    if (data.change_amount && data.change_amount > 0) {
         document.getElementById('successChangeRow').style.display = 'flex';
-        document.getElementById('successChange').textContent = 'Rp ' + formatNumber(saleData.change_amount);
+        document.getElementById('successChange').textContent = 'Rp ' + formatNumber(data.change_amount);
     } else {
         document.getElementById('successChangeRow').style.display = 'none';
     }
-    
-    // Tampilkan modal
     document.getElementById('paymentSuccessModal').classList.remove('hidden');
 }
 
-function closePaymentSuccessModal() {
-    document.getElementById('paymentSuccessModal').classList.add('hidden');
-    currentSaleId = null;
+function closePaymentSuccessModal(){ 
+    document.getElementById('paymentSuccessModal').classList.add('hidden'); 
+    currentSaleId=null; 
 }
 
-function printReceipt() {
-    if (!currentSaleId) {
-        showToast('error', 'Sale ID tidak ditemukan');
-        return;
+function printReceipt(){ 
+    if(!currentSaleId){ 
+        showToast('error','Sale ID tidak ditemukan'); 
+        return; 
+    } 
+    window.open('/receipt/print/'+currentSaleId, '_blank'); 
+}
+
+function downloadReceipt(){
+    if(!currentSaleId){ 
+        showToast('error','Sale ID tidak ditemukan'); 
+        return; 
     }
-    
-    // Buka halaman print di tab baru
-    window.open('/receipt/print/' + currentSaleId, '_blank');
+    showToast('info','Memproses download...');
+    const a=document.createElement('a'); 
+    a.href='/receipt/download/'+currentSaleId; 
+    a.download=''; 
+    document.body.appendChild(a); 
+    a.click(); 
+    document.body.removeChild(a);
+    setTimeout(()=>showToast('success','Struk berhasil didownload!'), 500);
 }
 
-function downloadReceipt() {
-    if (!currentSaleId) {
-        showToast('error', 'Sale ID tidak ditemukan');
-        return;
-    }
-    
-    // Tampilkan toast sebelum download
-    showToast('info', 'Memproses download...');
-    
-    // Gunakan teknik download yang tidak memblokir UI
-    const link = document.createElement('a');
-    link.href = '/receipt/download/' + currentSaleId;
-    link.download = ''; // Browser akan gunakan nama file dari server
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Toast sukses setelah trigger download
-    setTimeout(() => {
-        showToast('success', 'Struk berhasil didownload!');
-    }, 500);
-}
-
-function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
-}
-
-function updateProductStockFromSaleItems(saleItems) {
-    if (!saleItems || !saleItems.length) return;
-
-    saleItems.forEach(item => {
-        const wrapper = document.querySelector(`.stock-display[data-product-id="${item.product_id}"]`);
-        if (!wrapper) return;
-
-        const qtySpan = wrapper.querySelector('.stock-qty');
-        let currentQty = parseInt(qtySpan.textContent) || 0;
-        let newQty = currentQty - item.quantity;
-
-        if (newQty < 0) newQty = 0;
-
-        qtySpan.textContent = newQty;
-
-        // ubah warna hijau/merah sesuai stok
-        wrapper.classList.toggle('text-green-600', newQty > 0);
-        wrapper.classList.toggle('text-red-600', newQty <= 0);
-    });
-}
-
-// Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function(e){
     if (e.key === 'Escape') {
-        closeCashPaymentModal();
-        closePaymentSuccessModal();
-        closeTransferPaymentModal();
+        if (UI_STATE === 'cash' || UI_STATE === 'transfer' || UI_STATE === 'midtrans') setUIState('select');
+        else if (UI_STATE === 'select') setUIState('browse');
+        document.getElementById('paymentSuccessModal').classList.add('hidden');
     }
-    
-    if (e.key === 'Enter' && !document.getElementById('cashPaymentModal').classList.contains('hidden')) {
-        processCashPayment();
+    if (e.key === 'Enter' && UI_STATE === 'cash') { 
+        e.preventDefault(); 
+        processCashPayment(); 
     }
-});
-
-// Load cart
-document.addEventListener('DOMContentLoaded', function() {
-    renderCart();
 });
 </script>
 @endpush
