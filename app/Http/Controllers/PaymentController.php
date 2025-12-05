@@ -201,9 +201,6 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Generate Midtrans Snap Token
-     */
     public function createMidtransToken(Request $request)
     {
         $cart = Session::get('pos_cart', []);
@@ -219,16 +216,44 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
-            // Buat transaksi dengan status pending
-            $sale = $this->createSale($cart, $summary, [
-                'payment_method' => 'qris',
-                'payment_status' => 'pending',
-                'status' => 'draft',
-                'paid_amount' => 0,
-            ]);
+            // PERBAIKAN: Cek apakah sudah ada transaksi draft untuk user ini
+            $existingSale = Sale::where('outlet_id', auth()->user()->outlet_id)
+                ->where('cashier_id', auth()->id())
+                ->where('status', 'draft')
+                ->where('payment_status', 'pending')
+                ->where('payment_method', 'qris')
+                ->whereNotNull('midtrans_order_id')
+                ->latest()
+                ->first();
 
-            // Generate order ID untuk Midtrans
-            $orderId = 'ORDER-'.$sale->invoice_number;
+            if ($existingSale) {
+                // Gunakan sale yang sudah ada
+                $sale = $existingSale;
+                $orderId = $sale->midtrans_order_id;
+            } else {
+                // Buat transaksi baru
+                $sale = $this->createSale($cart, $summary, [
+                    'payment_method' => 'qris',
+                    'payment_status' => 'pending',
+                    'status' => 'draft',
+                    'paid_amount' => 0,
+                ]);
+
+                // Generate order ID unik
+                $orderId = $sale->invoice_number . '-' . time() . '-' . strtoupper(substr(md5(uniqid()), 0, 6));
+                
+                // Update sale dengan midtrans order ID
+                $sale->update([
+                    'midtrans_order_id' => $orderId,
+                ]);
+            }
+
+            // PERBAIKAN: Generate order ID unik dengan timestamp + random
+            // Format: ORDER-INV-OUTLET-YYYYMMDD-XXXX-TIMESTAMP-RANDOM
+            $orderId = $sale->invoice_number . '-' . time() . '-' . strtoupper(substr(md5(uniqid()), 0, 6));
+            
+            // Atau format yang lebih sederhana:
+            // $orderId = 'ORDER-' . $sale->id . '-' . time();
 
             // Prepare item details untuk Midtrans
             $itemDetails = [];
@@ -285,7 +310,7 @@ class PaymentController extends Controller
             // Get Snap Token
             $snapToken = Snap::getSnapToken($params);
 
-            // Update sale dengan midtrans order ID
+            // Update sale dengan midtrans order ID yang unik
             $sale->update([
                 'midtrans_order_id' => $orderId,
             ]);
@@ -308,7 +333,6 @@ class PaymentController extends Controller
             ], 500);
         }
     }
-
     /**
      * Handle Midtrans notification callback
      */

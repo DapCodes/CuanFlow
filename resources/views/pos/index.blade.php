@@ -6,7 +6,7 @@
 <style>
     html, body { 
         height: 100%; 
-        overflow: hidden;
+        /* overflow: hidden; */
     }
 
     body {
@@ -523,6 +523,15 @@
 </style>
 @endpush
 
+@section('breadcrumb')
+<li class="flex items-center">
+    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+    </svg>
+    <span class="text-gray-900 font-medium">Point of Sale</span>
+</li>
+@endsection
+
 @section('content')
 <!-- Toast Container -->
 <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
@@ -546,7 +555,7 @@
             </p>
         </div>
         <div class="flex gap-2.5">
-            <button onclick="closeStartSalesModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+            <button onclick="declineStartSales()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
                 Tidak
             </button>
             <button onclick="startCashRegister()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg">
@@ -609,18 +618,6 @@
 </div>
 
 <div class="pos-container">
-    <!-- Header -->
-    <div class="pos-header">
-        <div>
-            <h1 class="text-lg font-bold text-gray-900">Point of Sale</h1>
-            <p class="text-xs text-gray-500">{{ auth()->user()->outlet->name ?? 'CuanFlow' }}</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <a href="{{ route('cash-register.close') }}" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition-all">
-                <i class="fas fa-sign-out-alt mr-1.5"></i> Tutup Toko
-            </a>
-        </div>
-    </div>
 
     <!-- Main Content -->
     <div class="pos-main">
@@ -803,9 +800,22 @@
 
         <!-- Right Panel: Order Summary -->
         <div class="order-panel">
-            <div class="order-header">
-                <h2 class="text-base font-bold text-gray-900">Ringkasan Pesanan</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Total Item: <span id="totalItems" class="font-semibold text-gray-900">0</span></p>
+            <div class="order-header flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-bold text-gray-900">Ringkasan Pesanan</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Total Item: <span id="totalItems" class="font-semibold text-gray-900">0</span></p>
+                </div>
+
+                <div class="flex-shrink-0">
+                    <!-- Button Tutup Toko (default hidden) -->
+                    <button onclick="handleCloseCashRegister()" id="btnCloseCashRegister" class="hidden px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition-all">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Tutup Toko
+                    </button>
+                    <!-- Button Buka Toko (default hidden) -->
+                    <button onclick="openCashRegister()" id="btnOpenCashRegister" class="hidden px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-semibold hover:bg-green-600 transition-all">
+                        <i class="fas fa-door-open mr-1"></i> Buka Toko
+                    </button>
+                </div>
             </div>
 
             <div class="order-items custom-scrollbar">
@@ -883,7 +893,34 @@ function checkCashRegister() {
     fetch('{{ route("cash-register.check") }}')
         .then(r => r.json())
         .then(data => { 
-            if (!data.is_open) document.getElementById('startSalesModal').classList.remove('hidden'); 
+            if (data.is_open) {
+                // Toko sudah buka, tampilkan button "Tutup Toko"
+                document.getElementById('btnCloseCashRegister').classList.remove('hidden');
+                document.getElementById('btnOpenCashRegister').classList.add('hidden');
+            } else if (data.has_unfinished) {
+                // Ada sesi yang belum selesai (closed tapi closing_amount NULL)
+                // Cek apakah user sudah pernah decline
+                const hasDeclined = sessionStorage.getItem('pos_declined_modal');
+                
+                if (hasDeclined === 'true') {
+                    // Jangan tampilkan modal, langsung tampilkan button "Buka Toko"
+                    document.getElementById('btnOpenCashRegister').classList.remove('hidden');
+                    document.getElementById('btnCloseCashRegister').classList.add('hidden');
+                } else {
+                    // Tampilkan modal dengan pesan bahwa ada sesi yang belum selesai
+                    document.getElementById('startSalesModal').classList.remove('hidden');
+                }
+            } else {
+                // Tidak ada sesi aktif, cek apakah user sudah decline
+                const hasDeclined = sessionStorage.getItem('pos_declined_modal');
+                
+                if (hasDeclined === 'true') {
+                    document.getElementById('btnOpenCashRegister').classList.remove('hidden');
+                    document.getElementById('btnCloseCashRegister').classList.add('hidden');
+                } else {
+                    document.getElementById('startSalesModal').classList.remove('hidden');
+                }
+            }
         });
 }
 
@@ -898,12 +935,61 @@ function startCashRegister() {
     })
     .then(r=>r.json()).then(data=>{
         if(data.success){ 
-            showToast('success','Sesi penjualan dimulai'); 
-            closeStartSalesModal(); 
+            const message = data.is_continued 
+                ? 'Melanjutkan sesi penjualan sebelumnya' 
+                : 'Sesi penjualan dimulai';
+            
+            showToast('success', message); 
+            closeStartSalesModal();
+            
+            // Tampilkan button "Tutup Toko"
+            document.getElementById('btnCloseCashRegister').classList.remove('hidden');
+            // Sembunyikan button "Buka Toko"
+            document.getElementById('btnOpenCashRegister').classList.add('hidden');
+            
+            // Hapus status declined karena toko sudah dibuka
+            sessionStorage.removeItem('pos_declined_modal');
         } else { 
             showToast('error', data.message); 
         }
     }).catch(()=>showToast('error','Gagal memulai penjualan'));
+}
+
+// Fungsi saat user pilih "Tidak" di modal
+function declineStartSales() {
+    closeStartSalesModal();
+    // Tampilkan button "Buka Toko" (hijau)
+    document.getElementById('btnOpenCashRegister').classList.remove('hidden');
+    // Pastikan button "Tutup Toko" tetap hidden
+    document.getElementById('btnCloseCashRegister').classList.add('hidden');
+    
+    // Simpan status "user sudah pilih tidak" ke session storage
+    sessionStorage.setItem('pos_declined_modal', 'true');
+    
+    showToast('info', 'Anda bisa buka toko kapan saja dengan klik tombol "Buka Toko"');
+}
+
+// Fungsi untuk buka toko (dipanggil dari button hijau)
+function openCashRegister() {
+    fetch('{{ route("cash-register.start") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r=>r.json()).then(data=>{
+        if(data.success){ 
+            // Sembunyikan button "Buka Toko"
+            document.getElementById('btnOpenCashRegister').classList.add('hidden');
+            // Tampilkan button "Tutup Toko"
+            document.getElementById('btnCloseCashRegister').classList.remove('hidden');
+            
+            // Hapus status declined karena toko sudah dibuka
+            sessionStorage.removeItem('pos_declined_modal');
+            
+            showToast('success','Toko berhasil dibuka! Sesi penjualan dimulai'); 
+        } else { 
+            showToast('error', data.message); 
+        }
+    }).catch(()=>showToast('error','Gagal membuka toko'));
 }
 
 function showToast(type, message) {
@@ -926,6 +1012,14 @@ function showToast(type, message) {
 }
 
 function addProductToCart(el) {
+    // Cek apakah toko sudah buka (button tutup toko visible)
+    const isStoreOpen = !document.getElementById('btnCloseCashRegister').classList.contains('hidden');
+    
+    if (!isStoreOpen) {
+        showToast('warning', 'Buka toko terlebih dahulu untuk mulai transaksi!');
+        return;
+    }
+    
     const productId = el.dataset.productId;
     fetch('{{ route("pos.cart.add") }}', {
         method:'POST',
@@ -942,6 +1036,57 @@ function addProductToCart(el) {
             showToast('error', data.message); 
         }
     }).catch(()=>showToast('error','Terjadi kesalahan'));
+}
+
+function handleCloseCashRegister() {
+    // Cek total penjualan di sesi ini
+    fetch('{{ route("cash-register.check-sales") }}', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const totalSales = parseFloat(data.total_sales || 0);
+            
+            if (totalSales <= 0) {
+                // Tidak ada penjualan, tutup sesi otomatis tanpa redirect
+                closeCashRegisterSilent();
+            } else {
+                // Ada penjualan, redirect ke halaman close
+                window.location.href = '{{ route("cash-register.close") }}';
+            }
+        } else {
+            showToast('error', 'Gagal mengecek data penjualan');
+        }
+    })
+    .catch(() => {
+        showToast('error', 'Terjadi kesalahan saat tutup toko');
+    });
+}
+
+function closeCashRegisterSilent() {
+    // Tutup sesi tanpa redirect (untuk kasus tidak ada penjualan)
+    fetch('{{ route("cash-register.close-silent") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Sembunyikan button "Tutup Toko"
+            document.getElementById('btnCloseCashRegister').classList.add('hidden');
+            // Tampilkan button "Buka Toko"
+            document.getElementById('btnOpenCashRegister').classList.remove('hidden');
+            
+            showToast('success', 'Toko ditutup. Tidak ada penjualan di sesi ini.');
+        } else {
+            showToast('error', data.message || 'Gagal menutup toko');
+        }
+    })
+    .catch(() => {
+        showToast('error', 'Gagal menutup toko');
+    });
 }
 
 function updateCartQuantity(cartKey, newQty) {

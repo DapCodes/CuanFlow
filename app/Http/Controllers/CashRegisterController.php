@@ -17,10 +17,17 @@ class CashRegisterController extends Controller
         $userId = auth()->id();
         $outletId = auth()->user()->outlet_id;
 
-        // Cari cash register yang masih open
-        $register = CashRegister::open()
-            ->byUser($userId)
-            ->where('outlet_id', $outletId)
+        // Cari cash register yang masih open ATAU closed tapi belum difinalisasi
+        $register = CashRegister::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
+            ->where(function($q) {
+                $q->where('status', 'open')
+                ->orWhere(function($q2) {
+                    $q2->where('status', 'closed')
+                        ->whereNull('closing_amount');
+                });
+            })
+            ->latest('opened_at')
             ->first();
 
         if (!$register) {
@@ -29,12 +36,22 @@ class CashRegisterController extends Controller
 
         // Hitung summary penjualan
         $register->calculateSummary();
+        
+        // Update status jadi closed jika masih open
+        if ($register->status === 'open') {
+            $register->update([
+                'status' => 'closed',
+                'closed_at' => now(),
+            ]);
+        }
+        
         $register->save();
 
-        // Ambil detail transaksi hari ini
+        // Ambil detail transaksi dalam periode ini
         $sales = Sale::where('outlet_id', $outletId)
             ->where('cashier_id', $userId)
             ->where('created_at', '>=', $register->opened_at)
+            ->where('created_at', '<=', $register->closed_at ?? now())
             ->where('status', 'completed')
             ->with('items')
             ->latest()

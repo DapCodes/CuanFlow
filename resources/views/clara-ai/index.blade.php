@@ -21,6 +21,30 @@
     </li>
 @endsection
 
+@push('styles')
+<style>
+    /* Force word wrapping untuk text panjang */
+    .word-break {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
+    }
+    
+    /* Pastikan container chat tidak overflow */
+    #chatContainer {
+        overflow-x: hidden;
+    }
+    
+    /* Responsive text bubbles */
+    @media (max-width: 640px) {
+        .max-w-\[80\%\] {
+            max-width: 85%;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 
     <!-- Main Chat Interface -->
@@ -105,27 +129,22 @@
                 </div>
             </div>
 
-            <!-- Chat Messages -->
             <div class="flex-1 overflow-y-auto" id="chatContainer">
                 <div class="max-w-3xl mx-auto px-4 py-6">
                     @forelse($messages as $message)
                         @if ($message->role === 'user')
                             <div class="flex justify-end mb-4">
-                                <div
-                                    class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%] shadow-sm">
-                                    <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ $message->content }}</p>
+                                <div class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%] shadow-sm break-words">
+                                    <p class="text-sm leading-relaxed whitespace-pre-wrap break-words">{{ $message->content }}</p>
                                 </div>
                             </div>
                         @else
                             <div class="flex gap-3 mb-4">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
                                     <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
                                 </div>
-                                <div
-                                    class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[80%]">
-                                    <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
-                                        {{ $message->content }}</p>
+                                <div class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[80%] break-words overflow-hidden">
+                                    <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words word-break">{{ $message->content }}</p>
                                 </div>
                             </div>
                         @endif
@@ -294,14 +313,14 @@
                 }
 
                 // Add user message
-                const chatContent = container.querySelector('.max-w-3xl') || container;
-                chatContent.insertAdjacentHTML('beforeend', `
-        <div class="flex justify-end mb-4">
-            <div class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%] shadow-sm">
-                <p class="text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(message)}</p>
-            </div>
+const chatContent = container.querySelector('.max-w-3xl') || container;
+chatContent.insertAdjacentHTML('beforeend', `
+    <div class="flex justify-end mb-4">
+        <div class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%] shadow-sm break-words">
+            <p class="text-sm leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(message)}</p>
         </div>
-    `);
+    </div>
+`);
 
                 // Add loading
                 chatContent.insertAdjacentHTML('beforeend', `
@@ -340,15 +359,15 @@
 
                     if (data.success) {
                         chatContent.insertAdjacentHTML('beforeend', `
-                <div class="flex gap-3 mb-4">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                        <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
-                    </div>
-                    <div class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[80%]">
-                        <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">${escapeHtml(data.message)}</p>
-                    </div>
-                </div>
-            `);
+                            <div class="flex gap-3 mb-4">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                    <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[80%] break-words overflow-hidden">
+                                    <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words word-break">${escapeHtml(data.message)}</p>
+                                </div>
+                            </div>
+                        `);
 
                         if (data.remaining_quota !== undefined) {
                             updateQuota(data.remaining_quota);

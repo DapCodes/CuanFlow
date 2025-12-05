@@ -31,14 +31,42 @@ class PointOfSaleController extends Controller
 
     public function checkCashRegister()
     {
-        $openRegister = CashRegister::open()
-            ->byUser(auth()->id())
-            ->where('outlet_id', auth()->user()->outlet_id)
+        $userId = auth()->id();
+        $outletId = auth()->user()->outlet_id;
+
+        // Cek apakah ada register yang masih open
+        $openRegister = CashRegister::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
+            ->where('status', 'open')
             ->first();
 
+        if ($openRegister) {
+            return response()->json([
+                'is_open' => true,
+                'register' => $openRegister,
+            ]);
+        }
+
+        // Cek apakah ada register yang closed tapi belum difinalisasi (closing_amount NULL)
+        $unfinishedRegister = CashRegister::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
+            ->where('status', 'closed')
+            ->whereNull('closing_amount')
+            ->latest('closed_at')
+            ->first();
+
+        if ($unfinishedRegister) {
+            return response()->json([
+                'is_open' => false,
+                'has_unfinished' => true,
+                'register' => $unfinishedRegister,
+            ]);
+        }
+
         return response()->json([
-            'is_open' => $openRegister !== null,
-            'register' => $openRegister,
+            'is_open' => false,
+            'has_unfinished' => false,
+            'register' => null,
         ]);
     }
 
@@ -48,9 +76,9 @@ class PointOfSaleController extends Controller
         $outletId = auth()->user()->outlet_id;
 
         // Cek apakah sudah ada cash register yang open
-        $existingRegister = CashRegister::open()
-            ->byUser($userId)
-            ->where('outlet_id', $outletId)
+        $existingRegister = CashRegister::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
+            ->where('status', 'open')
             ->first();
 
         if ($existingRegister) {
@@ -60,24 +88,38 @@ class PointOfSaleController extends Controller
             ], 400);
         }
 
-        // Hitung opening amount dari sales sebelumnya yang belum di-register
-        $lastRegister = CashRegister::where('user_id', $userId)
-            ->where('outlet_id', $outletId)
+        // Cek apakah ada register yang closed tapi belum difinalisasi
+        $unfinishedRegister = CashRegister::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
             ->where('status', 'closed')
+            ->whereNull('closing_amount')
             ->latest('closed_at')
             ->first();
 
-        $openingAmount = 0;
-        
-        if ($lastRegister) {
-            // Ambil total cash dari sales setelah register terakhir ditutup
-            $openingAmount = Sale::where('outlet_id', $outletId)
-                ->where('cashier_id', $userId)
-                ->where('payment_method', 'cash')
-                ->where('status', 'completed')
-                ->where('created_at', '>', $lastRegister->closed_at)
-                ->sum('grand_total');
+        if ($unfinishedRegister) {
+            // Lanjutkan sesi yang belum selesai
+            $unfinishedRegister->update([
+                'status' => 'open',
+                'closed_at' => null, // Reset closed_at karena dibuka lagi
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Melanjutkan sesi penjualan sebelumnya',
+                'register' => $unfinishedRegister,
+                'is_continued' => true,
+            ]);
         }
+
+        // Hitung opening amount dari sales sebelumnya yang sudah difinalisasi
+        $lastRegister = CashRegister::where('user_id', $userId)
+            ->where('outlet_id', $outletId)
+            ->where('status', 'closed')
+            ->whereNotNull('closing_amount') // Hanya yang sudah difinalisasi
+            ->latest('closed_at')
+            ->first();
+
+        $openingAmount = $lastRegister ? $lastRegister->closing_amount : 0;
 
         // Buat cash register baru
         $register = CashRegister::create([
@@ -92,6 +134,7 @@ class PointOfSaleController extends Controller
             'success' => true,
             'message' => 'Sesi penjualan dimulai',
             'register' => $register,
+            'is_continued' => false,
         ]);
     }
 
@@ -295,5 +338,63 @@ class PointOfSaleController extends Controller
             'grand_total' => $grandTotal,
             'total_items' => $totalItems,
         ];
+    }
+
+    public function checkSales()
+    {
+        $cashRegister = CashRegister::where('outlet_id', auth()->user()->outlet_id)
+            ->where('user_id', auth()->id())
+            ->where('status', 'open')
+            ->latest()
+            ->first();
+
+        if (!$cashRegister) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi toko tidak ditemukan'
+            ]);
+        }
+
+        // Hitung total penjualan di sesi ini
+        $totalSales = Sale::where('outlet_id', $cashRegister->outlet_id)
+            ->where('cashier_id', $cashRegister->user_id)
+            ->where('created_at', '>=', $cashRegister->opened_at)
+            ->where('status', 'completed')
+            ->sum('grand_total');
+
+        return response()->json([
+            'success' => true,
+            'total_sales' => $totalSales
+        ]);
+    }
+
+    public function closeSilent(Request $request)
+    {
+        $cashRegister = CashRegister::where('outlet_id', auth()->user()->outlet_id)
+            ->where('user_id', auth()->id())
+            ->where('status', 'open')
+            ->latest()
+            ->first();
+
+        if (!$cashRegister) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi toko tidak ditemukan'
+            ]);
+        }
+
+        // Hitung summary
+        $cashRegister->calculateSummary();
+
+        // Tutup sesi (status closed tapi closing_amount NULL = belum difinalisasi)
+        $cashRegister->update([
+            'status' => 'closed',
+            'closed_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Toko berhasil ditutup'
+        ]);
     }
 }

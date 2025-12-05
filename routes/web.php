@@ -142,6 +142,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pos', [PointOfSaleController::class, 'index'])->name('pos.index');
     Route::get('/pos/check-register', [PointOfSaleController::class, 'checkCashRegister'])->name('cash-register.check');
     Route::post('/pos/start-register', [PointOfSaleController::class, 'startCashRegister'])->name('cash-register.start');
+    Route::get('/cash-register/check-sales', [PointOfSaleController::class, 'checkSales'])->name('cash-register.check-sales');
+    Route::post('/cash-register/close-silent', [PointOfSaleController::class, 'closeSilent'])->name('cash-register.close-silent');
     Route::post('/pos/cart/add', [PointOfSaleController::class, 'addToCart'])->name('pos.cart.add');
     Route::post('/pos/cart/update', [PointOfSaleController::class, 'updateCartItem'])->name('pos.cart.update');
     Route::delete('/pos/cart/remove', [PointOfSaleController::class, 'removeCartItem'])->name('pos.cart.remove');
