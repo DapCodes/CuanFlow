@@ -172,27 +172,24 @@
                                 <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                                     <div class="flex items-center">
                                         <i class="fas fa-money-bill-wave text-blue-600 mr-2"></i>
-                                        <span class="text-sm font-medium text-gray-700">Cash</span>
                                     </div>
                                     <span id="cashTotalText" class="text-sm font-bold text-blue-600">Rp {{ number_format($cashTotal, 0, ',', '.') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                                     <div class="flex items-center">
                                         <i class="fas fa-qrcode text-green-600 mr-2"></i>
-                                        <span class="text-sm font-medium text-gray-700">QRIS</span>
                                     </div>
                                     <span id="qrisTotalText" class="text-sm font-bold text-green-600">Rp {{ number_format($qrisTotal, 0, ',', '.') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
                                     <div class="flex items-center">
                                         <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
-                                        <span class="text-sm font-medium text-gray-700">Transfer</span>
                                     </div>
                                     <span id="transferTotalText" class="text-sm font-bold text-purple-600">Rp {{ number_format($transferTotal, 0, ',', '.') }}</span>
                                 </div>
                                 <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg border-2 border-gray-300 gap-1">
                                     <span class="text-sm font-bold text-gray-900">Total</span>
-                                    <span id="revenueTotalText" class="text-lg font-bold text-gray-900">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</span>
+                                    <span id="revenueTotalText" class="text-sm font-bold text-gray-900">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</span>
                                 </div>
                             </div>
                         </div>

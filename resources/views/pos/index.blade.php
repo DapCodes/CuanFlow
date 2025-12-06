@@ -558,7 +558,7 @@
             <button onclick="declineStartSales()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
                 Tidak
             </button>
-            <button onclick="startCashRegister()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg">
+            <button onclick="openOpeningAmountModal()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg">
                 Ya, Mulai
             </button>
         </div>
@@ -812,7 +812,7 @@
                         <i class="fas fa-sign-out-alt mr-1"></i> Tutup Toko
                     </button>
                     <!-- Button Buka Toko (default hidden) -->
-                    <button onclick="openCashRegister()" id="btnOpenCashRegister" class="hidden px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-semibold hover:bg-green-600 transition-all">
+                    <button onclick="openOpeningAmountModal()" id="btnOpenCashRegister" class="hidden px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-semibold hover:bg-green-600 transition-all">
                         <i class="fas fa-door-open mr-1"></i> Buka Toko
                     </button>
                 </div>
@@ -862,6 +862,51 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: Input Modal Awal -->
+<div id="openingAmountModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 lg:p-8">
+        <div class="text-center mb-5">
+            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-1">Modal Awal</h3>
+            <p class="text-gray-600 text-sm">Masukkan jumlah uang modal awal untuk hari ini</p>
+        </div>
+        <div class="bg-green-50 rounded-xl p-3 mb-5">
+            <p class="text-xs sm:text-sm text-gray-700 text-center">
+                <i class="fas fa-info-circle text-green-600 mr-1.5"></i>
+                Modal awal adalah uang tunai yang Anda bawa untuk memulai penjualan hari ini
+            </p>
+        </div>
+        <div class="mb-5">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Modal Awal (Rp):</label>
+            <input 
+                type="number" 
+                id="openingAmountInput" 
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-base font-semibold" 
+                placeholder="0"
+                min="0"
+                step="1000"
+                onkeypress="if(event.key==='Enter') submitOpeningAmount()">
+            <p class="text-xs text-gray-500 mt-2">
+                <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
+                Contoh: Rp 100.000 untuk kembalian dan pengeluaran tak terduga
+            </p>
+        </div>
+        <div class="flex gap-2.5">
+            <button onclick="skipOpeningAmount()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                Lewati (Rp 0)
+            </button>
+            <button onclick="submitOpeningAmount()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg text-sm font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg">
+                Simpan & Mulai
+            </button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -928,31 +973,126 @@ function closeStartSalesModal() {
     document.getElementById('startSalesModal').classList.add('hidden'); 
 }
 
-function startCashRegister() {
+// function startCashRegister() { ... } - SUDAH DIGANTI DENGAN openOpeningAmountModal dan submitOpeningAmount
+
+// Fungsi buka modal input modal awal
+function openOpeningAmountModal() {
+    document.getElementById('openingAmountModal').classList.remove('hidden');
+    setTimeout(() => {
+        document.getElementById('openingAmountInput').focus();
+    }, 200);
+}
+
+// Fungsi tutup modal input modal awal
+function closeOpeningAmountModal() {
+    document.getElementById('openingAmountModal').classList.add('hidden');
+    document.getElementById('openingAmountInput').value = '';
+}
+
+// Fungsi submit modal awal
+function submitOpeningAmount() {
+    const amount = parseFloat(document.getElementById('openingAmountInput').value) || 0;
+    
+    if (amount < 0) {
+        showToast('warning', 'Jumlah tidak boleh negatif');
+        return;
+    }
+
+    // Start session first
     fetch('{{ route("cash-register.start") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
     })
-    .then(r=>r.json()).then(data=>{
-        if(data.success){ 
-            const message = data.is_continued 
-                ? 'Melanjutkan sesi penjualan sebelumnya' 
-                : 'Sesi penjualan dimulai';
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            if (data.is_continued) {
+                // Jika melanjutkan sesi, tidak perlu set opening amount lagi (atau bisa diupdate jika perlu logic khusus)
+                closeOpeningAmountModal();
+                closeStartSalesModal(); // Pastikan modal welcome juga tertutup
+                showToast('success', 'Melanjutkan sesi penjualan sebelumnya');
+                
+                document.getElementById('btnCloseCashRegister').classList.remove('hidden');
+                document.getElementById('btnOpenCashRegister').classList.add('hidden');
+                sessionStorage.removeItem('pos_declined_modal');
+            } else {
+                // Sesi baru berhasil dibuat, sekarang set opening amount
+                setOpeningAmount(amount);
+            }
+        } else {
+            showToast('error', data.message || 'Gagal memulai sesi');
+        }
+    })
+    .catch(() => {
+        showToast('error', 'Terjadi kesalahan saat memulai sesi');
+    });
+}
+
+// Helper function untuk set opening amount setelah sesi dibuat
+function setOpeningAmount(amount) {
+    fetch('{{ route("cash-register.set-opening-amount") }}', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+        },
+        body: JSON.stringify({ opening_amount: amount })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeOpeningAmountModal();
+            closeStartSalesModal(); // Pastikan modal welcome juga tertutup
+            showToast('success', `Modal awal Rp ${formatNumber(amount)} berhasil diset`);
             
-            showToast('success', message); 
-            closeStartSalesModal();
-            
-            // Tampilkan button "Tutup Toko"
+            // Tampilkan button tutup toko
             document.getElementById('btnCloseCashRegister').classList.remove('hidden');
-            // Sembunyikan button "Buka Toko"
             document.getElementById('btnOpenCashRegister').classList.add('hidden');
             
-            // Hapus status declined karena toko sudah dibuka
+            // Hapus status declined
             sessionStorage.removeItem('pos_declined_modal');
-        } else { 
-            showToast('error', data.message); 
+        } else {
+            showToast('error', data.message || 'Gagal menyimpan modal awal');
         }
-    }).catch(()=>showToast('error','Gagal memulai penjualan'));
+    })
+    .catch(() => {
+        showToast('error', 'Terjadi kesalahan saat menyimpan modal awal');
+    });
+}
+
+// Fungsi lewati modal awal (set 0)
+function skipOpeningAmount() {
+    if (!confirm('Yakin ingin melewati input modal awal? Modal awal akan diset Rp 0')) {
+        return;
+    }
+    
+    // Start session first
+    fetch('{{ route("cash-register.start") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            if (data.is_continued) {
+                closeOpeningAmountModal();
+                closeStartSalesModal();
+                showToast('success', 'Melanjutkan sesi penjualan sebelumnya');
+                
+                document.getElementById('btnCloseCashRegister').classList.remove('hidden');
+                document.getElementById('btnOpenCashRegister').classList.add('hidden');
+                sessionStorage.removeItem('pos_declined_modal');
+            } else {
+                // Sesi baru, set amount 0
+                setOpeningAmount(0);
+            }
+        } else {
+            showToast('error', data.message || 'Gagal memulai sesi');
+        }
+    })
+    .catch(() => {
+        showToast('error', 'Terjadi kesalahan');
+    });
 }
 
 // Fungsi saat user pilih "Tidak" di modal
@@ -969,28 +1109,8 @@ function declineStartSales() {
     showToast('info', 'Anda bisa buka toko kapan saja dengan klik tombol "Buka Toko"');
 }
 
-// Fungsi untuk buka toko (dipanggil dari button hijau)
-function openCashRegister() {
-    fetch('{{ route("cash-register.start") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
-    })
-    .then(r=>r.json()).then(data=>{
-        if(data.success){ 
-            // Sembunyikan button "Buka Toko"
-            document.getElementById('btnOpenCashRegister').classList.add('hidden');
-            // Tampilkan button "Tutup Toko"
-            document.getElementById('btnCloseCashRegister').classList.remove('hidden');
-            
-            // Hapus status declined karena toko sudah dibuka
-            sessionStorage.removeItem('pos_declined_modal');
-            
-            showToast('success','Toko berhasil dibuka! Sesi penjualan dimulai'); 
-        } else { 
-            showToast('error', data.message); 
-        }
-    }).catch(()=>showToast('error','Gagal membuka toko'));
-}
+// Fungsi untuk buka toko (dipanggil dari button hijau) - SUDAH DIGANTI DENGAN openOpeningAmountModal
+// function openCashRegister() { ... }
 
 function showToast(type, message) {
     const container = document.getElementById('toastContainer');
@@ -1475,6 +1595,11 @@ document.addEventListener('keydown', function(e){
         if (UI_STATE === 'cash' || UI_STATE === 'transfer' || UI_STATE === 'midtrans') setUIState('select');
         else if (UI_STATE === 'select') setUIState('browse');
         document.getElementById('paymentSuccessModal').classList.add('hidden');
+        const openingModal = document.getElementById('openingAmountModal');
+        if (!openingModal.classList.contains('hidden')) {
+            closeOpeningAmountModal();
+        }
+
     }
     if (e.key === 'Enter' && UI_STATE === 'cash') { 
         e.preventDefault(); 

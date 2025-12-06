@@ -125,7 +125,7 @@ class PointOfSaleController extends Controller
         $register = CashRegister::create([
             'outlet_id' => $outletId,
             'user_id' => $userId,
-            'opening_amount' => $openingAmount,
+            'opening_amount' => null, // Set NULL dulu, akan diisi di modal berikutnya
             'opened_at' => now(),
             'status' => 'open',
         ]);
@@ -395,6 +395,42 @@ class PointOfSaleController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Toko berhasil ditutup'
+        ]);
+    }
+
+    public function setOpeningAmount(Request $request)
+    {
+        $request->validate([
+            'opening_amount' => 'required|numeric|min:0',
+        ]);
+
+        $userId = auth()->id();
+        $outletId = auth()->user()->outlet_id;
+
+        // Cari register yang baru dibuat (status open)
+        $register = CashRegister::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
+            ->where('status', 'open')
+            ->whereNull('opening_amount') // Belum diisi opening amount
+            ->latest('opened_at')
+            ->first();
+
+        if (!$register) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi penjualan tidak ditemukan',
+            ], 404);
+        }
+
+        // Update opening amount
+        $register->update([
+            'opening_amount' => $request->opening_amount,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Modal awal berhasil diset',
+            'register' => $register,
         ]);
     }
 }

@@ -153,6 +153,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/pos/cart/clear', [PointOfSaleController::class, 'clearCart'])->name('pos.cart.clear');
     Route::post('/pos/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('pos.customer.set');
     
+    Route::post('/cash-register/set-opening-amount', [PointOfSaleController::class, 'setOpeningAmount'])
+    ->name('cash-register.set-opening-amount');
+    
     // Cash Register Routes
     Route::get('/cash-register/close', [CashRegisterController::class, 'showClosePage'])->name('cash-register.close');
     Route::post('/cash-register/process-close', [CashRegisterController::class, 'processClose'])->name('cash-register.process-close');

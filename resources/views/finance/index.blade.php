@@ -24,6 +24,31 @@
         </div>
         @endif
 
+        <x-card-container> 
+                    <div class="bg-gradient-to-br from-purple-100 to-pink-50 p-6 border-b border-gray-200">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-utensils text-cuan-green mr-3"></i>
+                        Daftar Produk & Resep
+                        </h2>
+                        <p class="text-sm text-gray-600 mt-1">Kelola produk dan resep dengan perhitungan HPP otomatis</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center justify-center px-5 py-3 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-500 transition-all duration-200 shadow-md hover:shadow-lg">
+                            <i class="fas fa-plus-circle mr-2"></i>
+                            Tambah Pengeluaran
+                        </a>
+                        <a href="{{ route('raw-materials.suppliers.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white text-green-600 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
+                            <i class="fas fa-plus-circle mr-2"></i>
+                            Tambah Pemasukan
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
         <!-- Summary Cards Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"> 
             
@@ -401,6 +426,8 @@
         </div>
     </div>
 </main>
+        </x-card-container>
+
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>

@@ -6,6 +6,7 @@ use App\Models\CashRegister;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CashRegisterController extends Controller
 {
@@ -17,16 +18,10 @@ class CashRegisterController extends Controller
         $userId = auth()->id();
         $outletId = auth()->user()->outlet_id;
 
-        // Cari cash register yang masih open ATAU closed tapi belum difinalisasi
+        // Cari cash register yang masih open
         $register = CashRegister::where('outlet_id', $outletId)
             ->where('user_id', $userId)
-            ->where(function($q) {
-                $q->where('status', 'open')
-                ->orWhere(function($q2) {
-                    $q2->where('status', 'closed')
-                        ->whereNull('closing_amount');
-                });
-            })
+            ->where('status', 'open')
             ->latest('opened_at')
             ->first();
 
@@ -34,24 +29,14 @@ class CashRegisterController extends Controller
             return redirect()->route('pos.index')->with('error', 'Tidak ada sesi penjualan yang aktif');
         }
 
-        // Hitung summary penjualan
+        // Hitung summary penjualan real-time
         $register->calculateSummary();
-        
-        // Update status jadi closed jika masih open
-        if ($register->status === 'open') {
-            $register->update([
-                'status' => 'closed',
-                'closed_at' => now(),
-            ]);
-        }
-        
         $register->save();
 
         // Ambil detail transaksi dalam periode ini
         $sales = Sale::where('outlet_id', $outletId)
             ->where('cashier_id', $userId)
             ->where('created_at', '>=', $register->opened_at)
-            ->where('created_at', '<=', $register->closed_at ?? now())
             ->where('status', 'completed')
             ->with('items')
             ->latest()
@@ -73,9 +58,11 @@ class CashRegisterController extends Controller
         $userId = auth()->id();
         $outletId = auth()->user()->outlet_id;
 
-        $register = CashRegister::open()
-            ->byUser($userId)
-            ->where('outlet_id', $outletId)
+        // Cari register yang masih OPEN
+        $register = CashRegister::where('outlet_id', $outletId)
+            ->where('user_id', $userId)
+            ->where('status', 'open')
+            ->latest('opened_at')
             ->first();
 
         if (!$register) {
@@ -87,10 +74,19 @@ class CashRegisterController extends Controller
 
         DB::beginTransaction();
         try {
+            // Hitung summary terakhir sebelum tutup
+            $register->calculateSummary();
+            
             // Tutup cash register
             $register->close($request->closing_amount, $request->notes);
 
             DB::commit();
+
+            Log::info('Cash register closed successfully', [
+                'register_id' => $register->id,
+                'user_id' => $userId,
+                'closing_amount' => $request->closing_amount,
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -100,7 +96,10 @@ class CashRegisterController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Close Cash Register Error: ' . $e->getMessage());
+            Log::error('Close Cash Register Error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'success' => false,
@@ -115,7 +114,7 @@ class CashRegisterController extends Controller
     public function history()
     {
         $userId = auth()->id();
-        $outletId = auth()->user()->outlet_id();
+        $outletId = auth()->user()->outlet_id;
 
         $registers = CashRegister::where('outlet_id', $outletId)
             ->where('user_id', $userId)
@@ -135,13 +134,18 @@ class CashRegisterController extends Controller
         $register = CashRegister::with(['user', 'outlet'])
             ->findOrFail($id);
 
+        // Cek akses
+        if ($register->outlet_id !== auth()->user()->outlet_id && !auth()->user()->isOwner()) {
+            abort(403, 'Akses ditolak');
+        }
+
         // Ambil sales dalam periode register ini
         $sales = Sale::where('outlet_id', $register->outlet_id)
             ->where('cashier_id', $register->user_id)
             ->where('created_at', '>=', $register->opened_at)
             ->where('created_at', '<=', $register->closed_at ?? now())
             ->where('status', 'completed')
-            ->with('items')
+            ->with('items.product')
             ->latest()
             ->get();
 
