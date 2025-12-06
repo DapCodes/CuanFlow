@@ -536,7 +536,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="1"
        data-title="Point of Sale"
-       data-intro="<strong>Transaksi Sat-Set!</strong> Menu wajib untuk <strong>mencatat semua penjualan</strong> secara cepat dan akurat. Tingkatkan efisiensi kasir Anda dan hindari antrian panjang!">
+       data-intro="<strong>Catat penjualan di kasir.</strong> Gunakan menu ini untuk memasukkan setiap transaksi dengan cepat dan rapi, sehingga antrian tidak menumpuk.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-cash-register text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -549,7 +549,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="2"
        data-title="Penjualan"
-       data-intro="<strong>Mesin Gimmick Peningkat Omzet!</strong> Kelola strategi penjualan yang membuat <strong>pelanggan balik lagi</strong>.">
+       data-intro="<strong>Kelola semua penjualan.</strong> Lihat riwayat penjualan untuk mengetahui produk mana yang paling laku dan perkembangan usaha Anda.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-cart-shopping text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -562,7 +562,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="3"
        data-title="Diskon"
-       data-intro="<strong>Promo Dahsyat Auto Laris!</strong> Buat dan atur promo heboh, diskon menarik yang bikin <strong>pelanggan happy</strong> dan omzet meningkat!">
+       data-intro="<strong>Atur promo dan diskon.</strong> Buat potongan harga dengan cara sederhana agar pelanggan tertarik dan penjualan meningkat.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-red-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-tags text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -575,7 +575,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="4"
        data-title="Keuangan"
-       data-intro="<strong>Kontrol Arus Kas Total!</strong> Catat semua transaksi <strong>masuk dan keluar</strong> uang. Pastikan <strong>kondisi keuangan</strong> bisnis Anda selalu sehat dan terkendali. Tidur pun nyenyak!">
+       data-intro="<strong>Catat uang masuk dan keluar.</strong> Menu ini membantu Anda melihat kondisi keuangan usaha sehingga lebih mudah mengontrol arus kas.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-wallet text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -589,7 +589,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="5"
        data-title="Dashboard & Statistik"
-       data-intro="<strong>Monitor Performa Real-Time!</strong> Lihat ringkasan dan tren bisnis Anda dalam visual yang <strong>mudah dipahami</strong>. Siap mengambil <strong>keputusan strategis</strong> berdasarkan data terbaru.">
+       data-intro="<strong>Lihat ringkasan usaha Anda.</strong> Tampilkan grafik dan angka penting seperti penjualan dan keuntungan dalam tampilan yang mudah dipahami.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-chart-line text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -602,7 +602,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="6"
        data-title="Laporan Keseluruhan"
-       data-intro="<strong>Koleksi Laporan Lengkap!</strong> Tempat untuk <strong>mengakses dan mengunduh</strong> semua laporan (harian, mingguan, bulanan). Lakukan analisis mendalam untuk <strong>strategi cuan</strong> bisnis Anda.">
+       data-intro="<strong>Kumpulan laporan usaha.</strong> Akses dan unduh laporan harian, mingguan, dan bulanan untuk dicek atau dibagikan ke partner.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-file-invoice text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -616,7 +616,7 @@
        class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="7"
        data-title="Produk & Resep"
-       data-intro="<strong>Dapur Rahasia Cuan!</strong> Atur daftar produk dan resep, plus <strong>hitung Harga Pokok Penjualan (HPP)</strong> yang akurat. Tentukan harga jual optimal agar <strong>pelanggan senang, Anda cuan</strong>!">
+       data-intro="<strong>Atur daftar menu dan resep.</strong> Hitung otomatis harga pokok penjualan (HPP) sehingga Anda bisa menentukan harga jual yang pas.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-utensils text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -629,7 +629,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="8"
        data-title="Bahan Baku"
-       data-intro="<strong>Logistik Anti Kehabisan!</strong> Kelola detail <strong>bahan baku</strong> dan stok yang dibutuhkan. Dijamin, operasional dapur Anda <strong>tidak akan pernah *stuck*</strong> karena kehabisan stok.">
+       data-intro="<strong>Data stok bahan baku.</strong> Cek dan perbarui stok agar dapur tidak kehabisan bahan saat produksi.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-boxes-stacked text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -642,7 +642,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="9"
        data-title="Supplier"
-       data-intro="<strong>Database Mitra Terpercaya!</strong> Kelola <strong>kontak supplier</strong> andalan Anda. Hubungan baik dengan supplier = bisnis lancar jaya!">
+       data-intro="<strong>Daftar pemasok bahan.</strong> Simpan nama, kontak, dan catatan supplier agar mudah dihubungi saat membutuhkan barang.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-truck-field text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -655,7 +655,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="10"
        data-title="Produksi"
-       data-intro="<strong>Pusat Efisiensi Produksi!</strong> Kelola alur kerja dari bahan mentah hingga produk akhir. <strong>Tingkatkan hasil produksi</strong> tanpa pusing dengan manajemen yang teratur.">
+       data-intro="<strong>Catat proses produksi.</strong> Pantau pemakaian bahan sampai menjadi produk jadi, supaya produksi lebih teratur dan terkontrol.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-flask text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -668,7 +668,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="11"
        data-title="Stock Opname"
-       data-intro="<strong>Detektif Stok Anti Rugi!</strong> Lakukan pencocokan <strong>stok fisik dengan data sistem</strong> secara berkala. Pastikan akurasi inventaris Anda <strong>100% *matching*</strong>.">
+       data-intro="<strong>Cek ulang stok barang.</strong> Cocokkan stok di sistem dengan stok di gudang untuk mengurangi selisih dan kerugian.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-green-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-boxes-packing text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -682,7 +682,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="12"
        data-title="Informasi Outlet"
-       data-intro="<strong>Base Camp Bisnis Anda!</strong> Kelola semua <strong>data penting outlet</strong> (alamat, jam buka, dll.). Pastikan pelanggan selalu tahu di mana menemukan Anda!">
+       data-intro="<strong>Data toko/outlet Anda.</strong> Simpan alamat, jam buka, dan informasi penting lain agar data usaha selalu rapi.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-store text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -695,7 +695,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="13"
        data-title="Pegawai & Hak Akses"
-       data-intro="<strong>Kelola Tim Terbaik!</strong> Tambah data tim andalan dan atur <strong>siapa boleh mengakses apa</strong> di sistem. Kerja aman, kerjaan lancar terkendali.">
+       data-intro="<strong>Atur data karyawan.</strong> Tambah pegawai dan tentukan menu apa saja yang boleh mereka akses di sistem.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-users text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -708,7 +708,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="14"
        data-title="Kebijakan Outlet"
-       data-intro="<strong>Kitab Suci SOP Bisnis!</strong> Tempat <strong>mendokumentasikan semua aturan</strong> dan standar operasional. Pastikan <strong>konsistensi</strong> dan kualitas layanan Anda terjamin.">
+       data-intro="<strong>Catatan aturan usaha.</strong> Simpan SOP dan kebijakan sederhana agar semua pegawai bekerja dengan cara yang sama.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-clipboard-list text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -722,7 +722,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="15"
        data-title="Insight"
-       data-intro="<strong>Data Jadi Keputusan Cerdas!</strong> Dapatkan <strong>analisis mendalam</strong> dan rekomendasi bisnis berbasis data untuk <strong>strategi jitu</strong> meningkatkan performa.">
+       data-intro="<strong>Saran dari data usaha.</strong> Lihat ringkasan dan saran sederhana berdasarkan data penjualan untuk membantu Anda mengambil keputusan.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-violet-400 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-lightbulb text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -735,7 +735,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="16"
        data-title="Clara AI"
-       data-intro="<strong>Partner Analisis Cerdas!</strong> Siap diajak diskusi tentang performa bisnis, analisis data, dan <strong>strategi cuan</strong>. Tanya apa saja, AI siap kasih <i>insight</i> tajam!">
+       data-intro="<strong>Asisten pintar untuk usaha Anda.</strong> Tanyakan apa saja tentang penjualan, biaya, atau laporan, dan dapatkan jawaban dalam bahasa yang mudah dipahami.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <!-- <i class="fa-solid fa-robot text-4xl sm:text-5xl text-white"></i> -->
             <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-2" alt="">
@@ -750,7 +750,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="17"
        data-title="Pengaturan Akun"
-       data-intro="<strong>Kontrol Akun Pribadi Anda!</strong> Atur profil, ganti <strong>password</strong>, update kontak, dan sesuaikan preferensi akun. Jaga keamanan data digital Anda!">
+       data-intro="<strong>Atur profil akun Anda.</strong> Ubah nama, kata sandi, dan kontak untuk menjaga keamanan dan kerapihan data.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-500 to-gray-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-user-gear text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -763,7 +763,7 @@
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="18"
        data-title="Bantuan & FAQ"
-       data-intro="<strong>Pusat Solusi Cepat!</strong> Temukan jawaban atas pertanyaan umum dan <strong>panduan lengkap</strong> agar Anda semakin jago menggunakan sistem.">
+       data-intro="<strong>Panduan penggunaan aplikasi.</strong> Baca langkah-langkah sederhana dan jawaban pertanyaan umum saat Anda membutuhkan bantuan.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-circle-question text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -773,6 +773,7 @@
     </a>
 
 </div>
+
 </div>
 <!-- Modal Sapaan Selamat Datang (tambahkan sebelum modal noOutlet) -->
 <div id="welcomeTourModal" class="hidden modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
@@ -840,8 +841,8 @@
         <!-- Header -->
         <div class="flex items-start justify-between mb-6">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-lightbulb text-2xl text-white"></i>
+                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-2" alt="">
                 </div>
                 <div>
                     <h2 class="text-2xl font-bold text-gray-900">Insight Baru dari Clara AI</h2>

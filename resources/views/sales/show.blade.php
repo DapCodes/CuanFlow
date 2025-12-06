@@ -4,7 +4,7 @@
 
 @section('content')
 <main class="flex-grow py-4 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold text-gray-900">Detail Penjualan</h1>
             <span class="text-xs font-mono bg-slate-100 px-2 py-1 rounded">
@@ -108,7 +108,7 @@
                             <td class="px-3 py-1">
                                 <div class="font-semibold text-gray-800">{{ $item->product_name }}</div>
                             </td>
-                            <td class="px-3 py-1 text-right">{{ $item->quantity }}</td>
+                            <td class="px-3 py-1 text-right">{{ number_format($item->quantity, 0, ',', '.') }} {{$item->product->unit->name}}</td>
                             <td class="px-3 py-1 text-right">
                                 Rp {{ number_format($item->unit_price, 0, ',', '.') }}
                             </td>

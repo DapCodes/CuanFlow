@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
+use App\Models\SaleItem;
 use App\Models\Purchase;
 use App\Models\Expense;
 use App\Models\CashRegister;
@@ -22,10 +23,72 @@ class FinanceController extends Controller
         $expenseStartDate = $request->get('expense_start_date');
         $expenseEndDate = $request->get('expense_end_date');
 
-        // Get sales for selected date
+        // ==================== PENDAPATAN ====================
+        
+        // Pendapatan Hari Ini
         $startOfDay = Carbon::parse($selectedDate)->startOfDay();
         $endOfDay = Carbon::parse($selectedDate)->endOfDay();
+        
+        $dailyRevenue = Sale::where('outlet_id', $outletId)
+            ->completed()
+            ->whereBetween('created_at', [$startOfDay, $endOfDay])
+            ->sum('grand_total');
 
+        // Pendapatan Minggu Ini (7 hari terakhir)
+        $startOfWeek = Carbon::now()->subDays(6)->startOfDay();
+        $endOfWeek = Carbon::now()->endOfDay();
+        
+        $weeklyRevenue = Sale::where('outlet_id', $outletId)
+            ->completed()
+            ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
+            ->sum('grand_total');
+
+        // Pendapatan Bulan Ini
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+        
+        $monthlyRevenue = Sale::where('outlet_id', $outletId)
+            ->completed()
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->sum('grand_total');
+
+        // ==================== PENGELUARAN ====================
+        
+        // Pengeluaran Hari Ini
+        $dailyExpenses = Expense::where('outlet_id', $outletId)
+            ->whereDate('expense_date', Carbon::parse($selectedDate))
+            ->where('amount', '>', 0)
+            ->sum('amount');
+
+        // Pengeluaran Minggu Ini (7 hari terakhir)
+        $weeklyExpenses = Expense::where('outlet_id', $outletId)
+            ->whereBetween('expense_date', [$startOfWeek, $endOfWeek])
+            ->where('amount', '>', 0)
+            ->sum('amount');
+
+        // Pengeluaran Bulan Ini
+        $monthlyExpenses = Expense::where('outlet_id', $outletId)
+            ->whereBetween('expense_date', [$startOfMonth, $endOfMonth])
+            ->where('amount', '>', 0)
+            ->sum('amount');
+
+        // ==================== TOTAL & SALDO ====================
+        
+        // Total Revenue (Saldo Kas Total) - All Time
+        $totalRevenue = Sale::where('outlet_id', $outletId)
+            ->completed()
+            ->sum('grand_total');
+
+        // Total Expenses - All Time
+        $allTimeExpenses = Expense::where('outlet_id', $outletId)
+            ->where('amount', '>', 0)
+            ->sum('amount');
+
+        // Net Income (Saldo Bersih)
+        $totalNetIncome = $totalRevenue - $allTimeExpenses;
+
+        // ==================== PAYMENT METHODS (Daily) ====================
+        
         $sales = Sale::where('outlet_id', $outletId)
             ->completed()
             ->whereBetween('created_at', [$startOfDay, $endOfDay])
@@ -33,76 +96,155 @@ class FinanceController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Calculate payment method totals
         $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
         $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
         $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
-        $totalRevenue = $sales->sum('grand_total');
 
-        // Get daily summary
-        $dailyProfit = $sales->sum(fn($s) => $s->getTotalProfit());
+        // ==================== PROFIT CALCULATIONS ====================
         
-        $dailyExpenses = Expense::where('outlet_id', $outletId)
-            ->whereBetween('expense_date', [$startOfDay, $endOfDay])
-            ->where('amount', '>', 0)
-            ->sum('amount');
+        $dailyProfit = $sales->sum(fn($s) => $s->getTotalProfit());
+        $dailyNetIncome = $dailyRevenue - $dailyExpenses;
 
-        $dailyNetIncome = $totalRevenue - $dailyExpenses;
-
-        // Get all-time summary (if no date selected or for comparison)
-        $allTimeRevenue = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->sum('grand_total');
-
+        // All-time summary
+        $allTimeRevenue = $totalRevenue;
         $allTimeProfit = Sale::where('outlet_id', $outletId)
             ->completed()
             ->get()
             ->sum(fn($s) => $s->getTotalProfit());
+        $allTimeNetIncome = $totalNetIncome;
 
-        $allTimeExpenses = Expense::where('outlet_id', $outletId)
-            ->where('amount', '>', 0)
-            ->sum('amount');
-
-        $allTimeNetIncome = $allTimeRevenue - $allTimeExpenses;
-
-        // Get cash registers
+        // ==================== CASH REGISTERS ====================
+        
         $cashRegisters = CashRegister::where('outlet_id', $outletId)
             ->with('user')
             ->latest('opened_at')
             ->paginate(10, ['*'], 'cash_page');
 
-        // Get expenses with filter
+        // ==================== EXPENSES LIST ====================
+        
         [$expenseStart, $expenseEnd] = $this->getExpenseDateRange($expensePeriod, $expenseStartDate, $expenseEndDate);
         
         $expenses = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$expenseStart, $expenseEnd])
+            ->where('amount', '>', 0)
             ->with(['category', 'creator'])
-            ->orderBy('expense_date', 'desc')
+            ->orderBy('amount', 'desc')
             ->paginate(15, ['*'], 'expense_page');
 
         $expenseCategories = ExpenseCategory::where('is_active', true)->get();
 
+        // ==================== SALES LIST (untuk tabel) ====================
+        
+        $salesList = Sale::where('outlet_id', $outletId)
+            ->completed()
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->with(['customer', 'cashier'])
+            ->orderBy('grand_total', 'desc')
+            ->get();
+
         return view('finance.index', compact(
-            'sales',
             'selectedDate',
-            'cashTotal',
-            'qrisTotal',
-            'transferTotal',
-            'totalRevenue',
-            'dailyProfit',
-            'dailyExpenses',
-            'dailyNetIncome',
-            'allTimeRevenue',
-            'allTimeProfit',
-            'allTimeExpenses',
-            'allTimeNetIncome',
-            'cashRegisters',
-            'expenses',
-            'expenseCategories',
-            'expensePeriod',
-            'expenseStartDate',
-            'expenseEndDate'
+            'dailyRevenue', 'weeklyRevenue', 'monthlyRevenue',
+            'dailyExpenses', 'weeklyExpenses', 'monthlyExpenses',
+            'totalRevenue', 'totalNetIncome',
+            'sales', 'salesList', 'cashTotal', 'qrisTotal', 'transferTotal',
+            'dailyProfit', 'dailyNetIncome',
+            'allTimeRevenue', 'allTimeProfit', 'allTimeExpenses', 'allTimeNetIncome',
+            'cashRegisters', 'expenses', 'expenseCategories',
+            'expensePeriod', 'expenseStartDate', 'expenseEndDate'
         ));
+    }
+
+    public function getRevenueChart(Request $request): JsonResponse
+    {
+        $outletId = auth()->user()->outlet_id;
+        $period = $request->get('period', 'month'); // week, month, year
+
+        [$startDate, $endDate] = $this->getDateRange($period);
+
+        // Get top 5 products by revenue
+        $topProducts = SaleItem::join('sales', 'sale_items.sale_id', '=', 'sales.id')
+            ->join('products', 'sale_items.product_id', '=', 'products.id')
+            ->where('sales.outlet_id', $outletId)
+            ->where('sales.status', 'completed')
+            ->whereBetween('sales.created_at', [$startDate, $endDate])
+            ->select(
+                'products.name',
+                DB::raw('SUM(sale_items.subtotal) as total_revenue'),
+                DB::raw('COUNT(sale_items.id) as total_sold')
+            )
+            ->groupBy('products.id', 'products.name')
+            ->orderBy('total_revenue', 'desc')
+            ->limit(5)
+            ->get();
+
+        $labels = $topProducts->pluck('name')->toArray();
+        $data = $topProducts->pluck('total_revenue')->toArray();
+        $totalSold = $topProducts->pluck('total_sold')->toArray();
+
+        // Calculate percentages
+        $total = array_sum($data);
+        $percentages = array_map(function($value) use ($total) {
+            return $total > 0 ? round(($value / $total) * 100, 1) : 0;
+        }, $data);
+
+        return response()->json([
+            'labels' => $labels,
+            'data' => $data,
+            'percentages' => $percentages,
+            'totalSold' => $totalSold,
+            'total' => $total,
+        ]);
+    }
+
+    public function getExpenseChart(Request $request): JsonResponse
+    {
+        $outletId = auth()->user()->outlet_id;
+        $period = $request->get('period', 'month'); // week, month, year
+
+        [$startDate, $endDate] = $this->getDateRange($period);
+
+        // Get expenses by category
+        $expensesByCategory = Expense::where('outlet_id', $outletId)
+            ->where('amount', '>', 0)
+            ->whereBetween('expense_date', [$startDate, $endDate])
+            ->with('category')
+            ->select(
+                'expense_category_id',
+                DB::raw('SUM(amount) as total_amount'),
+                DB::raw('COUNT(id) as total_count')
+            )
+            ->groupBy('expense_category_id')
+            ->orderBy('total_amount', 'desc')
+            ->get();
+
+        $labels = $expensesByCategory->map(fn($e) => $e->category->name ?? 'Lainnya')->toArray();
+        $data = $expensesByCategory->pluck('total_amount')->toArray();
+        $counts = $expensesByCategory->pluck('total_count')->toArray();
+
+        // Calculate percentages
+        $total = array_sum($data);
+        $percentages = array_map(function($value) use ($total) {
+            return $total > 0 ? round(($value / $total) * 100, 1) : 0;
+        }, $data);
+
+        return response()->json([
+            'labels' => $labels,
+            'data' => $data,
+            'percentages' => $percentages,
+            'counts' => $counts,
+            'total' => $total,
+        ]);
+    }
+
+    private function getDateRange($period)
+    {
+        return match($period) {
+            'week' => [Carbon::now()->subDays(6)->startOfDay(), Carbon::now()->endOfDay()],
+            'month' => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
+            'year' => [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()],
+            default => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
+        };
     }
 
     public function createIncome(Request $request)
@@ -187,7 +329,7 @@ class FinanceController extends Controller
     {
         return match($period) {
             'today' => [now()->startOfDay(), now()->endOfDay()],
-            'week' => [now()->startOfWeek(), now()->endOfWeek()],
+            'week' => [now()->subDays(6)->startOfDay(), now()->endOfDay()],
             'month' => [now()->startOfMonth(), now()->endOfMonth()],
             'year' => [now()->startOfYear(), now()->endOfYear()],
             'custom' => [
@@ -204,7 +346,6 @@ class FinanceController extends Controller
         $count = Expense::where('expense_number', 'like', $prefix . '%')->count() + 1;
         return $prefix . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
-
 
     public function daily(Request $request): JsonResponse
     {
@@ -241,7 +382,7 @@ class FinanceController extends Controller
                 'invoice_number' => $s->invoice_number,
                 'time'           => $s->created_at->format('H:i'),
                 'cashier'        => $s->cashier?->name,
-                'payment_method' => $s->payment_method,   // 'cash' | 'qris' | 'transfer'
+                'payment_method' => $s->payment_method,
                 'grand_total'    => (int) $s->grand_total,
             ]),
             'totals' => [

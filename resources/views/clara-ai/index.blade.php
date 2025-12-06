@@ -3,22 +3,12 @@
 @section('title', 'Clara AI')
 
 @section('breadcrumb')
-    <li class="flex items-center">
-        <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                clip-rule="evenodd"></path>
-        </svg>
-        <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-blue-600 font-medium">Dashboard</a>
-    </li>
-    <li class="flex items-center">
-        <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                clip-rule="evenodd"></path>
-        </svg>
-        <span class="text-gray-900 font-medium">Clara AI</span>
-    </li>
+<li class="flex items-center">
+    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+    </svg>
+    <span class="text-gray-900 font-medium">Clara AI</span>
+</li>
 @endsection
 
 @push('styles')
@@ -41,6 +31,20 @@
         .max-w-\[80\%\] {
             max-width: 85%;
         }
+    }
+
+    /* Hover effect untuk delete button */
+    .chat-item:hover .delete-btn {
+        opacity: 1;
+    }
+
+    .delete-btn {
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .chat-item.active .delete-btn {
+        opacity: 1;
     }
 </style>
 @endpush
@@ -76,14 +80,24 @@
             <!-- Chat History List -->
             <div class="flex-1 overflow-y-auto p-2" id="chatHistory">
                 @foreach ($sessions as $s)
-                    <button onclick="loadChat({{ $s->id }})"
-                        class="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors duration-150 mb-1 group {{ $s->id == $session->id ? 'bg-indigo-50 border border-indigo-200' : 'border border-transparent' }}">
-                        <div
-                            class="text-sm font-medium truncate {{ $s->id == $session->id ? 'text-indigo-700' : 'text-gray-700' }}">
-                            {{ $s->title }}
+                    <div data-session-id="{{ $s->id }}" 
+                        class="chat-item relative mb-1 {{ $s->id == $session->id ? 'active' : '' }}">
+                        <div class="relative group">
+                            <button onclick="loadChat({{ $s->id }})"
+                                class="w-full text-left px-3 py-2.5 pr-10 rounded-lg hover:bg-gray-100 transition-colors duration-150 {{ $s->id == $session->id ? 'bg-indigo-50 border border-indigo-200' : 'border border-transparent' }}">
+                                <div class="text-sm font-medium truncate session-title {{ $s->id == $session->id ? 'text-indigo-700' : 'text-gray-700' }}">
+                                    {{ $s->title }}
+                                </div>
+                                <div class="text-xs text-gray-500 mt-0.5">{{ $s->created_at->diffForHumans() }}</div>
+                            </button>
+                            <button onclick="confirmDelete(event, {{ $s->id }})" 
+                                class="delete-btn absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
                         </div>
-                        <div class="text-xs text-gray-500 mt-0.5">{{ $s->created_at->diffForHumans() }}</div>
-                    </button>
+                    </div>
                 @endforeach
             </div>
         </div>
@@ -111,9 +125,7 @@
 
                         <div
                             class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                            <!-- <i class="fas fa-robot text-white text-sm"></i> -->
                             <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
-
                         </div>
                         <div class="min-w-0">
                             <h1 class="font-semibold text-gray-900 truncate text-sm">Clara AI</h1>
@@ -151,9 +163,6 @@
                     @empty
                         <div id="emptyState" class="flex items-center justify-center h-full">
                             <div class="text-center max-w-md w-full">
-                                <!-- <div class="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center mx-auto mb-6 shadow-sm">
-                                        <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
-                                    </div> -->
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Halo! 👋</h3>
                                 <p class="text-gray-600 text-sm mb-8">Saya Clara AI, siap membantu bisnis Anda dengan
                                     analisis data dan insight berharga</p>
@@ -228,6 +237,7 @@
     @push('scripts')
         <script>
             let currentQuota = {{ auth()->user()->daily_chat_quota }};
+            let currentSessionId = {{ $session->id }};
 
             // Toggle Sidebar
             function toggleSidebar() {
@@ -267,6 +277,17 @@
                 }
             }
 
+            function updateSessionTitle(sessionId, newTitle) {
+                // Update title di sidebar
+                const sessionItem = document.querySelector(`[data-session-id="${sessionId}"]`);
+                if (sessionItem) {
+                    const titleElement = sessionItem.querySelector('.session-title');
+                    if (titleElement) {
+                        titleElement.textContent = newTitle;
+                    }
+                }
+            }
+
             function askQuestion(q) {
                 document.getElementById('messageInput').value = q;
                 document.getElementById('chatForm').dispatchEvent(new Event('submit'));
@@ -286,6 +307,47 @@
                     toggleSidebar();
                 }
                 window.location.href = `{{ route('clara-ai.index') }}?session_id=${id}`;
+            }
+
+            function confirmDelete(event, sessionId) {
+                event.stopPropagation(); // Prevent triggering loadChat
+
+                if (confirm('Yakin ingin menghapus chat session ini? Semua pesan akan dihapus secara permanen.')) {
+                    deleteSession(sessionId);
+                }
+            }
+
+            async function deleteSession(sessionId) {
+                try {
+                    const res = await fetch(`/clara-ai/session/${sessionId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        // Jika session yang dihapus adalah session aktif
+                        if (sessionId == currentSessionId) {
+                            // Redirect ke session baru atau halaman utama
+                            window.location.href = '{{ route('clara-ai.new-session') }}';
+                        } else {
+                            // Hapus dari sidebar tanpa reload
+                            const sessionItem = document.querySelector(`[data-session-id="${sessionId}"]`);
+                            if (sessionItem) {
+                                sessionItem.remove();
+                            }
+                        }
+                    } else {
+                        alert('Gagal menghapus chat session: ' + data.message);
+                    }
+                } catch (err) {
+                    console.error('Error deleting session:', err);
+                    alert('Terjadi kesalahan saat menghapus chat session.');
+                }
             }
 
             document.getElementById('chatForm')?.addEventListener('submit', async (e) => {
@@ -313,30 +375,30 @@
                 }
 
                 // Add user message
-const chatContent = container.querySelector('.max-w-3xl') || container;
-chatContent.insertAdjacentHTML('beforeend', `
-    <div class="flex justify-end mb-4">
-        <div class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%] shadow-sm break-words">
-            <p class="text-sm leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(message)}</p>
-        </div>
-    </div>
-`);
+                const chatContent = container.querySelector('.max-w-3xl') || container;
+                chatContent.insertAdjacentHTML('beforeend', `
+                    <div class="flex justify-end mb-4">
+                        <div class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%] shadow-sm break-words">
+                            <p class="text-sm leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(message)}</p>
+                        </div>
+                    </div>
+                `);
 
                 // Add loading
                 chatContent.insertAdjacentHTML('beforeend', `
-        <div class="flex gap-3 mb-4" id="loading">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
-            </div>
-            <div class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5">
-                <div class="flex gap-1">
-                    <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                    <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
-                    <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
-                </div>
-            </div>
-        </div>
-    `);
+                    <div class="flex gap-3 mb-4" id="loading">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
+                        </div>
+                        <div class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5">
+                            <div class="flex gap-1">
+                                <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                                <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
+                                <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
+                            </div>
+                        </div>
+                    </div>
+                `);
 
                 input.value = '';
                 container.scrollTop = container.scrollHeight;
@@ -350,7 +412,7 @@ chatContent.insertAdjacentHTML('beforeend', `
                         },
                         body: JSON.stringify({
                             message: message,
-                            session_id: '{{ $session->id }}'
+                            session_id: currentSessionId
                         })
                     });
 
@@ -369,27 +431,32 @@ chatContent.insertAdjacentHTML('beforeend', `
                             </div>
                         `);
 
+                        // Update title jika ini chat pertama
+                        if (data.new_title) {
+                            updateSessionTitle(data.session_id, data.new_title);
+                        }
+
                         if (data.remaining_quota !== undefined) {
                             updateQuota(data.remaining_quota);
                         }
                     } else {
                         chatContent.insertAdjacentHTML('beforeend', `
-                <div class="flex gap-3 mb-4">
-                    <div class="bg-red-50 border border-red-200 rounded-2xl px-4 py-2.5 max-w-[80%]">
-                        <p class="text-sm text-red-600">${escapeHtml(data.message)}</p>
-                    </div>
-                </div>
-            `);
+                            <div class="flex gap-3 mb-4">
+                                <div class="bg-red-50 border border-red-200 rounded-2xl px-4 py-2.5 max-w-[80%]">
+                                    <p class="text-sm text-red-600">${escapeHtml(data.message)}</p>
+                                </div>
+                            </div>
+                        `);
                     }
                 } catch (err) {
                     document.getElementById('loading')?.remove();
                     chatContent.insertAdjacentHTML('beforeend', `
-            <div class="flex gap-3 mb-4">
-                <div class="bg-red-50 border border-red-200 rounded-2xl px-4 py-2.5 max-w-[80%]">
-                    <p class="text-sm text-red-600">Terjadi kesalahan koneksi. Silakan coba lagi.</p>
-                </div>
-            </div>
-        `);
+                        <div class="flex gap-3 mb-4">
+                            <div class="bg-red-50 border border-red-200 rounded-2xl px-4 py-2.5 max-w-[80%]">
+                                <p class="text-sm text-red-600">Terjadi kesalahan koneksi. Silakan coba lagi.</p>
+                            </div>
+                        </div>
+                    `);
                 } finally {
                     btn.disabled = false;
                     input.disabled = false;

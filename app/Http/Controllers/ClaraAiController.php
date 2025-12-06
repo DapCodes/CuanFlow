@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AiChatSession;
 use App\Services\ClaraAiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ClaraAiController extends Controller
 {
@@ -45,7 +46,7 @@ class ClaraAiController extends Controller
             $session = AiChatSession::create([
                 'user_id'   => $user->id,
                 'outlet_id' => $user->outlet_id,
-                'title'     => 'Chat dengan Clara AI',
+                'title'     => 'Chat Baru',
             ]);
 
             // Refresh collection
@@ -77,8 +78,19 @@ class ClaraAiController extends Controller
             ], 403);
         }
 
+        // Cek apakah ini chat pertama (untuk generate title)
+        $isFirstMessage = $session->messages()->count() === 0;
+
         // Proses chat melalui service
         $result = $this->claraAi->chat($session, $request->message);
+
+        // Generate title dari pesan pertama user
+        if ($isFirstMessage && $result['success']) {
+            $title = $this->generateTitle($request->message);
+            $session->update(['title' => $title]);
+            $result['new_title'] = $title;
+            $result['session_id'] = $session->id;
+        }
 
         return response()->json($result);
     }
@@ -87,14 +99,54 @@ class ClaraAiController extends Controller
     {
         $user = auth()->user();
 
-        // Buat session baru
+        // Cek apakah ada session kosong (belum ada chat)
+        $emptySession = AiChatSession::where('user_id', $user->id)
+            ->where('outlet_id', $user->outlet_id)
+            ->whereDoesntHave('messages')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Jika ada session kosong, redirect ke sana
+        if ($emptySession) {
+            return redirect()->route('clara-ai.index', ['session_id' => $emptySession->id]);
+        }
+
+        // Jika tidak ada, buat session baru
         $session = AiChatSession::create([
             'user_id'   => $user->id,
             'outlet_id' => $user->outlet_id,
-            'title'     => 'Chat Baru - ' . now()->format('d M Y H:i'),
+            'title'     => 'Chat Baru',
         ]);
 
-        // Redirect ke session baru dengan query parameter
         return redirect()->route('clara-ai.index', ['session_id' => $session->id]);
+    }
+
+    public function deleteSession(Request $request, $id)
+    {
+        $session = AiChatSession::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $session->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Chat session berhasil dihapus.',
+        ]);
+    }
+
+    /**
+     * Generate title dari pesan user
+     */
+    private function generateTitle($message)
+    {
+        // Potong pesan jika terlalu panjang dan tambahkan elipsis
+        $title = Str::limit($message, 50, '...');
+        
+        // Bersihkan karakter yang tidak diinginkan
+        $title = preg_replace('/\s+/', ' ', $title);
+        $title = trim($title);
+        
+        return $title ?: 'Chat Baru';
     }
 }

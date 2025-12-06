@@ -12,713 +12,560 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto space-y-6">
+<main class="flex-grow py-4 md:py-6 px-3 md:px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
         
         @if(session('success'))
-        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
+        <div class="bg-green-50 border-l-4 border-green-500 p-3 md:p-4 rounded-lg shadow-sm">
             <div class="flex items-start">
-                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                <p class="text-sm text-green-700">{{ session('success') }}</p>
+                <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm md:text-base"></i>
+                <p class="text-xs md:text-sm text-green-700">{{ session('success') }}</p>
             </div>
         </div>
         @endif
 
-        <!-- Header Section -->
-        <x-card-container>
-            <div class="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <!-- Summary Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"> 
+            
+            <!-- Saldo Kas Total (All Time) -->
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg md:rounded-xl p-4 md:p-6 shadow-lg text-white relative overflow-hidden sm:col-span-2 lg:row-span-2">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fas fa-wallet text-6xl md:text-8xl"></i>
+                </div>
+                <div class="relative z-10 h-full flex flex-col justify-between">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-chart-line text-purple-500 mr-3"></i>
-                            Manajemen Keuangan
-                        </h2>
-                        <p class="text-sm text-gray-500 mt-1">Pantau dan kelola keuangan outlet Anda</p>
-                    </div>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <a href="{{ route('finance.income.create') }}" class="inline-flex items-center justify-center px-5 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-500 transition-all duration-200 shadow-md hover:shadow-lg">
-                            <i class="fas fa-plus-circle mr-2"></i>
-                            Pemasukan
-                        </a>
-                        <a href="{{ route('finance.expense.create') }}" class="inline-flex items-center justify-center px-5 py-3 bg-white text-red-600 border border-red-200 rounded-lg font-semibold hover:bg-red-50 transition-all duration-200 shadow-md hover:shadow-lg">
-                            <i class="fas fa-minus-circle mr-2"></i>
-                            Pengeluaran
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </x-card-container>
-
-        <!-- Transaction Calendar & Table Section -->
-        <x-card-container>
-        <div class="p-6">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">
-            <i class="fas fa-calendar-alt text-purple-500 mr-2"></i>
-            Transaksi Penjualan
-            </h3>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- Calendar Section -->
-            <div class="lg:col-span-4">
-                <div class="border border-gray-200 rounded-lg p-4 h-full">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="font-semibold text-gray-700">Pilih Tanggal</h4>
-                    <button id="btnToday" class="text-xs text-purple-600 hover:text-purple-700 font-medium">
-                    Hari Ini
-                    </button>
-                </div>
-
-                <div id="calendar" class="fc-theme-standard rounded-xl shadow-sm border border-gray-200"></div>
-
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <div class="text-sm text-gray-600 mb-1">Tanggal Dipilih:</div>
-                    <div id="selectedDateText" class="text-lg font-bold text-gray-900">
-                    {{ \Carbon\Carbon::parse($selectedDate)->isoFormat('D MMMM Y') }}
-                    </div>
-                </div>
-                </div>
-            </div>
-
-            <!-- Transaction Table -->
-            <div class="lg:col-span-8">
-                <div class="border border-gray-200 rounded-lg overflow-hidden">
-                <div class="overflow-x-auto" style="max-height: 500px; overflow-y: auto;">
-                    <table class="w-full">
-                    <thead class="bg-gray-50 sticky top-0">
-                        <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Invoice</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Waktu</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Kasir</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Metode</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Total</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="salesTableBody" class="bg-white divide-y divide-gray-200">
-                        @forelse($sales as $sale)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $sale->invoice_number }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ $sale->created_at->format('H:i') }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ $sale->cashier->name }}</td>
-                            <td class="px-4 py-3">
-                            @if($sale->payment_method == 'cash')
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                <i class="fas fa-money-bill-wave mr-1"></i> Cash
-                                </span>
-                            @elseif($sale->payment_method == 'qris')
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <i class="fas fa-qrcode mr-1"></i> QRIS
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                <i class="fas fa-exchange-alt mr-1"></i> Transfer
-                                </span>
-                            @endif
-                            </td>
-                            <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
-                            Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                                Selesai
-                            </span>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-12 text-center text-gray-500">
-                            <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                            <p>Tidak ada transaksi pada tanggal ini</p>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                    </table>
-                </div>
-                </div>
-
-                <!-- ⬇️ Kartu metode pembayaran dipindah ke bawah tabel, 1 baris & scroll -->
-                <div class="mt-4 overflow-x-auto">
-                <div id="paymentRow" class="flex gap-3 whitespace-nowrap pb-2">
-                    <div class="inline-flex items-center justify-between min-w-[220px] p-3 bg-blue-50 rounded-lg">
-                    <div class="flex items-center">
-                        <i class="fas fa-money-bill-wave text-blue-600 mr-2"></i>
-                        <span class="text-sm font-medium text-gray-700">Cash</span>
-                    </div>
-                    <span id="cashTotalText" class="text-sm font-bold text-blue-600">Rp {{ number_format($cashTotal, 0, ',', '.') }}</span>
-                    </div>
-                    <div class="inline-flex items-center justify-between min-w-[220px] p-3 bg-green-50 rounded-lg">
-                    <div class="flex items-center">
-                        <i class="fas fa-qrcode text-green-600 mr-2"></i>
-                        <span class="text-sm font-medium text-gray-700">QRIS</span>
-                    </div>
-                    <span id="qrisTotalText" class="text-sm font-bold text-green-600">Rp {{ number_format($qrisTotal, 0, ',', '.') }}</span>
-                    </div>
-                    <div class="inline-flex items-center justify-between min-w-[220px] p-3 bg-purple-50 rounded-lg">
-                    <div class="flex items-center">
-                        <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
-                        <span class="text-sm font-medium text-gray-700">Transfer</span>
-                    </div>
-                    <span id="transferTotalText" class="text-sm font-bold text-purple-600">Rp {{ number_format($transferTotal, 0, ',', '.') }}</span>
-                    </div>
-                    <div class="inline-flex items-center justify-between min-w-[240px] p-3 bg-gray-100 rounded-lg border-2 border-gray-300 gap-1">
-                    <span class="text-sm font-bold text-gray-900">Total Pendapatan</span>
-                    <span id="revenueTotalText" class="text-lg font-bold text-gray-900">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</span>
-                    </div>
-                </div>
-                </div>
-            </div>
-            </div>
-        </div>
-        </x-card-container>
-
-        <!-- Daily Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-            <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Pendapatan</p>
-                <p id="summaryRevenue" class="text-xl font-bold text-green-600">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
-                <p id="summaryDate1" class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-arrow-up text-green-600 text-xl"></i>
-            </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-            <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Laba Kotor</p>
-                <p id="summaryProfit" class="text-xl font-bold text-blue-600">Rp {{ number_format($dailyProfit, 0, ',', '.') }}</p>
-                <p id="summaryDate2" class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-chart-line text-blue-600 text-xl"></i>
-            </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-            <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Pengeluaran</p>
-                <p id="summaryExpenses" class="text-xl font-bold text-red-600">Rp {{ number_format($dailyExpenses, 0, ',', '.') }}</p>
-                <p id="summaryDate3" class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-arrow-down text-red-600 text-xl"></i>
-            </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-            <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Laba Bersih</p>
-                <p id="summaryNet" class="text-xl font-bold {{ $dailyNetIncome >= 0 ? 'text-purple-600' : 'text-red-600' }}">
-                Rp {{ number_format($dailyNetIncome, 0, ',', '.') }}
-                </p>
-                <p id="summaryDate4" class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-wallet text-purple-600 text-xl"></i>
-            </div>
-            </div>
-        </div>
-        </div>
-
-
-        <!-- Cash Register Report -->
-        <x-card-container>
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-bold text-gray-900">
-                        <i class="fas fa-cash-register text-purple-500 mr-2"></i>
-                        Laporan Kas Register
-                    </h3>
-                    <a href="#" class="text-sm text-purple-600 hover:text-purple-700 font-medium">
-                        <i class="fas fa-plus-circle mr-1"></i>
-                        Tambah Laporan
-                    </a>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Kasir</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Dibuka</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Ditutup</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Total Transaksi</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Total Penjualan</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Cash</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">QRIS</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Transfer</th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($cashRegisters as $register)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $register->user->name }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ $register->opened_at->format('d M Y H:i') }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">
-                                    {{ $register->closed_at ? $register->closed_at->format('d M Y H:i') : '-' }}
-                                </td>
-                                <td class="px-4 py-3 text-sm text-right text-gray-900">{{ $register->total_transactions }}</td>
-                                <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
-                                    Rp {{ number_format($register->total_sales, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 text-sm text-right text-blue-600">
-                                    Rp {{ number_format($register->total_cash, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 text-sm text-right text-green-600">
-                                    Rp {{ number_format($register->total_qris, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 text-sm text-right text-purple-600">
-                                    Rp {{ number_format($register->total_transfer, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    @if($register->status == 'open')
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                                        Buka
-                                    </span>
-                                    @else
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                                        Tutup
-                                    </span>
-                                    @endif
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="9" class="px-4 py-12 text-center text-gray-500">
-                                    <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                                    <p>Belum ada laporan kas register</p>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                
-                @if($cashRegisters->hasPages())
-                <div class="mt-4">
-                    {{ $cashRegisters->links() }}
-                </div>
-                @endif
-            </div>
-        </x-card-container>
-
-        <!-- Expenses Table -->
-        <x-card-container>
-            <div class="p-6">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                    <h3 class="text-lg font-bold text-gray-900">
-                        <i class="fas fa-receipt text-red-500 mr-2"></i>
-                        Daftar Pengeluaran
-                    </h3>
-                    
-                    <form method="GET" class="flex flex-col sm:flex-row gap-2">
-                        <input type="hidden" name="date" value="{{ $selectedDate }}">
-                        <select name="expense_period" id="expensePeriodSelect" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
-                            <option value="today" {{ $expensePeriod == 'today' ? 'selected' : '' }}>Hari Ini</option>
-                            <option value="week" {{ $expensePeriod == 'week' ? 'selected' : '' }}>Minggu Ini</option>
-                            <option value="month" {{ $expensePeriod == 'month' ? 'selected' : '' }}>Bulan Ini</option>
-                            <option value="year" {{ $expensePeriod == 'year' ? 'selected' : '' }}>Tahun Ini</option>
-                            <option value="custom" {{ $expensePeriod == 'custom' ? 'selected' : '' }}>Periode Kustom</option>
-                        </select>
-                        <div id="expenseCustomDateRange" class="flex gap-2 {{ $expensePeriod == 'custom' ? '' : 'hidden' }}">
-                            <input type="date" name="expense_start_date" value="{{ $expenseStartDate }}" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
-                            <input type="date" name="expense_end_date" value="{{ $expenseEndDate }}" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
+                        <div class="flex items-center justify-between mb-2 md:mb-3">
+                            <p class="text-xs md:text-sm font-semibold uppercase tracking-wide opacity-90">Saldo Kas Bersih</p>
+                            <i class="fas fa-wallet text-xl md:text-2xl opacity-75"></i>
                         </div>
-                        <button type="submit" class="px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
-                            <i class="fas fa-filter mr-1"></i>Filter
-                        </button>
-                    </form>
+                        <p class="text-3xl md:text-5xl font-bold mb-1 md:mb-2">Rp {{ number_format($totalNetIncome, 0, ',', '.') }}</p>
+                        <p class="text-xs md:text-sm opacity-80 mb-2 md:mb-4">Total pendapatan dikurangi pengeluaran</p>
+                        <div class="flex items-center space-x-4 text-xs md:text-sm opacity-90">
+                            <div>
+                                <p class="opacity-75">Pendapatan</p>
+                                <p class="font-semibold">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
+                            </div>
+                            <div>
+                                <p class="opacity-75">Pengeluaran</p>
+                                <p class="font-semibold">Rp {{ number_format($allTimeExpenses, 0, ',', '.') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-auto pt-3 md:pt-4 border-t border-white/20">
+                        <p class="text-xs opacity-75">
+                            <i class="far fa-calendar mr-1"></i>
+                            Update terakhir: {{ \Carbon\Carbon::now()->format('d M Y H:i') }}
+                        </p>
+                    </div>
                 </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tanggal</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Nomor</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Kategori</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Deskripsi</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Metode</th>
-                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Jumlah</th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($expenses as $expense)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 text-sm text-gray-600">
-                                    {{ \Carbon\Carbon::parse($expense->expense_date)->format('d M Y') }}
-                                </td>
-                                <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $expense->expense_number }}</td>
-                                <td class="px-4 py-3">
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        {{ $expense->category->name ?? 'Lainnya' }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-700">{{ $expense->description }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600 capitalize">{{ $expense->payment_method }}</td>
-                                <td class="px-4 py-3 text-sm text-right font-semibold text-red-600">
-                                    Rp {{ number_format($expense->amount, 0, ',', '.') }}
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    @if($expense->status == 'approved')
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                        Disetujui
-                                    </span>
-                                    @elseif($expense->status == 'pending')
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                                        Pending
-                                    </span>
-                                    @else
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                        Ditolak
-                                    </span>
-                                    @endif
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="px-4 py-12 text-center text-gray-500">
-                                    <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                                    <p>Tidak ada data pengeluaran</p>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                @if($expenses->hasPages())
-                <div class="mt-4">
-                    {{ $expenses->links() }}
-                </div>
-                @endif
             </div>
-        </x-card-container>
+
+            <!-- PENDAPATAN - 3 cards -->
+            <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-lg md:rounded-xl p-3 md:p-5 shadow-lg text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fas fa-chart-line text-5xl md:text-7xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1 md:mb-2">Pendapatan Tahun ini</p>
+                    <p class="text-xl md:text-2xl font-bold mb-0.5 md:mb-1">Rp {{ number_format($monthlyRevenue, 0, ',', '.') }}</p>
+                    <p class="text-xs opacity-75">{{ \Carbon\Carbon::now()->format('Y') }}</p>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg md:rounded-xl p-3 md:p-5 shadow-lg text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fas fa-chart-line text-5xl md:text-7xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1 md:mb-2">Pendapatan Bulan ini</p>
+                    <p class="text-xl md:text-2xl font-bold mb-0.5 md:mb-1">Rp {{ number_format($monthlyRevenue, 0, ',', '.') }}</p>
+                    <p class="text-xs opacity-75">{{ \Carbon\Carbon::now()->format('F Y') }}</p>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-400 to-green-500 rounded-lg md:rounded-xl p-3 md:p-5 shadow-lg text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fas fa-chart-area text-5xl md:text-7xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1 md:mb-2">Pendapatan Minggu ini</p>
+                    <p class="text-xl md:text-2xl font-bold mb-0.5 md:mb-1">Rp {{ number_format($weeklyRevenue, 0, ',', '.') }}</p>
+                    <p class="text-xs opacity-75">7 Hari Terakhir</p>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-green-300 to-green-400 rounded-lg md:rounded-xl p-3 md:p-5 shadow-lg text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fas fa-chart-bar text-5xl md:text-7xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1 md:mb-2">Pendapatan Hari ini</p>
+                    <p class="text-xl md:text-2xl font-bold mb-0.5 md:mb-1">Rp {{ number_format($dailyRevenue, 0, ',', '.') }}</p>
+                    <p class="text-xs opacity-75">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
+                </div>
+            </div>
+
+            <!-- PENGELUARAN - 3 cards -->
+            <div class="bg-gradient-to-br from-red-600 to-red-700 rounded-lg md:rounded-xl p-3 md:p-5 shadow-lg text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fas fa-minus-circle text-5xl md:text-7xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1 md:mb-2">Pengeluaran Tahun ini</p>
+                    <p class="text-xl md:text-2xl font-bold mb-0.5 md:mb-1">Rp {{ number_format($monthlyExpenses, 0, ',', '.') }}</p>
+                    <p class="text-xs opacity-75">{{ \Carbon\Carbon::now()->format('Y') }}</p>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-lg md:rounded-xl p-3 md:p-5 shadow-lg text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fas fa-minus-circle text-5xl md:text-7xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1 md:mb-2">Pengeluaran Bulan ini</p>
+                    <p class="text-xl md:text-2xl font-bold mb-0.5 md:mb-1">Rp {{ number_format($monthlyExpenses, 0, ',', '.') }}</p>
+                    <p class="text-xs opacity-75">{{ \Carbon\Carbon::now()->format('F Y') }}</p>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-red-400 to-red-500 rounded-lg md:rounded-xl p-3 md:p-5 shadow-lg text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fas fa-cash-register text-5xl md:text-7xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1 md:mb-2">Pengeluaran Minggu ini</p>
+                    <p class="text-xl md:text-2xl font-bold mb-0.5 md:mb-1">Rp {{ number_format($weeklyExpenses, 0, ',', '.') }}</p>
+                    <p class="text-xs opacity-75">7 Hari Terakhir</p>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-red-300 to-red-400 rounded-lg md:rounded-xl p-3 md:p-5 shadow-lg text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10">
+                    <i class="fas fa-receipt text-5xl md:text-7xl"></i>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-xs font-semibold uppercase tracking-wide opacity-90 mb-1 md:mb-2">Pengeluaran Hari ini</p>
+                    <p class="text-xl md:text-2xl font-bold mb-0.5 md:mb-1">Rp {{ number_format($dailyExpenses, 0, ',', '.') }}</p>
+                    <p class="text-xs opacity-75">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 items-stretch"> <div class="flex flex-col h-full space-y-4 md:space-y-6">
+                
+                <div class="bg-white rounded-lg md:rounded-xl shadow-sm border border-gray-200 flex flex-col flex-1">
+                    <div class="p-3 md:p-5 border-b border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <h3 class="text-base md:text-lg font-bold text-gray-900">Rincian Pendapatan</h3>
+                                <p class="text-xs md:text-sm text-gray-500 mt-1">Transaksi terbesar bulan ini</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <select id="yearFilter" class="px-2 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    @for($y = date('Y'); $y >= date('Y') - 2; $y--)
+                                        <option value="{{ $y }}" {{ $y == date('Y') ? 'selected' : '' }}>{{ $y }}</option>
+                                    @endfor
+                                </select>
+                                <select id="monthFilter" class="px-2 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $month)
+                                        <option value="{{ $i + 1 }}" {{ ($i + 1) == date('n') ? 'selected' : '' }}>{{ $month }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 md:p-5 flex-1 flex flex-col justify-between">
+                        <div class="overflow-x-auto -mx-3 md:mx-0 w-full">
+                            <div class="inline-block min-w-full align-middle">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr class="bg-gray-50">
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-left text-xs font-semibold text-gray-600 uppercase">No</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-left text-xs font-semibold text-gray-600 uppercase">Kasir</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden sm:table-cell">Metode</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Tanggal</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-center text-xs font-semibold text-gray-600 uppercase">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="salesTableBody" class="divide-y divide-gray-100">
+                                        @forelse($salesList->take(5) as $index => $sale)
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm text-gray-700">{{ $index + 1 }}</td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm font-medium text-gray-900">
+                                                {{ $sale->cashier->name }}
+                                                <span class="block sm:hidden text-xs text-gray-500 mt-0.5">
+                                                    {{ $sale->payment_method == 'cash' ? 'Tunai' : ucfirst($sale->payment_method) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm text-gray-700 hidden sm:table-cell">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                                    {{ $sale->payment_method == 'cash' ? 'bg-green-100 text-green-800' : '' }}
+                                                    {{ $sale->payment_method == 'qris' ? 'bg-blue-100 text-blue-800' : '' }}
+                                                    {{ $sale->payment_method == 'transfer' ? 'bg-purple-100 text-purple-800' : '' }}">
+                                                    {{ $sale->payment_method == 'cash' ? 'Tunai' : ucfirst($sale->payment_method) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm font-semibold text-green-600 text-right whitespace-nowrap">
+                                                Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
+                                            </td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm text-gray-600 hidden md:table-cell">
+                                                {{ $sale->created_at->format('d-m-Y H:i') }}
+                                            </td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3">
+                                                <div class="flex items-center justify-center gap-1 md:gap-2">
+                                                    <button class="w-7 h-7 md:w-8 md:h-8 bg-green-500 hover:bg-green-600 text-white rounded-md flex items-center justify-center transition-colors" title="Lihat Detail">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </button>
+                                                    <button class="w-7 h-7 md:w-8 md:h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center justify-center transition-colors" title="Print">
+                                                        <i class="fas fa-print text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="6" class="h-40 md:h-52 text-center text-gray-500 align-middle">
+                                                <div class="flex flex-col items-center justify-center h-full">
+                                                    <i class="fas fa-inbox text-2xl md:text-3xl mb-2 block text-gray-300"></i>
+                                                    <p class="text-xs md:text-sm">Belum ada data pendapatan</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        @if($salesList->count() > 0)
+                        <div class="mt-3 md:mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 pt-3 md:pt-4">
+                            <p class="text-xs md:text-sm text-gray-600">Menampilkan {{ min(5, $salesList->count()) }} dari {{ $salesList->count() }} transaksi</p>
+                            <div class="flex items-center gap-1 md:gap-2">
+                                <span class="text-xs text-gray-500">Total: <span class="font-semibold text-green-600">Rp {{ number_format($salesList->sum('grand_total'), 0, ',', '.') }}</span></span>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg md:rounded-xl shadow-sm border border-gray-200 flex flex-col flex-1">
+                    <div class="p-3 md:p-5 border-b border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <h3 class="text-base md:text-lg font-bold text-gray-900">Rincian Pengeluaran</h3>
+                                <p class="text-xs md:text-sm text-gray-500 mt-1">Top pengeluaran bulan ini</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <select id="expenseYearFilter" class="px-2 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    @for($y = date('Y'); $y >= date('Y') - 2; $y--)
+                                        <option value="{{ $y }}" {{ $y == date('Y') ? 'selected' : '' }}>{{ $y }}</option>
+                                    @endfor
+                                </select>
+                                <select id="expenseMonthFilter" class="px-2 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $month)
+                                        <option value="{{ $i + 1 }}" {{ ($i + 1) == date('n') ? 'selected' : '' }}>{{ $month }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 md:p-5 flex-1 flex flex-col justify-between">
+                        <div class="overflow-x-auto -mx-3 md:mx-0 w-full">
+                            <div class="inline-block min-w-full align-middle">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr class="bg-gray-50">
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-left text-xs font-semibold text-gray-600 uppercase">No</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-left text-xs font-semibold text-gray-600 uppercase">Deskripsi</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden sm:table-cell">Kategori</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-right text-xs font-semibold text-gray-600 uppercase">Jumlah</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Tanggal</th>
+                                            <th class="px-2 md:px-3 py-2 md:py-3 text-center text-xs font-semibold text-gray-600 uppercase">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        @forelse($expenses->take(5) as $index => $expense)
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm text-gray-700">{{ $index + 1 }}</td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm font-medium text-gray-900">
+                                                {{ Str::limit($expense->description, 30) }}
+                                                <span class="block sm:hidden text-xs text-gray-500 mt-0.5">
+                                                    {{ $expense->category->name ?? 'Lainnya' }}
+                                                </span>
+                                            </td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm text-gray-700 hidden sm:table-cell">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                    {{ $expense->category->name ?? 'Lainnya' }}
+                                                </span>
+                                            </td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm font-semibold text-red-600 text-right whitespace-nowrap">
+                                                Rp {{ number_format($expense->amount, 0, ',', '.') }}
+                                            </td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3 text-xs md:text-sm text-gray-600 hidden md:table-cell">
+                                                {{ \Carbon\Carbon::parse($expense->expense_date)->format('d-m-Y') }}
+                                            </td>
+                                            <td class="px-2 md:px-3 py-2 md:py-3">
+                                                <div class="flex items-center justify-center gap-1 md:gap-2">
+                                                    <button class="w-7 h-7 md:w-8 md:h-8 bg-green-500 hover:bg-green-600 text-white rounded-md flex items-center justify-center transition-colors" title="Lihat Detail">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </button>
+                                                    <button class="w-7 h-7 md:w-8 md:h-8 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-colors" title="Hapus">
+                                                        <i class="fas fa-trash text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="6" class="h-40 md:h-52 text-center text-gray-500 align-middle">
+                                                <div class="flex flex-col items-center justify-center h-full">
+                                                    <i class="fas fa-inbox text-2xl md:text-3xl mb-2 block text-gray-300"></i>
+                                                    <p class="text-xs md:text-sm">Belum ada data pengeluaran</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        @if($expenses->count() > 0)
+                        <div class="mt-3 md:mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-200 pt-3 md:pt-4">
+                            <p class="text-xs md:text-sm text-gray-600">Menampilkan {{ min(5, $expenses->count()) }} dari {{ $expenses->count() }} pengeluaran</p>
+                            <div class="flex items-center gap-1 md:gap-2">
+                                <span class="text-xs text-gray-500">Total: <span class="font-semibold text-red-600">Rp {{ number_format($expenses->sum('amount'), 0, ',', '.') }}</span></span>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="flex flex-col h-full space-y-4 md:space-y-6">
+                
+                <div class="bg-white rounded-lg md:rounded-xl shadow-sm border border-gray-200 flex flex-col flex-1">
+                    <div class="p-3 md:p-5 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <h3 class="text-base md:text-lg font-bold text-gray-900">Distribusi Pendapatan</h3>
+                            <p class="text-xs md:text-sm text-gray-500 mt-1">Berdasarkan produk</p>
+                        </div>
+                        <select id="revenueYearFilter" class="w-full sm:w-auto px-2 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="week" selected>Minggu Ini</option>
+                            <option value="month">Bulan Ini</option>
+                            <option value="year">Tahun Ini</option>
+                        </select>
+                    </div>
+                    
+                    <div class="p-3 md:p-5 flex-1 flex flex-col justify-center">
+                        <div class="h-48 md:h-64 flex items-center justify-center w-full">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                        
+                        <div id="revenueLegend" class="mt-4 md:mt-6 grid grid-cols-2 gap-2 md:gap-3">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg md:rounded-xl shadow-sm border border-gray-200 flex flex-col flex-1">
+                    <div class="p-3 md:p-5 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <h3 class="text-base md:text-lg font-bold text-gray-900">Pengeluaran Toko</h3>
+                            <p class="text-xs md:text-sm text-gray-500 mt-1">Berdasarkan kategori</p>
+                        </div>
+                        <select id="expenseChartYearFilter" class="w-full sm:w-auto px-2 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="week" selected>Minggu ini</option>
+                            <option value="month">Bulan ini</option>
+                            <option value="year">Tahun ini</option>
+                        </select>
+                    </div>
+                    
+                    <div class="p-3 md:p-5 flex-1 flex flex-col justify-center">
+                        <div class="h-48 md:h-64 flex items-center justify-center w-full">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
+                        
+                        <div id="expenseLegend" class="mt-4 md:mt-6 grid grid-cols-2 gap-2 md:gap-3">
+                            </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
     </div>
 </main>
 
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-<style>
-  /* Warna & border global */
-  #calendar{
-    --fc-border-color:#e5e7eb;
-    --fc-neutral-bg-color:#fafafa;
-    --fc-today-bg-color:#EEF2FF;
-  }
-
-  /* Toolbar - Layout kiri-tengah-kanan dengan background putih */
-  .fc .fc-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0;
-    padding: 1rem;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-bottom: none;
-    border-radius: 0.75rem 0.75rem 0 0;
-  }
-  
-  .fc .fc-toolbar-chunk {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  
-  /* Title di tengah - uppercase dan bold */
-  .fc .fc-toolbar-title {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: #111827;
-    text-align: center;
-    min-width: 150px;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-  }
-
-  /* Sembunyikan tombol today bawaan */
-  .fc .fc-today-button {
-    display: none !important;
-  }
-
-  /* Tombol navigasi - hanya icon chevron */
-  .fc .fc-button {
-    border-radius: 0.375rem;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    color: #6b7280;
-    box-shadow: none;
-    padding: 0.375rem 0.5rem;
-    font-size: 1rem;
-    transition: all 0.2s;
-    min-width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .fc .fc-button:hover {
-    background: #f9fafb;
-    border-color: #d1d5db;
-    color: #111827;
-  }
-  
-  .fc .fc-button-primary:not(:disabled).fc-button-active,
-  .fc .fc-button-primary:focus {
-    box-shadow: none;
-    outline: none;
-  }
-
-  /* Grid & sel */
-  .fc .fc-scrollgrid {
-    border-radius: 0 0 0.75rem 0.75rem;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
-  }
-  
-  .fc .fc-daygrid-day-number {
-    font-weight: 600;
-    padding: 0.5rem;
-    font-size: 0.875rem;
-  }
-  
-  .fc .fc-day-today {
-    background: #3b83f6ad !important;
-  }
-
-  .fc .fc-day-today .fc-daygrid-day-number {
-    color: #ffffff !important;
-    font-weight: 700;
-  }
-  
-  .fc .fc-daygrid-day:hover {
-    background: #eff6ff;
-    cursor: pointer;
-  }
-  
-  .fc .fc-daygrid-day-frame {
-    min-height: 56px;
-  }
-
-  /* Highlight tanggal terpilih */
-  .fc .fc-daygrid-day.fc-selected {
-    background: #dbeafe !important;
-  }
-
-  .fc .fc-daygrid-day.fc-selected .fc-daygrid-day-number {
-    color: #1e40af;
-    font-weight: 700;
-  }
-
-  /* Header hari - uppercase, abu-abu muda */
-  .fc .fc-col-header-cell {
-    padding: 0.75rem 0.25rem;
-    font-weight: 600;
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    color: #6b7280;
-    background: #f9fafb;
-    border-color: #e5e7eb;
-    letter-spacing: 0.025em;
-  }
-
-  /* Responsive - Mobile */
-  @media (max-width: 640px) {
-    .fc .fc-toolbar {
-      padding: 0.75rem;
-    }
-
-    .fc .fc-toolbar-title {
-      font-size: 0.75rem;
-      min-width: 120px;
-    }
-    
-    .fc .fc-button {
-      padding: 0.25rem 0.375rem;
-      font-size: 0.875rem;
-      min-width: 28px;
-      height: 28px;
-    }
-    
-    .fc .fc-daygrid-day-frame {
-      min-height: 42px;
-    }
-    
-    .fc .fc-daygrid-day-number {
-      font-size: 0.75rem;
-      padding: 0.375rem;
-    }
-    
-    .fc .fc-col-header-cell {
-      font-size: 0.625rem;
-      padding: 0.5rem 0.125rem;
-    }
-  }
-
-  /* Extra small screens */
-  @media (max-width: 380px) {
-    .fc .fc-toolbar-title {
-      font-size: 0.6875rem;
-      min-width: 100px;
-    }
-    
-    .fc .fc-button {
-      padding: 0.25rem;
-      min-width: 24px;
-      height: 24px;
-    }
-  }
-</style>
-@endpush
-
-
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-  const rupiah = (n) => new Intl.NumberFormat('id-ID', {style:'currency', currency:'IDR', maximumFractionDigits:0}).format(n);
+document.addEventListener('DOMContentLoaded', function() {
+    
+    let revenueChart = null;
+    let expenseChart = null;
 
-  function methodBadge(method) {
-    if (method === 'cash')    return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><i class="fas fa-money-bill-wave mr-1"></i>Cash</span>`;
-    if (method === 'qris')    return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"><i class="fas fa-qrcode mr-1"></i>QRIS</span>`;
-    return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"><i class="fas fa-exchange-alt mr-1"></i>Transfer</span>`;
-  }
+    const colors = [
+        'rgb(248, 113, 113)',
+        'rgb(244, 114, 182)',
+        'rgb(167, 139, 250)',
+        'rgb(96, 165, 250)',
+        'rgb(250, 204, 21)',
+        'rgb(251, 146, 60)',
+        'rgb(134, 239, 172)',
+        'rgb(251, 191, 36)',
+        'rgb(147, 197, 253)',
+        'rgb(196, 181, 253)'
+    ];
 
-  function setLoading(isLoading) {
-    const tbody = document.getElementById('salesTableBody');
-    if (isLoading) {
-      tbody.innerHTML = `
-        <tr><td colspan="6" class="px-4 py-10 text-center text-gray-500">
-          <i class="fas fa-circle-notch fa-spin text-xl mr-2"></i> Memuat data...
-        </td></tr>`;
+    // Load Revenue Chart
+    function loadRevenueChart(period = 'month') {
+        fetch(`{{ route('finance.revenue-chart') }}?period=${period}`)
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('revenueChart');
+                if (!ctx) return;
+
+                if (revenueChart) {
+                    revenueChart.destroy();
+                }
+
+                if (data.labels.length === 0) {
+                    ctx.parentElement.innerHTML = '<div class="text-center text-gray-500 py-8"><i class="fas fa-inbox text-3xl mb-2 block text-gray-300"></i><p class="text-sm">Belum ada data pendapatan</p></div>';
+                    document.getElementById('revenueLegend').innerHTML = '';
+                    return;
+                }
+
+                revenueChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: colors.slice(0, data.labels.length),
+                            borderWidth: 0,
+                            cutout: '65%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = new Intl.NumberFormat('id-ID', { 
+                                            style: 'currency', 
+                                            currency: 'IDR',
+                                            minimumFractionDigits: 0
+                                        }).format(context.parsed);
+                                        const percentage = data.percentages[context.dataIndex];
+                                        const sold = data.totalSold[context.dataIndex];
+                                        return [label, value, `${percentage}% (${sold} terjual)`];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Update legend
+                updateLegend('revenueLegend', data.labels, colors);
+            })
+            .catch(error => console.error('Error loading revenue chart:', error));
     }
-  }
 
-  function refreshUI(payload) {
-    const dateLabel = new Date(payload.selectedDate + 'T00:00:00');
-    const dateText = dateLabel.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
-    document.getElementById('selectedDateText').innerText = dateText;
-    ['summaryDate1','summaryDate2','summaryDate3','summaryDate4'].forEach(id => {
-      document.getElementById(id).innerText = dateLabel.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+    // Load Expense Chart
+    function loadExpenseChart(period = 'month') {
+        fetch(`{{ route('finance.expense-chart') }}?period=${period}`)
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('expenseChart');
+                if (!ctx) return;
+
+                if (expenseChart) {
+                    expenseChart.destroy();
+                }
+
+                if (data.labels.length === 0) {
+                    ctx.parentElement.innerHTML = '<div class="text-center text-gray-500 py-8"><i class="fas fa-inbox text-3xl mb-2 block text-gray-300"></i><p class="text-sm">Belum ada data pengeluaran</p></div>';
+                    document.getElementById('expenseLegend').innerHTML = '';
+                    return;
+                }
+
+                expenseChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: colors.slice(0, data.labels.length),
+                            borderWidth: 0,
+                            cutout: '65%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = new Intl.NumberFormat('id-ID', { 
+                                            style: 'currency', 
+                                            currency: 'IDR',
+                                            minimumFractionDigits: 0
+                                        }).format(context.parsed);
+                                        const percentage = data.percentages[context.dataIndex];
+                                        const count = data.counts[context.dataIndex];
+                                        return [label, value, `${percentage}% (${count} transaksi)`];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Update legend
+                updateLegend('expenseLegend', data.labels, colors);
+            })
+            .catch(error => console.error('Error loading expense chart:', error));
+    }
+
+    function updateLegend(elementId, labels, colors) {
+        const legendElement = document.getElementById(elementId);
+        if (!legendElement) return;
+
+        legendElement.innerHTML = labels.map((label, index) => `
+            <div class="flex items-center space-x-2">
+                <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full flex-shrink-0" style="background-color: ${colors[index]}"></div>
+                <span class="text-xs text-gray-600">${label}</span>
+            </div>
+        `).join('');
+    }
+
+    // Event listeners for period filters
+    document.getElementById('revenueYearFilter')?.addEventListener('change', function() {
+        loadRevenueChart(this.value);
     });
 
-    // Tabel sales
-    const tbody = document.getElementById('salesTableBody');
-    if (!payload.sales.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" class="px-4 py-12 text-center text-gray-500">
-            <i class="fas fa-inbox text-4xl mb-2 block"></i>
-            <p>Tidak ada transaksi pada tanggal ini</p>
-          </td>
-        </tr>`;
-    } else {
-      tbody.innerHTML = payload.sales.map(s => `
-        <tr class="hover:bg-gray-50">
-          <td class="px-4 py-3 text-sm font-medium text-gray-900">${s.invoice_number}</td>
-          <td class="px-4 py-3 text-sm text-gray-600">${s.time}</td>
-          <td class="px-4 py-3 text-sm text-gray-600">${s.cashier ?? '-'}</td>
-          <td class="px-4 py-3">${methodBadge(s.payment_method)}</td>
-          <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">${rupiah(s.grand_total)}</td>
-          <td class="px-4 py-3 text-center">
-            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-              <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span> Selesai
-            </span>
-          </td>
-        </tr>`).join('');
-    }
-
-    // Kartu metode pembayaran (1 baris)
-    document.getElementById('cashTotalText').innerText     = rupiah(payload.totals.cash);
-    document.getElementById('qrisTotalText').innerText     = rupiah(payload.totals.qris);
-    document.getElementById('transferTotalText').innerText = rupiah(payload.totals.transfer);
-    document.getElementById('revenueTotalText').innerText  = rupiah(payload.totals.revenue);
-
-    // Ringkasan
-    document.getElementById('summaryRevenue').innerText  = rupiah(payload.totals.revenue);
-    document.getElementById('summaryProfit').innerText   = rupiah(payload.summary.profit);
-    document.getElementById('summaryExpenses').innerText = rupiah(payload.summary.expenses);
-    const net = payload.summary.net;
-    const netEl = document.getElementById('summaryNet');
-    netEl.innerText = rupiah(net);
-    netEl.classList.toggle('text-purple-600', net >= 0);
-    netEl.classList.toggle('text-red-600', net < 0);
-  }
-
-  async function loadDaily(dateStr) {
-    setLoading(true);
-    try {
-      const res = await fetch(`{{ route('finance.daily') }}?date=${dateStr}`, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      });
-      const json = await res.json();
-      refreshUI(json);
-    } catch (e) {
-      const tbody = document.getElementById('salesTableBody');
-      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-10 text-center text-red-500">
-        Gagal memuat data.
-      </td></tr>`;
-      console.error(e);
-    }
-  }
-
-  // Inisialisasi kalender
-  document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialDate: '{{ $selectedDate }}',
-      initialView: 'dayGridMonth',
-      headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-      locale: 'id',
-      firstDay: 1,           // mulai Senin
-      dayMaxEventRows: true, // biar rapi
-      selectable: true,
-      dateClick: (info) => loadDaily(info.dateStr),
+    document.getElementById('expenseChartYearFilter')?.addEventListener('change', function() {
+        loadExpenseChart(this.value);
     });
-    calendar.render();
 
-    // Tombol "Hari Ini"
-    document.getElementById('btnToday').addEventListener('click', () => {
-      const today = new Date().toISOString().slice(0,10);
-      calendar.today();
-      loadDaily(today);
-    });
-  });
-</script>
-
-<script>
-// Expense period filter
-document.getElementById('expensePeriodSelect').addEventListener('change', function() {
-    const customRange = document.getElementById('expenseCustomDateRange');
-    customRange.classList.toggle('hidden', this.value !== 'custom');
+    // Initial load
+    loadRevenueChart('month');
+    loadExpenseChart('month');
 });
-
-// Date selector functions
-function selectDate(date) {
-    window.location.href = '{{ route("finance.index") }}?date=' + date;
-}
-
-function selectToday() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('dateSelector').value = today;
-    selectDate(today);
-}
 </script>
 @endpush
 @endsection

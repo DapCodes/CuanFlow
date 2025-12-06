@@ -118,10 +118,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/clara-ai', [ClaraAiController::class, 'index'])->name('clara-ai.index');
-    Route::post('/clara-ai/chat', [ClaraAiController::class, 'chat'])->name('clara-ai.chat');
-    Route::get('/clara-ai/new-session', [ClaraAiController::class, 'newSession'])->name('clara-ai.new-session');
-
     Route::get('sales/daily', [SaleController::class, 'daily'])->name('sales.daily');
     Route::post('sales/{sale}/refund', [SaleController::class, 'refund'])->name('sales.refund');
     Route::get('sales/{sale}', [SaleController::class, 'show'])->name('sales.show');
@@ -135,6 +131,13 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/{id}/dismiss', [AiInsightController::class, 'dismiss'])->name('dismiss');
         Route::post('/mark-all-read', [AiInsightController::class, 'markAllAsRead'])->name('mark-all-read');
     });
+});
+
+Route::middleware('auth')->prefix('clara-ai')->name('clara-ai.')->group(function () {
+    Route::get('/', [ClaraAiController::class, 'index'])->name('index');
+    Route::post('/chat', [ClaraAiController::class, 'chat'])->name('chat');
+    Route::get('/new-session', [ClaraAiController::class, 'newSession'])->name('new-session');
+    Route::delete('/session/{id}', [ClaraAiController::class, 'deleteSession'])->name('delete-session');
 });
 
 // POS Routes
@@ -204,6 +207,9 @@ Route::middleware(['auth'])->prefix('finance')->name('finance.')->group(function
     Route::post('/expense', [FinanceController::class, 'storeExpense'])->name('expense.store');
     Route::post('/validate-revenue', [FinanceController::class, 'validateRevenue'])->name('validate-revenue');
     Route::get('/daily', [FinanceController::class, 'daily'])->name('daily');
+    
+    // Chart API Routes (BARU)
+    Route::get('/revenue-chart', [FinanceController::class, 'getRevenueChart'])->name('revenue-chart');
+    Route::get('/expense-chart', [FinanceController::class, 'getExpenseChart'])->name('expense-chart');
 });
-
 require __DIR__.'/auth.php';
