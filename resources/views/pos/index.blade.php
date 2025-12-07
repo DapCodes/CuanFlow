@@ -998,27 +998,30 @@ function submitOpeningAmount() {
         return;
     }
 
-    // Start session first
+    // Start session dengan opening amount sekaligus
     fetch('{{ route("cash-register.start") }}', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+        },
+        body: JSON.stringify({ opening_amount: amount })
     })
     .then(r => r.json())
     .then(data => {
         if (data.success) {
+            closeOpeningAmountModal();
+            closeStartSalesModal();
+            
             if (data.is_continued) {
-                // Jika melanjutkan sesi, tidak perlu set opening amount lagi (atau bisa diupdate jika perlu logic khusus)
-                closeOpeningAmountModal();
-                closeStartSalesModal(); // Pastikan modal welcome juga tertutup
                 showToast('success', 'Melanjutkan sesi penjualan sebelumnya');
-                
-                document.getElementById('btnCloseCashRegister').classList.remove('hidden');
-                document.getElementById('btnOpenCashRegister').classList.add('hidden');
-                sessionStorage.removeItem('pos_declined_modal');
             } else {
-                // Sesi baru berhasil dibuat, sekarang set opening amount
-                setOpeningAmount(amount);
+                showToast('success', `Toko dibuka dengan modal awal Rp ${formatNumber(amount)}`);
             }
+            
+            document.getElementById('btnCloseCashRegister').classList.remove('hidden');
+            document.getElementById('btnOpenCashRegister').classList.add('hidden');
+            sessionStorage.removeItem('pos_declined_modal');
         } else {
             showToast('error', data.message || 'Gagal memulai sesi');
         }
@@ -1066,26 +1069,30 @@ function skipOpeningAmount() {
         return;
     }
     
-    // Start session first
+    // Start session dengan amount 0
     fetch('{{ route("cash-register.start") }}', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+        },
+        body: JSON.stringify({ opening_amount: 0 })
     })
     .then(r => r.json())
     .then(data => {
         if (data.success) {
+            closeOpeningAmountModal();
+            closeStartSalesModal();
+            
             if (data.is_continued) {
-                closeOpeningAmountModal();
-                closeStartSalesModal();
                 showToast('success', 'Melanjutkan sesi penjualan sebelumnya');
-                
-                document.getElementById('btnCloseCashRegister').classList.remove('hidden');
-                document.getElementById('btnOpenCashRegister').classList.add('hidden');
-                sessionStorage.removeItem('pos_declined_modal');
             } else {
-                // Sesi baru, set amount 0
-                setOpeningAmount(0);
+                showToast('success', 'Toko dibuka dengan modal awal Rp 0');
             }
+            
+            document.getElementById('btnCloseCashRegister').classList.remove('hidden');
+            document.getElementById('btnOpenCashRegister').classList.add('hidden');
+            sessionStorage.removeItem('pos_declined_modal');
         } else {
             showToast('error', data.message || 'Gagal memulai sesi');
         }

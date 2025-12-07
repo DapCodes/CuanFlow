@@ -17,287 +17,276 @@
 </li>
 @endsection
 
+@push('styles')
+<style>
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .stat-card {
+            padding: 1rem !important;
+        }
+        .payment-card {
+            padding: 0.75rem !important;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <!-- Toast Container -->
 <div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
 
-<x-card-container>
 <main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
-        
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-blue-100 to-purple-50 rounded-2xl p-8 mb-8 text-white">
-            <div class="flex items-center justify-between">
+    <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 mb-6 text-white shadow-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-cash-register text-2xl"></i>
+                </div>
                 <div>
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-                            <i class="fas fa-cash-register text-3xl text-black"></i>
-                        </div>
-                        <div class="text-black">
-                            <h1 class="text-3xl font-bold">Tutup Toko</h1>
-                            <p class="text-slate-600">Rekap Penjualan Hari Ini</p>
-                        </div>
-                    </div>
+                    <h1 class="text-2xl font-bold">Tutup Toko</h1>
+                    <p class="text-sm text-indigo-100">Rekap Penjualan Hari Ini</p>
                 </div>
-                <div class="text-right">
-                    <p class="text-sm text-slate-600 mb-1">Kasir: {{ auth()->user()->name }}</p>
-                    <p class="text-sm text-slate-600">Dibuka: {{ $register->opened_at->format('d/m/Y H:i') }}</p>
-                    <p class="text-xs text-slate-600 mt-1">ID: #{{ $register->id }}</p>
-                </div>
+            </div>
+            <div class="text-sm text-indigo-100 sm:text-right">
+                <p class="font-medium">{{ auth()->user()->name }}</p>
+                <p>{{ $register->opened_at->format('d/m/Y H:i') }}</p>
             </div>
         </div>
+    </div>
 
-        <!-- Ringkasan Penjualan -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- Total Transaksi -->
-            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-receipt text-blue-600 text-xl"></i>
-                    </div>
-                    <span class="text-3xl font-bold text-gray-900">{{ number_format($register->total_transactions, 0, ',', '.') }}</span>
-                </div>
-                <p class="text-sm font-semibold text-gray-700">Total Transaksi</p>
-                <p class="text-xs text-gray-500 mt-1">transaksi selesai hari ini</p>
-            </div>
-
-            <!-- Total Penjualan -->
-            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-line text-green-600 text-xl"></i>
-                    </div>
-                    <span class="text-3xl font-bold text-green-600">Rp {{ number_format($register->total_sales, 0, ',', '.') }}</span>
-                </div>
-                <p class="text-sm font-semibold text-gray-700">Total Penjualan</p>
-                <p class="text-xs text-gray-500 mt-1">omset hari ini</p>
-            </div>
-
-            <!-- Modal Awal -->
-            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-wallet text-purple-600 text-xl"></i>
-                    </div>
-                    <span class="text-3xl font-bold text-purple-600">Rp {{ number_format($register->opening_amount, 0, ',', '.') }}</span>
-                </div>
-                <p class="text-sm font-semibold text-gray-700">Modal Awal</p>
-                <p class="text-xs text-gray-500 mt-1">saldo awal kasir</p>
-            </div>
+    <!-- Stats Grid - SIMPLIFIED -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <!-- Total Transaksi -->
+        <div class="stat-card bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+            <p class="text-xs text-gray-500 font-medium mb-1">Total Transaksi</p>
+            <p class="text-2xl font-bold text-gray-900">{{ number_format($register->total_transactions, 0, ',', '.') }}</p>
         </div>
 
-        <!-- Detail Metode Pembayaran -->
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <i class="fas fa-credit-card text-indigo-600"></i>
-                Rincian Metode Pembayaran
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-5 border border-green-200">
-                    <div class="flex items-center gap-3">
-                        <div class="w-14 h-14 bg-green-500 rounded-lg flex items-center justify-center shadow-md">
-                            <i class="fas fa-money-bill-wave text-white text-2xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-green-700 font-medium">TUNAI</p>
-                            <p class="text-2xl font-bold text-green-900">Rp {{ number_format($register->total_cash, 0, ',', '.') }}</p>
-                        </div>
+        <!-- Total Penjualan -->
+        <div class="stat-card bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+            <p class="text-xs text-gray-500 font-medium mb-1">Total Penjualan</p>
+            <p class="text-2xl font-bold text-green-600">Rp {{ number_format($register->total_sales, 0, ',', '.') }}</p>
+        </div>
+
+        <!-- Modal Awal -->
+        <div class="stat-card bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+            <p class="text-xs text-gray-500 font-medium mb-1">Modal Awal</p>
+            <p class="text-2xl font-bold text-purple-600">Rp {{ number_format($register->opening_amount, 0, ',', '.') }}</p>
+        </div>
+    </div>
+
+    <!-- Payment Methods -->
+    <div class="bg-white rounded-lg shadow p-5 mb-6">
+        <h3 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="fas fa-credit-card text-indigo-600"></i>
+            Metode Pembayaran
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="payment-card bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-money-bill-wave text-white"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs text-green-700 font-medium">TUNAI</p>
+                        <p class="text-lg font-bold text-green-900 truncate">Rp {{ number_format($register->total_cash, 0, ',', '.') }}</p>
                     </div>
                 </div>
+            </div>
 
-                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-5 border border-purple-200">
-                    <div class="flex items-center gap-3">
-                        <div class="w-14 h-14 bg-purple-500 rounded-lg flex items-center justify-center shadow-md">
-                            <i class="fas fa-qrcode text-white text-2xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-purple-700 font-medium">QRIS</p>
-                            <p class="text-2xl font-bold text-purple-900">Rp {{ number_format($register->total_qris, 0, ',', '.') }}</p>
-                        </div>
+            <div class="payment-card bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-qrcode text-white"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs text-purple-700 font-medium">QRIS</p>
+                        <p class="text-lg font-bold text-purple-900 truncate">Rp {{ number_format($register->total_qris, 0, ',', '.') }}</p>
                     </div>
                 </div>
+            </div>
 
-                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-5 border border-blue-200">
-                    <div class="flex items-center gap-3">
-                        <div class="w-14 h-14 bg-blue-500 rounded-lg flex items-center justify-center shadow-md">
-                            <i class="fas fa-building-columns text-white text-2xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-blue-700 font-medium">TRANSFER</p>
-                            <p class="text-2xl font-bold text-blue-900">Rp {{ number_format($register->total_transfer, 0, ',', '.') }}</p>
-                        </div>
+            <div class="payment-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-building-columns text-white"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs text-blue-700 font-medium">TRANSFER</p>
+                        <p class="text-lg font-bold text-blue-900 truncate">Rp {{ number_format($register->total_transfer, 0, ',', '.') }}</p>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Form Tutup Toko -->
-        <div class="bg-white rounded-xl shadow-md p-8 mb-8">
-            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <i class="fas fa-calculator text-indigo-600"></i>
-                Perhitungan Kasir
-            </h3>
+    <!-- Form Tutup Toko -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
+            <i class="fas fa-calculator text-indigo-600"></i>
+            Perhitungan Kasir
+        </h3>
 
-            <form id="closeRegisterForm" class="space-y-6">
-                @csrf
-                
-                <!-- Expected Amount Display -->
-                <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 border-2 border-indigo-300 rounded-xl p-6">
-                    <div class="flex items-center gap-4 mb-3">
-                        <div class="w-14 h-14 bg-indigo-500 rounded-lg flex items-center justify-center shadow-md">
-                            <i class="fas fa-calculator text-white text-2xl"></i>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-indigo-900 mb-1">
-                                Saldo Tunai yang Diharapkan
-                            </label>
-                            <div class="text-4xl font-bold text-indigo-600">
-                                Rp {{ number_format($register->expected_amount, 0, ',', '.') }}
-                            </div>
-                        </div>
+        <form id="closeRegisterForm" class="space-y-5">
+            @csrf
+            
+            <!-- Expected Amount -->
+            <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 border-2 border-indigo-200 rounded-lg p-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-calculator text-white"></i>
                     </div>
-                    <div class="bg-white/50 rounded-lg p-3 mt-3">
-                        <p class="text-sm text-gray-700">
-                            <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
-                            <span class="font-medium">Perhitungan:</span> Modal Awal (Rp {{ number_format($register->opening_amount, 0, ',', '.') }}) + Penjualan Tunai (Rp {{ number_format($register->total_cash, 0, ',', '.') }})
-                        </p>
+                    <div class="min-w-0 flex-1">
+                        <label class="block text-xs font-semibold text-indigo-900 mb-1">
+                            Saldo yang Diharapkan
+                        </label>
+                        <div class="text-2xl sm:text-3xl font-bold text-indigo-600 truncate">
+                            Rp {{ number_format($register->expected_amount, 0, ',', '.') }}
+                        </div>
                     </div>
                 </div>
-
-                <!-- Closing Amount Input -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-900 mb-3">
-                        <i class="fas fa-coins text-orange-500 mr-2"></i>
-                        Jumlah Uang Aktual di Kasir <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-lg">Rp</span>
-                        <input 
-                            type="number" 
-                            id="closingAmount" 
-                            name="closing_amount"
-                            class="w-full pl-14 pr-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-xl font-bold text-gray-900 transition-all"
-                            placeholder="0"
-                            required
-                            min="0"
-                            step="0.01"
-                            onkeyup="calculateDifference()"
-                            onchange="calculateDifference()"
-                        >
-                    </div>
-                    <p class="text-sm text-gray-600 mt-2 flex items-center gap-2">
-                        <i class="fas fa-hand-holding-usd text-gray-400"></i>
-                        Hitung total uang fisik yang ada di kasir Anda saat ini
+                <div class="bg-white/50 rounded-lg p-2 mt-2">
+                    <p class="text-xs text-gray-700">
+                        <i class="fas fa-info-circle text-indigo-500 mr-1"></i>
+                        Modal (Rp {{ number_format($register->opening_amount, 0, ',', '.') }}) + Tunai (Rp {{ number_format($register->total_cash, 0, ',', '.') }})
                     </p>
                 </div>
-
-                <!-- Difference Display -->
-                <div id="differenceDisplay" class="hidden">
-                    <div class="rounded-xl p-6 border-2 transition-all" id="differenceCard">
-                        <div class="flex items-center gap-4 mb-2">
-                            <div class="w-14 h-14 rounded-lg flex items-center justify-center shadow-md" id="differenceIcon">
-                                <i class="text-white text-2xl" id="differenceIconElement"></i>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-1" id="differenceLabel">
-                                    Selisih
-                                </label>
-                                <div class="text-4xl font-bold" id="differenceAmount">Rp 0</div>
-                            </div>
-                        </div>
-                        <p class="text-sm mt-3 font-medium" id="differenceNote"></p>
-                    </div>
-                </div>
-
-                <!-- Notes -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-900 mb-3">
-                        <i class="fas fa-sticky-note text-gray-500 mr-2"></i>
-                        Catatan (Opsional)
-                    </label>
-                    <textarea 
-                        name="notes"
-                        id="notes"
-                        rows="4"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                        placeholder="Tambahkan catatan atau keterangan jika diperlukan..."
-                    ></textarea>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex gap-4 pt-6 border-t-2 border-gray-200">
-                    <a href="{{ route('pos.index') }}" class="flex-1 px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all text-center flex items-center justify-center gap-2">
-                        <i class="fas fa-arrow-left"></i>
-                        Kembali ke POS
-                    </a>
-                    <button type="submit" id="submitBtn" class="flex-1 px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                        <i class="fas fa-door-closed"></i>
-                        Tutup Toko
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Recent Transactions -->
-        @if($sales->count() > 0)
-        <div class="bg-white rounded-xl shadow-md p-6">
-            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <i class="fas fa-list text-indigo-600"></i>
-                Transaksi Hari Ini ({{ $sales->count() }} transaksi)
-            </h3>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Invoice</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Waktu</th>
-                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Metode</th>
-                            <th class="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @foreach($sales as $sale)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-4 py-3 text-sm font-semibold text-gray-900">{{ $sale->invoice_number }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ $sale->created_at->format('H:i:s') }}</td>
-                            <td class="px-4 py-3">
-                                <span class="px-3 py-1 text-xs font-bold rounded-full 
-                                    @if($sale->payment_method === 'cash') bg-green-100 text-green-700
-                                    @elseif($sale->payment_method === 'qris') bg-purple-100 text-purple-700
-                                    @else bg-blue-100 text-blue-700
-                                    @endif">
-                                    {{ strtoupper($sale->payment_method) }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 text-sm font-bold text-right text-gray-900">Rp {{ number_format($sale->grand_total, 0, ',', '.') }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
             </div>
-        </div>
-        @endif
 
+            <!-- Closing Amount Input -->
+            <div>
+                <label class="block text-sm font-bold text-gray-900 mb-2">
+                    <i class="fas fa-coins text-orange-500 mr-1"></i>
+                    Uang Aktual di Kasir <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">Rp</span>
+                    <input 
+                        type="number" 
+                        id="closingAmount" 
+                        name="closing_amount"
+                        class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-lg font-bold text-gray-900"
+                        placeholder="0"
+                        required
+                        min="0"
+                        step="0.01"
+                        onkeyup="calculateDifference()"
+                        onchange="calculateDifference()"
+                    >
+                </div>
+                <p class="text-xs text-gray-600 mt-1 flex items-center gap-1">
+                    <i class="fas fa-hand-holding-usd text-gray-400"></i>
+                    Hitung total uang fisik di kasir
+                </p>
+            </div>
+
+            <!-- Difference Display -->
+            <div id="differenceDisplay" class="hidden">
+                <div class="rounded-lg p-4 border-2 transition-all" id="differenceCard">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" id="differenceIcon">
+                            <i class="text-white" id="differenceIconElement"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <label class="block text-xs font-semibold mb-1" id="differenceLabel">Selisih</label>
+                            <div class="text-2xl sm:text-3xl font-bold truncate" id="differenceAmount">Rp 0</div>
+                        </div>
+                    </div>
+                    <p class="text-xs mt-2 font-medium" id="differenceNote"></p>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div>
+                <label class="block text-sm font-bold text-gray-900 mb-2">
+                    <i class="fas fa-sticky-note text-gray-500 mr-1"></i>
+                    Catatan (Opsional)
+                </label>
+                <textarea 
+                    name="notes"
+                    id="notes"
+                    rows="3"
+                    class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                    placeholder="Tambahkan catatan jika diperlukan..."
+                ></textarea>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t-2 border-gray-200">
+                <a href="{{ route('pos.index') }}" class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all text-center flex items-center justify-center gap-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Kembali</span>
+                </a>
+                <button type="submit" id="submitBtn" class="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                    <i class="fas fa-door-closed"></i>
+                    <span>Tutup Toko</span>
+                </button>
+            </div>
+        </form>
     </div>
+
+    <!-- Recent Transactions -->
+    @if($sales->count() > 0)
+    <div class="bg-white rounded-lg shadow p-5">
+        <h3 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="fas fa-list text-indigo-600"></i>
+            Transaksi Hari Ini ({{ $sales->count() }})
+        </h3>
+        
+        <div class="overflow-x-auto -mx-5 px-5">
+            <table class="w-full min-w-[500px]">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Invoice</th>
+                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Waktu</th>
+                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Metode</th>
+                        <th class="px-3 py-2 text-right text-xs font-bold text-gray-700 uppercase">Total</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @foreach($sales as $sale)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 text-sm font-semibold text-gray-900">{{ $sale->invoice_number }}</td>
+                        <td class="px-3 py-2 text-sm text-gray-600">{{ $sale->created_at->format('H:i') }}</td>
+                        <td class="px-3 py-2">
+                            <span class="px-2 py-1 text-xs font-bold rounded-full 
+                                @if($sale->payment_method === 'cash') bg-green-100 text-green-700
+                                @elseif($sale->payment_method === 'qris') bg-purple-100 text-purple-700
+                                @else bg-blue-100 text-blue-700
+                                @endif">
+                                {{ strtoupper($sale->payment_method) }}
+                            </span>
+                        </td>
+                        <td class="px-3 py-2 text-sm font-bold text-right text-gray-900">Rp {{ number_format($sale->grand_total, 0, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
+</div>
 </main>
-</x-card-container>
 
 <!-- Modal Success -->
 <div id="successModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 transform transition-all">
-        <div class="flex justify-center mb-6">
-            <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-check-circle text-green-500 text-5xl"></i>
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+        <div class="flex justify-center mb-4">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-500 text-4xl"></i>
             </div>
         </div>
         
-        <h3 class="text-3xl font-bold text-gray-900 text-center mb-3">Toko Berhasil Ditutup!</h3>
-        <p class="text-gray-600 text-center mb-8">Terima kasih atas kerja keras Anda hari ini</p>
+        <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">Toko Berhasil Ditutup!</h3>
+        <p class="text-gray-600 text-center mb-6 text-sm">Terima kasih atas kerja keras Anda hari ini</p>
         
-        <button onclick="window.location.href='{{ route('dashboard') }}'" class="w-full px-6 py-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl font-bold hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2">
+        <button onclick="window.location.href='{{ route('dashboard') }}'" class="w-full px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg font-semibold hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2">
             <i class="fas fa-home"></i>
-            Kembali ke Dashboard
+            <span>Kembali ke Dashboard</span>
         </button>
     </div>
 </div>
@@ -325,8 +314,8 @@ function showToast(type, message) {
         warning: 'fa-exclamation-triangle'
     };
     
-    toast.className = `${colors[type]} text-white px-6 py-4 rounded-xl shadow-lg flex items-center gap-3 min-w-[300px]`;
-    toast.innerHTML = `<i class="fas ${icons[type]} text-xl"></i><span class="font-medium">${message}</span>`;
+    toast.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 min-w-[280px]`;
+    toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="text-sm font-medium">${message}</span>`;
     
     container.appendChild(toast);
     
@@ -358,34 +347,34 @@ function calculateDifference() {
         
         if (difference > 0) {
             // Surplus
-            card.className = 'rounded-xl p-6 border-2 border-green-300 bg-gradient-to-br from-green-50 to-green-100 transition-all';
-            icon.className = 'w-14 h-14 bg-green-500 rounded-lg flex items-center justify-center shadow-md';
-            iconElement.className = 'fas fa-arrow-up text-white text-2xl';
-            amountEl.className = 'text-4xl font-bold text-green-600';
-            labelEl.className = 'block text-sm font-semibold mb-1 text-green-900';
-            labelEl.textContent = 'Selisih Lebih (Surplus)';
-            noteEl.className = 'text-sm mt-3 font-medium text-green-700 bg-white/50 rounded-lg p-3';
-            noteEl.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Uang di kasir lebih banyak dari yang diharapkan';
+            card.className = 'rounded-lg p-4 border-2 border-green-300 bg-gradient-to-br from-green-50 to-green-100';
+            icon.className = 'w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0';
+            iconElement.className = 'fas fa-arrow-up text-white';
+            amountEl.className = 'text-2xl sm:text-3xl font-bold text-green-600 truncate';
+            labelEl.className = 'block text-xs font-semibold mb-1 text-green-900';
+            labelEl.textContent = 'Selisih Lebih';
+            noteEl.className = 'text-xs mt-2 font-medium text-green-700';
+            noteEl.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Uang di kasir lebih dari yang diharapkan';
         } else if (difference < 0) {
             // Minus
-            card.className = 'rounded-xl p-6 border-2 border-red-300 bg-gradient-to-br from-red-50 to-red-100 transition-all';
-            icon.className = 'w-14 h-14 bg-red-500 rounded-lg flex items-center justify-center shadow-md';
-            iconElement.className = 'fas fa-arrow-down text-white text-2xl';
-            amountEl.className = 'text-4xl font-bold text-red-600';
-            labelEl.className = 'block text-sm font-semibold mb-1 text-red-900';
-            labelEl.textContent = 'Selisih Kurang (Minus)';
-            noteEl.className = 'text-sm mt-3 font-medium text-red-700 bg-white/50 rounded-lg p-3';
-            noteEl.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Uang di kasir kurang dari yang diharapkan';
+            card.className = 'rounded-lg p-4 border-2 border-red-300 bg-gradient-to-br from-red-50 to-red-100';
+            icon.className = 'w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0';
+            iconElement.className = 'fas fa-arrow-down text-white';
+            amountEl.className = 'text-2xl sm:text-3xl font-bold text-red-600 truncate';
+            labelEl.className = 'block text-xs font-semibold mb-1 text-red-900';
+            labelEl.textContent = 'Selisih Kurang';
+            noteEl.className = 'text-xs mt-2 font-medium text-red-700';
+            noteEl.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Uang di kasir kurang dari yang diharapkan';
         } else {
             // Pas
-            card.className = 'rounded-xl p-6 border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100 transition-all';
-            icon.className = 'w-14 h-14 bg-blue-500 rounded-lg flex items-center justify-center shadow-md';
-            iconElement.className = 'fas fa-check text-white text-2xl';
-            amountEl.className = 'text-4xl font-bold text-blue-600';
-            labelEl.className = 'block text-sm font-semibold mb-1 text-blue-900';
+            card.className = 'rounded-lg p-4 border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100';
+            icon.className = 'w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0';
+            iconElement.className = 'fas fa-check text-white';
+            amountEl.className = 'text-2xl sm:text-3xl font-bold text-blue-600 truncate';
+            labelEl.className = 'block text-xs font-semibold mb-1 text-blue-900';
             labelEl.textContent = 'Tidak Ada Selisih';
-            noteEl.className = 'text-sm mt-3 font-medium text-blue-700 bg-white/50 rounded-lg p-3';
-            noteEl.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Sesuai! Uang di kasir pas dengan perhitungan';
+            noteEl.className = 'text-xs mt-2 font-medium text-blue-700';
+            noteEl.innerHTML = '<i class="fas fa-check-circle mr-1"></i>Sesuai! Uang di kasir pas dengan perhitungan';
         }
     } else {
         display.classList.add('hidden');
@@ -400,18 +389,16 @@ document.getElementById('closeRegisterForm').addEventListener('submit', function
     const submitBtn = document.getElementById('submitBtn');
     
     if (!closingAmount || closingAmount < 0) {
-        showToast('error', 'Mohon masukkan jumlah uang aktual yang valid');
+        showToast('error', 'Mohon masukkan jumlah yang valid');
         return;
     }
     
-    // Confirm
     if (!confirm('Yakin ingin menutup toko? Tindakan ini tidak dapat dibatalkan.')) {
         return;
     }
     
-    // Disable button
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i><span>Memproses...</span>';
     
     fetch('{{ route("cash-register.process-close") }}', {
         method: 'POST',
@@ -434,18 +421,17 @@ document.getElementById('closeRegisterForm').addEventListener('submit', function
         } else {
             showToast('error', data.message || 'Gagal menutup toko');
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-door-closed mr-2"></i>Tutup Toko';
+            submitBtn.innerHTML = '<i class="fas fa-door-closed mr-2"></i><span>Tutup Toko</span>';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('error', 'Terjadi kesalahan saat menutup toko');
+        showToast('error', 'Terjadi kesalahan');
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-door-closed mr-2"></i>Tutup Toko';
+        submitBtn.innerHTML = '<i class="fas fa-door-closed mr-2"></i><span>Tutup Toko</span>';
     });
 });
 
-// Auto-focus on load
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('closingAmount').focus();
 });

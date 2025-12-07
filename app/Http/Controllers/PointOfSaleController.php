@@ -72,6 +72,10 @@ class PointOfSaleController extends Controller
 
     public function startCashRegister(Request $request)
     {
+        $request->validate([
+            'opening_amount' => 'required|numeric|min:0',
+        ]);
+
         $userId = auth()->id();
         $outletId = auth()->user()->outlet_id;
 
@@ -100,7 +104,7 @@ class PointOfSaleController extends Controller
             // Lanjutkan sesi yang belum selesai
             $unfinishedRegister->update([
                 'status' => 'open',
-                'closed_at' => null, // Reset closed_at karena dibuka lagi
+                'closed_at' => null,
             ]);
 
             return response()->json([
@@ -111,21 +115,11 @@ class PointOfSaleController extends Controller
             ]);
         }
 
-        // Hitung opening amount dari sales sebelumnya yang sudah difinalisasi
-        $lastRegister = CashRegister::where('user_id', $userId)
-            ->where('outlet_id', $outletId)
-            ->where('status', 'closed')
-            ->whereNotNull('closing_amount') // Hanya yang sudah difinalisasi
-            ->latest('closed_at')
-            ->first();
-
-        $openingAmount = $lastRegister ? $lastRegister->closing_amount : 0;
-
-        // Buat cash register baru
+        // Buat cash register baru DENGAN opening_amount langsung
         $register = CashRegister::create([
             'outlet_id' => $outletId,
             'user_id' => $userId,
-            'opening_amount' => null, // Set NULL dulu, akan diisi di modal berikutnya
+            'opening_amount' => $request->opening_amount, // LANGSUNG SET DI SINI
             'opened_at' => now(),
             'status' => 'open',
         ]);
