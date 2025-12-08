@@ -184,7 +184,7 @@
                     <div class="p-3 md:p-5 border-b border-gray-200">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
-                                <h3 class="text-base md:text-lg font-bold text-gray-900">Rincian Pendapatan</h3>
+                                <h3 class="text-base md:text-lg font-bold text-gray-900">Rincian Penjualan</h3>
                                 <p class="text-xs md:text-sm text-gray-500 mt-1">Transaksi terbesar bulan ini</p>
                             </div>
                             <div class="flex items-center gap-2">

@@ -38,24 +38,31 @@
 <main class="flex-grow py-8 px-4">
     <div class="max-w-7xl mx-auto space-y-6">
     
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 mb-6 text-white shadow-lg">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-cash-register text-2xl"></i>
+    <x-card-container>
+        <div class="bg-gradient-to-br from-indigo-10 to-indigo-100 p-6 border-b border-indigo-200">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-indigo-600/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-cash-register text-2xl text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-indigo-700">
+                            Rekap Penjualan            
+                        </h1>
+                        <p class="text-sm text-indigo-500 mt-1">
+                            Hitung Pengeluaran dan Pendapatan Toko anda kali ini
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-2xl font-bold">Tutup Toko</h1>
-                    <p class="text-sm text-indigo-100">Rekap Penjualan Hari Ini</p>
+
+                <div class="text-sm text-indigo-500 md:text-right">
+                    <p class="font-medium text-indigo-700">{{ auth()->user()->name }}</p>
+                    <p class="text-indigo-500">{{ $register->opened_at->format('d/m/Y H:i') }}</p>
                 </div>
-            </div>
-            <div class="text-sm text-indigo-100 sm:text-right">
-                <p class="font-medium">{{ auth()->user()->name }}</p>
-                <p>{{ $register->opened_at->format('d/m/Y H:i') }}</p>
             </div>
         </div>
-    </div>
+    </x-card-container>
+
 
     <!-- Stats Grid - SIMPLIFIED -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -141,7 +148,7 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <label class="block text-xs font-semibold text-indigo-900 mb-1">
-                            Saldo yang Diharapkan
+                            Total Uang Tunai yang Seharusnya di Kasir
                         </label>
                         <div class="text-2xl sm:text-3xl font-bold text-indigo-600 truncate">
                             Rp {{ number_format($register->expected_amount, 0, ',', '.') }}
@@ -151,7 +158,9 @@
                 <div class="bg-white/50 rounded-lg p-2 mt-2">
                     <p class="text-xs text-gray-700">
                         <i class="fas fa-info-circle text-indigo-500 mr-1"></i>
-                        Modal (Rp {{ number_format($register->opening_amount, 0, ',', '.') }}) + Tunai (Rp {{ number_format($register->total_cash, 0, ',', '.') }})
+                        Ini adalah jumlah uang cash/tunai yang <b>seharusnya</b> ada di laci kasir sekarang:
+                        Modal awal (Rp {{ number_format($register->opening_amount, 0, ',', '.') }}) 
+                        + total pembayaran tunai hari ini (Rp {{ number_format($register->total_cash, 0, ',', '.') }}).
                     </p>
                 </div>
             </div>
