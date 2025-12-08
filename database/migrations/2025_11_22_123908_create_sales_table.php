@@ -32,6 +32,8 @@ return new class extends Migration
             $table->enum('status', ['draft', 'completed', 'cancelled', 'refunded'])->default('draft');
             $table->boolean('is_synced')->default(true);
             $table->datetime('completed_at')->nullable();
+            $table->datetime('refunded_at')->nullable();
+            $table->boolean('is_reported')->default(false);
             $table->timestamps();
             $table->softDeletes();
             $table->index(['outlet_id', 'created_at']);

@@ -291,7 +291,10 @@ class SaleController extends Controller
         try {
             // Kembalikan stok
             foreach ($sale->items as $item) {
-                $item->product->increment('stock', $item->quantity);
+                $stock = $item->product->getStockByOutlet($sale->outlet_id);
+                if ($stock) {
+                    $stock->increment('quantity', $item->quantity);
+                }
             }
 
             // Update status

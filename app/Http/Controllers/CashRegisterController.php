@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CashRegister;
 use App\Models\Sale;
+use App\Models\DailySummary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -53,12 +54,12 @@ class CashRegisterController extends Controller
         $request->validate([
             'closing_amount' => 'required|numeric|min:0',
             'notes' => 'nullable|string|max:1000',
+            'generate_daily_report' => 'nullable|boolean', // TAMBAHAN BARU
         ]);
 
         $userId = auth()->id();
         $outletId = auth()->user()->outlet_id;
 
-        // Cari register yang masih OPEN
         $register = CashRegister::where('outlet_id', $outletId)
             ->where('user_id', $userId)
             ->where('status', 'open')
@@ -80,17 +81,36 @@ class CashRegisterController extends Controller
             // Tutup cash register
             $register->close($request->closing_amount, $request->notes);
 
+            // TAMBAHAN BARU: Mark sales as reported
+            $sales = Sale::where('outlet_id', $outletId)
+                ->where('cashier_id', $userId)
+                ->where('created_at', '>=', $register->opened_at)
+                ->where('status', 'completed')
+                ->where('is_reported', false)
+                ->get();
+
+            foreach ($sales as $sale) {
+                $sale->update(['is_reported' => true]);
+            }
+
+            // TAMBAHAN BARU: Generate Daily Summary jika checkbox dicentang
+            if ($request->generate_daily_report) {
+                $summaryDate = $register->opened_at->format('Y-m-d');
+                DailySummary::generateForDate($outletId, $summaryDate);
+            }
+
             DB::commit();
 
             Log::info('Cash register closed successfully', [
                 'register_id' => $register->id,
                 'user_id' => $userId,
                 'closing_amount' => $request->closing_amount,
+                'daily_report_generated' => $request->generate_daily_report ?? false,
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Toko berhasil ditutup',
+                'message' => 'Toko berhasil ditutup' . ($request->generate_daily_report ? ' dan laporan harian dibuat' : ''),
                 'register' => $register->fresh(),
             ]);
 

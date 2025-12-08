@@ -473,6 +473,67 @@
         opacity: 0.5;
     }
 
+    /* Calculator Styles */
+    .calc-btn {
+        padding: 1rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .calc-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .calc-btn:active {
+        transform: translateY(0);
+    }
+
+    .calc-history-item {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .calc-history-item:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+
+    .calc-history-expression {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .calc-history-result {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    /* Responsive Calculator */
+    @media (max-width: 1024px) {
+        #calculatorModal .max-w-2xl {
+            max-width: 95%;
+        }
+        
+        .calc-btn {
+            padding: 0.875rem;
+            font-size: 1rem;
+        }
+    }
+
     /* Responsive */
     @media (max-width: 1280px) {
         .pos-main {
@@ -806,16 +867,38 @@
                     <p class="text-xs text-gray-500 mt-0.5">Total Item: <span id="totalItems" class="font-semibold text-gray-900">0</span></p>
                 </div>
 
-                <div class="flex-shrink-0">
-                    <!-- Button Tutup Toko (default hidden) -->
-                    <button onclick="handleCloseCashRegister()" id="btnCloseCashRegister" class="hidden px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition-all">
-                        <i class="fas fa-sign-out-alt mr-1"></i> Tutup Toko
+                <div class="flex-shrink-0 relative">
+                    <!-- Dropdown Button -->
+                    <button onclick="togglePOSMenu()" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-all flex items-center gap-1.5">
+                        <i class="fas fa-ellipsis-v"></i>
                     </button>
-                    <!-- Button Buka Toko (default hidden) -->
-                    <button onclick="openOpeningAmountModal()" id="btnOpenCashRegister" class="hidden px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-semibold hover:bg-green-600 transition-all">
-                        <i class="fas fa-door-open mr-1"></i> Buka Toko
-                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="posDropdownMenu" class="hidden absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-50 min-w-[200px] overflow-hidden">
+                        <!-- Buka/Tutup Toko -->
+                        <button onclick="handleCloseCashRegister()" id="menuCloseCashRegister" class="hidden w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 transition-colors flex items-center gap-2 text-red-600 font-medium border-b border-gray-100">
+                            <i class="fas fa-sign-out-alt w-4"></i>
+                            <span>Tutup Toko</span>
+                        </button>
+                        <button onclick="openOpeningAmountModal(); togglePOSMenu();" id="menuOpenCashRegister" class="hidden w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 transition-colors flex items-center gap-2 text-green-600 font-medium border-b border-gray-100">
+                            <i class="fas fa-door-open w-4"></i>
+                            <span>Buka Toko</span>
+                        </button>
+                        
+                        <!-- Penjualan Hari Ini -->
+                        <a href="{{ route('sales.index') }}" class="block w-full px-4 py-2.5 text-left text-sm hover:bg-indigo-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
+                            <i class="fas fa-chart-line w-4 text-indigo-600"></i>
+                            <span>Penjualan Hari Ini</span>
+                        </a>
+                        
+                        <!-- Kalkulator -->
+                        <button onclick="openCalculator(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 transition-colors flex items-center gap-2 text-gray-700">
+                            <i class="fas fa-calculator w-4 text-purple-600"></i>
+                            <span>Kalkulator</span>
+                        </button>
+                    </div>
                 </div>
+
             </div>
 
             <div class="order-items custom-scrollbar">
@@ -907,23 +990,291 @@
     </div>
 </div>
 
+<!-- Modal: Kalkulator -->
+<div id="calculatorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between mb-4 flex-shrink-0">
+            <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="fas fa-calculator text-purple-600"></i>
+                Kalkulator
+            </h3>
+            <button onclick="closeCalculator()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-1 overflow-hidden">
+            <!-- Calculator -->
+            <div class="lg:col-span-3">
+                <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
+                    <!-- Display -->
+                    <div class="bg-white rounded-lg p-4 mb-4 shadow-inner">
+                        <div class="text-right text-sm text-gray-500 h-6" id="calcExpression"></div>
+                        <div class="text-right text-3xl font-bold text-gray-900 break-all" id="calcDisplay">0</div>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="calcClear()" class="calc-btn bg-red-500 hover:bg-red-600 text-white col-span-2 font-semibold">C</button>
+                        <button onclick="calcDelete()" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white font-semibold">DEL</button>
+                        <button onclick="calcOperator('/')" class="calc-btn bg-indigo-500 hover:bg-indigo-600 text-white text-xl">÷</button>
+                        
+                        <button onclick="calcNumber('7')" class="calc-btn">7</button>
+                        <button onclick="calcNumber('8')" class="calc-btn">8</button>
+                        <button onclick="calcNumber('9')" class="calc-btn">9</button>
+                        <button onclick="calcOperator('*')" class="calc-btn bg-indigo-500 hover:bg-indigo-600 text-white text-xl">×</button>
+                        
+                        <button onclick="calcNumber('4')" class="calc-btn">4</button>
+                        <button onclick="calcNumber('5')" class="calc-btn">5</button>
+                        <button onclick="calcNumber('6')" class="calc-btn">6</button>
+                        <button onclick="calcOperator('-')" class="calc-btn bg-indigo-500 hover:bg-indigo-600 text-white text-xl">−</button>
+                        
+                        <button onclick="calcNumber('1')" class="calc-btn">1</button>
+                        <button onclick="calcNumber('2')" class="calc-btn">2</button>
+                        <button onclick="calcNumber('3')" class="calc-btn">3</button>
+                        <button onclick="calcOperator('+')" class="calc-btn bg-indigo-500 hover:bg-indigo-600 text-white text-xl">+</button>
+                        
+                        <button onclick="calcNumber('0')" class="calc-btn col-span-2">0</button>
+                        <button onclick="calcDecimal()" class="calc-btn">.</button>
+                        <button onclick="calcEquals()" class="calc-btn bg-green-500 hover:bg-green-600 text-white font-semibold text-xl">=</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- History -->
+            <div class="lg:col-span-2 flex flex-col overflow-hidden">
+                <div class="flex items-center justify-between mb-3 flex-shrink-0">
+                    <h4 class="text-sm font-bold text-gray-700">Riwayat</h4>
+                    <button onclick="calcClearHistory()" class="text-xs text-red-600 hover:text-red-700 font-medium">
+                        <i class="fas fa-trash mr-1"></i>Hapus Semua
+                    </button>
+                </div>
+                <div id="calcHistory" class="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
+                    <div class="text-center text-gray-400 text-sm py-8">
+                        <i class="fas fa-history text-3xl mb-2 opacity-50"></i>
+                        <p>Belum ada riwayat</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 <script>
+// ==================== GLOBAL VARIABLES ====================
 let UI_STATE = 'browse';
 let cart = @json($cart ?? []);
 let cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0 };
 let currentSaleId = null;
 
+// ==================== CALCULATOR VARIABLES ====================
+let calcCurrentValue = '0';
+let calcPreviousValue = '';
+let calcOperation = null;
+let calcHistory = [];
+
+// ==================== DOM READY ====================
 document.addEventListener('DOMContentLoaded', function() {
+    loadCalcHistory();
     checkCashRegister();
     renderCart();
     setUIState('browse');
     initCategoryTabs();
+    initClickOutsideHandler();
 });
 
+// ==================== DROPDOWN MENU FUNCTIONS ====================
+function togglePOSMenu() {
+    const menu = document.getElementById('posDropdownMenu');
+    menu.classList.toggle('hidden');
+}
+
+function initClickOutsideHandler() {
+    document.addEventListener('click', function(e) {
+        const menu = document.getElementById('posDropdownMenu');
+        const button = e.target.closest('button');
+        
+        if (!menu.contains(e.target) && button?.onclick?.toString().indexOf('togglePOSMenu') === -1) {
+            menu.classList.add('hidden');
+        }
+    });
+}
+
+// ==================== CALCULATOR FUNCTIONS ====================
+function openCalculator() {
+    document.getElementById('calculatorModal').classList.remove('hidden');
+    updateCalcDisplay();
+}
+
+function closeCalculator() {
+    document.getElementById('calculatorModal').classList.add('hidden');
+}
+
+function calcNumber(num) {
+    if (calcCurrentValue === '0' || calcCurrentValue === 'Error') {
+        calcCurrentValue = num;
+    } else {
+        calcCurrentValue += num;
+    }
+    updateCalcDisplay();
+}
+
+function calcOperator(op) {
+    if (calcPreviousValue !== '' && calcOperation !== null) {
+        calcEquals();
+    }
+    calcPreviousValue = calcCurrentValue;
+    calcOperation = op;
+    calcCurrentValue = '0';
+    updateCalcDisplay();
+}
+
+function calcDecimal() {
+    if (!calcCurrentValue.includes('.')) {
+        calcCurrentValue += '.';
+        updateCalcDisplay();
+    }
+}
+
+function calcEquals() {
+    if (calcPreviousValue === '' || calcOperation === null) return;
+    
+    const prev = parseFloat(calcPreviousValue);
+    const current = parseFloat(calcCurrentValue);
+    let result;
+    
+    switch(calcOperation) {
+        case '+': result = prev + current; break;
+        case '-': result = prev - current; break;
+        case '*': result = prev * current; break;
+        case '/': 
+            if (current === 0) {
+                calcCurrentValue = 'Error';
+                updateCalcDisplay();
+                calcPreviousValue = '';
+                calcOperation = null;
+                return;
+            }
+            result = prev / current; 
+            break;
+        default: return;
+    }
+    
+    const expression = `${prev} ${calcOperation === '*' ? '×' : calcOperation === '/' ? '÷' : calcOperation} ${current}`;
+    addToCalcHistory(expression, result);
+    
+    calcCurrentValue = result.toString();
+    calcPreviousValue = '';
+    calcOperation = null;
+    updateCalcDisplay();
+}
+
+function calcClear() {
+    calcCurrentValue = '0';
+    calcPreviousValue = '';
+    calcOperation = null;
+    updateCalcDisplay();
+}
+
+function calcDelete() {
+    if (calcCurrentValue.length > 1) {
+        calcCurrentValue = calcCurrentValue.slice(0, -1);
+    } else {
+        calcCurrentValue = '0';
+    }
+    updateCalcDisplay();
+}
+
+function updateCalcDisplay() {
+    document.getElementById('calcDisplay').textContent = calcCurrentValue;
+    
+    let expression = '';
+    if (calcPreviousValue !== '') {
+        const opSymbol = calcOperation === '*' ? '×' : calcOperation === '/' ? '÷' : calcOperation;
+        expression = `${calcPreviousValue} ${opSymbol}`;
+    }
+    document.getElementById('calcExpression').textContent = expression;
+}
+
+function addToCalcHistory(expression, result) {
+    const historyItem = {
+        expression: expression,
+        result: result,
+        timestamp: new Date().toISOString()
+    };
+    
+    calcHistory.unshift(historyItem);
+    
+    if (calcHistory.length > 50) {
+        calcHistory = calcHistory.slice(0, 50);
+    }
+    
+    saveCalcHistory();
+    renderCalcHistory();
+}
+
+function saveCalcHistory() {
+    localStorage.setItem('pos_calc_history', JSON.stringify(calcHistory));
+}
+
+function loadCalcHistory() {
+    const saved = localStorage.getItem('pos_calc_history');
+    if (saved) {
+        try {
+            calcHistory = JSON.parse(saved);
+            renderCalcHistory();
+        } catch (e) {
+            calcHistory = [];
+        }
+    }
+}
+
+function renderCalcHistory() {
+    const container = document.getElementById('calcHistory');
+    
+    if (calcHistory.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-gray-400 text-sm py-8">
+                <i class="fas fa-history text-3xl mb-2 opacity-50"></i>
+                <p>Belum ada riwayat</p>
+            </div>`;
+        return;
+    }
+    
+    let html = '';
+    calcHistory.forEach((item, index) => {
+        html += `
+            <div class="calc-history-item" onclick="calcUseHistory(${index})">
+                <div class="calc-history-expression">${item.expression}</div>
+                <div class="calc-history-result">= ${formatNumber(item.result)}</div>
+            </div>`;
+    });
+    
+    container.innerHTML = html;
+}
+
+function calcUseHistory(index) {
+    const item = calcHistory[index];
+    calcCurrentValue = item.result.toString();
+    calcPreviousValue = '';
+    calcOperation = null;
+    updateCalcDisplay();
+}
+
+function calcClearHistory() {
+    if (!confirm('Hapus semua riwayat kalkulator?')) return;
+    
+    calcHistory = [];
+    saveCalcHistory();
+    renderCalcHistory();
+    showToast('success', 'Riwayat berhasil dihapus');
+}
+
+// ==================== CASH REGISTER FUNCTIONS ====================
 function initCategoryTabs() {
     const tabs = document.querySelectorAll('.category-tab');
     tabs.forEach(tab => {
@@ -939,29 +1290,23 @@ function checkCashRegister() {
         .then(r => r.json())
         .then(data => { 
             if (data.is_open) {
-                // Toko sudah buka, tampilkan button "Tutup Toko"
-                document.getElementById('btnCloseCashRegister').classList.remove('hidden');
-                document.getElementById('btnOpenCashRegister').classList.add('hidden');
+                document.getElementById('menuCloseCashRegister').classList.remove('hidden');
+                document.getElementById('menuOpenCashRegister').classList.add('hidden');
             } else if (data.has_unfinished) {
-                // Ada sesi yang belum selesai (closed tapi closing_amount NULL)
-                // Cek apakah user sudah pernah decline
                 const hasDeclined = sessionStorage.getItem('pos_declined_modal');
                 
                 if (hasDeclined === 'true') {
-                    // Jangan tampilkan modal, langsung tampilkan button "Buka Toko"
-                    document.getElementById('btnOpenCashRegister').classList.remove('hidden');
-                    document.getElementById('btnCloseCashRegister').classList.add('hidden');
+                    document.getElementById('menuOpenCashRegister').classList.remove('hidden');
+                    document.getElementById('menuCloseCashRegister').classList.add('hidden');
                 } else {
-                    // Tampilkan modal dengan pesan bahwa ada sesi yang belum selesai
                     document.getElementById('startSalesModal').classList.remove('hidden');
                 }
             } else {
-                // Tidak ada sesi aktif, cek apakah user sudah decline
                 const hasDeclined = sessionStorage.getItem('pos_declined_modal');
                 
                 if (hasDeclined === 'true') {
-                    document.getElementById('btnOpenCashRegister').classList.remove('hidden');
-                    document.getElementById('btnCloseCashRegister').classList.add('hidden');
+                    document.getElementById('menuOpenCashRegister').classList.remove('hidden');
+                    document.getElementById('menuCloseCashRegister').classList.add('hidden');
                 } else {
                     document.getElementById('startSalesModal').classList.remove('hidden');
                 }
@@ -973,9 +1318,6 @@ function closeStartSalesModal() {
     document.getElementById('startSalesModal').classList.add('hidden'); 
 }
 
-// function startCashRegister() { ... } - SUDAH DIGANTI DENGAN openOpeningAmountModal dan submitOpeningAmount
-
-// Fungsi buka modal input modal awal
 function openOpeningAmountModal() {
     document.getElementById('openingAmountModal').classList.remove('hidden');
     setTimeout(() => {
@@ -983,22 +1325,19 @@ function openOpeningAmountModal() {
     }, 200);
 }
 
-// Fungsi tutup modal input modal awal
 function closeOpeningAmountModal() {
     document.getElementById('openingAmountModal').classList.add('hidden');
     document.getElementById('openingAmountInput').value = '';
 }
 
-// Fungsi submit modal awal
 function submitOpeningAmount() {
     const amount = parseFloat(document.getElementById('openingAmountInput').value) || 0;
-    
+
     if (amount < 0) {
         showToast('warning', 'Jumlah tidak boleh negatif');
         return;
     }
 
-    // Start session dengan opening amount sekaligus
     fetch('{{ route("cash-register.start") }}', {
         method: 'POST',
         headers: { 
@@ -1019,8 +1358,8 @@ function submitOpeningAmount() {
                 showToast('success', `Toko dibuka dengan modal awal Rp ${formatNumber(amount)}`);
             }
             
-            document.getElementById('btnCloseCashRegister').classList.remove('hidden');
-            document.getElementById('btnOpenCashRegister').classList.add('hidden');
+            document.getElementById('menuCloseCashRegister').classList.remove('hidden');
+            document.getElementById('menuOpenCashRegister').classList.add('hidden');
             sessionStorage.removeItem('pos_declined_modal');
         } else {
             showToast('error', data.message || 'Gagal memulai sesi');
@@ -1031,45 +1370,11 @@ function submitOpeningAmount() {
     });
 }
 
-// Helper function untuk set opening amount setelah sesi dibuat
-function setOpeningAmount(amount) {
-    fetch('{{ route("cash-register.set-opening-amount") }}', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}' 
-        },
-        body: JSON.stringify({ opening_amount: amount })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            closeOpeningAmountModal();
-            closeStartSalesModal(); // Pastikan modal welcome juga tertutup
-            showToast('success', `Modal awal Rp ${formatNumber(amount)} berhasil diset`);
-            
-            // Tampilkan button tutup toko
-            document.getElementById('btnCloseCashRegister').classList.remove('hidden');
-            document.getElementById('btnOpenCashRegister').classList.add('hidden');
-            
-            // Hapus status declined
-            sessionStorage.removeItem('pos_declined_modal');
-        } else {
-            showToast('error', data.message || 'Gagal menyimpan modal awal');
-        }
-    })
-    .catch(() => {
-        showToast('error', 'Terjadi kesalahan saat menyimpan modal awal');
-    });
-}
-
-// Fungsi lewati modal awal (set 0)
 function skipOpeningAmount() {
     if (!confirm('Yakin ingin melewati input modal awal? Modal awal akan diset Rp 0')) {
         return;
     }
     
-    // Start session dengan amount 0
     fetch('{{ route("cash-register.start") }}', {
         method: 'POST',
         headers: { 
@@ -1090,8 +1395,8 @@ function skipOpeningAmount() {
                 showToast('success', 'Toko dibuka dengan modal awal Rp 0');
             }
             
-            document.getElementById('btnCloseCashRegister').classList.remove('hidden');
-            document.getElementById('btnOpenCashRegister').classList.add('hidden');
+            document.getElementById('menuCloseCashRegister').classList.remove('hidden');
+            document.getElementById('menuOpenCashRegister').classList.add('hidden');
             sessionStorage.removeItem('pos_declined_modal');
         } else {
             showToast('error', data.message || 'Gagal memulai sesi');
@@ -1102,23 +1407,63 @@ function skipOpeningAmount() {
     });
 }
 
-// Fungsi saat user pilih "Tidak" di modal
 function declineStartSales() {
     closeStartSalesModal();
-    // Tampilkan button "Buka Toko" (hijau)
-    document.getElementById('btnOpenCashRegister').classList.remove('hidden');
-    // Pastikan button "Tutup Toko" tetap hidden
-    document.getElementById('btnCloseCashRegister').classList.add('hidden');
     
-    // Simpan status "user sudah pilih tidak" ke session storage
+    document.getElementById('menuOpenCashRegister').classList.remove('hidden');
+    document.getElementById('menuCloseCashRegister').classList.add('hidden');
+    
     sessionStorage.setItem('pos_declined_modal', 'true');
     
     showToast('info', 'Anda bisa buka toko kapan saja dengan klik tombol "Buka Toko"');
 }
 
-// Fungsi untuk buka toko (dipanggil dari button hijau) - SUDAH DIGANTI DENGAN openOpeningAmountModal
-// function openCashRegister() { ... }
+function handleCloseCashRegister() {
+    fetch('{{ route("cash-register.check-sales") }}', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const totalSales = parseFloat(data.total_sales || 0);
+            
+            if (totalSales <= 0) {
+                closeCashRegisterSilent();
+            } else {
+                window.location.href = '{{ route("cash-register.close") }}';
+            }
+        } else {
+            showToast('error', 'Gagal mengecek data penjualan');
+        }
+    })
+    .catch(() => {
+        showToast('error', 'Terjadi kesalahan saat tutup toko');
+    });
+}
 
+function closeCashRegisterSilent() {
+    fetch('{{ route("cash-register.close-silent") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('menuCloseCashRegister').classList.add('hidden');
+            document.getElementById('menuOpenCashRegister').classList.remove('hidden');
+            
+            showToast('success', 'Toko ditutup. Tidak ada penjualan di sesi ini.');
+        } else {
+            showToast('error', data.message || 'Gagal menutup toko');
+        }
+    })
+    .catch(() => {
+        showToast('error', 'Gagal menutup toko');
+    });
+}
+
+// ==================== UTILITY FUNCTIONS ====================
 function showToast(type, message) {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -1138,9 +1483,24 @@ function showToast(type, message) {
     }, 2500);
 }
 
+function formatNumber(num){ 
+    num = Number(num||0); 
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
+}
+
+function formatDateTime(s){
+    const d = new Date(s); 
+    const day=String(d.getDate()).padStart(2,'0'); 
+    const month=String(d.getMonth()+1).padStart(2,'0');
+    const year=d.getFullYear(); 
+    const h=String(d.getHours()).padStart(2,'0'); 
+    const m=String(d.getMinutes()).padStart(2,'0');
+    return `${day}/${month}/${year} ${h}:${m}`;
+}
+
+// ==================== CART FUNCTIONS ====================
 function addProductToCart(el) {
-    // Cek apakah toko sudah buka (button tutup toko visible)
-    const isStoreOpen = !document.getElementById('btnCloseCashRegister').classList.contains('hidden');
+    const isStoreOpen = !document.getElementById('menuCloseCashRegister').classList.contains('hidden');
     
     if (!isStoreOpen) {
         showToast('warning', 'Buka toko terlebih dahulu untuk mulai transaksi!');
@@ -1163,57 +1523,6 @@ function addProductToCart(el) {
             showToast('error', data.message); 
         }
     }).catch(()=>showToast('error','Terjadi kesalahan'));
-}
-
-function handleCloseCashRegister() {
-    // Cek total penjualan di sesi ini
-    fetch('{{ route("cash-register.check-sales") }}', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            const totalSales = parseFloat(data.total_sales || 0);
-            
-            if (totalSales <= 0) {
-                // Tidak ada penjualan, tutup sesi otomatis tanpa redirect
-                closeCashRegisterSilent();
-            } else {
-                // Ada penjualan, redirect ke halaman close
-                window.location.href = '{{ route("cash-register.close") }}';
-            }
-        } else {
-            showToast('error', 'Gagal mengecek data penjualan');
-        }
-    })
-    .catch(() => {
-        showToast('error', 'Terjadi kesalahan saat tutup toko');
-    });
-}
-
-function closeCashRegisterSilent() {
-    // Tutup sesi tanpa redirect (untuk kasus tidak ada penjualan)
-    fetch('{{ route("cash-register.close-silent") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            // Sembunyikan button "Tutup Toko"
-            document.getElementById('btnCloseCashRegister').classList.add('hidden');
-            // Tampilkan button "Buka Toko"
-            document.getElementById('btnOpenCashRegister').classList.remove('hidden');
-            
-            showToast('success', 'Toko ditutup. Tidak ada penjualan di sesi ini.');
-        } else {
-            showToast('error', data.message || 'Gagal menutup toko');
-        }
-    })
-    .catch(() => {
-        showToast('error', 'Gagal menutup toko');
-    });
 }
 
 function updateCartQuantity(cartKey, newQty) {
@@ -1358,6 +1667,7 @@ function onQtyBlur(cartKey, value) {
     updateCartQuantity(cartKey, v);
 }
 
+// ==================== UI STATE FUNCTIONS ====================
 function setUIState(state) {
     UI_STATE = state;
     const views = ['browse','select','cash','transfer','midtrans'];
@@ -1395,6 +1705,7 @@ function showPaymentSelection() {
     setUIState('select');
 }
 
+// ==================== PAYMENT FUNCTIONS ====================
 function calculateChange() {
     const paid = parseFloat(document.getElementById('cashPaidAmount').value) || 0;
     const change = paid - (cartSummary.grand_total || 0);
@@ -1525,21 +1836,6 @@ function openMidtransPayment() {
     }).catch(()=>showToast('error','Gagal membuat token'));
 }
 
-function formatNumber(num){ 
-    num = Number(num||0); 
-    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
-}
-
-function formatDateTime(s){
-    const d = new Date(s); 
-    const day=String(d.getDate()).padStart(2,'0'); 
-    const month=String(d.getMonth()+1).padStart(2,'0');
-    const year=d.getFullYear(); 
-    const h=String(d.getHours()).padStart(2,'0'); 
-    const m=String(d.getMinutes()).padStart(2,'0');
-    return `${day}/${month}/${year} ${h}:${m}`;
-}
-
 function updateProductStockFromSaleItems(items){
     if (!items || !items.length) return;
     items.forEach(item=>{
@@ -1597,21 +1893,165 @@ function downloadReceipt(){
     setTimeout(()=>showToast('success','Struk berhasil didownload!'), 500);
 }
 
+// ==================== KEYBOARD SHORTCUTS ====================
 document.addEventListener('keydown', function(e){
+    // ESC key handling
     if (e.key === 'Escape') {
-        if (UI_STATE === 'cash' || UI_STATE === 'transfer' || UI_STATE === 'midtrans') setUIState('select');
-        else if (UI_STATE === 'select') setUIState('browse');
-        document.getElementById('paymentSuccessModal').classList.add('hidden');
+        // Close calculator if open
+        const calcModal = document.getElementById('calculatorModal');
+        if (!calcModal.classList.contains('hidden')) {
+            closeCalculator();
+            return;
+        }
+        
+        // Close payment success modal if open
+        const successModal = document.getElementById('paymentSuccessModal');
+        if (!successModal.classList.contains('hidden')) {
+            closePaymentSuccessModal();
+            return;
+        }
+        
+        // Close opening amount modal if open
         const openingModal = document.getElementById('openingAmountModal');
         if (!openingModal.classList.contains('hidden')) {
             closeOpeningAmountModal();
+            return;
         }
-
+        
+        // Navigate back in payment flow
+        if (UI_STATE === 'cash' || UI_STATE === 'transfer' || UI_STATE === 'midtrans') {
+            setUIState('select');
+        } else if (UI_STATE === 'select') {
+            setUIState('browse');
+        }
     }
+    
+    // Enter key on cash payment
     if (e.key === 'Enter' && UI_STATE === 'cash') { 
-        e.preventDefault(); 
-        processCashPayment(); 
+        const cashInput = document.getElementById('cashPaidAmount');
+        if (document.activeElement === cashInput) {
+            e.preventDefault(); 
+            processCashPayment(); 
+        }
+    }
+    
+    // Enter key on opening amount modal
+    if (e.key === 'Enter') {
+        const openingInput = document.getElementById('openingAmountInput');
+        if (document.activeElement === openingInput) {
+            e.preventDefault();
+            submitOpeningAmount();
+        }
     }
 });
+
+// Calculator keyboard support (handled in calculator section already, but adding to main keydown)
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('calculatorModal');
+    if (modal.classList.contains('hidden')) return;
+    
+    if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        calcNumber(e.key);
+    } else if (e.key === '.') {
+        e.preventDefault();
+        calcDecimal();
+    } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+        e.preventDefault();
+        calcOperator(e.key);
+    } else if (e.key === 'Enter' || e.key === '=') {
+        e.preventDefault();
+        calcEquals();
+    } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        calcDelete();
+    } else if (e.key === 'Delete' || e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        calcClear();
+    }
+});
+
+// ==================== SEARCH & FILTER FUNCTIONS ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // Search product
+    const searchInput = document.getElementById('searchProduct');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterProducts(searchTerm, document.getElementById('filterCategory').value);
+        });
+    }
+    
+    // Filter category dropdown
+    const filterCategory = document.getElementById('filterCategory');
+    if (filterCategory) {
+        filterCategory.addEventListener('change', function() {
+            const searchTerm = document.getElementById('searchProduct').value.toLowerCase();
+            filterProducts(searchTerm, this.value);
+        });
+    }
+    
+    // Category tabs
+    const categoryTabs = document.querySelectorAll('.category-tab');
+    categoryTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            categoryTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            const category = this.dataset.category;
+            const searchTerm = document.getElementById('searchProduct').value.toLowerCase();
+            filterProducts(searchTerm, category);
+            
+            // Sync with dropdown
+            document.getElementById('filterCategory').value = category;
+        });
+    });
+});
+
+function filterProducts(searchTerm, category) {
+    const productCards = document.querySelectorAll('.product-card');
+    let visibleCount = 0;
+    
+    productCards.forEach(card => {
+        const productName = card.dataset.productName ? card.dataset.productName.toLowerCase() : '';
+        const productCode = card.dataset.productCode ? card.dataset.productCode.toLowerCase() : '';
+        
+        // Match search term
+        const matchesSearch = !searchTerm || 
+            productName.includes(searchTerm) || 
+            productCode.includes(searchTerm);
+        
+        // Match category (you might need to add category data attribute to products)
+        const matchesCategory = !category || card.dataset.category === category;
+        
+        if (matchesSearch && matchesCategory) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Show/hide empty state
+    const productGrid = document.getElementById('productGrid');
+    const emptyState = productGrid.querySelector('.empty-state');
+    
+    if (visibleCount === 0) {
+        if (!emptyState) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.style.gridColumn = '1/-1';
+            emptyDiv.innerHTML = `
+                <i class="fas fa-search"></i>
+                <p>Produk tidak ditemukan</p>
+            `;
+            productGrid.appendChild(emptyDiv);
+        }
+    } else {
+        if (emptyState) {
+            emptyState.remove();
+        }
+    }
+}
 </script>
 @endpush

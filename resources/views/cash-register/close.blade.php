@@ -208,6 +208,28 @@
                 </div>
             </div>
 
+            <!-- Tambahkan setelah "Closing Amount Input" dan sebelum "Notes" -->
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-lg p-4">
+                <div class="flex items-start gap-3">
+                    <input 
+                        type="checkbox" 
+                        id="generateDailyReport" 
+                        name="generate_daily_report"
+                        class="w-5 h-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500 mt-0.5"
+                    >
+                    <div class="flex-1">
+                        <label for="generateDailyReport" class="block text-sm font-bold text-gray-900 cursor-pointer">
+                            <i class="fas fa-file-alt text-blue-600 mr-1"></i>
+                            Ini adalah sesi penjualan terakhir hari ini
+                        </label>
+                        <p class="text-xs text-gray-600 mt-1">
+                            <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                            Centang jika ini adalah penutupan terakhir hari ini. Sistem akan membuat <b>Laporan Harian</b> otomatis dan menandai semua transaksi hari ini sebagai "sudah dilaporkan".
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Notes -->
             <div>
                 <label class="block text-sm font-bold text-gray-900 mb-2">
@@ -395,6 +417,7 @@ document.getElementById('closeRegisterForm').addEventListener('submit', function
     
     const closingAmount = parseFloat(document.getElementById('closingAmount').value);
     const notes = document.getElementById('notes').value;
+    const generateDailyReport = document.getElementById('generateDailyReport').checked; // TAMBAHAN BARU
     const submitBtn = document.getElementById('submitBtn');
     
     if (!closingAmount || closingAmount < 0) {
@@ -402,7 +425,13 @@ document.getElementById('closeRegisterForm').addEventListener('submit', function
         return;
     }
     
-    if (!confirm('Yakin ingin menutup toko? Tindakan ini tidak dapat dibatalkan.')) {
+    // TAMBAHAN BARU: Konfirmasi jika generate daily report dicentang
+    let confirmMessage = 'Yakin ingin menutup toko? Tindakan ini tidak dapat dibatalkan.';
+    if (generateDailyReport) {
+        confirmMessage = 'Yakin ingin menutup toko dan membuat laporan harian?\n\nSemua transaksi hari ini akan ditandai sebagai "sudah dilaporkan" dan laporan harian akan dibuat otomatis.';
+    }
+    
+    if (!confirm(confirmMessage)) {
         return;
     }
     
@@ -417,13 +446,14 @@ document.getElementById('closeRegisterForm').addEventListener('submit', function
         },
         body: JSON.stringify({
             closing_amount: closingAmount,
-            notes: notes
+            notes: notes,
+            generate_daily_report: generateDailyReport // TAMBAHAN BARU
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('success', 'Toko berhasil ditutup!');
+            showToast('success', data.message); // Pesan sudah include info laporan harian
             setTimeout(() => {
                 document.getElementById('successModal').classList.remove('hidden');
             }, 500);
