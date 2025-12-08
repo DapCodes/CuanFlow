@@ -149,7 +149,7 @@ class FinanceController extends Controller
             ->orderBy('grand_total', 'desc')
             ->get();
 
-        return view('finance.index', compact(
+        return view('main.finance.index', compact(
             'selectedDate',
             'dailyRevenue', 'weeklyRevenue', 'monthlyRevenue',
             'dailyExpenses', 'weeklyExpenses', 'monthlyExpenses',
@@ -257,7 +257,7 @@ class FinanceController extends Controller
     public function createIncome(Request $request)
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
-        return view('finance.create-income', compact('categories'));
+        return view('main.finance.create-income', compact('categories'));
     }
 
     public function storeIncome(Request $request)
@@ -294,7 +294,7 @@ class FinanceController extends Controller
     public function createExpense()
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
-        return view('finance.create-expense', compact('categories'));
+        return view('main.finance.create-expense', compact('categories'));
     }
 
     public function storeExpense(Request $request)

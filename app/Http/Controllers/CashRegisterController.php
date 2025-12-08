@@ -43,7 +43,7 @@ class CashRegisterController extends Controller
             ->latest()
             ->get();
 
-        return view('cash-register.close', compact('register', 'sales'));
+        return view('main.cash-register.close', compact('register', 'sales'));
     }
 
     /**
@@ -142,7 +142,7 @@ class CashRegisterController extends Controller
             ->latest('closed_at')
             ->paginate(20);
 
-        return view('cash-register.history', compact('registers'));
+        return view('main.cash-register.history', compact('registers'));
     }
 
     /**
@@ -168,6 +168,6 @@ class CashRegisterController extends Controller
             ->latest()
             ->get();
 
-        return view('cash-register.show', compact('register', 'sales'));
+        return view('main.cash-register.show', compact('register', 'sales'));
     }
 }

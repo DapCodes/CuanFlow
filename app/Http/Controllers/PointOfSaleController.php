@@ -26,7 +26,7 @@ class PointOfSaleController extends Controller
         $customers = Customer::active()->get();
         $cart = Session::get('pos_cart', []);
 
-        return view('pos.index', compact('products', 'activeDiscounts', 'customers', 'cart'));
+        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart'));
     }
 
     public function checkCashRegister()

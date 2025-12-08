@@ -88,7 +88,7 @@ class SaleController extends Controller
 
         $expenseCategories = ExpenseCategory::where('is_active', true)->get();
 
-        return view('sales.index', compact(
+        return view('main.sales.index', compact(
             'sales',
             'selectedDate',
             'cashTotal',
@@ -116,7 +116,7 @@ class SaleController extends Controller
     public function createIncome(Request $request)
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
-        return view('sales.create-income', compact('categories'));
+        return view('main.sales.create-income', compact('categories'));
     }
 
     public function storeIncome(Request $request)
@@ -153,7 +153,7 @@ class SaleController extends Controller
     public function createExpense()
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
-        return view('sales.create-expense', compact('categories'));
+        return view('main.sales.create-expense', compact('categories'));
     }
 
     public function storeExpense(Request $request)
@@ -319,7 +319,7 @@ class SaleController extends Controller
 
         $sale->load(['items.product', 'customer', 'cashier', 'payments']);
 
-        return view('sales.show', compact('sale'));
+        return view('main.sales.show', compact('sale'));
     }
 
     /**

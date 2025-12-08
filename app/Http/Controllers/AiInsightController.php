@@ -33,7 +33,7 @@ class AiInsightController extends Controller
             ->active()
             ->count();
 
-        return view('ai-insights.index', compact('insights', 'unreadCount'));
+        return view('main.ai-insights.index', compact('insights', 'unreadCount'));
     }
 
     public function show($id)
@@ -44,7 +44,7 @@ class AiInsightController extends Controller
         // Mark as read
         $insight->markAsRead();
 
-        return view('ai-insights.show', compact('insight'));
+        return view('main.ai-insights.show', compact('insight'));
     }
 
     public function markAsRead(Request $request, $id)

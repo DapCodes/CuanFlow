@@ -58,7 +58,7 @@ class ClaraAiController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return view('clara-ai.index', compact('session', 'sessions', 'messages'));
+        return view('main.clara-ai.index', compact('session', 'sessions', 'messages'));
     }
 
     public function chat(Request $request)
