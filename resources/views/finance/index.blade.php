@@ -185,7 +185,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                                 <h3 class="text-base md:text-lg font-bold text-gray-900">Rincian Penjualan</h3>
-                                <p class="text-xs md:text-sm text-gray-500 mt-1">Transaksi terbesar bulan ini</p>
+                                <p class="text-xs md:text-sm text-gray-500 mt-1">Semua Transaksi bulan ini</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <select id="yearFilter" class="px-2 md:px-3 py-1.5 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">

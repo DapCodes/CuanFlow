@@ -93,7 +93,6 @@ class CashRegisterController extends Controller
                 $sale->update(['is_reported' => true]);
             }
 
-            // TAMBAHAN BARU: Generate Daily Summary jika checkbox dicentang
             if ($request->generate_daily_report) {
                 $summaryDate = $register->opened_at->format('Y-m-d');
                 DailySummary::generateForDate($outletId, $summaryDate);

@@ -31,6 +31,7 @@ class FinanceController extends Controller
         
         $dailyRevenue = Sale::where('outlet_id', $outletId)
             ->completed()
+            ->where('is_reported', true)
             ->whereBetween('created_at', [$startOfDay, $endOfDay])
             ->sum('grand_total');
 
@@ -40,6 +41,7 @@ class FinanceController extends Controller
         
         $weeklyRevenue = Sale::where('outlet_id', $outletId)
             ->completed()
+            ->where('is_reported', true)
             ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
             ->sum('grand_total');
 
@@ -49,6 +51,7 @@ class FinanceController extends Controller
         
         $monthlyRevenue = Sale::where('outlet_id', $outletId)
             ->completed()
+            ->where('is_reported', true)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('grand_total');
 
@@ -77,6 +80,7 @@ class FinanceController extends Controller
         // Total Revenue (Saldo Kas Total) - All Time
         $totalRevenue = Sale::where('outlet_id', $outletId)
             ->completed()
+            ->where('is_reported', true)
             ->sum('grand_total');
 
         // Total Expenses - All Time
@@ -92,6 +96,7 @@ class FinanceController extends Controller
         $sales = Sale::where('outlet_id', $outletId)
             ->completed()
             ->whereBetween('created_at', [$startOfDay, $endOfDay])
+            ->where('is_reported', true)
             ->with(['customer', 'cashier'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -109,6 +114,7 @@ class FinanceController extends Controller
         $allTimeRevenue = $totalRevenue;
         $allTimeProfit = Sale::where('outlet_id', $outletId)
             ->completed()
+            ->where('is_reported', true)
             ->get()
             ->sum(fn($s) => $s->getTotalProfit());
         $allTimeNetIncome = $totalNetIncome;
@@ -138,6 +144,7 @@ class FinanceController extends Controller
         $salesList = Sale::where('outlet_id', $outletId)
             ->completed()
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->where('is_reported', true)
             ->with(['customer', 'cashier'])
             ->orderBy('grand_total', 'desc')
             ->get();
