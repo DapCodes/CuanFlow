@@ -41,22 +41,28 @@ Route::middleware('auth')->group(function () {
     Route::post('outlets/{outlet}/toggle-status', [OutletInformationController::class, 'toggleStatus'])
         ->name('outlets.toggle-status');
 
-    Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
-        Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');
-        Route::get('/generate-barcode', [App\Http\Controllers\ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
-        Route::get('/ajax/raw-material-price', [App\Http\Controllers\ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
+    // routes/web.php
+Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
+    Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');
+    Route::get('/generate-barcode', [App\Http\Controllers\ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
+    Route::get('/ajax/raw-material-price', [App\Http\Controllers\ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
 
-        Route::get('/', [App\Http\Controllers\ProductHppController::class, 'index'])->name('index');
-        Route::get('/create', [App\Http\Controllers\ProductHppController::class, 'create'])->name('create');
-        Route::post('/', [App\Http\Controllers\ProductHppController::class, 'store'])->name('store');
-        Route::get('/{product}', [App\Http\Controllers\ProductHppController::class, 'show'])->name('show');
-        Route::get('/{product}/edit', [App\Http\Controllers\ProductHppController::class, 'edit'])->name('edit');
-        Route::put('/{product}', [App\Http\Controllers\ProductHppController::class, 'update'])->name('update');
-        Route::delete('/{product}', [App\Http\Controllers\ProductHppController::class, 'destroy'])->name('destroy');
+    Route::get('/', [App\Http\Controllers\ProductHppController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\ProductHppController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\ProductHppController::class, 'store'])->name('store');
+    Route::get('/{product}', [App\Http\Controllers\ProductHppController::class, 'show'])->name('show');
+    Route::get('/{product}/edit', [App\Http\Controllers\ProductHppController::class, 'edit'])->name('edit');
+    Route::put('/{product}', [App\Http\Controllers\ProductHppController::class, 'update'])->name('update');
+    Route::delete('/{product}', [App\Http\Controllers\ProductHppController::class, 'destroy'])->name('destroy');
 
-        Route::get('/sales-analytics', [ProductHppController::class, 'getSalesAnalytics'])
-            ->name('sales-analytics');
-    });
+    Route::get('/sales-analytics', [App\Http\Controllers\ProductHppController::class, 'getSalesAnalytics'])
+        ->name('sales-analytics');
+
+    // ✅ rute toggle yang benar (nama & parameter)
+    Route::post('/{product}/toggle-status', [App\Http\Controllers\ProductHppController::class, 'toggleStatus'])
+        ->name('toggle-status');
+});
+
 
     Route::prefix('raw-materials')->name('raw-materials.')->group(function () {
         Route::get('/', [RawMaterialAndSupplierController::class, 'indexRawMaterial'])

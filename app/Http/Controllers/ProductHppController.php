@@ -426,6 +426,29 @@ class ProductHppController extends Controller
         }
     }
 
+public function toggleStatus(Request $request, Product $product)
+{
+    if ($product->outlet_id !== Auth::user()->outlet_id) {
+        return $request->wantsJson()
+            ? response()->json(['message' => 'Not found'], 404)
+            : abort(404);
+    }
+
+    $product->is_active = ! $product->is_active;
+    $product->save();
+
+    if ($request->wantsJson()) {
+        return response()->json([
+            'status'    => 'ok',
+            'id'        => $product->id,
+            'is_active' => (bool) $product->is_active,
+        ]);
+    }
+
+    return back()->with('success', 'Status produk berhasil diubah');
+}
+
+
     public function destroy(Product $product)
     {
         // Validasi outlet_id

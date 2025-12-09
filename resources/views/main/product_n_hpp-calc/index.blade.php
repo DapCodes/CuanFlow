@@ -191,17 +191,14 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($product->is_active)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                    Aktif
+                                <span class="status-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                                            {{ $product->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}"
+                                    data-status-badge
+                                    data-product-id="{{ $product->id }}"
+                                    data-active="{{ $product->is_active ? '1' : '0' }}">
+                                    <span class="dot w-2 h-2 rounded-full mr-2 {{ $product->is_active ? 'bg-green-500' : 'bg-gray-400' }}"></span>
+                                    <span class="label">{{ $product->is_active ? 'Aktif' : 'Nonaktif' }}</span>
                                 </span>
-                                @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                                    <span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                                    Nonaktif
-                                </span>
-                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-2">
@@ -215,6 +212,18 @@
                                        title="Edit">
                                         <i class="fas fa-edit text-sm"></i>
                                     </a>
+                                    <form action="{{ route('products-hpp.toggle-status', $product->id) }}"
+                                        method="POST"
+                                        class="inline ajax-toggle-status"
+                                        data-product-id="{{ $product->id }}">
+                                        @csrf
+                                        <button type="submit"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors
+                                                    {{ $product->is_active ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                                                title="{{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                            <i class="fas fa-{{ $product->is_active ? 'toggle-on' : 'toggle-off' }} text-sm"></i>
+                                        </button>
+                                    </form>
                                     <form action="{{ route('products-hpp.destroy', $product->id) }}" 
                                           method="POST" 
                                           class="inline-block" 
@@ -329,3 +338,90 @@
     </div>
 </main>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+  function updateStatusBadge(productId, isActive) {
+    const badge = document.querySelector(`[data-status-badge][data-product-id="${productId}"]`);
+    if (!badge) return;
+
+    // reset kelas warna utama
+    badge.classList.remove('bg-green-100','text-green-800','bg-gray-100','text-gray-600');
+
+    if (isActive) {
+      badge.classList.add('bg-green-100','text-green-800');
+      badge.querySelector('.label').textContent = 'Aktif';
+    } else {
+      badge.classList.add('bg-gray-100','text-gray-600');
+      badge.querySelector('.label').textContent = 'Nonaktif';
+    }
+
+    // update titik/dot
+    const dot = badge.querySelector('.dot');
+    if (dot) {
+      dot.classList.remove('bg-green-500','bg-gray-400');
+      dot.classList.add(isActive ? 'bg-green-500' : 'bg-gray-400');
+    }
+
+    // simpan state terkini
+    badge.dataset.active = isActive ? '1' : '0';
+  }
+
+  document.querySelectorAll('form.ajax-toggle-status').forEach(function (form) {
+    form.addEventListener('submit', async function (e) {
+      if (!window.fetch) return; // fallback submit normal jika fetch tak ada
+      e.preventDefault();
+
+      const btn  = form.querySelector('button[type="submit"]');
+      const icon = btn?.querySelector('i');
+      const productId = form.getAttribute('data-product-id');
+
+      try {
+        btn?.setAttribute('disabled', 'disabled');
+
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': token,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!res.ok) throw new Error(await res.text() || 'Request gagal');
+
+        const data = await res.json();
+        const isActive = !!data.is_active;
+
+        // === Update tombol ===
+        btn.classList.remove('bg-gray-100','text-gray-600','hover:bg-gray-200',
+                             'bg-green-100','text-green-600','hover:bg-green-200');
+        if (isActive) {
+          btn.classList.add('bg-green-100','text-green-600','hover:bg-green-200');
+          btn.title = 'Nonaktifkan';
+        } else {
+          btn.classList.add('bg-gray-100','text-gray-600','hover:bg-gray-200');
+          btn.title = 'Aktifkan';
+        }
+        if (icon) {
+          icon.classList.remove('fa-toggle-on','fa-toggle-off');
+          icon.classList.add(isActive ? 'fa-toggle-on' : 'fa-toggle-off');
+        }
+
+        // === Update badge status di kolom "Status" ===
+        updateStatusBadge(productId, isActive);
+
+      } catch (err) {
+        console.error(err);
+        alert('Gagal mengubah status. Silakan coba lagi.');
+      } finally {
+        btn?.removeAttribute('disabled');
+      }
+    });
+  });
+});
+</script>
+@endpush
+
