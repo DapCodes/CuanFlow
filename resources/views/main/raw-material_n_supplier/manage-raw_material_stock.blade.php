@@ -27,7 +27,6 @@
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-box-open text-red-400 mr-3"></i>
                             Kelola Stok Bahan Baku
                         </h2>
                         <p class="text-sm text-gray-500 mt-1">Tambah atau kurangi stok bahan baku</p>
@@ -79,7 +78,7 @@
                             <div>
                                 <p class="text-xs text-gray-500 uppercase font-semibold">Stok Saat Ini</p>
                                 <p class="text-2xl font-bold text-gray-900 mt-1">
-                                    {{ number_format($currentStock, 2) }}
+                                    {{ number_format($currentStock, 0) }}
                                 </p>
                                 <p class="text-xs text-gray-500 mt-1">{{ $rawMaterial->unit->name ?? 'unit' }}</p>
                             </div>
@@ -93,7 +92,7 @@
                             <div>
                                 <p class="text-xs text-gray-500 uppercase font-semibold">Minimum Stok</p>
                                 <p class="text-2xl font-bold text-yellow-600 mt-1">
-                                    {{ number_format($rawMaterial->min_stock, 2) }}
+                                    {{ number_format($rawMaterial->min_stock, 0) }}
                                 </p>
                                 <p class="text-xs text-gray-500 mt-1">{{ $rawMaterial->unit->name ?? 'unit' }}</p>
                             </div>

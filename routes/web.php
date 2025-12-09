@@ -156,26 +156,34 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cash-register/set-opening-amount', [PointOfSaleController::class, 'setOpeningAmount'])
     ->name('cash-register.set-opening-amount');
     
-    // Cash Register Routes
     Route::get('/cash-register/close', [CashRegisterController::class, 'showClosePage'])->name('cash-register.close');
     Route::post('/cash-register/process-close', [CashRegisterController::class, 'processClose'])->name('cash-register.process-close');
     Route::get('/cash-register/history', [CashRegisterController::class, 'history'])->name('cash-register.history');
     Route::get('/cash-register/{id}', [CashRegisterController::class, 'show'])->name('cash-register.show');
     
-    // Payment Routes
     Route::post('/payment/cash', [PaymentController::class, 'processCashPayment'])->name('payment.cash');
     Route::post('/payment/transfer', [PaymentController::class, 'processTransferPayment'])->name('payment.transfer');
     Route::post('/payment/midtrans/token', [PaymentController::class, 'createMidtransToken'])->name('payment.midtrans.token');
     Route::post('/payment/midtrans/notification', [PaymentController::class, 'handleMidtransNotification'])->name('payment.midtrans.notification');
     Route::get('/payment/midtrans/finish', [PaymentController::class, 'midtransFinish'])->name('payment.midtrans.finish');
+
+    Route::prefix('discounts')->name('discounts.')->group(function () {
+        Route::get('/', [App\Http\Controllers\DiscountController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\DiscountController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\DiscountController::class, 'store'])->name('store');
+        Route::get('/{discount}', [App\Http\Controllers\DiscountController::class, 'show'])->name('show');
+        Route::get('/{discount}/edit', [App\Http\Controllers\DiscountController::class, 'edit'])->name('edit');
+        Route::put('/{discount}', [App\Http\Controllers\DiscountController::class, 'update'])->name('update');
+        Route::delete('/{discount}', [App\Http\Controllers\DiscountController::class, 'destroy'])->name('destroy');
+        Route::post('/{discount}/toggle-status', [App\Http\Controllers\DiscountController::class, 'toggleStatus'])->name('toggle-status');
+        Route::get('/generate-code', [App\Http\Controllers\DiscountController::class, 'generateCode'])->name('generate-code');
+    });
     
-    // API untuk get sale detail (untuk Midtrans success callback)
     Route::get('/api/sale/{id}', function($id) {
         $sale = \App\Models\Sale::with('items')->findOrFail($id);
         return response()->json($sale);
     });
     
-    // Receipt Routes
     Route::get('/receipt/print/{id}', [ReceiptController::class, 'print'])->name('receipt.print');
     Route::get('/receipt/download/{id}', [ReceiptController::class, 'download'])->name('receipt.download');
 });
