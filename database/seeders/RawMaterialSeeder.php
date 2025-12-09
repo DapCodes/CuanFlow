@@ -20,142 +20,254 @@ class RawMaterialSeeder extends Seeder
 
         if (empty($units) || empty($categories) || empty($supplierIds)) {
             echo "Pastikan UnitSeeder, CategorySeeder, dan SupplierSeeder sudah dijalankan.\n";
-
             return;
         }
 
-        $unitKg = $units['kg'] ?? null;
-        $unitL = $units['L'] ?? null;
-        $unitG = $units['g'] ?? null;
-        $unitMl = $units['ml'] ?? null;
-        $unitPcs = $units['pcs'] ?? null;
-        $unitSct = $units['sct'] ?? null;
-        $unitBox = $units['box'] ?? null;
-        $unitBtl = $units['btl'] ?? null;
-
-        // Bahan baku khusus untuk membuat Takoyaki
+        // Bahan baku untuk berbagai produk
         $rawMaterialsData = [
-            // Tepung
+            // TEPUNG
             [
                 'code' => 'RM001', 'name' => 'Tepung Terigu Segitiga Biru', 'barcode' => '89900010001',
-                'category_slug' => 'tepung', 'unit_abbreviation' => 'kg', 'purchase_price' => 11000.00,
-                'min_stock' => 50.0, 'shelf_life_days' => 180,
+                'category_slug' => 'tepung', 'unit_abbreviation' => 'g', 'purchase_price' => 11.00,
+                'min_stock' => 50000.0, 'shelf_life_days' => 180,
             ],
             [
                 'code' => 'RM002', 'name' => 'Tepung Tapioka', 'barcode' => '89900010002',
-                'category_slug' => 'tepung', 'unit_abbreviation' => 'kg', 'purchase_price' => 12000.00,
-                'min_stock' => 20.0, 'shelf_life_days' => 240,
+                'category_slug' => 'tepung', 'unit_abbreviation' => 'g', 'purchase_price' => 12.00,
+                'min_stock' => 20000.0, 'shelf_life_days' => 240,
+            ],
+            [
+                'code' => 'RM003', 'name' => 'Tepung Maizena', 'barcode' => '89900010003',
+                'category_slug' => 'tepung', 'unit_abbreviation' => 'g', 'purchase_price' => 18.00,
+                'min_stock' => 10000.0, 'shelf_life_days' => 240,
             ],
 
-            // Telur
+            // GULA & PEMANIS
             [
-                'code' => 'RM003', 'name' => 'Telur Ayam (per butir)', 'barcode' => '89900020001',
+                'code' => 'RM004', 'name' => 'Gula Pasir', 'barcode' => '89900020001',
+                'category_slug' => 'gula-pemanis', 'unit_abbreviation' => 'g', 'purchase_price' => 15.00,
+                'min_stock' => 30000.0, 'shelf_life_days' => 730,
+            ],
+            [
+                'code' => 'RM005', 'name' => 'Gula Aren Bubuk', 'barcode' => '89900020002',
+                'category_slug' => 'gula-pemanis', 'unit_abbreviation' => 'g', 'purchase_price' => 35.00,
+                'min_stock' => 10000.0, 'shelf_life_days' => 365,
+            ],
+
+            // DAIRY
+            [
+                'code' => 'RM006', 'name' => 'Susu UHT Full Cream', 'barcode' => '89900030001',
+                'category_slug' => 'dairy', 'unit_abbreviation' => 'ml', 'purchase_price' => 12.00,
+                'min_stock' => 20000.0, 'shelf_life_days' => 180,
+            ],
+            [
+                'code' => 'RM007', 'name' => 'Susu Kental Manis', 'barcode' => '89900030002',
+                'category_slug' => 'dairy', 'unit_abbreviation' => 'ml', 'purchase_price' => 18.00,
+                'min_stock' => 10000.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM008', 'name' => 'Keju Cheddar Parut', 'barcode' => '89900030003',
+                'category_slug' => 'dairy', 'unit_abbreviation' => 'g', 'purchase_price' => 80.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 60,
+            ],
+            [
+                'code' => 'RM009', 'name' => 'Whipped Cream', 'barcode' => '89900030004',
+                'category_slug' => 'dairy', 'unit_abbreviation' => 'ml', 'purchase_price' => 45.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 30,
+            ],
+
+            // TELUR
+            [
+                'code' => 'RM010', 'name' => 'Telur Ayam', 'barcode' => '89900040001',
                 'category_slug' => 'telur', 'unit_abbreviation' => 'pcs', 'purchase_price' => 2500.00,
                 'min_stock' => 100.0, 'shelf_life_days' => 14,
             ],
 
-            // Dashi & Kaldu
+            // MINYAK & LEMAK
             [
-                'code' => 'RM004', 'name' => 'Dashi Powder (Kaldu Ikan)', 'barcode' => '89900030001',
-                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 150.00,
-                'min_stock' => 500.0, 'shelf_life_days' => 365,
+                'code' => 'RM011', 'name' => 'Minyak Goreng', 'barcode' => '89900050001',
+                'category_slug' => 'minyak-lemak', 'unit_abbreviation' => 'ml', 'purchase_price' => 15.00,
+                'min_stock' => 20000.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM012', 'name' => 'Mentega/Butter', 'barcode' => '89900050002',
+                'category_slug' => 'minyak-lemak', 'unit_abbreviation' => 'g', 'purchase_price' => 50.00,
+                'min_stock' => 10000.0, 'shelf_life_days' => 90,
             ],
 
-            // Bumbu & Perasa
+            // BUMBU & PERASA
             [
-                'code' => 'RM005', 'name' => 'Penyedap Rasa (MSG)', 'barcode' => '89900030002',
-                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 30.00,
-                'min_stock' => 1000.0, 'shelf_life_days' => 730,
-            ],
-            [
-                'code' => 'RM006', 'name' => 'Garam Halus', 'barcode' => '89900030003',
-                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 20.00,
-                'min_stock' => 2000.0, 'shelf_life_days' => 730,
-            ],
-            [
-                'code' => 'RM007', 'name' => 'Kecap Asin (Shoyu)', 'barcode' => '89900030004',
-                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'ml', 'purchase_price' => 50.00,
+                'code' => 'RM013', 'name' => 'Dashi Powder', 'barcode' => '89900060001',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 150.00,
                 'min_stock' => 2000.0, 'shelf_life_days' => 365,
             ],
             [
-                'code' => 'RM008', 'name' => 'Mirin (Rice Wine)', 'barcode' => '89900030005',
-                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'ml', 'purchase_price' => 80.00,
-                'min_stock' => 1000.0, 'shelf_life_days' => 365,
+                'code' => 'RM014', 'name' => 'Garam Halus', 'barcode' => '89900060002',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 10.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 730,
+            ],
+            [
+                'code' => 'RM015', 'name' => 'Vanili Bubuk', 'barcode' => '89900060003',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 200.00,
+                'min_stock' => 500.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM016', 'name' => 'Cokelat Bubuk', 'barcode' => '89900060004',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 65.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM017', 'name' => 'Kopi Arabica Bubuk', 'barcode' => '89900060005',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 120.00,
+                'min_stock' => 3000.0, 'shelf_life_days' => 180,
+            ],
+            [
+                'code' => 'RM018', 'name' => 'Matcha Powder', 'barcode' => '89900060006',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 250.00,
+                'min_stock' => 1000.0, 'shelf_life_days' => 180,
             ],
 
-            // Isian Takoyaki
+            // BAHAN TAKOYAKI
             [
-                'code' => 'RM009', 'name' => 'Gurita Beku (Octopus)', 'barcode' => '89900040001',
-                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'kg', 'purchase_price' => 180000.00,
-                'min_stock' => 5.0, 'shelf_life_days' => 90,
+                'code' => 'RM019', 'name' => 'Gurita Beku', 'barcode' => '89900070001',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 180.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 90,
             ],
             [
-                'code' => 'RM010', 'name' => 'Daun Bawang (Negi)', 'barcode' => '89900040002',
+                'code' => 'RM020', 'name' => 'Daun Bawang', 'barcode' => '89900070002',
                 'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 30.00,
-                'min_stock' => 500.0, 'shelf_life_days' => 7,
+                'min_stock' => 2000.0, 'shelf_life_days' => 7,
             ],
             [
-                'code' => 'RM011', 'name' => 'Jahe Merah Parut', 'barcode' => '89900040003',
-                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 50.00,
-                'min_stock' => 500.0, 'shelf_life_days' => 14,
+                'code' => 'RM021', 'name' => 'Jahe Merah', 'barcode' => '89900070003',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 25.00,
+                'min_stock' => 1000.0, 'shelf_life_days' => 14,
             ],
-
-            // Topping & Saus
             [
-                'code' => 'RM012', 'name' => 'Katsuobushi (Bonito Flakes)', 'barcode' => '89900050001',
+                'code' => 'RM022', 'name' => 'Katsuobushi (Bonito Flakes)', 'barcode' => '89900070004',
                 'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 200.00,
+                'min_stock' => 1000.0, 'shelf_life_days' => 180,
+            ],
+            [
+                'code' => 'RM023', 'name' => 'Aonori (Rumput Laut)', 'barcode' => '89900070005',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 250.00,
                 'min_stock' => 500.0, 'shelf_life_days' => 180,
             ],
             [
-                'code' => 'RM013', 'name' => 'Aonori (Rumput Laut Hijau)', 'barcode' => '89900050002',
-                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 250.00,
-                'min_stock' => 300.0, 'shelf_life_days' => 180,
+                'code' => 'RM024', 'name' => 'Takoyaki Sauce', 'barcode' => '89900070006',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'ml', 'purchase_price' => 50.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 365,
             ],
             [
-                'code' => 'RM014', 'name' => 'Takoyaki Sauce', 'barcode' => '89900050003',
-                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'ml', 'purchase_price' => 100.00,
-                'min_stock' => 2000.0, 'shelf_life_days' => 365,
+                'code' => 'RM025', 'name' => 'Mayonnaise Jepang', 'barcode' => '89900070007',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'ml', 'purchase_price' => 40.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 180,
+            ],
+
+            // BAHAN MINUMAN
+            [
+                'code' => 'RM026', 'name' => 'Es Batu', 'barcode' => '89900080001',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 5.00,
+                'min_stock' => 50000.0, 'shelf_life_days' => 1,
             ],
             [
-                'code' => 'RM015', 'name' => 'Mayonnaise Jepang', 'barcode' => '89900050004',
-                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'ml', 'purchase_price' => 60.00,
+                'code' => 'RM027', 'name' => 'Air Mineral', 'barcode' => '89900080002',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'ml', 'purchase_price' => 2.00,
+                'min_stock' => 50000.0, 'shelf_life_days' => 180,
+            ],
+            [
+                'code' => 'RM028', 'name' => 'Sirup Cokelat', 'barcode' => '89900080003',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'ml', 'purchase_price' => 35.00,
+                'min_stock' => 3000.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM029', 'name' => 'Sirup Vanilla', 'barcode' => '89900080004',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'ml', 'purchase_price' => 35.00,
+                'min_stock' => 3000.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM030', 'name' => 'Boba/Pearl', 'barcode' => '89900080005',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 25.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM031', 'name' => 'Jelly Nata de Coco', 'barcode' => '89900080006',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 20.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 365,
+            ],
+
+            // BAHAN ROTI & PASTRY
+            [
+                'code' => 'RM032', 'name' => 'Ragi Instan', 'barcode' => '89900090001',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 80.00,
+                'min_stock' => 1000.0, 'shelf_life_days' => 180,
+            ],
+            [
+                'code' => 'RM033', 'name' => 'Bread Improver', 'barcode' => '89900090002',
+                'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 100.00,
+                'min_stock' => 1000.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM034', 'name' => 'Selai Strawberry', 'barcode' => '89900090003',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 45.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM035', 'name' => 'Selai Cokelat', 'barcode' => '89900090004',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 48.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => 365,
+            ],
+            [
+                'code' => 'RM036', 'name' => 'Kacang Almond Slice', 'barcode' => '89900090005',
+                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 120.00,
                 'min_stock' => 2000.0, 'shelf_life_days' => 180,
             ],
-            [
-                'code' => 'RM016', 'name' => 'Wijen Sangrai', 'barcode' => '89900050005',
-                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'g', 'purchase_price' => 80.00,
-                'min_stock' => 500.0, 'shelf_life_days' => 365,
-            ],
 
-            // Minyak untuk Memasak
+            // KEMASAN
             [
-                'code' => 'RM017', 'name' => 'Minyak Goreng', 'barcode' => '89900060001',
-                'category_slug' => 'minyak-lemak', 'unit_abbreviation' => 'L', 'purchase_price' => 15000.00,
-                'min_stock' => 20.0, 'shelf_life_days' => 365,
+                'code' => 'RM037', 'name' => 'Box Takoyaki (6 pcs)', 'barcode' => '89900100001',
+                'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 1200.00,
+                'min_stock' => 500.0, 'shelf_life_days' => null,
             ],
-
-            // Air/Cairan
             [
-                'code' => 'RM018', 'name' => 'Air Mineral Galon', 'barcode' => '89900070001',
-                'category_slug' => 'bahan-lainnya', 'unit_abbreviation' => 'L', 'purchase_price' => 20000.00,
-                'min_stock' => 10.0, 'shelf_life_days' => 180,
-            ],
-
-            // Kemasan
-            [
-                'code' => 'RM019', 'name' => 'Box Takoyaki (isi 6)', 'barcode' => '89900080001',
+                'code' => 'RM038', 'name' => 'Box Takoyaki (10 pcs)', 'barcode' => '89900100002',
                 'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 1500.00,
                 'min_stock' => 500.0, 'shelf_life_days' => null,
             ],
             [
-                'code' => 'RM020', 'name' => 'Tusuk Gigi/Picks', 'barcode' => '89900080002',
+                'code' => 'RM039', 'name' => 'Cup Plastik 16oz + Tutup', 'barcode' => '89900100003',
+                'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 800.00,
+                'min_stock' => 1000.0, 'shelf_life_days' => null,
+            ],
+            [
+                'code' => 'RM040', 'name' => 'Cup Plastik 22oz + Tutup', 'barcode' => '89900100004',
+                'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 1000.00,
+                'min_stock' => 1000.0, 'shelf_life_days' => null,
+            ],
+            [
+                'code' => 'RM041', 'name' => 'Sedotan', 'barcode' => '89900100005',
                 'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 50.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => null,
+            ],
+            [
+                'code' => 'RM042', 'name' => 'Paper Bag Kecil', 'barcode' => '89900100006',
+                'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 500.00,
+                'min_stock' => 1000.0, 'shelf_life_days' => null,
+            ],
+            [
+                'code' => 'RM043', 'name' => 'Paper Bag Sedang', 'barcode' => '89900100007',
+                'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 700.00,
+                'min_stock' => 1000.0, 'shelf_life_days' => null,
+            ],
+            [
+                'code' => 'RM044', 'name' => 'Plastik Wrapping', 'barcode' => '89900100008',
+                'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 100.00,
                 'min_stock' => 2000.0, 'shelf_life_days' => null,
             ],
             [
-                'code' => 'RM021', 'name' => 'Plastik Wrapping', 'barcode' => '89900080003',
-                'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 100.00,
-                'min_stock' => 1000.0, 'shelf_life_days' => null,
+                'code' => 'RM045', 'name' => 'Tusuk Gigi', 'barcode' => '89900100009',
+                'category_slug' => 'kemasan', 'unit_abbreviation' => 'pcs', 'purchase_price' => 30.00,
+                'min_stock' => 5000.0, 'shelf_life_days' => null,
             ],
         ];
 
@@ -164,9 +276,8 @@ class RawMaterialSeeder extends Seeder
             $category_id = $categories[$data['category_slug']] ?? null;
             $unit_id = $units[$data['unit_abbreviation']] ?? null;
 
-            if (! $category_id || ! $unit_id) {
+            if (!$category_id || !$unit_id) {
                 echo "Warning: Category atau Unit tidak ditemukan untuk {$data['name']}\n";
-
                 continue;
             }
 
@@ -179,7 +290,7 @@ class RawMaterialSeeder extends Seeder
                 'outlet_id' => $targetOutletId,
                 'unit_id' => $unit_id,
                 'supplier_id' => $supplier_id,
-                'description' => 'Bahan baku untuk membuat Takoyaki',
+                'description' => 'Bahan baku untuk produksi',
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -195,14 +306,12 @@ class RawMaterialSeeder extends Seeder
             $unitAbbreviation = DB::table('units')->where('id', $rawMaterial->unit_id)->value('abbreviation');
 
             $initialStock = match ($unitAbbreviation) {
-                'kg' => fake()->numberBetween(10, 50),           // Tepung, gurita: 10-50 kg
-                'L' => fake()->numberBetween(15, 40),            // Minyak, air: 15-40 liter
-                'g' => fake()->numberBetween(500, 3000),         // Bumbu, topping: 500-3000 gram
-                'ml' => fake()->numberBetween(1000, 5000),       // Saus, kecap: 1-5 liter
-                'pcs' => fake()->numberBetween(150, 500),        // Telur, kemasan: 150-500 pcs
-                'sct', 'btl' => fake()->numberBetween(50, 200),  // Sachet/botol: 50-200
-                'box' => fake()->numberBetween(10, 50),          // Box: 10-50
-                default => fake()->numberBetween(20, 100),
+                'kg' => fake()->numberBetween(50, 200),
+                'L' => fake()->numberBetween(30, 100),
+                'g' => fake()->numberBetween(5000, 20000),
+                'ml' => fake()->numberBetween(5000, 20000),
+                'pcs' => fake()->numberBetween(500, 2000),
+                default => fake()->numberBetween(100, 500),
             };
 
             $avgPurchasePrice = $rawMaterial->purchase_price;
@@ -210,7 +319,7 @@ class RawMaterialSeeder extends Seeder
             $rawMaterialStocks[] = [
                 'raw_material_id' => $rawMaterial->id,
                 'outlet_id' => $targetOutletId,
-                'quantity' => $initialStock,  // Sudah angka bulat dari numberBetween
+                'quantity' => $initialStock,
                 'avg_purchase_price' => round($avgPurchasePrice, 2),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -219,6 +328,7 @@ class RawMaterialSeeder extends Seeder
 
         RawMaterialStock::insert($rawMaterialStocks);
 
-        echo "Seeder bahan baku Takoyaki berhasil dijalankan!\n";
+        echo "✓ Seeder bahan baku berhasil dijalankan!\n";
+        echo "Total bahan baku: " . count($rawMaterialRecords) . "\n";
     }
 }

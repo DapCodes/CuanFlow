@@ -699,10 +699,10 @@
                     </select>
                 </div>
                 <div class="category-tabs" id="categoryTabs">
-                    <button class="category-tab active" data-category="">Semua</button>
+                    <!-- <button class="category-tab active" data-category="">Semua</button>
                     <button class="category-tab" data-category="food">Makanan</button>
                     <button class="category-tab" data-category="drink">Minuman</button>
-                    <button class="category-tab" data-category="snack">Snack</button>
+                    <button class="category-tab" data-category="snack">Snack</button> -->
                 </div>
             </div>
 
@@ -712,12 +712,13 @@
                     <div class="product-grid" id="productGrid">
                         @forelse($products as $product)
                         <div class="product-card"
-                             data-product-id="{{ $product->id }}"
-                             data-product-name="{{ $product->name }}"
-                             data-product-code="{{ $product->code }}"
-                             data-product-price="{{ $product->selling_price }}"
-                             data-product-hpp="{{ $product->hpp }}"
-                             onclick="addProductToCart(this)">
+                            data-product-id="{{ $product->id }}"
+                            data-product-name="{{ $product->name }}"
+                            data-product-code="{{ $product->code }}"
+                            data-product-price="{{ $product->selling_price }}"
+                            data-product-hpp="{{ $product->hpp }}"
+                            data-category="{{ $product->category_id }}"
+                            onclick="addProductToCart(this)">
                             @if($product->image)
                                 <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="product-image">
                             @else
@@ -1071,6 +1072,9 @@ let cart = @json($cart ?? []);
 let cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0 };
 let currentSaleId = null;
 
+// TAMBAHKAN INI
+let categories = @json($categories ?? []);
+
 // ==================== CALCULATOR VARIABLES ====================
 let calcCurrentValue = '0';
 let calcPreviousValue = '';
@@ -1083,9 +1087,228 @@ document.addEventListener('DOMContentLoaded', function() {
     checkCashRegister();
     renderCart();
     setUIState('browse');
-    initCategoryTabs();
+    
+    // TAMBAHKAN INI
+    renderCategoryTabs();
+    renderCategoryDropdown();
+    initCategoryHandlers();
+    
     initClickOutsideHandler();
 });
+
+// ==================== CATEGORY FUNCTIONS ====================
+// ==================== CATEGORY FUNCTIONS ====================
+
+function renderCategoryTabs() {
+    const tabsContainer = document.getElementById('categoryTabs');
+    if (!tabsContainer) return;
+    
+    let html = `<button class="category-tab active" data-category="">
+        <i class="fas fa-th-large mr-1.5"></i>Semua
+    </button>`;
+    
+    categories.forEach(cat => {
+        const icon = cat.icon || 'fa-folder';
+        html += `<button class="category-tab" data-category="${cat.id}">
+            <i class="fas ${icon} mr-1.5"></i>${cat.name}
+        </button>`;
+    });
+    
+    tabsContainer.innerHTML = html;
+}
+
+function renderCategoryDropdown() {
+    const dropdown = document.getElementById('filterCategory');
+    if (!dropdown) return;
+    
+    let html = '<option value="">Semua Kategori</option>';
+    
+    categories.forEach(cat => {
+        html += `<option value="${cat.id}">${cat.name}</option>`;
+    });
+    
+    dropdown.innerHTML = html;
+}
+
+function initCategoryHandlers() {
+    // Category tabs click handler
+    document.addEventListener('click', function(e) {
+        const tab = e.target.closest('.category-tab');
+        if (!tab) return;
+        
+        // Update active state
+        document.querySelectorAll('.category-tab').forEach(t => {
+            t.classList.remove('active');
+        });
+        tab.classList.add('active');
+        
+        // Get category and filter
+        const categoryId = tab.dataset.category;
+        const searchTerm = document.getElementById('searchProduct')?.value.toLowerCase() || '';
+        
+        // Sync with dropdown
+        const dropdown = document.getElementById('filterCategory');
+        if (dropdown) dropdown.value = categoryId;
+        
+        // Apply filter
+        filterProducts(searchTerm, categoryId);
+    });
+    
+    // Category dropdown change handler
+    const dropdown = document.getElementById('filterCategory');
+    if (dropdown) {
+        dropdown.addEventListener('change', function() {
+            const categoryId = this.value;
+            const searchTerm = document.getElementById('searchProduct')?.value.toLowerCase() || '';
+            
+            // Sync with tabs
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                if (tab.dataset.category === categoryId) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Apply filter
+            filterProducts(searchTerm, categoryId);
+        });
+    }
+    
+    // Search input handler
+    const searchInput = document.getElementById('searchProduct');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const categoryId = document.getElementById('filterCategory')?.value || '';
+            filterProducts(searchTerm, categoryId);
+        });
+    }
+}
+
+function filterProducts(searchTerm, categoryId) {
+    const productCards = document.querySelectorAll('.product-card');
+    const productGrid = document.getElementById('productGrid');
+    let visibleCount = 0;
+    
+    productCards.forEach(card => {
+        const productName = (card.dataset.productName || '').toLowerCase();
+        const productCode = (card.dataset.productCode || '').toLowerCase();
+        const productCategory = card.dataset.category || '';
+        
+        // Match search term (nama atau kode produk)
+        const matchesSearch = !searchTerm || 
+            productName.includes(searchTerm) || 
+            productCode.includes(searchTerm);
+        
+        // Match category
+        const matchesCategory = !categoryId || productCategory === categoryId;
+        
+        // Show/hide card
+        if (matchesSearch && matchesCategory) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Handle empty state
+    updateEmptyState(productGrid, visibleCount, searchTerm, categoryId);
+}
+
+function updateEmptyState(productGrid, visibleCount, searchTerm, categoryId) {
+    // Remove existing empty state
+    const existingEmpty = productGrid.querySelector('.empty-state-filter');
+    if (existingEmpty) existingEmpty.remove();
+    
+    if (visibleCount === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'empty-state empty-state-filter';
+        emptyDiv.style.gridColumn = '1/-1';
+        
+        let message = 'Produk tidak ditemukan';
+        if (searchTerm && categoryId) {
+            const categoryName = getCategoryName(categoryId);
+            message = `Tidak ada produk "${searchTerm}" di kategori ${categoryName}`;
+        } else if (searchTerm) {
+            message = `Tidak ada produk dengan kata kunci "${searchTerm}"`;
+        } else if (categoryId) {
+            const categoryName = getCategoryName(categoryId);
+            message = `Tidak ada produk di kategori ${categoryName}`;
+        }
+        
+        emptyDiv.innerHTML = `
+            <i class="fas fa-search"></i>
+            <p>${message}</p>
+            ${(searchTerm || categoryId) ? `
+                <button onclick="clearFilters()" class="mt-3 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600 transition-colors">
+                    <i class="fas fa-times mr-2"></i>Hapus Filter
+                </button>
+            ` : ''}
+        `;
+        productGrid.appendChild(emptyDiv);
+    }
+}
+
+function getCategoryName(categoryId) {
+    const category = categories.find(cat => cat.id == categoryId);
+    return category ? category.name : 'Kategori';
+}
+
+function clearFilters() {
+    // Clear search
+    const searchInput = document.getElementById('searchProduct');
+    if (searchInput) searchInput.value = '';
+    
+    // Clear category
+    const dropdown = document.getElementById('filterCategory');
+    if (dropdown) dropdown.value = '';
+    
+    // Reset tabs
+    document.querySelectorAll('.category-tab').forEach(tab => {
+        if (tab.dataset.category === '') {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    
+    // Show all products
+    filterProducts('', '');
+    
+    showToast('info', 'Filter dihapus');
+}
+
+// ==================== UTILITY: Get Category Statistics ====================
+function getCategoryStats() {
+    const stats = {};
+    
+    document.querySelectorAll('.product-card').forEach(card => {
+        const categoryId = card.dataset.category || 'uncategorized';
+        stats[categoryId] = (stats[categoryId] || 0) + 1;
+    });
+    
+    return stats;
+}
+
+// Optional: Show product count in tabs
+function updateCategoryTabsWithCount() {
+    const stats = getCategoryStats();
+    
+    document.querySelectorAll('.category-tab').forEach(tab => {
+        const categoryId = tab.dataset.category;
+        const count = categoryId === '' 
+            ? Object.values(stats).reduce((a, b) => a + b, 0)
+            : stats[categoryId] || 0;
+        
+        // Add count badge if you want
+        const badge = tab.querySelector('.count-badge');
+        if (badge) {
+            badge.textContent = count;
+        }
+    });
+}
 
 // ==================== DROPDOWN MENU FUNCTIONS ====================
 function togglePOSMenu() {

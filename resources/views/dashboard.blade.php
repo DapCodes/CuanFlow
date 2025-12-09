@@ -527,7 +527,7 @@
 
 @section('content')
 <main class="flex-grow flex items-center justify-center py-8 px-4">
-    <div class="w-full max-w-7xl">
+    <div class="w-full max-w-6xl">
 <div class="flex justify-center p-4">
 <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-6 max-w-7xl w-full">
 

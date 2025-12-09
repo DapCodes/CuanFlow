@@ -6,6 +6,7 @@ use App\Models\CashRegister;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Product;
+use App\Models\Category;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -22,13 +23,24 @@ class PointOfSaleController extends Controller
             ->with(['category', 'unit', 'stocks'])
             ->get();
 
+        // Ambil kategori yang memiliki produk aktif
+        $categories = Category::whereHas('products', function($query) use ($outletId) {
+            $query->where('outlet_id', $outletId)
+                ->where('is_active', true)
+                ->where('is_sellable', true);
+        })
+        ->where('type', 'product')
+        ->where('is_active', true)
+        ->orderBy('sort_order')
+        ->orderBy('name')
+        ->get(['id', 'name', 'slug', 'icon']);
+
         $activeDiscounts = Discount::active()->get();
         $customers = Customer::active()->get();
         $cart = Session::get('pos_cart', []);
 
-        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart'));
+        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories'));
     }
-
     public function checkCashRegister()
     {
         $userId = auth()->id();

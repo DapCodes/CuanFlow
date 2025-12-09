@@ -46,4 +46,13 @@ class Category extends Model
     {
         return $q->where('type', 'product');
     }
+
+    public function scopeWithActiveProducts($query, $outletId)
+    {
+        return $query->whereHas('products', function($q) use ($outletId) {
+            $q->where('outlet_id', $outletId)
+            ->where('is_active', true)
+            ->where('is_sellable', true);
+        });
+    }
 }

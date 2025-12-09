@@ -25,11 +25,11 @@ class ProductWithRecipeSeeder extends Seeder
             return;
         }
 
-        // Ambil semua raw material dengan kode mereka
         $rawMaterials = RawMaterial::all()->keyBy('code');
 
-        // Data produk Takoyaki dengan resep asli
+        // Data produk dengan resep yang masuk akal
         $productsData = [
+            // ============ KATEGORI MAKANAN (TAKOYAKI) ============
             [
                 'code' => 'PRD001',
                 'name' => 'Takoyaki Original (6 pcs)',
@@ -45,32 +45,30 @@ class ProductWithRecipeSeeder extends Seeder
                     'name' => 'Resep Takoyaki Original (6 pcs)',
                     'output_quantity' => 6,
                     'estimated_time_minutes' => 15,
-                    'instructions' => 'Campur tepung terigu, tepung tapioka, telur, dashi powder, air, dan bumbu untuk membuat adonan. Panaskan cetakan takoyaki, beri minyak. Tuang adonan, masukkan potongan gurita, daun bawang. Balik hingga bulat kecoklatan. Sajikan dengan saus takoyaki, mayones, katsuobushi, dan aonori.',
+                    'instructions' => 'Campur tepung terigu, tepung tapioka, telur, dashi powder, air, garam. Panaskan cetakan takoyaki. Tuang adonan, masukkan potongan gurita, daun bawang, jahe. Balik hingga bulat kecoklatan. Sajikan dengan saus takoyaki, mayones, katsuobushi, dan aonori.',
                     'items' => [
-                        ['code' => 'RM001', 'quantity' => 100],      // Tepung Terigu 100g
+                        ['code' => 'RM001', 'quantity' => 80],       // Tepung Terigu 80g
                         ['code' => 'RM002', 'quantity' => 20],       // Tepung Tapioka 20g
-                        ['code' => 'RM003', 'quantity' => 2],        // Telur 2 butir
-                        ['code' => 'RM004', 'quantity' => 8],        // Dashi Powder 8g
-                        ['code' => 'RM005', 'quantity' => 2],        // MSG 2g
-                        ['code' => 'RM006', 'quantity' => 3],        // Garam 3g
-                        ['code' => 'RM018', 'quantity' => 0.3],      // Air 300ml (0.3L)
-                        ['code' => 'RM009', 'quantity' => 0.12],     // Gurita 120g
-                        ['code' => 'RM010', 'quantity' => 15],       // Daun Bawang 15g
-                        ['code' => 'RM011', 'quantity' => 5],        // Jahe Merah 5g
-                        ['code' => 'RM017', 'quantity' => 0.03],     // Minyak 30ml (0.03L)
-                        ['code' => 'RM014', 'quantity' => 30],       // Takoyaki Sauce 30ml
-                        ['code' => 'RM015', 'quantity' => 20],       // Mayonnaise 20ml
-                        ['code' => 'RM012', 'quantity' => 5],        // Katsuobushi 5g
-                        ['code' => 'RM013', 'quantity' => 2],        // Aonori 2g
-                        ['code' => 'RM016', 'quantity' => 3],        // Wijen 3g
-                        ['code' => 'RM019', 'quantity' => 1],        // Box Takoyaki
-                        ['code' => 'RM020', 'quantity' => 6],        // Tusuk Gigi 6 pcs
+                        ['code' => 'RM010', 'quantity' => 1],        // Telur 1 butir
+                        ['code' => 'RM013', 'quantity' => 5],        // Dashi Powder 5g
+                        ['code' => 'RM014', 'quantity' => 2],        // Garam 2g
+                        ['code' => 'RM027', 'quantity' => 250],      // Air 250ml
+                        ['code' => 'RM019', 'quantity' => 100],      // Gurita 100g
+                        ['code' => 'RM020', 'quantity' => 10],       // Daun Bawang 10g
+                        ['code' => 'RM021', 'quantity' => 5],        // Jahe Merah 5g
+                        ['code' => 'RM011', 'quantity' => 20],       // Minyak 20ml
+                        ['code' => 'RM024', 'quantity' => 25],       // Takoyaki Sauce 25ml
+                        ['code' => 'RM025', 'quantity' => 15],       // Mayonnaise 15ml
+                        ['code' => 'RM022', 'quantity' => 3],        // Katsuobushi 3g
+                        ['code' => 'RM023', 'quantity' => 2],        // Aonori 2g
+                        ['code' => 'RM037', 'quantity' => 1],        // Box Takoyaki (6 pcs)
+                        ['code' => 'RM045', 'quantity' => 6],        // Tusuk Gigi
                     ],
                 ],
             ],
             [
                 'code' => 'PRD002',
-                'name' => 'Takoyaki Jumbo Original (10 pcs)',
+                'name' => 'Takoyaki Jumbo (10 pcs)',
                 'barcode' => '89910010002',
                 'category_slug' => 'makanan',
                 'unit_abbreviation' => 'pcs',
@@ -83,104 +81,379 @@ class ProductWithRecipeSeeder extends Seeder
                     'name' => 'Resep Takoyaki Jumbo (10 pcs)',
                     'output_quantity' => 10,
                     'estimated_time_minutes' => 20,
-                    'instructions' => 'Campur tepung terigu, tepung tapioka, telur, dashi powder, air, dan bumbu untuk membuat adonan. Panaskan cetakan takoyaki, beri minyak. Tuang adonan, masukkan potongan gurita, daun bawang. Balik hingga bulat kecoklatan. Sajikan dengan saus takoyaki, mayones, katsuobushi, dan aonori.',
+                    'instructions' => 'Campur tepung terigu, tepung tapioka, telur, dashi powder, air, garam. Panaskan cetakan takoyaki. Tuang adonan, masukkan potongan gurita, daun bawang, jahe. Balik hingga bulat kecoklatan. Sajikan dengan saus takoyaki, mayones, katsuobushi, dan aonori.',
                     'items' => [
-                        ['code' => 'RM001', 'quantity' => 170],      // Tepung Terigu 170g
-                        ['code' => 'RM002', 'quantity' => 35],       // Tepung Tapioka 35g
-                        ['code' => 'RM003', 'quantity' => 3],        // Telur 3 butir
-                        ['code' => 'RM004', 'quantity' => 12],       // Dashi Powder 12g
-                        ['code' => 'RM005', 'quantity' => 3],        // MSG 3g
-                        ['code' => 'RM006', 'quantity' => 5],        // Garam 5g
-                        ['code' => 'RM018', 'quantity' => 0.5],      // Air 500ml
-                        ['code' => 'RM009', 'quantity' => 0.2],      // Gurita 200g
-                        ['code' => 'RM010', 'quantity' => 25],       // Daun Bawang 25g
-                        ['code' => 'RM011', 'quantity' => 8],        // Jahe Merah 8g
-                        ['code' => 'RM017', 'quantity' => 0.05],     // Minyak 50ml
-                        ['code' => 'RM014', 'quantity' => 50],       // Takoyaki Sauce 50ml
-                        ['code' => 'RM015', 'quantity' => 35],       // Mayonnaise 35ml
-                        ['code' => 'RM012', 'quantity' => 8],        // Katsuobushi 8g
-                        ['code' => 'RM013', 'quantity' => 3],        // Aonori 3g
-                        ['code' => 'RM016', 'quantity' => 5],        // Wijen 5g
-                        ['code' => 'RM019', 'quantity' => 1],        // Box Takoyaki
-                        ['code' => 'RM020', 'quantity' => 10],       // Tusuk Gigi 10 pcs
+                        ['code' => 'RM001', 'quantity' => 130],      // Tepung Terigu 130g
+                        ['code' => 'RM002', 'quantity' => 30],       // Tepung Tapioka 30g
+                        ['code' => 'RM010', 'quantity' => 2],        // Telur 2 butir
+                        ['code' => 'RM013', 'quantity' => 8],        // Dashi Powder 8g
+                        ['code' => 'RM014', 'quantity' => 3],        // Garam 3g
+                        ['code' => 'RM027', 'quantity' => 400],      // Air 400ml
+                        ['code' => 'RM019', 'quantity' => 160],      // Gurita 160g
+                        ['code' => 'RM020', 'quantity' => 15],       // Daun Bawang 15g
+                        ['code' => 'RM021', 'quantity' => 8],        // Jahe Merah 8g
+                        ['code' => 'RM011', 'quantity' => 30],       // Minyak 30ml
+                        ['code' => 'RM024', 'quantity' => 40],       // Takoyaki Sauce 40ml
+                        ['code' => 'RM025', 'quantity' => 25],       // Mayonnaise 25ml
+                        ['code' => 'RM022', 'quantity' => 5],        // Katsuobushi 5g
+                        ['code' => 'RM023', 'quantity' => 3],        // Aonori 3g
+                        ['code' => 'RM038', 'quantity' => 1],        // Box Takoyaki (10 pcs)
+                        ['code' => 'RM045', 'quantity' => 10],       // Tusuk Gigi
                     ],
                 ],
             ],
+
+            // ============ KATEGORI ROTI ============
             [
                 'code' => 'PRD003',
-                'name' => 'Takoyaki Pedas (6 pcs)',
-                'barcode' => '89910010003',
-                'category_slug' => 'makanan',
+                'name' => 'Roti Sobek Cokelat',
+                'barcode' => '89910020001',
+                'category_slug' => 'roti',
                 'unit_abbreviation' => 'pcs',
-                'selling_price' => 27000.00,
-                'reseller_price' => 24000.00,
-                'min_stock' => 10.0,
-                'shelf_life_days' => 1,
-                'description' => 'Takoyaki dengan saus pedas dan taburan cabai bubuk untuk pecinta pedas',
+                'selling_price' => 35000.00,
+                'reseller_price' => 30000.00,
+                'min_stock' => 15.0,
+                'shelf_life_days' => 3,
+                'description' => 'Roti sobek lembut dengan isian selai cokelat',
                 'recipe' => [
-                    'name' => 'Resep Takoyaki Pedas (6 pcs)',
-                    'output_quantity' => 6,
-                    'estimated_time_minutes' => 15,
-                    'instructions' => 'Buat adonan takoyaki seperti biasa. Tambahkan sedikit cabai bubuk ke dalam adonan. Masak dengan gurita dan daun bawang. Setelah matang, beri saus takoyaki yang sudah dicampur dengan saus pedas, mayones pedas, dan taburan cabai bubuk.',
+                    'name' => 'Resep Roti Sobek Cokelat',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 120,
+                    'instructions' => 'Campur tepung terigu, gula, ragi, bread improver, garam, telur, susu, dan mentega. Uleni hingga kalis. Diamkan 60 menit. Bagi adonan, isi dengan selai cokelat, bentuk bulat. Tata dalam loyang, diamkan 30 menit. Oles susu, panggang 180°C selama 25 menit.',
                     'items' => [
-                        ['code' => 'RM001', 'quantity' => 100],      // Tepung Terigu 100g
-                        ['code' => 'RM002', 'quantity' => 20],       // Tepung Tapioka 20g
-                        ['code' => 'RM003', 'quantity' => 2],        // Telur 2 butir
-                        ['code' => 'RM004', 'quantity' => 8],        // Dashi Powder 8g
-                        ['code' => 'RM005', 'quantity' => 2],        // MSG 2g
-                        ['code' => 'RM006', 'quantity' => 3],        // Garam 3g
-                        ['code' => 'RM018', 'quantity' => 0.3],      // Air 300ml
-                        ['code' => 'RM009', 'quantity' => 0.12],     // Gurita 120g
-                        ['code' => 'RM010', 'quantity' => 15],       // Daun Bawang 15g
-                        ['code' => 'RM011', 'quantity' => 8],        // Jahe Merah 8g (lebih banyak untuk sensasi pedas)
-                        ['code' => 'RM017', 'quantity' => 0.03],     // Minyak 30ml
-                        ['code' => 'RM014', 'quantity' => 35],       // Takoyaki Sauce 35ml (lebih banyak)
-                        ['code' => 'RM015', 'quantity' => 20],       // Mayonnaise 20ml
-                        ['code' => 'RM012', 'quantity' => 5],        // Katsuobushi 5g
-                        ['code' => 'RM013', 'quantity' => 2],        // Aonori 2g
-                        ['code' => 'RM016', 'quantity' => 3],        // Wijen 3g
-                        ['code' => 'RM019', 'quantity' => 1],        // Box Takoyaki
-                        ['code' => 'RM020', 'quantity' => 6],        // Tusuk Gigi 6 pcs
+                        ['code' => 'RM001', 'quantity' => 300],      // Tepung Terigu 300g
+                        ['code' => 'RM004', 'quantity' => 40],       // Gula 40g
+                        ['code' => 'RM032', 'quantity' => 5],        // Ragi Instan 5g
+                        ['code' => 'RM033', 'quantity' => 3],        // Bread Improver 3g
+                        ['code' => 'RM014', 'quantity' => 5],        // Garam 5g
+                        ['code' => 'RM010', 'quantity' => 1],        // Telur 1 butir
+                        ['code' => 'RM006', 'quantity' => 150],      // Susu UHT 150ml
+                        ['code' => 'RM012', 'quantity' => 50],       // Mentega 50g
+                        ['code' => 'RM035', 'quantity' => 100],      // Selai Cokelat 100g
+                        ['code' => 'RM042', 'quantity' => 1],        // Paper Bag Kecil
+                        ['code' => 'RM044', 'quantity' => 1],        // Plastik Wrapping
                     ],
                 ],
             ],
             [
                 'code' => 'PRD004',
-                'name' => 'Takoyaki Keju (6 pcs)',
-                'barcode' => '89910010004',
-                'category_slug' => 'makanan',
+                'name' => 'Roti Tawar Sandwich',
+                'barcode' => '89910020002',
+                'category_slug' => 'roti',
                 'unit_abbreviation' => 'pcs',
-                'selling_price' => 30000.00,
-                'reseller_price' => 27000.00,
-                'min_stock' => 10.0,
-                'shelf_life_days' => 1,
-                'description' => 'Takoyaki dengan taburan keju parut melimpah dan saus keju',
+                'selling_price' => 28000.00,
+                'reseller_price' => 24000.00,
+                'min_stock' => 15.0,
+                'shelf_life_days' => 4,
+                'description' => 'Roti tawar lembut untuk sandwich (12 slice)',
                 'recipe' => [
-                    'name' => 'Resep Takoyaki Keju (6 pcs)',
-                    'output_quantity' => 6,
-                    'estimated_time_minutes' => 15,
-                    'instructions' => 'Buat adonan dan masak takoyaki seperti biasa dengan isian gurita. Setelah matang, beri saus takoyaki, mayones, lalu taburkan keju cheddar parut yang melimpah. Tambahkan katsuobushi dan aonori sebagai finishing.',
+                    'name' => 'Resep Roti Tawar Sandwich',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 180,
+                    'instructions' => 'Campur tepung terigu, gula, ragi, bread improver, garam, susu, dan mentega. Uleni hingga kalis elastis. Diamkan 90 menit. Bentuk memanjang, masukkan loyang. Diamkan 45 menit. Panggang 180°C selama 35 menit. Dinginkan, potong 12 slice.',
+                    'items' => [
+                        ['code' => 'RM001', 'quantity' => 500],      // Tepung Terigu 500g
+                        ['code' => 'RM004', 'quantity' => 50],       // Gula 50g
+                        ['code' => 'RM032', 'quantity' => 8],        // Ragi Instan 8g
+                        ['code' => 'RM033', 'quantity' => 5],        // Bread Improver 5g
+                        ['code' => 'RM014', 'quantity' => 8],        // Garam 8g
+                        ['code' => 'RM006', 'quantity' => 280],      // Susu UHT 280ml
+                        ['code' => 'RM012', 'quantity' => 60],       // Mentega 60g
+                        ['code' => 'RM042', 'quantity' => 1],        // Paper Bag Kecil
+                        ['code' => 'RM044', 'quantity' => 1],        // Plastik Wrapping
+                    ],
+                ],
+            ],
+
+            // ============ KATEGORI KUE ============
+            [
+                'code' => 'PRD005',
+                'name' => 'Brownies Cokelat Kacang',
+                'barcode' => '89910030001',
+                'category_slug' => 'kue',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 45000.00,
+                'reseller_price' => 40000.00,
+                'min_stock' => 10.0,
+                'shelf_life_days' => 5,
+                'description' => 'Brownies cokelat premium dengan taburan kacang almond',
+                'recipe' => [
+                    'name' => 'Resep Brownies Cokelat Kacang',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 90,
+                    'instructions' => 'Lelehkan mentega dan cokelat bubuk. Kocok telur dan gula hingga mengembang. Masukkan campuran mentega-cokelat, aduk rata. Tambahkan tepung terigu, vanili, garam, aduk perlahan. Tuang ke loyang, taburi almond. Panggang 170°C selama 40 menit.',
+                    'items' => [
+                        ['code' => 'RM001', 'quantity' => 150],      // Tepung Terigu 150g
+                        ['code' => 'RM016', 'quantity' => 80],       // Cokelat Bubuk 80g
+                        ['code' => 'RM004', 'quantity' => 180],      // Gula 180g
+                        ['code' => 'RM010', 'quantity' => 4],        // Telur 4 butir
+                        ['code' => 'RM012', 'quantity' => 150],      // Mentega 150g
+                        ['code' => 'RM015', 'quantity' => 3],        // Vanili 3g
+                        ['code' => 'RM014', 'quantity' => 2],        // Garam 2g
+                        ['code' => 'RM036', 'quantity' => 50],       // Almond Slice 50g
+                        ['code' => 'RM042', 'quantity' => 1],        // Paper Bag Kecil
+                        ['code' => 'RM044', 'quantity' => 1],        // Plastik Wrapping
+                    ],
+                ],
+            ],
+            [
+                'code' => 'PRD006',
+                'name' => 'Bolu Kukus Pandan',
+                'barcode' => '89910030002',
+                'category_slug' => 'kue',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 25000.00,
+                'reseller_price' => 22000.00,
+                'min_stock' => 15.0,
+                'shelf_life_days' => 3,
+                'description' => 'Bolu kukus lembut rasa pandan (8 potong)',
+                'recipe' => [
+                    'name' => 'Resep Bolu Kukus Pandan',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 60,
+                    'instructions' => 'Kocok telur dan gula hingga mengembang putih. Masukkan tepung terigu, susu, vanili secara bertahap sambil dikocok. Tambahkan mentega cair, aduk rata. Beri pewarna pandan. Tuang ke loyang, kukus 30 menit api sedang. Potong 8 bagian.',
+                    'items' => [
+                        ['code' => 'RM001', 'quantity' => 200],      // Tepung Terigu 200g
+                        ['code' => 'RM004', 'quantity' => 150],      // Gula 150g
+                        ['code' => 'RM010', 'quantity' => 5],        // Telur 5 butir
+                        ['code' => 'RM006', 'quantity' => 100],      // Susu UHT 100ml
+                        ['code' => 'RM012', 'quantity' => 80],       // Mentega 80g
+                        ['code' => 'RM015', 'quantity' => 2],        // Vanili 2g
+                        ['code' => 'RM042', 'quantity' => 1],        // Paper Bag Kecil
+                        ['code' => 'RM044', 'quantity' => 1],        // Plastik Wrapping
+                    ],
+                ],
+            ],
+
+            // ============ KATEGORI PASTRY ============
+            [
+                'code' => 'PRD007',
+                'name' => 'Croissant Butter',
+                'barcode' => '89910040001',
+                'category_slug' => 'pastry',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 18000.00,
+                'reseller_price' => 15000.00,
+                'min_stock' => 20.0,
+                'shelf_life_days' => 2,
+                'description' => 'Croissant klasik dengan lapisan mentega berlimpah',
+                'recipe' => [
+                    'name' => 'Resep Croissant Butter',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 240,
+                    'instructions' => 'Buat adonan dari tepung, gula, ragi, garam, susu, dan sedikit mentega. Diamkan 30 menit. Lapis dengan mentega dingin, lipat 3x. Dinginkan 30 menit. Ulang proses lipat 2x. Giling tipis, potong segitiga, gulung. Diamkan 60 menit. Oles telur, panggang 200°C 20 menit.',
                     'items' => [
                         ['code' => 'RM001', 'quantity' => 100],      // Tepung Terigu 100g
-                        ['code' => 'RM002', 'quantity' => 20],       // Tepung Tapioka 20g
-                        ['code' => 'RM003', 'quantity' => 2],        // Telur 2 butir
-                        ['code' => 'RM004', 'quantity' => 8],        // Dashi Powder 8g
-                        ['code' => 'RM005', 'quantity' => 2],        // MSG 2g
-                        ['code' => 'RM006', 'quantity' => 3],        // Garam 3g
-                        ['code' => 'RM018', 'quantity' => 0.3],      // Air 300ml
-                        ['code' => 'RM009', 'quantity' => 0.12],     // Gurita 120g
-                        ['code' => 'RM010', 'quantity' => 15],       // Daun Bawang 15g
-                        ['code' => 'RM011', 'quantity' => 5],        // Jahe Merah 5g
-                        ['code' => 'RM017', 'quantity' => 0.03],     // Minyak 30ml
-                        ['code' => 'RM014', 'quantity' => 30],       // Takoyaki Sauce 30ml
-                        ['code' => 'RM015', 'quantity' => 25],       // Mayonnaise 25ml (lebih banyak)
-                        ['code' => 'RM012', 'quantity' => 5],        // Katsuobushi 5g
-                        ['code' => 'RM013', 'quantity' => 2],        // Aonori 2g
-                        ['code' => 'RM016', 'quantity' => 3],        // Wijen 3g
-                        ['code' => 'RM019', 'quantity' => 1],        // Box Takoyaki
-                        ['code' => 'RM020', 'quantity' => 6],        // Tusuk Gigi 6 pcs
-                        // Note: Keju sebaiknya ditambahkan sebagai raw material baru (RM022)
-                        // Untuk saat ini menggunakan bahan yang ada
+                        ['code' => 'RM004', 'quantity' => 10],       // Gula 10g
+                        ['code' => 'RM032', 'quantity' => 3],        // Ragi 3g
+                        ['code' => 'RM014', 'quantity' => 2],        // Garam 2g
+                        ['code' => 'RM006', 'quantity' => 50],       // Susu 50ml
+                        ['code' => 'RM012', 'quantity' => 50],       // Mentega untuk lapisan 50g
+                        ['code' => 'RM010', 'quantity' => 0.2],      // Telur untuk olesan (1/5 butir)
+                        ['code' => 'RM042', 'quantity' => 1],        // Paper Bag Kecil
+                    ],
+                ],
+            ],
+            [
+                'code' => 'PRD008',
+                'name' => 'Danish Strawberry',
+                'barcode' => '89910040002',
+                'category_slug' => 'pastry',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 20000.00,
+                'reseller_price' => 17000.00,
+                'min_stock' => 20.0,
+                'shelf_life_days' => 2,
+                'description' => 'Danish pastry dengan selai strawberry segar',
+                'recipe' => [
+                    'name' => 'Resep Danish Strawberry',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 200,
+                    'instructions' => 'Buat adonan danish seperti croissant. Lapis mentega, lipat 3x. Giling, potong kotak. Beri selai strawberry di tengah. Lipat 4 sudut ke tengah. Diamkan 45 menit. Oles telur, panggang 190°C 18 menit. Beri whipped cream sebagai topping.',
+                    'items' => [
+                        ['code' => 'RM001', 'quantity' => 100],      // Tepung Terigu 100g
+                        ['code' => 'RM004', 'quantity' => 15],       // Gula 15g
+                        ['code' => 'RM032', 'quantity' => 3],        // Ragi 3g
+                        ['code' => 'RM014', 'quantity' => 2],        // Garam 2g
+                        ['code' => 'RM006', 'quantity' => 40],       // Susu 40ml
+                        ['code' => 'RM012', 'quantity' => 45],       // Mentega 45g
+                        ['code' => 'RM010', 'quantity' => 0.2],      // Telur (1/5 butir)
+                        ['code' => 'RM034', 'quantity' => 30],       // Selai Strawberry 30g
+                        ['code' => 'RM009', 'quantity' => 20],       // Whipped Cream 20ml
+                        ['code' => 'RM042', 'quantity' => 1],        // Paper Bag Kecil
+                    ],
+                ],
+            ],
+
+            // ============ KATEGORI MINUMAN ============
+            [
+                'code' => 'PRD009',
+                'name' => 'Es Kopi Susu Gula Aren',
+                'barcode' => '89910050001',
+                'category_slug' => 'minuman',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 18000.00,
+                'reseller_price' => 15000.00,
+                'min_stock' => 30.0,
+                'shelf_life_days' => 1,
+                'description' => 'Kopi arabica dengan susu dan gula aren (16oz)',
+                'recipe' => [
+                    'name' => 'Resep Es Kopi Susu Gula Aren',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 5,
+                    'instructions' => 'Seduh kopi arabica dengan air panas 100ml. Larutkan gula aren 20g. Masukkan es batu ke cup. Tuang kopi dan gula aren. Tambahkan susu UHT. Aduk rata. Tutup dan beri sedotan.',
+                    'items' => [
+                        ['code' => 'RM017', 'quantity' => 15],       // Kopi Arabica 15g
+                        ['code' => 'RM005', 'quantity' => 20],       // Gula Aren 20g
+                        ['code' => 'RM006', 'quantity' => 150],      // Susu UHT 150ml
+                        ['code' => 'RM026', 'quantity' => 150],      // Es Batu 150g
+                        ['code' => 'RM027', 'quantity' => 100],      // Air 100ml
+                        ['code' => 'RM039', 'quantity' => 1],        // Cup 16oz + Tutup
+                        ['code' => 'RM041', 'quantity' => 1],        // Sedotan
+                    ],
+                ],
+            ],
+            [
+                'code' => 'PRD010',
+                'name' => 'Matcha Latte',
+                'barcode' => '89910050002',
+                'category_slug' => 'minuman',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 22000.00,
+                'reseller_price' => 19000.00,
+                'min_stock' => 30.0,
+                'shelf_life_days' => 1,
+                'description' => 'Matcha premium dengan susu segar (16oz)',
+                'recipe' => [
+                    'name' => 'Resep Matcha Latte',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 5,
+                    'instructions' => 'Campur matcha powder dengan air hangat 50ml, aduk hingga larut. Tambahkan gula, aduk rata. Masukkan es batu ke cup. Tuang campuran matcha. Tambahkan susu UHT. Tutup dan beri sedotan.',
+                    'items' => [
+                        ['code' => 'RM018', 'quantity' => 8],        // Matcha Powder 8g
+                        ['code' => 'RM004', 'quantity' => 25],       // Gula 25g
+                        ['code' => 'RM006', 'quantity' => 200],      // Susu UHT 200ml
+                        ['code' => 'RM026', 'quantity' => 150],      // Es Batu 150g
+                        ['code' => 'RM027', 'quantity' => 50],       // Air 50ml
+                        ['code' => 'RM039', 'quantity' => 1],        // Cup 16oz + Tutup
+                        ['code' => 'RM041', 'quantity' => 1],        // Sedotan
+                    ],
+                ],
+            ],
+            [
+                'code' => 'PRD011',
+                'name' => 'Chocolate Milkshake',
+                'barcode' => '89910050003',
+                'category_slug' => 'minuman',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 25000.00,
+                'reseller_price' => 22000.00,
+                'min_stock' => 25.0,
+                'shelf_life_days' => 1,
+                'description' => 'Milkshake cokelat dengan whipped cream (22oz)',
+                'recipe' => [
+                    'name' => 'Resep Chocolate Milkshake',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 7,
+                    'instructions' => 'Blender susu, cokelat bubuk, gula, es batu hingga smooth dan creamy. Tuang ke cup 22oz. Tambahkan whipped cream di atas. Beri drizzle sirup cokelat. Tutup dan beri sedotan.',
+                    'items' => [
+                        ['code' => 'RM006', 'quantity' => 250],      // Susu UHT 250ml
+                        ['code' => 'RM016', 'quantity' => 30],       // Cokelat Bubuk 30g
+                        ['code' => 'RM004', 'quantity' => 30],       // Gula 30g
+                        ['code' => 'RM026', 'quantity' => 200],      // Es Batu 200g
+                        ['code' => 'RM009', 'quantity' => 50],       // Whipped Cream 50ml
+                        ['code' => 'RM028', 'quantity' => 15],       // Sirup Cokelat 15ml
+                        ['code' => 'RM040', 'quantity' => 1],        // Cup 22oz + Tutup
+                        ['code' => 'RM041', 'quantity' => 1],        // Sedotan
+                    ],
+                ],
+            ],
+            [
+                'code' => 'PRD012',
+                'name' => 'Boba Brown Sugar Milk Tea',
+                'barcode' => '89910050004',
+                'category_slug' => 'minuman',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 20000.00,
+                'reseller_price' => 17000.00,
+                'min_stock' => 25.0,
+                'shelf_life_days' => 1,
+                'description' => 'Milk tea dengan boba dan gula aren (22oz)',
+                'recipe' => [
+                    'name' => 'Resep Boba Brown Sugar Milk Tea',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 8,
+                    'instructions' => 'Rebus boba 20 menit, tiriskan. Campur dengan gula aren cair. Masukkan boba ke cup. Tambahkan es batu. Tuang susu segar. Beri drizzle gula aren di dinding cup. Tutup dan beri sedotan besar.',
+                    'items' => [
+                        ['code' => 'RM030', 'quantity' => 80],       // Boba 80g
+                        ['code' => 'RM005', 'quantity' => 30],       // Gula Aren 30g
+                        ['code' => 'RM006', 'quantity' => 280],      // Susu UHT 280ml
+                        ['code' => 'RM026', 'quantity' => 150],      // Es Batu 150g
+                        ['code' => 'RM040', 'quantity' => 1],        // Cup 22oz + Tutup
+                        ['code' => 'RM041', 'quantity' => 1],        // Sedotan
+                    ],
+                ],
+            ],
+
+            // ============ KATEGORI SNACK ============
+            [
+                'code' => 'PRD013',
+                'name' => 'Donat Cokelat',
+                'barcode' => '89910060001',
+                'category_slug' => 'snack',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 8000.00,
+                'reseller_price' => 7000.00,
+                'min_stock' => 50.0,
+                'shelf_life_days' => 2,
+                'description' => 'Donat empuk dengan topping cokelat',
+                'recipe' => [
+                    'name' => 'Resep Donat Cokelat',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 90,
+                    'instructions' => 'Campur tepung, gula, ragi, garam, telur, susu, dan mentega. Uleni hingga kalis. Diamkan 45 menit. Bentuk donat, lubangi tengah. Diamkan 20 menit. Goreng hingga kecoklatan. Angkat, tiriskan. Celupkan ke topping cokelat. Kemas.',
+                    'items' => [
+                        ['code' => 'RM001', 'quantity' => 60],       // Tepung Terigu 60g
+                        ['code' => 'RM004', 'quantity' => 10],       // Gula 10g
+                        ['code' => 'RM032', 'quantity' => 2],        // Ragi 2g
+                        ['code' => 'RM014', 'quantity' => 1],        // Garam 1g
+                        ['code' => 'RM010', 'quantity' => 0.3],      // Telur 0.3 butir
+                        ['code' => 'RM006', 'quantity' => 30],       // Susu 30ml
+                        ['code' => 'RM012', 'quantity' => 10],       // Mentega 10g
+                        ['code' => 'RM011', 'quantity' => 50],       // Minyak goreng 50ml
+                        ['code' => 'RM035', 'quantity' => 20],       // Topping Cokelat 20g
+                        ['code' => 'RM044', 'quantity' => 1],        // Plastik Wrapping
+                    ],
+                ],
+            ],
+            [
+                'code' => 'PRD014',
+                'name' => 'Donat Keju',
+                'barcode' => '89910060002',
+                'category_slug' => 'snack',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 9000.00,
+                'reseller_price' => 8000.00,
+                'min_stock' => 50.0,
+                'shelf_life_days' => 2,
+                'description' => 'Donat dengan taburan keju parut melimpah',
+                'recipe' => [
+                    'name' => 'Resep Donat Keju',
+                    'output_quantity' => 1,
+                    'estimated_time_minutes' => 90,
+                    'instructions' => 'Campur tepung, gula, ragi, garam, telur, susu, dan mentega. Uleni hingga kalis. Diamkan 45 menit. Bentuk donat. Diamkan 20 menit. Goreng hingga kecoklatan. Angkat, tiriskan. Oles susu kental manis, taburi keju parut. Kemas.',
+                    'items' => [
+                        ['code' => 'RM001', 'quantity' => 60],       // Tepung Terigu 60g
+                        ['code' => 'RM004', 'quantity' => 10],       // Gula 10g
+                        ['code' => 'RM032', 'quantity' => 2],        // Ragi 2g
+                        ['code' => 'RM014', 'quantity' => 1],        // Garam 1g
+                        ['code' => 'RM010', 'quantity' => 0.3],      // Telur 0.3 butir
+                        ['code' => 'RM006', 'quantity' => 30],       // Susu 30ml
+                        ['code' => 'RM012', 'quantity' => 10],       // Mentega 10g
+                        ['code' => 'RM011', 'quantity' => 50],       // Minyak goreng 50ml
+                        ['code' => 'RM007', 'quantity' => 10],       // Susu Kental Manis 10ml
+                        ['code' => 'RM008', 'quantity' => 15],       // Keju Parut 15g
+                        ['code' => 'RM044', 'quantity' => 1],        // Plastik Wrapping
                     ],
                 ],
             ],
@@ -197,7 +470,6 @@ class ProductWithRecipeSeeder extends Seeder
                     $itemCost = $rawMaterial->purchase_price * $item['quantity'];
                     $rawMaterialCost += $itemCost;
                     
-                    // Simpan detail perhitungan
                     $calculationDetails[] = [
                         'raw_material_code' => $rawMaterial->code,
                         'raw_material_name' => $rawMaterial->name,
@@ -215,7 +487,7 @@ class ProductWithRecipeSeeder extends Seeder
             $outputQuantity = $productData['recipe']['output_quantity'];
             $hppPerUnit = $totalHpp / $outputQuantity;
 
-            // Hitung margin
+            // Hitung margin berdasarkan harga jual
             $selling_price = $productData['selling_price'];
             $margin_percent = $totalHpp > 0 ? (($selling_price - $totalHpp) / $selling_price) * 100 : 0;
 
@@ -230,7 +502,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'hpp' => round($totalHpp, 2),
                 'selling_price' => $selling_price,
                 'reseller_price' => $productData['reseller_price'],
-                'margin_percent' => round($margin_percent, 4),
+                'margin_percent' => round($margin_percent, 2),
                 'min_stock' => $productData['min_stock'],
                 'shelf_life_days' => $productData['shelf_life_days'],
                 'description' => $productData['description'],
@@ -291,12 +563,12 @@ class ProductWithRecipeSeeder extends Seeder
                     ],
                 ]),
                 'notes' => 'HPP calculation generated by seeder. Additional cost includes electricity, gas, and labor (15% of raw material cost).',
-                'calculated_by' => null, // System generated
+                'calculated_by' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            // Buat stok awal produk (misalnya 20 box ready to sell)
+            // Buat stok awal produk
             ProductStock::create([
                 'product_id' => $product->id,
                 'outlet_id' => $targetOutletId,
@@ -305,19 +577,17 @@ class ProductWithRecipeSeeder extends Seeder
                 'updated_at' => now(),
             ]);
 
-            echo "✓ Produk '{$product->name}' dengan resep berhasil dibuat!\n";
-            echo "  Biaya Bahan Baku: Rp " . number_format($rawMaterialCost, 0, ',', '.') . "\n";
+            echo "✓ Produk '{$product->name}' berhasil dibuat!\n";
+            echo "  Biaya Bahan: Rp " . number_format($rawMaterialCost, 0, ',', '.') . "\n";
             echo "  Biaya Tambahan (15%): Rp " . number_format($additionalCost, 0, ',', '.') . "\n";
             echo "  Total HPP: Rp " . number_format($totalHpp, 0, ',', '.') . "\n";
-            echo "  HPP per Unit: Rp " . number_format($hppPerUnit, 0, ',', '.') . "\n";
             echo "  Harga Jual: Rp " . number_format($selling_price, 0, ',', '.') . "\n";
             echo "  Margin: " . number_format($margin_percent, 2) . "%\n";
-            echo "  Jumlah bahan: " . count($productData['recipe']['items']) . " items\n";
-            echo "  Output: " . $outputQuantity . " pcs\n\n";
+            echo "  Profit: Rp " . number_format($selling_price - $totalHpp, 0, ',', '.') . "\n\n";
         }
 
         echo "========================================\n";
-        echo "Seeder produk Takoyaki dengan resep berhasil dijalankan!\n";
+        echo "Seeder produk berhasil dijalankan!\n";
         echo "Total produk: " . count($productsData) . "\n";
         echo "========================================\n";
     }
