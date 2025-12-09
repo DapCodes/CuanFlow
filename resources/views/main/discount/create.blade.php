@@ -18,292 +18,332 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
-        
-        <x-card-container>
-            <div class="bg-gradient-to-br from-red-400 to-pink-500 p-6 border-b border-gray-200">
-                <h2 class="text-2xl font-bold text-white flex items-center">
-                    <i class="fas fa-plus-circle mr-3"></i>
-                    Tambah Diskon Baru
-                </h2>
-                <p class="text-sm text-red-50 mt-1">Buat diskon untuk menarik lebih banyak pelanggan</p>
-            </div>
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
 
-            <form action="{{ route('discounts.store') }}" method="POST" class="p-6">
+        {{-- HEADER (disamakan pattern dengan index) --}}
+        <section
+            class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-500 border border-red-100">
+                        <i class="fas fa-plus-circle text-sm"></i>
+                    </span>
+                    <span>Tambah Diskon Baru</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Buat dan atur diskon dengan langkah yang sederhana, cocok untuk tim kasir maupun pemilik usaha.
+                </p>
+            </div>
+        </section>
+
+        {{-- FORM CARD UTAMA --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            <form action="{{ route('discounts.store') }}" method="POST" class="px-4 md:px-6 py-6 space-y-8">
                 @csrf
 
-                <!-- Informasi Dasar -->
-                <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                        <i class="fas fa-info-circle text-red-500 mr-2"></i>
-                        Informasi Dasar
-                    </h3>
+                {{-- Informasi Dasar --}}
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-info-circle text-red-500"></i>
+                            <span>Informasi Dasar</span>
+                        </h3>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Kode Diskon -->
+                        {{-- Kode Diskon --}}
                         <div>
-                            <label for="code" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="code" class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Kode Diskon <span class="text-red-500">*</span>
                             </label>
                             <div class="flex gap-2">
-                                <input type="text" 
-                                       name="code" 
-                                       id="code" 
+                                <input type="text"
+                                       name="code"
+                                       id="code"
                                        value="{{ old('code') }}"
-                                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('code') border-red-500 @enderror" 
+                                       class="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 @error('code') border-red-500 @enderror"
                                        placeholder="DISC-XXXXX"
                                        required>
-                                <button type="button" 
+                                <button type="button"
                                         id="generateCodeBtn"
-                                        class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                                    <i class="fas fa-sync-alt"></i>
+                                        class="px-3 md:px-4 py-2.5 bg-gray-700 text-white rounded-lg text-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    <i class="fas fa-sync-alt text-xs md:text-sm"></i>
                                 </button>
                             </div>
                             @error('code')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- Nama Diskon -->
+                        {{-- Nama Diskon --}}
                         <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Nama Diskon <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" 
-                                   name="name" 
-                                   id="name" 
+                            <input type="text"
+                                   name="name"
+                                   id="name"
                                    value="{{ old('name') }}"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('name') border-red-500 @enderror" 
+                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 @error('name') border-red-500 @enderror"
                                    placeholder="Contoh: Diskon Akhir Tahun"
                                    required>
                             @error('name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
                 </div>
 
-                <!-- Tipe Diskon -->
-                <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                        <i class="fas fa-layer-group text-red-500 mr-2"></i>
-                        Tipe Diskon <span class="text-red-500">*</span>
-                    </h3>
+                {{-- Tipe Diskon --}}
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-layer-group text-red-500"></i>
+                            <span>Tipe Diskon</span>
+                            <span class="text-red-500">*</span>
+                        </h3>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Percentage -->
+                        {{-- Percentage --}}
                         <label class="relative cursor-pointer">
-                            <input type="radio" 
-                                   name="type" 
-                                   value="percentage" 
-                                   class="peer sr-only" 
+                            <input type="radio"
+                                   name="type"
+                                   value="percentage"
+                                   class="peer sr-only"
                                    {{ old('type') == 'percentage' || !old('type') ? 'checked' : '' }}>
-                            <div class="border-2 border-gray-300 rounded-lg p-6 peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-300 transition-all">
-                                <div class="flex flex-col items-center text-center">
-                                    <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mb-3">
-                                        <i class="fas fa-percent text-white text-2xl"></i>
+                            <div
+                                class="border border-gray-300 rounded-lg p-4 md:p-5 peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-400 transition-all">
+                                <div class="flex flex-col items-center text-center gap-2">
+                                    <div
+                                        class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-percent text-white text-lg md:text-xl"></i>
                                     </div>
-                                    <h4 class="font-semibold text-gray-900 mb-1">Persentase</h4>
-                                    <p class="text-xs text-gray-600">Diskon dalam bentuk persen (%) dari harga</p>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900 text-sm">Persentase</h4>
+                                        <p class="text-xs text-gray-600 mt-1">
+                                            Diskon dalam bentuk persen (%) dari harga.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </label>
 
-                        <!-- Fixed -->
+                        {{-- Fixed --}}
                         <label class="relative cursor-pointer">
-                            <input type="radio" 
-                                   name="type" 
-                                   value="fixed" 
+                            <input type="radio"
+                                   name="type"
+                                   value="fixed"
                                    class="peer sr-only"
                                    {{ old('type') == 'fixed' ? 'checked' : '' }}>
-                            <div class="border-2 border-gray-300 rounded-lg p-6 peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-300 transition-all">
-                                <div class="flex flex-col items-center text-center">
-                                    <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mb-3">
-                                        <i class="fas fa-money-bill text-white text-2xl"></i>
+                            <div
+                                class="border border-gray-300 rounded-lg p-4 md:p-5 peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-400 transition-all">
+                                <div class="flex flex-col items-center text-center gap-2">
+                                    <div
+                                        class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-money-bill text-white text-lg md:text-xl"></i>
                                     </div>
-                                    <h4 class="font-semibold text-gray-900 mb-1">Fixed</h4>
-                                    <p class="text-xs text-gray-600">Potongan harga dengan nominal tetap (Rp)</p>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900 text-sm">Fixed</h4>
+                                        <p class="text-xs text-gray-600 mt-1">
+                                            Potongan harga dengan nominal tetap (Rp).
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </label>
 
-                        <!-- Buy X Get Y -->
+                        {{-- Buy X Get Y --}}
                         <label class="relative cursor-pointer">
-                            <input type="radio" 
-                                   name="type" 
-                                   value="buy_x_get_y" 
+                            <input type="radio"
+                                   name="type"
+                                   value="buy_x_get_y"
                                    class="peer sr-only"
                                    {{ old('type') == 'buy_x_get_y' ? 'checked' : '' }}>
-                            <div class="border-2 border-gray-300 rounded-lg p-6 peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-300 transition-all">
-                                <div class="flex flex-col items-center text-center">
-                                    <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mb-3">
-                                        <i class="fas fa-gift text-white text-2xl"></i>
+                            <div
+                                class="border border-gray-300 rounded-lg p-4 md:p-5 peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-400 transition-all">
+                                <div class="flex flex-col items-center text-center gap-2">
+                                    <div
+                                        class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-gift text-white text-lg md:text-xl"></i>
                                     </div>
-                                    <h4 class="font-semibold text-gray-900 mb-1">Buy X Get Y</h4>
-                                    <p class="text-xs text-gray-600">Beli sejumlah produk, gratis sejumlah produk</p>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900 text-sm">Buy X Get Y</h4>
+                                        <p class="text-xs text-gray-600 mt-1">
+                                            Beli sejumlah produk, gratis sejumlah produk.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <!-- Form Dinamis Berdasarkan Tipe -->
-                <div id="dynamicFields">
-                    <!-- Percentage/Fixed Fields -->
-                    <div id="percentageFixedFields" class="mb-8" style="display: none;">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-dollar-sign text-red-500 mr-2"></i>
-                            Detail Diskon
-                        </h3>
+                {{-- Form Dinamis Berdasarkan Tipe --}}
+                <div id="dynamicFields" class="space-y-8">
+                    {{-- Percentage/Fixed Fields --}}
+                    <div id="percentageFixedFields" style="display:none;">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-dollar-sign text-red-500"></i>
+                                <span>Detail Diskon</span>
+                            </h3>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="value" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="value" class="block text-sm font-medium text-gray-700 mb-1.5">
                                     <span id="valueLabel">Nilai Diskon</span> <span class="text-red-500">*</span>
                                 </label>
                                 <div class="relative">
-                                    <input type="number" 
-                                           name="value" 
-                                           id="value" 
+                                    <input type="number"
+                                           name="value"
+                                           id="value"
                                            value="{{ old('value') }}"
                                            step="0.01"
                                            min="0"
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('value') border-red-500 @enderror" 
+                                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 @error('value') border-red-500 @enderror"
                                            placeholder="0">
-                                    <span id="valueUnit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"></span>
+                                    <span id="valueUnit"
+                                          class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500"></span>
                                 </div>
                                 @error('value')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label for="max_discount" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="max_discount" class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Maksimal Diskon <span class="text-gray-400">(Opsional)</span>
                                 </label>
                                 <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                                    <input type="number" 
-                                           name="max_discount" 
-                                           id="max_discount" 
+                                    <span
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">Rp</span>
+                                    <input type="number"
+                                           name="max_discount"
+                                           id="max_discount"
                                            value="{{ old('max_discount') }}"
                                            step="1000"
                                            min="0"
-                                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                           class="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400"
                                            placeholder="0">
                                 </div>
-                                <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ada batasan</p>
+                                <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ada batasan.</p>
                             </div>
 
                             <div>
-                                <label for="min_purchase" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="min_purchase" class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Minimal Pembelian
                                 </label>
                                 <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                                    <input type="number" 
-                                           name="min_purchase" 
-                                           id="min_purchase" 
+                                    <span
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">Rp</span>
+                                    <input type="number"
+                                           name="min_purchase"
+                                           id="min_purchase"
                                            value="{{ old('min_purchase', 0) }}"
                                            step="1000"
                                            min="0"
-                                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                           class="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400"
                                            placeholder="0">
                                 </div>
                             </div>
 
                             <div>
-                                <label for="product_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="product_id" class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Produk Spesifik <span class="text-gray-400">(Opsional)</span>
                                 </label>
-                                <select name="product_id" 
-                                        id="product_id" 
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <select name="product_id"
+                                        id="product_id"
+                                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400">
                                     <option value="">Semua Produk</option>
                                     @foreach($products as $product)
-                                    <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
-                                        {{ $product->name }}
-                                    </option>
+                                        <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
+                                            {{ $product->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
 
                             <div>
-                                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Kategori <span class="text-gray-400">(Opsional)</span>
                                 </label>
-                                <select name="category_id" 
-                                        id="category_id" 
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <select name="category_id"
+                                        id="category_id"
+                                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400">
                                     <option value="">Semua Kategori</option>
                                     @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                        {{ $category->name }}
-                                    </option>
+                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Buy X Get Y Fields -->
-                    <div id="buyXGetYFields" class="mb-8" style="display: none;">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-gift text-red-500 mr-2"></i>
-                            Detail Promo
-                        </h3>
+                    {{-- Buy X Get Y Fields --}}
+                    <div id="buyXGetYFields" style="display:none;">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-gift text-red-500"></i>
+                                <span>Detail Promo</span>
+                            </h3>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                                <label for="buy_quantity" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="buy_quantity" class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Beli <span class="text-red-500">*</span>
                                 </label>
-                                <input type="number" 
-                                       name="buy_quantity" 
-                                       id="buy_quantity" 
+                                <input type="number"
+                                       name="buy_quantity"
+                                       id="buy_quantity"
                                        value="{{ old('buy_quantity', 1) }}"
                                        min="1"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('buy_quantity') border-red-500 @enderror" 
+                                       class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 @error('buy_quantity') border-red-500 @enderror"
                                        placeholder="1">
                                 @error('buy_quantity')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label for="get_quantity" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="get_quantity" class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Gratis <span class="text-red-500">*</span>
                                 </label>
-                                <input type="number" 
-                                       name="get_quantity" 
-                                       id="get_quantity" 
+                                <input type="number"
+                                       name="get_quantity"
+                                       id="get_quantity"
                                        value="{{ old('get_quantity', 1) }}"
                                        min="1"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('get_quantity') border-red-500 @enderror" 
+                                       class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 @error('get_quantity') border-red-500 @enderror"
                                        placeholder="1">
                                 @error('get_quantity')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label for="buy_product_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="buy_product_id" class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Produk <span class="text-red-500">*</span>
                                 </label>
-                                <select name="product_id" 
-                                        id="buy_product_id" 
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('product_id') border-red-500 @enderror">
+                                <select name="product_id"
+                                        id="buy_product_id"
+                                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 @error('product_id') border-red-500 @enderror">
                                     <option value="">Pilih Produk</option>
                                     @foreach($products as $product)
-                                    <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
-                                        {{ $product->name }}
-                                    </option>
+                                        <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
+                                            {{ $product->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                                 @error('product_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
 
-                        <!-- Preview Promo -->
+                        {{-- Preview Promo --}}
                         <div class="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                             <p class="text-sm font-medium text-purple-900">
                                 <i class="fas fa-info-circle mr-2"></i>
@@ -313,85 +353,88 @@
                     </div>
                 </div>
 
-                <!-- Periode & Batasan -->
-                <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                        <i class="fas fa-calendar-alt text-red-500 mr-2"></i>
-                        Periode & Batasan
-                    </h3>
+                {{-- Periode & Batasan --}}
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-calendar-alt text-red-500"></i>
+                            <span>Periode & Batasan</span>
+                        </h3>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Tanggal Mulai <span class="text-gray-400">(Opsional)</span>
                             </label>
-                            <input type="datetime-local" 
-                                   name="start_date" 
-                                   id="start_date" 
+                            <input type="datetime-local"
+                                   name="start_date"
+                                   id="start_date"
                                    value="{{ old('start_date') }}"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400">
                         </div>
 
                         <div>
-                            <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Tanggal Berakhir <span class="text-gray-400">(Opsional)</span>
                             </label>
-                            <input type="datetime-local" 
-                                   name="end_date" 
-                                   id="end_date" 
+                            <input type="datetime-local"
+                                   name="end_date"
+                                   id="end_date"
                                    value="{{ old('end_date') }}"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 @error('end_date') border-red-500 @enderror">
+                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 @error('end_date') border-red-500 @enderror">
                             @error('end_date')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label for="usage_limit" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="usage_limit" class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Batas Penggunaan <span class="text-gray-400">(Opsional)</span>
                             </label>
-                            <input type="number" 
-                                   name="usage_limit" 
-                                   id="usage_limit" 
+                            <input type="number"
+                                   name="usage_limit"
+                                   id="usage_limit"
                                    value="{{ old('usage_limit') }}"
                                    min="1"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" 
+                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400"
                                    placeholder="Tidak terbatas">
-                            <p class="mt-1 text-xs text-gray-500">Kosongkan untuk tidak ada batasan</p>
+                            <p class="mt-1 text-xs text-gray-500">Kosongkan untuk tidak ada batasan.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Status Aktif -->
-                <div class="mb-8">
+                {{-- Status Aktif --}}
+                <div>
                     <div class="flex items-center">
-                        <input type="checkbox" 
-                               name="is_active" 
-                               id="is_active" 
+                        <input type="checkbox"
+                               name="is_active"
+                               id="is_active"
                                value="1"
                                {{ old('is_active', true) ? 'checked' : '' }}
-                               class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                               class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
                         <label for="is_active" class="ml-3 text-sm font-medium text-gray-700">
                             Aktifkan diskon sekarang
                         </label>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
-                    <a href="{{ route('discounts.index') }}" 
-                       class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
-                        <i class="fas fa-times mr-2"></i>
-                        Batal
-                    </a>
-                    <button type="submit" 
-                            class="px-6 py-2.5 bg-gradient-to-br from-red-400 to-pink-500 text-white rounded-lg hover:from-red-500 hover:to-pink-600 transition-colors font-semibold shadow-md">
-                        <i class="fas fa-save mr-2"></i>
-                        Simpan Diskon
-                    </button>
+                {{-- Action Buttons - MOBILE FULL WIDTH --}}
+                <div class="pt-5 border-t border-gray-200">
+                    <div class="flex flex-col md:flex-row md:justify-end gap-3">
+                        <a href="{{ route('discounts.index') }}"
+                           class="w-full md:w-auto inline-flex items-center justify-center px-4 md:px-6 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-times mr-2 text-xs"></i>
+                            <span>Batal</span>
+                        </a>
+                        <button type="submit"
+                                class="w-full md:w-auto inline-flex items-center justify-center px-4 md:px-6 py-2.5 bg-red-500 text-sm font-semibold text-white rounded-lg hover:bg-red-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1">
+                            <i class="fas fa-save mr-2 text-xs"></i>
+                            <span>Simpan Diskon</span>
+                        </button>
+                    </div>
                 </div>
             </form>
-        </x-card-container>
-
+        </section>
     </div>
 </main>
 
@@ -448,37 +491,40 @@ document.addEventListener('DOMContentLoaded', function() {
     // Generate code
     generateCodeBtn.addEventListener('click', function() {
         this.disabled = true;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        this.innerHTML = '<i class="fas fa-spinner fa-spin text-xs"></i>';
 
         fetch('{{ route("discounts.generate-code") }}')
             .then(response => response.json())
             .then(data => {
                 codeInput.value = data.code;
                 this.disabled = false;
-                this.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                this.innerHTML = '<i class="fas fa-sync-alt text-xs md:text-sm"></i>';
             })
             .catch(error => {
                 console.error('Error:', error);
                 this.disabled = false;
-                this.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                this.innerHTML = '<i class="fas fa-sync-alt text-xs md:text-sm"></i>';
                 alert('Gagal generate kode');
             });
     });
 
     // Update promo preview
     function updatePromoPreview() {
+        if (!buyQuantityInput || !getQuantityInput || !promoPreview) return;
         const buyQty = buyQuantityInput.value || 1;
         const getQty = getQuantityInput.value || 1;
         promoPreview.textContent = `Beli ${buyQty} Gratis ${getQty}`;
     }
 
-    buyQuantityInput.addEventListener('input', updatePromoPreview);
-    getQuantityInput.addEventListener('input', updatePromoPreview);
+    if (buyQuantityInput && getQuantityInput) {
+        buyQuantityInput.addEventListener('input', updatePromoPreview);
+        getQuantityInput.addEventListener('input', updatePromoPreview);
+    }
 
     // Sync product/category selection
     const productId = document.getElementById('product_id');
     const categoryId = document.getElementById('category_id');
-    
+
     if (productId && categoryId) {
         productId.addEventListener('change', function() {
             if (this.value) {
