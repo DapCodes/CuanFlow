@@ -58,9 +58,11 @@ Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
     Route::get('/sales-analytics', [App\Http\Controllers\ProductHppController::class, 'getSalesAnalytics'])
         ->name('sales-analytics');
 
-    // ✅ rute toggle yang benar (nama & parameter)
     Route::post('/{product}/toggle-status', [App\Http\Controllers\ProductHppController::class, 'toggleStatus'])
         ->name('toggle-status');
+
+    Route::post('/generate-recipe-ai', [App\Http\Controllers\ProductHppController::class, 'generateRecipeAI'])
+        ->name('generate-recipe-ai');
 });
 
 
@@ -174,6 +176,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payment/midtrans/finish', [PaymentController::class, 'midtransFinish'])->name('payment.midtrans.finish');
 
     Route::prefix('discounts')->name('discounts.')->group(function () {
+        Route::get('/generate-code', [App\Http\Controllers\DiscountController::class, 'generateCode'])->name('generate-code');
         Route::get('/', [App\Http\Controllers\DiscountController::class, 'index'])->name('index');
         Route::get('/create', [App\Http\Controllers\DiscountController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\DiscountController::class, 'store'])->name('store');
@@ -182,7 +185,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{discount}', [App\Http\Controllers\DiscountController::class, 'update'])->name('update');
         Route::delete('/{discount}', [App\Http\Controllers\DiscountController::class, 'destroy'])->name('destroy');
         Route::post('/{discount}/toggle-status', [App\Http\Controllers\DiscountController::class, 'toggleStatus'])->name('toggle-status');
-        Route::get('/generate-code', [App\Http\Controllers\DiscountController::class, 'generateCode'])->name('generate-code');
     });
     
     Route::get('/api/sale/{id}', function($id) {

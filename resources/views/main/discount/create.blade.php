@@ -47,7 +47,6 @@
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-info-circle text-red-500"></i>
                             <span>Informasi Dasar</span>
                         </h3>
                     </div>
@@ -99,7 +98,6 @@
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-layer-group text-red-500"></i>
                             <span>Tipe Diskon</span>
                             <span class="text-red-500">*</span>
                         </h3>
@@ -115,10 +113,6 @@
                             <div
                                 class="border border-gray-300 rounded-lg p-4 md:p-5 peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-400 transition-all">
                                 <div class="flex flex-col items-center text-center gap-2">
-                                    <div
-                                        class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-percent text-white text-lg md:text-xl"></i>
-                                    </div>
                                     <div>
                                         <h4 class="font-semibold text-gray-900 text-sm">Persentase</h4>
                                         <p class="text-xs text-gray-600 mt-1">
@@ -139,10 +133,6 @@
                             <div
                                 class="border border-gray-300 rounded-lg p-4 md:p-5 peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-400 transition-all">
                                 <div class="flex flex-col items-center text-center gap-2">
-                                    <div
-                                        class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-money-bill text-white text-lg md:text-xl"></i>
-                                    </div>
                                     <div>
                                         <h4 class="font-semibold text-gray-900 text-sm">Fixed</h4>
                                         <p class="text-xs text-gray-600 mt-1">
@@ -163,10 +153,6 @@
                             <div
                                 class="border border-gray-300 rounded-lg p-4 md:p-5 peer-checked:border-red-500 peer-checked:bg-red-50 hover:border-red-400 transition-all">
                                 <div class="flex flex-col items-center text-center gap-2">
-                                    <div
-                                        class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-gift text-white text-lg md:text-xl"></i>
-                                    </div>
                                     <div>
                                         <h4 class="font-semibold text-gray-900 text-sm">Buy X Get Y</h4>
                                         <p class="text-xs text-gray-600 mt-1">
@@ -185,7 +171,6 @@
                     <div id="percentageFixedFields" style="display:none;">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                                <i class="fas fa-dollar-sign text-red-500"></i>
                                 <span>Detail Diskon</span>
                             </h3>
                         </div>
@@ -286,7 +271,6 @@
                     <div id="buyXGetYFields" style="display:none;">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                                <i class="fas fa-gift text-red-500"></i>
                                 <span>Detail Promo</span>
                             </h3>
                         </div>
@@ -357,7 +341,6 @@
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-calendar-alt text-red-500"></i>
                             <span>Periode & Batasan</span>
                         </h3>
                     </div>

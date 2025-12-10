@@ -110,72 +110,110 @@
 @endpush
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
 
+        {{-- VALIDATION ERROR --}}
         @if($errors->any())
-        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm" role="alert">
+                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
                 <div class="flex-1">
-                    <h3 class="font-semibold text-red-800 mb-2">Terjadi kesalahan!</h3>
-                    <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                    <p class="font-semibold text-red-800 mb-1">Ada data yang belum benar.</p>
+                    <ul class="list-disc list-inside text-red-700 space-y-1">
                         @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                            <li>{{ $error }}</li>
                         @endforeach
                     </ul>
+                    <p class="mt-2 text-xs text-red-600">
+                        Periksa kembali isian yang bertanda <span class="font-semibold">*</span>.
+                    </p>
                 </div>
             </div>
-        </div>
         @endif
 
-        <x-card-container>
-            <!-- Progress Steps -->
-            <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200">
-                <div class="flex justify-between items-center relative">
-                    <!-- Progress Line -->
+        {{-- HEADER HALAMAN (seragam dengan index) --}}
+        <section
+            class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 text-cuan-green border border-green-100">
+                        <i class="fas fa-utensils text-sm"></i>
+                    </span>
+                    <span>Tambah Produk & Resep</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Isi data produk langkah demi langkah. Tenang, semua data masih bisa diubah setelah disimpan.
+                </p>
+            </div>
+            <div class="flex flex-col items-start md:items-end gap-1 text-sm">
+                <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">
+                    <i class="fas fa-list-ol mr-2 text-xs"></i>
+                    Form bertahap: 6 langkah
+                </span>
+                <p class="text-xs text-gray-500">
+                    Form ini otomatis menyimpan <span class="font-semibold">draft</span> supaya data tidak mudah hilang.
+                </p>
+            </div>
+        </section>
+
+        {{-- CARD FORM BERTAHAP --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+
+            {{-- Progress Steps (tetap pakai ID & class lama untuk JS) --}}
+            <div class="bg-gradient-to-r from-green-50 to-blue-50 px-4 md:px-6 py-5 border-b border-gray-200">
+                <div class="flex justify-between items-center relative max-w-3xl mx-auto">
+                    {{-- Garis Progress --}}
                     <div class="absolute top-5 left-0 right-0 h-0.5 bg-gray-200" style="z-index: 0;">
                         <div id="progressLine" class="h-full bg-cuan-green transition-all duration-300" style="width: 0%;"></div>
                     </div>
 
-                    <!-- Step 1 -->
+                    {{-- Langkah 1 --}}
                     <div class="flex-1 text-center step-indicator active relative z-10" data-step="1">
-                        <div class="w-10 h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-2 shadow-md">
-                            <i class="fas fa-info-circle text-white"></i>
+                        <div class="w-10 h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-1 shadow-md">
+                            <i class="fas fa-info-circle text-white text-sm"></i>
                         </div>
-                        {{-- <p class="text-xs font-medium text-gray-900">Info Dasar</p> --}}
+                        <p class="text-[11px] font-medium text-gray-900">Info Produk</p>
                     </div>
 
-                    <!-- Step 2 -->
+                    {{-- Langkah 2 --}}
                     <div class="flex-1 text-center step-indicator relative z-10" data-step="2">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-book-open text-gray-400"></i>
+                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
+                            <i class="fas fa-book-open text-gray-400 text-sm"></i>
                         </div>
-                        {{-- <p class="text-xs font-medium text-gray-500">Info Resep</p> --}}
+                        <p class="text-[11px] font-medium text-gray-600">Resep</p>
                     </div>
 
-                    <!-- Step 3 -->
+                    {{-- Langkah 3 --}}
                     <div class="flex-1 text-center step-indicator relative z-10" data-step="3">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-shopping-basket text-gray-400"></i>
+                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
+                            <i class="fas fa-shopping-basket text-gray-400 text-sm"></i>
                         </div>
-                        {{-- <p class="text-xs font-medium text-gray-500">Bahan Baku</p> --}}
+                        <p class="text-[11px] font-medium text-gray-600">Bahan Baku</p>
                     </div>
 
-                    <!-- Step 4 -->
+                    {{-- Langkah 4 --}}
                     <div class="flex-1 text-center step-indicator relative z-10" data-step="4">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-coins text-gray-400"></i>
+                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
+                            <i class="fas fa-coins text-gray-400 text-sm"></i>
                         </div>
-                        {{-- <p class="text-xs font-medium text-gray-500">Biaya Tambahan</p> --}}
+                        <p class="text-[11px] font-medium text-gray-600">Biaya Lain</p>
                     </div>
 
-                    <!-- Step 5 -->
+                    {{-- Langkah 5 --}}
                     <div class="flex-1 text-center step-indicator relative z-10" data-step="5">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-tags text-gray-400"></i>
+                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
+                            <i class="fas fa-tags text-gray-400 text-sm"></i>
                         </div>
-                        {{-- <p class="text-xs font-medium text-gray-500">Harga & Stok</p> --}}
+                        <p class="text-[11px] font-medium text-gray-600">Harga & Stok</p>
+                    </div>
+
+                    {{-- Langkah 6 --}}
+                    <div class="flex-1 text-center step-indicator relative z-10" data-step="6">
+                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
+                            <i class="fas fa-chart-line text-gray-400 text-sm"></i>
+                        </div>
+                        <p class="text-[11px] font-medium text-gray-600">Target Jual</p>
                     </div>
                 </div>
             </div>
@@ -183,61 +221,73 @@
             <form action="{{ route('products-hpp.store') }}" method="POST" enctype="multipart/form-data" id="productForm">
                 @csrf
 
-                <!-- Step 1: Basic Info -->
-                <div class="step-content p-6" id="step1">
+                {{-- STEP 1: INFO DASAR --}}
+                <div class="step-content px-4 md:px-6 py-6" id="step1">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-info-circle text-cuan-green mr-2"></i>
-                            Informasi Dasar Produk
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-info-circle text-cuan-green"></i>
+                            <span>Info Produk</span>
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">Masukkan informasi dasar tentang produk yang akan dibuat</p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Masukkan nama, kode, dan keterangan singkat produk yang ingin dijual.
+                        </p>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Code -->
+                        {{-- Kode Produk --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-barcode text-gray-400 mr-1"></i>
                                 Kode Produk <span class="text-red-500">*</span>
                             </label>
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" name="code" id="productCode" value="{{ old('code') }}" 
-                                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                    placeholder="Contoh: PRD001" required>
-                                <button type="button" id="generateCode" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap">
+                                <input type="text" name="code" id="productCode" value="{{ old('code') }}"
+                                       class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       placeholder="Contoh: PRD001" required>
+                                <button type="button" id="generateCode"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-semibold">
                                     <i class="fas fa-magic mr-2"></i>
-                                    Buat Kode
+                                    Buat Otomatis
                                 </button>
                             </div>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Kode bebas, yang penting mudah dibaca tim Anda.
+                            </p>
                         </div>
 
+                        {{-- Nama Produk --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-tag text-gray-400 mr-1"></i>
                                 Nama Produk <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="name" value="{{ old('name') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                placeholder="Masukkan nama produk" required>
+                            <input type="text" name="name" value="{{ old('name') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   placeholder="Contoh: Donat Cokelat Isi" required>
                         </div>
 
-                        <!-- Barcode -->
+                        {{-- Barcode --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-qrcode text-gray-400 mr-1"></i>
                                 Barcode
                             </label>
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" name="barcode" id="productBarcode" value="{{ old('barcode') }}" 
-                                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                    placeholder="Opsional">
-                                <button type="button" id="generateBarcode" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap">
+                                <input type="text" name="barcode" id="productBarcode" value="{{ old('barcode') }}"
+                                       class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       placeholder="Opsional">
+                                <button type="button" id="generateBarcode"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-semibold">
                                     <i class="fas fa-magic mr-2"></i>
-                                    Buat Kode
+                                    Buat Otomatis
                                 </button>
                             </div>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Jika belum pakai barcode, bisa dikosongkan dulu.
+                            </p>
                         </div>
 
+                        {{-- Kategori --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-folder text-gray-400 mr-1"></i>
@@ -246,13 +296,17 @@
                             <select name="category_id" class="select2-category w-full">
                                 <option value="">- Pilih Kategori -</option>
                                 @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
+                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
                                 @endforeach
                             </select>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Contoh: Minuman, Snack, Kue, Lauk, dll.
+                            </p>
                         </div>
 
+                        {{-- Satuan --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-ruler text-gray-400 mr-1"></i>
@@ -261,109 +315,152 @@
                             <select name="unit_id" class="select2-unit w-full" required>
                                 <option value="">- Pilih Satuan -</option>
                                 @foreach($units as $unit)
-                                <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
-                                    {{ $unit->name }}
-                                </option>
+                                    <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
+                                        {{ $unit->name }}
+                                    </option>
                                 @endforeach
                             </select>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Contoh: pcs, cup, box, bungkus, dll.
+                            </p>
                         </div>
 
+                        {{-- Foto Produk --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-image text-gray-400 mr-1"></i>
                                 Foto Produk
                             </label>
-                            <input type="file" name="image" id="imageInput" accept="image/*" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                            <p class="text-xs text-gray-500 mt-1">Max 2MB (JPG, JPEG, PNG)</p>
-                            
-                            <!-- Image Preview -->
+                            <input type="file" name="image" id="imageInput" accept="image/*"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <p class="text-xs text-gray-500 mt-1">Maksimal 2MB (JPG, JPEG, PNG). Foto membantu kasir lebih yakin.</p>
+
+                            {{-- Preview Foto --}}
                             <div id="imagePreview" class="mt-3 hidden">
                                 <div class="relative inline-block">
-                                    <img id="previewImg" src="" alt="Preview" class="w-32 h-32 object-cover rounded-lg border-2 border-gray-300 shadow-sm">
-                                    <button type="button" id="removeImage" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
+                                    <img id="previewImg" src="" alt="Preview"
+                                         class="w-32 h-32 object-cover rounded-lg border-2 border-gray-300 shadow-sm">
+                                    <button type="button" id="removeImage"
+                                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors">
                                         <i class="fas fa-times text-xs"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
+                        {{-- Deskripsi --}}
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-align-left text-gray-400 mr-1"></i>
                                 Deskripsi
                             </label>
-                            <textarea name="description" rows="3" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                placeholder="Deskripsi produk (opsional)">{{ old('description') }}</textarea>
+                            <textarea name="description" rows="3"
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                      placeholder="Tuliskan deskripsi singkat produk (rasa, ukuran, keunggulan, dll)">{{ old('description') }}</textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 2: Recipe Info -->
-                <div class="step-content p-6 hidden" id="step2">
+                {{-- STEP 2: RESEP --}}
+                <div class="step-content px-4 md:px-6 py-6 hidden" id="step2">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-book-open text-cuan-green mr-2"></i>
-                            Informasi Resep
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-book-open text-cuan-green"></i>
+                            <span>Resep Produk</span>
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">Tentukan resep untuk produksi produk ini</p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Tuliskan nama resep, hasil produksi, dan cara membuat produk ini.
+                        </p>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-signature text-gray-400 mr-1"></i>
                                 Nama Resep <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="recipe_name" value="{{ old('recipe_name') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                placeholder="Contoh: Resep Kue Original" required>
+                            <input type="text" name="recipe_name" value="{{ old('recipe_name') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   placeholder="Contoh: Resep Donat Original" required>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-layer-group text-gray-400 mr-1"></i>
-                                Jumlah Output <span class="text-red-500">*</span>
+                                Jumlah Jadi <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" step="0.01" name="output_quantity" value="{{ old('output_quantity', 1) }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                placeholder="1" required>
-                            <p class="text-xs text-gray-500 mt-1">Berapa banyak produk yang dihasilkan dari resep ini</p>
+                            <input type="number" step="0.01" name="output_quantity" value="{{ old('output_quantity', 1) }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   placeholder="1" required>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Contoh: 1 resep menghasilkan 20 pcs, isi 20.
+                            </p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-clock text-gray-400 mr-1"></i>
-                                Estimasi Waktu (menit)
+                                Perkiraan Waktu (menit)
                             </label>
-                            <input type="number" name="estimated_time_minutes" value="{{ old('estimated_time_minutes') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                placeholder="30">
+                            <input type="number" name="estimated_time_minutes" value="{{ old('estimated_time_minutes') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   placeholder="Contoh: 30">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Boleh dikosongkan jika belum tahu pastinya.
+                            </p>
                         </div>
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-list-ol text-gray-400 mr-1"></i>
-                                Instruksi Pembuatan
+                                Cara Membuat (Langkah-langkah)
                             </label>
-                            <textarea name="instructions" rows="6" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                placeholder="1. Langkah pertama...&#10;2. Langkah kedua...&#10;3. Dan seterusnya...">{{ old('instructions') }}</textarea>
+                            <textarea name="instructions" rows="6"
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                      placeholder="1. Siapkan bahan...&#10;2. Campur dan aduk...&#10;3. Goreng / panggang...&#10;4. Sajikan...">{{ old('instructions') }}</textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 3: Recipe Items -->
-                <div class="step-content p-6 hidden" id="step3">
+                {{-- STEP 3: BAHAN BAKU --}}
+                <div class="step-content px-4 md:px-6 py-6 hidden" id="step3">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-shopping-basket text-cuan-green mr-2"></i>
-                            Bahan Baku yang Dibutuhkan
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-shopping-basket text-cuan-green"></i>
+                            <span>Bahan Baku</span>
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">Tambahkan bahan baku dan jumlah yang diperlukan untuk resep ini</p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Tambahkan bahan baku yang dipakai untuk sekali resep. Bisa isi manual atau pakai bantuan AI.
+                        </p>
+
+                        {{-- Card AI --}}
+                        <div class="mt-4 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-magic text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900 mb-1">Buat Resep dengan AI</h4>
+                                    <p class="text-sm text-gray-600 mb-3">
+                                        Sistem akan membantu menyusun daftar bahan dan takaran otomatis,
+                                        berdasarkan <span class="font-semibold">nama produk</span> dan
+                                        <span class="font-semibold">bahan yang sudah terdaftar</span> di outlet Anda.
+                                    </p>
+                                    <button type="button" id="generateRecipeAI"
+                                            class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm">
+                                        <i class="fas fa-sparkles mr-2"></i>
+                                        Buat Resep Otomatis
+                                    </button>
+                                    <p class="mt-2 text-xs text-gray-500">
+                                        Hasil AI tetap bisa Anda ubah lagi sesuai bahan di dapur.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
+
                     <div id="recipeItemsContainer" class="space-y-4">
                         <div class="recipe-item border border-gray-200 rounded-lg p-5 bg-gray-50">
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -374,9 +471,9 @@
                                     <select name="recipe_items[0][raw_material_id]" class="raw-material-select w-full" required>
                                         <option value="">- Pilih Bahan -</option>
                                         @foreach($rawMaterials as $rm)
-                                        <option value="{{ $rm->id }}" data-price="{{ $rm->purchase_price }}" data-unit="{{ $rm->unit->name ?? '' }}">
-                                            {{ $rm->name }} ({{ $rm->unit->name ?? '' }}) - Rp {{ number_format($rm->purchase_price, 0, ',', '.') }}
-                                        </option>
+                                            <option value="{{ $rm->id }}" data-price="{{ $rm->purchase_price }}" data-unit="{{ $rm->unit->name ?? '' }}">
+                                                {{ $rm->name }} ({{ $rm->unit->name ?? '' }}) - Rp {{ number_format($rm->purchase_price, 0, ',', '.') }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -384,20 +481,26 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         Jumlah <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="number" step="0.01" name="recipe_items[0][quantity]" 
-                                        class="quantity-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                        placeholder="0" required>
+                                    <input type="number" step="0.01" name="recipe_items[0][quantity]"
+                                           class="quantity-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                           placeholder="0" required>
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Satuan</label>
-                                    <input type="text" class="unit-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" readonly placeholder="-">
+                                    <input type="text"
+                                           class="unit-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+                                           readonly placeholder="-">
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Biaya</label>
-                                    <input type="text" class="cost-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-blue-50 font-semibold text-blue-700" readonly value="Rp 0">
+                                    <input type="text"
+                                           class="cost-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-blue-50 font-semibold text-blue-700"
+                                           readonly value="Rp 0">
                                 </div>
                                 <div class="md:col-span-1 flex items-end">
-                                    <button type="button" class="remove-item w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors" style="display: none;">
+                                    <button type="button"
+                                            class="remove-item w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                            style="display: none;">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -407,44 +510,48 @@
                                     <i class="fas fa-sticky-note text-gray-400 mr-1"></i>
                                     Catatan
                                 </label>
-                                <input type="text" name="recipe_items[0][notes]" 
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                    placeholder="Catatan tambahan (opsional)">
+                                <input type="text" name="recipe_items[0][notes]"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       placeholder="Catatan tambahan (opsional), misalnya merk tertentu, kualitas, dll">
                             </div>
                         </div>
                     </div>
 
-                    <button type="button" id="addRecipeItem" class="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-colors text-sm font-medium">
+                    <button type="button" id="addRecipeItem"
+                            class="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-colors text-sm font-medium">
                         <i class="fas fa-plus mr-2"></i>
                         Tambah Bahan
                     </button>
 
                     <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-5">
-                        <div class="flex justify-between items-center">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <span class="text-sm font-semibold text-gray-700 flex items-center">
                                 <i class="fas fa-calculator text-cuan-green mr-2"></i>
-                                Total Biaya Bahan Baku:
+                                Total biaya bahan baku untuk 1 resep:
                             </span>
                             <span id="totalMaterialCost" class="text-xl font-bold text-cuan-green">Rp 0</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 4: Additional Costs -->
-                <div class="step-content p-6 hidden" id="step4">
+                {{-- STEP 4: BIAYA TAMBAHAN --}}
+                <div class="step-content px-4 md:px-6 py-6 hidden" id="step4">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-coins text-cuan-green mr-2"></i>
-                            Biaya Tambahan
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-coins text-cuan-green"></i>
+                            <span>Biaya Lain-lain</span>
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">Tambahkan biaya overhead seperti listrik, gas, packaging, dll</p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Masukkan biaya di luar bahan baku, misalnya listrik, gas, kemasan, dan tenaga kerja.
+                        </p>
                     </div>
-                    
+
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                        <div class="flex items-start">
-                            <i class="fas fa-info-circle text-cuan-green mt-0.5 mr-3"></i>
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-info-circle text-cuan-green mt-0.5"></i>
                             <p class="text-sm text-blue-800">
-                                Biaya tambahan mencakup semua pengeluaran diluar bahan baku yang diperlukan dalam proses produksi seperti listrik, gas, packaging, tenaga kerja, dan lain-lain.
+                                Biaya tambahan ini membantu HPP lebih realistis. Kalau bingung, bisa isi perkiraan
+                                per resep atau isi 0 dulu, nanti bisa disesuaikan lagi.
                             </p>
                         </div>
                     </div>
@@ -452,59 +559,64 @@
                     <div class="max-w-md">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             <i class="fas fa-money-bill-wave text-gray-400 mr-1"></i>
-                            Biaya Tambahan (Rp)
+                            Total Biaya Lain per Resep (Rp)
                         </label>
-                        <input type="number" step="0.01" name="additional_cost" id="additionalCostInput" value="{{ old('additional_cost', 0) }}" 
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                            placeholder="0">
-                        <p class="text-xs text-gray-500 mt-1">Masukkan 0 jika tidak ada biaya tambahan</p>
+                        <input type="number" step="0.01" name="additional_cost" id="additionalCostInput"
+                               value="{{ old('additional_cost', 0) }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               placeholder="0">
+                        <p class="text-xs text-gray-500 mt-1">
+                            Contoh: listrik, gas, kemasan, sewa dapur, dan lain-lain. Isi 0 jika belum mau dihitung.
+                        </p>
                     </div>
 
                     <div class="mt-8 bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
-                        <h4 class="text-base font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-chart-line text-green-600 mr-2"></i>
-                            Ringkasan Perhitungan HPP
+                        <h4 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fas fa-chart-line text-green-600"></i>
+                            <span>Ringkasan HPP (Harga Pokok Produksi)</span>
                         </h4>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center py-2">
-                                <span class="text-sm text-gray-700">Biaya Bahan Baku:</span>
+                                <span class="text-sm text-gray-700">Total biaya bahan baku:</span>
                                 <span id="summaryMaterialCost" class="font-semibold text-gray-900">Rp 0</span>
                             </div>
                             <div class="flex justify-between items-center py-2">
-                                <span class="text-sm text-gray-700">Biaya Tambahan:</span>
+                                <span class="text-sm text-gray-700">Biaya lain-lain:</span>
                                 <span id="summaryAdditionalCost" class="font-semibold text-gray-900">Rp 0</span>
                             </div>
                             <div class="border-t border-gray-300 pt-3 flex justify-between items-center">
-                                <span class="font-bold text-gray-900">Total HPP:</span>
+                                <span class="font-bold text-gray-900">Total HPP per resep:</span>
                                 <span id="summaryTotalHpp" class="text-xl font-bold text-green-600">Rp 0</span>
                             </div>
                             <div class="flex justify-between items-center py-2">
-                                <span class="text-sm text-gray-700">Output Quantity:</span>
+                                <span class="text-sm text-gray-700">Hasil resep (jumlah jadi):</span>
                                 <span id="summaryOutputQty" class="font-semibold text-gray-900">1</span>
                             </div>
                             <div class="bg-white rounded-lg p-4 flex justify-between items-center shadow-sm">
-                                <span class="font-bold text-gray-900">HPP Per Unit:</span>
+                                <span class="font-bold text-gray-900">HPP per 1 {{ $units->first()->name ?? 'unit' }}:</span>
                                 <span id="summaryHppPerUnit" class="text-2xl font-bold text-cuan-green">Rp 0</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 5: Pricing & Stock -->
-                <div class="step-content p-6 hidden" id="step5">
+                {{-- STEP 5: HARGA & STOK --}}
+                <div class="step-content px-4 md:px-6 py-6 hidden" id="step5">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-tags text-cuan-green mr-2"></i>
-                            Harga Jual & Stok
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-tags text-cuan-green"></i>
+                            <span>Harga Jual & Stok</span>
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">Tentukan harga jual dan pengaturan stok produk</p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Atur harga jual, harga reseller (jika ada), dan batas stok minimum.
+                        </p>
                     </div>
-                    
+
                     <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                        <div class="flex justify-between items-center">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <span class="text-sm font-semibold text-gray-700 flex items-center">
                                 <i class="fas fa-dollar-sign text-green-600 mr-2"></i>
-                                HPP Per Unit:
+                                HPP per unit (perkiraan modal per pcs):
                             </span>
                             <span id="finalHppPerUnit" class="text-xl font-bold text-green-600">Rp 0</span>
                         </div>
@@ -516,8 +628,13 @@
                                 <i class="fas fa-hand-holding-usd text-gray-400 mr-1"></i>
                                 Harga Jual <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" step="0.01" name="selling_price" id="sellingPriceInput" value="{{ old('selling_price') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                            <input type="number" step="0.01" name="selling_price" id="sellingPriceInput"
+                                   value="{{ old('selling_price') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Contoh: 10000" required>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Sesuaikan dengan pasar dan margin yang diinginkan.
+                            </p>
                         </div>
 
                         <div>
@@ -525,9 +642,11 @@
                                 <i class="fas fa-tag text-gray-400 mr-1"></i>
                                 Harga Reseller
                             </label>
-                            <input type="number" step="0.01" name="reseller_price" value="{{ old('reseller_price') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <p class="text-xs text-gray-500 mt-1">Harga untuk reseller (opsional)</p>
+                            <input type="number" step="0.01" name="reseller_price"
+                                   value="{{ old('reseller_price') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Opsional, contoh: 9000">
+                            <p class="text-xs text-gray-500 mt-1">Harga khusus untuk agen/reseller (boleh kosong).</p>
                         </div>
 
                         <div>
@@ -535,9 +654,11 @@
                                 <i class="fas fa-percent text-gray-400 mr-1"></i>
                                 Harga Promo
                             </label>
-                            <input type="number" step="0.01" name="promo_price" value="{{ old('promo_price') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <p class="text-xs text-gray-500 mt-1">Harga saat promo (opsional)</p>
+                            <input type="number" step="0.01" name="promo_price"
+                                   value="{{ old('promo_price') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Opsional, contoh: 8000">
+                            <p class="text-xs text-gray-500 mt-1">Harga khusus saat promo (boleh kosong).</p>
                         </div>
 
                         <div>
@@ -545,9 +666,13 @@
                                 <i class="fas fa-boxes text-gray-400 mr-1"></i>
                                 Minimum Stok
                             </label>
-                            <input type="number" step="0.01" name="min_stock" value="{{ old('min_stock', 0) }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <p class="text-xs text-gray-500 mt-1">Alert jika stok di bawah angka ini</p>
+                            <input type="number" step="0.01" name="min_stock"
+                                   value="{{ old('min_stock', 0) }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Contoh: 10">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Sistem akan memberi tanda jika stok turun di bawah angka ini.
+                            </p>
                         </div>
 
                         <div>
@@ -555,34 +680,38 @@
                                 <i class="fas fa-calendar-day text-gray-400 mr-1"></i>
                                 Masa Simpan (hari)
                             </label>
-                            <input type="number" name="shelf_life_days" value="{{ old('shelf_life_days') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <p class="text-xs text-gray-500 mt-1">Berapa hari produk bisa disimpan</p>
+                            <input type="number" name="shelf_life_days"
+                                   value="{{ old('shelf_life_days') }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Contoh: 3">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Berapa lama produk aman dijual. Cocok untuk makanan/minuman segar.
+                            </p>
                         </div>
                     </div>
 
                     <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                            <i class="fas fa-chart-line text-cuan-green mr-2"></i>
-                            Analisis Margin
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-chart-line text-cuan-green"></i>
+                            <span>Perkiraan Laba per Unit</span>
                         </h4>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-700">HPP Per Unit:</span>
+                                <span class="text-gray-700">HPP per unit (modal):</span>
                                 <span id="marginHpp" class="font-semibold text-gray-900">Rp 0</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-700">Harga Jual:</span>
+                                <span class="text-gray-700">Harga jual:</span>
                                 <span id="marginSellingPrice" class="font-semibold text-gray-900">Rp 0</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-700">Keuntungan:</span>
+                                <span class="text-gray-700">Laba per unit:</span>
                                 <span id="marginProfit" class="font-semibold text-gray-900">Rp 0</span>
                             </div>
                             <div class="bg-white rounded-lg p-4 flex justify-between items-center border-2 border-blue-200">
                                 <span class="text-lg font-bold text-gray-800">
                                     <i class="fas fa-percentage text-cuan-green mr-2"></i>
-                                    Margin:
+                                    Margin (persentase laba):
                                 </span>
                                 <span id="marginPercent" class="text-2xl font-bold text-green-600">0%</span>
                             </div>
@@ -590,73 +719,75 @@
                     </div>
                 </div>
 
-                <!-- Step 6: Sales Target & Analysis -->
-                <div class="step-content p-6 hidden" id="step6">
+                {{-- STEP 6: TARGET PENJUALAN --}}
+                <div class="step-content px-4 md:px-6 py-6 hidden" id="step6">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-chart-line text-cuan-green mr-2"></i>
-                            Analisis Target Penjualan
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-chart-line text-cuan-green"></i>
+                            <span>Target Penjualan</span>
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">Tentukan target omzet dan lihat proyeksi penjualan berdasarkan data historis</p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Atur target omzet per bulan dan lihat kira-kira harus jual berapa pcs per hari.
+                        </p>
                     </div>
 
-                    <!-- Toggle Enable Target -->
+                    {{-- Toggle --}}
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-6">
                         <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" name="enable_sales_target" value="1" id="enableSalesTarget" class="w-5 h-5 text-cuan-green rounded focus:ring-2 focus:ring-green-500">
+                            <input type="checkbox" name="enable_sales_target" value="1" id="enableSalesTarget"
+                                   class="w-5 h-5 text-cuan-green rounded focus:ring-2 focus:ring-green-500">
                             <span class="ml-3 text-sm font-semibold text-gray-800">
                                 <i class="fas fa-bullseye mr-2 text-cuan-green"></i>
-                                Aktifkan Target Penjualan untuk Produk Ini
+                                Aktifkan target penjualan untuk produk ini
                             </span>
                         </label>
-                        <p class="text-xs text-gray-600 ml-8 mt-1">Pantau pencapaian penjualan dan dapatkan insights bisnis yang lebih baik</p>
+                        <p class="text-xs text-gray-600 ml-8 mt-1">
+                            Fitur ini membantu melihat apakah penjualan sudah sejalan dengan target omset.
+                        </p>
                     </div>
 
                     <div id="salesTargetContent" class="hidden">
-                        <!-- Historical Sales Analysis -->
+                        {{-- Analisis historis --}}
                         <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 mb-6 border border-purple-200">
-                            <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                                <i class="fas fa-history text-purple-600 mr-2"></i>
-                                Analisis Penjualan Historis (30 Hari Terakhir)
+                            <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-history text-purple-600"></i>
+                                <span>Ringkasan Penjualan 30 Hari Terakhir</span>
                             </h4>
-                            
+
                             <div id="historicalDataLoading" class="text-center py-8">
                                 <i class="fas fa-spinner fa-spin text-3xl text-gray-400 mb-2"></i>
-                                <p class="text-gray-600">Memuat data penjualan...</p>
+                                <p class="text-gray-600 text-sm">Sedang mengambil data penjualan...</p>
                             </div>
 
                             <div id="historicalDataContent" class="hidden">
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                                        <p class="text-xs text-gray-500 mb-1">Total Terjual</p>
+                                        <p class="text-xs text-gray-500 mb-1">Total terjual (30 hari)</p>
                                         <p class="text-2xl font-bold text-purple-600" id="totalSold30Days">0 pcs</p>
                                     </div>
                                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                                        <p class="text-xs text-gray-500 mb-1">Rata-rata/Hari</p>
+                                        <p class="text-xs text-gray-500 mb-1">Rata-rata per hari</p>
                                         <p class="text-2xl font-bold text-blue-600" id="avgDailySales">0 pcs</p>
                                     </div>
                                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                                        <p class="text-xs text-gray-500 mb-1">Hari Terbaik</p>
+                                        <p class="text-xs text-gray-500 mb-1">Hari penjualan terbaik</p>
                                         <p class="text-2xl font-bold text-green-600" id="bestSalesDay">-</p>
                                     </div>
                                 </div>
 
-                                <!-- Charts Container -->
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <!-- Weekly Trend Chart -->
                                     <div class="bg-white rounded-lg p-5 shadow-sm">
-                                        <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
-                                            <i class="fas fa-chart-bar text-blue-500 mr-2"></i>
-                                            Tren Penjualan Mingguan
+                                        <h5 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                            <i class="fas fa-chart-bar text-blue-500"></i>
+                                            <span>Tren penjualan per minggu</span>
                                         </h5>
                                         <canvas id="weeklyTrendChart" height="250"></canvas>
                                     </div>
 
-                                    <!-- Daily Pattern Chart -->
                                     <div class="bg-white rounded-lg p-5 shadow-sm">
-                                        <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
-                                            <i class="fas fa-calendar-week text-purple-500 mr-2"></i>
-                                            Pola Penjualan Harian
+                                        <h5 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                            <i class="fas fa-calendar-week text-purple-500"></i>
+                                            <span>Pola penjualan per hari</span>
                                         </h5>
                                         <canvas id="dailyPatternChart" height="250"></canvas>
                                     </div>
@@ -665,104 +796,116 @@
 
                             <div id="noHistoricalData" class="hidden text-center py-8">
                                 <i class="fas fa-inbox text-5xl text-gray-300 mb-3"></i>
-                                <p class="text-gray-600 font-medium">Belum ada data penjualan historis</p>
-                                <p class="text-sm text-gray-500 mt-1">Data akan tersedia setelah produk terjual</p>
+                                <p class="text-gray-600 font-medium">Belum ada data penjualan untuk produk ini.</p>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    Data akan muncul setelah produk ini mulai terjual di sistem.
+                                </p>
                             </div>
                         </div>
 
-                        <!-- Target Revenue Input -->
+                        {{-- Input target --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     <i class="fas fa-money-bill-wave text-gray-400 mr-1"></i>
-                                    Target Omzet Per Bulan (Rp) <span class="text-red-500">*</span>
+                                    Target omzet per bulan (Rp) <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" step="0.01" name="monthly_target_revenue" id="monthlyTargetRevenue"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    placeholder="100000000">
-                                <p class="text-xs text-gray-500 mt-1">Berapa target pendapatan per bulan dari produk ini?</p>
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Contoh: 5000000">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Contoh: ingin omzet Rp 5.000.000/bulan dari produk ini.
+                                </p>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     <i class="fas fa-calendar-alt text-gray-400 mr-1"></i>
-                                    Tanggal Mulai Target
+                                    Tanggal mulai hitung target
                                 </label>
                                 <input type="date" name="target_start_date" id="targetStartDate" value="{{ date('Y-m-d') }}"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Biasanya diisi awal bulan berjalan.
+                                </p>
                             </div>
                         </div>
 
-                        <!-- Sales Target Calculation Result -->
+                        {{-- Hasil perhitungan --}}
                         <div id="targetCalculationResult" class="hidden">
                             <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-300 mb-6">
-                                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                                    <i class="fas fa-calculator text-green-600 mr-2"></i>
-                                    Perhitungan Target Penjualan
+                                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <i class="fas fa-calculator text-green-600"></i>
+                                    <span>Perhitungan Target Penjualan</span>
                                 </h4>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                                        <p class="text-xs text-gray-600 mb-1">Target Penjualan/Bulan</p>
+                                        <p class="text-xs text-gray-600 mb-1">Target jual per bulan</p>
                                         <p class="text-2xl font-bold text-green-600" id="monthlySalesTarget">0 pcs</p>
                                     </div>
                                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                                        <p class="text-xs text-gray-600 mb-1">Target Penjualan/Hari</p>
+                                        <p class="text-xs text-gray-600 mb-1">Target jual per hari</p>
                                         <p class="text-2xl font-bold text-blue-600" id="dailySalesTarget">0 pcs</p>
                                     </div>
                                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                                        <p class="text-xs text-gray-600 mb-1">Revenue Harian Target</p>
+                                        <p class="text-xs text-gray-600 mb-1">Target omzet harian</p>
                                         <p class="text-xl font-bold text-purple-600" id="dailyRevenueTarget">Rp 0</p>
                                     </div>
                                     <div class="bg-white rounded-lg p-4 shadow-sm">
-                                        <p class="text-xs text-gray-600 mb-1">Profit Bulanan Target</p>
+                                        <p class="text-xs text-gray-600 mb-1">Target laba per bulan</p>
                                         <p class="text-xl font-bold text-emerald-600" id="monthlyProfitTarget">Rp 0</p>
                                     </div>
                                 </div>
 
-                                <!-- Achievement Indicator -->
                                 <div class="bg-white rounded-lg p-5 shadow-sm">
                                     <div class="flex justify-between items-center mb-2">
-                                        <span class="text-sm font-semibold text-gray-700">Perbandingan dengan Performa Saat Ini</span>
+                                        <span class="text-sm font-semibold text-gray-700">
+                                            Perbandingan dengan penjualan saat ini
+                                        </span>
                                         <span id="achievementPercent" class="text-lg font-bold text-gray-800">0%</span>
                                     </div>
                                     <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                                        <div id="achievementBar" class="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500" style="width: 0%"></div>
+                                        <div id="achievementBar"
+                                             class="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500"
+                                             style="width: 0%"></div>
                                     </div>
-                                    <p class="text-xs text-gray-600 mt-2" id="achievementNote">Berdasarkan rata-rata penjualan 30 hari terakhir</p>
+                                    <p class="text-xs text-gray-600 mt-2" id="achievementNote">
+                                        Berdasarkan rata-rata penjualan 30 hari terakhir.
+                                    </p>
                                 </div>
                             </div>
 
-                            <!-- Projection Chart -->
+                            {{-- Grafik proyeksi --}}
                             <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-                                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                                    <i class="fas fa-chart-area text-indigo-600 mr-2"></i>
-                                    Proyeksi Pencapaian Target
+                                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <i class="fas fa-chart-area text-indigo-600"></i>
+                                    <span>Proyeksi Pencapaian Target</span>
                                 </h4>
                                 <div style="position: relative; height: 250px; width: 100%;">
                                     <canvas id="projectionChart"></canvas>
                                 </div>
-                                
+
                                 <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div class="bg-blue-50 rounded-lg p-4 text-center">
-                                        <p class="text-xs text-gray-600 mb-1">Scenario Optimis</p>
+                                        <p class="text-xs text-gray-600 mb-1">Skenario optimis</p>
                                         <p class="text-xl font-bold text-blue-600" id="optimisticScenario">0 hari</p>
-                                        <p class="text-xs text-gray-500">+20% dari rata-rata</p>
+                                        <p class="text-xs text-gray-500">Penjualan naik ±20%</p>
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4 text-center">
-                                        <p class="text-xs text-gray-600 mb-1">Scenario Realistis</p>
+                                        <p class="text-xs text-gray-600 mb-1">Skenario realistis</p>
                                         <p class="text-xl font-bold text-gray-600" id="realisticScenario">0 hari</p>
-                                        <p class="text-xs text-gray-500">Sesuai rata-rata</p>
+                                        <p class="text-xs text-gray-500">Sesuai penjualan sekarang</p>
                                     </div>
                                     <div class="bg-red-50 rounded-lg p-4 text-center">
-                                        <p class="text-xs text-gray-600 mb-1">Scenario Pesimis</p>
+                                        <p class="text-xs text-gray-600 mb-1">Skenario pesimis</p>
                                         <p class="text-xl font-bold text-red-600" id="pessimisticScenario">0 hari</p>
-                                        <p class="text-xs text-gray-500">-20% dari rata-rata</p>
+                                        <p class="text-xs text-gray-500">Penjualan turun ±20%</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Hidden inputs for form submission -->
+                            {{-- Hidden inputs --}}
                             <input type="hidden" name="daily_sales_target" id="hiddenDailySalesTarget">
                             <input type="hidden" name="monthly_sales_target" id="hiddenMonthlySalesTarget">
                             <input type="hidden" name="daily_revenue_target" id="hiddenDailyRevenueTarget">
@@ -771,20 +914,27 @@
                     </div>
                 </div>
 
-                <!-- Navigation Buttons -->
-                <div class="px-6 py-6 bg-gray-50 border-t border-gray-200">
+                {{-- NAV BUTTONS --}}
+                <div class="px-4 md:px-6 py-5 bg-gray-50 border-t border-gray-200">
                     <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-                        <button type="button" id="prevBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold" style="display: none;">
+                        <button type="button" id="prevBtn"
+                                class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                                style="display: none;">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Sebelumnya
                         </button>
+
                         <div class="hidden sm:block"></div>
+
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <button type="button" id="nextBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-all font-semibold shadow-md hover:shadow-lg order-2 sm:order-1">
-                                Selanjutnya
+                            <button type="button" id="nextBtn"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-all font-semibold shadow-md hover:shadow-lg order-2 sm:order-1">
+                                Lanjut
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </button>
-                            <button type="submit" id="submitBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-green-700 transition-all font-semibold shadow-md hover:shadow-lg order-1 sm:order-2" style="display: none;">
+                            <button type="submit" id="submitBtn"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-green-700 transition-all font-semibold shadow-md hover:shadow-lg order-1 sm:order-2"
+                                    style="display: none;">
                                 <i class="fas fa-save mr-2"></i>
                                 Simpan Produk
                             </button>
@@ -793,9 +943,7 @@
                 </div>
 
             </form>
-
-        </x-card-container>
-
+        </section>
     </div>
 </main>
 
@@ -1248,6 +1396,248 @@ function updateAvailableRawMaterials() {
     });
 }
 
+document.getElementById('generateRecipeAI').addEventListener('click', async function() {
+    const btn = this;
+    
+    const productNameInput = document.querySelector('input[name="name"]');
+    const outputQtyInput = document.querySelector('input[name="output_quantity"]');
+    
+    if (!productNameInput || !outputQtyInput) {
+        alert('ERROR: Input tidak ditemukan');
+        return;
+    }
+    
+    const productName = productNameInput.value;
+    const outputQty = outputQtyInput.value;
+
+    if (!productName || !outputQty) {
+        alert('Mohon isi Nama Produk (Step 1) dan Jumlah Output (Step 2) terlebih dahulu');
+        return;
+    }
+
+    // Konfirmasi jika sudah ada recipe items
+    const existingItems = document.querySelectorAll('.recipe-item').length;
+    if (existingItems > 0) {
+        const confirm = window.confirm(
+            'Anda sudah memiliki ' + existingItems + ' bahan baku. ' +
+            'Generate AI akan mengganti semua bahan yang ada. Lanjutkan?'
+        );
+        if (!confirm) return;
+    }
+
+    // Loading state
+    btn.disabled = true;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+
+    try {
+        const response = await fetch('{{ route("products-hpp.generate-recipe-ai") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: JSON.stringify({
+                product_name: productName,
+                output_quantity: parseFloat(outputQty),
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || 'Unknown error');
+        }
+
+        const recipe = data.recipe;
+        
+        if (!recipe.ingredients || !Array.isArray(recipe.ingredients)) {
+            throw new Error('Invalid recipe structure - missing ingredients array');
+        }
+
+        // ✅ FIX: Clear ALL existing items first
+        const container = document.getElementById('recipeItemsContainer');
+        if (!container) {
+            throw new Error('Recipe items container not found');
+        }
+        
+        container.innerHTML = ''; // Clear semua
+        recipeItemIndex = 0; // Reset index
+
+        // Show assumptions first
+        if (recipe.assumptions) {
+            showAIAssumptions(recipe.assumptions, recipe.missing_ingredients || []);
+        }
+
+        // ✅ FIX: Add ALL ingredients dengan loop
+        recipe.ingredients.forEach((ingredient, index) => {
+            console.log(`Processing ingredient ${index}:`, ingredient);
+            
+            // Buat item baru untuk SETIAP ingredient
+            const newItem = document.createElement('div');
+            newItem.className = 'recipe-item border border-gray-200 rounded-lg p-5 bg-gray-50';
+            newItem.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div class="md:col-span-5">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Bahan Baku <span class="text-red-500">*</span>
+                        </label>
+                        <select name="recipe_items[${recipeItemIndex}][raw_material_id]" class="raw-material-select w-full" required>
+                            <option value="">- Pilih Bahan -</option>
+                            @foreach($rawMaterials as $rm)
+                            <option value="{{ $rm->id }}" data-price="{{ $rm->purchase_price }}" data-unit="{{ $rm->unit->name ?? '' }}">
+                                {{ $rm->name }} ({{ $rm->unit->name ?? '' }}) - Rp {{ number_format($rm->purchase_price, 0, ',', '.') }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Jumlah <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" step="0.01" name="recipe_items[${recipeItemIndex}][quantity]" 
+                            class="quantity-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                            placeholder="0" required>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Satuan</label>
+                        <input type="text" class="unit-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" readonly placeholder="-">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Biaya</label>
+                        <input type="text" class="cost-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-blue-50 font-semibold text-blue-700" readonly value="Rp 0">
+                    </div>
+                    <div class="md:col-span-1 flex items-end">
+                        <button type="button" class="remove-item w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-sticky-note text-gray-400 mr-1"></i>
+                        Catatan
+                    </label>
+                    <input type="text" name="recipe_items[${recipeItemIndex}][notes]" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                        placeholder="Catatan tambahan (opsional)">
+                </div>
+            `;
+            
+            container.appendChild(newItem);
+            
+            // Initialize Select2
+            const select = $(newItem).find('.raw-material-select');
+            select.select2({
+                theme: 'default',
+                width: '100%',
+                placeholder: '- Pilih Bahan -'
+            });
+            
+            // Set values
+            select.val(ingredient.raw_material_id).trigger('change');
+            
+            const qtyInput = newItem.querySelector('.quantity-input');
+            if (qtyInput) {
+                qtyInput.value = ingredient.quantity;
+            }
+            
+            const noteInput = newItem.querySelector('input[name*="[notes]"]');
+            if (noteInput && ingredient.notes) {
+                noteInput.value = ingredient.notes;
+            }
+            
+            // Trigger calculation
+            calculateItemCost(newItem);
+            
+            recipeItemIndex++;
+        });
+
+        // Update UI states
+        updateRemoveButtons();
+        updateAvailableRawMaterials();
+        calculateTotalMaterialCost();
+        saveFormData();
+
+        // Success message
+        showSuccessMessage(
+            'Resep berhasil di-generate! ' +
+            'Total ' + recipe.ingredients.length + ' bahan baku ditambahkan.'
+        );
+
+    } catch (error) {
+        console.error('Error details:', error);
+        alert('Gagal generate resep: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+});
+
+function showAIAssumptions(assumptions, missingIngredients) {
+    let html = `
+        <div class="fixed inset-0 z-50 overflow-y-auto" style="background: rgba(0,0,0,0.5);">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                        Informasi Generate Resep
+                    </h3>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2">Asumsi AI:</h4>
+                        <p class="text-sm text-gray-700 bg-blue-50 p-3 rounded">${assumptions}</p>
+                    </div>
+    `;
+
+    if (missingIngredients && missingIngredients.length > 0) {
+        html += `
+            <div class="mb-4">
+                <h4 class="font-semibold mb-2 text-orange-600">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    Bahan yang Tidak Ditemukan:
+                </h4>
+                <ul class="text-sm space-y-2">
+        `;
+        missingIngredients.forEach(item => {
+            html += `
+                <li class="bg-orange-50 p-2 rounded">
+                    <strong>${item.name}</strong>: ${item.reason}
+                </li>
+            `;
+        });
+        html += `</ul></div>`;
+    }
+
+    html += `
+                    <button onclick="this.closest('.fixed').remove()" 
+                            class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Mengerti
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function showSuccessMessage(message) {
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+    toast.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 // ============================================
 // EVENT LISTENERS FOR DRAFT
 // ============================================
@@ -1553,17 +1943,22 @@ function validateStep(step) {
 
 function addRecipeItem() {
     const container = document.getElementById('recipeItemsContainer');
+    
+    if (!container) {
+        console.error('Recipe items container not found!');
+        return;
+    }
+    
     const newItem = document.createElement('div');
-    newItem.className = 'recipe-item bg-gray-50 p-5 rounded-lg mb-4 border border-gray-200';
+    newItem.className = 'recipe-item border border-gray-200 rounded-lg p-5 bg-gray-50';
     newItem.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
             <div class="md:col-span-5">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-box text-gray-400 mr-1"></i>
                     Bahan Baku <span class="text-red-500">*</span>
                 </label>
-                <select name="recipe_items[${recipeItemIndex}][raw_material_id]" class="raw-material-select select2 w-full" required data-placeholder="Pilih Bahan Baku">
-                    <option value=""></option>
+                <select name="recipe_items[${recipeItemIndex}][raw_material_id]" class="raw-material-select w-full" required>
+                    <option value="">- Pilih Bahan -</option>
                     @foreach($rawMaterials as $rm)
                     <option value="{{ $rm->id }}" data-price="{{ $rm->purchase_price }}" data-unit="{{ $rm->unit->name ?? '' }}">
                         {{ $rm->name }} ({{ $rm->unit->name ?? '' }}) - Rp {{ number_format($rm->purchase_price, 0, ',', '.') }}
@@ -1573,24 +1968,19 @@ function addRecipeItem() {
             </div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-calculator text-gray-400 mr-1"></i>
                     Jumlah <span class="text-red-500">*</span>
                 </label>
-                <input type="number" step="0.01" name="recipe_items[${recipeItemIndex}][quantity]" class="quantity-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                <input type="number" step="0.01" name="recipe_items[${recipeItemIndex}][quantity]" 
+                    class="quantity-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                    placeholder="0" required>
             </div>
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-balance-scale text-gray-400 mr-1"></i>
-                    Satuan
-                </label>
-                <input type="text" class="unit-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Satuan</label>
+                <input type="text" class="unit-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" readonly placeholder="-">
             </div>
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-money-bill-wave text-gray-400 mr-1"></i>
-                    Biaya
-                </label>
-                <input type="text" class="cost-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-blue-50 font-semibold text-cuan-green" readonly value="Rp 0">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Biaya</label>
+                <input type="text" class="cost-display w-full px-4 py-3 border border-gray-300 rounded-lg bg-blue-50 font-semibold text-blue-700" readonly value="Rp 0">
             </div>
             <div class="md:col-span-1 flex items-end">
                 <button type="button" class="remove-item w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
@@ -1603,21 +1993,26 @@ function addRecipeItem() {
                 <i class="fas fa-sticky-note text-gray-400 mr-1"></i>
                 Catatan
             </label>
-            <input type="text" name="recipe_items[${recipeItemIndex}][notes]" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Catatan opsional untuk bahan ini">
+            <input type="text" name="recipe_items[${recipeItemIndex}][notes]" 
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                placeholder="Catatan tambahan (opsional)">
         </div>
     `;
     
     container.appendChild(newItem);
     
-    $(newItem).find('.select2').select2({
+    // Initialize Select2 for the new item
+    $(newItem).find('.raw-material-select').select2({
         theme: 'default',
         width: '100%',
-        placeholder: 'Pilih Bahan Baku'
+        placeholder: '- Pilih Bahan -'
     });
     
     recipeItemIndex++;
     updateRemoveButtons();
     updateAvailableRawMaterials();
+    
+    console.log('Added new recipe item, index:', recipeItemIndex);
 }
 
 function updateRemoveButtons() {
@@ -1633,10 +2028,25 @@ function updateRemoveButtons() {
 }
 
 function calculateItemCost(item) {
+    if (!item) {
+        console.error('calculateItemCost: item is null/undefined');
+        return;
+    }
+    
     const select = item.querySelector('.raw-material-select');
     const quantityInput = item.querySelector('.quantity-input');
     const unitDisplay = item.querySelector('.unit-display');
     const costDisplay = item.querySelector('.cost-display');
+    
+    if (!select || !quantityInput || !unitDisplay || !costDisplay) {
+        console.error('calculateItemCost: Missing required elements', {
+            select: !!select,
+            quantityInput: !!quantityInput,
+            unitDisplay: !!unitDisplay,
+            costDisplay: !!costDisplay
+        });
+        return;
+    }
     
     const selectedOption = select.options[select.selectedIndex];
     const price = parseFloat(selectedOption.dataset.price || 0);

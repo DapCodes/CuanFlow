@@ -11,6 +11,7 @@ use App\Models\Recipe;
 use App\Models\RecipeItem;
 use App\Models\Sale;
 use App\Models\Unit;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -486,7 +487,6 @@ public function toggleStatus(Request $request, Product $product)
 
     public function generateCode()
     {
-        // Generate kode produk format: PRD + YYYYMMDD + 3 digit angka
         $date = now()->format('Ymd');
         $prefix = 'PRD'.$date;
 
@@ -630,4 +630,201 @@ public function toggleStatus(Request $request, Product $product)
             'worst_day' => $worstDay,
         ]);
     }
+
+
+public function generateRecipeAI(Request $request)
+{
+    $validated = $request->validate([
+        'product_name' => 'required|string|max:255',
+        'output_quantity' => 'required|numeric|min:0.01',
+    ]);
+
+    try {
+        // Ambil raw materials yang tersedia untuk outlet ini
+        $rawMaterials = RawMaterial::with('unit')
+            ->where('outlet_id', Auth::user()->outlet_id)
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($rm) {
+                return [
+                    'id' => $rm->id,
+                    'name' => $rm->name,
+                    'unit' => $rm->unit->name ?? '',
+                    'unit_abbreviation' => $rm->unit->abbreviation ?? '',
+                    'purchase_price' => (float) $rm->purchase_price,
+                    'stock_quantity' => $rm->getStockQuantity(Auth::user()->outlet_id),
+                ];
+            });
+
+        if ($rawMaterials->isEmpty()) {
+            throw new \Exception('Tidak ada bahan baku tersedia di outlet ini. Mohon tambahkan bahan baku terlebih dahulu.');
+        }
+
+        // Baca system prompt dari file
+        $systemPromptPath = resource_path('ai-prompts/recipe-generator.txt');
+        
+        if (!file_exists($systemPromptPath)) {
+            throw new \Exception('System prompt file not found. Please create: ' . $systemPromptPath);
+        }
+        
+        $systemPrompt = file_get_contents($systemPromptPath);
+
+        // Prepare user message
+        $userMessage = json_encode([
+            'menu_name' => $validated['product_name'],
+            'output' => (float) $validated['output_quantity'],
+            'raw_materials' => $rawMaterials,
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        \Log::info('AI Recipe Generation Request', [
+            'product_name' => $validated['product_name'],
+            'output_quantity' => $validated['output_quantity'],
+            'raw_materials_count' => $rawMaterials->count(),
+        ]);
+
+        // Panggil AI API
+        $response = Http::timeout(90)
+            ->withHeaders([
+                'Authorization' => 'Bearer ' . env('CLARA_AI_API_KEY'),
+                'Content-Type' => 'application/json',
+            ])
+            ->post('https://openrouter.ai/api/v1/chat/completions', [
+                'model' => 'amazon/nova-2-lite-v1:free',
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => $systemPrompt,
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $userMessage,
+                    ],
+                ],
+                'temperature' => 0.7,
+                'max_tokens' => 3000,
+                'response_format' => ['type' => 'json_object'], // Force JSON response
+            ]);
+
+        if ($response->failed()) {
+            \Log::error('AI API Request Failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new \Exception('AI API request failed: ' . $response->status() . ' - ' . $response->body());
+        }
+
+        $data = $response->json();
+        $aiContent = $data['choices'][0]['message']['content'] ?? null;
+
+        if (!$aiContent) {
+            throw new \Exception('Empty response from AI');
+        }
+
+        \Log::info('AI Raw Response', [
+            'content_length' => strlen($aiContent),
+            'first_100_chars' => substr($aiContent, 0, 100),
+        ]);
+
+        // ✅ MULTIPLE CLEANING STRATEGIES
+        $recipe = $this->parseAIResponse($aiContent);
+
+        // Validasi struktur response
+        if (!isset($recipe['ingredients']) || !is_array($recipe['ingredients'])) {
+            throw new \Exception('Invalid recipe structure - missing ingredients array');
+        }
+
+        if (empty($recipe['ingredients'])) {
+            throw new \Exception('AI generated empty recipe. Please try again.');
+        }
+
+        // Validasi setiap ingredient
+        foreach ($recipe['ingredients'] as $index => $ingredient) {
+            if (!isset($ingredient['raw_material_id']) || !isset($ingredient['quantity'])) {
+                throw new \Exception("Invalid ingredient at index {$index}: missing required fields");
+            }
+            
+            // Pastikan raw_material_id valid
+            $rmExists = $rawMaterials->where('id', $ingredient['raw_material_id'])->first();
+            if (!$rmExists) {
+                throw new \Exception("Invalid raw_material_id: {$ingredient['raw_material_id']} not found in outlet materials");
+            }
+        }
+
+        \Log::info('AI Recipe Generation Success', [
+            'ingredients_count' => count($recipe['ingredients']),
+            'missing_ingredients' => $recipe['missing_ingredients'] ?? [],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'recipe' => $recipe,
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('AI Recipe Generation Error', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'product_name' => $validated['product_name'] ?? null,
+            'outlet_id' => Auth::user()->outlet_id,
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+/**
+ * Parse AI response with multiple fallback strategies
+ */
+private function parseAIResponse(string $content): array
+{
+    // Strategy 1: Remove markdown code blocks
+    $cleaned = preg_replace('/```json\s*|\s*```/i', '', trim($content));
+    
+    // Strategy 2: Remove control characters
+    $cleaned = preg_replace('/[\x00-\x1F\x7F]/u', '', $cleaned);
+    
+    // Strategy 3: Fix common JSON issues
+    $cleaned = str_replace(["\r\n", "\r", "\n"], ' ', $cleaned);
+    $cleaned = preg_replace('/\s+/', ' ', $cleaned);
+    
+    // Try parsing
+    $recipe = json_decode($cleaned, true);
+    
+    if (json_last_error() === JSON_ERROR_NONE) {
+        return $recipe;
+    }
+    
+    // Strategy 4: Try to extract JSON from text
+    if (preg_match('/\{.*"menu_name".*"ingredients".*\}/s', $content, $matches)) {
+        $extracted = $matches[0];
+        $extracted = preg_replace('/[\x00-\x1F\x7F]/u', '', $extracted);
+        $recipe = json_decode($extracted, true);
+        
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $recipe;
+        }
+    }
+    
+    // Strategy 5: Try fixing common escape issues
+    $cleaned = stripslashes($cleaned);
+    $recipe = json_decode($cleaned, true);
+    
+    if (json_last_error() === JSON_ERROR_NONE) {
+        return $recipe;
+    }
+    
+    // All strategies failed
+    \Log::error('JSON Parse Failed - All Strategies', [
+        'original_length' => strlen($content),
+        'cleaned_length' => strlen($cleaned),
+        'json_error' => json_last_error_msg(),
+        'first_200_chars' => substr($cleaned, 0, 200),
+        'last_200_chars' => substr($cleaned, -200),
+    ]);
+    
+    throw new \Exception('Invalid JSON from AI: ' . json_last_error_msg() . '. Raw response logged for debugging.');
+}
 }

@@ -12,253 +12,346 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4">
+<main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
         
+        {{-- Alert / Notifikasi (diseragamkan gaya-nya dengan halaman diskon) --}}
         @if(session('success'))
-        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
-            <div class="flex items-start">
-                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                <p class="text-sm text-green-700">{{ session('success') }}</p>
+            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
+                <p class="text-green-800">{{ session('success') }}</p>
             </div>
-        </div>
         @endif
 
         @if(session('error'))
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
-                <p class="text-sm text-red-700">{{ session('error') }}</p>
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
+                <p class="text-red-800">{{ session('error') }}</p>
             </div>
-        </div>
         @endif
 
-        <!-- Header Section -->
-        <x-card-container>
-            <div class="bg-gradient-to-br from-pink-40 to-red-50 p-6 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN (diseragamkan dengan pola di discounts.index) --}}
+        <section
+            class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-500 border border-red-100">
+                        <i class="fas fa-shopping-cart text-sm"></i>
+                    </span>
+                    <span>Manajemen Penjualan</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Pantau dan kelola transaksi penjualan harian dengan tampilan yang rapi dan konsisten.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 font-medium mb-1">Tanggal terpilih</p>
+                    <p class="text-sm font-semibold text-gray-900">
+                        {{ \Carbon\Carbon::parse($selectedDate)->isoFormat('D MMMM Y') }}
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        {{-- RINGKASAN STATISTIK HARIAN (layout mengikuti diskon, isi tetap seperti semula) --}}
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-shopping-cart text-red-500 mr-3"></i>
-                            Manajemen Penjualan
-                        </h2>
-                        <p class="text-sm text-gray-500 mt-1">Pantau dan kelola transaksi penjualan</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Penjualan</p>
+                        <p id="summaryRevenue" class="mt-1 text-2xl font-semibold text-green-600">
+                            Rp {{ number_format($totalRevenue, 0, ',', '.') }}
+                        </p>
+                        <p id="summaryDate1" class="text-xs text-gray-400 mt-1">
+                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
+                        </p>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center border border-green-200">
+                        <i class="fas fa-shopping-cart text-green-600 text-lg"></i>
                     </div>
                 </div>
             </div>
-        </x-card-container>
 
-        <!-- Transaction Calendar & Table Section -->
-        <x-card-container>
-            <div class="p-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">
-                    <i class="fas fa-calendar-alt text-red-500 mr-2"></i>
-                    Transaksi Penjualan
-                </h3>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Transaksi</p>
+                        <p id="summaryTransactions" class="mt-1 text-2xl font-semibold text-blue-600">
+                            {{ $totalTransactions }}
+                        </p>
+                        <p id="summaryDate2" class="text-xs text-gray-400 mt-1">
+                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
+                        </p>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center border border-blue-200">
+                        <i class="fas fa-receipt text-blue-600 text-lg"></i>
+                    </div>
+                </div>
+            </div>
 
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Laba Kotor</p>
+                        <p id="summaryProfit" class="mt-1 text-2xl font-semibold text-purple-600">
+                            Rp {{ number_format($dailyProfit, 0, ',', '.') }}
+                        </p>
+                        <p id="summaryDate3" class="text-xs text-gray-400 mt-1">
+                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
+                        </p>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center border border-purple-200">
+                        <i class="fas fa-chart-line text-purple-600 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Refund</p>
+                        <p id="summaryRefunds" class="mt-1 text-2xl font-semibold text-red-600">
+                            Rp {{ number_format($totalRefunds, 0, ',', '.') }}
+                        </p>
+                        <p id="summaryDate4" class="text-xs text-gray-400 mt-1">
+                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
+                        </p>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center border border-red-200">
+                        <i class="fas fa-undo text-red-600 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- KONTEN UTAMA: KALENDER + TABEL TRANSAKSI (layout & padding seragam dengan diskon) --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            {{-- Header / Toolbar kecil --}}
+            <div class="border-b border-gray-200 px-4 md:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-500 border border-red-100">
+                        <i class="fas fa-calendar-alt text-xs"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-sm font-semibold text-gray-900 sm:text-base">
+                            Transaksi Penjualan
+                        </h2>
+                        <p class="text-xs text-gray-500">
+                            Pilih tanggal pada kalender untuk melihat transaksi penjualan.
+                        </p>
+                    </div>
+                </div>
+                <button id="btnToday"
+                    class="inline-flex items-center justify-center rounded-lg bg-red-500 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1">
+                    <i class="fas fa-calendar-day mr-1 text-[11px]"></i>
+                    Hari Ini
+                </button>
+            </div>
+
+            {{-- Grid Kalender + Tabel --}}
+            <div class="px-4 md:px-6 py-5">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <!-- Calendar Section -->
+                    {{-- Calendar Section --}}
                     <div class="lg:col-span-5">
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="font-semibold text-gray-700">Pilih Tanggal</h4>
-                                <button id="btnToday" class="text-xs text-red-600 hover:text-red-700 font-medium">
-                                    Hari Ini
-                                </button>
+                        <div class="border border-gray-200 rounded-xl bg-white">
+                            <div class="px-4 pt-4 pb-2 flex items-center justify-between">
+                                <h4 class="font-semibold text-gray-700 text-sm">Pilih Tanggal</h4>
                             </div>
 
-                            <div id="calendar" class="fc-theme-standard rounded-xl shadow-sm border border-gray-200"></div>
+                            <div id="calendar"
+                                 class="fc-theme-standard rounded-xl border-t border-gray-200"></div>
 
-                            <div class="mt-4 pt-4 border-t border-gray-200">
-                                <div class="text-sm text-gray-600 mb-1">Tanggal Dipilih:</div>
-                                <div id="selectedDateText" class="text-lg font-bold text-gray-900">
+                            <div class="mt-0 px-4 pb-4 pt-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                                <div class="text-xs text-gray-500 mb-1 font-medium">Tanggal Dipilih</div>
+                                <div id="selectedDateText" class="text-base font-semibold text-gray-900">
                                     {{ \Carbon\Carbon::parse($selectedDate)->isoFormat('D MMMM Y') }}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Transaction Table -->
+                    {{-- Transaction Table --}}
                     <div class="lg:col-span-7">
-                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <div
+                            class="border border-gray-200 rounded-xl overflow-hidden bg-white mb-4 shadow-sm">
                             <div class="overflow-x-auto" style="max-height: 500px; overflow-y: auto;">
-                                <table class="w-full">
-                                    <thead class="bg-gray-50 sticky top-0">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-50 sticky top-0 border-b border-gray-200">
                                         <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Invoice</th>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Waktu</th>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Kasir</th>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Metode</th>
-                                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Total</th>
-                                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Status</th>
-                                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase w-32">Aksi</th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                Invoice
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                Waktu
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                Kasir
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                Metode
+                                            </th>
+                                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                Total
+                                            </th>
+                                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                Status
+                                            </th>
+                                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide w-32">
+                                                Aksi
+                                            </th>
                                         </tr>
                                     </thead>
 
-                                    <tbody id="salesTableBody" class="bg-white divide-y divide-gray-200">
+                                    <tbody id="salesTableBody" class="bg-white divide-y divide-gray-100">
                                         @forelse($sales as $sale)
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $sale->invoice_number }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-600">{{ $sale->created_at->format('H:i') }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-600">{{ $sale->cashier->name }}</td>
-                                            <td class="px-4 py-3">
-                                                @if($sale->payment_method == 'cash')
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                        <i class="fas fa-money-bill-wave mr-1"></i> Cash
-                                                    </span>
-                                                @elseif($sale->payment_method == 'qris')
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        <i class="fas fa-qrcode mr-1"></i> QRIS
-                                                    </span>
-                                                @else
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                        <i class="fas fa-exchange-alt mr-1"></i> Transfer
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
-                                                Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
-                                            </td>
-                                            <td class="px-4 py-3 text-center">
-                                                @if($sale->status == 'completed')
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                                                        Selesai
-                                                    </span>
-                                                @elseif($sale->status == 'refunded')
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                                        <span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
-                                                        Dikembalikan
-                                                    </span>
-                                                @else
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                                                        <span class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></span>
-                                                        {{ ucfirst($sale->status) }}
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-3 text-center">
-                                                <div class="flex items-center justify-center gap-2">
-                                                    <a href="{{ route('sales.show', $sale->id) }}" 
-                                                       class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-medium transition-colors">
-                                                        <i class="fas fa-eye mr-1"></i>Detail
-                                                    </a>
-                                                    @if($sale->status == 'completed' && in_array($sale->payment_method, ['cash', 'transfer']))
-                                                        <button onclick="confirmRefund('{{ $sale->id }}', '{{ $sale->invoice_number }}', {{ $sale->grand_total }})" 
-                                                                class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-xs font-medium transition-colors">
-                                                            <i class="fas fa-undo mr-1"></i>
-                                                            Refund
-                                                        </button>
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                                                    {{ $sale->invoice_number }}
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-600">
+                                                    {{ $sale->created_at->format('H:i') }}
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-600">
+                                                    {{ $sale->cashier->name }}
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    @if($sale->payment_method == 'cash')
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            <i class="fas fa-money-bill-wave mr-1"></i> Cash
+                                                        </span>
+                                                    @elseif($sale->payment_method == 'qris')
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            <i class="fas fa-qrcode mr-1"></i> QRIS
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                            <i class="fas fa-exchange-alt mr-1"></i> Transfer
+                                                        </span>
                                                     @endif
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
+                                                    Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    @if($sale->status == 'completed')
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                                            <span
+                                                                class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                                            Selesai
+                                                        </span>
+                                                    @elseif($sale->status == 'refunded')
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                                            <span
+                                                                class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
+                                                            Dikembalikan
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                                            <span
+                                                                class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></span>
+                                                            {{ ucfirst($sale->status) }}
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="flex items-center justify-center gap-2">
+                                                        <a href="{{ route('sales.show', $sale->id) }}"
+                                                           class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-medium transition-colors">
+                                                            <i class="fas fa-eye mr-1"></i>Detail
+                                                        </a>
+                                                        @if($sale->status == 'completed' && in_array($sale->payment_method, ['cash', 'transfer']))
+                                                            <button
+                                                                onclick="confirmRefund('{{ $sale->id }}', '{{ $sale->invoice_number }}', {{ $sale->grand_total }})"
+                                                                class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-xs font-medium transition-colors">
+                                                                <i class="fas fa-undo mr-1"></i>
+                                                                Refund
+                                                            </button>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         @empty
-                                        <tr>
-                                            <td colspan="7" class="px-4 py-12 text-center text-gray-500">
-                                                <i class="fas fa-inbox text-4xl mb-2 block"></i>
-                                                <p>Tidak ada transaksi pada tanggal ini</p>
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td colspan="7"
+                                                    class="px-4 py-12 text-center text-gray-500">
+                                                    <div class="flex flex-col items-center justify-center">
+                                                        <i class="fas fa-inbox text-4xl mb-2 block text-gray-300"></i>
+                                                        <p class="text-sm">Tidak ada transaksi pada tanggal ini</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         @endforelse
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <!-- Payment method cards -->
-                        <div class="mt-4">
-                            <div id="paymentRow" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3">
-                                <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-money-bill-wave text-blue-600 mr-2"></i>
-                                    </div>
-                                    <span id="cashTotalText" class="text-sm font-bold text-blue-600">Rp {{ number_format($cashTotal, 0, ',', '.') }}</span>
+                        {{-- Payment method cards (diseragamkan gaya card-nya) --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3">
+                            <div
+                                class="flex items-center justify-between px-3 py-3 bg-blue-50 rounded-xl border border-blue-100">
+                                <div class="flex items-center">
+                                    <i class="fas fa-money-bill-wave text-blue-600 mr-2"></i>
                                 </div>
-                                <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-qrcode text-green-600 mr-2"></i>
-                                    </div>
-                                    <span id="qrisTotalText" class="text-sm font-bold text-green-600">Rp {{ number_format($qrisTotal, 0, ',', '.') }}</span>
+                                <span id="cashTotalText"
+                                      class="text-sm font-bold text-blue-600">
+                                    Rp {{ number_format($cashTotal, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div
+                                class="flex items-center justify-between px-3 py-3 bg-green-50 rounded-xl border border-green-100">
+                                <div class="flex items-center">
+                                    <i class="fas fa-qrcode text-green-600 mr-2"></i>
                                 </div>
-                                <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
-                                    </div>
-                                    <span id="transferTotalText" class="text-sm font-bold text-purple-600">Rp {{ number_format($transferTotal, 0, ',', '.') }}</span>
+                                <span id="qrisTotalText"
+                                      class="text-sm font-bold text-green-600">
+                                    Rp {{ number_format($qrisTotal, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div
+                                class="flex items-center justify-between px-3 py-3 bg-purple-50 rounded-xl border border-purple-100">
+                                <div class="flex items-center">
+                                    <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
                                 </div>
-                                <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg border-2 border-gray-300 gap-1">
-                                    <span class="text-sm font-bold text-gray-900">Total</span>
-                                    <span id="revenueTotalText" class="text-sm font-bold text-gray-900">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</span>
-                                </div>
+                                <span id="transferTotalText"
+                                      class="text-sm font-bold text-purple-600">
+                                    Rp {{ number_format($transferTotal, 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div
+                                class="flex items-center justify-between px-3 py-3 bg-gray-100 rounded-xl border-2 border-gray-300 gap-1">
+                                <span class="text-sm font-bold text-gray-900">Total</span>
+                                <span id="revenueTotalText"
+                                      class="text-sm font-bold text-gray-900">
+                                    Rp {{ number_format($totalRevenue, 0, ',', '.') }}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </x-card-container>
-
-        <!-- Daily Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Total Penjualan</p>
-                        <p id="summaryRevenue" class="text-xl font-bold text-green-600">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
-                        <p id="summaryDate1" class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-shopping-cart text-green-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Total Transaksi</p>
-                        <p id="summaryTransactions" class="text-xl font-bold text-blue-600">{{ $totalTransactions }}</p>
-                        <p id="summaryDate2" class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-receipt text-blue-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Laba Kotor</p>
-                        <p id="summaryProfit" class="text-xl font-bold text-purple-600">Rp {{ number_format($dailyProfit, 0, ',', '.') }}</p>
-                        <p id="summaryDate3" class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Refund</p>
-                        <p id="summaryRefunds" class="text-xl font-bold text-red-600">Rp {{ number_format($totalRefunds, 0, ',', '.') }}</p>
-                        <p id="summaryDate4" class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-undo text-red-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
 </main>
 
-<!-- Refund Confirmation Modal -->
-<div id="refundModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-        <div class="mt-3">
+{{-- Refund Confirmation Modal (kelas sedikit dirapikan, fungsi tetap sama) --}}
+<div id="refundModal"
+     class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 w-full max-w-md">
+        <div class="border shadow-lg rounded-xl bg-white px-5 py-6">
             <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full">
                 <i class="fas fa-undo text-red-600 text-2xl"></i>
             </div>
@@ -266,18 +359,26 @@
             <div class="mt-4 text-sm text-gray-600">
                 <p class="text-center">Apakah Anda yakin ingin melakukan refund untuk:</p>
                 <div class="bg-gray-50 rounded-lg p-3 mt-3">
-                    <p class="font-medium text-gray-900">Invoice: <span id="refundInvoice"></span></p>
-                    <p class="font-bold text-red-600 text-lg mt-1">Total: <span id="refundAmount"></span></p>
+                    <p class="font-medium text-gray-900">
+                        Invoice: <span id="refundInvoice"></span>
+                    </p>
+                    <p class="font-bold text-red-600 text-lg mt-1">
+                        Total: <span id="refundAmount"></span>
+                    </p>
                 </div>
-                <p class="text-center mt-3 text-red-600 font-medium">Stok produk akan dikembalikan dan uang akan dikembalikan ke kasir.</p>
+                <p class="text-center mt-3 text-red-600 font-medium">
+                    Stok produk akan dikembalikan dan uang akan dikembalikan ke kasir.
+                </p>
             </div>
             <div class="flex gap-3 mt-5">
-                <button onclick="closeRefundModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium">
+                <button onclick="closeRefundModal()"
+                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium">
                     Batal
                 </button>
                 <form id="refundForm" method="POST" class="flex-1">
                     @csrf
-                    <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
+                    <button type="submit"
+                            class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
                         Ya, Refund
                     </button>
                 </form>
@@ -305,8 +406,7 @@
     margin-bottom: 0;
     padding: 0.75rem 1rem;
     background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-bottom: none;
+    border-bottom: 1px solid #e5e7eb;
     border-radius: 0.75rem 0.75rem 0 0;
   }
   
