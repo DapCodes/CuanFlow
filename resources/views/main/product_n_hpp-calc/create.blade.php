@@ -161,59 +161,59 @@
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
 
             {{-- Progress Steps (tetap pakai ID & class lama untuk JS) --}}
-            <div class="bg-gradient-to-r from-green-50 to-blue-50 px-4 md:px-6 py-5 border-b border-gray-200">
+            <div class="bg-gradient-to-r from-green-50 to-blue-50 px-2 md:px-6 py-4 md:py-5 border-b border-gray-200">
                 <div class="flex justify-between items-center relative max-w-3xl mx-auto">
                     {{-- Garis Progress --}}
-                    <div class="absolute top-5 left-0 right-0 h-0.5 bg-gray-200" style="z-index: 0;">
+                    <div class="absolute top-4 md:top-5 left-0 right-0 h-0.5 bg-gray-200" style="z-index: 0;">
                         <div id="progressLine" class="h-full bg-cuan-green transition-all duration-300" style="width: 0%;"></div>
                     </div>
 
                     {{-- Langkah 1 --}}
-                    <div class="flex-1 text-center step-indicator active relative z-10" data-step="1">
-                        <div class="w-10 h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-1 shadow-md">
-                            <i class="fas fa-info-circle text-white text-sm"></i>
+                    <div class="flex-1 text-center step-indicator active relative z-10 cursor-default" data-step="1" title="Info Produk">
+                        <div class="w-8 h-8 md:w-10 md:h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-2 shadow-md transition-all duration-300">
+                            <i class="fas fa-info-circle text-white text-xs md:text-sm" data-default-icon="fas fa-info-circle"></i>
                         </div>
-                        <p class="text-[11px] font-medium text-gray-900">Info Produk</p>
+                        <p class="hidden md:block text-[11px] font-medium text-gray-900 transition-colors duration-300">Info Produk</p>
                     </div>
 
                     {{-- Langkah 2 --}}
-                    <div class="flex-1 text-center step-indicator relative z-10" data-step="2">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
-                            <i class="fas fa-book-open text-gray-400 text-sm"></i>
+                    <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="2" title="Resep">
+                        <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
+                            <i class="fas fa-book-open text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-book-open"></i>
                         </div>
-                        <p class="text-[11px] font-medium text-gray-600">Resep</p>
+                        <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Resep</p>
                     </div>
 
                     {{-- Langkah 3 --}}
-                    <div class="flex-1 text-center step-indicator relative z-10" data-step="3">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
-                            <i class="fas fa-shopping-basket text-gray-400 text-sm"></i>
+                    <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="3" title="Bahan Baku">
+                        <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
+                            <i class="fas fa-shopping-basket text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-shopping-basket"></i>
                         </div>
-                        <p class="text-[11px] font-medium text-gray-600">Bahan Baku</p>
+                        <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Bahan Baku</p>
                     </div>
 
                     {{-- Langkah 4 --}}
-                    <div class="flex-1 text-center step-indicator relative z-10" data-step="4">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
-                            <i class="fas fa-coins text-gray-400 text-sm"></i>
+                    <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="4" title="Biaya Lain">
+                        <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
+                            <i class="fas fa-coins text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-coins"></i>
                         </div>
-                        <p class="text-[11px] font-medium text-gray-600">Biaya Lain</p>
+                        <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Biaya Lain</p>
                     </div>
 
                     {{-- Langkah 5 --}}
-                    <div class="flex-1 text-center step-indicator relative z-10" data-step="5">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
-                            <i class="fas fa-tags text-gray-400 text-sm"></i>
+                    <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="5" title="Harga & Stok">
+                        <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
+                            <i class="fas fa-tags text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-tags"></i>
                         </div>
-                        <p class="text-[11px] font-medium text-gray-600">Harga & Stok</p>
+                        <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Harga & Stok</p>
                     </div>
 
                     {{-- Langkah 6 --}}
-                    <div class="flex-1 text-center step-indicator relative z-10" data-step="6">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
-                            <i class="fas fa-chart-line text-gray-400 text-sm"></i>
+                    <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="6" title="Target Jual">
+                        <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
+                            <i class="fas fa-chart-line text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-chart-line"></i>
                         </div>
-                        <p class="text-[11px] font-medium text-gray-600">Target Jual</p>
+                        <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Target Jual</p>
                     </div>
                 </div>
             </div>
@@ -1892,17 +1892,35 @@ function showStep(step) {
         const stepNum = index + 1;
         const circle = indicator.querySelector('div');
         const icon = circle ? circle.querySelector('i') : null;
+        const label = indicator.querySelector('p');
         
         if (!circle) return;
+
+        // Base classes for circle (Responsive: w-8 h-8 on mobile, w-10 h-10 on desktop)
+        const baseCircleClass = 'w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300';
+        const defaultIcon = icon ? icon.getAttribute('data-default-icon') : '';
         
         if (stepNum < step) {
-            circle.className = 'w-10 h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-2 shadow-md';
-            if (icon) icon.className = 'fas fa-check text-white';
+            // Completed Step
+            circle.className = baseCircleClass + ' bg-cuan-green shadow-md';
+            if (icon) icon.className = 'fas fa-check text-white text-xs md:text-sm';
+            if (label) {
+                label.className = 'hidden md:block text-[11px] font-medium text-cuan-green transition-colors duration-300';
+            }
         } else if (stepNum === step) {
-            circle.className = 'w-10 h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-2 shadow-md ring-4 ring-green-200';
+            // Active Step
+            circle.className = baseCircleClass + ' bg-cuan-green shadow-md ring-4 ring-green-200 transform scale-110';
+            if (icon && defaultIcon) icon.className = defaultIcon + ' text-white text-xs md:text-sm';
+            if (label) {
+                label.className = 'hidden md:block text-[11px] font-bold text-gray-900 transition-colors duration-300';
+            }
         } else {
-            circle.className = 'w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2';
-            if (icon) icon.className = icon.className.replace('text-white', 'text-gray-400');
+            // Inactive Step
+            circle.className = baseCircleClass + ' bg-white border-2 border-gray-300';
+            if (icon && defaultIcon) icon.className = defaultIcon + ' text-gray-400 text-xs md:text-sm';
+            if (label) {
+                label.className = 'hidden md:block text-[11px] font-medium text-gray-400 transition-colors duration-300';
+            }
         }
     });
     
