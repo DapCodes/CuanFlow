@@ -1069,7 +1069,7 @@
 // ==================== GLOBAL VARIABLES ====================
 let UI_STATE = 'browse';
 let cart = @json($cart ?? []);
-let cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0 };
+let cartSummary = @json($cartSummary) || { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0, total_items: 0 }; // PERBAIKAN: Load dari backend
 let currentSaleId = null;
 
 // TAMBAHKAN INI
@@ -1081,11 +1081,10 @@ let calcPreviousValue = '';
 let calcOperation = null;
 let calcHistory = [];
 
-// ==================== DOM READY ====================
 document.addEventListener('DOMContentLoaded', function() {
     loadCalcHistory();
     checkCashRegister();
-    renderCart();
+    renderCart(); // PERBAIKAN: Ini akan render cart dengan summary yang sudah benar
     setUIState('browse');
     
     // TAMBAHKAN INI
@@ -1097,8 +1096,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ==================== CATEGORY FUNCTIONS ====================
-// ==================== CATEGORY FUNCTIONS ====================
-
 function renderCategoryTabs() {
     const tabsContainer = document.getElementById('categoryTabs');
     if (!tabsContainer) return;

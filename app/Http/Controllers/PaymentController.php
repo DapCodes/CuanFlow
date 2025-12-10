@@ -240,8 +240,8 @@ class PaymentController extends Controller
                 ]);
 
                 // Generate order ID unik
-                $orderId = $sale->invoice_number . '-' . time() . '-' . strtoupper(substr(md5(uniqid()), 0, 6));
-                
+                $orderId = $sale->invoice_number.'-'.time().'-'.strtoupper(substr(md5(uniqid()), 0, 6));
+
                 // Update sale dengan midtrans order ID
                 $sale->update([
                     'midtrans_order_id' => $orderId,
@@ -250,8 +250,8 @@ class PaymentController extends Controller
 
             // PERBAIKAN: Generate order ID unik dengan timestamp + random
             // Format: ORDER-INV-OUTLET-YYYYMMDD-XXXX-TIMESTAMP-RANDOM
-            $orderId = $sale->invoice_number . '-' . time() . '-' . strtoupper(substr(md5(uniqid()), 0, 6));
-            
+            $orderId = $sale->invoice_number.'-'.time().'-'.strtoupper(substr(md5(uniqid()), 0, 6));
+
             // Atau format yang lebih sederhana:
             // $orderId = 'ORDER-' . $sale->id . '-' . time();
 
@@ -333,6 +333,7 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+
     /**
      * Handle Midtrans notification callback
      */

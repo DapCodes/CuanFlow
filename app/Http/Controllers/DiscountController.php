@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Product;
-use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -103,7 +103,7 @@ class DiscountController extends Controller
     public function update(Request $request, Discount $discount)
     {
         $rules = [
-            'code' => 'required|string|max:30|unique:discounts,code,' . $discount->id,
+            'code' => 'required|string|max:30|unique:discounts,code,'.$discount->id,
             'name' => 'required|string|max:255',
             'type' => 'required|in:percentage,fixed,buy_x_get_y',
             'value' => 'required|numeric|min:0',
@@ -150,7 +150,7 @@ class DiscountController extends Controller
     public function toggleStatus(Discount $discount)
     {
         $discount->update([
-            'is_active' => !$discount->is_active
+            'is_active' => ! $discount->is_active,
         ]);
 
         $status = $discount->is_active ? 'diaktifkan' : 'dinonaktifkan';
@@ -162,7 +162,7 @@ class DiscountController extends Controller
     public function generateCode()
     {
         do {
-            $code = 'DISC-' . strtoupper(Str::random(8));
+            $code = 'DISC-'.strtoupper(Str::random(8));
         } while (Discount::where('code', $code)->exists());
 
         return response()->json(['code' => $code]);

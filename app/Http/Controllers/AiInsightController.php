@@ -10,7 +10,7 @@ class AiInsightController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        
+
         $query = AiInsight::where('outlet_id', $user->outlet_id)
             ->active()
             ->orderBy('created_at', 'desc');
@@ -50,7 +50,7 @@ class AiInsightController extends Controller
     public function markAsRead(Request $request, $id)
     {
         try {
-            if (!$request->user()) {
+            if (! $request->user()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthenticated',
@@ -84,7 +84,7 @@ class AiInsightController extends Controller
     public function dismiss(Request $request, $id)
     {
         try {
-            if (!$request->user()) {
+            if (! $request->user()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthenticated',
@@ -118,7 +118,7 @@ class AiInsightController extends Controller
     public function markAllAsRead(Request $request)
     {
         try {
-            if (!$request->user()) {
+            if (! $request->user()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthenticated',

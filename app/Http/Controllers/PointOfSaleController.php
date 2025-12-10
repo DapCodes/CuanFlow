@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashRegister;
+use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Product;
-use App\Models\Category;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -24,23 +24,27 @@ class PointOfSaleController extends Controller
             ->get();
 
         // Ambil kategori yang memiliki produk aktif
-        $categories = Category::whereHas('products', function($query) use ($outletId) {
+        $categories = Category::whereHas('products', function ($query) use ($outletId) {
             $query->where('outlet_id', $outletId)
                 ->where('is_active', true)
                 ->where('is_sellable', true);
         })
-        ->where('type', 'product')
-        ->where('is_active', true)
-        ->orderBy('sort_order')
-        ->orderBy('name')
-        ->get(['id', 'name', 'slug', 'icon']);
+            ->where('type', 'product')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'icon']);
 
         $activeDiscounts = Discount::active()->get();
         $customers = Customer::active()->get();
         $cart = Session::get('pos_cart', []);
 
-        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories'));
+        // PERBAIKAN: Hitung cart summary dari session
+        $cartSummary = $this->calculateCartSummary($cart);
+
+        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories', 'cartSummary'));
     }
+
     public function checkCashRegister()
     {
         $userId = auth()->id();
@@ -219,7 +223,7 @@ class PointOfSaleController extends Controller
 
         $cart = Session::get('pos_cart', []);
 
-        if (!isset($cart[$request->cart_key])) {
+        if (! isset($cart[$request->cart_key])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Item tidak ditemukan di keranjang',
@@ -354,10 +358,10 @@ class PointOfSaleController extends Controller
             ->latest()
             ->first();
 
-        if (!$cashRegister) {
+        if (! $cashRegister) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sesi toko tidak ditemukan'
+                'message' => 'Sesi toko tidak ditemukan',
             ]);
         }
 
@@ -370,7 +374,7 @@ class PointOfSaleController extends Controller
 
         return response()->json([
             'success' => true,
-            'total_sales' => $totalSales
+            'total_sales' => $totalSales,
         ]);
     }
 
@@ -382,10 +386,10 @@ class PointOfSaleController extends Controller
             ->latest()
             ->first();
 
-        if (!$cashRegister) {
+        if (! $cashRegister) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sesi toko tidak ditemukan'
+                'message' => 'Sesi toko tidak ditemukan',
             ]);
         }
 
@@ -400,7 +404,7 @@ class PointOfSaleController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Toko berhasil ditutup'
+            'message' => 'Toko berhasil ditutup',
         ]);
     }
 
@@ -421,7 +425,7 @@ class PointOfSaleController extends Controller
             ->latest('opened_at')
             ->first();
 
-        if (!$register) {
+        if (! $register) {
             return response()->json([
                 'success' => false,
                 'message' => 'Sesi penjualan tidak ditemukan',

@@ -19,7 +19,7 @@ class CategorySeeder extends Seeder
             ['name' => 'Bumbu & Perasa', 'slug' => 'bumbu-perasa', 'type' => 'raw_material', 'sort_order' => 6],
             ['name' => 'Kemasan', 'slug' => 'kemasan', 'type' => 'raw_material', 'sort_order' => 7],
             ['name' => 'Bahan Lainnya', 'slug' => 'bahan-lainnya', 'type' => 'raw_material', 'sort_order' => 8],
-            
+
             // Product Categories
             ['name' => 'Makanan', 'slug' => 'makanan', 'type' => 'product', 'sort_order' => 9],
             ['name' => 'Roti', 'slug' => 'roti', 'type' => 'product', 'sort_order' => 10],

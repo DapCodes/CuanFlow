@@ -1,21 +1,20 @@
 <?php
 
+use App\Http\Controllers\AiInsightController;
+use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ChangeOutletController;
+use App\Http\Controllers\ClaraAiController;
+use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OutletInformationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PointOfSaleController;
-use App\Http\Controllers\ProductHppController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RawMaterialAndSupplierController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\SaleController;
-use App\Http\Controllers\ClaraAiController;
-use App\Http\Controllers\AiInsightController;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\FinanceController;
-use App\Http\Controllers\CashRegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -42,29 +41,28 @@ Route::middleware('auth')->group(function () {
         ->name('outlets.toggle-status');
 
     // routes/web.php
-Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
-    Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');
-    Route::get('/generate-barcode', [App\Http\Controllers\ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
-    Route::get('/ajax/raw-material-price', [App\Http\Controllers\ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
+    Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
+        Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');
+        Route::get('/generate-barcode', [App\Http\Controllers\ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
+        Route::get('/ajax/raw-material-price', [App\Http\Controllers\ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
 
-    Route::get('/', [App\Http\Controllers\ProductHppController::class, 'index'])->name('index');
-    Route::get('/create', [App\Http\Controllers\ProductHppController::class, 'create'])->name('create');
-    Route::post('/', [App\Http\Controllers\ProductHppController::class, 'store'])->name('store');
-    Route::get('/{product}', [App\Http\Controllers\ProductHppController::class, 'show'])->name('show');
-    Route::get('/{product}/edit', [App\Http\Controllers\ProductHppController::class, 'edit'])->name('edit');
-    Route::put('/{product}', [App\Http\Controllers\ProductHppController::class, 'update'])->name('update');
-    Route::delete('/{product}', [App\Http\Controllers\ProductHppController::class, 'destroy'])->name('destroy');
+        Route::get('/', [App\Http\Controllers\ProductHppController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\ProductHppController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\ProductHppController::class, 'store'])->name('store');
+        Route::get('/{product}', [App\Http\Controllers\ProductHppController::class, 'show'])->name('show');
+        Route::get('/{product}/edit', [App\Http\Controllers\ProductHppController::class, 'edit'])->name('edit');
+        Route::put('/{product}', [App\Http\Controllers\ProductHppController::class, 'update'])->name('update');
+        Route::delete('/{product}', [App\Http\Controllers\ProductHppController::class, 'destroy'])->name('destroy');
 
-    Route::get('/sales-analytics', [App\Http\Controllers\ProductHppController::class, 'getSalesAnalytics'])
-        ->name('sales-analytics');
+        Route::get('/sales-analytics', [App\Http\Controllers\ProductHppController::class, 'getSalesAnalytics'])
+            ->name('sales-analytics');
 
-    Route::post('/{product}/toggle-status', [App\Http\Controllers\ProductHppController::class, 'toggleStatus'])
-        ->name('toggle-status');
+        Route::post('/{product}/toggle-status', [App\Http\Controllers\ProductHppController::class, 'toggleStatus'])
+            ->name('toggle-status');
 
-    Route::post('/generate-recipe-ai', [App\Http\Controllers\ProductHppController::class, 'generateRecipeAI'])
-        ->name('generate-recipe-ai');
-});
-
+        Route::post('/generate-recipe-ai', [App\Http\Controllers\ProductHppController::class, 'generateRecipeAI'])
+            ->name('generate-recipe-ai');
+    });
 
     Route::prefix('raw-materials')->name('raw-materials.')->group(function () {
         Route::get('/', [RawMaterialAndSupplierController::class, 'indexRawMaterial'])
@@ -160,15 +158,15 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/pos/cart/remove', [PointOfSaleController::class, 'removeCartItem'])->name('pos.cart.remove');
     Route::post('/pos/cart/clear', [PointOfSaleController::class, 'clearCart'])->name('pos.cart.clear');
     Route::post('/pos/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('pos.customer.set');
-    
+
     Route::post('/cash-register/set-opening-amount', [PointOfSaleController::class, 'setOpeningAmount'])
-    ->name('cash-register.set-opening-amount');
-    
+        ->name('cash-register.set-opening-amount');
+
     Route::get('/cash-register/close', [CashRegisterController::class, 'showClosePage'])->name('cash-register.close');
     Route::post('/cash-register/process-close', [CashRegisterController::class, 'processClose'])->name('cash-register.process-close');
     Route::get('/cash-register/history', [CashRegisterController::class, 'history'])->name('cash-register.history');
     Route::get('/cash-register/{id}', [CashRegisterController::class, 'show'])->name('cash-register.show');
-    
+
     Route::post('/payment/cash', [PaymentController::class, 'processCashPayment'])->name('payment.cash');
     Route::post('/payment/transfer', [PaymentController::class, 'processTransferPayment'])->name('payment.transfer');
     Route::post('/payment/midtrans/token', [PaymentController::class, 'createMidtransToken'])->name('payment.midtrans.token');
@@ -186,12 +184,13 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{discount}', [App\Http\Controllers\DiscountController::class, 'destroy'])->name('destroy');
         Route::post('/{discount}/toggle-status', [App\Http\Controllers\DiscountController::class, 'toggleStatus'])->name('toggle-status');
     });
-    
-    Route::get('/api/sale/{id}', function($id) {
+
+    Route::get('/api/sale/{id}', function ($id) {
         $sale = \App\Models\Sale::with('items')->findOrFail($id);
+
         return response()->json($sale);
     });
-    
+
     Route::get('/receipt/print/{id}', [ReceiptController::class, 'print'])->name('receipt.print');
     Route::get('/receipt/download/{id}', [ReceiptController::class, 'download'])->name('receipt.download');
 });
@@ -226,7 +225,7 @@ Route::middleware(['auth'])->prefix('finance')->name('finance.')->group(function
     Route::post('/expense', [FinanceController::class, 'storeExpense'])->name('expense.store');
     Route::post('/validate-revenue', [FinanceController::class, 'validateRevenue'])->name('validate-revenue');
     Route::get('/daily', [FinanceController::class, 'daily'])->name('daily');
-    
+
     // Chart API Routes (BARU)
     Route::get('/revenue-chart', [FinanceController::class, 'getRevenueChart'])->name('revenue-chart');
     Route::get('/expense-chart', [FinanceController::class, 'getExpenseChart'])->name('expense-chart');

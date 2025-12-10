@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashRegister;
-use App\Models\Sale;
 use App\Models\DailySummary;
+use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +26,7 @@ class CashRegisterController extends Controller
             ->latest('opened_at')
             ->first();
 
-        if (!$register) {
+        if (! $register) {
             return redirect()->route('pos.index')->with('error', 'Tidak ada sesi penjualan yang aktif');
         }
 
@@ -66,7 +66,7 @@ class CashRegisterController extends Controller
             ->latest('opened_at')
             ->first();
 
-        if (!$register) {
+        if (! $register) {
             return response()->json([
                 'success' => false,
                 'message' => 'Tidak ada sesi penjualan yang aktif',
@@ -77,7 +77,7 @@ class CashRegisterController extends Controller
         try {
             // Hitung summary terakhir sebelum tutup
             $register->calculateSummary();
-            
+
             // Tutup cash register
             $register->close($request->closing_amount, $request->notes);
 
@@ -109,7 +109,7 @@ class CashRegisterController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Toko berhasil ditutup' . ($request->generate_daily_report ? ' dan laporan harian dibuat' : ''),
+                'message' => 'Toko berhasil ditutup'.($request->generate_daily_report ? ' dan laporan harian dibuat' : ''),
                 'register' => $register->fresh(),
             ]);
 
@@ -122,7 +122,7 @@ class CashRegisterController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menutup toko: ' . $e->getMessage(),
+                'message' => 'Gagal menutup toko: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -154,7 +154,7 @@ class CashRegisterController extends Controller
             ->findOrFail($id);
 
         // Cek akses
-        if ($register->outlet_id !== auth()->user()->outlet_id && !auth()->user()->isOwner()) {
+        if ($register->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
             abort(403, 'Akses ditolak');
         }
 

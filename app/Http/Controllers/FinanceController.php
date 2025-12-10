@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CashRegister;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\Purchase;
-use App\Models\Expense;
-use App\Models\CashRegister;
-use App\Models\ExpenseCategory;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FinanceController extends Controller
 {
@@ -24,11 +23,11 @@ class FinanceController extends Controller
         $expenseEndDate = $request->get('expense_end_date');
 
         // ==================== PENDAPATAN ====================
-        
+
         // Pendapatan Hari Ini
         $startOfDay = Carbon::parse($selectedDate)->startOfDay();
         $endOfDay = Carbon::parse($selectedDate)->endOfDay();
-        
+
         $dailyRevenue = Sale::where('outlet_id', $outletId)
             ->completed()
             ->where('is_reported', true)
@@ -38,7 +37,7 @@ class FinanceController extends Controller
         // Pendapatan Minggu Ini (7 hari terakhir)
         $startOfWeek = Carbon::now()->subDays(6)->startOfDay();
         $endOfWeek = Carbon::now()->endOfDay();
-        
+
         $weeklyRevenue = Sale::where('outlet_id', $outletId)
             ->completed()
             ->where('is_reported', true)
@@ -48,7 +47,7 @@ class FinanceController extends Controller
         // Pendapatan Bulan Ini
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
-        
+
         $monthlyRevenue = Sale::where('outlet_id', $outletId)
             ->completed()
             ->where('is_reported', true)
@@ -56,7 +55,7 @@ class FinanceController extends Controller
             ->sum('grand_total');
 
         // ==================== PENGELUARAN ====================
-        
+
         // Pengeluaran Hari Ini
         $dailyExpenses = Expense::where('outlet_id', $outletId)
             ->whereDate('expense_date', Carbon::parse($selectedDate))
@@ -76,7 +75,7 @@ class FinanceController extends Controller
             ->sum('amount');
 
         // ==================== TOTAL & SALDO ====================
-        
+
         // Total Revenue (Saldo Kas Total) - All Time
         $totalRevenue = Sale::where('outlet_id', $outletId)
             ->completed()
@@ -92,7 +91,7 @@ class FinanceController extends Controller
         $totalNetIncome = $totalRevenue - $allTimeExpenses;
 
         // ==================== PAYMENT METHODS (Daily) ====================
-        
+
         $sales = Sale::where('outlet_id', $outletId)
             ->completed()
             ->whereBetween('created_at', [$startOfDay, $endOfDay])
@@ -106,8 +105,8 @@ class FinanceController extends Controller
         $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
 
         // ==================== PROFIT CALCULATIONS ====================
-        
-        $dailyProfit = $sales->sum(fn($s) => $s->getTotalProfit());
+
+        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
         $dailyNetIncome = $dailyRevenue - $dailyExpenses;
 
         // All-time summary
@@ -116,20 +115,20 @@ class FinanceController extends Controller
             ->completed()
             ->where('is_reported', true)
             ->get()
-            ->sum(fn($s) => $s->getTotalProfit());
+            ->sum(fn ($s) => $s->getTotalProfit());
         $allTimeNetIncome = $totalNetIncome;
 
         // ==================== CASH REGISTERS ====================
-        
+
         $cashRegisters = CashRegister::where('outlet_id', $outletId)
             ->with('user')
             ->latest('opened_at')
             ->paginate(10, ['*'], 'cash_page');
 
         // ==================== EXPENSES LIST ====================
-        
+
         [$expenseStart, $expenseEnd] = $this->getExpenseDateRange($expensePeriod, $expenseStartDate, $expenseEndDate);
-        
+
         $expenses = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$expenseStart, $expenseEnd])
             ->where('amount', '>', 0)
@@ -140,7 +139,7 @@ class FinanceController extends Controller
         $expenseCategories = ExpenseCategory::where('is_active', true)->get();
 
         // ==================== SALES LIST (untuk tabel) ====================
-        
+
         $salesList = Sale::where('outlet_id', $outletId)
             ->completed()
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
@@ -191,7 +190,7 @@ class FinanceController extends Controller
 
         // Calculate percentages
         $total = array_sum($data);
-        $percentages = array_map(function($value) use ($total) {
+        $percentages = array_map(function ($value) use ($total) {
             return $total > 0 ? round(($value / $total) * 100, 1) : 0;
         }, $data);
 
@@ -225,13 +224,13 @@ class FinanceController extends Controller
             ->orderBy('total_amount', 'desc')
             ->get();
 
-        $labels = $expensesByCategory->map(fn($e) => $e->category->name ?? 'Lainnya')->toArray();
+        $labels = $expensesByCategory->map(fn ($e) => $e->category->name ?? 'Lainnya')->toArray();
         $data = $expensesByCategory->pluck('total_amount')->toArray();
         $counts = $expensesByCategory->pluck('total_count')->toArray();
 
         // Calculate percentages
         $total = array_sum($data);
-        $percentages = array_map(function($value) use ($total) {
+        $percentages = array_map(function ($value) use ($total) {
             return $total > 0 ? round(($value / $total) * 100, 1) : 0;
         }, $data);
 
@@ -246,7 +245,7 @@ class FinanceController extends Controller
 
     private function getDateRange($period)
     {
-        return match($period) {
+        return match ($period) {
             'week' => [Carbon::now()->subDays(6)->startOfDay(), Carbon::now()->endOfDay()],
             'month' => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
             'year' => [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()],
@@ -257,6 +256,7 @@ class FinanceController extends Controller
     public function createIncome(Request $request)
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
+
         return view('main.finance.create-income', compact('categories'));
     }
 
@@ -294,6 +294,7 @@ class FinanceController extends Controller
     public function createExpense()
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
+
         return view('main.finance.create-expense', compact('categories'));
     }
 
@@ -334,14 +335,14 @@ class FinanceController extends Controller
 
     private function getExpenseDateRange($period, $startDate, $endDate)
     {
-        return match($period) {
+        return match ($period) {
             'today' => [now()->startOfDay(), now()->endOfDay()],
             'week' => [now()->subDays(6)->startOfDay(), now()->endOfDay()],
             'month' => [now()->startOfMonth(), now()->endOfMonth()],
             'year' => [now()->startOfYear(), now()->endOfYear()],
             'custom' => [
                 $startDate ? Carbon::parse($startDate)->startOfDay() : now()->startOfMonth(),
-                $endDate ? Carbon::parse($endDate)->endOfDay() : now()->endOfDay()
+                $endDate ? Carbon::parse($endDate)->endOfDay() : now()->endOfDay(),
             ],
             default => [now()->startOfDay(), now()->endOfDay()],
         };
@@ -349,9 +350,10 @@ class FinanceController extends Controller
 
     private function generateExpenseNumber()
     {
-        $prefix = 'EXP-' . date('Ymd');
-        $count = Expense::where('expense_number', 'like', $prefix . '%')->count() + 1;
-        return $prefix . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        $prefix = 'EXP-'.date('Ymd');
+        $count = Expense::where('expense_number', 'like', $prefix.'%')->count() + 1;
+
+        return $prefix.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 
     public function daily(Request $request): JsonResponse
@@ -360,8 +362,8 @@ class FinanceController extends Controller
         $outletId = auth()->user()->outlet_id;
 
         $selectedDate = Carbon::parse($request->date)->format('Y-m-d');
-        $startOfDay   = Carbon::parse($selectedDate)->startOfDay();
-        $endOfDay     = Carbon::parse($selectedDate)->endOfDay();
+        $startOfDay = Carbon::parse($selectedDate)->startOfDay();
+        $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
         $sales = Sale::where('outlet_id', $outletId)
             ->completed()
@@ -370,12 +372,12 @@ class FinanceController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $cashTotal     = $sales->where('payment_method', 'cash')->sum('grand_total');
-        $qrisTotal     = $sales->where('payment_method', 'qris')->sum('grand_total');
+        $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
+        $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
         $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
-        $totalRevenue  = $sales->sum('grand_total');
+        $totalRevenue = $sales->sum('grand_total');
 
-        $dailyProfit   = $sales->sum(fn($s) => $s->getTotalProfit());
+        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
         $dailyExpenses = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$startOfDay, $endOfDay])
             ->where('amount', '>', 0)
@@ -385,23 +387,23 @@ class FinanceController extends Controller
 
         return response()->json([
             'selectedDate' => $selectedDate,
-            'sales' => $sales->map(fn($s) => [
+            'sales' => $sales->map(fn ($s) => [
                 'invoice_number' => $s->invoice_number,
-                'time'           => $s->created_at->format('H:i'),
-                'cashier'        => $s->cashier?->name,
+                'time' => $s->created_at->format('H:i'),
+                'cashier' => $s->cashier?->name,
                 'payment_method' => $s->payment_method,
-                'grand_total'    => (int) $s->grand_total,
+                'grand_total' => (int) $s->grand_total,
             ]),
             'totals' => [
-                'cash'     => (int) $cashTotal,
-                'qris'     => (int) $qrisTotal,
+                'cash' => (int) $cashTotal,
+                'qris' => (int) $qrisTotal,
                 'transfer' => (int) $transferTotal,
-                'revenue'  => (int) $totalRevenue,
+                'revenue' => (int) $totalRevenue,
             ],
             'summary' => [
-                'profit'   => (int) $dailyProfit,
+                'profit' => (int) $dailyProfit,
                 'expenses' => (int) $dailyExpenses,
-                'net'      => (int) $dailyNetIncome,
+                'net' => (int) $dailyNetIncome,
             ],
         ]);
     }

@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use App\Services\ClaraAiService;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Bind ClaraAiService sebagai singleton
         $this->app->singleton(ClaraAiService::class, function ($app) {
-            return new ClaraAiService();
+            return new ClaraAiService;
         });
     }
 

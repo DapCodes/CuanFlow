@@ -20,6 +20,7 @@ class RawMaterialSeeder extends Seeder
 
         if (empty($units) || empty($categories) || empty($supplierIds)) {
             echo "Pastikan UnitSeeder, CategorySeeder, dan SupplierSeeder sudah dijalankan.\n";
+
             return;
         }
 
@@ -276,8 +277,9 @@ class RawMaterialSeeder extends Seeder
             $category_id = $categories[$data['category_slug']] ?? null;
             $unit_id = $units[$data['unit_abbreviation']] ?? null;
 
-            if (!$category_id || !$unit_id) {
+            if (! $category_id || ! $unit_id) {
                 echo "Warning: Category atau Unit tidak ditemukan untuk {$data['name']}\n";
+
                 continue;
             }
 
@@ -329,6 +331,6 @@ class RawMaterialSeeder extends Seeder
         RawMaterialStock::insert($rawMaterialStocks);
 
         echo "✓ Seeder bahan baku berhasil dijalankan!\n";
-        echo "Total bahan baku: " . count($rawMaterialRecords) . "\n";
+        echo 'Total bahan baku: '.count($rawMaterialRecords)."\n";
     }
 }

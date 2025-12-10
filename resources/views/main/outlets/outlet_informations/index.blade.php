@@ -12,241 +12,314 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
-        
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        {{-- Alert / Notifikasi --}}
         @if(session('success'))
-        <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                <div class="flex-1">
-                    <p class="text-sm text-green-700">{{ session('success') }}</p>
-                </div>
+            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
+                <p class="text-green-800">{{ session('success') }}</p>
             </div>
-        </div>
         @endif
 
         @if(session('error'))
-        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
-                <div class="flex-1">
-                    <p class="text-sm text-red-700">{{ session('error') }}</p>
-                </div>
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
+                <p class="text-red-800">{{ session('error') }}</p>
             </div>
-        </div>
         @endif
 
-        <x-card-container>
-            <!-- Header -->
-            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN (diseragamkan dengan halaman diskon, warna tetap kuning-oranye) --}}
+        <section
+            class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-yellow-100 to-orange-100 text-orange-500 border border-orange-100">
+                        <i class="fas fa-store text-sm"></i>
+                    </span>
+                    <span>Informasi Outlet</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Kelola daftar outlet, detail kontak, dan status operasional dengan tampilan yang rapi dan konsisten.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+                <a href="{{ route('outlets.create') }}"
+                   class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 px-4 py-2.5 text-sm font-semibold text-white hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 shadow-sm">
+                    <i class="fas fa-plus-circle text-sm"></i>
+                    <span>Tambah Outlet</span>
+                </a>
+            </div>
+        </section>
+
+        {{-- RINGKASAN STATISTIK (layout mirip diskon, warna ala outlet) --}}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
+                <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-store text-orange-500 mr-3"></i>
-                            Informasi Outlet
-                        </h2>
-                        <p class="text-sm text-gray-600 mt-1">Kelola informasi dan pengaturan outlet Anda</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Outlet</p>
+                        <p class="mt-1 text-2xl font-semibold text-gray-900">{{ $outlets->total() }}</p>
                     </div>
-                    <a href="{{ route('outlets.create') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg">
-                        <i class="fas fa-plus-circle mr-2"></i>
-                        Tambah Outlet
-                    </a>
+                    <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center border border-yellow-100">
+                        <i class="fas fa-store text-yellow-500 text-lg"></i>
+                    </div>
                 </div>
             </div>
 
-            <!-- Filter & Search -->
-            <div class="p-6 bg-gray-50 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-1">
-                        <div class="relative">
-                            <input type="text" id="searchInput" placeholder="Cari outlet..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Outlet Aktif</p>
+                        <p class="mt-1 text-2xl font-semibold text-green-600">{{ $outlets->where('is_active', true)->count() }}</p>
                     </div>
-                    <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Semua Status</option>
-                        <option value="active">Aktif</option>
-                        <option value="inactive">Nonaktif</option>
-                    </select>
+                    <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center border border-green-100">
+                        <i class="fas fa-check-circle text-green-500 text-lg"></i>
+                    </div>
                 </div>
             </div>
 
-            <!-- Table -->
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Outlet Nonaktif</p>
+                        <p class="mt-1 text-2xl font-semibold text-gray-600">{{ $outlets->where('is_active', false)->count() }}</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
+                        <i class="fas fa-times-circle text-gray-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Owner</p>
+                        <p class="mt-1 text-2xl font-semibold text-orange-500">{{ $outlets->pluck('owner_id')->unique()->count() }}</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100">
+                        <i class="fas fa-user-tie text-orange-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- KONTEN UTAMA: TOOLBAR + TABEL (layout mengikuti halaman diskon) --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            {{-- Toolbar: Search & Filter --}}
+            <div class="border-b border-gray-200 px-4 md:px-6 py-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between gap-4">
+                <div class="w-full md:max-w-md">
+                    <label class="text-xs font-medium text-gray-500 mb-1 block">Cari outlet</label>
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Cari berdasarkan nama outlet..."
+                               class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-3 w-full md:w-auto">
+                    <div class="w-full sm:w-40 md:w-44">
+                        <label class="text-xs font-medium text-gray-500 mb-1 block">Status Outlet</label>
+                        <select id="statusFilter"
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
+                            <option value="">Semua Status</option>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Nonaktif</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tabel --}}
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 <i class="fas fa-barcode mr-1 text-gray-400"></i>
                                 Kode
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 <i class="fas fa-store mr-1 text-gray-400"></i>
                                 Outlet
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 <i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>
                                 Alamat
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 <i class="fas fa-phone mr-1 text-gray-400"></i>
                                 Kontak
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 <i class="fas fa-user-tie mr-1 text-gray-400"></i>
                                 Owner
                             </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 <i class="fas fa-toggle-on mr-1 text-gray-400"></i>
                                 Status
                             </th>
-                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 <i class="fas fa-cog mr-1 text-gray-400"></i>
                                 Aksi
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-100 bg-white">
                         @forelse($outlets as $outlet)
-                        <tr class="hover:bg-gray-50 transition-colors outlet-row" data-status="{{ $outlet->is_active ? 'active' : 'inactive' }}">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-mono font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded">
-                                    {{ $outlet->code }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    @if($outlet->logo)
-                                    <img src="{{ Storage::url($outlet->logo) }}" alt="{{ $outlet->name }}" class="h-12 w-12 rounded-lg object-cover mr-3 border-2 border-gray-200 shadow-sm">
-                                    @else
-                                    <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mr-3 shadow-sm">
-                                        <i class="fas fa-store text-white text-lg"></i>
-                                    </div>
-                                    @endif
-                                    <div>
-                                        <div class="text-sm font-semibold text-gray-900 outlet-name">{{ $outlet->name }}</div>
-                                        <div class="text-xs text-gray-500 flex items-center mt-1">
-                                            <i class="fas fa-calendar mr-1"></i>
-                                            {{ $outlet->created_at->format('d M Y') }}
+                            <tr class="hover:bg-gray-50 transition-colors outlet-row"
+                                data-status="{{ $outlet->is_active ? 'active' : 'inactive' }}">
+                                {{-- Kode --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-xs font-mono font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded">
+                                        {{ $outlet->code }}
+                                    </span>
+                                </td>
+
+                                {{-- Outlet + Tanggal --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        @if($outlet->logo)
+                                            <img src="{{ Storage::url($outlet->logo) }}" alt="{{ $outlet->name }}" class="h-12 w-12 rounded-lg object-cover mr-3 border-2 border-gray-200 shadow-sm">
+                                        @else
+                                            <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mr-3 shadow-sm">
+                                                <i class="fas fa-store text-white text-lg"></i>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <div class="text-sm font-semibold text-gray-900 outlet-name">{{ $outlet->name }}</div>
+                                            <div class="text-xs text-gray-500 flex items-center mt-1">
+                                                <i class="fas fa-calendar mr-1"></i>
+                                                {{ $outlet->created_at->format('d M Y') }}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900 max-w-xs">
-                                    <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
-                                    {{ Str::limit($outlet->address, 50) }}
-                                </div>
-                                @if($outlet->latitude && $outlet->longtitude)
-                                <div class="text-xs text-gray-500 mt-1">
-                                    <i class="fas fa-globe mr-1"></i>
-                                    {{ number_format($outlet->latitude, 6) }}, {{ number_format($outlet->longtitude, 6) }}
-                                </div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
-                                    <i class="fas fa-phone text-green-500 mr-1"></i>
-                                    {{ $outlet->phone ?? '-' }}
-                                </div>
-                                @if($outlet->email)
-                                <div class="text-xs text-gray-500 mt-1">
-                                    <i class="fas fa-envelope text-blue-500 mr-1"></i>
-                                    {{ $outlet->email }}
-                                </div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($outlet->owner)
-                                <div class="flex items-center">
-                                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold mr-2">
-                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                </td>
+
+                                {{-- Alamat --}}
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900 max-w-xs">
+                                        <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
+                                        {{ Str::limit($outlet->address, 50) }}
                                     </div>
-                                    <div>
-                                        <div class="text-sm font-medium text-gray-900">{{ $outlet->owner->name }}</div>
-                                        <div class="text-xs text-gray-500">{{ $outlet->owner->email }}</div>
-                                    </div>
-                                </div>
-                                @else
-                                <span class="text-sm text-gray-400">-</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($outlet->is_active)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                    Aktif
-                                </span>
-                                @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                                    <span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                                    Nonaktif
-                                </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <a href="{{ route('outlets.show', $outlet->id) }}" 
-                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors" 
-                                       title="Detail">
-                                        <i class="fas fa-eye text-sm"></i>
-                                    </a>
-                                    <a href="{{ route('outlets.edit', $outlet->id) }}" 
-                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition-colors" 
-                                       title="Edit">
-                                        <i class="fas fa-edit text-sm"></i>
-                                    </a>
-                                    @if(auth()->user()->outlet_id === $outlet->id)
-                                    <button type="button" 
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed" 
-                                            title="Outlet aktif tidak dapat dihapus"
-                                            disabled>
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
-                                    @else
-                                    <form action="{{ route('outlets.destroy', $outlet->id) }}" 
-                                          method="POST" 
-                                          class="inline-block" 
-                                          onsubmit="return confirm('Yakin ingin menghapus outlet {{ $outlet->name }}? Semua data terkait akan terhapus!')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" 
-                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors" 
-                                                title="Hapus">
-                                            <i class="fas fa-trash text-sm"></i>
-                                        </button>
-                                    </form>
+                                    @if($outlet->latitude && $outlet->longtitude)
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            <i class="fas fa-globe mr-1"></i>
+                                            {{ number_format($outlet->latitude, 6) }}, {{ number_format($outlet->longtitude, 6) }}
+                                        </div>
                                     @endif
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                        <i class="fas fa-store-slash text-5xl text-gray-300"></i>
+                                </td>
+
+                                {{-- Kontak --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        <i class="fas fa-phone text-green-500 mr-1"></i>
+                                        {{ $outlet->phone ?? '-' }}
                                     </div>
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Outlet</h3>
-                                    <p class="text-sm text-gray-500 mb-6">Mulai dengan menambahkan outlet pertama Anda</p>
-                                    <a href="{{ route('outlets.create') }}" class="inline-flex items-center px-5 py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-cuan-olive transition-colors">
-                                        <i class="fas fa-plus-circle mr-2"></i>
-                                        Tambah Outlet
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
+                                    @if($outlet->email)
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            <i class="fas fa-envelope text-blue-500 mr-1"></i>
+                                            {{ $outlet->email }}
+                                        </div>
+                                    @endif
+                                </td>
+
+                                {{-- Owner --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($outlet->owner)
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-white font-semibold mr-2">
+                                                {{ substr(auth()->user()->name, 0, 1) }}
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">{{ $outlet->owner->name }}</div>
+                                                <div class="text-xs text-gray-500">{{ $outlet->owner->email }}</div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-sm text-gray-400">-</span>
+                                    @endif
+                                </td>
+
+                                {{-- Status --}}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($outlet->is_active)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100">
+                                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></span>
+                                            Aktif
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">
+                                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1.5"></span>
+                                            Nonaktif
+                                        </span>
+                                    @endif
+                                </td>
+
+                                {{-- Aksi --}}
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="inline-flex items-center gap-1.5">
+                                        <a href="{{ route('outlets.show', $outlet->id) }}"
+                                           class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                           title="Detail">
+                                            <i class="fas fa-eye text-xs"></i>
+                                        </a>
+                                        <a href="{{ route('outlets.edit', $outlet->id) }}"
+                                           class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-yellow-200 bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
+                                           title="Edit">
+                                            <i class="fas fa-edit text-xs"></i>
+                                        </a>
+                                        @if(auth()->user()->outlet_id === $outlet->id)
+                                            <button type="button"
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                                                    title="Outlet aktif tidak dapat dihapus"
+                                                    disabled>
+                                                <i class="fas fa-trash text-xs"></i>
+                                            </button>
+                                        @else
+                                            <form action="{{ route('outlets.destroy', $outlet->id) }}"
+                                                  method="POST"
+                                                  class="inline-block"
+                                                  onsubmit="return confirm('Yakin ingin menghapus outlet {{ $outlet->name }}? Semua data terkait akan terhapus!')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
+                                                        title="Hapus">
+                                                    <i class="fas fa-trash text-xs"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-6 py-16 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                            <i class="fas fa-store-slash text-5xl text-gray-300"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Outlet</h3>
+                                        <p class="text-sm text-gray-500 mb-4">Mulai dengan menambahkan outlet pertama Anda</p>
+                                        <a href="{{ route('outlets.create') }}"
+                                           class="inline-flex items-center px-5 py-2.5 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-colors">
+                                            <i class="fas fa-plus-circle mr-2"></i>
+                                            Tambah Outlet
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination -->
+            {{-- Pagination --}}
             @if($outlets->hasPages())
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="text-sm text-gray-700">
+                <div class="px-4 md:px-6 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="text-xs sm:text-sm text-gray-700">
                         Menampilkan 
                         <span class="font-semibold">{{ $outlets->firstItem() }}</span>
                         sampai
@@ -259,60 +332,8 @@
                         {{ $outlets->links() }}
                     </div>
                 </div>
-            </div>
             @endif
-
-            <!-- Summary Statistics -->
-            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-t border-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Total Outlet</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $outlets->total() }}</p>
-                            </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-store text-blue-600 text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Outlet Aktif</p>
-                                <p class="text-2xl font-bold text-green-600 mt-1">{{ $outlets->where('is_active', true)->count() }}</p>
-                            </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Outlet Nonaktif</p>
-                                <p class="text-2xl font-bold text-gray-600 mt-1">{{ $outlets->where('is_active', false)->count() }}</p>
-                            </div>
-                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-times-circle text-gray-600 text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Total Owner</p>
-                                <p class="text-2xl font-bold text-purple-600 mt-1">{{ $outlets->pluck('owner_id')->unique()->count() }}</p>
-                            </div>
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-user-tie text-purple-600 text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </x-card-container>
-
+        </section>
     </div>
 </main>
 
@@ -324,26 +345,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const rows = document.querySelectorAll('.outlet-row');
 
     function filterTable() {
-        const searchTerm = searchInput.value.toLowerCase();
+        const searchTerm = (searchInput.value || '').toLowerCase();
         const statusValue = statusFilter.value;
 
         rows.forEach(row => {
-            const name = row.querySelector('.outlet-name').textContent.toLowerCase();
+            const nameEl = row.querySelector('.outlet-name');
+            const name = nameEl ? nameEl.textContent.toLowerCase() : '';
             const status = row.dataset.status;
-            
-            const matchesSearch = name.includes(searchTerm);
+
+            const matchesSearch = !searchTerm || name.includes(searchTerm);
             const matchesStatus = !statusValue || status === statusValue;
 
-            if (matchesSearch && matchesStatus) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
         });
     }
 
-    searchInput.addEventListener('input', filterTable);
-    statusFilter.addEventListener('change', filterTable);
+    if (searchInput) {
+        searchInput.addEventListener('input', filterTable);
+    }
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterTable);
+    }
 });
 </script>
 @endpush

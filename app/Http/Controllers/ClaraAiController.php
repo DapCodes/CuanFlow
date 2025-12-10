@@ -37,16 +37,16 @@ class ClaraAiController extends Controller
         }
 
         // Jika tidak ada atau tidak valid, ambil session terbaru
-        if (!$session && $sessions->isNotEmpty()) {
+        if (! $session && $sessions->isNotEmpty()) {
             $session = $sessions->first();
         }
 
         // Jika sama sekali belum ada session, buat baru
-        if (!$session) {
+        if (! $session) {
             $session = AiChatSession::create([
-                'user_id'   => $user->id,
+                'user_id' => $user->id,
                 'outlet_id' => $user->outlet_id,
-                'title'     => 'Chat Baru',
+                'title' => 'Chat Baru',
             ]);
 
             // Refresh collection
@@ -64,7 +64,7 @@ class ClaraAiController extends Controller
     public function chat(Request $request)
     {
         $request->validate([
-            'message'    => 'required|string|max:1000',
+            'message' => 'required|string|max:1000',
             'session_id' => 'required|exists:ai_chat_sessions,id',
         ]);
 
@@ -113,9 +113,9 @@ class ClaraAiController extends Controller
 
         // Jika tidak ada, buat session baru
         $session = AiChatSession::create([
-            'user_id'   => $user->id,
+            'user_id' => $user->id,
             'outlet_id' => $user->outlet_id,
-            'title'     => 'Chat Baru',
+            'title' => 'Chat Baru',
         ]);
 
         return redirect()->route('clara-ai.index', ['session_id' => $session->id]);
@@ -142,11 +142,11 @@ class ClaraAiController extends Controller
     {
         // Potong pesan jika terlalu panjang dan tambahkan elipsis
         $title = Str::limit($message, 50, '...');
-        
+
         // Bersihkan karakter yang tidak diinginkan
         $title = preg_replace('/\s+/', ' ', $title);
         $title = trim($title);
-        
+
         return $title ?: 'Chat Baru';
     }
 }

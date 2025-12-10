@@ -1,10 +1,10 @@
 <?php
 
+use App\Models\Outlet;
+use App\Services\ClaraAiService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
-use App\Services\ClaraAiService;
-use App\Models\Outlet;
 
 // Register command untuk generate insights
 Artisan::command('ai:generate-insights {--outlet_id=}', function (ClaraAiService $claraAi) {
@@ -18,7 +18,7 @@ Artisan::command('ai:generate-insights {--outlet_id=}', function (ClaraAiService
 
     foreach ($outlets as $outlet) {
         $this->info("Generating insights for outlet: {$outlet->name}");
-        
+
         try {
             $claraAi->generateDailyInsights($outlet->id);
             $this->info("✓ Insights generated successfully for {$outlet->name}");

@@ -62,10 +62,10 @@ class CashRegister extends Model
     {
         // Pastikan summary sudah dihitung
         $this->calculateSummary();
-        
+
         // Hitung selisih
         $difference = $closingAmount - $this->expected_amount;
-        
+
         // Update data
         $this->update([
             'closing_amount' => $closingAmount,
@@ -101,7 +101,7 @@ class CashRegister extends Model
         $this->total_cash = $sales->where('payment_method', 'cash')->sum('grand_total');
         $this->total_qris = $sales->where('payment_method', 'qris')->sum('grand_total');
         $this->total_transfer = $sales->where('payment_method', 'transfer')->sum('grand_total');
-        
+
         // Expected amount = opening amount + total cash sales
         $this->expected_amount = $this->opening_amount + $this->total_cash;
 
@@ -156,6 +156,7 @@ class CashRegister extends Model
         } elseif ($this->difference < 0) {
             return 'minus';
         }
+
         return 'exact';
     }
 
@@ -165,12 +166,12 @@ class CashRegister extends Model
     public function getFormattedDifference(): string
     {
         $type = $this->getDifferenceType();
-        $amount = 'Rp ' . number_format(abs($this->difference), 0, ',', '.');
-        
-        return match($type) {
+        $amount = 'Rp '.number_format(abs($this->difference), 0, ',', '.');
+
+        return match ($type) {
             'surplus' => "+{$amount} (Lebih)",
             'minus' => "-{$amount} (Kurang)",
-            'exact' => "Rp 0 (Pas)",
+            'exact' => 'Rp 0 (Pas)',
         };
     }
 }

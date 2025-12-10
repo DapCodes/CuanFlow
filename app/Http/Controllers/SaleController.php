@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Sale;
-use App\Models\Purchase;
-use App\Models\Expense;
 use App\Models\CashRegister;
+use App\Models\Expense;
 use App\Models\ExpenseCategory;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Models\Sale;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
@@ -46,8 +45,8 @@ class SaleController extends Controller
         $totalRevenue = $sales->sum('grand_total');
 
         // Get daily summary
-        $dailyProfit = $sales->sum(fn($s) => $s->getTotalProfit());
-        
+        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+
         $dailyExpenses = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$startOfDay, $endOfDay])
             ->where('amount', '>', 0)
@@ -63,7 +62,7 @@ class SaleController extends Controller
         $allTimeProfit = Sale::where('outlet_id', $outletId)
             ->completed()
             ->get()
-            ->sum(fn($s) => $s->getTotalProfit());
+            ->sum(fn ($s) => $s->getTotalProfit());
 
         $allTimeExpenses = Expense::where('outlet_id', $outletId)
             ->where('amount', '>', 0)
@@ -79,7 +78,7 @@ class SaleController extends Controller
 
         // Get expenses with filter
         [$expenseStart, $expenseEnd] = $this->getExpenseDateRange($expensePeriod, $expenseStartDate, $expenseEndDate);
-        
+
         $expenses = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$expenseStart, $expenseEnd])
             ->with(['category', 'creator'])
@@ -116,6 +115,7 @@ class SaleController extends Controller
     public function createIncome(Request $request)
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
+
         return view('main.sales.create-income', compact('categories'));
     }
 
@@ -153,6 +153,7 @@ class SaleController extends Controller
     public function createExpense()
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
+
         return view('main.sales.create-expense', compact('categories'));
     }
 
@@ -193,14 +194,14 @@ class SaleController extends Controller
 
     private function getExpenseDateRange($period, $startDate, $endDate)
     {
-        return match($period) {
+        return match ($period) {
             'today' => [now()->startOfDay(), now()->endOfDay()],
             'week' => [now()->startOfWeek(), now()->endOfWeek()],
             'month' => [now()->startOfMonth(), now()->endOfMonth()],
             'year' => [now()->startOfYear(), now()->endOfYear()],
             'custom' => [
                 $startDate ? Carbon::parse($startDate)->startOfDay() : now()->startOfMonth(),
-                $endDate ? Carbon::parse($endDate)->endOfDay() : now()->endOfDay()
+                $endDate ? Carbon::parse($endDate)->endOfDay() : now()->endOfDay(),
             ],
             default => [now()->startOfDay(), now()->endOfDay()],
         };
@@ -208,11 +209,11 @@ class SaleController extends Controller
 
     private function generateExpenseNumber()
     {
-        $prefix = 'EXP-' . date('Ymd');
-        $count = Expense::where('expense_number', 'like', $prefix . '%')->count() + 1;
-        return $prefix . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-    }
+        $prefix = 'EXP-'.date('Ymd');
+        $count = Expense::where('expense_number', 'like', $prefix.'%')->count() + 1;
 
+        return $prefix.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
+    }
 
     public function daily(Request $request): JsonResponse
     {
@@ -220,8 +221,8 @@ class SaleController extends Controller
         $outletId = auth()->user()->outlet_id;
 
         $selectedDate = Carbon::parse($request->date)->format('Y-m-d');
-        $startOfDay   = Carbon::parse($selectedDate)->startOfDay();
-        $endOfDay     = Carbon::parse($selectedDate)->endOfDay();
+        $startOfDay = Carbon::parse($selectedDate)->startOfDay();
+        $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
         $sales = Sale::where('outlet_id', $outletId)
             ->completed()
@@ -230,12 +231,12 @@ class SaleController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $cashTotal     = $sales->where('payment_method', 'cash')->sum('grand_total');
-        $qrisTotal     = $sales->where('payment_method', 'qris')->sum('grand_total');
+        $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
+        $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
         $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
-        $totalRevenue  = $sales->sum('grand_total');
+        $totalRevenue = $sales->sum('grand_total');
 
-        $dailyProfit   = $sales->sum(fn($s) => $s->getTotalProfit());
+        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
         $dailyExpenses = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$startOfDay, $endOfDay])
             ->where('amount', '>', 0)
@@ -245,37 +246,37 @@ class SaleController extends Controller
 
         return response()->json([
             'selectedDate' => $selectedDate,
-            'sales' => $sales->map(fn($s) => [
-                'id'             => $s->id,
+            'sales' => $sales->map(fn ($s) => [
+                'id' => $s->id,
                 'invoice_number' => $s->invoice_number,
-                'time'           => $s->created_at->format('H:i'),
-                'cashier'        => $s->cashier?->name,
+                'time' => $s->created_at->format('H:i'),
+                'cashier' => $s->cashier?->name,
                 'payment_method' => $s->payment_method,
-                'grand_total'    => (int) $s->grand_total,
-                'status'         => $s->status, // TAMBAHKAN ini
+                'grand_total' => (int) $s->grand_total,
+                'status' => $s->status, // TAMBAHKAN ini
             ]),
             'totals' => [
-                'cash'     => (int) $cashTotal,
-                'qris'     => (int) $qrisTotal,
+                'cash' => (int) $cashTotal,
+                'qris' => (int) $qrisTotal,
                 'transfer' => (int) $transferTotal,
-                'revenue'  => (int) $totalRevenue,
+                'revenue' => (int) $totalRevenue,
             ],
             'summary' => [
-                'revenue'      => (int) $totalRevenue,
+                'revenue' => (int) $totalRevenue,
                 'transactions' => $sales->count(),
-                'profit'       => (int) $dailyProfit,
-                'expenses'     => (int) $dailyExpenses,
-                'refunds'      => (int) Sale::where('outlet_id', $outletId)
-                                        ->where('status', 'refunded')
-                                        ->whereBetween('created_at', [$startOfDay, $endOfDay])
-                                        ->sum('grand_total'),
+                'profit' => (int) $dailyProfit,
+                'expenses' => (int) $dailyExpenses,
+                'refunds' => (int) Sale::where('outlet_id', $outletId)
+                    ->where('status', 'refunded')
+                    ->whereBetween('created_at', [$startOfDay, $endOfDay])
+                    ->sum('grand_total'),
             ],
         ]);
     }
 
     public function refund(Sale $sale)
     {
-        if ($sale->outlet_id !== auth()->user()->outlet_id && !auth()->user()->isOwner()) {
+        if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
             abort(403, 'Akses ditolak');
         }
 
@@ -283,7 +284,7 @@ class SaleController extends Controller
             return back()->with('error', 'Hanya transaksi selesai yang bisa di-refund');
         }
 
-        if (!in_array($sale->payment_method, ['cash', 'transfer'])) {
+        if (! in_array($sale->payment_method, ['cash', 'transfer'])) {
             return back()->with('error', 'Hanya transaksi Cash/Transfer yang bisa di-refund');
         }
 
@@ -301,12 +302,15 @@ class SaleController extends Controller
             $sale->update(['status' => 'refunded']);
 
             DB::commit();
+
             return back()->with('success', 'Refund berhasil. Stok telah dikembalikan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Refund gagal: ' . $e->getMessage());
+
+            return back()->with('error', 'Refund gagal: '.$e->getMessage());
         }
     }
+
     /**
      * Tampilkan detail penjualan
      */

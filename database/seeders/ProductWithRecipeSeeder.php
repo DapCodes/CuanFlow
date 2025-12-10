@@ -22,6 +22,7 @@ class ProductWithRecipeSeeder extends Seeder
 
         if (empty($units) || empty($categories)) {
             echo "Pastikan UnitSeeder dan CategorySeeder sudah dijalankan.\n";
+
             return;
         }
 
@@ -463,13 +464,13 @@ class ProductWithRecipeSeeder extends Seeder
             // Hitung HPP dari resep dengan detail per bahan
             $rawMaterialCost = 0;
             $calculationDetails = [];
-            
+
             foreach ($productData['recipe']['items'] as $item) {
                 $rawMaterial = $rawMaterials->get($item['code']);
                 if ($rawMaterial) {
                     $itemCost = $rawMaterial->purchase_price * $item['quantity'];
                     $rawMaterialCost += $itemCost;
-                    
+
                     $calculationDetails[] = [
                         'raw_material_code' => $rawMaterial->code,
                         'raw_material_name' => $rawMaterial->name,
@@ -578,17 +579,17 @@ class ProductWithRecipeSeeder extends Seeder
             ]);
 
             echo "✓ Produk '{$product->name}' berhasil dibuat!\n";
-            echo "  Biaya Bahan: Rp " . number_format($rawMaterialCost, 0, ',', '.') . "\n";
-            echo "  Biaya Tambahan (15%): Rp " . number_format($additionalCost, 0, ',', '.') . "\n";
-            echo "  Total HPP: Rp " . number_format($totalHpp, 0, ',', '.') . "\n";
-            echo "  Harga Jual: Rp " . number_format($selling_price, 0, ',', '.') . "\n";
-            echo "  Margin: " . number_format($margin_percent, 2) . "%\n";
-            echo "  Profit: Rp " . number_format($selling_price - $totalHpp, 0, ',', '.') . "\n\n";
+            echo '  Biaya Bahan: Rp '.number_format($rawMaterialCost, 0, ',', '.')."\n";
+            echo '  Biaya Tambahan (15%): Rp '.number_format($additionalCost, 0, ',', '.')."\n";
+            echo '  Total HPP: Rp '.number_format($totalHpp, 0, ',', '.')."\n";
+            echo '  Harga Jual: Rp '.number_format($selling_price, 0, ',', '.')."\n";
+            echo '  Margin: '.number_format($margin_percent, 2)."%\n";
+            echo '  Profit: Rp '.number_format($selling_price - $totalHpp, 0, ',', '.')."\n\n";
         }
 
         echo "========================================\n";
         echo "Seeder produk berhasil dijalankan!\n";
-        echo "Total produk: " . count($productsData) . "\n";
+        echo 'Total produk: '.count($productsData)."\n";
         echo "========================================\n";
     }
 }
