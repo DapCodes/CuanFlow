@@ -2103,6 +2103,7 @@ function clearCart() {
         if(data.success){
             cart = {};
             cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0,total_items:0 };
+            activeDiscountPlan = null; // ⬅️ TAMBAHKAN INI
             renderCart();
             setUIState('browse');
             showToast('success','Keranjang dikosongkan');
@@ -2122,6 +2123,9 @@ function renderCart() {
     const isPayflow = (UI_STATE !== 'browse');
 
     if (!cart || Object.keys(cart).length === 0) {
+        // PERBAIKAN: Clear discount plan jika cart kosong
+        activeDiscountPlan = null;
+        
         preview.innerHTML = `
             <div class="empty-state" id="emptyCartPreview">
                 <i class="fas fa-shopping-cart"></i>
@@ -2308,6 +2312,7 @@ function calculateChange() {
     document.getElementById('changeAmount').textContent = 'Rp ' + formatNumber(Math.max(0, change));
 }
 
+// ==================== PAYMENT FUNCTIONS ====================
 function processCashPayment() {
     const paid = parseFloat(document.getElementById('cashPaidAmount').value) || 0;
     if (paid < (cartSummary.grand_total || 0)) {
@@ -2325,12 +2330,21 @@ function processCashPayment() {
             if (data.sale && data.sale.items) { 
                 updateProductStockFromSaleItems(data.sale.items); 
             }
+            // PERBAIKAN: Update stock dengan free items untuk BOGO
+            if (activeDiscountPlan && activeDiscountPlan.discount_type === 'buy_x_get_y') {
+                updateProductStockWithFreeItems(activeDiscountPlan);
+            }
+            
             await fetch('{{ route("pos.cart.clear") }}', { 
                 method:'POST', 
                 headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
             });
+            
+            // PERBAIKAN: Reset semua state
             cart = {}; 
             cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0,total_items:0 };
+            activeDiscountPlan = null; // ⬅️ TAMBAHKAN INI
+            
             renderCart(); 
             setUIState('browse');
             openPaymentSuccessModal({
@@ -2365,12 +2379,21 @@ function processTransferPayment() {
             if (data.sale && data.sale.items) { 
                 updateProductStockFromSaleItems(data.sale.items); 
             }
+            // PERBAIKAN: Update stock dengan free items untuk BOGO
+            if (activeDiscountPlan && activeDiscountPlan.discount_type === 'buy_x_get_y') {
+                updateProductStockWithFreeItems(activeDiscountPlan);
+            }
+            
             await fetch('{{ route("pos.cart.clear") }}', { 
                 method:'POST', 
                 headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
             });
+            
+            // PERBAIKAN: Reset semua state
             cart = {}; 
             cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0,total_items:0 };
+            activeDiscountPlan = null; // ⬅️ TAMBAHKAN INI
+            
             renderCart(); 
             setUIState('browse');
             openPaymentSuccessModal({
@@ -2410,12 +2433,21 @@ function openMidtransPayment() {
                         if (saleData.items) { 
                             updateProductStockFromSaleItems(saleData.items); 
                         }
+                        // PERBAIKAN: Update stock dengan free items untuk BOGO
+                        if (activeDiscountPlan && activeDiscountPlan.discount_type === 'buy_x_get_y') {
+                            updateProductStockWithFreeItems(activeDiscountPlan);
+                        }
+                        
                         await fetch('{{ route("pos.cart.clear") }}', { 
                             method:'POST', 
                             headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
                         });
+                        
+                        // PERBAIKAN: Reset semua state
                         cart = {}; 
                         cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0,total_items:0 };
+                        activeDiscountPlan = null; // ⬅️ TAMBAHKAN INI
+                        
                         renderCart(); 
                         setUIState('browse');
                         openPaymentSuccessModal({
@@ -2450,6 +2482,29 @@ function updateProductStockFromSaleItems(items){
     });
 }
 
+// PERBAIKAN: Fungsi baru untuk update stock dengan free items BOGO
+function updateProductStockWithFreeItems(discountPlan) {
+    if (!discountPlan || discountPlan.discount_type !== 'buy_x_get_y') return;
+    if (!discountPlan.affected_items || !discountPlan.affected_items.length) return;
+    
+    discountPlan.affected_items.forEach(item => {
+        const freeQty = item.free_qty || 0;
+        if (freeQty <= 0) return;
+        
+        const wrap = document.querySelector(`.product-stock[data-product-id="${item.product_id}"]`);
+        if (!wrap) return;
+        
+        const qtySpan = wrap.querySelector('.stock-qty');
+        let currentQty = parseInt((qtySpan.textContent||'0').replace(/\./g,'')) || 0;
+        let newQty = currentQty - freeQty;
+        if (newQty < 0) newQty = 0;
+        
+        qtySpan.textContent = formatNumber(newQty);
+        wrap.classList.toggle('text-green-600', newQty > 0);
+        wrap.classList.toggle('text-red-600', newQty <= 0);
+    });
+}
+
 function openPaymentSuccessModal(data){
     currentSaleId = data.sale_id || data.id;
     document.getElementById('successInvoiceNumber').textContent = data.invoice_number || '-';
@@ -2467,6 +2522,10 @@ function openPaymentSuccessModal(data){
 function closePaymentSuccessModal(){
     document.getElementById('paymentSuccessModal').classList.add('hidden');
     currentSaleId=null;
+    
+    // PERBAIKAN: Pastikan discount info benar-benar hilang
+    activeDiscountPlan = null;
+    renderCart();
 }
 
 function printReceipt(){

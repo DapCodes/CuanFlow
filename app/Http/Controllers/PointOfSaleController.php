@@ -520,4 +520,110 @@ class PointOfSaleController extends Controller
         Session::put('pos_discount_plan', $newPlan);
         return $newPlan;
     }
+
+public function applyDiscount(Request $request)
+{
+    $request->validate([
+        'discount_code' => 'nullable|string',
+    ]);
+
+    $cart = Session::get('pos_cart', []);
+    
+    if (empty($cart)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Keranjang kosong',
+        ], 400);
+    }
+
+    $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
+    
+    // Find candidates
+    $discountCode = $request->discount_code;
+    $customerId = Session::get('pos_customer_id');
+    
+    $candidates = $this->discountService->findCandidates(
+        array_values($cart),
+        $discountCode,
+        $customerId
+    );
+    
+    if ($candidates->isEmpty()) {
+        Session::forget('pos_discount_plan');
+        return response()->json([
+            'success' => false,
+            'message' => $discountCode 
+                ? 'Kode diskon tidak valid atau tidak ditemukan' 
+                : 'Tidak ada diskon yang tersedia',
+        ], 400);
+    }
+    
+    // Calculate best plan
+    $plan = $this->discountService->calculateDiscountPlan(
+        array_values($cart),
+        $candidates,
+        $subtotal
+    );
+    
+    // Validate the plan is actually applicable
+    if (!$plan['discount_id']) {
+        Session::forget('pos_discount_plan');
+        return response()->json([
+            'success' => false,
+            'message' => 'Syarat diskon belum terpenuhi',
+        ], 400);
+    }
+    
+    // For BOGO with no free items possible, reject
+    if ($plan['discount_type'] === 'buy_x_get_y' && $plan['free_item_quota'] <= 0) {
+        Session::forget('pos_discount_plan');
+        return response()->json([
+            'success' => false,
+            'message' => 'Syarat diskon belum terpenuhi. Belanja lebih banyak untuk mendapat item gratis.',
+        ], 400);
+    }
+    
+    Session::put('pos_discount_plan', $plan);
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Diskon berhasil diterapkan',
+        'discount_plan' => $plan,
+        'cart_summary' => $this->calculateCartSummary($cart),
+    ]);
+}
+
+public function getAvailableDiscounts()
+{
+    $outletId = auth()->user()->outlet_id;
+    
+    $discounts = Discount::where('is_active', true)
+        ->where(function($query) use ($outletId) {
+            $query->whereNull('outlet_id')
+                  ->orWhere('outlet_id', $outletId);
+        })
+        ->get()
+        ->filter(fn($d) => $d->isValid())
+        ->map(function($discount) {
+            return [
+                'id' => $discount->id,
+                'name' => $discount->name,
+                'type' => $discount->type,
+                'value' => $discount->value,
+                'product_id' => $discount->product_id,
+                'category_id' => $discount->category_id,
+                'buy_quantity' => $discount->buy_quantity,
+                'get_quantity' => $discount->get_quantity,
+                'min_purchase' => $discount->min_purchase,
+                'max_discount' => $discount->max_discount,
+                'can_apply' => true, // Already filtered by isValid()
+            ];
+        })
+        ->values();
+    
+    return response()->json([
+        'success' => true,
+        'discounts' => $discounts,
+    ]);
+}
 }

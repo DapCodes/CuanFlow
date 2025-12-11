@@ -52,34 +52,52 @@ class DiscountService
         return $candidates->unique('id');
     }
     
-    /**
-     * Calculate discount plan for cart
-     */
-    public function calculateDiscountPlan(array $cartItems, Collection $candidates, float $subtotal): array
-    {
-        $bestPlan = null;
-        $maxBenefit = 0;
+/**
+ * Calculate discount plan for cart
+ */
+public function calculateDiscountPlan(array $cartItems, Collection $candidates, float $subtotal): array
+{
+    $bestPlan = null;
+    $maxBenefit = -1;
+    
+    foreach ($candidates as $discount) {
+        $plan = $this->simulateDiscount($discount, $cartItems, $subtotal);
         
-        foreach ($candidates as $discount) {
-            $plan = $this->simulateDiscount($discount, $cartItems, $subtotal);
-            
-            if ($plan['total_discount'] > $maxBenefit) {
-                $maxBenefit = $plan['total_discount'];
-                $bestPlan = $plan;
+        // Calculate benefit based on discount type
+        if ($plan['discount_type'] === 'buy_x_get_y') {
+            // For BOGO: benefit = number of free items * average item price
+            // This ensures BOGO competes fairly with monetary discounts
+            $freeQty = $plan['free_item_quota'] ?? 0;
+            if ($freeQty > 0 && !empty($plan['free_item_candidates'])) {
+                // Calculate average price of free item candidates
+                $avgPrice = collect($plan['free_item_candidates'])
+                    ->avg('unit_price');
+                $benefit = $freeQty * $avgPrice;
+            } else {
+                $benefit = 0;
             }
+        } else {
+            // For percentage/fixed: benefit = actual discount amount
+            $benefit = $plan['total_discount'];
         }
-        
-        return $bestPlan ?? [
-            'discount_id' => null,
-            'discount_name' => null,
-            'discount_type' => null,
-            'total_discount' => 0,
-            'affected_items' => [],
-            'requires_free_item_selection' => false,
-            'free_item_candidates' => [],
-            'free_item_quota' => 0,
-        ];
+
+        if ($benefit > $maxBenefit) {
+            $maxBenefit = $benefit;
+            $bestPlan = $plan;
+        }
     }
+    
+    return $bestPlan ?? [
+        'discount_id' => null,
+        'discount_name' => null,
+        'discount_type' => null,
+        'total_discount' => 0,
+        'affected_items' => [],
+        'requires_free_item_selection' => false,
+        'free_item_candidates' => [],
+        'free_item_quota' => 0,
+    ];
+}
     
     /**
      * Simulate discount application

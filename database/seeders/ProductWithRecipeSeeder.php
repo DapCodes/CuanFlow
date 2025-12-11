@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\HppCalculation;
 use App\Models\Product;
 use App\Models\ProductStock;
@@ -27,6 +28,7 @@ class ProductWithRecipeSeeder extends Seeder
         }
 
         $rawMaterials = RawMaterial::all()->keyBy('code');
+        $createdProducts = [];
 
         // Data produk dengan resep yang masuk akal
         $productsData = [
@@ -460,6 +462,10 @@ class ProductWithRecipeSeeder extends Seeder
             ],
         ];
 
+        // Cleanup existing products to avoid duplicates
+        $codes = array_column($productsData, 'code');
+        Product::whereIn('code', $codes)->forceDelete();
+
         foreach ($productsData as $productData) {
             // Hitung HPP dari resep dengan detail per bahan
             $rawMaterialCost = 0;
@@ -513,6 +519,8 @@ class ProductWithRecipeSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            $createdProducts[$productData['code']] = $product->id;
 
             // Buat resep
             $recipe = Recipe::create([
@@ -573,7 +581,7 @@ class ProductWithRecipeSeeder extends Seeder
             ProductStock::create([
                 'product_id' => $product->id,
                 'outlet_id' => $targetOutletId,
-                'quantity' => 20,
+                'quantity' => 100,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -590,6 +598,79 @@ class ProductWithRecipeSeeder extends Seeder
         echo "========================================\n";
         echo "Seeder produk berhasil dijalankan!\n";
         echo 'Total produk: '.count($productsData)."\n";
+        echo "========================================\n\n";
+
+        // ============ SEEDER DISKON ============
+        echo "Memulai seeding diskon...\n";
+
+        $discountsData = [
+            [
+                'code' => 'DISC-TAKO10',
+                'name' => 'Diskon Takoyaki 10%',
+                'type' => 'percentage',
+                'value' => 10,
+                'min_purchase' => 0,
+                'max_discount' => 5000,
+                'product_code' => 'PRD001', // Takoyaki Original
+                'start_date' => now(),
+                'end_date' => now()->addMonth(),
+                'is_active' => true,
+            ],
+            [
+                'code' => 'DISC-KOPI-B2G1',
+                'name' => 'Beli 2 Gratis 1 Kopi Susu',
+                'type' => 'buy_x_get_y',
+                'value' => 0,
+                'min_purchase' => 0,
+                'buy_quantity' => 2,
+                'get_quantity' => 1,
+                'product_code' => 'PRD009', // Es Kopi Susu Gula Aren
+                'start_date' => now(),
+                'end_date' => now()->addMonth(),
+                'is_active' => true,
+            ],
+            [
+                'code' => 'DISC-BROWNIES-5K',
+                'name' => 'Potongan 5rb Brownies',
+                'type' => 'fixed',
+                'value' => 5000,
+                'min_purchase' => 40000,
+                'product_code' => 'PRD005', // Brownies Cokelat Kacang
+                'start_date' => now(),
+                'end_date' => now()->addMonth(),
+                'is_active' => true,
+            ],
+        ];
+
+        foreach ($discountsData as $data) {
+            $productId = $createdProducts[$data['product_code']] ?? null;
+
+            if ($productId) {
+                Discount::updateOrCreate(
+                    ['code' => $data['code']],
+                    [
+                        'name' => $data['name'],
+                        'type' => $data['type'],
+                        'value' => $data['value'],
+                        'min_purchase' => $data['min_purchase'],
+                        'max_discount' => $data['max_discount'] ?? null,
+                        'buy_quantity' => $data['buy_quantity'] ?? null,
+                        'get_quantity' => $data['get_quantity'] ?? null,
+                        'product_id' => $productId,
+                        'start_date' => $data['start_date'],
+                        'end_date' => $data['end_date'],
+                        'is_active' => $data['is_active'],
+                    ]
+                );
+
+                echo "✓ Diskon '{$data['name']}' berhasil dibuat/diupdate untuk produk kode {$data['product_code']}\n";
+            } else {
+                echo "⚠ Produk dengan kode {$data['product_code']} tidak ditemukan, diskon '{$data['name']}' dilewati.\n";
+            }
+        }
+
+        echo "========================================\n";
+        echo "Seeder diskon berhasil dijalankan!\n";
         echo "========================================\n";
     }
 }
