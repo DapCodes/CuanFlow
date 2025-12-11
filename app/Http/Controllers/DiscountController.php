@@ -74,6 +74,7 @@ class DiscountController extends Controller
         // Set default values
         $validated['min_purchase'] = $validated['min_purchase'] ?? 0;
         $validated['used_count'] = 0;
+        $validated['outlet_id'] = auth()->user()->outlet_id;
         $validated['is_active'] = $request->has('is_active');
 
         if ($validated['type'] === 'buy_x_get_y') {

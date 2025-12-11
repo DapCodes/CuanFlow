@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('get_quantity')->nullable();
             $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('outlet_id')->nullable()->constrained()->nullOnDelete();
             $table->datetime('start_date')->nullable();
             $table->datetime('end_date')->nullable();
             $table->integer('usage_limit')->nullable();

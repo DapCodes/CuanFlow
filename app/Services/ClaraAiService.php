@@ -20,101 +20,123 @@ class ClaraAiService
         $this->apiKey = config('services.clara.key');
     }
 
-    public function chat(AiChatSession $session, string $userMessage): array
-    {
-        $user = $session->user;
+public function chat(AiChatSession $session, string $userMessage): array
+{
+    $user = $session->user;
 
-        // Check dan reset quota harian
-        if (! $this->checkAndResetQuota($user)) {
-            return [
-                'success' => false,
-                'message' => 'Kuota chat harian Anda sudah habis. Kuota akan direset besok.',
-            ];
-        }
+    // Check dan reset quota harian
+    if (! $this->checkAndResetQuota($user)) {
+        return [
+            'success' => false,
+            'message' => 'Kuota chat harian Anda sudah habis. Kuota akan direset besok.',
+        ];
+    }
 
-        // Save user message
-        $session->addMessage('user', $userMessage);
+    // Save user message
+    $session->addMessage('user', $userMessage);
 
-        // Get business context dengan validasi data
-        $contextData = $this->getBusinessContext($session->outlet_id);
+    // Get business context dengan validasi data
+    $contextData = $this->getBusinessContext($session->outlet_id);
 
-        // Build conversation history
-        $messages = $this->buildMessages($session, $contextData, $userMessage);
+    // Build conversation history
+    $messages = $this->buildMessages($session, $contextData, $userMessage);
 
-        try {
-            \Log::info('Sending request to Clara AI', [
-                'messages_count' => count($messages),
-                'user_message' => $userMessage,
-            ]);
+    try {
+        \Log::info('Sending request to Clara AI', [
+            'messages_count' => count($messages),
+            'user_message' => $userMessage,
+        ]);
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer '.$this->apiKey,
-                'Content-Type' => 'application/json',
-            ])->timeout(60)->post($this->baseUrl.'/chat/completions', [
-                'model' => 'amazon/nova-2-lite-v1:free',
-                'messages' => $messages,
-                'max_tokens' => 2000,
-            ]);
+        // PAKAI NAMA LAIN: $httpResponse
+        $httpResponse = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Content-Type'  => 'application/json',
+        ])->timeout(60)->post($this->baseUrl . '/chat/completions', [
+            'model'      => 'amazon/nova-2-lite-v1:free',
+            'messages'   => $messages,
+            'max_tokens' => 2000,
+        ]);
 
-            \Log::info('Clara AI Response Status', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
+        \Log::info('Clara AI Response Status', [
+            'status' => $httpResponse->status(),
+            'body'   => $httpResponse->body(),
+        ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
+        if ($httpResponse->successful()) {
+            $data = $httpResponse->json();
 
-                if (! isset($data['choices'][0]['message']['content'])) {
-                    \Log::error('Invalid response structure', ['data' => $data]);
-
-                    return [
-                        'success' => false,
-                        'message' => 'Format response tidak valid.',
-                    ];
-                }
-
-                $aiResponse = $data['choices'][0]['message']['content'];
-
-                // ✅ BERSIHKAN RESPONSE dari markdown dan whitespace
-                $cleanResponse = $this->cleanAiResponse($aiResponse);
-
-                // Save AI response (yang sudah dibersihkan)
-                $session->addMessage('assistant', $cleanResponse);
-
-                // Generate insight jika diperlukan
-                $this->generateInsightIfNeeded($session->outlet_id, $userMessage, $cleanResponse, $contextData);
-
-                // Kurangi quota
-                $user->decrement('daily_chat_quota');
+            // Kalau OpenRouter mengembalikan error dalam body (HTTP 200 tapi isinya error)
+            if (isset($data['error'])) {
+                \Log::error('Clara AI provider error', ['data' => $data]);
 
                 return [
-                    'success' => true,
-                    'message' => $cleanResponse, // Kirim yang sudah bersih
-                    'remaining_quota' => $user->daily_chat_quota,
+                    'success' => false,
+                    'message' => 'Maaf, terjadi kesalahan di penyedia model AI: ' . $data['error']['message'],
                 ];
             }
 
-            \Log::error('Clara AI request failed', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
+            if (! isset($data['choices'][0]['message']['content'])) {
+                \Log::error('Invalid response structure', ['data' => $data]);
+
+                return [
+                    'success' => false,
+                    'message' => 'Format response tidak valid.',
+                ];
+            }
+
+            $aiResponse = $data['choices'][0]['message']['content'];
+
+            // Bersihkan markdown dll
+            $cleanResponse = $this->cleanAiResponse($aiResponse);
+
+            // Kalau kosong total, anggap model gagal jawab
+            if (trim($cleanResponse) === '') {
+                \Log::warning('Empty AI response', ['raw' => $aiResponse]);
+
+                return [
+                    'success' => false,
+                    'message' => 'Maaf, Clara AI tidak bisa menjawab pertanyaan ini saat ini. Coba ulangi atau ubah pertanyaannya.',
+                ];
+            }
+
+            // Baru simpan kalau ada isinya
+            $session->addMessage('assistant', $cleanResponse);
+
+            // Generate insight jika diperlukan
+            $this->generateInsightIfNeeded($session->outlet_id, $userMessage, $cleanResponse, $contextData);
+
+            // Kurangi quota
+            $user->decrement('daily_chat_quota');
 
             return [
-                'success' => false,
-                'message' => 'Maaf, terjadi kesalahan saat menghubungi Clara AI. Status: '.$response->status(),
-            ];
-        } catch (\Exception $e) {
-            \Log::error('Clara AI Exception', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'Error: '.$e->getMessage(),
+                'success' => true,
+                'message' => $cleanResponse,
+                'remaining_quota' => $user->daily_chat_quota,
             ];
         }
+
+        \Log::error('Clara AI request failed', [
+            'status' => $httpResponse->status(),
+            'body'   => $httpResponse->body(),
+        ]);
+
+        return [
+            'success' => false,
+            'message' => 'Maaf, terjadi kesalahan saat menghubungi Clara AI. Status: ' . $httpResponse->status(),
+        ];
+    } catch (\Exception $e) {
+        \Log::error('Clara AI Exception', [
+            'message' => $e->getMessage(),
+            'trace'   => $e->getTraceAsString(),
+        ]);
+
+        return [
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage(),
+        ];
     }
+}
+
 
     /**
      * Bersihkan response AI dari markdown dan whitespace berlebih
@@ -135,22 +157,25 @@ class ClaraAiService
         // 4. Hapus markdown headers (# ## ###)
         $response = preg_replace('/^#{1,6}\s+/m', '', $response);
 
-        // 5. Hapus markdown code blocks (```code```)
-        $response = preg_replace('/```[\s\S]*?```/', '', $response);
+        // 5. Hapus markdown code blocks (```code```) tapi simpan isinya
+        // Sebelumnya dihapus total, sekarang cuma buang ``` di luar
+        $response = preg_replace('/```(.*?)```/s', '$1', $response);
+
+        // 6. Hapus inline code `code`
         $response = preg_replace('/`([^`]+)`/', '$1', $response);
 
-        // 6. Normalize multiple spaces menjadi single space
+        // 7. Normalize multiple spaces menjadi single space
         $response = preg_replace('/[ \t]+/', ' ', $response);
 
-        // 7. Normalize multiple newlines (max 2 newlines)
+        // 8. Normalize multiple newlines (max 2 newlines)
         $response = preg_replace('/\n{3,}/', "\n\n", $response);
 
-        // 8. Trim setiap baris
+        // 9. Trim setiap baris
         $lines = explode("\n", $response);
         $lines = array_map('trim', $lines);
         $response = implode("\n", $lines);
 
-        // 9. Final trim
+        // 10. Final trim
         return trim($response);
     }
 
@@ -189,11 +214,11 @@ class ClaraAiService
             ->where('status', 'completed')
             ->where('created_at', '>=', now()->subDays(7))
             ->selectRaw('
-            COUNT(*) as total_transactions,
-            SUM(grand_total) as total_revenue,
-            AVG(grand_total) as avg_transaction,
-            DATE(created_at) as sale_date
-        ')
+                COUNT(*) as total_transactions,
+                SUM(grand_total) as total_revenue,
+                AVG(grand_total) as avg_transaction,
+                DATE(created_at) as sale_date
+            ')
             ->groupBy('sale_date')
             ->orderBy('sale_date', 'desc')
             ->get();
@@ -206,10 +231,10 @@ class ClaraAiService
             ->where('sales.status', 'completed')
             ->where('sales.created_at', '>=', now()->subDays(7))
             ->selectRaw('
-            products.name,
-            SUM(sale_items.quantity) as total_sold,
-            SUM(sale_items.subtotal) as total_revenue
-        ')
+                products.name,
+                SUM(sale_items.quantity) as total_sold,
+                SUM(sale_items.subtotal) as total_revenue
+            ')
             ->groupBy('products.id', 'products.name')
             ->orderBy('total_sold', 'desc')
             ->limit(5)
@@ -303,6 +328,11 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
         $lastRole = 'system';
         foreach ($history as $msg) {
             if ($msg->role === 'system') {
+                continue;
+            }
+
+            // SKIP kalau content kosong / cuma spasi
+            if (trim($msg->content) === '') {
                 continue;
             }
 

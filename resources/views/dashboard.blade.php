@@ -537,7 +537,7 @@
        data-step="1"
        data-title="Point of Sale"
        data-intro="<strong>Catat penjualan di kasir.</strong> Gunakan menu ini untuk memasukkan setiap transaksi dengan cepat dan rapi, sehingga antrian tidak menumpuk.">
-        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-500 to-red-400 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-cash-register text-4xl sm:text-5xl text-white"></i>
         </div>
         <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">

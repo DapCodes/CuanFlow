@@ -612,6 +612,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'min_purchase' => 0,
                 'max_discount' => 5000,
                 'product_code' => 'PRD001', // Takoyaki Original
+                'outlet_id' => $targetOutletId,
                 'start_date' => now(),
                 'end_date' => now()->addMonth(),
                 'is_active' => true,
@@ -625,6 +626,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'buy_quantity' => 2,
                 'get_quantity' => 1,
                 'product_code' => 'PRD009', // Es Kopi Susu Gula Aren
+                'outlet_id' => $targetOutletId,
                 'start_date' => now(),
                 'end_date' => now()->addMonth(),
                 'is_active' => true,
@@ -635,7 +637,8 @@ class ProductWithRecipeSeeder extends Seeder
                 'type' => 'fixed',
                 'value' => 5000,
                 'min_purchase' => 40000,
-                'product_code' => 'PRD005', // Brownies Cokelat Kacang
+                'product_code' => 'PRD005', // Brownies Cokelat Kacang 
+                'outlet_id' => $targetOutletId,
                 'start_date' => now(),
                 'end_date' => now()->addMonth(),
                 'is_active' => true,
@@ -657,6 +660,7 @@ class ProductWithRecipeSeeder extends Seeder
                         'buy_quantity' => $data['buy_quantity'] ?? null,
                         'get_quantity' => $data['get_quantity'] ?? null,
                         'product_id' => $productId,
+                        'outlet_id' => $data['outlet_id'],
                         'start_date' => $data['start_date'],
                         'end_date' => $data['end_date'],
                         'is_active' => $data['is_active'],

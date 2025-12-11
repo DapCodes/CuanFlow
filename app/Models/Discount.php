@@ -14,7 +14,7 @@ class Discount extends Model
     protected $fillable = [
         'code', 'name', 'type', 'value', 'min_purchase', 'max_discount',
         'buy_quantity', 'get_quantity', 'product_id', 'category_id',
-        'start_date', 'end_date', 'usage_limit', 'used_count', 'is_active',
+        'start_date', 'end_date', 'usage_limit', 'used_count', 'is_active', 'outlet_id',
     ];
 
     protected $casts = [

@@ -175,46 +175,40 @@ public function apply(Request $request)
         ]);
     }
     
-/**
- * Get available discounts for current cart
- * GET /pos/discounts/available
- */
 public function available()
 {
     $outletId = auth()->user()->outlet_id;
-    
-    // Get ALL active discounts, not just for current cart
+
     $allDiscounts = Discount::where('is_active', true)
         ->where(function($query) use ($outletId) {
             $query->whereNull('outlet_id')
                   ->orWhere('outlet_id', $outletId);
         })
-        ->get()
-        ->filter(fn($d) => $d->isValid());
-    
+        ->get();
+
     $discounts = $allDiscounts->map(function($discount) {
         return [
-            'id' => $discount->id,
-            'code' => $discount->code,
-            'name' => $discount->name,
-            'type' => $discount->type,
-            'value' => $discount->value,
+            'id'           => $discount->id,
+            'code'         => $discount->code,
+            'name'         => $discount->name,
+            'type'         => $discount->type,
+            'value'        => $discount->value,
             'min_purchase' => $discount->min_purchase,
             'max_discount' => $discount->max_discount,
-            'product_id' => $discount->product_id,
-            'category_id' => $discount->category_id,
-            'buy_quantity' => $discount->buy_quantity,      // ⬅️ PENTING untuk BOGO
-            'get_quantity' => $discount->get_quantity,      // ⬅️ PENTING untuk BOGO
-            'can_apply' => true, // Already filtered by isValid()
+            'product_id'   => $discount->product_id ?? null,  // ← Tambahkan ?? null
+            'category_id'  => $discount->category_id ?? null, // ← Tambahkan ?? null
+            'buy_quantity' => $discount->buy_quantity ?? null, // ← Tambahkan ?? null
+            'get_quantity' => $discount->get_quantity ?? null, // ← Tambahkan ?? null
+            'can_apply'    => true,
         ];
     });
-    
+
     return response()->json([
-        'success' => true,
+        'success'   => true,
         'discounts' => $discounts->values(),
     ]);
 }
-    
+
     /**
      * Calculate cart summary with discount
      */
