@@ -40,6 +40,16 @@
 
         {{-- FORM CARD UTAMA --}}
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            @if ($errors->any())
+                <div class="mb-4 p-3 rounded bg-red-50 border border-red-200 text-sm text-red-700">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form action="{{ route('discounts.store') }}" method="POST" class="px-4 md:px-6 py-6 space-y-8">
                 @csrf
 

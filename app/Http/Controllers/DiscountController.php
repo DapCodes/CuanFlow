@@ -44,7 +44,7 @@ class DiscountController extends Controller
             'code' => 'required|string|max:30|unique:discounts,code',
             'name' => 'required|string|max:255',
             'type' => 'required|in:percentage,fixed,buy_x_get_y',
-            'value' => 'required|numeric|min:0',
+            'value' => 'nullable|required_unless:type,buy_x_get_y|numeric|min:0',
             'min_purchase' => 'nullable|numeric|min:0',
             'max_discount' => 'nullable|numeric|min:0',
             'start_date' => 'nullable|date',
@@ -52,6 +52,7 @@ class DiscountController extends Controller
             'usage_limit' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
         ];
+
 
         // Validasi khusus untuk buy_x_get_y
         if ($request->type === 'buy_x_get_y') {
@@ -74,6 +75,10 @@ class DiscountController extends Controller
         $validated['min_purchase'] = $validated['min_purchase'] ?? 0;
         $validated['used_count'] = 0;
         $validated['is_active'] = $request->has('is_active');
+
+        if ($validated['type'] === 'buy_x_get_y') {
+            $validated['value'] = 0; // atau nilai lain kalau mau
+        }
 
         Discount::create($validated);
 

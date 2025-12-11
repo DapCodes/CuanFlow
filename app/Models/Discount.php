@@ -18,8 +18,17 @@ class Discount extends Model
     ];
 
     protected $casts = [
-        'value' => 'decimal:2', 'min_purchase' => 'decimal:2', 'max_discount' => 'decimal:2',
-        'start_date' => 'datetime', 'end_date' => 'datetime', 'is_active' => 'boolean',
+        'value' => 'decimal:2',
+        'min_purchase' => 'decimal:2',
+        'max_discount' => 'decimal:2',
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'is_active' => 'boolean',
+        // Tambahkan ini
+        'product_id' => 'integer',
+        'category_id' => 'integer',
+        'buy_quantity' => 'integer',
+        'get_quantity' => 'integer',
     ];
 
     public function product(): BelongsTo

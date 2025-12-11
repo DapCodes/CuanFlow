@@ -8,11 +8,16 @@ use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Services\DiscountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
 class PointOfSaleController extends Controller
 {
+    public function __construct(
+        private DiscountService $discountService
+    ) {}
+
     public function index()
     {
         $outletId = auth()->user()->outlet_id;
@@ -38,11 +43,12 @@ class PointOfSaleController extends Controller
         $activeDiscounts = Discount::active()->get();
         $customers = Customer::active()->get();
         $cart = Session::get('pos_cart', []);
+        $activeDiscountPlan = Session::get('pos_discount_plan');
 
         // PERBAIKAN: Hitung cart summary dari session
         $cartSummary = $this->calculateCartSummary($cart);
 
-        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories', 'cartSummary'));
+        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories', 'cartSummary', 'activeDiscountPlan'));
     }
 
     public function checkCashRegister()
@@ -205,12 +211,16 @@ class PointOfSaleController extends Controller
         $cart[$cartKey]['subtotal'] = ($cart[$cartKey]['unit_price'] * $cart[$cartKey]['quantity']) - $cart[$cartKey]['discount_amount'];
 
         Session::put('pos_cart', $cart);
+        
+        // Re-apply discount if exists
+        $this->reapplyDiscount($cart);
 
         return response()->json([
             'success' => true,
             'message' => 'Produk berhasil ditambahkan ke keranjang',
             'cart' => $cart,
             'cart_summary' => $this->calculateCartSummary($cart),
+            'discount_plan' => Session::get('pos_discount_plan'),
         ]);
     }
 
@@ -264,11 +274,15 @@ class PointOfSaleController extends Controller
 
         Session::put('pos_cart', $cart);
 
+        // Re-apply discount if exists
+        $this->reapplyDiscount($cart);
+
         return response()->json([
             'success' => true,
             'message' => 'Keranjang berhasil diperbarui',
             'cart' => $cart,
             'cart_summary' => $this->calculateCartSummary($cart),
+            'discount_plan' => Session::get('pos_discount_plan'),
         ]);
     }
 
@@ -281,12 +295,16 @@ class PointOfSaleController extends Controller
         if (isset($cart[$request->cart_key])) {
             unset($cart[$request->cart_key]);
             Session::put('pos_cart', $cart);
+            
+            // Re-apply discount if exists
+            $this->reapplyDiscount($cart);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Item berhasil dihapus dari keranjang',
                 'cart' => $cart,
                 'cart_summary' => $this->calculateCartSummary($cart),
+                'discount_plan' => Session::get('pos_discount_plan'),
             ]);
         }
 
@@ -301,6 +319,7 @@ class PointOfSaleController extends Controller
         Session::forget('pos_cart');
         Session::forget('pos_customer_id');
         Session::forget('pos_discount_code');
+        Session::forget('pos_discount_plan');
 
         return response()->json([
             'success' => true,
@@ -332,8 +351,14 @@ class PointOfSaleController extends Controller
 
         foreach ($cart as $item) {
             $subtotal += ($item['unit_price'] * $item['quantity']);
-            $totalDiscount += $item['discount_amount'];
+            // $totalDiscount += $item['discount_amount']; 
             $totalItems += $item['quantity'];
+        }
+
+        // Get discount from session plan
+        $plan = Session::get('pos_discount_plan');
+        if ($plan) {
+            $totalDiscount = $plan['total_discount'];
         }
 
         $tax = 0;
@@ -442,5 +467,57 @@ class PointOfSaleController extends Controller
             'message' => 'Modal awal berhasil diset',
             'register' => $register,
         ]);
+    }
+
+    /**
+     * Re-apply discount after cart changes
+     */
+    private function reapplyDiscount(array $cart)
+    {
+        $plan = Session::get('pos_discount_plan');
+        if (!$plan) return null;
+
+        $discountId = $plan['discount_id'];
+        $discount = Discount::find($discountId);
+
+        if (!$discount || !$discount->isValid()) {
+            Session::forget('pos_discount_plan');
+            return null;
+        }
+
+        $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
+        $candidates = collect([$discount]);
+        
+        // Calculate basic plan
+        $newPlan = $this->discountService->calculateDiscountPlan(array_values($cart), $candidates, $subtotal);
+
+        // If invalid now
+        if ($newPlan['total_discount'] <= 0 && !$newPlan['requires_free_item_selection']) {
+             Session::forget('pos_discount_plan');
+             return null;
+        }
+
+        // Handle Buy X Get Y preservation
+        if ($discount->type === 'buy_x_get_y' && !empty($plan['affected_items'])) {
+            try {
+                // Extract previous selection
+                $selection = [];
+                foreach ($plan['affected_items'] as $item) {
+                    if (isset($item['free_qty']) && $item['free_qty'] > 0) {
+                        $selection[$item['product_id']] = $item['free_qty'];
+                    }
+                }
+
+                if (!empty($selection)) {
+                    $newPlan = $this->discountService->applyFreeItems($discount, array_values($cart), $selection);
+                }
+            } catch (\Exception $e) {
+                // If previous selection is invalid (e.g. item removed), fall back to basic plan (requires selection)
+                // $newPlan is already set to the basic plan from calculateDiscountPlan
+            }
+        }
+
+        Session::put('pos_discount_plan', $newPlan);
+        return $newPlan;
     }
 }

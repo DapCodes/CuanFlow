@@ -6,7 +6,6 @@
 <style>
     html, body { 
         height: 100%; 
-        /* overflow: hidden; */
     }
 
     body {
@@ -20,7 +19,6 @@
         overflow: hidden;
     }
 
-    /* Header kompak */
     .pos-header {
         background: white;
         border-bottom: 1px solid #e5e7eb;
@@ -31,7 +29,6 @@
         flex-shrink: 0;
     }
 
-    /* Main content area */
     .pos-main {
         flex: 1;
         display: grid;
@@ -42,7 +39,6 @@
         min-height: 0;
     }
 
-    /* Left panel - Products */
     .products-panel {
         display: flex;
         flex-direction: column;
@@ -65,11 +61,11 @@
         min-height: 0;
     }
 
-    /* Product Grid - Compact */
+    /* Product Grid - 4 Columns */
     .product-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 0.75rem;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
     }
 
     .product-card {
@@ -81,6 +77,7 @@
         transition: all 0.2s;
         display: flex;
         flex-direction: column;
+        position: relative;
     }
 
     .product-card:hover {
@@ -118,6 +115,7 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        min-height: 2.1rem;
     }
 
     .product-price {
@@ -125,6 +123,7 @@
         font-weight: 700;
         color: #6366f1;
         margin-top: auto;
+        margin-bottom: 2rem;
     }
 
     .product-stock {
@@ -132,7 +131,24 @@
         margin-top: 0.25rem;
     }
 
-    /* Right panel - Order Summary */
+    /* Discount Badge - Always Visible at Bottom */
+    .discount-badge {
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        right: 4px;
+        z-index: 10;
+    }
+    
+    .discount-badge > div {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+    }
+
     .order-panel {
         display: flex;
         flex-direction: column;
@@ -265,7 +281,6 @@
         font-weight: 700;
     }
 
-    /* Buttons */
     .btn-primary {
         width: 100%;
         padding: 0.875rem;
@@ -307,7 +322,6 @@
         border-color: #d1d5db;
     }
 
-    /* Search & Filter */
     .search-box {
         position: relative;
         flex: 1;
@@ -354,7 +368,6 @@
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
-    /* Category Tabs */
     .category-tabs {
         display: flex;
         gap: 0.5rem;
@@ -384,7 +397,6 @@
         color: #374151;
     }
 
-    /* Custom Scrollbar */
     .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
         height: 6px;
@@ -404,7 +416,6 @@
         background: #9ca3af;
     }
 
-    /* Payment Views */
     .payment-view {
         padding: 1.5rem;
         max-width: 400px;
@@ -460,7 +471,6 @@
         color: #6b7280;
     }
 
-    /* Empty State */
     .empty-state {
         text-align: center;
         padding: 3rem 1rem;
@@ -473,7 +483,6 @@
         opacity: 0.5;
     }
 
-    /* Calculator Styles */
     .calc-btn {
         padding: 1rem;
         background: white;
@@ -522,8 +531,7 @@
         color: #1f2937;
     }
 
-    /* Responsive Calculator */
-    @media (max-width: 1024px) {
+    @media (min-width: 1024px) {
         #calculatorModal .max-w-2xl {
             max-width: 95%;
         }
@@ -541,7 +549,7 @@
         }
         
         .product-grid {
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
         }
     }
 
@@ -549,6 +557,10 @@
         .pos-main {
             grid-template-columns: 1fr;
             grid-template-rows: 1fr auto;
+        }
+        
+        .product-grid {
+            grid-template-columns: repeat(3, 1fr);
         }
         
         .order-panel {
@@ -578,7 +590,7 @@
         }
         
         .product-grid {
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 </style>
@@ -1069,30 +1081,28 @@
 // ==================== GLOBAL VARIABLES ====================
 let UI_STATE = 'browse';
 let cart = @json($cart ?? []);
-let cartSummary = @json($cartSummary) || { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0, total_items: 0 }; // PERBAIKAN: Load dari backend
-let currentSaleId = null;
-
-// TAMBAHKAN INI
+let cartSummary = @json($cartSummary) || { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0, total_items: 0 };
 let categories = @json($categories ?? []);
-
-// ==================== CALCULATOR VARIABLES ====================
+let activeDiscountPlan = @json($activeDiscountPlan ?? null);
+let availableDiscounts = [];
 let calcCurrentValue = '0';
 let calcPreviousValue = '';
 let calcOperation = null;
 let calcHistory = [];
+let currentSaleId = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     loadCalcHistory();
     checkCashRegister();
-    renderCart(); // PERBAIKAN: Ini akan render cart dengan summary yang sudah benar
+    renderCart();
     setUIState('browse');
     
-    // TAMBAHKAN INI
     renderCategoryTabs();
     renderCategoryDropdown();
     initCategoryHandlers();
-    
     initClickOutsideHandler();
+    loadAvailableDiscounts();
+    initDiscountUI();
 });
 
 // ==================== CATEGORY FUNCTIONS ====================
@@ -1119,7 +1129,6 @@ function renderCategoryDropdown() {
     if (!dropdown) return;
     
     let html = '<option value="">Semua Kategori</option>';
-    
     categories.forEach(cat => {
         html += `<option value="${cat.id}">${cat.name}</option>`;
     });
@@ -1128,37 +1137,32 @@ function renderCategoryDropdown() {
 }
 
 function initCategoryHandlers() {
-    // Category tabs click handler
+    // Klik tab kategori
     document.addEventListener('click', function(e) {
         const tab = e.target.closest('.category-tab');
         if (!tab) return;
         
-        // Update active state
         document.querySelectorAll('.category-tab').forEach(t => {
             t.classList.remove('active');
         });
         tab.classList.add('active');
         
-        // Get category and filter
         const categoryId = tab.dataset.category;
         const searchTerm = document.getElementById('searchProduct')?.value.toLowerCase() || '';
         
-        // Sync with dropdown
         const dropdown = document.getElementById('filterCategory');
         if (dropdown) dropdown.value = categoryId;
         
-        // Apply filter
         filterProducts(searchTerm, categoryId);
     });
     
-    // Category dropdown change handler
+    // Dropdown kategori
     const dropdown = document.getElementById('filterCategory');
     if (dropdown) {
         dropdown.addEventListener('change', function() {
             const categoryId = this.value;
             const searchTerm = document.getElementById('searchProduct')?.value.toLowerCase() || '';
             
-            // Sync with tabs
             document.querySelectorAll('.category-tab').forEach(tab => {
                 if (tab.dataset.category === categoryId) {
                     tab.classList.add('active');
@@ -1167,12 +1171,11 @@ function initCategoryHandlers() {
                 }
             });
             
-            // Apply filter
             filterProducts(searchTerm, categoryId);
         });
     }
     
-    // Search input handler
+    // Pencarian
     const searchInput = document.getElementById('searchProduct');
     if (searchInput) {
         searchInput.addEventListener('input', function() {
@@ -1193,15 +1196,12 @@ function filterProducts(searchTerm, categoryId) {
         const productCode = (card.dataset.productCode || '').toLowerCase();
         const productCategory = card.dataset.category || '';
         
-        // Match search term (nama atau kode produk)
         const matchesSearch = !searchTerm || 
             productName.includes(searchTerm) || 
             productCode.includes(searchTerm);
         
-        // Match category
-        const matchesCategory = !categoryId || productCategory === categoryId;
+        const matchesCategory = !categoryId || productCategory == categoryId;
         
-        // Show/hide card
         if (matchesSearch && matchesCategory) {
             card.style.display = '';
             visibleCount++;
@@ -1210,12 +1210,10 @@ function filterProducts(searchTerm, categoryId) {
         }
     });
     
-    // Handle empty state
     updateEmptyState(productGrid, visibleCount, searchTerm, categoryId);
 }
 
 function updateEmptyState(productGrid, visibleCount, searchTerm, categoryId) {
-    // Remove existing empty state
     const existingEmpty = productGrid.querySelector('.empty-state-filter');
     if (existingEmpty) existingEmpty.remove();
     
@@ -1254,15 +1252,12 @@ function getCategoryName(categoryId) {
 }
 
 function clearFilters() {
-    // Clear search
     const searchInput = document.getElementById('searchProduct');
     if (searchInput) searchInput.value = '';
     
-    // Clear category
     const dropdown = document.getElementById('filterCategory');
     if (dropdown) dropdown.value = '';
     
-    // Reset tabs
     document.querySelectorAll('.category-tab').forEach(tab => {
         if (tab.dataset.category === '') {
             tab.classList.add('active');
@@ -1271,40 +1266,361 @@ function clearFilters() {
         }
     });
     
-    // Show all products
     filterProducts('', '');
-    
     showToast('info', 'Filter dihapus');
 }
 
-// ==================== UTILITY: Get Category Statistics ====================
-function getCategoryStats() {
-    const stats = {};
-    
-    document.querySelectorAll('.product-card').forEach(card => {
-        const categoryId = card.dataset.category || 'uncategorized';
-        stats[categoryId] = (stats[categoryId] || 0) + 1;
-    });
-    
-    return stats;
+// ==================== DISCOUNT FUNCTIONS ====================
+function loadAvailableDiscounts() {
+    fetch('/pos/discounts/available')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                availableDiscounts = data.discounts || [];
+                renderDiscountBadges();
+            }
+        })
+        .catch(err => console.error('Failed to load discounts:', err));
 }
 
-// Optional: Show product count in tabs
-function updateCategoryTabsWithCount() {
-    const stats = getCategoryStats();
-    
-    document.querySelectorAll('.category-tab').forEach(tab => {
-        const categoryId = tab.dataset.category;
-        const count = categoryId === '' 
-            ? Object.values(stats).reduce((a, b) => a + b, 0)
-            : stats[categoryId] || 0;
+function renderDiscountBadges() {
+    document.querySelectorAll('.product-card').forEach(card => {
+        const productId = parseInt(card.dataset.productId);
+        const categoryId = parseInt(card.dataset.category);
         
-        // Add count badge if you want
-        const badge = tab.querySelector('.count-badge');
-        if (badge) {
-            badge.textContent = count;
+        const discounts = availableDiscounts.filter(d => {
+            if (!d.can_apply) return false;
+            if (d.product_id && d.product_id === productId) return true;
+            if (d.category_id && d.category_id === categoryId) return true;
+            if (!d.product_id && !d.category_id) return true;
+            return false;
+        });
+                
+        if (discounts.length > 0) {
+            const discount = discounts[0];
+            const badge = createDiscountBadge(discount);
+            
+            const existing = card.querySelector('.discount-badge');
+            if (existing) existing.remove();
+            
+            card.appendChild(badge);
         }
     });
+}
+
+function createDiscountBadge(discount) {
+    const badge = document.createElement('div');
+    badge.className = 'discount-badge';
+    
+    let text = '';
+    let color = 'bg-red-500';
+    
+    switch(discount.type) {
+        case 'percentage':
+            text = `-${discount.value}%`;
+            break;
+        case 'fixed':
+            text = `-Rp ${formatNumber(discount.value)}`;
+            color = 'bg-orange-500';
+            break;
+        case 'buy_x_get_y':
+            text = `Beli ${discount.buy_quantity} Gratis ${discount.get_quantity}`;
+            color = 'bg-green-500';
+            break;
+    }
+    
+    badge.innerHTML = `
+        <div class="${color} text-white px-2 py-1 rounded-md text-xs font-bold shadow-md">
+            ${text}
+        </div>
+    `;
+    
+    return badge;
+}
+
+function applyDiscount(discountCode = null) {
+    const payload = discountCode ? { discount_code: discountCode } : {};
+    
+    fetch('/pos/discounts/apply', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            activeDiscountPlan = data.discount_plan;
+            cartSummary = data.cart_summary;
+            
+            renderCart();
+            
+            if (data.discount_plan.requires_free_item_selection) {
+                showFreeItemSelectionModal(data.discount_plan);
+            } else {
+                showToast('success', `Diskon ${data.discount_plan.discount_name} diterapkan`);
+            }
+        } else {
+            showToast('error', data.message);
+        }
+    })
+    .catch(() => showToast('error', 'Gagal menerapkan diskon'));
+}
+
+// ====== FREE ITEM (BOGO) MODAL ======
+function showFreeItemSelectionModal(discountPlan) {
+    const modal = document.getElementById('freeItemModal') || createFreeItemModal();
+    
+    activeDiscountPlan = discountPlan;
+    
+    document.getElementById('freeItemQuota').textContent = discountPlan.free_item_quota;
+    document.getElementById('freeItemsRemaining').textContent = discountPlan.free_item_quota;
+    
+    const candidatesList = document.getElementById('freeItemCandidates');
+    candidatesList.innerHTML = '';
+    
+    discountPlan.free_item_candidates.forEach(candidate => {
+        const item = document.createElement('div');
+        item.className = 'free-item-candidate';
+        item.innerHTML = `
+            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 transition-colors">
+                <div class="flex-1">
+                    <div class="font-semibold text-gray-900">${candidate.product_name}</div>
+                    <div class="text-sm text-gray-600">Rp ${formatNumber(candidate.unit_price)}</div>
+                    <div class="text-xs text-gray-500">Maks. gratis: ${candidate.max_free_qty}</div>
+                </div>
+                <div class="qty-controls">
+                    <button class="qty-btn" onclick="adjustFreeQty(${candidate.product_id}, -1)">−</button>
+                    <input type="number" 
+                           min="0" 
+                           max="${candidate.max_free_qty}"
+                           value="0"
+                           class="qty-input"
+                           id="freeQty_${candidate.product_id}"
+                           onchange="updateFreeItemsRemaining()">
+                    <button class="qty-btn" onclick="adjustFreeQty(${candidate.product_id}, 1)">+</button>
+                </div>
+            </div>
+        `;
+        candidatesList.appendChild(item);
+    });
+    
+    modal.classList.remove('hidden');
+}
+
+function createFreeItemModal() {
+    const modal = document.createElement('div');
+    modal.id = 'freeItemModal';
+    modal.className = 'hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between mb-4 flex-shrink-0">
+                <h3 class="text-xl font-bold text-gray-900">
+                    <i class="fas fa-gift text-green-500 mr-2"></i>
+                    Pilih Item Gratis
+                </h3>
+                <button onclick="closeFreeItemModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-xl p-3 mb-4 flex-shrink-0">
+                <p class="text-sm text-green-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Anda berhak mendapat <span id="freeItemQuota" class="font-bold">0</span> item gratis!
+                    Sisa: <span id="freeItemsRemaining" class="font-bold">0</span>
+                </p>
+            </div>
+            
+            <div id="freeItemCandidates" class="flex-1 overflow-y-auto space-y-2 custom-scrollbar mb-4">
+            </div>
+            
+            <div class="flex gap-3 flex-shrink-0">
+                <button onclick="closeFreeItemModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                    Batal
+                </button>
+                <button onclick="confirmFreeItems()" class="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md">
+                    <i class="fas fa-check mr-2"></i>
+                    Konfirmasi
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    return modal;
+}
+
+function adjustFreeQty(productId, delta) {
+    const input = document.getElementById(`freeQty_${productId}`);
+    if (!input) return;
+    const max = parseInt(input.max);
+    let newVal = parseInt(input.value || '0') + delta;
+    newVal = Math.max(0, Math.min(max, newVal));
+    input.value = newVal;
+    updateFreeItemsRemaining();
+}
+
+function updateFreeItemsRemaining() {
+    if (!activeDiscountPlan) return;
+    const quota = activeDiscountPlan.free_item_quota;
+    let used = 0;
+
+    document.querySelectorAll('[id^="freeQty_"]').forEach(input => {
+        used += parseInt(input.value || '0') || 0;
+    });
+
+    const remaining = Math.max(0, quota - used);
+    document.getElementById('freeItemsRemaining').textContent = remaining;
+
+    if (used > quota) {
+        showToast('warning', 'Jumlah melebihi kuota gratis!');
+    }
+}
+
+function confirmFreeItems() {
+    const freeItems = [];
+    document.querySelectorAll('[id^="freeQty_"]').forEach(input => {
+        const qty = parseInt(input.value || '0') || 0;
+        if (qty > 0) {
+            const productId = input.id.replace('freeQty_', '');
+            freeItems.push({
+                product_id: parseInt(productId),
+                quantity: qty
+            });
+        }
+    });
+
+    if (freeItems.length === 0) {
+        showToast('warning', 'Pilih minimal 1 item gratis');
+        return;
+    }
+
+    fetch('/pos/discounts/assign-free-items', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ free_items: freeItems })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            activeDiscountPlan = data.discount_plan;
+            cartSummary = data.cart_summary;
+            
+            closeFreeItemModal();
+            renderCart();
+            
+            showToast('success', 'Item gratis berhasil diterapkan!');
+        } else {
+            showToast('error', data.message);
+        }
+    })
+    .catch(() => showToast('error', 'Gagal memproses item gratis'));
+}
+
+function closeFreeItemModal() {
+    const modal = document.getElementById('freeItemModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function clearDiscount() {
+    if (!activeDiscountPlan) return;
+    if (!confirm('Hapus diskon yang diterapkan?')) return;
+
+    fetch('/pos/discounts/clear', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            activeDiscountPlan = null;
+            cartSummary = data.cart_summary;
+            renderCart();
+            showToast('success', 'Diskon dihapus');
+        }
+    })
+    .catch(() => showToast('error', 'Gagal menghapus diskon'));
+}
+
+function initDiscountUI() {
+    const actions = document.getElementById('actionsControls');
+    if (!actions || document.getElementById('btnDiscountCode')) return;
+    const btn = document.createElement('button');
+    btn.id = 'btnDiscountCode';
+    btn.className = 'btn-secondary mb-2';
+    btn.innerHTML = '<i class="fas fa-ticket-alt mr-2"></i>Kode Diskon';
+    btn.onclick = showDiscountCodeModal;
+
+    actions.insertBefore(btn, actions.firstChild);
+}
+
+function showDiscountCodeModal() {
+    const modal = document.getElementById('discountCodeModal') || createDiscountCodeModal();
+    modal.classList.remove('hidden');
+    setTimeout(() => document.getElementById('discountCodeInput')?.focus(), 200);
+}
+
+function createDiscountCodeModal() {
+    const modal = document.createElement('div');
+    modal.id = 'discountCodeModal';
+    modal.className = 'hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div class="text-center mb-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-ticket-alt text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Masukkan Kode Diskon</h3>
+            </div>
+            <div class="mb-4">
+                <input type="text" 
+                       id="discountCodeInput" 
+                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-lg font-semibold uppercase"
+                       placeholder="KODE DISKON"
+                       onkeypress="if(event.key==='Enter') submitDiscountCode()">
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="closeDiscountCodeModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50">
+                    Batal
+                </button>
+                <button onclick="submitDiscountCode()" class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-indigo-700">
+                    Terapkan
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    return modal;
+}
+
+function submitDiscountCode() {
+    const input = document.getElementById('discountCodeInput');
+    const code = input?.value.trim().toUpperCase();
+    if (!code) {
+        showToast('warning', 'Masukkan kode diskon');
+        return;
+    }
+
+    applyDiscount(code);
+    closeDiscountCodeModal();
+}
+
+function closeDiscountCodeModal() {
+    const modal = document.getElementById('discountCodeModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        const input = document.getElementById('discountCodeInput');
+        if (input) input.value = '';
+    }
 }
 
 // ==================== DROPDOWN MENU FUNCTIONS ====================
@@ -1316,9 +1632,11 @@ function togglePOSMenu() {
 function initClickOutsideHandler() {
     document.addEventListener('click', function(e) {
         const menu = document.getElementById('posDropdownMenu');
-        const button = e.target.closest('button');
-        
-        if (!menu.contains(e.target) && button?.onclick?.toString().indexOf('togglePOSMenu') === -1) {
+        if (!menu) return;
+        const isInsideMenu = menu.contains(e.target);
+        const btn = e.target.closest('button');
+        const isToggleButton = btn && btn.onclick && String(btn.onclick).includes('togglePOSMenu');
+        if (!isInsideMenu && !isToggleButton) {
             menu.classList.add('hidden');
         }
     });
@@ -1362,11 +1680,10 @@ function calcDecimal() {
 
 function calcEquals() {
     if (calcPreviousValue === '' || calcOperation === null) return;
-    
     const prev = parseFloat(calcPreviousValue);
     const current = parseFloat(calcCurrentValue);
     let result;
-    
+
     switch(calcOperation) {
         case '+': result = prev + current; break;
         case '-': result = prev - current; break;
@@ -1383,10 +1700,10 @@ function calcEquals() {
             break;
         default: return;
     }
-    
+
     const expression = `${prev} ${calcOperation === '*' ? '×' : calcOperation === '/' ? '÷' : calcOperation} ${current}`;
     addToCalcHistory(expression, result);
-    
+
     calcCurrentValue = result.toString();
     calcPreviousValue = '';
     calcOperation = null;
@@ -1411,7 +1728,6 @@ function calcDelete() {
 
 function updateCalcDisplay() {
     document.getElementById('calcDisplay').textContent = calcCurrentValue;
-    
     let expression = '';
     if (calcPreviousValue !== '') {
         const opSymbol = calcOperation === '*' ? '×' : calcOperation === '/' ? '÷' : calcOperation;
@@ -1426,13 +1742,12 @@ function addToCalcHistory(expression, result) {
         result: result,
         timestamp: new Date().toISOString()
     };
-    
     calcHistory.unshift(historyItem);
-    
+
     if (calcHistory.length > 50) {
         calcHistory = calcHistory.slice(0, 50);
     }
-    
+
     saveCalcHistory();
     renderCalcHistory();
 }
@@ -1455,7 +1770,6 @@ function loadCalcHistory() {
 
 function renderCalcHistory() {
     const container = document.getElementById('calcHistory');
-    
     if (calcHistory.length === 0) {
         container.innerHTML = `
             <div class="text-center text-gray-400 text-sm py-8">
@@ -1464,7 +1778,7 @@ function renderCalcHistory() {
             </div>`;
         return;
     }
-    
+
     let html = '';
     calcHistory.forEach((item, index) => {
         html += `
@@ -1473,7 +1787,7 @@ function renderCalcHistory() {
                 <div class="calc-history-result">= ${formatNumber(item.result)}</div>
             </div>`;
     });
-    
+
     container.innerHTML = html;
 }
 
@@ -1487,7 +1801,6 @@ function calcUseHistory(index) {
 
 function calcClearHistory() {
     if (!confirm('Hapus semua riwayat kalkulator?')) return;
-    
     calcHistory = [];
     saveCalcHistory();
     renderCalcHistory();
@@ -1495,26 +1808,15 @@ function calcClearHistory() {
 }
 
 // ==================== CASH REGISTER FUNCTIONS ====================
-function initCategoryTabs() {
-    const tabs = document.querySelectorAll('.category-tab');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-}
-
 function checkCashRegister() {
     fetch('{{ route("cash-register.check") }}')
         .then(r => r.json())
-        .then(data => { 
+        .then(data => {
             if (data.is_open) {
                 document.getElementById('menuCloseCashRegister').classList.remove('hidden');
                 document.getElementById('menuOpenCashRegister').classList.add('hidden');
             } else if (data.has_unfinished) {
                 const hasDeclined = sessionStorage.getItem('pos_declined_modal');
-                
                 if (hasDeclined === 'true') {
                     document.getElementById('menuOpenCashRegister').classList.remove('hidden');
                     document.getElementById('menuCloseCashRegister').classList.add('hidden');
@@ -1523,7 +1825,6 @@ function checkCashRegister() {
                 }
             } else {
                 const hasDeclined = sessionStorage.getItem('pos_declined_modal');
-                
                 if (hasDeclined === 'true') {
                     document.getElementById('menuOpenCashRegister').classList.remove('hidden');
                     document.getElementById('menuCloseCashRegister').classList.add('hidden');
@@ -1534,8 +1835,8 @@ function checkCashRegister() {
         });
 }
 
-function closeStartSalesModal() { 
-    document.getElementById('startSalesModal').classList.add('hidden'); 
+function closeStartSalesModal() {
+    document.getElementById('startSalesModal').classList.add('hidden');
 }
 
 function openOpeningAmountModal() {
@@ -1552,7 +1853,6 @@ function closeOpeningAmountModal() {
 
 function submitOpeningAmount() {
     const amount = parseFloat(document.getElementById('openingAmountInput').value) || 0;
-
     if (amount < 0) {
         showToast('warning', 'Jumlah tidak boleh negatif');
         return;
@@ -1594,7 +1894,6 @@ function skipOpeningAmount() {
     if (!confirm('Yakin ingin melewati input modal awal? Modal awal akan diset Rp 0')) {
         return;
     }
-    
     fetch('{{ route("cash-register.start") }}', {
         method: 'POST',
         headers: { 
@@ -1629,25 +1928,26 @@ function skipOpeningAmount() {
 
 function declineStartSales() {
     closeStartSalesModal();
-    
     document.getElementById('menuOpenCashRegister').classList.remove('hidden');
     document.getElementById('menuCloseCashRegister').classList.add('hidden');
-    
+
     sessionStorage.setItem('pos_declined_modal', 'true');
-    
+
     showToast('info', 'Anda bisa buka toko kapan saja dengan klik tombol "Buka Toko"');
 }
 
 function handleCloseCashRegister() {
     fetch('{{ route("cash-register.check-sales") }}', {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+        }
     })
     .then(r => r.json())
     .then(data => {
         if (data.success) {
             const totalSales = parseFloat(data.total_sales || 0);
-            
             if (totalSales <= 0) {
                 closeCashRegisterSilent();
             } else {
@@ -1665,14 +1965,16 @@ function handleCloseCashRegister() {
 function closeCashRegisterSilent() {
     fetch('{{ route("cash-register.close-silent") }}', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        headers: { 
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+        }
     })
     .then(r => r.json())
     .then(data => {
         if (data.success) {
             document.getElementById('menuCloseCashRegister').classList.add('hidden');
             document.getElementById('menuOpenCashRegister').classList.remove('hidden');
-            
             showToast('success', 'Toko ditutup. Tidak ada penjualan di sesi ini.');
         } else {
             showToast('error', data.message || 'Gagal menutup toko');
@@ -1687,33 +1989,33 @@ function closeCashRegisterSilent() {
 function showToast(type, message) {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
-    const colors = { 
-        success:'bg-green-500', 
-        error:'bg-red-500', 
-        info:'bg-blue-500', 
-        warning:'bg-orange-500' 
+    const colors = {
+        success:'bg-green-500',
+        error:'bg-red-500',
+        info:'bg-blue-500',
+        warning:'bg-orange-500'
     };
-    toast.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg text-sm`;
+    toast.className = `${colors[type] || 'bg-gray-800'} text-white px-4 py-3 rounded-lg shadow-lg text-sm`;
     toast.textContent = message;
     container.appendChild(toast);
-    setTimeout(()=>{ 
-        toast.style.opacity='0'; 
-        toast.style.transition='opacity 0.3s'; 
-        setTimeout(()=>toast.remove(),300); 
+    setTimeout(()=>{
+        toast.style.opacity='0';
+        toast.style.transition='opacity 0.3s';
+        setTimeout(()=>toast.remove(),300);
     }, 2500);
 }
 
-function formatNumber(num){ 
-    num = Number(num||0); 
-    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
+function formatNumber(num){
+    num = Number(num||0);
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 function formatDateTime(s){
-    const d = new Date(s); 
-    const day=String(d.getDate()).padStart(2,'0'); 
+    const d = new Date(s);
+    const day=String(d.getDate()).padStart(2,'0');
     const month=String(d.getMonth()+1).padStart(2,'0');
-    const year=d.getFullYear(); 
-    const h=String(d.getHours()).padStart(2,'0'); 
+    const year=d.getFullYear();
+    const h=String(d.getHours()).padStart(2,'0');
     const m=String(d.getMinutes()).padStart(2,'0');
     return `${day}/${month}/${year} ${h}:${m}`;
 }
@@ -1721,34 +2023,35 @@ function formatDateTime(s){
 // ==================== CART FUNCTIONS ====================
 function addProductToCart(el) {
     const isStoreOpen = !document.getElementById('menuCloseCashRegister').classList.contains('hidden');
-    
     if (!isStoreOpen) {
         showToast('warning', 'Buka toko terlebih dahulu untuk mulai transaksi!');
         return;
     }
-    
+
     const productId = el.dataset.productId;
     fetch('{{ route("pos.cart.add") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
         body: JSON.stringify({ product_id: productId, quantity: 1 })
     })
-    .then(r=>r.json()).then(data=>{
+    .then(r=>r.json())
+    .then(data=>{
         if(data.success){
             cart = data.cart; 
             cartSummary = data.cart_summary;
+            if (data.discount_plan !== undefined) activeDiscountPlan = data.discount_plan;
             renderCart(); 
             showToast('success','Ditambahkan ke keranjang');
         } else { 
             showToast('error', data.message); 
         }
-    }).catch(()=>showToast('error','Terjadi kesalahan'));
+    })
+    .catch(()=>showToast('error','Terjadi kesalahan'));
 }
 
 function updateCartQuantity(cartKey, newQty) {
     let qty = parseFloat(newQty);
     if (isNaN(qty) || qty < 0) qty = 0;
-
     fetch('{{ route("pos.cart.update") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' },
@@ -1759,6 +2062,7 @@ function updateCartQuantity(cartKey, newQty) {
         if (data.success) {
             cart = data.cart; 
             cartSummary = data.cart_summary;
+            if (data.discount_plan !== undefined) activeDiscountPlan = data.discount_plan;
             renderCart();
         } else {
             showToast('error', data.message || 'Gagal update item');
@@ -1776,8 +2080,9 @@ function removeCartItem(cartKey) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            cart = data.cart; 
+            cart = data.cart;
             cartSummary = data.cart_summary;
+            if (data.discount_plan !== undefined) activeDiscountPlan = data.discount_plan;
             renderCart();
             showToast('success', 'Item dihapus');
         } else {
@@ -1792,20 +2097,26 @@ function clearCart() {
     fetch('{{ route("pos.cart.clear") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}
-    }).then(r=>r.json()).then(data=>{
+    })
+    .then(r=>r.json())
+    .then(data=>{
         if(data.success){
-            cart = {}; 
-            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0 };
-            renderCart(); 
-            setUIState('browse'); 
+            cart = {};
+            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0,total_items:0 };
+            renderCart();
+            setUIState('browse');
             showToast('success','Keranjang dikosongkan');
         }
-    }).catch(()=>showToast('error','Gagal'));
+    })
+    .catch(()=>showToast('error','Gagal'));
 }
 
 function renderCart() {
     const preview = document.getElementById('cartItemsPreview');
-    const totalItems = Object.values(cart).reduce((s,i)=>s+Number(i.quantity||0),0);
+    const oldDiscountInfo = document.getElementById('discountInfo');
+    if (oldDiscountInfo) oldDiscountInfo.remove();
+
+    const totalItems = Object.values(cart || {}).reduce((s,i)=>s+Number(i.quantity||0),0);
     document.getElementById('totalItems').textContent = totalItems;
 
     const isPayflow = (UI_STATE !== 'browse');
@@ -1855,6 +2166,63 @@ function renderCart() {
         preview.innerHTML = html;
     }
 
+    // ====== INFO DISKON DI AREA KERANJANG ======
+    if (activeDiscountPlan) {
+        const discountInfo = document.createElement('div');
+        discountInfo.id = 'discountInfo';
+        
+        if (activeDiscountPlan.discount_type === 'buy_x_get_y') {
+            const freeItems = activeDiscountPlan.affected_items || [];
+            const totalFreeQty = freeItems.reduce((sum, item) => sum + (item.free_qty || 0), 0);
+            
+            discountInfo.innerHTML = `
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3 mb-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="text-xs text-green-600 font-semibold mb-1">
+                                <i class="fas fa-gift mr-1"></i>Promo BOGO Aktif
+                            </div>
+                            <div class="text-sm font-bold text-green-900">${activeDiscountPlan.discount_name || 'Buy X Get Y'}</div>
+                            <div class="text-xs text-green-700 mt-1">
+                                ${totalFreeQty > 0 ? `🎁 Dapat ${totalFreeQty} item gratis` : 'Pilih item gratis Anda'}
+                            </div>
+                        </div>
+                        <button onclick="clearDiscount()" class="text-red-500 hover:text-red-700 px-2">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else if ((activeDiscountPlan.total_discount || cartSummary.total_discount || 0) > 0) {
+            const saved = activeDiscountPlan.total_discount || cartSummary.total_discount || 0;
+            
+            discountInfo.innerHTML = `
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-3 mb-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="text-xs text-purple-600 font-semibold mb-1">
+                                <i class="fas fa-tag mr-1"></i>Diskon Aktif
+                            </div>
+                            <div class="text-sm font-bold text-purple-900">${activeDiscountPlan.discount_name || 'Diskon' }</div>
+                            <div class="text-xs text-purple-700 mt-1">
+                                Hemat Rp ${formatNumber(saved)}
+                            </div>
+                        </div>
+                        <button onclick="clearDiscount()" class="text-red-500 hover:text-red-700 px-2">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        if (preview.firstChild) {
+            preview.prepend(discountInfo);
+        } else {
+            preview.appendChild(discountInfo);
+        }
+    }
+
+    // ====== RINGKASAN DI FOOTER ======
     document.getElementById('summarySubtotal').textContent = 'Rp ' + formatNumber(cartSummary.subtotal || 0);
     document.getElementById('summaryDiscount').textContent = '- Rp ' + formatNumber(cartSummary.total_discount || 0);
     document.getElementById('summaryGrandTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
@@ -1869,14 +2237,14 @@ function renderCart() {
 }
 
 function incrementQty(cartKey) {
-    const item = cart[cartKey]; 
+    const item = cart[cartKey];
     if (!item) return;
     const newQty = Number(item.quantity) + 1;
     updateCartQuantity(cartKey, newQty);
 }
 
 function decrementQty(cartKey) {
-    const item = cart[cartKey]; 
+    const item = cart[cartKey];
     if (!item) return;
     const newQty = Math.max(0, Number(item.quantity) - 1);
     updateCartQuantity(cartKey, newQty);
@@ -1891,19 +2259,27 @@ function onQtyBlur(cartKey, value) {
 function setUIState(state) {
     UI_STATE = state;
     const views = ['browse','select','cash','transfer','midtrans'];
-    views.forEach(v => document.getElementById(`view-${v}`).classList.add('hidden'));
-    document.getElementById(`view-${state}`).classList.remove('hidden');
+    views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) el.classList.add('hidden');
+    });
+    const active = document.getElementById(`view-${state}`);
+    if (active) active.classList.remove('hidden');
 
     updateRightActions();
     renderCart();
 
-    if (state === 'cash') setTimeout(()=>document.getElementById('cashPaidAmount').focus(), 120);
+    if (state === 'cash') {
+        setTimeout(()=>document.getElementById('cashPaidAmount').focus(), 120);
+    }
 }
 
 function updateRightActions(){
     const isPayflow = (UI_STATE !== 'browse');
     const controls = document.getElementById('actionsControls');
     const badge = document.getElementById('actionsPayflowSummary');
+    if (!controls || !badge) return;
+
     if (isPayflow) {
         controls.classList.add('hidden');
         badge.classList.remove('hidden');
@@ -1918,9 +2294,9 @@ function backToBrowse(){
 }
 
 function showPaymentSelection() {
-    if (!cart || Object.keys(cart).length === 0) { 
-        showToast('warning','Keranjang kosong'); 
-        return; 
+    if (!cart || Object.keys(cart).length === 0) {
+        showToast('warning','Keranjang kosong');
+        return;
     }
     setUIState('select');
 }
@@ -1934,17 +2310,17 @@ function calculateChange() {
 
 function processCashPayment() {
     const paid = parseFloat(document.getElementById('cashPaidAmount').value) || 0;
-    if (paid < (cartSummary.grand_total || 0)) { 
-        showToast('error','Jumlah kurang'); 
-        return; 
+    if (paid < (cartSummary.grand_total || 0)) {
+        showToast('error','Jumlah kurang');
+        return;
     }
-
     fetch('{{ route("payment.cash") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
         body: JSON.stringify({ paid_amount: paid })
     })
-    .then(r=>r.json()).then(async data=>{
+    .then(r=>r.json())
+    .then(async data=>{
         if (data.success) {
             if (data.sale && data.sale.items) { 
                 updateProductStockFromSaleItems(data.sale.items); 
@@ -1954,7 +2330,7 @@ function processCashPayment() {
                 headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
             });
             cart = {}; 
-            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0 };
+            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0,total_items:0 };
             renderCart(); 
             setUIState('browse');
             openPaymentSuccessModal({
@@ -1967,23 +2343,24 @@ function processCashPayment() {
         } else { 
             showToast('error', data.message); 
         }
-    }).catch(()=>showToast('error','Gagal proses pembayaran'));
+    })
+    .catch(()=>showToast('error','Gagal proses pembayaran'));
 }
 
 function processTransferPayment() {
     const method = document.getElementById('transferMethod').value;
     const ref = document.getElementById('transferReference').value;
-    if (!method) { 
-        showToast('warning','Pilih metode transfer'); 
-        return; 
+    if (!method) {
+        showToast('warning','Pilih metode transfer');
+        return;
     }
-
     fetch('{{ route("payment.transfer") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
         body: JSON.stringify({ transfer_method: method, reference_number: ref })
     })
-    .then(r=>r.json()).then(async data=>{
+    .then(r=>r.json())
+    .then(async data=>{
         if (data.success) {
             if (data.sale && data.sale.items) { 
                 updateProductStockFromSaleItems(data.sale.items); 
@@ -1993,7 +2370,7 @@ function processTransferPayment() {
                 headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
             });
             cart = {}; 
-            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0 };
+            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0,total_items:0 };
             renderCart(); 
             setUIState('browse');
             openPaymentSuccessModal({
@@ -2005,20 +2382,21 @@ function processTransferPayment() {
         } else { 
             showToast('error', data.message); 
         }
-    }).catch(()=>showToast('error','Gagal proses pembayaran'));
+    })
+    .catch(()=>showToast('error','Gagal proses pembayaran'));
 }
 
 function openMidtransPayment() {
-    if (!cart || Object.keys(cart).length === 0) { 
-        showToast('warning','Keranjang kosong'); 
-        return; 
+    if (!cart || Object.keys(cart).length === 0) {
+        showToast('warning','Keranjang kosong');
+        return;
     }
-
     fetch('{{ route("payment.midtrans.token") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}
     })
-    .then(r=>r.json()).then(data=>{
+    .then(r=>r.json())
+    .then(data=>{
         if (!data.success) { 
             showToast('error', data.message || 'Gagal membuat token Midtrans'); 
             return; 
@@ -2037,7 +2415,7 @@ function openMidtransPayment() {
                             headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
                         });
                         cart = {}; 
-                        cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0 };
+                        cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0,total_items:0 };
                         renderCart(); 
                         setUIState('browse');
                         openPaymentSuccessModal({
@@ -2053,7 +2431,8 @@ function openMidtransPayment() {
             onError: function(){ showToast('error','Pembayaran via Midtrans gagal'); },
             onClose: function(){ showToast('info','Jendela pembayaran ditutup'); }
         });
-    }).catch(()=>showToast('error','Gagal membuat token'));
+    })
+    .catch(()=>showToast('error','Gagal membuat token'));
 }
 
 function updateProductStockFromSaleItems(items){
@@ -2063,7 +2442,7 @@ function updateProductStockFromSaleItems(items){
         if (!wrap) return;
         const qtySpan = wrap.querySelector('.stock-qty');
         let currentQty = parseInt((qtySpan.textContent||'0').replace(/\./g,'')) || 0;
-        let newQty = currentQty - item.quantity; 
+        let newQty = currentQty - item.quantity;
         if (newQty < 0) newQty = 0;
         qtySpan.textContent = formatNumber(newQty);
         wrap.classList.toggle('text-green-600', newQty>0);
@@ -2085,68 +2464,61 @@ function openPaymentSuccessModal(data){
     document.getElementById('paymentSuccessModal').classList.remove('hidden');
 }
 
-function closePaymentSuccessModal(){ 
-    document.getElementById('paymentSuccessModal').classList.add('hidden'); 
-    currentSaleId=null; 
+function closePaymentSuccessModal(){
+    document.getElementById('paymentSuccessModal').classList.add('hidden');
+    currentSaleId=null;
 }
 
-function printReceipt(){ 
-    if(!currentSaleId){ 
-        showToast('error','Sale ID tidak ditemukan'); 
-        return; 
-    } 
-    window.open('/receipt/print/'+currentSaleId, '_blank'); 
+function printReceipt(){
+    if(!currentSaleId){
+        showToast('error','Sale ID tidak ditemukan');
+        return;
+    }
+    window.open('/receipt/print/'+currentSaleId, '_blank');
 }
 
 function downloadReceipt(){
-    if(!currentSaleId){ 
-        showToast('error','Sale ID tidak ditemukan'); 
-        return; 
+    if(!currentSaleId){
+        showToast('error','Sale ID tidak ditemukan');
+        return;
     }
     showToast('info','Memproses download...');
-    const a=document.createElement('a'); 
-    a.href='/receipt/download/'+currentSaleId; 
-    a.download=''; 
-    document.body.appendChild(a); 
-    a.click(); 
+    const a=document.createElement('a');
+    a.href='/receipt/download/'+currentSaleId;
+    a.download='';
+    document.body.appendChild(a);
+    a.click();
     document.body.removeChild(a);
     setTimeout(()=>showToast('success','Struk berhasil didownload!'), 500);
 }
 
 // ==================== KEYBOARD SHORTCUTS ====================
 document.addEventListener('keydown', function(e){
-    // ESC key handling
     if (e.key === 'Escape') {
-        // Close calculator if open
         const calcModal = document.getElementById('calculatorModal');
-        if (!calcModal.classList.contains('hidden')) {
+        if (calcModal && !calcModal.classList.contains('hidden')) {
             closeCalculator();
             return;
         }
-        
-        // Close payment success modal if open
         const successModal = document.getElementById('paymentSuccessModal');
-        if (!successModal.classList.contains('hidden')) {
+        if (successModal && !successModal.classList.contains('hidden')) {
             closePaymentSuccessModal();
             return;
         }
         
-        // Close opening amount modal if open
         const openingModal = document.getElementById('openingAmountModal');
-        if (!openingModal.classList.contains('hidden')) {
+        if (openingModal && !openingModal.classList.contains('hidden')) {
             closeOpeningAmountModal();
             return;
         }
         
-        // Navigate back in payment flow
         if (UI_STATE === 'cash' || UI_STATE === 'transfer' || UI_STATE === 'midtrans') {
             setUIState('select');
         } else if (UI_STATE === 'select') {
             setUIState('browse');
         }
     }
-    
-    // Enter key on cash payment
+
     if (e.key === 'Enter' && UI_STATE === 'cash') { 
         const cashInput = document.getElementById('cashPaidAmount');
         if (document.activeElement === cashInput) {
@@ -2154,8 +2526,7 @@ document.addEventListener('keydown', function(e){
             processCashPayment(); 
         }
     }
-    
-    // Enter key on opening amount modal
+
     if (e.key === 'Enter') {
         const openingInput = document.getElementById('openingAmountInput');
         if (document.activeElement === openingInput) {
@@ -2165,11 +2536,10 @@ document.addEventListener('keydown', function(e){
     }
 });
 
-// Calculator keyboard support (handled in calculator section already, but adding to main keydown)
+// Keyboard untuk kalkulator
 document.addEventListener('keydown', function(e) {
     const modal = document.getElementById('calculatorModal');
-    if (modal.classList.contains('hidden')) return;
-    
+    if (!modal || modal.classList.contains('hidden')) return;
     if (e.key >= '0' && e.key <= '9') {
         e.preventDefault();
         calcNumber(e.key);
@@ -2190,88 +2560,5 @@ document.addEventListener('keydown', function(e) {
         calcClear();
     }
 });
-
-// ==================== SEARCH & FILTER FUNCTIONS ====================
-document.addEventListener('DOMContentLoaded', function() {
-    // Search product
-    const searchInput = document.getElementById('searchProduct');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            filterProducts(searchTerm, document.getElementById('filterCategory').value);
-        });
-    }
-    
-    // Filter category dropdown
-    const filterCategory = document.getElementById('filterCategory');
-    if (filterCategory) {
-        filterCategory.addEventListener('change', function() {
-            const searchTerm = document.getElementById('searchProduct').value.toLowerCase();
-            filterProducts(searchTerm, this.value);
-        });
-    }
-    
-    // Category tabs
-    const categoryTabs = document.querySelectorAll('.category-tab');
-    categoryTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            categoryTabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            
-            const category = this.dataset.category;
-            const searchTerm = document.getElementById('searchProduct').value.toLowerCase();
-            filterProducts(searchTerm, category);
-            
-            // Sync with dropdown
-            document.getElementById('filterCategory').value = category;
-        });
-    });
-});
-
-function filterProducts(searchTerm, category) {
-    const productCards = document.querySelectorAll('.product-card');
-    let visibleCount = 0;
-    
-    productCards.forEach(card => {
-        const productName = card.dataset.productName ? card.dataset.productName.toLowerCase() : '';
-        const productCode = card.dataset.productCode ? card.dataset.productCode.toLowerCase() : '';
-        
-        // Match search term
-        const matchesSearch = !searchTerm || 
-            productName.includes(searchTerm) || 
-            productCode.includes(searchTerm);
-        
-        // Match category (you might need to add category data attribute to products)
-        const matchesCategory = !category || card.dataset.category === category;
-        
-        if (matchesSearch && matchesCategory) {
-            card.style.display = '';
-            visibleCount++;
-        } else {
-            card.style.display = 'none';
-        }
-    });
-    
-    // Show/hide empty state
-    const productGrid = document.getElementById('productGrid');
-    const emptyState = productGrid.querySelector('.empty-state');
-    
-    if (visibleCount === 0) {
-        if (!emptyState) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.className = 'empty-state';
-            emptyDiv.style.gridColumn = '1/-1';
-            emptyDiv.innerHTML = `
-                <i class="fas fa-search"></i>
-                <p>Produk tidak ditemukan</p>
-            `;
-            productGrid.appendChild(emptyDiv);
-        }
-    } else {
-        if (emptyState) {
-            emptyState.remove();
-        }
-    }
-}
 </script>
 @endpush

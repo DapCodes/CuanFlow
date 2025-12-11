@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('code', 30)->unique();
             $table->string('name');
             $table->enum('type', ['percentage', 'fixed', 'buy_x_get_y']);
-            $table->decimal('value', 15, 2);
+            $table->decimal('value', 15, 2)->default(0);
             $table->decimal('min_purchase', 15, 2)->default(0);
             $table->decimal('max_discount', 15, 2)->nullable();
             $table->integer('buy_quantity')->nullable();

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
+use App\Models\Discount;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -24,7 +26,104 @@ class PaymentController extends Controller
     }
 
     /**
-     * Proses pembayaran tunai (cash)
+     * PERBAIKAN: Reduce stock dengan memperhitungkan free items dari BOGO
+     */
+    private function reduceStock($cart, $discountPlan = null)
+    {
+        foreach ($cart as $item) {
+            $product = Product::find($item['product_id']);
+            if (!$product || !$product->track_stock) continue;
+
+            $stock = $product->stocks()
+                ->where('outlet_id', auth()->user()->outlet_id)
+                ->first();
+
+            // Hitung qty yang harus dikurangi
+            $qtyToReduce = $item['quantity'];
+            
+            // PERBAIKAN: Tambahkan free qty jika ada (untuk BOGO)
+            if ($discountPlan && isset($discountPlan['affected_items'])) {
+                $affectedItem = collect($discountPlan['affected_items'])
+                    ->firstWhere('product_id', $item['product_id']);
+                
+                if ($affectedItem && isset($affectedItem['free_qty'])) {
+                    $qtyToReduce += $affectedItem['free_qty'];
+                }
+            }
+
+            if ($stock) {
+                $reduced = $stock->reduceStock($qtyToReduce);
+                if (!$reduced) {
+                    \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$qtyToReduce}");
+                }
+            } else {
+                \App\Models\ProductStock::create([
+                    'product_id' => $product->id,
+                    'outlet_id' => auth()->user()->outlet_id,
+                    'quantity' => 0,
+                ]);
+                \Log::warning("No stock record found for product {$product->id} at outlet ".auth()->user()->outlet_id);
+            }
+        }
+    }
+
+    /**
+     * PERBAIKAN: Reduce stock from sale dengan memperhitungkan free items
+     */
+    private function reduceStockFromSale($sale)
+    {
+        // Parse discount plan from sale notes
+        $discountPlan = null;
+        if ($sale->notes) {
+            try {
+                $notes = json_decode($sale->notes, true);
+                if (isset($notes['discount_plan'])) {
+                    $discountPlan = $notes['discount_plan'];
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to parse discount plan from sale notes: ' . $e->getMessage());
+            }
+        }
+
+        foreach ($sale->items as $saleItem) {
+            $product = $saleItem->product;
+            if (!$product || !$product->track_stock) continue;
+
+            $stock = $product->stocks()
+                ->where('outlet_id', $sale->outlet_id)
+                ->first();
+
+            // Hitung qty yang harus dikurangi
+            $qtyToReduce = $saleItem->quantity;
+            
+            // PERBAIKAN: Tambahkan free qty jika ada
+            if ($discountPlan && isset($discountPlan['affected_items'])) {
+                $affectedItem = collect($discountPlan['affected_items'])
+                    ->firstWhere('product_id', $product->id);
+                
+                if ($affectedItem && isset($affectedItem['free_qty'])) {
+                    $qtyToReduce += $affectedItem['free_qty'];
+                }
+            }
+
+            if ($stock) {
+                $reduced = $stock->reduceStock($qtyToReduce);
+                if (!$reduced) {
+                    \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$qtyToReduce}");
+                }
+            } else {
+                \App\Models\ProductStock::create([
+                    'product_id' => $product->id,
+                    'outlet_id' => $sale->outlet_id,
+                    'quantity' => 0,
+                ]);
+                \Log::warning("No stock record found for product {$product->id} at outlet {$sale->outlet_id}");
+            }
+        }
+    }
+
+    /**
+     * Process cash payment with discount support
      */
     public function processCashPayment(Request $request)
     {
@@ -33,6 +132,7 @@ class PaymentController extends Controller
         ]);
 
         $cart = Session::get('pos_cart', []);
+        $discountPlan = Session::get('pos_discount_plan');
 
         if (empty($cart)) {
             return response()->json([
@@ -41,9 +141,8 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        $summary = $this->calculateCartSummary($cart);
+        $summary = $this->calculateCartSummaryWithDiscount($cart, $discountPlan);
 
-        // Validasi jumlah bayar
         if ($request->paid_amount < $summary['grand_total']) {
             return response()->json([
                 'success' => false,
@@ -53,8 +152,7 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
-            // Buat transaksi penjualan
-            $sale = $this->createSale($cart, $summary, [
+            $sale = $this->createSaleWithDiscount($cart, $summary, $discountPlan, [
                 'payment_method' => 'cash',
                 'paid_amount' => $request->paid_amount,
                 'change_amount' => $request->paid_amount - $summary['grand_total'],
@@ -63,7 +161,6 @@ class PaymentController extends Controller
                 'completed_at' => now(),
             ]);
 
-            // Simpan ke sale_payments
             SalePayment::create([
                 'sale_id' => $sale->id,
                 'payment_method' => 'cash',
@@ -76,15 +173,16 @@ class PaymentController extends Controller
                 'received_by' => auth()->id(),
             ]);
 
-            // load items
             $sale->load('items');
+            
+            // PERBAIKAN: Pass discount plan to reduce stock
+            $this->reduceStock($cart, $discountPlan);
+            
+            if ($discountPlan && isset($discountPlan['discount_id'])) {
+                $this->incrementDiscountUsage($discountPlan['discount_id']);
+            }
 
-            // Kurangi stok
-            $this->reduceStock($cart);
-
-            // Clear cart
-            Session::forget('pos_cart');
-            Session::forget('pos_customer_id');
+            Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
 
             DB::commit();
 
@@ -96,6 +194,7 @@ class PaymentController extends Controller
                     'invoice_number' => $sale->invoice_number,
                     'created_at' => $sale->created_at,
                     'grand_total' => $sale->grand_total,
+                    'discount_amount' => $sale->discount_amount,
                     'items' => $sale->items->map(function ($item) {
                         return [
                             'product_id' => $item->product_id,
@@ -118,16 +217,17 @@ class PaymentController extends Controller
     }
 
     /**
-     * Proses pembayaran transfer manual (via QR di toko)
+     * Process transfer payment with discount support
      */
     public function processTransferPayment(Request $request)
     {
         $request->validate([
-            'transfer_method' => 'required|string', // BCA, BRI, QRIS, dll
+            'transfer_method' => 'required|string',
             'reference_number' => 'nullable|string',
         ]);
 
         $cart = Session::get('pos_cart', []);
+        $discountPlan = Session::get('pos_discount_plan');
 
         if (empty($cart)) {
             return response()->json([
@@ -136,12 +236,11 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        $summary = $this->calculateCartSummary($cart);
+        $summary = $this->calculateCartSummaryWithDiscount($cart, $discountPlan);
 
         DB::beginTransaction();
         try {
-            // Buat transaksi penjualan
-            $sale = $this->createSale($cart, $summary, [
+            $sale = $this->createSaleWithDiscount($cart, $summary, $discountPlan, [
                 'payment_method' => 'transfer',
                 'paid_amount' => $summary['grand_total'],
                 'payment_status' => 'paid',
@@ -152,7 +251,6 @@ class PaymentController extends Controller
 
             $sale->load('items');
 
-            // Simpan detail pembayaran ke sale_payments
             SalePayment::create([
                 'sale_id' => $sale->id,
                 'payment_method' => 'transfer',
@@ -164,12 +262,14 @@ class PaymentController extends Controller
                 'received_by' => auth()->id(),
             ]);
 
-            // Kurangi stok
-            $this->reduceStock($cart);
+            // PERBAIKAN: Pass discount plan
+            $this->reduceStock($cart, $discountPlan);
+            
+            if ($discountPlan && isset($discountPlan['discount_id'])) {
+                $this->incrementDiscountUsage($discountPlan['discount_id']);
+            }
 
-            // Clear cart
-            Session::forget('pos_cart');
-            Session::forget('pos_customer_id');
+            Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
 
             DB::commit();
 
@@ -181,6 +281,7 @@ class PaymentController extends Controller
                     'invoice_number' => $sale->invoice_number,
                     'created_at' => $sale->created_at,
                     'grand_total' => $sale->grand_total,
+                    'discount_amount' => $sale->discount_amount,
                     'items' => $sale->items->map(function ($item) {
                         return [
                             'product_id' => $item->product_id,
@@ -201,9 +302,13 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * Create Midtrans token
+     */
     public function createMidtransToken(Request $request)
     {
         $cart = Session::get('pos_cart', []);
+        $discountPlan = Session::get('pos_discount_plan');
 
         if (empty($cart)) {
             return response()->json([
@@ -212,11 +317,10 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        $summary = $this->calculateCartSummary($cart);
+        $summary = $this->calculateCartSummaryWithDiscount($cart, $discountPlan);
 
         DB::beginTransaction();
         try {
-            // PERBAIKAN: Cek apakah sudah ada transaksi draft untuk user ini
             $existingSale = Sale::where('outlet_id', auth()->user()->outlet_id)
                 ->where('cashier_id', auth()->id())
                 ->where('status', 'draft')
@@ -227,35 +331,18 @@ class PaymentController extends Controller
                 ->first();
 
             if ($existingSale) {
-                // Gunakan sale yang sudah ada
                 $sale = $existingSale;
-                $orderId = $sale->midtrans_order_id;
             } else {
-                // Buat transaksi baru
-                $sale = $this->createSale($cart, $summary, [
+                $sale = $this->createSaleWithDiscount($cart, $summary, $discountPlan, [
                     'payment_method' => 'qris',
                     'payment_status' => 'pending',
                     'status' => 'draft',
                     'paid_amount' => 0,
                 ]);
-
-                // Generate order ID unik
-                $orderId = $sale->invoice_number.'-'.time().'-'.strtoupper(substr(md5(uniqid()), 0, 6));
-
-                // Update sale dengan midtrans order ID
-                $sale->update([
-                    'midtrans_order_id' => $orderId,
-                ]);
             }
 
-            // PERBAIKAN: Generate order ID unik dengan timestamp + random
-            // Format: ORDER-INV-OUTLET-YYYYMMDD-XXXX-TIMESTAMP-RANDOM
             $orderId = $sale->invoice_number.'-'.time().'-'.strtoupper(substr(md5(uniqid()), 0, 6));
 
-            // Atau format yang lebih sederhana:
-            // $orderId = 'ORDER-' . $sale->id . '-' . time();
-
-            // Prepare item details untuk Midtrans
             $itemDetails = [];
             foreach ($cart as $item) {
                 $itemDetails[] = [
@@ -266,17 +353,15 @@ class PaymentController extends Controller
                 ];
             }
 
-            // Add discount as item if exists
             if ($summary['total_discount'] > 0) {
                 $itemDetails[] = [
                     'id' => 'DISCOUNT',
                     'price' => -(int) $summary['total_discount'],
                     'quantity' => 1,
-                    'name' => 'Diskon',
+                    'name' => $discountPlan['discount_name'] ?? 'Diskon',
                 ];
             }
 
-            // Add tax if exists
             if ($summary['tax'] > 0) {
                 $itemDetails[] = [
                     'id' => 'TAX',
@@ -307,10 +392,8 @@ class PaymentController extends Controller
                 ],
             ];
 
-            // Get Snap Token
             $snapToken = Snap::getSnapToken($params);
 
-            // Update sale dengan midtrans order ID yang unik
             $sale->update([
                 'midtrans_order_id' => $orderId,
             ]);
@@ -335,12 +418,11 @@ class PaymentController extends Controller
     }
 
     /**
-     * Handle Midtrans notification callback
+     * Handle Midtrans notification
      */
     public function handleMidtransNotification(Request $request)
     {
         \Log::info('=== Midtrans Notification Received ===');
-        \Log::info('Request Method: '.$request->method());
         \Log::info('Request Body: ', $request->all());
 
         try {
@@ -352,28 +434,18 @@ class PaymentController extends Controller
             $transactionId = $notification->transaction_id;
             $paymentType = $notification->payment_type;
 
-            \Log::info('Parsed Notification: ', [
-                'order_id' => $orderId,
-                'transaction_status' => $transactionStatus,
-                'fraud_status' => $fraudStatus,
-                'payment_type' => $paymentType,
-            ]);
-
-            // Cari sale berdasarkan midtrans_order_id
             $sale = Sale::where('midtrans_order_id', $orderId)->first();
 
-            if (! $sale) {
+            if (!$sale) {
                 \Log::warning('Sale not found for order_id: '.$orderId);
-
                 return response()->json(['message' => 'Sale not found'], 404);
             }
 
             DB::beginTransaction();
             try {
-                // Cek apakah stok sudah dikurangi sebelumnya
                 $shouldReduceStock = ($sale->payment_status !== 'paid' && $sale->status !== 'completed');
+                $shouldIncrementDiscount = $shouldReduceStock;
 
-                // Update sale berdasarkan status
                 if ($transactionStatus == 'capture') {
                     if ($fraudStatus == 'accept') {
                         $sale->update([
@@ -386,13 +458,14 @@ class PaymentController extends Controller
                             'paid_amount' => $sale->grand_total,
                         ]);
 
-                        // Simpan ke sale_payments jika belum ada
                         $this->createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification);
 
-                        // Kurangi stok hanya jika belum pernah dikurangi
                         if ($shouldReduceStock) {
                             $this->reduceStockFromSale($sale);
-                            \Log::info('Stock reduced for order: '.$orderId);
+                        }
+                        
+                        if ($shouldIncrementDiscount && $sale->discount_amount > 0) {
+                            $this->incrementDiscountUsageFromSaleNotes($sale);
                         }
 
                         \Log::info('Payment captured and accepted for order: '.$orderId);
@@ -408,15 +481,14 @@ class PaymentController extends Controller
                         'paid_amount' => $sale->grand_total,
                     ]);
 
-                    // Simpan ke sale_payments jika belum ada
                     $this->createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification);
 
-                    // Kurangi stok hanya jika belum pernah dikurangi
                     if ($shouldReduceStock) {
                         $this->reduceStockFromSale($sale);
-                        \Log::info('Stock reduced for order: '.$orderId);
-                    } else {
-                        \Log::info('Stock already reduced, skipping for order: '.$orderId);
+                    }
+                    
+                    if ($shouldIncrementDiscount && $sale->discount_amount > 0) {
+                        $this->incrementDiscountUsageFromSaleNotes($sale);
                     }
 
                     \Log::info('Payment settled for order: '.$orderId);
@@ -428,9 +500,6 @@ class PaymentController extends Controller
                         'midtrans_payment_type' => $paymentType,
                         'midtrans_response' => json_encode($notification->getResponse()),
                     ]);
-
-                    \Log::info('Payment pending for order: '.$orderId);
-
                 } elseif ($transactionStatus == 'deny' || $transactionStatus == 'expire' || $transactionStatus == 'cancel') {
                     $sale->update([
                         'payment_status' => 'cancelled',
@@ -439,8 +508,6 @@ class PaymentController extends Controller
                         'midtrans_payment_type' => $paymentType,
                         'midtrans_response' => json_encode($notification->getResponse()),
                     ]);
-
-                    \Log::info('Payment cancelled/expired/denied for order: '.$orderId);
                 }
 
                 DB::commit();
@@ -453,15 +520,11 @@ class PaymentController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
                 \Log::error('Failed to update sale: '.$e->getMessage());
-                \Log::error('Stack trace: '.$e->getTraceAsString());
-
                 return response()->json(['message' => 'Failed to update sale'], 500);
             }
 
         } catch (\Exception $e) {
             \Log::error('Midtrans Notification Error: '.$e->getMessage());
-            \Log::error('Stack trace: '.$e->getTraceAsString());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid notification',
@@ -470,97 +533,21 @@ class PaymentController extends Controller
     }
 
     /**
-     * Halaman finish setelah Midtrans payment
+     * Create sale with discount support
+     * PERBAIKAN: Simpan discount_plan lengkap di notes
      */
-    public function midtransFinish(Request $request)
-    {
-        $orderId = $request->order_id;
-        $sale = Sale::where('midtrans_order_id', $orderId)->first();
-
-        if (! $sale) {
-            return redirect()->route('pos.index')->with('error', 'Transaksi tidak ditemukan');
-        }
-
-        // Clear cart
-        Session::forget('pos_cart');
-        Session::forget('pos_customer_id');
-
-        return redirect()->route('pos.index')->with('success', 'Pembayaran berhasil diproses. Invoice: '.$sale->invoice_number);
-    }
-
-    /**
-     * Clear cart (untuk dipanggil dari frontend setelah payment berhasil)
-     */
-    public function clearCart(Request $request)
-    {
-        Session::forget('pos_cart');
-        Session::forget('pos_customer_id');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Cart cleared',
-        ]);
-    }
-
-    /**
-     * Helper: Simpan atau update sale payment untuk Midtrans
-     */
-    private function createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification)
-    {
-        // Cek apakah sudah ada record payment untuk sale ini
-        $salePayment = SalePayment::where('sale_id', $sale->id)
-            ->where('midtrans_transaction_id', $transactionId)
-            ->first();
-
-        $paymentDetails = [
-            'payment_type' => $paymentType,
-            'transaction_id' => $transactionId,
-            'transaction_time' => $notification->transaction_time ?? null,
-            'settlement_time' => $notification->settlement_time ?? null,
-            'gross_amount' => $notification->gross_amount ?? null,
-        ];
-
-        // Tambahkan detail VA jika ada
-        if (isset($notification->va_numbers)) {
-            $paymentDetails['va_numbers'] = $notification->va_numbers;
-        }
-
-        // Tambahkan detail bill key jika ada
-        if (isset($notification->bill_key)) {
-            $paymentDetails['bill_key'] = $notification->bill_key;
-            $paymentDetails['biller_code'] = $notification->biller_code ?? null;
-        }
-
-        if ($salePayment) {
-            // Update existing payment
-            $salePayment->update([
-                'amount' => $sale->grand_total,
-                'payment_details' => json_encode($paymentDetails),
-            ]);
-
-            \Log::info('Updated sale_payment record for sale_id: '.$sale->id);
-        } else {
-            // Create new payment record
-            SalePayment::create([
-                'sale_id' => $sale->id,
-                'payment_method' => 'qris', // atau bisa disesuaikan dengan payment_type
-                'amount' => $sale->grand_total,
-                'reference_number' => null,
-                'midtrans_transaction_id' => $transactionId,
-                'payment_details' => json_encode($paymentDetails),
-                'received_by' => $sale->cashier_id,
-            ]);
-
-            \Log::info('Created sale_payment record for sale_id: '.$sale->id);
-        }
-    }
-
-    /**
-     * Helper: Buat transaksi sale
-     */
-    private function createSale($cart, $summary, $additionalData = [])
+    private function createSaleWithDiscount($cart, $summary, $discountPlan, $additionalData = [])
     {
         $customerId = Session::get('pos_customer_id');
+
+        // PERBAIKAN: Simpan discount plan lengkap
+        $notes = null;
+        if ($discountPlan) {
+            $notes = json_encode([
+                'discount_id' => $discountPlan['discount_id'],
+                'discount_plan' => $discountPlan,
+            ]);
+        }
 
         $saleData = array_merge([
             'outlet_id' => auth()->user()->outlet_id,
@@ -573,21 +560,33 @@ class PaymentController extends Controller
             'grand_total' => $summary['grand_total'],
             'paid_amount' => 0,
             'change_amount' => 0,
+            'notes' => $notes,
         ], $additionalData);
 
         $sale = Sale::create($saleData);
 
-        // Buat sale items
+        // Create sale items
         foreach ($cart as $item) {
+            $discountAmount = 0;
+            
+            if ($discountPlan && isset($discountPlan['affected_items'])) {
+                $affectedItem = collect($discountPlan['affected_items'])
+                    ->firstWhere('product_id', $item['product_id']);
+                
+                if ($affectedItem) {
+                    $discountAmount = $affectedItem['discount_amount'] ?? 0;
+                }
+            }
+            
             SaleItem::create([
                 'sale_id' => $sale->id,
                 'product_id' => $item['product_id'],
                 'product_name' => $item['product_name'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
-                'discount_percent' => $item['discount_percent'],
-                'discount_amount' => $item['discount_amount'],
-                'subtotal' => $item['subtotal'],
+                'discount_percent' => 0,
+                'discount_amount' => $discountAmount,
+                'subtotal' => ($item['unit_price'] * $item['quantity']) - $discountAmount,
                 'hpp' => $item['hpp'],
             ]);
         }
@@ -596,96 +595,105 @@ class PaymentController extends Controller
     }
 
     /**
-     * Helper: Kurangi stok dari cart
+     * Calculate cart summary with discount
      */
-    private function reduceStock($cart)
+    private function calculateCartSummaryWithDiscount($cart, $discountPlan)
     {
-        foreach ($cart as $item) {
-            $product = \App\Models\Product::find($item['product_id']);
-
-            if ($product && $product->track_stock) {
-                $stock = $product->stocks()
-                    ->where('outlet_id', auth()->user()->outlet_id)
-                    ->first();
-
-                if ($stock) {
-                    $reduced = $stock->reduceStock($item['quantity']);
-
-                    if (! $reduced) {
-                        \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$item['quantity']}");
-                    }
-                } else {
-                    \App\Models\ProductStock::create([
-                        'product_id' => $product->id,
-                        'outlet_id' => auth()->user()->outlet_id,
-                        'quantity' => 0,
-                    ]);
-
-                    \Log::warning("No stock record found for product {$product->id} at outlet ".auth()->user()->outlet_id);
-                }
-            }
-        }
-    }
-
-    /**
-     * Helper: Kurangi stok dari sale yang sudah ada
-     */
-    private function reduceStockFromSale($sale)
-    {
-        foreach ($sale->items as $item) {
-            $product = $item->product;
-
-            if ($product && $product->track_stock) {
-                $stock = $product->stocks()
-                    ->where('outlet_id', $sale->outlet_id)
-                    ->first();
-
-                if ($stock) {
-                    $reduced = $stock->reduceStock($item->quantity);
-
-                    if (! $reduced) {
-                        \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$item->quantity}");
-                    }
-                } else {
-                    \App\Models\ProductStock::create([
-                        'product_id' => $product->id,
-                        'outlet_id' => $sale->outlet_id,
-                        'quantity' => 0,
-                    ]);
-
-                    \Log::warning("No stock record found for product {$product->id} at outlet {$sale->outlet_id}");
-                }
-            }
-        }
-    }
-
-    /**
-     * Helper: Hitung ringkasan keranjang
-     */
-    private function calculateCartSummary($cart)
-    {
-        $subtotal = 0;
-        $totalDiscount = 0;
-        $totalItems = 0;
-
-        foreach ($cart as $item) {
-            $subtotal += ($item['unit_price'] * $item['quantity']);
-            $totalDiscount += $item['discount_amount'];
-            $totalItems += $item['quantity'];
-        }
-
-        $tax = 0;
+        $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
+        $totalDiscount = $discountPlan['total_discount'] ?? 0;
+        
         $taxPercent = 0;
-
-        $grandTotal = $subtotal - $totalDiscount + $tax;
-
+        $subtotalAfterDiscount = $subtotal - $totalDiscount;
+        $tax = $subtotalAfterDiscount * ($taxPercent / 100);
+        $grandTotal = $subtotalAfterDiscount + $tax;
+        
+        $totalItems = collect($cart)->sum('quantity');
+        
         return [
-            'subtotal' => $subtotal,
-            'total_discount' => $totalDiscount,
-            'tax' => $tax,
+            'subtotal' => round($subtotal, 2),
+            'total_discount' => round($totalDiscount, 2),
+            'tax' => round($tax, 2),
             'tax_percent' => $taxPercent,
-            'grand_total' => $grandTotal,
+            'grand_total' => round($grandTotal, 2),
             'total_items' => $totalItems,
         ];
+    }
+    
+    private function incrementDiscountUsage($discountId)
+    {
+        $discount = Discount::find($discountId);
+        if ($discount) {
+            $discount->incrementUsage();
+            \Log::info("Incremented usage for discount ID: $discountId");
+        }
+    }
+    
+    private function incrementDiscountUsageFromSaleNotes($sale)
+    {
+        if ($sale->notes) {
+            try {
+                $notes = json_decode($sale->notes, true);
+                if (isset($notes['discount_id'])) {
+                    $this->incrementDiscountUsage($notes['discount_id']);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to parse sale notes for discount: ' . $e->getMessage());
+            }
+        }
+    }
+    
+    private function createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification)
+    {
+        $salePayment = SalePayment::where('sale_id', $sale->id)
+            ->where('midtrans_transaction_id', $transactionId)
+            ->first();
+
+        $paymentDetails = [
+            'payment_type' => $paymentType,
+            'transaction_id' => $transactionId,
+            'transaction_time' => $notification->transaction_time ?? null,
+            'settlement_time' => $notification->settlement_time ?? null,
+            'gross_amount' => $notification->gross_amount ?? null,
+        ];
+
+        if (isset($notification->va_numbers)) {
+            $paymentDetails['va_numbers'] = $notification->va_numbers;
+        }
+
+        if (isset($notification->bill_key)) {
+            $paymentDetails['bill_key'] = $notification->bill_key;
+            $paymentDetails['biller_code'] = $notification->biller_code ?? null;
+        }
+
+        if ($salePayment) {
+            $salePayment->update([
+                'amount' => $sale->grand_total,
+                'payment_details' => json_encode($paymentDetails),
+            ]);
+        } else {
+            SalePayment::create([
+                'sale_id' => $sale->id,
+                'payment_method' => 'qris',
+                'amount' => $sale->grand_total,
+                'reference_number' => null,
+                'midtrans_transaction_id' => $transactionId,
+                'payment_details' => json_encode($paymentDetails),
+                'received_by' => $sale->cashier_id,
+            ]);
+        }
+    }
+
+    public function midtransFinish(Request $request)
+    {
+        $orderId = $request->order_id;
+        $sale = Sale::where('midtrans_order_id', $orderId)->first();
+
+        if (!$sale) {
+            return redirect()->route('pos.index')->with('error', 'Transaksi tidak ditemukan');
+        }
+
+        Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
+
+        return redirect()->route('pos.index')->with('success', 'Pembayaran berhasil diproses. Invoice: '.$sale->invoice_number);
     }
 }

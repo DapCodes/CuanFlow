@@ -217,6 +217,13 @@ Route::middleware(['auth'])->prefix('receipt')->name('receipt.')->group(function
     Route::get('preview/{id}', [ReceiptController::class, 'previewReceipt'])->name('preview');
 });
 
+Route::middleware(['auth'])->prefix('pos/discounts')->name('pos.discounts.')->group(function () {
+    Route::post('/apply', [App\Http\Controllers\PosDiscountController::class, 'apply'])->name('apply');
+    Route::post('/assign-free-items', [App\Http\Controllers\PosDiscountController::class, 'assignFreeItems'])->name('assign-free-items');
+    Route::post('/clear', [App\Http\Controllers\PosDiscountController::class, 'clear'])->name('clear');
+    Route::get('/available', [App\Http\Controllers\PosDiscountController::class, 'available'])->name('available');
+});
+
 Route::middleware(['auth'])->prefix('finance')->name('finance.')->group(function () {
     Route::get('/', [FinanceController::class, 'index'])->name('index');
     Route::get('/income/create', [FinanceController::class, 'createIncome'])->name('income.create');
