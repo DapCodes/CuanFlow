@@ -159,6 +159,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/pos/cart/clear', [PointOfSaleController::class, 'clearCart'])->name('pos.cart.clear');
     Route::post('/pos/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('pos.customer.set');
 
+    Route::post('/pos/products/{product}/toggle-visibility', [PointOfSaleController::class, 'toggleProductVisibility'])
+        ->name('pos.products.toggle-visibility');
+
     Route::post('/cash-register/set-opening-amount', [PointOfSaleController::class, 'setOpeningAmount'])
         ->name('cash-register.set-opening-amount');
 

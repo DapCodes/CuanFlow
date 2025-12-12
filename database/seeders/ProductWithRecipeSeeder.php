@@ -616,6 +616,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'start_date' => now(),
                 'end_date' => now()->addMonth(),
                 'is_active' => true,
+                'is_voucher' => false,
             ],
             [
                 'code' => 'DISC-KOPI-B2G1',
@@ -630,6 +631,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'start_date' => now(),
                 'end_date' => now()->addMonth(),
                 'is_active' => true,
+                'is_voucher' => true,
             ],
             [
                 'code' => 'DISC-BROWNIES-5K',
@@ -642,6 +644,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'start_date' => now(),
                 'end_date' => now()->addMonth(),
                 'is_active' => true,
+                'is_voucher' => true,
             ],
         ];
 
@@ -664,6 +667,7 @@ class ProductWithRecipeSeeder extends Seeder
                         'start_date' => $data['start_date'],
                         'end_date' => $data['end_date'],
                         'is_active' => $data['is_active'],
+                        'is_voucher' => $data['is_voucher'] ?? false,
                     ]
                 );
 

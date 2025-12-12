@@ -26,6 +26,7 @@ return new class extends Migration
             $table->integer('usage_limit')->nullable();
             $table->integer('used_count')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_voucher')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

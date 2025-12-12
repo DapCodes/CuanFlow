@@ -672,7 +672,7 @@
 <div id="startSalesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 lg:p-8">
         <div class="text-center mb-5">
-            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
@@ -680,9 +680,9 @@
             <h3 class="text-xl font-bold text-gray-900 mb-1">Selamat Datang!</h3>
             <p class="text-gray-600 text-sm">Mulai penjualan Anda hari ini</p>
         </div>
-        <div class="bg-indigo-50 rounded-xl p-3 mb-5">
+        <div class="bg-orange-50 rounded-xl p-3 mb-5">
             <p class="text-xs sm:text-sm text-gray-700 text-center">
-                <i class="fas fa-info-circle text-indigo-600 mr-1.5"></i>
+                <i class="fas fa-info-circle text-orange-600 mr-1.5"></i>
                 Sistem akan mencatat semua transaksi Anda hari ini
             </p>
         </div>
@@ -690,7 +690,7 @@
             <button onclick="declineStartSales()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
                 Tidak
             </button>
-            <button onclick="openOpeningAmountModal()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg text-sm font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg">
+            <button onclick="openOpeningAmountModal()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg">
                 Ya, Mulai
             </button>
         </div>
@@ -701,15 +701,15 @@
 <div id="paymentSuccessModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 lg:p-8">
         <div class="flex justify-center mb-5">
-            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                 </svg>
             </div>
         </div>
         <h3 class="text-xl font-bold text-gray-900 text-center mb-1.5">Pembayaran Berhasil!</h3>
         <p class="text-gray-600 text-sm text-center mb-5">Transaksi telah berhasil diproses</p>
-        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-4 mb-5">
+        <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 mb-5">
             <div class="space-y-1.5 text-sm">
                 <div class="flex justify-between">
                     <span class="text-gray-600">No. Invoice:</span>
@@ -719,9 +719,9 @@
                     <span class="text-gray-600">Tanggal:</span>
                     <span class="text-gray-900 font-medium" id="successDate">-</span>
                 </div>
-                <div class="flex justify-between text-base font-bold border-t border-indigo-200 pt-2 mt-2">
+                <div class="flex justify-between text-base font-bold border-t border-orange-200 pt-2 mt-2">
                     <span class="text-gray-700">Total:</span>
-                    <span class="text-indigo-600" id="successTotal">Rp 0</span>
+                    <span class="text-orange-600" id="successTotal">Rp 0</span>
                 </div>
                 <div class="flex justify-between text-sm" id="successChangeRow" style="display: none;">
                     <span class="text-gray-600">Kembalian:</span>
@@ -730,13 +730,13 @@
             </div>
         </div>
         <div class="space-y-2.5">
-            <button onclick="printReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg">
+            <button onclick="printReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                 </svg>
                 <span>Cetak Struk</span>
             </button>
-            <button onclick="downloadReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-indigo-200 text-indigo-600 rounded-xl text-sm font-semibold hover:bg-indigo-50 transition-all">
+            <button onclick="downloadReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-orange-200 text-orange-600 rounded-xl text-sm font-semibold hover:bg-orange-50 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
@@ -965,6 +965,11 @@
                             <span>Kalkulator</span>
                         </button>
 
+                        <button onclick="openProductSettingsModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-orange-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
+                            <i class="fas fa-cog w-4 text-orange-600"></i>
+                            <span>Atur Produk</span>
+                        </button>
+
                          <!-- Penjualan Hari Ini -->
                         <a href="{{ route('dashboard') }}" class="block w-full px-4 py-2.5 text-left text-sm hover:bg-indigo-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-list w-4 text-indigo-600"></i>
@@ -1024,7 +1029,7 @@
 <div id="openingAmountModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 lg:p-8">
         <div class="text-center mb-5">
-            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
@@ -1032,9 +1037,9 @@
             <h3 class="text-xl font-bold text-gray-900 mb-1">Modal Awal</h3>
             <p class="text-gray-600 text-sm">Masukkan jumlah uang modal awal untuk hari ini</p>
         </div>
-        <div class="bg-green-50 rounded-xl p-3 mb-5">
+        <div class="bg-orange-50 rounded-xl p-3 mb-5">
             <p class="text-xs sm:text-sm text-gray-700 text-center">
-                <i class="fas fa-info-circle text-green-600 mr-1.5"></i>
+                <i class="fas fa-info-circle text-orange-600 mr-1.5"></i>
                 Modal awal adalah uang tunai yang Anda bawa untuk memulai penjualan hari ini
             </p>
         </div>
@@ -1043,7 +1048,7 @@
             <input 
                 type="number" 
                 id="openingAmountInput" 
-                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-base font-semibold" 
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base font-semibold" 
                 placeholder="0"
                 min="0"
                 step="1000"
@@ -1057,7 +1062,7 @@
             <button onclick="skipOpeningAmount()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
                 Lewati (Rp 0)
             </button>
-            <button onclick="submitOpeningAmount()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg text-sm font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg">
+            <button onclick="submitOpeningAmount()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg">
                 Simpan & Mulai
             </button>
         </div>
@@ -1069,7 +1074,7 @@
     <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between mb-4 flex-shrink-0">
             <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <i class="fas fa-calculator text-purple-600"></i>
+                <i class="fas fa-calculator text-orange-600"></i>
                 Kalkulator
             </h3>
             <button onclick="closeCalculator()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
@@ -1080,7 +1085,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-1 overflow-hidden">
             <!-- Calculator -->
             <div class="lg:col-span-3">
-                <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
+                <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200">
                     <!-- Display -->
                     <div class="bg-white rounded-lg p-4 mb-4 shadow-inner">
                         <div class="text-right text-sm text-gray-500 h-6" id="calcExpression"></div>
@@ -1091,26 +1096,26 @@
                     <div class="grid grid-cols-4 gap-2">
                         <button onclick="calcClear()" class="calc-btn bg-red-500 hover:bg-red-600 text-white col-span-2 font-semibold">C</button>
                         <button onclick="calcDelete()" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white font-semibold">DEL</button>
-                        <button onclick="calcOperator('/')" class="calc-btn bg-indigo-500 hover:bg-indigo-600 text-white text-xl">÷</button>
+                        <button onclick="calcOperator('/')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">÷</button>
                         
                         <button onclick="calcNumber('7')" class="calc-btn">7</button>
                         <button onclick="calcNumber('8')" class="calc-btn">8</button>
                         <button onclick="calcNumber('9')" class="calc-btn">9</button>
-                        <button onclick="calcOperator('*')" class="calc-btn bg-indigo-500 hover:bg-indigo-600 text-white text-xl">×</button>
+                        <button onclick="calcOperator('*')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">×</button>
                         
                         <button onclick="calcNumber('4')" class="calc-btn">4</button>
                         <button onclick="calcNumber('5')" class="calc-btn">5</button>
                         <button onclick="calcNumber('6')" class="calc-btn">6</button>
-                        <button onclick="calcOperator('-')" class="calc-btn bg-indigo-500 hover:bg-indigo-600 text-white text-xl">−</button>
+                        <button onclick="calcOperator('-')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">−</button>
                         
                         <button onclick="calcNumber('1')" class="calc-btn">1</button>
                         <button onclick="calcNumber('2')" class="calc-btn">2</button>
                         <button onclick="calcNumber('3')" class="calc-btn">3</button>
-                        <button onclick="calcOperator('+')" class="calc-btn bg-indigo-500 hover:bg-indigo-600 text-white text-xl">+</button>
+                        <button onclick="calcOperator('+')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">+</button>
                         
                         <button onclick="calcNumber('0')" class="calc-btn col-span-2">0</button>
                         <button onclick="calcDecimal()" class="calc-btn">.</button>
-                        <button onclick="calcEquals()" class="calc-btn bg-green-500 hover:bg-green-600 text-white font-semibold text-xl">=</button>
+                        <button onclick="calcEquals()" class="calc-btn bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xl">=</button>
                     </div>
                 </div>
             </div>
@@ -1130,6 +1135,98 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Atur Produk -->
+<div id="productSettingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+            <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="fas fa-cog text-orange-600"></i>
+                Atur Produk
+            </h3>
+            <button onclick="closeProductSettingsModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+            <!-- Toggle: Sembunyikan Stok Habis -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div class="flex-1">
+                    <div class="font-semibold text-gray-900 mb-1">Sembunyikan Stok Habis</div>
+                    <div class="text-sm text-gray-600">Produk dengan stok 0 tidak akan ditampilkan</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="hideOutOfStock" class="sr-only peer" onchange="applyProductSettings()">
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                </label>
+            </div>
+
+            <!-- Select: Urutkan Produk -->
+            <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <label class="block font-semibold text-gray-900 mb-3">Urutkan Produk</label>
+                <select id="sortProducts" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm" onchange="applyProductSettings()">
+                    <option value="default">Default (ID)</option>
+                    <option value="name-asc">Nama (A-Z)</option>
+                    <option value="name-desc">Nama (Z-A)</option>
+                    <option value="price-asc">Harga Termurah</option>
+                    <option value="price-desc">Harga Termahal</option>
+                    <option value="discount">Produk Diskon</option>
+                </select>
+            </div>
+
+            <!-- Toggle: Sembunyikan Beberapa Produk -->
+            <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="font-semibold text-gray-900">Sembunyikan Beberapa Produk</div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="enableProductHiding" class="sr-only peer" onchange="toggleProductListVisibility()">
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                    </label>
+                </div>
+                
+                <!-- Product List (Hidden by default) -->
+                <div id="productVisibilityList" class="hidden mt-4 space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+                    @foreach($products as $product)
+                    <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-gray-900 truncate">{{ $product->name }}</div>
+                            <div class="text-xs text-gray-500">{{ $product->code }}</div>
+                            @if($product->track_stock)
+                                @php
+                                    $stock = $product->stocks->where('outlet_id', auth()->user()->outlet_id)->first();
+                                    $stockQty = $stock ? $stock->quantity : 0;
+                                @endphp
+                                <div class="text-xs {{ $stockQty > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                    Stok: {{ number_format($stockQty, 0, ',', '.') }}
+                                </div>
+                            @endif
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer ml-3">
+                            <input 
+                                type="checkbox" 
+                                class="sr-only peer product-visibility-toggle" 
+                                data-product-id="{{ $product->id }}"
+                                {{ $product->is_active ? 'checked' : '' }}
+                                onchange="toggleProductVisibility({{ $product->id }}, this.checked)">
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                        </label>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 flex gap-3 flex-shrink-0">
+            <button onclick="resetProductSettings()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                <i class="fas fa-undo mr-2"></i>Reset
+            </button>
+            <button onclick="closeProductSettingsModal()" class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
+                <i class="fas fa-check mr-2"></i>Selesai
+            </button>
         </div>
     </div>
 </div>
@@ -1157,6 +1254,10 @@ document.addEventListener('DOMContentLoaded', function() {
     checkCashRegister();
     renderCart();
     setUIState('browse');
+    loadProductSettings();
+    if (productSettings.hideOutOfStock || productSettings.sortBy !== 'default' || productSettings.hiddenProducts.length > 0) {
+        applyProductSettings();
+    }
     
     renderCategoryTabs();
     renderCategoryDropdown();
@@ -1342,7 +1443,8 @@ function loadAvailableDiscounts() {
         })
         .then((data) => {
             if (data.success) {
-                availableDiscounts = data.discounts || [];
+                // Filter hanya non-voucher untuk badge
+                availableDiscounts = (data.discounts || []).filter(d => !d.is_voucher);
                 renderDiscountBadges();
             }
         })
@@ -1487,7 +1589,7 @@ function createFreeItemModal() {
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col">
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                 <h3 class="text-xl font-bold text-gray-900">
-                    <i class="fas fa-gift text-green-500 mr-2"></i>
+                    <i class="fas fa-gift text-orange-500 mr-2"></i>
                     Pilih Item Gratis
                 </h3>
                 <button onclick="closeFreeItemModal()" class="text-gray-400 hover:text-gray-600">
@@ -1495,8 +1597,8 @@ function createFreeItemModal() {
                 </button>
             </div>
             
-            <div class="bg-green-50 border border-green-200 rounded-xl p-3 mb-4 flex-shrink-0">
-                <p class="text-sm text-green-800">
+            <div class="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 flex-shrink-0">
+                <p class="text-sm text-orange-800">
                     <i class="fas fa-info-circle mr-2"></i>
                     Anda berhak mendapat <span id="freeItemQuota" class="font-bold">0</span> item gratis!
                     Sisa: <span id="freeItemsRemaining" class="font-bold">0</span>
@@ -1510,7 +1612,7 @@ function createFreeItemModal() {
                 <button onclick="closeFreeItemModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
                     Batal
                 </button>
-                <button onclick="confirmFreeItems()" class="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md">
+                <button onclick="confirmFreeItems()" class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
                     <i class="fas fa-check mr-2"></i>
                     Konfirmasi
                 </button>
@@ -1625,7 +1727,7 @@ function initDiscountUI() {
     const btn = document.createElement('button');
     btn.id = 'btnDiscountCode';
     btn.className = 'btn-secondary mb-2';
-    btn.innerHTML = '<i class="fas fa-ticket-alt mr-2"></i>Kode Diskon';
+    btn.innerHTML = '<i class="fas fa-ticket-alt mr-2"></i>Gunakan Voucher';
     btn.onclick = showDiscountCodeModal;
 
     actions.insertBefore(btn, actions.firstChild);
@@ -1644,24 +1746,24 @@ function createDiscountCodeModal() {
     modal.innerHTML = `
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div class="text-center mb-4">
-                <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-ticket-alt text-white text-2xl"></i>
                 </div>
-                <h3 class="text-xl font-bold text-gray-900">Masukkan Kode Diskon</h3>
+                <h3 class="text-xl font-bold text-gray-900">Masukkan Kode Voucher</h3> <!-- ⬅️ Ubah -->
             </div>
             <div class="mb-4">
                 <input type="text" 
-                       id="discountCodeInput" 
-                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-lg font-semibold uppercase"
-                       placeholder="KODE DISKON"
-                       onkeypress="if(event.key==='Enter') submitDiscountCode()">
+                    id="discountCodeInput" 
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-center text-lg font-semibold uppercase"
+                    placeholder="KODE VOUCHER" 
+                    onkeypress="if(event.key==='Enter') submitDiscountCode()">
             </div>
             
             <div class="flex gap-3">
                 <button onclick="closeDiscountCodeModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50">
                     Batal
                 </button>
-                <button onclick="submitDiscountCode()" class="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-indigo-700">
+                <button onclick="submitDiscountCode()" class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-red-700">
                     Terapkan
                 </button>
             </div>
@@ -1675,12 +1777,39 @@ function submitDiscountCode() {
     const input = document.getElementById('discountCodeInput');
     const code = input?.value.trim().toUpperCase();
     if (!code) {
-        showToast('warning', 'Masukkan kode diskon');
+        showToast('warning', 'Masukkan kode voucher');
         return;
     }
 
-    applyDiscount(code);
-    closeDiscountCodeModal();
+    // Langsung fetch tanpa bikin fungsi baru
+    fetch('/pos/discounts/apply', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ discount_code: code })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            activeDiscountPlan = data.discount_plan;
+            cartSummary = data.cart_summary;
+            
+            renderCart();
+            
+            if (data.discount_plan.requires_free_item_selection) {
+                showFreeItemSelectionModal(data.discount_plan);
+            } else {
+                showToast('success', `Voucher ${data.discount_plan.discount_name} diterapkan`);
+            }
+            
+            closeDiscountCodeModal();
+        } else {
+            showToast('error', data.message);
+        }
+    })
+    .catch(() => showToast('error', 'Gagal menerapkan voucher'));
 }
 
 function closeDiscountCodeModal() {
@@ -2623,6 +2752,10 @@ function downloadReceipt(){
 // ==================== KEYBOARD SHORTCUTS ====================
 document.addEventListener('keydown', function(e){
     if (e.key === 'Escape') {
+        const modal = document.getElementById('productSettingsModal');
+        if (modal && !modal.classList.contains('hidden')) {
+            closeProductSettingsModal();
+        }
         const calcModal = document.getElementById('calculatorModal');
         if (calcModal && !calcModal.classList.contains('hidden')) {
             closeCalculator();
@@ -2688,5 +2821,182 @@ document.addEventListener('keydown', function(e) {
         calcClear();
     }
 });
+
+// ==================== PRODUCT SETTINGS FUNCTIONS ====================
+let productSettings = {
+    hideOutOfStock: false,
+    sortBy: 'default',
+    hiddenProducts: []
+};
+
+function openProductSettingsModal() {
+    document.getElementById('productSettingsModal').classList.remove('hidden');
+    loadProductSettings();
+}
+
+function closeProductSettingsModal() {
+    document.getElementById('productSettingsModal').classList.add('hidden');
+}
+
+function loadProductSettings() {
+    const saved = localStorage.getItem('pos_product_settings');
+    if (saved) {
+        try {
+            productSettings = JSON.parse(saved);
+            document.getElementById('hideOutOfStock').checked = productSettings.hideOutOfStock;
+            document.getElementById('sortProducts').value = productSettings.sortBy;
+            
+            if (productSettings.hiddenProducts && productSettings.hiddenProducts.length > 0) {
+                document.getElementById('enableProductHiding').checked = true;
+                toggleProductListVisibility();
+                
+                // Update toggle states
+                productSettings.hiddenProducts.forEach(productId => {
+                    const toggle = document.querySelector(`.product-visibility-toggle[data-product-id="${productId}"]`);
+                    if (toggle) toggle.checked = false;
+                });
+            }
+        } catch (e) {
+            console.error('Failed to load product settings:', e);
+        }
+    }
+}
+
+function saveProductSettings() {
+    localStorage.setItem('pos_product_settings', JSON.stringify(productSettings));
+}
+
+function toggleProductListVisibility() {
+    const checkbox = document.getElementById('enableProductHiding');
+    const list = document.getElementById('productVisibilityList');
+    
+    if (checkbox.checked) {
+        list.classList.remove('hidden');
+    } else {
+        list.classList.add('hidden');
+        // Reset all toggles to checked
+        document.querySelectorAll('.product-visibility-toggle').forEach(toggle => {
+            toggle.checked = true;
+        });
+        productSettings.hiddenProducts = [];
+        saveProductSettings();
+        applyProductSettings();
+    }
+}
+
+function toggleProductVisibility(productId, isVisible) {
+    if (isVisible) {
+        // Remove from hidden list
+        productSettings.hiddenProducts = productSettings.hiddenProducts.filter(id => id !== productId);
+    } else {
+        // Add to hidden list
+        if (!productSettings.hiddenProducts.includes(productId)) {
+            productSettings.hiddenProducts.push(productId);
+        }
+    }
+    
+    saveProductSettings();
+    applyProductSettings();
+}
+
+function applyProductSettings() {
+    // Save current settings
+    productSettings.hideOutOfStock = document.getElementById('hideOutOfStock').checked;
+    productSettings.sortBy = document.getElementById('sortProducts').value;
+    saveProductSettings();
+    
+    const productGrid = document.getElementById('productGrid');
+    const productCards = Array.from(document.querySelectorAll('.product-card'));
+    
+    // Apply filters
+    productCards.forEach(card => {
+        const productId = parseInt(card.dataset.productId);
+        let shouldShow = true;
+        
+        // Check if manually hidden
+        if (productSettings.hiddenProducts.includes(productId)) {
+            shouldShow = false;
+        }
+        
+        // Check out of stock filter
+        if (shouldShow && productSettings.hideOutOfStock) {
+            const stockEl = card.querySelector('.product-stock .stock-qty');
+            if (stockEl) {
+                const stockQty = parseInt(stockEl.textContent.replace(/\./g, '')) || 0;
+                if (stockQty <= 0) {
+                    shouldShow = false;
+                }
+            }
+        }
+        
+        card.style.display = shouldShow ? '' : 'none';
+    });
+    
+    // Apply sorting
+    const visibleCards = productCards.filter(card => card.style.display !== 'none');
+    
+    visibleCards.sort((a, b) => {
+        switch(productSettings.sortBy) {
+            case 'name-asc':
+                return a.dataset.productName.localeCompare(b.dataset.productName);
+            case 'name-desc':
+                return b.dataset.productName.localeCompare(a.dataset.productName);
+            case 'price-asc':
+                return parseFloat(a.dataset.productPrice) - parseFloat(b.dataset.productPrice);
+            case 'price-desc':
+                return parseFloat(b.dataset.productPrice) - parseFloat(a.dataset.productPrice);
+            case 'discount':
+                const aHasDiscount = a.querySelector('.discount-badge') ? 1 : 0;
+                const bHasDiscount = b.querySelector('.discount-badge') ? 1 : 0;
+                return bHasDiscount - aHasDiscount;
+            default:
+                return parseInt(a.dataset.productId) - parseInt(b.dataset.productId);
+        }
+    });
+    
+    // Re-append in sorted order
+    visibleCards.forEach(card => productGrid.appendChild(card));
+    
+    // Update empty state
+    const visibleCount = visibleCards.length;
+    updateEmptyState(productGrid, visibleCount, '', '');
+    
+    showToast('success', 'Pengaturan produk diterapkan');
+}
+
+function resetProductSettings() {
+    if (!confirm('Reset semua pengaturan produk ke default?')) return;
+    
+    productSettings = {
+        hideOutOfStock: false,
+        sortBy: 'default',
+        hiddenProducts: []
+    };
+    
+    localStorage.removeItem('pos_product_settings');
+    
+    document.getElementById('hideOutOfStock').checked = false;
+    document.getElementById('sortProducts').value = 'default';
+    document.getElementById('enableProductHiding').checked = false;
+    toggleProductListVisibility();
+    
+    // Reset all toggles
+    document.querySelectorAll('.product-visibility-toggle').forEach(toggle => {
+        toggle.checked = true;
+    });
+    
+    // Show all products
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.style.display = '';
+    });
+    
+    // Reset order to default (by ID)
+    const productGrid = document.getElementById('productGrid');
+    const productCards = Array.from(document.querySelectorAll('.product-card'));
+    productCards.sort((a, b) => parseInt(a.dataset.productId) - parseInt(b.dataset.productId));
+    productCards.forEach(card => productGrid.appendChild(card));
+    
+    showToast('success', 'Pengaturan direset ke default');
+}
 </script>
 @endpush

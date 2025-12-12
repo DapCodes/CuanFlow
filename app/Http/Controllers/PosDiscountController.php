@@ -36,19 +36,33 @@ public function apply(Request $request)
     $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
     
     // Find discount candidates
-    $candidates = $this->discountService->findCandidates(
-        array_values($cart),
-        $request->discount_code,
-        Session::get('pos_customer_id')
-    );
-    
-    if ($candidates->isEmpty()) {
-        return response()->json([
-            'success' => false,
-            'message' => $request->discount_code 
-                ? 'Kode diskon tidak valid atau sudah tidak berlaku' 
-                : 'Tidak ada diskon yang tersedia',
-        ], 404);
+    if ($request->discount_code) {
+        // Strict check for the requested code
+        $voucher = Discount::where('code', $request->discount_code)->first();
+        
+        if (!$voucher || !$voucher->isValid()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode voucher tidak valid atau sudah tidak berlaku',
+            ], 404);
+        }
+        
+        // If code is valid, ONLY consider this voucher
+        $candidates = collect([$voucher]);
+    } else {
+        // No code, find all automatic candidates
+        $candidates = $this->discountService->findCandidates(
+            array_values($cart),
+            null,
+            Session::get('pos_customer_id')
+        );
+        
+        if ($candidates->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada diskon yang tersedia',
+            ], 404);
+        }
     }
     
     // Calculate best discount plan
@@ -200,6 +214,7 @@ public function available()
             'buy_quantity' => $discount->buy_quantity ?? null, // ← Tambahkan ?? null
             'get_quantity' => $discount->get_quantity ?? null, // ← Tambahkan ?? null
             'can_apply'    => true,
+            'is_voucher'   => (bool) $discount->is_voucher,
         ];
     });
 

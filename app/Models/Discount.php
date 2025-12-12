@@ -14,7 +14,7 @@ class Discount extends Model
     protected $fillable = [
         'code', 'name', 'type', 'value', 'min_purchase', 'max_discount',
         'buy_quantity', 'get_quantity', 'product_id', 'category_id',
-        'start_date', 'end_date', 'usage_limit', 'used_count', 'is_active', 'outlet_id',
+        'start_date', 'end_date', 'usage_limit', 'used_count', 'is_active', 'outlet_id', 'is_voucher',
     ];
 
     protected $casts = [
@@ -24,7 +24,7 @@ class Discount extends Model
         'start_date' => 'datetime',
         'end_date' => 'datetime',
         'is_active' => 'boolean',
-        // Tambahkan ini
+        'is_voucher' => 'boolean',
         'product_id' => 'integer',
         'category_id' => 'integer',
         'buy_quantity' => 'integer',
