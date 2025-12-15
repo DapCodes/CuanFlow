@@ -130,11 +130,11 @@
       </div>
 
       {{-- Modal Footer --}}
-      <div class="px-5 py-4 border-t border-gray-200 flex items-center justify-between">
-        <a href="{{ route('ai-insights.index') }}"
+      <div class="px-5 py-4 border-t border-gray-200 flex items-center justify-end">
+        <!-- <a href="{{ route('ai-insights.index') }}"
            class="text-sm font-semibold text-purple-700 hover:text-purple-800">
           Lihat halaman ini
-        </a>
+        </a> -->
         <button id="btnCloseModal2" class="text-sm font-semibold text-gray-700 hover:text-gray-900">
           Tutup
         </button>
