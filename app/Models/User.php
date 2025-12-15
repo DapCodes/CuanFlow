@@ -12,10 +12,12 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use CausesActivity, HasFactory, HasRoles, LogsActivity, Notifiable, SoftDeletes;
+    use CausesActivity, HasFactory, HasRoles, LogsActivity, Notifiable, SoftDeletes, MustVerifyEmailTrait;
 
     protected $fillable = [
         'name', 'email', 'password', 'outlet_id', 'phone', 'avatar', 'is_active', 'last_login_at',

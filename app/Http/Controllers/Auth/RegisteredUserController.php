@@ -32,7 +32,8 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            // tambah dns biar domain email harus valid (mengurangi email palsu)
+            'email' => ['required', 'string', 'lowercase', 'email:rfc,dns', 'max:255', 'unique:'.User::class],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'terms' => ['required', 'accepted'],
@@ -54,11 +55,13 @@ class RegisteredUserController extends Controller
 
             DB::commit();
 
+            // ini yang ngirim email verifikasi
             event(new Registered($user));
-
             Auth::login($user);
 
-            return redirect()->route('dashboard')->with('success', 'Selamat datang di CuanFlow! Akun Anda berhasil dibuat.');
+            return redirect()->route('verification.notice')
+                ->with('success', 'Akun berhasil dibuat. Silakan cek email untuk verifikasi.');
+
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -68,4 +71,5 @@ class RegisteredUserController extends Controller
                 ->withErrors(['error' => 'Terjadi kesalahan saat membuat akun. Silakan coba lagi. Error: '.$e->getMessage()]);
         }
     }
+
 }

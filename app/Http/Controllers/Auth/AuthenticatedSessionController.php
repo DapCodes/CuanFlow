@@ -25,11 +25,17 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
+
+        if (! $request->user()->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice')
+                ->withErrors(['email' => 'Email kamu belum terverifikasi. Silakan cek inbox/spam lalu klik link verifikasi.']);
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
+
+
 
     /**
      * Destroy an authenticated session.

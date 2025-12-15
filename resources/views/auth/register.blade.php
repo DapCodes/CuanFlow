@@ -525,12 +525,15 @@
                 </div>
             @endif
 
-            <!-- Success Messages -->
             @if (session('success'))
                 <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg animate-fade-in-up">
-                    <p class="text-sm text-green-600">{{ session('success') }}</p>
+                    <p class="text-sm text-green-700 font-semibold">Berhasil membuat akun ✅</p>
+                    <p class="text-sm text-green-700 mt-1">
+                        {{ session('success') }}
+                    </p>
                 </div>
             @endif
+
 
             <!-- Progress Indicator -->
             <div class="flex items-center justify-center mb-8 space-x-2 animate-on-load animate-fade-in-up delay-400">
@@ -710,19 +713,19 @@
 
                     <!-- Success Message -->
                     <h3 class="text-2xl font-bold text-gray-900 mb-3 form-field">
-                        Akun Berhasil Dibuat!
+                        Siap! Tinggal Verifikasi Email 📩
                     </h3>
                     <p class="text-gray-600 mb-8 form-field max-w-sm mx-auto">
-                        Selamat! Akun Anda telah berhasil didaftarkan. Anda siap untuk memulai perjalanan mengelola bisnis dengan CuanFlow.
+                        Kami akan mengirim link verifikasi ke email kamu. Setelah klik link verifikasi, baru kamu bisa login.
+                        <br><span class="text-xs text-gray-500">Cek juga folder Spam/Promotions.</span>
                     </p>
 
-                    <!-- Action Button -->
                     <div class="form-field">
                         <button 
                             type="submit"
                             class="w-full py-3.5 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-base btn-hover"
                         >
-                            Daftar & Buka Dasbor Sekarang
+                            Buat Akun & Kirim Email Verifikasi
                         </button>
                     </div>
                 </div>
@@ -974,6 +977,31 @@
                 goToStep2();
             });
         @endif
+
+        @if (session('success'))
+            window.addEventListener('DOMContentLoaded', function() {
+                // langsung lompat ke step 3 supaya user paham harus verifikasi email
+                const step1 = document.getElementById('step1');
+                const step2 = document.getElementById('step2');
+                const step3 = document.getElementById('step3');
+
+                if (step1) step1.classList.add('hidden');
+                if (step2) step2.classList.add('hidden');
+                if (step3) step3.classList.remove('hidden');
+
+                // update progress indicator
+                document.getElementById('progress-1')?.classList.remove('active');
+                document.getElementById('progress-1')?.classList.add('completed');
+                document.getElementById('progress-line-1')?.classList.add('active');
+
+                document.getElementById('progress-2')?.classList.add('completed');
+                document.getElementById('progress-2')?.classList.remove('active');
+                document.getElementById('progress-line-2')?.classList.add('active');
+
+                document.getElementById('progress-3')?.classList.add('active');
+            });
+        @endif
+
         
         // Page Exit Animation
         function exitPage(url) {
