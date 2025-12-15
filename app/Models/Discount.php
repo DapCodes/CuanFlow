@@ -81,6 +81,13 @@ class Discount extends Model
         $this->increment('used_count');
     }
 
+    public function decrementUsage(): void
+    {
+        if ($this->used_count > 0) {
+            $this->decrement('used_count');
+        }
+    }
+
     public function scopeActive($q)
     {
         return $q->where('is_active', true)

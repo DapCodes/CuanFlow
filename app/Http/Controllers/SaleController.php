@@ -298,6 +298,21 @@ class SaleController extends Controller
                 }
             }
 
+            // Kembalikan usage count diskon jika ada
+            if ($sale->notes) {
+                try {
+                    $notes = json_decode($sale->notes, true);
+                    if (isset($notes['discount_id'])) {
+                        $discount = \App\Models\Discount::find($notes['discount_id']);
+                        if ($discount) {
+                            $discount->decrementUsage();
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to restore discount usage for sale ' . $sale->id . ': ' . $e->getMessage());
+                }
+            }
+
             // Update status
             $sale->update(['status' => 'refunded']);
 
