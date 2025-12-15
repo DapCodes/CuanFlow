@@ -661,12 +661,59 @@
             padding-inline: 0.75rem;
         }
     }
+
+/* Modal Table Styles */
+#salesTableBody tr {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#salesTableBody tr:hover {
+    background-color: #f9fafb;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+@media (max-width: 768px) {
+    #salesTodayModal .max-w-6xl {
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    
+    #salesTodayModal table {
+        font-size: 0.75rem;
+    }
+    
+    #salesTodayModal th,
+    #salesTodayModal td {
+        padding: 0.5rem;
+    }
+}
 </style>
 @endpush 
 
 @section('content')
 <!-- Toast Container -->
-<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
 
 <!-- Modal: Mulai Penjualan -->
 <div id="startSalesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -954,10 +1001,10 @@
                         </button>
                         
                         <!-- Penjualan Hari Ini -->
-                        <a href="{{ route('sales.index') }}" class="block w-full px-4 py-2.5 text-left text-sm hover:bg-indigo-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
+                        <button onclick="openSalesTodayModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-indigo-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-chart-line w-4 text-indigo-600"></i>
                             <span>Penjualan Hari Ini</span>
-                        </a>
+                        </button>
                         
                         <!-- Kalkulator -->
                         <button onclick="openCalculator(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 transition-colors flex items-center gap-2 text-gray-700 0 border-b border-gray-100">
@@ -1145,7 +1192,7 @@
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <i class="fas fa-cog text-orange-600"></i>
-                Atur Produk
+                Pengaturan
             </h3>
             <button onclick="closeProductSettingsModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
                 <i class="fas fa-times"></i>
@@ -1226,6 +1273,77 @@
             </button>
             <button onclick="closeProductSettingsModal()" class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
                 <i class="fas fa-check mr-2"></i>Selesai
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Penjualan Hari Ini -->
+<div id="salesTodayModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-chart-line text-orange-600"></i>
+                    Penjualan Hari Ini
+                </h3>
+                <p class="text-sm text-gray-600 mt-1" id="salesTodayDate">-</p>
+            </div>
+            <button onclick="closeSalesTodayModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200 flex-shrink-0">
+            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                <div class="text-xs text-gray-600 mb-1">Total Transaksi</div>
+                <div class="text-xl font-bold text-gray-900" id="modalTotalTransactions">0</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                <div class="text-xs text-gray-600 mb-1">Total Pendapatan</div>
+                <div class="text-xl font-bold text-green-600" id="modalTotalRevenue">Rp 0</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                <div class="text-xs text-gray-600 mb-1">Tunai</div>
+                <div class="text-lg font-bold text-blue-600" id="modalCashTotal">Rp 0</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                <div class="text-xs text-gray-600 mb-1">Non-Tunai</div>
+                <div class="text-lg font-bold text-purple-600" id="modalNonCashTotal">Rp 0</div>
+            </div>
+        </div>
+        
+        <!-- Table Container -->
+        <div class="flex-1 overflow-auto p-6 custom-scrollbar">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">No. Invoice</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">Waktu</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">Kasir</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">Metode</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">Total</th>
+                            <th class="px-4 py-3 text-center font-semibold text-gray-700">Status</th>
+                            <th class="px-4 py-3 text-center font-semibold text-gray-700">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesTableBody">
+                        <tr>
+                            <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                <p>Memuat data...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="p-6 border-t border-gray-200 flex justify-end gap-3 flex-shrink-0">
+            <button onclick="closeSalesTodayModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                Tutup
             </button>
         </div>
     </div>
@@ -1700,7 +1818,18 @@ function closeFreeItemModal() {
 
 function clearDiscount() {
     if (!activeDiscountPlan) return;
-    if (!confirm('Hapus diskon yang diterapkan?')) return;
+    
+    Swal.fire({
+        title: 'Hapus Diskon?',
+        text: "Diskon yang diterapkan akan dihapus",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f97316',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
 
     fetch('/pos/discounts/clear', {
         method: 'POST',
@@ -1718,7 +1847,8 @@ function clearDiscount() {
             showToast('success', 'Diskon dihapus');
         }
     })
-    .catch(() => showToast('error', 'Gagal menghapus diskon'));
+        }
+    });
 }
 
 function initDiscountUI() {
@@ -1998,11 +2128,26 @@ function calcUseHistory(index) {
 }
 
 function calcClearHistory() {
-    if (!confirm('Hapus semua riwayat kalkulator?')) return;
+    Swal.fire({
+        title: 'Hapus Riwayat?',
+        text: "Semua riwayat kalkulator akan dihapus",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
     calcHistory = [];
     saveCalcHistory();
     renderCalcHistory();
-    showToast('success', 'Riwayat berhasil dihapus');
+            calcHistory = [];
+            saveCalcHistory();
+            renderCalcHistory();
+            showToast('success', 'Riwayat berhasil dihapus');
+        }
+    });
 }
 
 // ==================== CASH REGISTER FUNCTIONS ====================
@@ -2089,9 +2234,17 @@ function submitOpeningAmount() {
 }
 
 function skipOpeningAmount() {
-    if (!confirm('Yakin ingin melewati input modal awal? Modal awal akan diset Rp 0')) {
-        return;
-    }
+    Swal.fire({
+        title: 'Lewati Modal Awal?',
+        text: "Modal awal akan diset Rp 0. Anda yakin?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#f97316',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Lewati',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
     fetch('{{ route("cash-register.start") }}', {
         method: 'POST',
         headers: { 
@@ -2121,6 +2274,8 @@ function skipOpeningAmount() {
     })
     .catch(() => {
         showToast('error', 'Terjadi kesalahan');
+    });
+        }
     });
 }
 
@@ -2185,22 +2340,22 @@ function closeCashRegisterSilent() {
 
 // ==================== UTILITY FUNCTIONS ====================
 function showToast(type, message) {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    const colors = {
-        success:'bg-green-500',
-        error:'bg-red-500',
-        info:'bg-blue-500',
-        warning:'bg-orange-500'
-    };
-    toast.className = `${colors[type] || 'bg-gray-800'} text-white px-4 py-3 rounded-lg shadow-lg text-sm`;
-    toast.textContent = message;
-    container.appendChild(toast);
-    setTimeout(()=>{
-        toast.style.opacity='0';
-        toast.style.transition='opacity 0.3s';
-        setTimeout(()=>toast.remove(),300);
-    }, 2500);
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+
+    Toast.fire({
+        icon: type,
+        title: message
+    });
 }
 
 function formatNumber(num){
@@ -2291,7 +2446,17 @@ function removeCartItem(cartKey) {
 }
 
 function clearCart() {
-    if (!confirm('Kosongkan keranjang?')) return;
+    Swal.fire({
+        title: 'Kosongkan Keranjang?',
+        text: "Semua item di keranjang akan dihapus!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Kosongkan',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
     fetch('{{ route("pos.cart.clear") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}
@@ -2307,7 +2472,8 @@ function clearCart() {
             showToast('success','Keranjang dikosongkan');
         }
     })
-    .catch(()=>showToast('error','Gagal'));
+        }
+    });
 }
 
 function renderCart() {
@@ -2965,38 +3131,185 @@ function applyProductSettings() {
 }
 
 function resetProductSettings() {
-    if (!confirm('Reset semua pengaturan produk ke default?')) return;
-    
-    productSettings = {
-        hideOutOfStock: false,
-        sortBy: 'default',
-        hiddenProducts: []
-    };
-    
-    localStorage.removeItem('pos_product_settings');
-    
-    document.getElementById('hideOutOfStock').checked = false;
-    document.getElementById('sortProducts').value = 'default';
-    document.getElementById('enableProductHiding').checked = false;
-    toggleProductListVisibility();
-    
-    // Reset all toggles
-    document.querySelectorAll('.product-visibility-toggle').forEach(toggle => {
-        toggle.checked = true;
+    Swal.fire({
+        title: 'Reset Pengaturan?',
+        text: "Semua pengaturan produk akan dikembalikan ke default",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Reset',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            productSettings = {
+                hideOutOfStock: false,
+                sortBy: 'default',
+                hiddenProducts: []
+            };
+            
+            localStorage.removeItem('pos_product_settings');
+            
+            document.getElementById('hideOutOfStock').checked = false;
+            document.getElementById('sortProducts').value = 'default';
+            document.getElementById('enableProductHiding').checked = false;
+            toggleProductListVisibility();
+            
+            // Reset all toggles
+            document.querySelectorAll('.product-visibility-toggle').forEach(toggle => {
+                toggle.checked = true;
+            });
+            
+            // Show all products
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.style.display = '';
+            });
+            
+            // Reset order to default (by ID)
+            const productGrid = document.getElementById('productGrid');
+            const productCards = Array.from(document.querySelectorAll('.product-card'));
+            productCards.sort((a, b) => parseInt(a.dataset.productId) - parseInt(b.dataset.productId));
+            productCards.forEach(card => productGrid.appendChild(card));
+            
+            applyProductSettings();
+            showToast('success', 'Pengaturan direset ke default');
+        }
     });
-    
-    // Show all products
-    document.querySelectorAll('.product-card').forEach(card => {
-        card.style.display = '';
-    });
-    
-    // Reset order to default (by ID)
-    const productGrid = document.getElementById('productGrid');
-    const productCards = Array.from(document.querySelectorAll('.product-card'));
-    productCards.sort((a, b) => parseInt(a.dataset.productId) - parseInt(b.dataset.productId));
-    productCards.forEach(card => productGrid.appendChild(card));
-    
-    showToast('success', 'Pengaturan direset ke default');
 }
+
+// ==================== SALES TODAY MODAL FUNCTIONS ====================
+function openSalesTodayModal() {
+    document.getElementById('salesTodayModal').classList.remove('hidden');
+    loadSalesToday();
+}
+
+function closeSalesTodayModal() {
+    document.getElementById('salesTodayModal').classList.add('hidden');
+}
+
+function loadSalesToday() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('salesTodayDate').textContent = formatDate(today);
+    
+    fetch(`{{ route('sales.daily') }}?date=${today}`)
+        .then(r => r.json())
+        .then(data => {
+            // Update summary cards
+            document.getElementById('modalTotalTransactions').textContent = data.summary.transactions;
+            document.getElementById('modalTotalRevenue').textContent = 'Rp ' + formatNumber(data.summary.revenue);
+            document.getElementById('modalCashTotal').textContent = 'Rp ' + formatNumber(data.totals.cash);
+            
+            const nonCash = data.totals.qris + data.totals.transfer;
+            document.getElementById('modalNonCashTotal').textContent = 'Rp ' + formatNumber(nonCash);
+            
+            // Render table
+            const tbody = document.getElementById('salesTableBody');
+            if (data.sales.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                            <i class="fas fa-inbox text-3xl mb-2 opacity-50"></i>
+                            <p>Belum ada transaksi hari ini</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            data.sales.forEach(sale => {
+                const paymentBadge = getPaymentBadge(sale.payment_method);
+                const statusBadge = sale.status === 'completed' 
+                    ? '<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>Selesai</span>'
+                    : '<span class="badge badge-danger"><i class="fas fa-undo mr-1"></i>Refund</span>';
+                
+                const refundButton = (sale.status === 'completed' && (sale.payment_method === 'cash' || sale.payment_method === 'transfer'))
+                    ? `<button onclick="confirmRefund(${sale.id})" class="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition-colors">
+                        <i class="fas fa-undo mr-1"></i>Refund
+                    </button>`
+                    : '-';
+                
+                html += `
+                    <tr>
+                        <td class="px-4 py-3 font-mono text-xs">${sale.invoice_number}</td>
+                        <td class="px-4 py-3">${sale.time}</td>
+                        <td class="px-4 py-3">${sale.cashier || '-'}</td>
+                        <td class="px-4 py-3">${paymentBadge}</td>
+                        <td class="px-4 py-3 text-right font-semibold">Rp ${formatNumber(sale.grand_total)}</td>
+                        <td class="px-4 py-3 text-center">${statusBadge}</td>
+                        <td class="px-4 py-3 text-center">${refundButton}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        })
+        .catch(() => {
+            showToast('error', 'Gagal memuat data penjualan');
+            document.getElementById('salesTableBody').innerHTML = `
+                <tr>
+                    <td colspan="7" class="px-4 py-8 text-center text-red-500">
+                        <i class="fas fa-exclamation-circle text-3xl mb-2"></i>
+                        <p>Gagal memuat data</p>
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+function getPaymentBadge(method) {
+    const badges = {
+        'cash': '<span class="badge" style="background-color: #dbeafe; color: #1e40af;"><i class="fas fa-money-bill-wave mr-1"></i>Tunai</span>',
+        'transfer': '<span class="badge" style="background-color: #fef3c7; color: #92400e;"><i class="fas fa-building-columns mr-1"></i>Transfer</span>',
+        'qris': '<span class="badge" style="background-color: #e9d5ff; color: #6b21a8;"><i class="fas fa-qrcode mr-1"></i>QRIS</span>'
+    };
+    return badges[method] || method;
+}
+
+function confirmRefund(saleId) {
+    Swal.fire({
+        title: 'Refund Transaksi?',
+        text: "Stok akan dikembalikan dan status transaksi akan diubah menjadi 'Refunded'",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Refund',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            processRefund(saleId);
+        }
+    });
+}
+
+function processRefund(saleId) {
+    fetch(`/sales/${saleId}/refund`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('success', 'Refund berhasil diproses');
+            loadSalesToday(); // Reload table
+        } else {
+            showToast('error', data.message || 'Refund gagal');
+        }
+    })
+    .catch(() => {
+        showToast('error', 'Terjadi kesalahan saat refund');
+    });
+}
+
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('id-ID', options);
+}
+
 </script>
 @endpush

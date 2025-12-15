@@ -277,15 +277,15 @@ class SaleController extends Controller
     public function refund(Sale $sale)
     {
         if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
-            abort(403, 'Akses ditolak');
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
         if ($sale->status !== 'completed') {
-            return back()->with('error', 'Hanya transaksi selesai yang bisa di-refund');
+            return response()->json(['success' => false, 'message' => 'Hanya transaksi selesai yang bisa di-refund'], 400);
         }
 
         if (! in_array($sale->payment_method, ['cash', 'transfer'])) {
-            return back()->with('error', 'Hanya transaksi Cash/Transfer yang bisa di-refund');
+            return response()->json(['success' => false, 'message' => 'Hanya transaksi Cash/Transfer yang bisa di-refund'], 400);
         }
 
         DB::beginTransaction();
@@ -303,11 +303,11 @@ class SaleController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Refund berhasil. Stok telah dikembalikan.');
+            return response()->json(['success' => true, 'message' => 'Refund berhasil. Stok telah dikembalikan.']);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', 'Refund gagal: '.$e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Refund gagal: '.$e->getMessage()], 500);
         }
     }
 
