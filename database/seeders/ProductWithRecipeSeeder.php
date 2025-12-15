@@ -639,7 +639,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'type' => 'fixed',
                 'value' => 5000,
                 'min_purchase' => 40000,
-                'product_code' => 'PRD005', // Brownies Cokelat Kacang 
+                'product_code' => 'PRD005', // Brownies Cokelat Kacang
                 'outlet_id' => $targetOutletId,
                 'start_date' => now(),
                 'end_date' => now()->addMonth(),

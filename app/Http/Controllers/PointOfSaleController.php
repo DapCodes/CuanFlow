@@ -211,7 +211,7 @@ class PointOfSaleController extends Controller
         $cart[$cartKey]['subtotal'] = ($cart[$cartKey]['unit_price'] * $cart[$cartKey]['quantity']) - $cart[$cartKey]['discount_amount'];
 
         Session::put('pos_cart', $cart);
-        
+
         $this->autoApplyNonVoucherDiscount();
 
         return response()->json([
@@ -294,7 +294,7 @@ class PointOfSaleController extends Controller
         if (isset($cart[$request->cart_key])) {
             unset($cart[$request->cart_key]);
             Session::put('pos_cart', $cart);
-            
+
             // Auto-apply non-voucher discount
             $this->autoApplyNonVoucherDiscount();
 
@@ -350,7 +350,7 @@ class PointOfSaleController extends Controller
 
         foreach ($cart as $item) {
             $subtotal += ($item['unit_price'] * $item['quantity']);
-            // $totalDiscount += $item['discount_amount']; 
+            // $totalDiscount += $item['discount_amount'];
             $totalItems += $item['quantity'];
         }
 
@@ -474,30 +474,34 @@ class PointOfSaleController extends Controller
     private function reapplyDiscount(array $cart)
     {
         $plan = Session::get('pos_discount_plan');
-        if (!$plan) return null;
+        if (! $plan) {
+            return null;
+        }
 
         $discountId = $plan['discount_id'];
         $discount = Discount::find($discountId);
 
-        if (!$discount || !$discount->isValid()) {
+        if (! $discount || ! $discount->isValid()) {
             Session::forget('pos_discount_plan');
+
             return null;
         }
 
-        $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
+        $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
         $candidates = collect([$discount]);
-        
+
         // Calculate basic plan
         $newPlan = $this->discountService->calculateDiscountPlan(array_values($cart), $candidates, $subtotal);
 
         // If invalid now
-        if ($newPlan['total_discount'] <= 0 && !$newPlan['requires_free_item_selection']) {
-             Session::forget('pos_discount_plan');
-             return null;
+        if ($newPlan['total_discount'] <= 0 && ! $newPlan['requires_free_item_selection']) {
+            Session::forget('pos_discount_plan');
+
+            return null;
         }
 
         // Handle Buy X Get Y preservation
-        if ($discount->type === 'buy_x_get_y' && !empty($plan['affected_items'])) {
+        if ($discount->type === 'buy_x_get_y' && ! empty($plan['affected_items'])) {
             try {
                 // Extract previous selection
                 $selection = [];
@@ -507,7 +511,7 @@ class PointOfSaleController extends Controller
                     }
                 }
 
-                if (!empty($selection)) {
+                if (! empty($selection)) {
                     $newPlan = $this->discountService->applyFreeItems($discount, array_values($cart), $selection);
                 }
             } catch (\Exception $e) {
@@ -517,272 +521,278 @@ class PointOfSaleController extends Controller
         }
 
         Session::put('pos_discount_plan', $newPlan);
+
         return $newPlan;
     }
 
-public function applyDiscount(Request $request)
-{
-    $request->validate([
-        'discount_code' => 'nullable|string',
-    ]);
+    public function applyDiscount(Request $request)
+    {
+        $request->validate([
+            'discount_code' => 'nullable|string',
+        ]);
 
-    $cart = Session::get('pos_cart', []);
-    
-    if (empty($cart)) {
+        $cart = Session::get('pos_cart', []);
+
+        if (empty($cart)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Keranjang kosong',
+            ], 400);
+        }
+
+        $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
+
+        // Find candidates
+        $discountCode = $request->discount_code;
+        $customerId = Session::get('pos_customer_id');
+
+        $candidates = $this->discountService->findCandidates(
+            array_values($cart),
+            $discountCode,
+            $customerId
+        );
+
+        // FILTER HANYA VOUCHER (is_voucher = true)
+        $voucherCandidates = $candidates->filter(function ($discount) {
+            return $discount->is_voucher == true;
+        });
+
+        if ($voucherCandidates->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => $discountCode
+                    ? 'Kode voucher tidak valid atau tidak ditemukan'
+                    : 'Tidak ada voucher yang tersedia',
+            ], 400);
+        }
+
+        // Calculate best plan
+        $plan = $this->discountService->calculateDiscountPlan(
+            array_values($cart),
+            $voucherCandidates,
+            $subtotal
+        );
+
+        // Validate the plan is actually applicable
+        if (! $plan['discount_id']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Syarat voucher belum terpenuhi',
+            ], 400);
+        }
+
+        // For BOGO with no free items possible, reject
+        if ($plan['discount_type'] === 'buy_x_get_y' && $plan['free_item_quota'] <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Syarat voucher belum terpenuhi. Belanja lebih banyak untuk mendapat item gratis.',
+            ], 400);
+        }
+
+        // For percentage/fixed with no discount, reject
+        if ($plan['discount_type'] !== 'buy_x_get_y' && $plan['total_discount'] <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Syarat voucher belum terpenuhi',
+            ], 400);
+        }
+
+        Session::put('pos_discount_plan', $plan);
+
         return response()->json([
-            'success' => false,
-            'message' => 'Keranjang kosong',
-        ], 400);
+            'success' => true,
+            'message' => 'Voucher berhasil diterapkan',
+            'discount_plan' => $plan,
+            'cart_summary' => $this->calculateCartSummary($cart),
+        ]);
     }
 
-    $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
-    
-    // Find candidates
-    $discountCode = $request->discount_code;
-    $customerId = Session::get('pos_customer_id');
-    
-    $candidates = $this->discountService->findCandidates(
-        array_values($cart),
-        $discountCode,
-        $customerId
-    );
-    
-    // FILTER HANYA VOUCHER (is_voucher = true)
-    $voucherCandidates = $candidates->filter(function($discount) {
-        return $discount->is_voucher == true;
-    });
-    
-    if ($voucherCandidates->isEmpty()) {
+    public function getAvailableDiscounts()
+    {
+        $outletId = auth()->user()->outlet_id;
+
+        $discounts = Discount::where('is_active', true)
+            ->where(function ($query) use ($outletId) {
+                $query->whereNull('outlet_id')
+                    ->orWhere('outlet_id', $outletId);
+            })
+            ->get()
+            ->filter(fn ($d) => $d->isValid())
+            ->map(function ($discount) {
+                return [
+                    'id' => $discount->id,
+                    'name' => $discount->name,
+                    'type' => $discount->type,
+                    'value' => $discount->value,
+                    'product_id' => $discount->product_id,
+                    'category_id' => $discount->category_id,
+                    'buy_quantity' => $discount->buy_quantity,
+                    'get_quantity' => $discount->get_quantity,
+                    'min_purchase' => $discount->min_purchase,
+                    'max_discount' => $discount->max_discount,
+                    'is_voucher' => (bool) $discount->is_voucher, // ✅ PENTING
+                    'can_apply' => true,
+                ];
+            })
+            ->values();
+
         return response()->json([
-            'success' => false,
-            'message' => $discountCode 
-                ? 'Kode voucher tidak valid atau tidak ditemukan' 
-                : 'Tidak ada voucher yang tersedia',
-        ], 400);
-    }
-    
-    // Calculate best plan
-    $plan = $this->discountService->calculateDiscountPlan(
-        array_values($cart),
-        $voucherCandidates,
-        $subtotal
-    );
-    
-    // Validate the plan is actually applicable
-    if (!$plan['discount_id']) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Syarat voucher belum terpenuhi',
-        ], 400);
-    }
-    
-    // For BOGO with no free items possible, reject
-    if ($plan['discount_type'] === 'buy_x_get_y' && $plan['free_item_quota'] <= 0) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Syarat voucher belum terpenuhi. Belanja lebih banyak untuk mendapat item gratis.',
-        ], 400);
-    }
-    
-    // For percentage/fixed with no discount, reject
-    if ($plan['discount_type'] !== 'buy_x_get_y' && $plan['total_discount'] <= 0) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Syarat voucher belum terpenuhi',
-        ], 400);
-    }
-    
-    Session::put('pos_discount_plan', $plan);
-    
-    return response()->json([
-        'success' => true,
-        'message' => 'Voucher berhasil diterapkan',
-        'discount_plan' => $plan,
-        'cart_summary' => $this->calculateCartSummary($cart),
-    ]);
-}
-
-
-public function getAvailableDiscounts()
-{
-    $outletId = auth()->user()->outlet_id;
-
-    $discounts = Discount::where('is_active', true)
-        ->where(function($query) use ($outletId) {
-            $query->whereNull('outlet_id')
-                  ->orWhere('outlet_id', $outletId);
-        })
-        ->get()
-        ->filter(fn($d) => $d->isValid())
-        ->map(function($discount) {
-            return [
-                'id' => $discount->id,
-                'name' => $discount->name,
-                'type' => $discount->type,
-                'value' => $discount->value,
-                'product_id' => $discount->product_id,
-                'category_id' => $discount->category_id,
-                'buy_quantity' => $discount->buy_quantity,
-                'get_quantity' => $discount->get_quantity,
-                'min_purchase' => $discount->min_purchase,
-                'max_discount' => $discount->max_discount,
-                'is_voucher' => (bool) $discount->is_voucher, // ✅ PENTING
-                'can_apply' => true,
-            ];
-        })
-        ->values();
-
-    return response()->json([
-        'success' => true,
-        'discounts' => $discounts,
-    ]);
-}
-
-/**
- * Auto-apply non-voucher discounts when cart changes
- */
-private function autoApplyNonVoucherDiscount()
-{
-    $cart = Session::get('pos_cart', []);
-    
-    if (empty($cart)) {
-        // Always clear discount if cart is empty
-        Session::forget('pos_discount_plan');
-        return;
+            'success' => true,
+            'discounts' => $discounts,
+        ]);
     }
 
-    $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
-    
-    // Cek apakah ada discount yang aktif (voucher atau non-voucher)
-    $currentPlan = Session::get('pos_discount_plan');
-    
-    // Jika ada voucher aktif, re-validate against CURRENT cart
-    if ($currentPlan) {
-        $currentDiscount = Discount::find($currentPlan['discount_id']);
-        if ($currentDiscount && $currentDiscount->is_voucher) {
-            // 1. Check basic validity (date, active, etc)
-            if (!$currentDiscount->isValid()) {
-                Session::forget('pos_discount_plan');
-                return;
-            }
-            
-            // 2. Check if it still applies to the CURRENT cart (min purchase, etc)
-            $candidates = collect([$currentDiscount]);
-            $newPlan = $this->discountService->calculateDiscountPlan(
-                array_values($cart), 
-                $candidates, 
-                $subtotal
-            );
-            
-            // If invalid for current cart (e.g. total < min_purchase), remove it
-            if (!$newPlan['discount_id'] || 
-               ($newPlan['discount_type'] !== 'buy_x_get_y' && $newPlan['total_discount'] <= 0) ||
-               ($newPlan['discount_type'] === 'buy_x_get_y' && $newPlan['free_item_quota'] <= 0)) {
-                
-                Session::forget('pos_discount_plan');
-                return;
-            }
-            
-            // Update plan with new calculation (e.g. if percentage, amount changes)
-            Session::put('pos_discount_plan', $newPlan);
+    /**
+     * Auto-apply non-voucher discounts when cart changes
+     */
+    private function autoApplyNonVoucherDiscount()
+    {
+        $cart = Session::get('pos_cart', []);
+
+        if (empty($cart)) {
+            // Always clear discount if cart is empty
+            Session::forget('pos_discount_plan');
+
             return;
         }
-    }
-    
-    // Cari discount non-voucher yang bisa auto-apply
-    $candidates = $this->discountService->findCandidates(
-        array_values($cart),
-        null,
-        Session::get('pos_customer_id')
-    );
-    
-    // Filter hanya non-voucher discounts
-    $nonVoucherCandidates = $candidates->filter(function($discount) {
-        return $discount->is_voucher == false;
-    });
-    
-    if ($nonVoucherCandidates->isEmpty()) {
-        // Hapus non-voucher discount jika ada
+
+        $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
+
+        // Cek apakah ada discount yang aktif (voucher atau non-voucher)
+        $currentPlan = Session::get('pos_discount_plan');
+
+        // Jika ada voucher aktif, re-validate against CURRENT cart
         if ($currentPlan) {
             $currentDiscount = Discount::find($currentPlan['discount_id']);
-            if (!$currentDiscount || !$currentDiscount->is_voucher) {
+            if ($currentDiscount && $currentDiscount->is_voucher) {
+                // 1. Check basic validity (date, active, etc)
+                if (! $currentDiscount->isValid()) {
+                    Session::forget('pos_discount_plan');
+
+                    return;
+                }
+
+                // 2. Check if it still applies to the CURRENT cart (min purchase, etc)
+                $candidates = collect([$currentDiscount]);
+                $newPlan = $this->discountService->calculateDiscountPlan(
+                    array_values($cart),
+                    $candidates,
+                    $subtotal
+                );
+
+                // If invalid for current cart (e.g. total < min_purchase), remove it
+                if (! $newPlan['discount_id'] ||
+                   ($newPlan['discount_type'] !== 'buy_x_get_y' && $newPlan['total_discount'] <= 0) ||
+                   ($newPlan['discount_type'] === 'buy_x_get_y' && $newPlan['free_item_quota'] <= 0)) {
+
+                    Session::forget('pos_discount_plan');
+
+                    return;
+                }
+
+                // Update plan with new calculation (e.g. if percentage, amount changes)
+                Session::put('pos_discount_plan', $newPlan);
+
+                return;
+            }
+        }
+
+        // Cari discount non-voucher yang bisa auto-apply
+        $candidates = $this->discountService->findCandidates(
+            array_values($cart),
+            null,
+            Session::get('pos_customer_id')
+        );
+
+        // Filter hanya non-voucher discounts
+        $nonVoucherCandidates = $candidates->filter(function ($discount) {
+            return $discount->is_voucher == false;
+        });
+
+        if ($nonVoucherCandidates->isEmpty()) {
+            // Hapus non-voucher discount jika ada
+            if ($currentPlan) {
+                $currentDiscount = Discount::find($currentPlan['discount_id']);
+                if (! $currentDiscount || ! $currentDiscount->is_voucher) {
+                    Session::forget('pos_discount_plan');
+                }
+            }
+
+            return;
+        }
+
+        // Calculate best discount plan
+        $plan = $this->discountService->calculateDiscountPlan(
+            array_values($cart),
+            $nonVoucherCandidates,
+            $subtotal
+        );
+
+        // Validate plan
+        if (! $plan['discount_id']) {
+            Session::forget('pos_discount_plan');
+
+            return;
+        }
+
+        // Jika discount sebelumnya sama dengan yang baru, preserve free item selection
+        if ($currentPlan && $currentPlan['discount_id'] === $plan['discount_id']) {
+            $currentDiscount = Discount::find($currentPlan['discount_id']);
+
+            // Handle Buy X Get Y preservation
+            if ($currentDiscount && $currentDiscount->type === 'buy_x_get_y' && ! empty($currentPlan['affected_items'])) {
+                try {
+                    // Extract previous selection
+                    $selection = [];
+                    foreach ($currentPlan['affected_items'] as $item) {
+                        if (isset($item['free_qty']) && $item['free_qty'] > 0) {
+                            $selection[$item['product_id']] = $item['free_qty'];
+                        }
+                    }
+
+                    if (! empty($selection)) {
+                        $plan = $this->discountService->applyFreeItems(
+                            $currentDiscount,
+                            array_values($cart),
+                            $selection
+                        );
+                    }
+                } catch (\Exception $e) {
+                    // If previous selection is invalid, use new plan
+                }
+            }
+        }
+
+        // Apply discount jika valid
+        if ($plan['discount_type'] === 'buy_x_get_y') {
+            if (($plan['free_item_quota'] ?? 0) > 0) {
+                Session::put('pos_discount_plan', $plan);
+            } else {
+                Session::forget('pos_discount_plan');
+            }
+        } else {
+            if (($plan['total_discount'] ?? 0) > 0) {
+                Session::put('pos_discount_plan', $plan);
+            } else {
                 Session::forget('pos_discount_plan');
             }
         }
-        return;
     }
-    
-    // Calculate best discount plan
-    $plan = $this->discountService->calculateDiscountPlan(
-        array_values($cart),
-        $nonVoucherCandidates,
-        $subtotal
-    );
-    
-    // Validate plan
-    if (!$plan['discount_id']) {
-        Session::forget('pos_discount_plan');
-        return;
-    }
-    
-    // Jika discount sebelumnya sama dengan yang baru, preserve free item selection
-    if ($currentPlan && $currentPlan['discount_id'] === $plan['discount_id']) {
-        $currentDiscount = Discount::find($currentPlan['discount_id']);
-        
-        // Handle Buy X Get Y preservation
-        if ($currentDiscount && $currentDiscount->type === 'buy_x_get_y' && !empty($currentPlan['affected_items'])) {
-            try {
-                // Extract previous selection
-                $selection = [];
-                foreach ($currentPlan['affected_items'] as $item) {
-                    if (isset($item['free_qty']) && $item['free_qty'] > 0) {
-                        $selection[$item['product_id']] = $item['free_qty'];
-                    }
-                }
 
-                if (!empty($selection)) {
-                    $plan = $this->discountService->applyFreeItems(
-                        $currentDiscount, 
-                        array_values($cart), 
-                        $selection
-                    );
-                }
-            } catch (\Exception $e) {
-                // If previous selection is invalid, use new plan
-            }
+    public function toggleProductVisibility(Request $request, Product $product)
+    {
+        if ($product->outlet_id !== auth()->user()->outlet_id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
-    }
-    
-    // Apply discount jika valid
-    if ($plan['discount_type'] === 'buy_x_get_y') {
-        if (($plan['free_item_quota'] ?? 0) > 0) {
-            Session::put('pos_discount_plan', $plan);
-        } else {
-            Session::forget('pos_discount_plan');
-        }
-    } else {
-        if (($plan['total_discount'] ?? 0) > 0) {
-            Session::put('pos_discount_plan', $plan);
-        } else {
-            Session::forget('pos_discount_plan');
-        }
-    }
-}
 
-public function toggleProductVisibility(Request $request, Product $product)
-{
-    if ($product->outlet_id !== auth()->user()->outlet_id) {
-        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        $product->is_active = $request->is_active;
+        $product->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Visibilitas produk berhasil diubah',
+            'product_id' => $product->id,
+            'is_active' => (bool) $product->is_active,
+        ]);
     }
-    
-    $product->is_active = $request->is_active;
-    $product->save();
-    
-    return response()->json([
-        'success' => true,
-        'message' => 'Visibilitas produk berhasil diubah',
-        'product_id' => $product->id,
-        'is_active' => (bool) $product->is_active
-    ]);
-}
 }

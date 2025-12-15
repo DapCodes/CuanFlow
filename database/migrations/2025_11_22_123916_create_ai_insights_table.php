@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('ai_insights', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('outlet_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('outlet_id')->constrained()->cascadeOnDelete();
             $table->enum('type', ['sales_trend', 'stock_prediction', 'product_recommendation', 'anomaly', 'general']);
             $table->string('title');
             $table->text('content');
@@ -18,8 +18,11 @@ return new class extends Migration
             $table->enum('severity', ['info', 'warning', 'critical'])->default('info');
             $table->boolean('is_read')->default(false);
             $table->boolean('is_dismissed')->default(false);
-            $table->date('insight_date');
+            $table->dateTime('insight_date')->index();
             $table->timestamps();
+
+            $table->index(['outlet_id', 'created_at']);
+            $table->index(['outlet_id', 'is_read', 'is_dismissed']);
         });
     }
 

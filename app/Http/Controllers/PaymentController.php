@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Discount;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
-use App\Models\Discount;
-use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -32,7 +32,9 @@ class PaymentController extends Controller
     {
         foreach ($cart as $item) {
             $product = Product::find($item['product_id']);
-            if (!$product || !$product->track_stock) continue;
+            if (! $product || ! $product->track_stock) {
+                continue;
+            }
 
             $stock = $product->stocks()
                 ->where('outlet_id', auth()->user()->outlet_id)
@@ -40,12 +42,12 @@ class PaymentController extends Controller
 
             // Hitung qty yang harus dikurangi
             $qtyToReduce = $item['quantity'];
-            
+
             // PERBAIKAN: Tambahkan free qty jika ada (untuk BOGO)
             if ($discountPlan && isset($discountPlan['affected_items'])) {
                 $affectedItem = collect($discountPlan['affected_items'])
                     ->firstWhere('product_id', $item['product_id']);
-                
+
                 if ($affectedItem && isset($affectedItem['free_qty'])) {
                     $qtyToReduce += $affectedItem['free_qty'];
                 }
@@ -53,7 +55,7 @@ class PaymentController extends Controller
 
             if ($stock) {
                 $reduced = $stock->reduceStock($qtyToReduce);
-                if (!$reduced) {
+                if (! $reduced) {
                     \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$qtyToReduce}");
                 }
             } else {
@@ -81,13 +83,15 @@ class PaymentController extends Controller
                     $discountPlan = $notes['discount_plan'];
                 }
             } catch (\Exception $e) {
-                \Log::warning('Failed to parse discount plan from sale notes: ' . $e->getMessage());
+                \Log::warning('Failed to parse discount plan from sale notes: '.$e->getMessage());
             }
         }
 
         foreach ($sale->items as $saleItem) {
             $product = $saleItem->product;
-            if (!$product || !$product->track_stock) continue;
+            if (! $product || ! $product->track_stock) {
+                continue;
+            }
 
             $stock = $product->stocks()
                 ->where('outlet_id', $sale->outlet_id)
@@ -95,12 +99,12 @@ class PaymentController extends Controller
 
             // Hitung qty yang harus dikurangi
             $qtyToReduce = $saleItem->quantity;
-            
+
             // PERBAIKAN: Tambahkan free qty jika ada
             if ($discountPlan && isset($discountPlan['affected_items'])) {
                 $affectedItem = collect($discountPlan['affected_items'])
                     ->firstWhere('product_id', $product->id);
-                
+
                 if ($affectedItem && isset($affectedItem['free_qty'])) {
                     $qtyToReduce += $affectedItem['free_qty'];
                 }
@@ -108,7 +112,7 @@ class PaymentController extends Controller
 
             if ($stock) {
                 $reduced = $stock->reduceStock($qtyToReduce);
-                if (!$reduced) {
+                if (! $reduced) {
                     \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$qtyToReduce}");
                 }
             } else {
@@ -174,10 +178,10 @@ class PaymentController extends Controller
             ]);
 
             $sale->load('items');
-            
+
             // PERBAIKAN: Pass discount plan to reduce stock
             $this->reduceStock($cart, $discountPlan);
-            
+
             if ($discountPlan && isset($discountPlan['discount_id'])) {
                 $this->incrementDiscountUsage($discountPlan['discount_id']);
             }
@@ -264,7 +268,7 @@ class PaymentController extends Controller
 
             // PERBAIKAN: Pass discount plan
             $this->reduceStock($cart, $discountPlan);
-            
+
             if ($discountPlan && isset($discountPlan['discount_id'])) {
                 $this->incrementDiscountUsage($discountPlan['discount_id']);
             }
@@ -436,8 +440,9 @@ class PaymentController extends Controller
 
             $sale = Sale::where('midtrans_order_id', $orderId)->first();
 
-            if (!$sale) {
+            if (! $sale) {
                 \Log::warning('Sale not found for order_id: '.$orderId);
+
                 return response()->json(['message' => 'Sale not found'], 404);
             }
 
@@ -463,7 +468,7 @@ class PaymentController extends Controller
                         if ($shouldReduceStock) {
                             $this->reduceStockFromSale($sale);
                         }
-                        
+
                         if ($shouldIncrementDiscount && $sale->discount_amount > 0) {
                             $this->incrementDiscountUsageFromSaleNotes($sale);
                         }
@@ -486,7 +491,7 @@ class PaymentController extends Controller
                     if ($shouldReduceStock) {
                         $this->reduceStockFromSale($sale);
                     }
-                    
+
                     if ($shouldIncrementDiscount && $sale->discount_amount > 0) {
                         $this->incrementDiscountUsageFromSaleNotes($sale);
                     }
@@ -520,11 +525,13 @@ class PaymentController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
                 \Log::error('Failed to update sale: '.$e->getMessage());
+
                 return response()->json(['message' => 'Failed to update sale'], 500);
             }
 
         } catch (\Exception $e) {
             \Log::error('Midtrans Notification Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid notification',
@@ -568,16 +575,16 @@ class PaymentController extends Controller
         // Create sale items
         foreach ($cart as $item) {
             $discountAmount = 0;
-            
+
             if ($discountPlan && isset($discountPlan['affected_items'])) {
                 $affectedItem = collect($discountPlan['affected_items'])
                     ->firstWhere('product_id', $item['product_id']);
-                
+
                 if ($affectedItem) {
                     $discountAmount = $affectedItem['discount_amount'] ?? 0;
                 }
             }
-            
+
             SaleItem::create([
                 'sale_id' => $sale->id,
                 'product_id' => $item['product_id'],
@@ -599,16 +606,16 @@ class PaymentController extends Controller
      */
     private function calculateCartSummaryWithDiscount($cart, $discountPlan)
     {
-        $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
+        $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
         $totalDiscount = $discountPlan['total_discount'] ?? 0;
-        
+
         $taxPercent = 0;
         $subtotalAfterDiscount = $subtotal - $totalDiscount;
         $tax = $subtotalAfterDiscount * ($taxPercent / 100);
         $grandTotal = $subtotalAfterDiscount + $tax;
-        
+
         $totalItems = collect($cart)->sum('quantity');
-        
+
         return [
             'subtotal' => round($subtotal, 2),
             'total_discount' => round($totalDiscount, 2),
@@ -618,7 +625,7 @@ class PaymentController extends Controller
             'total_items' => $totalItems,
         ];
     }
-    
+
     private function incrementDiscountUsage($discountId)
     {
         $discount = Discount::find($discountId);
@@ -627,7 +634,7 @@ class PaymentController extends Controller
             \Log::info("Incremented usage for discount ID: $discountId");
         }
     }
-    
+
     private function incrementDiscountUsageFromSaleNotes($sale)
     {
         if ($sale->notes) {
@@ -637,11 +644,11 @@ class PaymentController extends Controller
                     $this->incrementDiscountUsage($notes['discount_id']);
                 }
             } catch (\Exception $e) {
-                \Log::warning('Failed to parse sale notes for discount: ' . $e->getMessage());
+                \Log::warning('Failed to parse sale notes for discount: '.$e->getMessage());
             }
         }
     }
-    
+
     private function createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification)
     {
         $salePayment = SalePayment::where('sale_id', $sale->id)
@@ -688,7 +695,7 @@ class PaymentController extends Controller
         $orderId = $request->order_id;
         $sale = Sale::where('midtrans_order_id', $orderId)->first();
 
-        if (!$sale) {
+        if (! $sale) {
             return redirect()->route('pos.index')->with('error', 'Transaksi tidak ditemukan');
         }
 

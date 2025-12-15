@@ -718,7 +718,7 @@
     </a>
 
     <!-- AI & INSIGHT -->
-    <a href="#"
+    <a href="{{ route('ai-insights.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="15"
        data-title="Insight"

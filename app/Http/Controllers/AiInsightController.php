@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\AiInsight;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 
 class AiInsightController extends Controller
 {
@@ -146,4 +150,106 @@ class AiInsightController extends Controller
             ], 500);
         }
     }
+
+public function calendarSummary(Request $request)
+{
+    $user = $request->user();
+
+    // FullCalendar kirim ISO string, kadang "+" berubah jadi spasi.
+    $startRaw = (string) $request->query('start', '');
+    $endRaw   = (string) $request->query('end', '');
+
+    $startRaw = str_replace(' ', '+', $startRaw);
+    $endRaw   = str_replace(' ', '+', $endRaw);
+
+    try {
+        $startDate = $startRaw ? Carbon::parse($startRaw)->startOfDay() : now()->startOfMonth();
+        $endDate   = $endRaw ? Carbon::parse($endRaw)->endOfDay() : now()->endOfMonth();
+    } catch (\Throwable $e) {
+        Log::error('calendarSummary parse error', [
+            'start' => $startRaw,
+            'end' => $endRaw,
+            'message' => $e->getMessage(),
+        ]);
+
+        // balikin array kosong biar FullCalendar gak crash
+        return response()->json([]);
+    }
+
+    $rows = AiInsight::query()
+        ->where('outlet_id', $user->outlet_id)
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->selectRaw("
+            DATE(created_at) as d,
+            SUM(CASE WHEN is_dismissed = 0 AND is_read = 0 THEN 1 ELSE 0 END) as unread_count,
+            SUM(CASE WHEN is_dismissed = 0 AND is_read = 1 THEN 1 ELSE 0 END) as read_count,
+            SUM(CASE WHEN is_dismissed = 1 THEN 1 ELSE 0 END) as dismissed_count
+        ")
+        ->groupBy('d')
+        ->get();
+
+    $events = $rows->map(function ($r) {
+        $unread = (int) $r->unread_count;
+        $read = (int) $r->read_count;
+        $dismissed = (int) $r->dismissed_count;
+
+        $titleParts = [];
+        if ($unread) $titleParts[] = "U:$unread";
+        if ($read) $titleParts[] = "R:$read";
+        if ($dismissed) $titleParts[] = "D:$dismissed";
+
+        return [
+            'title' => implode(' ', $titleParts),
+            'start' => $r->d,     // YYYY-MM-DD OK utk allDay
+            'allDay' => true,
+            'extendedProps' => [
+                'unread' => $unread,
+                'read' => $read,
+                'dismissed' => $dismissed,
+            ],
+        ];
+    })->values();
+
+    return response()->json($events);
+}
+
+
+public function daily(Request $request)
+{
+    $user = $request->user();
+    $date = $request->query('date'); // YYYY-MM-DD
+
+    $selected = $date ? Carbon::parse($date)->toDateString() : today()->toDateString();
+
+    $insights = AiInsight::query()
+        ->where('outlet_id', $user->outlet_id)
+        ->whereDate('created_at', $selected)
+        ->orderByRaw("FIELD(severity,'critical','warning','info')")
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function ($i) {
+            return [
+                'id' => $i->id,
+                'title' => $i->title,
+                'type' => $i->type,
+                'severity' => $i->severity,
+                'content' => $i->content,
+                'is_read' => (bool) $i->is_read,
+                'is_dismissed' => (bool) $i->is_dismissed,
+                'time' => $i->created_at->format('H:i'),
+            ];
+        });
+
+    return response()->json([
+        'date' => $selected,
+        'counts' => [
+            'total' => $insights->count(),
+            'unread' => $insights->where('is_dismissed', false)->where('is_read', false)->count(),
+            'read' => $insights->where('is_dismissed', false)->where('is_read', true)->count(),
+            'dismissed' => $insights->where('is_dismissed', true)->count(),
+        ],
+        'insights' => $insights,
+    ]);
+}
+
 }

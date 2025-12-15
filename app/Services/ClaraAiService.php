@@ -6,6 +6,7 @@ use App\Models\AiChatSession;
 use App\Models\AiInsight;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -20,123 +21,122 @@ class ClaraAiService
         $this->apiKey = config('services.clara.key');
     }
 
-public function chat(AiChatSession $session, string $userMessage): array
-{
-    $user = $session->user;
+    public function chat(AiChatSession $session, string $userMessage): array
+    {
+        $user = $session->user;
 
-    // Check dan reset quota harian
-    if (! $this->checkAndResetQuota($user)) {
-        return [
-            'success' => false,
-            'message' => 'Kuota chat harian Anda sudah habis. Kuota akan direset besok.',
-        ];
-    }
-
-    // Save user message
-    $session->addMessage('user', $userMessage);
-
-    // Get business context dengan validasi data
-    $contextData = $this->getBusinessContext($session->outlet_id);
-
-    // Build conversation history
-    $messages = $this->buildMessages($session, $contextData, $userMessage);
-
-    try {
-        \Log::info('Sending request to Clara AI', [
-            'messages_count' => count($messages),
-            'user_message' => $userMessage,
-        ]);
-
-        // PAKAI NAMA LAIN: $httpResponse
-        $httpResponse = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey,
-            'Content-Type'  => 'application/json',
-        ])->timeout(60)->post($this->baseUrl . '/chat/completions', [
-            'model'      => 'amazon/nova-2-lite-v1:free',
-            'messages'   => $messages,
-            'max_tokens' => 2000,
-        ]);
-
-        \Log::info('Clara AI Response Status', [
-            'status' => $httpResponse->status(),
-            'body'   => $httpResponse->body(),
-        ]);
-
-        if ($httpResponse->successful()) {
-            $data = $httpResponse->json();
-
-            // Kalau OpenRouter mengembalikan error dalam body (HTTP 200 tapi isinya error)
-            if (isset($data['error'])) {
-                \Log::error('Clara AI provider error', ['data' => $data]);
-
-                return [
-                    'success' => false,
-                    'message' => 'Maaf, terjadi kesalahan di penyedia model AI: ' . $data['error']['message'],
-                ];
-            }
-
-            if (! isset($data['choices'][0]['message']['content'])) {
-                \Log::error('Invalid response structure', ['data' => $data]);
-
-                return [
-                    'success' => false,
-                    'message' => 'Format response tidak valid.',
-                ];
-            }
-
-            $aiResponse = $data['choices'][0]['message']['content'];
-
-            // Bersihkan markdown dll
-            $cleanResponse = $this->cleanAiResponse($aiResponse);
-
-            // Kalau kosong total, anggap model gagal jawab
-            if (trim($cleanResponse) === '') {
-                \Log::warning('Empty AI response', ['raw' => $aiResponse]);
-
-                return [
-                    'success' => false,
-                    'message' => 'Maaf, Clara AI tidak bisa menjawab pertanyaan ini saat ini. Coba ulangi atau ubah pertanyaannya.',
-                ];
-            }
-
-            // Baru simpan kalau ada isinya
-            $session->addMessage('assistant', $cleanResponse);
-
-            // Generate insight jika diperlukan
-            $this->generateInsightIfNeeded($session->outlet_id, $userMessage, $cleanResponse, $contextData);
-
-            // Kurangi quota
-            $user->decrement('daily_chat_quota');
-
+        // Check dan reset quota harian
+        if (! $this->checkAndResetQuota($user)) {
             return [
-                'success' => true,
-                'message' => $cleanResponse,
-                'remaining_quota' => $user->daily_chat_quota,
+                'success' => false,
+                'message' => 'Kuota chat harian Anda sudah habis. Kuota akan direset besok.',
             ];
         }
 
-        \Log::error('Clara AI request failed', [
-            'status' => $httpResponse->status(),
-            'body'   => $httpResponse->body(),
-        ]);
+        // Save user message
+        $session->addMessage('user', $userMessage);
 
-        return [
-            'success' => false,
-            'message' => 'Maaf, terjadi kesalahan saat menghubungi Clara AI. Status: ' . $httpResponse->status(),
-        ];
-    } catch (\Exception $e) {
-        \Log::error('Clara AI Exception', [
-            'message' => $e->getMessage(),
-            'trace'   => $e->getTraceAsString(),
-        ]);
+        // Get business context dengan validasi data
+        $contextData = $this->getBusinessContext($session->outlet_id);
 
-        return [
-            'success' => false,
-            'message' => 'Error: ' . $e->getMessage(),
-        ];
+        // Build conversation history
+        $messages = $this->buildMessages($session, $contextData, $userMessage);
+
+        try {
+            \Log::info('Sending request to Clara AI', [
+                'messages_count' => count($messages),
+                'user_message' => $userMessage,
+            ]);
+
+            // PAKAI NAMA LAIN: $httpResponse
+            $httpResponse = Http::withHeaders([
+                'Authorization' => 'Bearer '.$this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->timeout(60)->post($this->baseUrl.'/chat/completions', [
+                'model' => 'amazon/nova-2-lite-v1:free',
+                'messages' => $messages,
+                'max_tokens' => 2000,
+            ]);
+
+            \Log::info('Clara AI Response Status', [
+                'status' => $httpResponse->status(),
+                'body' => $httpResponse->body(),
+            ]);
+
+            if ($httpResponse->successful()) {
+                $data = $httpResponse->json();
+
+                // Kalau OpenRouter mengembalikan error dalam body (HTTP 200 tapi isinya error)
+                if (isset($data['error'])) {
+                    \Log::error('Clara AI provider error', ['data' => $data]);
+
+                    return [
+                        'success' => false,
+                        'message' => 'Maaf, terjadi kesalahan di penyedia model AI: '.$data['error']['message'],
+                    ];
+                }
+
+                if (! isset($data['choices'][0]['message']['content'])) {
+                    \Log::error('Invalid response structure', ['data' => $data]);
+
+                    return [
+                        'success' => false,
+                        'message' => 'Format response tidak valid.',
+                    ];
+                }
+
+                $aiResponse = $data['choices'][0]['message']['content'];
+
+                // Bersihkan markdown dll
+                $cleanResponse = $this->cleanAiResponse($aiResponse);
+
+                // Kalau kosong total, anggap model gagal jawab
+                if (trim($cleanResponse) === '') {
+                    \Log::warning('Empty AI response', ['raw' => $aiResponse]);
+
+                    return [
+                        'success' => false,
+                        'message' => 'Maaf, Clara AI tidak bisa menjawab pertanyaan ini saat ini. Coba ulangi atau ubah pertanyaannya.',
+                    ];
+                }
+
+                // Baru simpan kalau ada isinya
+                $session->addMessage('assistant', $cleanResponse);
+
+                // Generate insight jika diperlukan
+                $this->generateInsightIfNeeded($session->outlet_id, $userMessage, $cleanResponse, $contextData);
+
+                // Kurangi quota
+                $user->decrement('daily_chat_quota');
+
+                return [
+                    'success' => true,
+                    'message' => $cleanResponse,
+                    'remaining_quota' => $user->daily_chat_quota,
+                ];
+            }
+
+            \Log::error('Clara AI request failed', [
+                'status' => $httpResponse->status(),
+                'body' => $httpResponse->body(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Maaf, terjadi kesalahan saat menghubungi Clara AI. Status: '.$httpResponse->status(),
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Clara AI Exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Error: '.$e->getMessage(),
+            ];
+        }
     }
-}
-
 
     /**
      * Bersihkan response AI dari markdown dan whitespace berlebih
@@ -449,6 +449,24 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
     {
         $contextData = $this->getBusinessContext($outletId);
 
+        // DEFAULT insight kalau ada penjualan hari ini
+        if (($contextData['today_revenue'] ?? 0) > 0) {
+            AiInsight::create([
+                'outlet_id' => $outletId,
+                'type' => 'sales_trend',
+                'title' => 'Ringkasan Penjualan Hari Ini',
+                'content' => 'Pendapatan hari ini: Rp '.number_format($contextData['today_revenue'], 0, ',', '.').
+                            '. Total transaksi 7 hari terakhir bisa dicek di dashboard penjualan.',
+                'data' => [
+                    'today_revenue' => $contextData['today_revenue'],
+                    'top_products' => $contextData['top_products']->toArray(),
+                    'low_stock' => $contextData['low_stock']->toArray(),
+                ],
+                'severity' => 'info',
+                'insight_date' => now(),
+            ]);
+        }
+
         // 1. Check low stock
         if ($contextData['low_stock']->count() > 0) {
             AiInsight::create([
@@ -529,5 +547,42 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
         }
 
         return implode("\n", $formatted);
+    }
+
+    public function generateInsightIfNeededOnOnline(int $outletId): void
+    {
+        // Lock biar aman kalau ada request bersamaan
+        $lock = Cache::lock("insight_24h_outlet_{$outletId}", 30);
+        if (! $lock->get()) {
+            return;
+        }
+
+        try {
+            // 1. Cek: sudah ada insight < 24 jam?
+            $alreadyGenerated = AiInsight::where('outlet_id', $outletId)
+                ->where('created_at', '>=', now()->subHours(24))
+                ->exists();
+
+            if ($alreadyGenerated) {
+                return;
+            }
+
+            // 2. Syarat: sales > 0 (hari ini)
+            $salesCount = DB::table('sales')
+                ->where('outlet_id', $outletId)
+                ->where('status', 'completed')
+                ->whereDate('created_at', today())
+                ->count();
+
+            if ($salesCount <= 0) {
+                return;
+            }
+
+            // 3. Generate insight otomatis
+            $this->generateDailyInsights($outletId);
+
+        } finally {
+            $lock->release();
+        }
     }
 }

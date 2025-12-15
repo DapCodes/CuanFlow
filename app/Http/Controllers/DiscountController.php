@@ -53,7 +53,6 @@ class DiscountController extends Controller
             'is_active' => 'boolean',
         ];
 
-
         // Validasi khusus untuk buy_x_get_y
         if ($request->type === 'buy_x_get_y') {
             $rules['buy_quantity'] = 'required|integer|min:1';

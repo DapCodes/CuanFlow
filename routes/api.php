@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Api\OutletApiController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {

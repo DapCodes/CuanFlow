@@ -19,11 +19,11 @@ class OutletApiController extends Controller
      */
     public function index(Request $request)
     {
-        $q          = trim((string) $request->query('q', ''));
+        $q = trim((string) $request->query('q', ''));
         $activeOnly = (int) $request->query('active_only', 1) === 1;
-        $hasCoord   = (int) $request->query('has_coord', 0) === 1;
-        $perPage    = (int) $request->query('per_page', 50);
-        $perPage    = max(1, min($perPage, 200));
+        $hasCoord = (int) $request->query('has_coord', 0) === 1;
+        $perPage = (int) $request->query('per_page', 50);
+        $perPage = max(1, min($perPage, 200));
 
         $query = Outlet::query();
 
@@ -38,8 +38,8 @@ class OutletApiController extends Controller
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
                 $w->where('name', 'like', "%{$q}%")
-                  ->orWhere('code', 'like', "%{$q}%")
-                  ->orWhere('address', 'like', "%{$q}%");
+                    ->orWhere('code', 'like', "%{$q}%")
+                    ->orWhere('address', 'like', "%{$q}%");
             });
         }
 

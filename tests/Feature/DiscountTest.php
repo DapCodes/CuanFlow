@@ -2,25 +2,29 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
+use App\Models\CashRegister;
+use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Outlet;
 use App\Models\Product;
-use App\Models\Category;
-use App\Models\Unit;
-use App\Models\Discount;
 use App\Models\ProductStock;
-use App\Models\CashRegister;
+use App\Models\Unit;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class DiscountTest extends TestCase
 {
     use RefreshDatabase;
 
     protected $user;
+
     protected $outlet;
+
     protected $product1;
+
     protected $product2;
+
     protected $category;
 
     protected function setUp(): void
@@ -29,14 +33,14 @@ class DiscountTest extends TestCase
 
         $this->outlet = Outlet::factory()->create();
         $this->user = User::factory()->create(['outlet_id' => $this->outlet->id]);
-        
+
         $this->category = Category::factory()->create([
             'type' => 'product',
             'is_active' => true,
         ]);
-        
+
         $unit = Unit::factory()->create();
-        
+
         $this->product1 = Product::factory()->create([
             'outlet_id' => $this->outlet->id,
             'category_id' => $this->category->id,
@@ -45,7 +49,7 @@ class DiscountTest extends TestCase
             'hpp' => 50000,
             'track_stock' => true,
         ]);
-        
+
         $this->product2 = Product::factory()->create([
             'outlet_id' => $this->outlet->id,
             'category_id' => $this->category->id,
@@ -54,19 +58,19 @@ class DiscountTest extends TestCase
             'hpp' => 25000,
             'track_stock' => true,
         ]);
-        
+
         ProductStock::create([
             'product_id' => $this->product1->id,
             'outlet_id' => $this->outlet->id,
             'quantity' => 100,
         ]);
-        
+
         ProductStock::create([
             'product_id' => $this->product2->id,
             'outlet_id' => $this->outlet->id,
             'quantity' => 100,
         ]);
-        
+
         CashRegister::create([
             'outlet_id' => $this->outlet->id,
             'user_id' => $this->user->id,
@@ -90,7 +94,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         // Add items to cart
         session(['pos_cart' => [
             $this->product1->id => [
@@ -129,7 +133,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session(['pos_cart' => [
             $this->product1->id => [
                 'product_id' => $this->product1->id,
@@ -160,7 +164,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session(['pos_cart' => [
             $this->product1->id => [
                 'product_id' => $this->product1->id,
@@ -190,7 +194,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session(['pos_cart' => [
             $this->product1->id => [
                 'product_id' => $this->product1->id,
@@ -224,7 +228,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session(['pos_cart' => [
             $this->product1->id => [
                 'product_id' => $this->product1->id,
@@ -263,7 +267,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session([
             'pos_cart' => [
                 $this->product1->id => [
@@ -305,7 +309,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session([
             'pos_cart' => [
                 $this->product1->id => [
@@ -352,7 +356,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session(['pos_cart' => [
             $this->product1->id => [
                 'product_id' => $this->product1->id,
@@ -388,7 +392,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session(['pos_cart' => [
             $this->product1->id => [
                 'product_id' => $this->product1->id,
@@ -418,9 +422,9 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         $initialStock = $this->product1->getStockQuantity($this->outlet->id);
-        
+
         session([
             'pos_cart' => [
                 $this->product1->id => [
@@ -445,7 +449,7 @@ class DiscountTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        
+
         $this->assertEquals(
             $initialStock - 2,
             $this->product1->fresh()->getStockQuantity($this->outlet->id)
@@ -464,7 +468,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session([
             'pos_cart' => [
                 $this->product1->id => [
@@ -501,7 +505,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session([
             'pos_cart' => [
                 $this->product1->id => [
@@ -520,13 +524,13 @@ class DiscountTest extends TestCase
         ]);
 
         $summary = $response->json('cart_summary');
-        
+
         // Subtotal: 200,000
         // Discount: 50,000
         // Subtotal after discount: 150,000
         // Tax (0%): 0
         // Grand total: 150,000
-        
+
         $this->assertEquals(200000, $summary['subtotal']);
         $this->assertEquals(50000, $summary['total_discount']);
         $this->assertEquals(150000, $summary['grand_total']);
@@ -544,7 +548,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session([
             'pos_cart' => [
                 $this->product1->id => [
@@ -584,7 +588,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session(['pos_cart' => [
             $this->product1->id => [
                 'product_id' => $this->product1->id,
@@ -615,7 +619,7 @@ class DiscountTest extends TestCase
         ]);
 
         $this->actingAs($this->user);
-        
+
         session(['pos_cart' => [
             $this->product1->id => [
                 'product_id' => $this->product1->id,

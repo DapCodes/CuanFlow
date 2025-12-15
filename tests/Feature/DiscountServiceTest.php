@@ -2,12 +2,12 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Services\DiscountService;
+use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Product;
-use App\Models\Category;
+use App\Services\DiscountService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class DiscountServiceTest extends TestCase
 {
@@ -18,7 +18,7 @@ class DiscountServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new DiscountService();
+        $this->service = new DiscountService;
     }
 
     /** @test */
@@ -139,7 +139,7 @@ class DiscountServiceTest extends TestCase
     public function it_calculates_buy_x_get_y_correctly()
     {
         $product = Product::factory()->create(['selling_price' => 100000]);
-        
+
         $discount = Discount::factory()->create([
             'type' => 'buy_x_get_y',
             'buy_quantity' => 3,
@@ -172,7 +172,7 @@ class DiscountServiceTest extends TestCase
     public function it_handles_multiple_free_items_in_buy_x_get_y()
     {
         $product = Product::factory()->create(['selling_price' => 50000]);
-        
+
         $discount = Discount::factory()->create([
             'type' => 'buy_x_get_y',
             'buy_quantity' => 2,
@@ -204,7 +204,7 @@ class DiscountServiceTest extends TestCase
     public function it_applies_free_items_correctly()
     {
         $product = Product::factory()->create(['selling_price' => 100000]);
-        
+
         $discount = Discount::factory()->create([
             'type' => 'buy_x_get_y',
             'buy_quantity' => 3,
@@ -240,7 +240,7 @@ class DiscountServiceTest extends TestCase
     public function it_rejects_excessive_free_item_selection()
     {
         $product = Product::factory()->create(['selling_price' => 100000]);
-        
+
         $discount = Discount::factory()->create([
             'type' => 'buy_x_get_y',
             'buy_quantity' => 3,
@@ -339,14 +339,14 @@ class DiscountServiceTest extends TestCase
         // Total discount: 20% of 150k = 30k
         // Item 1: 100k/150k * 30k = 20k
         // Item 2: 50k/150k * 30k = 10k
-        
+
         $this->assertEquals(30000, $plan['total_discount']);
         $this->assertCount(2, $plan['affected_items']);
-        
+
         $item1Discount = collect($plan['affected_items'])
             ->firstWhere('product_id', 1)['discount_amount'];
         $this->assertEquals(20000, $item1Discount);
-        
+
         $item2Discount = collect($plan['affected_items'])
             ->firstWhere('product_id', 2)['discount_amount'];
         $this->assertEquals(10000, $item2Discount);
@@ -373,7 +373,7 @@ class DiscountServiceTest extends TestCase
     {
         $product1 = Product::factory()->create();
         $product2 = Product::factory()->create();
-        
+
         $discount = Discount::factory()->create([
             'type' => 'percentage',
             'value' => 20,
@@ -412,10 +412,10 @@ class DiscountServiceTest extends TestCase
     {
         $category1 = Category::factory()->create();
         $category2 = Category::factory()->create();
-        
+
         $product1 = Product::factory()->create(['category_id' => $category1->id]);
         $product2 = Product::factory()->create(['category_id' => $category2->id]);
-        
+
         $discount = Discount::factory()->create([
             'type' => 'percentage',
             'value' => 20,

@@ -15,7 +15,12 @@ class AiInsight extends Model
         'severity', 'is_read', 'is_dismissed', 'insight_date',
     ];
 
-    protected $casts = ['data' => 'array', 'is_read' => 'boolean', 'is_dismissed' => 'boolean', 'insight_date' => 'date'];
+    protected $casts = [
+        'data' => 'array',
+        'is_read' => 'boolean',
+        'is_dismissed' => 'boolean',
+        'insight_date' => 'datetime',
+    ];
 
     public function outlet(): BelongsTo
     {
@@ -34,7 +39,8 @@ class AiInsight extends Model
 
     public function scopeUnread($q)
     {
-        return $q->where('is_read', false);
+        return $q->where('is_read', false)
+                ->where('is_dismissed', false);
     }
 
     public function scopeActive($q)

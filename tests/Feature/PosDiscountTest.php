@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Discount;
+use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\User;
-use App\Models\Outlet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Session;
 use Tests\TestCase;
@@ -15,7 +15,9 @@ class PosDiscountTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $outlet;
+
     protected $product;
 
     protected function setUp(): void
@@ -104,19 +106,19 @@ class PosDiscountTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('discount_plan.requires_free_item_selection', true)
             ->assertJsonPath('discount_plan.free_item_quota', 1);
-            
+
         // Select free item
         $response = $this->postJson(route('pos.discounts.assign-free-items'), [
             'free_items' => [
-                ['product_id' => $this->product->id, 'quantity' => 1]
-            ]
+                ['product_id' => $this->product->id, 'quantity' => 1],
+            ],
         ]);
-        
+
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
             ->assertJsonPath('discount_plan.total_discount', 10000); // 1 free item worth 10,000
     }
-    
+
     public function test_discount_cleared_on_cart_update()
     {
         $discount = Discount::factory()->percentage()->create(['value' => 10]);
@@ -129,15 +131,15 @@ class PosDiscountTest extends TestCase
         $this->postJson(route('pos.discounts.apply'), [
             'discount_code' => $discount->code,
         ]);
-        
+
         $this->assertTrue(Session::has('pos_discount_plan'));
-        
+
         // Update cart
         $this->postJson(route('pos.cart.add'), [
             'product_id' => $this->product->id,
             'quantity' => 1,
         ]);
-        
+
         $this->assertFalse(Session::has('pos_discount_plan'));
     }
 }

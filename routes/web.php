@@ -22,7 +22,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', [MenuController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', \App\Http\Middleware\TriggerInsightOnOnline::class])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -136,6 +136,8 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/{id}/read', [AiInsightController::class, 'markAsRead'])->name('mark-read');
         Route::post('/{id}/dismiss', [AiInsightController::class, 'dismiss'])->name('dismiss');
         Route::post('/mark-all-read', [AiInsightController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::get('/calendar/summary', [AiInsightController::class, 'calendarSummary'])->name('calendar.summary');
+        Route::get('/calendar/daily', [AiInsightController::class, 'daily'])->name('calendar.daily');
     });
 });
 

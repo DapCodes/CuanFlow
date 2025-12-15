@@ -1827,7 +1827,8 @@ function clearDiscount() {
         confirmButtonColor: '#f97316',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Ya, Hapus',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        backdrop: 'rgba(0, 0, 0, 0.5)'
     }).then((result) => {
         if (result.isConfirmed) {
 
@@ -2136,7 +2137,8 @@ function calcClearHistory() {
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
         confirmButtonText: 'Ya, Hapus',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        backdrop: 'rgba(0, 0, 0, 0.5)'
     }).then((result) => {
         if (result.isConfirmed) {
     calcHistory = [];
@@ -2242,7 +2244,8 @@ function skipOpeningAmount() {
         confirmButtonColor: '#f97316',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Ya, Lewati',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        backdrop: 'rgba(0, 0, 0, 0.5)'
     }).then((result) => {
         if (result.isConfirmed) {
     fetch('{{ route("cash-register.start") }}', {
