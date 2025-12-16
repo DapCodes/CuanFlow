@@ -25,6 +25,9 @@ Route::get('/dashboard', [MenuController::class, 'index'])
     ->middleware(['auth', 'verified', \App\Http\Middleware\TriggerInsightOnOnline::class])
     ->name('dashboard');
 
+// Public Receipt Route
+Route::get('/receipts/{invoice}', [ReceiptController::class, 'show'])->name('receipts.show');
+
 Route::middleware('auth')->group(function () {
 
     Route::prefix('outlets/register')->name('outlets.register.')->group(function () {

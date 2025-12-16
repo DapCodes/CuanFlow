@@ -244,12 +244,12 @@
                                                 </td>
                                                 <td class="px-2 md:px-3 py-2 md:py-3">
                                                     <div class="flex items-center justify-center gap-1 md:gap-2">
-                                                        <button class="w-7 h-7 md:w-8 md:h-8 bg-green-500 hover:bg-green-600 text-white rounded-md flex items-center justify-center transition-colors" title="Lihat Detail">
+                                                        <a href="{{ route('sales.show', $sale->id) }}" class="w-7 h-7 md:w-8 md:h-8 bg-green-500 hover:bg-green-600 text-white rounded-md flex items-center justify-center transition-colors" title="Lihat Detail">
                                                             <i class="fas fa-eye text-xs"></i>
-                                                        </button>
-                                                        <button class="w-7 h-7 md:w-8 md:h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center justify-center transition-colors" title="Print">
+                                                        </a>
+                                                        <a href="{{ route('receipt.preview', $sale->id) }}" class="w-7 h-7 md:w-8 md:h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center justify-center transition-colors" title="Print">
                                                             <i class="fas fa-print text-xs"></i>
-                                                        </button>
+                                                        </a>
                                                     </div>
                                                 </td>
                                             </tr>

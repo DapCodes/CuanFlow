@@ -197,9 +197,6 @@
         .barcode {
             text-align: center;
             margin: 12px 0;
-            font-family: 'Libre Barcode 39', cursive;
-            font-size: 32px;
-            letter-spacing: 2px;
         }
         
         .brand {
@@ -344,10 +341,28 @@
             @endif
         </div>
         
-        <!-- Barcode -->
+        <!-- QR (scanable) -->
         <div class="barcode">
-            {!! QrCode::size(100)->generate($sale->invoice_number) !!}
+            @php
+                use BaconQrCode\Renderer\ImageRenderer;
+                use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+                use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+                use BaconQrCode\Writer;
+
+                $url = route('receipts.show', $sale->invoice_number);
+
+                $renderer = new ImageRenderer(
+                    new RendererStyle(140),
+                    new SvgImageBackEnd()
+                );
+
+                $writer = new Writer($renderer);
+                $qrCodeSvg = $writer->writeString($url);
+            @endphp
+            {!! $qrCodeSvg !!}
         </div>
+
+
         
         <!-- Footer -->
         <div class="footer">

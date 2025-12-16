@@ -11,15 +11,12 @@ use Illuminate\Support\Facades\Log;
 
 class CashRegisterController extends Controller
 {
-    /**
-     * Tampilkan halaman tutup toko
-     */
+
     public function showClosePage()
     {
         $userId = auth()->id();
         $outletId = auth()->user()->outlet_id;
 
-        // Cari cash register yang masih open
         $register = CashRegister::where('outlet_id', $outletId)
             ->where('user_id', $userId)
             ->where('status', 'open')
@@ -30,21 +27,22 @@ class CashRegisterController extends Controller
             return redirect()->route('pos.index')->with('error', 'Tidak ada sesi penjualan yang aktif');
         }
 
-        // Hitung summary penjualan real-time
         $register->calculateSummary();
         $register->save();
 
-        // Ambil detail transaksi dalam periode ini
+        // Ambil transaksi periode ini (Completed + Refunded)
         $sales = Sale::where('outlet_id', $outletId)
             ->where('cashier_id', $userId)
             ->where('created_at', '>=', $register->opened_at)
-            ->where('status', 'completed')
-            ->with('items')
+            ->whereIn('status', ['completed', 'refunded'])
             ->latest()
             ->get();
 
-        return view('main.cash-register.close', compact('register', 'sales'));
+        $totalDiscount = (float) $sales->sum('discount_amount');
+
+        return view('main.cash-register.close', compact('register', 'sales', 'totalDiscount'));
     }
+
 
     /**
      * Proses tutup toko

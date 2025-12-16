@@ -59,4 +59,16 @@ class ReceiptController extends Controller
 
         return $pdf->stream('struk-'.$sale->invoice_number.'.pdf');
     }
+
+    /**
+     * Tampilkan halaman detail struk (public)
+     */
+    public function show($invoiceNumber)
+    {
+        $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product'])
+            ->where('invoice_number', $invoiceNumber)
+            ->firstOrFail();
+
+        return view('receipts.detail', compact('sale'));
+    }
 }

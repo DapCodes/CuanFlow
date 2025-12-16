@@ -1342,6 +1342,10 @@
         </div>
         
         <div class="p-6 border-t border-gray-200 flex justify-end gap-3 flex-shrink-0">
+            <a href="{{ route('sales.index') }}" class="px-6 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors flex items-center gap-2">
+                <i class="fas fa-external-link-alt"></i>
+                Lihat Semua Penjualan
+            </a>
             <button onclick="closeSalesTodayModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
                 Tutup
             </button>
