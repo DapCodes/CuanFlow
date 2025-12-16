@@ -62,7 +62,6 @@ class RegisteredUserController extends Controller
             return redirect()->route('verification.notice')
                 ->with('success', 'Akun berhasil dibuat. Silakan cek email untuk verifikasi.');
 
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -71,5 +70,4 @@ class RegisteredUserController extends Controller
                 ->withErrors(['error' => 'Terjadi kesalahan saat membuat akun. Silakan coba lagi. Error: '.$e->getMessage()]);
         }
     }
-
 }

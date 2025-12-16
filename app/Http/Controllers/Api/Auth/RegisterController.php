@@ -15,11 +15,11 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => ['required','string','max:255'],
-            'email' => ['required','string','lowercase','email:rfc,dns','max:255','unique:users,email'],
-            'phone' => ['required','string','max:20'],
-            'password' => ['required','confirmed', Rules\Password::defaults()],
-            'terms' => ['required','accepted'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email:rfc,dns', 'max:255', 'unique:users,email'],
+            'phone' => ['required', 'string', 'max:20'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'terms' => ['required', 'accepted'],
         ]);
 
         try {
@@ -48,11 +48,12 @@ class RegisterController extends Controller
                 'data' => [
                     'user_id' => $user->id,
                     'email' => $user->email,
-                ]
+                ],
             ], 201);
 
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => 'Terjadi kesalahan saat membuat akun.',
                 'error' => $e->getMessage(),

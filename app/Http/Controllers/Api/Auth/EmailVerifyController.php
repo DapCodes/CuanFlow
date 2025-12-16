@@ -13,11 +13,11 @@ class EmailVerifyController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if (!hash_equals(sha1($user->email), $hash)) {
+        if (! hash_equals(sha1($user->email), $hash)) {
             return response()->json(['message' => 'Hash tidak valid.'], 403);
         }
 
-        if (!$user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
             event(new Verified($user));
         }

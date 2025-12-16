@@ -309,7 +309,7 @@ class SaleController extends Controller
                         }
                     }
                 } catch (\Exception $e) {
-                    \Log::warning('Failed to restore discount usage for sale ' . $sale->id . ': ' . $e->getMessage());
+                    \Log::warning('Failed to restore discount usage for sale '.$sale->id.': '.$e->getMessage());
                 }
             }
 

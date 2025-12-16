@@ -12,24 +12,24 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => ['required','email'],
-            'password' => ['required','string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
         ]);
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Email atau password salah.'], 401);
         }
 
-        if (!$user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             return response()->json([
                 'message' => 'Email belum terverifikasi. Silakan cek inbox/spam lalu klik link verifikasi.',
                 'code' => 'EMAIL_NOT_VERIFIED',
             ], 403);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             return response()->json(['message' => 'Akun tidak aktif.'], 403);
         }
 

@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use App\Services\ClaraAiService;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-    */
+     */
     public function boot(): void
     {
         VerifyEmail::createUrlUsing(function ($notifiable) {

@@ -40,7 +40,7 @@ class AiInsight extends Model
     public function scopeUnread($q)
     {
         return $q->where('is_read', false)
-                ->where('is_dismissed', false);
+            ->where('is_dismissed', false);
     }
 
     public function scopeActive($q)
