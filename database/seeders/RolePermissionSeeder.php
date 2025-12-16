@@ -93,5 +93,7 @@ class RolePermissionSeeder extends Seeder
             'view_stock', 'adjust_stock', 'view_stock_history', 'view_recipes',
             'view_productions', 'create_productions', 'edit_productions', 'complete_productions',
         ]);
+
+        Role::create(['name' => 'pelanggan']);
     }
 }
