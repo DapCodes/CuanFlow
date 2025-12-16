@@ -532,18 +532,34 @@
 <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 max-w-7xl w-full">
 
     <!-- OPERASIONAL UTAMA (Prioritas Tertinggi) -->
-    <a href="{{ route('pos.index') }}"
-       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="1"
-       data-title="Point of Sale"
-       data-intro="<strong>Catat penjualan di kasir.</strong> Gunakan menu ini untuk memasukkan setiap transaksi dengan cepat dan rapi, sehingga antrian tidak menumpuk.">
-        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-500 to-red-400 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
-            <i class="fa-solid fa-cash-register text-4xl sm:text-5xl text-white"></i>
-        </div>
-        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
-            Point of Sale
-        </span>
-    </a>
+<a href="{{ route('pos.index') }}"
+   class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300 relative"
+   data-step="1"
+   data-title="Point of Sale"
+   data-intro="<strong>Catat penjualan di kasir.</strong> Gunakan menu ini untuk memasukkan setiap transaksi dengan cepat dan rapi, sehingga antrian tidak menumpuk.">
+
+    <div class="menu-icon relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-500 to-red-400 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+        @if(isset($isPosOpen) && $isPosOpen)
+            <span
+                class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2
+                       h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full
+                       bg-emerald-400 ring-2 ring-white/80 shadow-sm
+                       transition-all duration-300
+                       opacity-90 scale-95
+                       group-hover:opacity-100 group-hover:scale-110"
+                title="POS sedang buka"
+                aria-label="POS sedang buka"
+            ></span>
+        @endif
+
+        <i class="fa-solid fa-cash-register text-4xl sm:text-5xl text-white"></i>
+    </div>
+
+    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+        Point of Sale
+    </span>
+</a>
+
 
     <a href="{{ route('sales.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
