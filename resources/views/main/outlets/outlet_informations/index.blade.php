@@ -4,9 +4,6 @@
 
 @section('breadcrumb')
 <li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
     <span class="text-gray-900 font-medium">Informasi Outlet</span>
 </li>
 @endsection
@@ -18,14 +15,12 @@
         {{-- Alert / Notifikasi --}}
         @if(session('success'))
             <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
                 <p class="text-green-800">{{ session('success') }}</p>
             </div>
         @endif
 
         @if(session('error'))
             <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
                 <p class="text-red-800">{{ session('error') }}</p>
             </div>
         @endif
@@ -113,8 +108,7 @@
                     <label class="text-xs font-medium text-gray-500 mb-1 block">Cari outlet</label>
                     <div class="relative">
                         <input type="text" id="searchInput" placeholder="Cari berdasarkan nama outlet..."
-                               class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                               class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
                     </div>
                 </div>
 
@@ -137,31 +131,24 @@
                     <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-barcode mr-1 text-gray-400"></i>
                                 Kode
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-store mr-1 text-gray-400"></i>
                                 Outlet
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>
                                 Alamat
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-phone mr-1 text-gray-400"></i>
                                 Kontak
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-user-tie mr-1 text-gray-400"></i>
                                 Owner
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-toggle-on mr-1 text-gray-400"></i>
                                 Status
                             </th>
                             <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-cog mr-1 text-gray-400"></i>
                                 Aksi
                             </th>
                         </tr>
@@ -190,7 +177,6 @@
                                         <div>
                                             <div class="text-sm font-semibold text-gray-900 outlet-name">{{ $outlet->name }}</div>
                                             <div class="text-xs text-gray-500 flex items-center mt-1">
-                                                <i class="fas fa-calendar mr-1"></i>
                                                 {{ $outlet->created_at->format('d M Y') }}
                                             </div>
                                         </div>
@@ -200,12 +186,10 @@
                                 {{-- Alamat --}}
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900 max-w-xs">
-                                        <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
                                         {{ Str::limit($outlet->address, 50) }}
                                     </div>
                                     @if($outlet->latitude && $outlet->longtitude)
                                         <div class="text-xs text-gray-500 mt-1">
-                                            <i class="fas fa-globe mr-1"></i>
                                             {{ number_format($outlet->latitude, 6) }}, {{ number_format($outlet->longtitude, 6) }}
                                         </div>
                                     @endif
@@ -214,12 +198,10 @@
                                 {{-- Kontak --}}
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
-                                        <i class="fas fa-phone text-green-500 mr-1"></i>
                                         {{ $outlet->phone ?? '-' }}
                                     </div>
                                     @if($outlet->email)
                                         <div class="text-xs text-gray-500 mt-1">
-                                            <i class="fas fa-envelope text-blue-500 mr-1"></i>
                                             {{ $outlet->email }}
                                         </div>
                                     @endif
@@ -299,13 +281,12 @@
                                 <td colspan="7" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                            <i class="fas fa-store-slash text-5xl text-gray-300"></i>
+                                            <span class="text-5xl text-gray-300 font-bold">!</span>
                                         </div>
                                         <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Outlet</h3>
                                         <p class="text-sm text-gray-500 mb-4">Mulai dengan menambahkan outlet pertama Anda</p>
                                         <a href="{{ route('outlets.create') }}"
                                            class="inline-flex items-center px-5 py-2.5 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-colors">
-                                            <i class="fas fa-plus-circle mr-2"></i>
                                             Tambah Outlet
                                         </a>
                                     </div>

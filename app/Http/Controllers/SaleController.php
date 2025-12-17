@@ -253,7 +253,8 @@ class SaleController extends Controller
                 'cashier' => $s->cashier?->name,
                 'payment_method' => $s->payment_method,
                 'grand_total' => (int) $s->grand_total,
-                'status' => $s->status, // TAMBAHKAN ini
+                'status' => $s->status,
+                'total_discount' => (int) $s->total_discount,
             ]),
             'totals' => [
                 'cash' => (int) $cashTotal,
@@ -362,17 +363,27 @@ class SaleController extends Controller
             abort(403, 'Akses ditolak');
         }
 
-        $sale->load('items');
+        $sale->load(['items.product', 'customer', 'cashier', 'payments']);
 
         return response()->json([
             'id' => $sale->id,
             'invoice_number' => $sale->invoice_number,
-            'created_at' => $sale->created_at,
-            'grand_total' => $sale->grand_total,
+            'created_at' => $sale->created_at->format('Y-m-d H:i:s'),
+            'cashier_name' => $sale->cashier->name ?? '-',
+            'customer_name' => $sale->customer->name ?? 'Guest',
+            'subtotal' => (int) $sale->subtotal,
+            'tax' => (int) $sale->tax,
+            'total_discount' => (int) $sale->total_discount,
+            'grand_total' => (int) $sale->grand_total,
+            'payment_method' => $sale->payment_method,
+            'paid_amount' => (int) $sale->paid_amount,
+            'change_amount' => (int) $sale->change_amount,
             'items' => $sale->items->map(function ($item) {
                 return [
-                    'product_id' => $item->product_id,
+                    'product_name' => $item->product->name,
                     'quantity' => $item->quantity,
+                    'price' => (int) $item->price,
+                    'subtotal' => (int) $item->subtotal,
                 ];
             })->values(),
         ]);

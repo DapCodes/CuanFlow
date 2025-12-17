@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Log;
 
 class CashRegisterController extends Controller
 {
-
     public function showClosePage()
     {
         $userId = auth()->id();
@@ -42,7 +41,6 @@ class CashRegisterController extends Controller
 
         return view('main.cash-register.close', compact('register', 'sales', 'totalDiscount'));
     }
-
 
     /**
      * Proses tutup toko

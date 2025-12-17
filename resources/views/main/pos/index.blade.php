@@ -1324,6 +1324,7 @@
                             <th class="px-4 py-3 text-left font-semibold text-gray-700">Waktu</th>
                             <th class="px-4 py-3 text-left font-semibold text-gray-700">Kasir</th>
                             <th class="px-4 py-3 text-left font-semibold text-gray-700">Metode</th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">Total Diskon</th>
                             <th class="px-4 py-3 text-right font-semibold text-gray-700">Total</th>
                             <th class="px-4 py-3 text-center font-semibold text-gray-700">Status</th>
                             <th class="px-4 py-3 text-center font-semibold text-gray-700">Aksi</th>
@@ -1331,7 +1332,7 @@
                     </thead>
                     <tbody id="salesTableBody">
                         <tr>
-                            <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="8" class="px-4 py-8 text-center text-gray-500">
                                 <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
                                 <p>Memuat data...</p>
                             </td>
@@ -1347,6 +1348,98 @@
                 Lihat Semua Penjualan
             </a>
             <button onclick="closeSalesTodayModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Detail Penjualan -->
+<div id="saleDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-receipt text-orange-600"></i>
+                    Detail Penjualan
+                </h3>
+                <p class="text-sm text-gray-600 mt-1" id="detailInvoiceNumber">-</p>
+            </div>
+            <button onclick="closeSaleDetailModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            <!-- Info Pelanggan & Kasir -->
+            <div class="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <div>
+                    <div class="text-xs text-gray-500 mb-1">Kasir</div>
+                    <div class="font-semibold text-gray-900" id="detailCashier">-</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500 mb-1">Pelanggan</div>
+                    <div class="font-semibold text-gray-900" id="detailCustomer">-</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500 mb-1">Waktu</div>
+                    <div class="font-semibold text-gray-900" id="detailTime">-</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500 mb-1">Metode Pembayaran</div>
+                    <div class="font-semibold text-gray-900" id="detailPaymentMethod">-</div>
+                </div>
+            </div>
+
+            <!-- Daftar Item -->
+            <h4 class="font-bold text-gray-900 mb-3">Item Pembelian</h4>
+            <div class="border rounded-xl overflow-hidden mb-6">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-gray-600">Produk</th>
+                            <th class="px-4 py-2 text-center text-gray-600">Qty</th>
+                            <th class="px-4 py-2 text-right text-gray-600">Harga</th>
+                            <th class="px-4 py-2 text-right text-gray-600">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailItemsBody">
+                        <!-- Items will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Ringkasan Pembayaran -->
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span id="detailSubtotal">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                    <span>Pajak</span>
+                    <span id="detailTax">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-red-600">
+                    <span>Diskon</span>
+                    <span id="detailDiscount">-Rp 0</span>
+                </div>
+                <div class="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
+                    <span>Total Akhir</span>
+                    <span id="detailGrandTotal">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-gray-600 pt-2">
+                    <span>Bayar</span>
+                    <span id="detailPaid">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-green-600 font-semibold">
+                    <span>Kembalian</span>
+                    <span id="detailChange">Rp 0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 flex justify-end gap-3 flex-shrink-0 bg-gray-50">
+            <button onclick="closeSaleDetailModal()" class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors shadow-sm">
                 Tutup
             </button>
         </div>
@@ -3214,7 +3307,7 @@ function loadSalesToday() {
             if (data.sales.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-2 opacity-50"></i>
                             <p>Belum ada transaksi hari ini</p>
                         </td>
@@ -3242,9 +3335,17 @@ function loadSalesToday() {
                         <td class="px-4 py-3">${sale.time}</td>
                         <td class="px-4 py-3">${sale.cashier || '-'}</td>
                         <td class="px-4 py-3">${paymentBadge}</td>
+                        <td class="px-4 py-3 text-right font-semibold text-red-600">Rp ${formatNumber(sale.total_discount)}</td>
                         <td class="px-4 py-3 text-right font-semibold">Rp ${formatNumber(sale.grand_total)}</td>
                         <td class="px-4 py-3 text-center">${statusBadge}</td>
-                        <td class="px-4 py-3 text-center">${refundButton}</td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="showSaleDetail(${sale.id})" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors border border-blue-200">
+                                    <i class="fas fa-eye mr-1"></i>Detail
+                                </button>
+                                ${refundButton}
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
@@ -3255,7 +3356,7 @@ function loadSalesToday() {
             showToast('error', 'Gagal memuat data penjualan');
             document.getElementById('salesTableBody').innerHTML = `
                 <tr>
-                    <td colspan="7" class="px-4 py-8 text-center text-red-500">
+                    <td colspan="8" class="px-4 py-8 text-center text-red-500">
                         <i class="fas fa-exclamation-circle text-3xl mb-2"></i>
                         <p>Gagal memuat data</p>
                     </td>
@@ -3316,6 +3417,55 @@ function formatDate(dateStr) {
     const date = new Date(dateStr);
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return date.toLocaleDateString('id-ID', options);
+}
+
+function showSaleDetail(saleId) {
+    // Show loading state or just open modal with loader
+    document.getElementById('saleDetailModal').classList.remove('hidden');
+    
+    // Reset content
+    document.getElementById('detailItemsBody').innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Memuat...</td></tr>';
+    
+    fetch(`/api/sale/${saleId}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('detailInvoiceNumber').textContent = data.invoice_number;
+            document.getElementById('detailCashier').textContent = data.cashier_name;
+            document.getElementById('detailCustomer').textContent = data.customer_name;
+            document.getElementById('detailTime').textContent = data.created_at;
+            document.getElementById('detailPaymentMethod').textContent = data.payment_method.toUpperCase();
+            
+            // Render Items
+            let itemsHtml = '';
+            data.items.forEach(item => {
+                itemsHtml += `
+                    <tr class="border-b last:border-0">
+                        <td class="px-4 py-2 text-gray-800">${item.product_name}</td>
+                        <td class="px-4 py-2 text-center text-gray-600">${item.quantity}</td>
+                        <td class="px-4 py-2 text-right text-gray-600">Rp ${formatNumber(item.price)}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">Rp ${formatNumber(item.subtotal)}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('detailItemsBody').innerHTML = itemsHtml;
+            
+            // Render Totals
+            document.getElementById('detailSubtotal').textContent = 'Rp ' + formatNumber(data.subtotal);
+            document.getElementById('detailTax').textContent = 'Rp ' + formatNumber(data.tax);
+            document.getElementById('detailDiscount').textContent = '-Rp ' + formatNumber(data.total_discount);
+            document.getElementById('detailGrandTotal').textContent = 'Rp ' + formatNumber(data.grand_total);
+            document.getElementById('detailPaid').textContent = 'Rp ' + formatNumber(data.paid_amount);
+            document.getElementById('detailChange').textContent = 'Rp ' + formatNumber(data.change_amount);
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('error', 'Gagal memuat detail transaksi');
+            closeSaleDetailModal();
+        });
+}
+
+function closeSaleDetailModal() {
+    document.getElementById('saleDetailModal').classList.add('hidden');
 }
 
 </script>
