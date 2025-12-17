@@ -153,35 +153,27 @@
                     <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-barcode mr-1 text-gray-400"></i>
                                 Kode
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-box mr-1 text-gray-400"></i>
                                 Produk
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-folder mr-1 text-gray-400"></i>
                                 Kategori
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-calculator mr-1 text-gray-400"></i>
                                 HPP
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-tag mr-1 text-gray-400"></i>
                                 Harga Jual
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-percent mr-1 text-gray-400"></i>
                                 Margin
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-toggle-on mr-1 text-gray-400"></i>
                                 Status
                             </th>
                             <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <i class="fas fa-cog mr-1 text-gray-400"></i>
                                 Aksi
                             </th>
                         </tr>
@@ -207,7 +199,6 @@
                                         <div>
                                             <div class="text-sm font-semibold text-gray-900">{{ $product->name }}</div>
                                             <div class="text-xs text-gray-500 flex items-center mt-1">
-                                                <i class="fas fa-ruler-combined mr-1"></i>
                                                 {{ $product->unit->name ?? '-' }}
                                             </div>
                                         </div>
@@ -216,7 +207,6 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($product->category)
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            <i class="fas fa-tag mr-1"></i>
                                             {{ $product->category->name }}
                                         </span>
                                     @else
@@ -259,7 +249,6 @@
                                         }
                                     @endphp
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold {{ $bgClass }} {{ $textClass }}">
-                                        <i class="fas {{ $icon }} mr-1"></i>
                                         {{ number_format($margin, 1) }}%
                                     </span>
                                 </td>

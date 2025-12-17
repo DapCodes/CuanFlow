@@ -53,6 +53,7 @@ class SaleController extends Controller
             ->sum('amount');
 
         $dailyNetIncome = $totalRevenue - $dailyExpenses;
+        $dailyTotalDiscount = $sales->sum('discount_amount');
 
         // Get all-time summary (if no date selected or for comparison)
         $allTimeRevenue = Sale::where('outlet_id', $outletId)
@@ -108,7 +109,8 @@ class SaleController extends Controller
             'expenseStartDate',
             'expenseEndDate',
             'totalRefunds',
-            'totalTransactions'
+            'totalTransactions',
+            'dailyTotalDiscount'
         ));
     }
 
@@ -243,6 +245,7 @@ class SaleController extends Controller
             ->sum('amount');
 
         $dailyNetIncome = $totalRevenue - $dailyExpenses;
+        $dailyTotalDiscount = $sales->sum('discount_amount');
 
         return response()->json([
             'selectedDate' => $selectedDate,
@@ -254,7 +257,8 @@ class SaleController extends Controller
                 'payment_method' => $s->payment_method,
                 'grand_total' => (int) $s->grand_total,
                 'status' => $s->status,
-                'total_discount' => (int) $s->total_discount,
+                'status' => $s->status,
+                'total_discount' => (int) $s->discount_amount,
             ]),
             'totals' => [
                 'cash' => (int) $cashTotal,
@@ -267,10 +271,7 @@ class SaleController extends Controller
                 'transactions' => $sales->count(),
                 'profit' => (int) $dailyProfit,
                 'expenses' => (int) $dailyExpenses,
-                'refunds' => (int) Sale::where('outlet_id', $outletId)
-                    ->where('status', 'refunded')
-                    ->whereBetween('created_at', [$startOfDay, $endOfDay])
-                    ->sum('grand_total'),
+                'discount' => (int) $dailyTotalDiscount,
             ],
         ]);
     }

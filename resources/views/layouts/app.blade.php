@@ -161,169 +161,306 @@
 
     <div class="min-h-screen flex flex-col">
         <!-- Navbar -->
-        <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <!-- Logo / Outlet -->
-                        @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
-                            @php
-                                $userOutlets = auth()->user()->isOwner() 
-                                    ? auth()->user()->outletsOwned->sortBy('name') 
-                                    : collect([auth()->user()->outlet]);
-                                    
-                                $hasMultipleOutlets = $userOutlets->count() > 1;
-                            @endphp
-                            
-                            @if($hasMultipleOutlets)
-                                <!-- Multi Outlet Dropdown -->
-                                <div class="relative" x-data="{ open: false }">
-                                    <button @click="open = !open" class="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-lg transition">
-                                        @if(auth()->user()->outlet->logo)
-                                            <img src="{{ Storage::url(auth()->user()->outlet->logo) }}" 
-                                                alt="{{ auth()->user()->outlet->name }}" 
-                                                class="h-10 w-10 object-contain rounded-lg">
-                                        @endif
-                                        <div class="flex items-center space-x-2">
-                                            <span class="text-xl font-bold text-gray-900">
-                                                {{ auth()->user()->outlet->name }}
-                                            </span>
-                                            <i class="fa-solid fa-chevron-down text-xs text-gray-600"></i>
-                                        </div>
-                                    </button>
 
-                                    <!-- Outlet Dropdown Menu -->
-                                    <div x-show="open" 
-                                        @click.away="open = false"
-                                        x-transition:enter="transition ease-out duration-100"
-                                        x-transition:enter-start="transform opacity-0 scale-95"
-                                        x-transition:enter-end="transform opacity-100 scale-100"
-                                        x-transition:leave="transition ease-in duration-75"
-                                        x-transition:leave-start="transform opacity-100 scale-100"
-                                        x-transition:leave-end="transform opacity-0 scale-95"
-                                        class="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 border border-gray-200"
-                                        style="display: none;">
-                                        
-                                        <div class="px-4 py-2 border-b border-gray-200">
-                                            <p class="text-xs text-gray-500 font-medium">Pilih Outlet</p>
-                                        </div>
+<!-- Navbar -->
+<nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false }">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            
+            <!-- Left: Logo / Outlet -->
+            <div class="flex items-center min-w-0">
+                @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
+                    @php
+                        $userOutlets = auth()->user()->isOwner()
+                            ? auth()->user()->outletsOwned->sortBy('name')
+                            : collect([auth()->user()->outlet]);
 
-                                        @foreach($userOutlets as $outlet)
-                                           <form method="POST" action="{{ route('change.outlet') }}">
+                        $hasMultipleOutlets = $userOutlets->count() > 1;
+                    @endphp
+
+                    <!-- Desktop outlet display (same as before, but truncated nicely) -->
+                    <div class="hidden sm:flex items-center">
+                        @if($hasMultipleOutlets)
+                            <!-- Multi Outlet Dropdown (Desktop) -->
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open"
+                                    class="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-lg transition">
+                                    @if(auth()->user()->outlet->logo)
+                                        <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
+                                            alt="{{ auth()->user()->outlet->name }}"
+                                            class="h-10 w-10 object-contain rounded-lg">
+                                    @endif
+
+                                    <div class="flex items-center space-x-2 min-w-0">
+                                        <span class="text-lg font-bold text-gray-900 truncate max-w-[220px]">
+                                            {{ auth()->user()->outlet->name }}
+                                        </span>
+                                        <i class="fa-solid fa-chevron-down text-xs text-gray-600"></i>
+                                    </div>
+                                </button>
+
+                                <div x-show="open"
+                                    @click.away="open = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute left-0 mt-2 w-72 bg-white rounded-lg shadow-lg py-2 border border-gray-200"
+                                    style="display:none;">
+
+                                    <div class="px-4 py-2 border-b border-gray-200">
+                                        <p class="text-xs text-gray-500 font-medium">Pilih Outlet</p>
+                                    </div>
+
+                                    @foreach($userOutlets as $outlet)
+                                        <form method="POST" action="{{ route('change.outlet') }}">
                                             @csrf
                                             <input type="hidden" name="outlet_id" value="{{ $outlet->id }}">
 
-                                            <button type="submit" 
-                                                class="w-full text-left block px-4 py-3 hover:bg-cuan-yellow/20 transition 
+                                            <button type="submit"
+                                                class="w-full text-left block px-4 py-3 hover:bg-cuan-yellow/20 transition
                                                 {{ auth()->user()->outlet_id == $outlet->id ? 'bg-cuan-yellow/30' : '' }}">
-        
-                                                    <div class="flex items-center space-x-3">
-                                                        @if($outlet->logo)
-                                                            <img src="{{ Storage::url($outlet->logo) }}" 
-                                                                alt="{{ $outlet->name }}" 
-                                                                class="h-8 w-8 object-contain rounded">
-                                                        @else
-                                                            <div class="h-8 w-8 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
-                                                                {{ substr($outlet->name, 0, 1) }}
-                                                            </div>
-                                                        @endif
-
-                                                        <div class="flex-1">
-                                                            <p class="text-sm font-medium text-gray-900">{{ $outlet->name }}</p>
-                                                            <p class="text-xs text-gray-500">{{ $outlet->business_category }}</p>
+                                                <div class="flex items-center space-x-3">
+                                                    @if($outlet->logo)
+                                                        <img src="{{ Storage::url($outlet->logo) }}"
+                                                            alt="{{ $outlet->name }}"
+                                                            class="h-8 w-8 object-contain rounded">
+                                                    @else
+                                                        <div
+                                                            class="h-8 w-8 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
+                                                            {{ substr($outlet->name, 0, 1) }}
                                                         </div>
+                                                    @endif
 
-                                                        @if(auth()->user()->outlet_id == $outlet->id)
-                                                            <i class="fa-solid fa-check text-cuan-green"></i>
-                                                        @endif
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-gray-900 truncate">
+                                                            {{ $outlet->name }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-500 truncate">
+                                                            {{ $outlet->business_category }}
+                                                        </p>
                                                     </div>
 
-                                                </button>
-                                            </form>
-                                        @endforeach
-                                    </div>
+                                                    @if(auth()->user()->outlet_id == $outlet->id)
+                                                        <i class="fa-solid fa-check text-cuan-green"></i>
+                                                    @endif
+                                                </div>
+                                            </button>
+                                        </form>
+                                    @endforeach
                                 </div>
-                            @else
-                                <!-- Single Outlet -->
-                                <a href="{{ route('dashboard') }}" class="nav-link flex items-center space-x-3">
-                                    @if(auth()->user()->outlet->logo)
-                                        <img src="{{ Storage::url(auth()->user()->outlet->logo) }}" 
-                                            alt="{{ auth()->user()->outlet->name }}" 
-                                            class="h-10 w-10 object-contain rounded-lg">
-                                    @endif
-                                    <span class="text-xl font-bold text-gray-900">
-                                        {{ auth()->user()->outlet->name }}
-                                    </span>
-                                </a>
-                            @endif
+                            </div>
                         @else
-                            <!-- CuanFlow Logo (No Outlet) -->
+                            <!-- Single Outlet (Desktop) -->
                             <a href="{{ route('dashboard') }}" class="nav-link flex items-center space-x-3">
-                                <img src="{{ asset('assets/image/logo.svg') }}" 
-                                    alt="CuanFlow" 
-                                    class="h-10 w-auto">
-                                <span class="text-xl font-bold text-gray-900">
-                                    CuanFlow
+                                @if(auth()->user()->outlet->logo)
+                                    <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
+                                        alt="{{ auth()->user()->outlet->name }}"
+                                        class="h-10 w-10 object-contain rounded-lg">
+                                @endif
+                                <span class="text-lg font-bold text-gray-900 truncate max-w-[240px]">
+                                    {{ auth()->user()->outlet->name }}
                                 </span>
                             </a>
                         @endif
                     </div>
 
-                    <!-- Right Side -->
-                    <div class="flex items-center space-x-4">
-                        <!-- User Dropdown -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
-                                @if(auth()->user()->avatar)
-                                    <img src="{{ Storage::url(auth()->user()->avatar) }}" 
-                                        alt="{{ auth()->user()->name }}" 
-                                        class="h-8 w-8 rounded-full object-cover">
-                                @else
-                                    <div class="h-8 w-8 rounded-full bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold">
-                                        {{ substr(auth()->user()->name, 0, 1) }}
-                                    </div>
-                                @endif
-                                <span class="text-sm font-medium hidden sm:block text-gray-900">{{ auth()->user()->name }}</span>
-                                <i class="fa-solid fa-chevron-down text-xs"></i>
-                            </button>
-
-                            <!-- Dropdown Menu -->
-                            <div x-show="open" 
-                                @click.away="open = false"
-                                x-transition:enter="transition ease-out duration-100"
-                                x-transition:enter-start="transform opacity-0 scale-95"
-                                x-transition:enter-end="transform opacity-100 scale-100"
-                                x-transition:leave="transition ease-in duration-75"
-                                x-transition:leave-start="transform opacity-100 scale-100"
-                                x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border border-gray-200"
-                                style="display: none;">
-                                
-                                @if(auth()->user()->outlet_id)
-                                    <div class="px-4 py-2 border-b border-gray-200">
-                                        <p class="text-xs text-gray-500">Outlet ({{ auth()->user()->getRoleNames()->first() }}) </p>
-                                        <p class="text-sm font-medium text-gray-900">{{ auth()->user()->outlet->name }}</p>
-                                    </div>
-                                @endif
-
-                                <a href="{{ route('profile.edit') }}" class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">
-                                    <i class="fa-solid fa-user mr-2"></i>
-                                    Profile
-                                </a>
-                                
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="logout-btn w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                        <i class="fa-solid fa-right-from-bracket mr-2"></i>
-                                        Logout
-                                    </button>
-                                </form>
+                    <!-- Mobile outlet display (compact) -->
+                    <a href="{{ route('dashboard') }}" class="sm:hidden flex items-center space-x-2 min-w-0">
+                        @if(auth()->user()->outlet->logo)
+                            <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
+                                alt="{{ auth()->user()->outlet->name }}"
+                                class="h-9 w-9 object-contain rounded-lg">
+                        @else
+                            <div class="h-9 w-9 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
+                                {{ substr(auth()->user()->outlet->name, 0, 1) }}
                             </div>
-                        </div>
+                        @endif
+                        <span class="text-base font-bold text-gray-900 truncate">
+                            {{ auth()->user()->outlet->name }}
+                        </span>
+                    </a>
+
+                @else
+                    <!-- No Outlet -->
+                    <a href="{{ route('dashboard') }}" class="nav-link flex items-center space-x-3">
+                        <img src="{{ asset('assets/image/logo.svg') }}" alt="CuanFlow" class="h-10 w-auto">
+                        <span class="text-lg font-bold text-gray-900">CuanFlow</span>
+                    </a>
+                @endif
+            </div>
+
+            <!-- Right: Desktop user dropdown -->
+            <div class="hidden sm:flex items-center space-x-4">
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open"
+                        class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
+                        @if(auth()->user()->avatar)
+                            <img src="{{ Storage::url(auth()->user()->avatar) }}"
+                                alt="{{ auth()->user()->name }}"
+                                class="h-8 w-8 rounded-full object-cover">
+                        @else
+                            <div
+                                class="h-8 w-8 rounded-full bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold">
+                                {{ substr(auth()->user()->name, 0, 1) }}
+                            </div>
+                        @endif
+                        <span class="text-sm font-medium text-gray-900 max-w-[180px] truncate">
+                            {{ auth()->user()->name }}
+                        </span>
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </button>
+
+                    <div x-show="open"
+                        @click.away="open = false"
+                        x-transition:enter="transition ease-out duration-100"
+                        x-transition:enter-start="transform opacity-0 scale-95"
+                        x-transition:enter-end="transform opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="transform opacity-100 scale-100"
+                        x-transition:leave-end="transform opacity-0 scale-95"
+                        class="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg py-2 border border-gray-200"
+                        style="display:none;">
+
+                        @if(auth()->user()->outlet_id)
+                            <div class="px-4 py-2 border-b border-gray-200">
+                                <p class="text-xs text-gray-500">Outlet ({{ auth()->user()->getRoleNames()->first() }})</p>
+                                <p class="text-sm font-medium text-gray-900 truncate">{{ auth()->user()->outlet->name }}</p>
+                            </div>
+                        @endif
+
+                        <a href="{{ route('profile.edit') }}"
+                            class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">
+                            <i class="fa-solid fa-user mr-2"></i>
+                            Profile
+                        </a>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="logout-btn w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                <i class="fa-solid fa-right-from-bracket mr-2"></i>
+                                Logout
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
-        </nav>
+
+            <!-- Right: Mobile hamburger -->
+            <div class="sm:hidden flex items-center">
+                <button @click="mobileOpen = !mobileOpen"
+                    class="inline-flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 focus:outline-none"
+                    aria-label="Open menu">
+                    <svg class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path x-show="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        <path x-show="mobileOpen" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" style="display:none;" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile panel -->
+    <div x-show="mobileOpen"
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0 -translate-y-2"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-100"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 -translate-y-2"
+        class="sm:hidden border-t border-gray-200 bg-white"
+        style="display:none;"
+        @click.away="mobileOpen = false">
+
+        <div class="px-4 py-3 space-y-3">
+            <!-- User info -->
+            <div class="flex items-center space-x-3">
+                @if(auth()->user()->avatar)
+                    <img src="{{ Storage::url(auth()->user()->avatar) }}"
+                        alt="{{ auth()->user()->name }}"
+                        class="h-10 w-10 rounded-full object-cover">
+                @else
+                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold">
+                        {{ substr(auth()->user()->name, 0, 1) }}
+                    </div>
+                @endif
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                    @if(auth()->user()->outlet_id)
+                        <p class="text-xs text-gray-500 truncate">
+                            {{ auth()->user()->outlet->name }} • {{ auth()->user()->getRoleNames()->first() }}
+                        </p>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Mobile outlet switcher (only if multiple) -->
+            @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
+                @php
+                    $userOutlets = auth()->user()->isOwner()
+                        ? auth()->user()->outletsOwned->sortBy('name')
+                        : collect([auth()->user()->outlet]);
+                    $hasMultipleOutlets = $userOutlets->count() > 1;
+                @endphp
+
+                @if($hasMultipleOutlets)
+                    <div class="pt-2 border-t border-gray-100">
+                        <p class="text-xs font-medium text-gray-500 mb-2">Pilih Outlet</p>
+                        <div class="space-y-2">
+                            @foreach($userOutlets as $outlet)
+                                <form method="POST" action="{{ route('change.outlet') }}">
+                                    @csrf
+                                    <input type="hidden" name="outlet_id" value="{{ $outlet->id }}">
+                                    <button type="submit"
+                                        class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg border
+                                            {{ auth()->user()->outlet_id == $outlet->id ? 'border-cuan-green bg-cuan-yellow/20' : 'border-gray-200 hover:bg-gray-50' }}">
+                                        @if($outlet->logo)
+                                            <img src="{{ Storage::url($outlet->logo) }}" alt="{{ $outlet->name }}"
+                                                class="h-8 w-8 object-contain rounded">
+                                        @else
+                                            <div class="h-8 w-8 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
+                                                {{ substr($outlet->name, 0, 1) }}
+                                            </div>
+                                        @endif
+                                        <div class="flex-1 min-w-0 text-left">
+                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $outlet->name }}</p>
+                                            <p class="text-xs text-gray-500 truncate">{{ $outlet->business_category }}</p>
+                                        </div>
+                                        @if(auth()->user()->outlet_id == $outlet->id)
+                                            <i class="fa-solid fa-check text-cuan-green"></i>
+                                        @endif
+                                    </button>
+                                </form>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            @endif
+
+            <!-- Actions -->
+            <div class="pt-2 border-t border-gray-100 space-y-2">
+                <a href="{{ route('profile.edit') }}"
+                    class="nav-link flex items-center w-full px-3 py-2 rounded-lg hover:bg-cuan-yellow/20 text-gray-900">
+                    <i class="fa-solid fa-user mr-2"></i>
+                    Profile
+                </a>
+
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit"
+                        class="logout-btn flex items-center w-full px-3 py-2 rounded-lg hover:bg-red-50 text-red-600">
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
 
         <!-- Breadcrumbs -->
         @if(View::hasSection('breadcrumb'))

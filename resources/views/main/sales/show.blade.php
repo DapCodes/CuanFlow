@@ -27,7 +27,7 @@
             <div>
                 <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
                     <span
-                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 text-cuan-green border border-green-100">
+                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-500 border border-red-100">
                         <i class="fas fa-receipt text-sm"></i>
                     </span>
                     <span>Detail Penjualan</span>

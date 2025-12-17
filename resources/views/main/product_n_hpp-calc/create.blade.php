@@ -225,7 +225,6 @@
                 <div class="step-content px-4 md:px-6 py-6" id="step1">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-info-circle text-cuan-green"></i>
                             <span>Info Produk</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">
@@ -237,7 +236,6 @@
                         {{-- Kode Produk --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-barcode text-gray-400 mr-1"></i>
                                 Kode Produk <span class="text-red-500">*</span>
                             </label>
                             <div class="flex flex-col sm:flex-row gap-2">
@@ -258,7 +256,6 @@
                         {{-- Nama Produk --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-tag text-gray-400 mr-1"></i>
                                 Nama Produk <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="name" value="{{ old('name') }}"
@@ -269,7 +266,6 @@
                         {{-- Barcode --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-qrcode text-gray-400 mr-1"></i>
                                 Barcode
                             </label>
                             <div class="flex flex-col sm:flex-row gap-2">
@@ -290,7 +286,6 @@
                         {{-- Kategori --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-folder text-gray-400 mr-1"></i>
                                 Kategori
                             </label>
                             <select name="category_id" class="select2-category w-full">
@@ -309,7 +304,6 @@
                         {{-- Satuan --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-ruler text-gray-400 mr-1"></i>
                                 Satuan <span class="text-red-500">*</span>
                             </label>
                             <select name="unit_id" class="select2-unit w-full" required>
@@ -328,7 +322,6 @@
                         {{-- Foto Produk --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-image text-gray-400 mr-1"></i>
                                 Foto Produk
                             </label>
                             <input type="file" name="image" id="imageInput" accept="image/*"
@@ -351,7 +344,6 @@
                         {{-- Deskripsi --}}
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-align-left text-gray-400 mr-1"></i>
                                 Deskripsi
                             </label>
                             <textarea name="description" rows="3"
@@ -365,7 +357,6 @@
                 <div class="step-content px-4 md:px-6 py-6 hidden" id="step2">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-book-open text-cuan-green"></i>
                             <span>Resep Produk</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">
@@ -376,7 +367,6 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-signature text-gray-400 mr-1"></i>
                                 Nama Resep <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="recipe_name" value="{{ old('recipe_name') }}"
@@ -386,7 +376,6 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-layer-group text-gray-400 mr-1"></i>
                                 Jumlah Jadi <span class="text-red-500">*</span>
                             </label>
                             <input type="number" step="0.01" name="output_quantity" value="{{ old('output_quantity', 1) }}"
@@ -399,7 +388,6 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-clock text-gray-400 mr-1"></i>
                                 Perkiraan Waktu (menit)
                             </label>
                             <input type="number" name="estimated_time_minutes" value="{{ old('estimated_time_minutes') }}"
@@ -412,7 +400,6 @@
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-list-ol text-gray-400 mr-1"></i>
                                 Cara Membuat (Langkah-langkah)
                             </label>
                             <textarea name="instructions" rows="6"
@@ -426,7 +413,6 @@
                 <div class="step-content px-4 md:px-6 py-6 hidden" id="step3">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-shopping-basket text-cuan-green"></i>
                             <span>Bahan Baku</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">
@@ -507,7 +493,6 @@
                             </div>
                             <div class="mt-3">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    <i class="fas fa-sticky-note text-gray-400 mr-1"></i>
                                     Catatan
                                 </label>
                                 <input type="text" name="recipe_items[0][notes]"
@@ -526,7 +511,6 @@
                     <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-5">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <span class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-calculator text-cuan-green mr-2"></i>
                                 Total biaya bahan baku untuk 1 resep:
                             </span>
                             <span id="totalMaterialCost" class="text-xl font-bold text-cuan-green">Rp 0</span>
@@ -538,7 +522,6 @@
                 <div class="step-content px-4 md:px-6 py-6 hidden" id="step4">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-coins text-cuan-green"></i>
                             <span>Biaya Lain-lain</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">
@@ -558,7 +541,6 @@
 
                     <div class="max-w-md">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-money-bill-wave text-gray-400 mr-1"></i>
                             Total Biaya Lain per Resep (Rp)
                         </label>
                         <input type="number" step="0.01" name="additional_cost" id="additionalCostInput"
@@ -572,7 +554,6 @@
 
                     <div class="mt-8 bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
                         <h4 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <i class="fas fa-chart-line text-green-600"></i>
                             <span>Ringkasan HPP (Harga Pokok Produksi)</span>
                         </h4>
                         <div class="space-y-3">
@@ -604,7 +585,6 @@
                 <div class="step-content px-4 md:px-6 py-6 hidden" id="step5">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-tags text-cuan-green"></i>
                             <span>Harga Jual & Stok</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">
@@ -615,7 +595,6 @@
                     <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <span class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-dollar-sign text-green-600 mr-2"></i>
                                 HPP per unit (perkiraan modal per pcs):
                             </span>
                             <span id="finalHppPerUnit" class="text-xl font-bold text-green-600">Rp 0</span>
@@ -625,7 +604,6 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-hand-holding-usd text-gray-400 mr-1"></i>
                                 Harga Jual <span class="text-red-500">*</span>
                             </label>
                             <input type="number" step="0.01" name="selling_price" id="sellingPriceInput"
@@ -639,7 +617,6 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-tag text-gray-400 mr-1"></i>
                                 Harga Reseller
                             </label>
                             <input type="number" step="0.01" name="reseller_price"
@@ -651,7 +628,6 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-percent text-gray-400 mr-1"></i>
                                 Harga Promo
                             </label>
                             <input type="number" step="0.01" name="promo_price"
@@ -663,7 +639,6 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-boxes text-gray-400 mr-1"></i>
                                 Minimum Stok
                             </label>
                             <input type="number" step="0.01" name="min_stock"
@@ -677,7 +652,6 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-calendar-day text-gray-400 mr-1"></i>
                                 Masa Simpan (hari)
                             </label>
                             <input type="number" name="shelf_life_days"
@@ -692,7 +666,6 @@
 
                     <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
                         <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <i class="fas fa-chart-line text-cuan-green"></i>
                             <span>Perkiraan Laba per Unit</span>
                         </h4>
                         <div class="space-y-3">
@@ -710,7 +683,6 @@
                             </div>
                             <div class="bg-white rounded-lg p-4 flex justify-between items-center border-2 border-blue-200">
                                 <span class="text-lg font-bold text-gray-800">
-                                    <i class="fas fa-percentage text-cuan-green mr-2"></i>
                                     Margin (persentase laba):
                                 </span>
                                 <span id="marginPercent" class="text-2xl font-bold text-green-600">0%</span>
@@ -723,7 +695,6 @@
                 <div class="step-content px-4 md:px-6 py-6 hidden" id="step6">
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-chart-line text-cuan-green"></i>
                             <span>Target Penjualan</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">
@@ -737,7 +708,6 @@
                             <input type="checkbox" name="enable_sales_target" value="1" id="enableSalesTarget"
                                    class="w-5 h-5 text-cuan-green rounded focus:ring-2 focus:ring-green-500">
                             <span class="ml-3 text-sm font-semibold text-gray-800">
-                                <i class="fas fa-bullseye mr-2 text-cuan-green"></i>
                                 Aktifkan target penjualan untuk produk ini
                             </span>
                         </label>

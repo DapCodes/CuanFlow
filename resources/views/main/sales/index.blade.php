@@ -128,6 +128,24 @@
                     </div>
                 </div>
             </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm" hidden>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Diskon</p>
+                        <p id="summaryDiscount" class="mt-1 text-2xl font-semibold text-orange-600">
+                            Rp {{ number_format($dailyTotalDiscount ?? 0, 0, ',', '.') }}
+                        </p>
+                        <p id="summaryDate5" class="text-xs text-gray-400 mt-1">
+                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
+                        </p>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center border border-orange-200">
+                        <i class="fas fa-tags text-orange-600 text-lg"></i>
+                    </div>
+                </div>
+            </div>
         </section>
 
         {{-- KONTEN UTAMA: KALENDER + TABEL TRANSAKSI (layout & padding seragam dengan diskon) --}}
@@ -198,6 +216,9 @@
                                                 Metode
                                             </th>
                                             <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                Diskon
+                                            </th>
+                                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                                 Total
                                             </th>
                                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -238,6 +259,9 @@
                                                             <i class="fas fa-exchange-alt mr-1"></i> Transfer
                                                         </span>
                                                     @endif
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-right font-medium text-orange-600">
+                                                    Rp {{ number_format($sale->discount_amount, 0, ',', '.') }}
                                                 </td>
                                                 <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
                                                     Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
@@ -285,7 +309,8 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7"
+                                            <tr>
+                                                <td colspan="8"
                                                     class="px-4 py-12 text-center text-gray-500">
                                                     <div class="flex flex-col items-center justify-center">
                                                         <i class="fas fa-inbox text-4xl mb-2 block text-gray-300"></i>
@@ -662,7 +687,7 @@
   function setLoading(isLoading) {
     const tbody = document.getElementById('salesTableBody');
     if (isLoading) {
-      tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-10 text-center text-gray-500"><i class="fas fa-circle-notch fa-spin text-xl mr-2"></i> Memuat data...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-gray-500"><i class="fas fa-circle-notch fa-spin text-xl mr-2"></i> Memuat data...</td></tr>`;
     }
   }
 
@@ -671,13 +696,13 @@
     const dateText = dateLabel.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
     document.getElementById('selectedDateText').innerText = dateText;
     
-    ['summaryDate1','summaryDate2','summaryDate3','summaryDate4'].forEach(id => {
+    ['summaryDate1','summaryDate2','summaryDate3','summaryDate4', 'summaryDate5'].forEach(id => {
       document.getElementById(id).innerText = dateLabel.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
     });
 
     const tbody = document.getElementById('salesTableBody');
     if (!payload.sales.length) {
-      tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl mb-2 block"></i><p>Tidak ada transaksi pada tanggal ini</p></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl mb-2 block"></i><p>Tidak ada transaksi pada tanggal ini</p></td></tr>`;
     } else {
       tbody.innerHTML = payload.sales.map(s => `
         <tr class="hover:bg-gray-50">
@@ -685,6 +710,7 @@
           <td class="px-4 py-3 text-sm text-gray-600">${s.time}</td>
           <td class="px-4 py-3 text-sm text-gray-600">${s.cashier ?? '-'}</td>
           <td class="px-4 py-3">${methodBadge(s.payment_method)}</td>
+          <td class="px-4 py-3 text-sm text-right font-medium text-orange-600">${rupiah(s.total_discount)}</td>
           <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">${rupiah(s.grand_total)}</td>
           <td class="px-4 py-3 text-center">${statusBadge(s.status)}</td>
           <td class="px-4 py-3 text-center">
@@ -710,6 +736,7 @@
     document.getElementById('summaryTransactions').innerText = payload.summary.transactions;
     document.getElementById('summaryProfit').innerText = rupiah(payload.summary.profit);
     document.getElementById('summaryRefunds').innerText = rupiah(payload.summary.refunds);
+    document.getElementById('summaryDiscount').innerText = rupiah(payload.summary.discount);
   }
 
   async function loadDaily(dateStr) {
@@ -722,7 +749,7 @@
       refreshUI(json);
     } catch (e) {
       const tbody = document.getElementById('salesTableBody');
-      tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-10 text-center text-red-500">Gagal memuat data.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-red-500">Gagal memuat data.</td></tr>`;
       console.error(e);
     }
   }

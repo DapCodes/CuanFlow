@@ -81,10 +81,9 @@
 
                     {{-- DATA PRODUK --}}
                     <div class="lg:col-span-2">
-                        <h2 class="text-lg md:text-xl font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-info-circle text-cuan-green mr-2"></i>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                             Informasi Produk
-                        </h2>
+                        </h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -171,8 +170,8 @@
                 <div class="bg-gradient-to-r from-purple-50 to-blue-50 p-6 border-b border-gray-200 rounded-t-xl">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                         <div>
-                            <h3 class="text-lg md:text-xl font-bold text-gray-900 flex items-center">
-                                <i class="fas fa-bullseye text-purple-600 mr-2"></i>
+                            <h3 class="text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-bullseye text-purple-600"></i>
                                 Target Penjualan Aktif
                             </h3>
                             <p class="text-xs md:text-sm text-gray-600 mt-1">
@@ -235,7 +234,7 @@
                             ->get();
 
                         $actualQuantity = $actualSales->sum(fn($s) => $s->items->sum('quantity'));
-                        $actualRevenue = $actualSales->sum(fn($s) => $s->items->sum(fn($i) => $i->quantity * $i->price));
+                        $actualRevenue = $actualSales->sum(fn($s) => $s->items->sum(fn($i) => $i->quantity * $i->unit_price));
 
                         $quantityAchievement = $salesTarget->monthly_sales_target > 0
                             ? ($actualQuantity / $salesTarget->monthly_sales_target) * 100
@@ -251,8 +250,8 @@
                     @endphp
 
                     <div class="bg-white rounded-xl border-2 border-gray-200 p-6 mb-6">
-                        <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                        <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fas fa-chart-line text-blue-600"></i>
                             Pencapaian Bulan Ini ({{ now()->format('F Y') }})
                         </h4>
 
@@ -355,10 +354,9 @@
                     {{-- Pola Penjualan Harian --}}
                     @if($salesTarget->sales_pattern)
                         <div class="bg-white rounded-xl border-2 border-gray-200 p-6">
-                            <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-calendar-week text-indigo-600 mr-2"></i>
-                                Pola Penjualan Harian
-                            </h4>
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            Pola Penjualan Harian
+                        </h3>
                             <p class="text-xs text-gray-500 mb-4">
                                 Membantu melihat hari-hari apa saja yang biasanya paling ramai terjual, sehingga Anda bisa mengatur stok dan promo dengan lebih tepat.
                             </p>
@@ -374,8 +372,7 @@
             @if($product->defaultRecipe)
                 <x-card-container>
                     <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 border-b border-gray-200 rounded-t-xl">
-                        <h3 class="text-lg md:text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-book-open text-cuan-green mr-2"></i>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2">
                             Resep Produksi: {{ $product->defaultRecipe->name }}
                         </h3>
                         <p class="text-xs md:text-sm text-gray-600 mt-1">
@@ -405,8 +402,7 @@
 
                         {{-- BAHAN BAKU --}}
                         <div class="mb-6">
-                            <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
-                                <i class="fas fa-shopping-basket text-cuan-green mr-2"></i>
+                            <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                                 Bahan Baku per Resep
                             </h4>
                             <div class="space-y-3">
@@ -419,8 +415,8 @@
                                                 {{ $item->rawMaterial->unit->name ?? '' }}
                                             </p>
                                             @if($item->notes)
-                                                <p class="text-xs text-gray-500 mt-1">
-                                                    <i class="fas fa-sticky-note mr-1"></i>{{ $item->notes }}
+                                                <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                                    <i class="fas fa-sticky-note"></i>{{ $item->notes }}
                                                 </p>
                                             @endif
                                         </div>
@@ -438,8 +434,7 @@
                         {{-- INSTRUKSI --}}
                         @if($product->defaultRecipe->instructions)
                             <div>
-                                <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
-                                    <i class="fas fa-list-ol text-blue-500 mr-2"></i>
+                                <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                                     Instruksi Pembuatan
                                 </h4>
                                 <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
@@ -457,8 +452,7 @@
             @if($product->latestHppCalculation)
                 <x-card-container>
                     <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 border-b border-gray-200 rounded-t-xl">
-                        <h3 class="text-lg md:text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-calculator text-purple-600 mr-2"></i>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2">
                             Perhitungan HPP Terbaru
                         </h3>
                         <p class="text-xs md:text-sm text-gray-600 mt-1">
@@ -509,8 +503,8 @@
                                 </div>
                             </div>
 
-                            <div class="text-xs text-gray-500 mt-4">
-                                <i class="fas fa-clock mr-1"></i>
+                            <div class="text-sm text-gray-500 mt-4 flex items-center gap-1">
+                                <i class="fas fa-clock"></i>
                                 Dihitung pada: {{ $hpp->created_at->format('d M Y H:i') }}
                                 @if($hpp->calculatedBy)
                                     <br>Oleh: {{ $hpp->calculatedBy->name }}
