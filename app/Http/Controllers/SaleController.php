@@ -247,6 +247,12 @@ class SaleController extends Controller
         $dailyNetIncome = $totalRevenue - $dailyExpenses;
         $dailyTotalDiscount = $sales->sum('discount_amount');
 
+        // Get total refunds for the selected date
+        $totalRefunds = Sale::where('outlet_id', $outletId)
+            ->where('status', 'refunded')
+            ->whereBetween('created_at', [$startOfDay, $endOfDay])
+            ->sum('grand_total');
+
         return response()->json([
             'selectedDate' => $selectedDate,
             'sales' => $sales->map(fn ($s) => [
@@ -256,7 +262,6 @@ class SaleController extends Controller
                 'cashier' => $s->cashier?->name,
                 'payment_method' => $s->payment_method,
                 'grand_total' => (int) $s->grand_total,
-                'status' => $s->status,
                 'status' => $s->status,
                 'total_discount' => (int) $s->discount_amount,
             ]),
@@ -272,6 +277,7 @@ class SaleController extends Controller
                 'profit' => (int) $dailyProfit,
                 'expenses' => (int) $dailyExpenses,
                 'discount' => (int) $dailyTotalDiscount,
+                'refunds' => (int) $totalRefunds,
             ],
         ]);
     }

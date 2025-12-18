@@ -601,8 +601,8 @@
     </a>
 
     <!-- MONITORING & ANALISIS -->
-    <a href="#"
-       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+    <a href="{{ route('statistics.index') }}"
+       class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="5"
        data-title="Dashboard & Statistik"
        data-intro="<strong>Lihat ringkasan usaha Anda.</strong> Tampilkan grafik dan angka penting seperti penjualan dan keuntungan dalam tampilan yang mudah dipahami.">
@@ -613,6 +613,7 @@
             Dashboard & Statistik
         </span>
     </a>
+
 
     <a href="#"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"

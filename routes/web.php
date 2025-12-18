@@ -245,4 +245,17 @@ Route::middleware(['auth'])->prefix('finance')->name('finance.')->group(function
     Route::get('/revenue-chart', [FinanceController::class, 'getRevenueChart'])->name('revenue-chart');
     Route::get('/expense-chart', [FinanceController::class, 'getExpenseChart'])->name('expense-chart');
 });
+
+// Statistics / Dashboard Routes
+Route::middleware(['auth'])->prefix('statistics')->name('statistics.')->group(function () {
+    Route::get('/', [App\Http\Controllers\StatisticsController::class, 'index'])->name('index');
+    Route::get('/export', [App\Http\Controllers\StatisticsController::class, 'export'])->name('export');
+    Route::get('/sales-chart', [App\Http\Controllers\StatisticsController::class, 'getSalesChart'])->name('sales-chart');
+    Route::get('/payment-method-chart', [App\Http\Controllers\StatisticsController::class, 'getPaymentMethodChart'])->name('payment-method-chart');
+    Route::get('/top-products-chart', [App\Http\Controllers\StatisticsController::class, 'getTopProductsChart'])->name('top-products-chart');
+    Route::get('/category-chart', [App\Http\Controllers\StatisticsController::class, 'getCategoryChart'])->name('category-chart');
+    Route::get('/hourly-chart', [App\Http\Controllers\StatisticsController::class, 'getHourlyChart'])->name('hourly-chart');
+    Route::get('/expense-chart', [App\Http\Controllers\StatisticsController::class, 'getExpenseChart'])->name('expense-chart');
+});
+
 require __DIR__.'/auth.php';
