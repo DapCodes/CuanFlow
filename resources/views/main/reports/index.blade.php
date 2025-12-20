@@ -389,7 +389,7 @@
                 </button>
             </div>
 
-            <form action="{{ route('reports.export-excel') }}" method="GET" id="excelExportForm">
+            <form action="{{ route('reports.export-excel') }}" method="GET" id="excelExportForm" target="_blank">
                 <input type="hidden" name="period" value="{{ $period }}">
                 <input type="hidden" name="start_date" value="{{ request('start_date') }}">
                 <input type="hidden" name="end_date" value="{{ request('end_date') }}">
@@ -483,7 +483,7 @@
                 </button>
             </div>
 
-            <form action="{{ route('reports.export-pdf') }}" method="GET" id="pdfExportForm">
+            <form action="{{ route('reports.export-pdf') }}" method="GET" id="pdfExportForm" target="_blank">
                 <input type="hidden" name="period" value="{{ $period }}">
                 <input type="hidden" name="start_date" value="{{ request('start_date') }}">
                 <input type="hidden" name="end_date" value="{{ request('end_date') }}">
