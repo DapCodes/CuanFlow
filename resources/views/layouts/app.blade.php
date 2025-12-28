@@ -40,6 +40,7 @@
     </script>
     
     <style>
+        [x-cloak] { display: none !important; }
         body {
             font-family: 'Satoshi', sans-serif;
         }
@@ -520,6 +521,11 @@
             
             // Use event delegation for better performance
             document.addEventListener('click', function(e) {
+                // Skip if clicked element or parent has no-loader class
+                if (e.target.closest('.no-loader')) {
+                    return;
+                }
+                
                 const link = e.target.closest('.nav-link');
                 if (link) {
                     const url = link.getAttribute('href');

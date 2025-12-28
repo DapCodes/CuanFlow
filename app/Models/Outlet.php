@@ -88,6 +88,11 @@ class Outlet extends Model
         return $this->hasMany(StockNotification::class);
     }
 
+    public function debts(): HasMany
+    {
+        return $this->hasMany(CustomerDebt::class);
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

@@ -11,7 +11,7 @@ class CustomerDebt extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['customer_id', 'sale_id', 'amount', 'paid_amount', 'remaining_amount', 'due_date', 'status', 'notes'];
+    protected $fillable = ['customer_id', 'sale_id', 'outlet_id', 'amount', 'paid_amount', 'remaining_amount', 'due_date', 'status', 'notes'];
 
     protected $casts = ['amount' => 'decimal:2', 'paid_amount' => 'decimal:2', 'remaining_amount' => 'decimal:2', 'due_date' => 'date'];
 
@@ -51,6 +51,16 @@ class CustomerDebt extends Model
     public function scopeUnpaid($q)
     {
         return $q->whereIn('status', ['unpaid', 'partial']);
+    }
+
+    public function scopePaid($q)
+    {
+        return $q->where('status', 'paid');
+    }
+
+    public function scopeOutlet($q)
+    {
+        return $q->where('outlet_id', auth()->user()->outlet_id);
     }
 
     public function scopeOverdue($q)

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->foreignId('sale_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('outlet_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 15, 2);
             $table->decimal('paid_amount', 15, 2)->default(0);
             $table->decimal('remaining_amount', 15, 2);

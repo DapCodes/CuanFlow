@@ -14,7 +14,6 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             ExpenseCategorySeeder::class,
             SettingSeeder::class,
-            KeyboardShortcutSeeder::class,
             SupplierSeeder::class,
             OutletSeeder::class,
             RawMaterialSeeder::class,

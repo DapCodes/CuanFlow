@@ -249,6 +249,7 @@ Route::middleware(['auth'])->prefix('finance')->name('finance.')->group(function
 // Report Routes
 Route::middleware(['auth'])->prefix('reports')->name('reports.')->group(function () {
     Route::get('/', [App\Http\Controllers\ReportController::class, 'index'])->name('index');
+    Route::get('/ajax-data', [App\Http\Controllers\ReportController::class, 'ajaxData'])->name('ajax-data');
     Route::get('/export-pdf', [App\Http\Controllers\ReportController::class, 'exportPdf'])->name('export-pdf');
     Route::get('/export-excel', [App\Http\Controllers\ReportController::class, 'exportExcel'])->name('export-excel');
 });
