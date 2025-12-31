@@ -4,67 +4,109 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CustomerDebt extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['customer_id', 'sale_id', 'outlet_id', 'amount', 'paid_amount', 'remaining_amount', 'due_date', 'status', 'notes'];
+    protected $fillable = [
+        'customer_id',
+        'sale_id',
+        'outlet_id',
+        'amount',
+        'paid_amount',
+        'remaining_amount',
+        'due_date',
+        'status',
+        'notes'
+    ];
 
-    protected $casts = ['amount' => 'decimal:2', 'paid_amount' => 'decimal:2', 'remaining_amount' => 'decimal:2', 'due_date' => 'date'];
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'remaining_amount' => 'decimal:2',
+        'due_date' => 'date'
+    ];
 
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(fn ($m) => $m->remaining_amount = $m->amount - $m->paid_amount);
-    }
-
-    public function customer(): BelongsTo
+    public function customer()
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function sale(): BelongsTo
+    public function sale()
     {
         return $this->belongsTo(Sale::class);
     }
 
-    public function payments(): HasMany
+    public function outlet()
+    {
+        return $this->belongsTo(Outlet::class);
+    }
+
+    public function payments()
     {
         return $this->hasMany(DebtPayment::class);
     }
 
-    public function addPayment(float $amt, string $method, ?string $ref = null, ?int $by = null): DebtPayment
+    /**
+     * Record a payment for this debt
+     */
+    public function recordPayment($amount, $paymentMethod = 'cash', $referenceNumber = null, $notes = null)
     {
-        $pay = $this->payments()->create(['amount' => $amt, 'payment_method' => $method, 'reference_number' => $ref, 'received_by' => $by]);
-        $this->paid_amount += $amt;
-        $this->remaining_amount = $this->amount - $this->paid_amount;
-        $this->status = $this->remaining_amount <= 0 ? 'paid' : 'partial';
-        $this->save();
-        $this->customer->updateTotalDebt();
+        if ($amount <= 0 || $amount > $this->remaining_amount) {
+            throw new \Exception('Invalid payment amount');
+        }
 
-        return $pay;
+        DB::transaction(function () use ($amount, $paymentMethod, $referenceNumber, $notes) {
+            // Create payment record
+            DebtPayment::create([
+                'customer_debt_id' => $this->id,
+                'amount' => $amount,
+                'payment_method' => $paymentMethod,
+                'reference_number' => $referenceNumber,
+                'notes' => $notes,
+                'received_by' => auth()->id()
+            ]);
+
+            // Update debt amounts
+            $this->paid_amount += $amount;
+            $this->remaining_amount -= $amount;
+
+            // Update status
+            if ($this->remaining_amount <= 0) {
+                $this->status = 'paid';
+            } elseif ($this->paid_amount > 0) {
+                $this->status = 'partial';
+            }
+
+            $this->save();
+
+            // Update customer total debt
+            $this->customer->decrement('total_debt', $amount);
+        });
     }
 
-    public function scopeUnpaid($q)
+    /**
+     * Check if debt is overdue
+     */
+    public function isOverdue()
     {
-        return $q->whereIn('status', ['unpaid', 'partial']);
+        if (!$this->due_date || $this->status === 'paid') {
+            return false;
+        }
+
+        return $this->due_date->isPast();
     }
 
-    public function scopePaid($q)
+    /**
+     * Get days overdue
+     */
+    public function getDaysOverdueAttribute()
     {
-        return $q->where('status', 'paid');
-    }
+        if (!$this->isOverdue()) {
+            return 0;
+        }
 
-    public function scopeOutlet($q)
-    {
-        return $q->where('outlet_id', auth()->user()->outlet_id);
-    }
-
-    public function scopeOverdue($q)
-    {
-        return $q->unpaid()->whereNotNull('due_date')->where('due_date', '<', today());
+        return now()->diffInDays($this->due_date);
     }
 }

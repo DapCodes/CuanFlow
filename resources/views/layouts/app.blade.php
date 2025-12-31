@@ -162,9 +162,7 @@
 
     <div class="min-h-screen flex flex-col">
         <!-- Navbar -->
-
-<!-- Navbar -->
-<nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false }">
+<nav id="main-navbar" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 items-center">
             

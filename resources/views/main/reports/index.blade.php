@@ -872,7 +872,7 @@ function reportApp() {
             {key: 'summary', label: 'Ringkasan'},
             {key: 'sales', label: 'Penjualan'},
             {key: 'finance', label: 'Keuangan'},
-            {key: 'customer', label: 'Pelanggan'},
+            {key: 'customer', label: 'Pelanggan & Piutang'},
             {key: 'stock', label: 'Stok & Bahan'},
             {key: 'cashier', label: 'Performa Kasir'},
             {key: 'hourly', label: 'Analisis Waktu'}

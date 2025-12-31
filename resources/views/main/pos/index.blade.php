@@ -662,6 +662,26 @@
         }
     }
 
+.customer-search-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.customer-search-item:last-child {
+    border-bottom: none;
+}
+
+.customer-search-item:hover {
+    background-color: #fff7ed;
+}
+
+.customer-search-item.selected {
+    background-color: #ffedd5;
+    border-left: 3px solid #f97316;
+}
+
 /* Modal Table Styles */
 #salesTableBody tr {
     border-bottom: 1px solid #e5e7eb;
@@ -1014,7 +1034,7 @@
 
                         <button onclick="openProductSettingsModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-orange-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-cog w-4 text-orange-600"></i>
-                            <span>Atur Produk</span>
+                            <span>Pengaturan</span>
                         </button>
 
                          <!-- Penjualan Hari Ini -->
@@ -1208,6 +1228,18 @@
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="hideOutOfStock" class="sr-only peer" onchange="applyProductSettings()">
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                </label>
+            </div>
+
+            <!-- Toggle: Sembunyikan Navbar -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div class="flex-1">
+                    <div class="font-semibold text-gray-900 mb-1">Mode Layar Penuh</div>
+                    <div class="text-sm text-gray-600">Sembunyikan navbar untuk area kerja yang lebih luas</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="hideNavbarToggle" class="sr-only peer" onchange="toggleNavbarVisibility(this.checked)">
                     <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
                 </label>
             </div>
@@ -1446,6 +1478,178 @@
     </div>
 </div>
 
+<div id="debtPaymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-hand-holding-usd text-orange-600"></i>
+                    Pembayaran Dengan Utang
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Masukkan informasi pelanggan</p>
+            </div>
+            <button onclick="closeDebtPaymentModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            <!-- Payment Info Summary -->
+            <div class="grid grid-cols-2 gap-4 mb-6 bg-orange-50 p-4 rounded-xl border border-orange-200">
+                <div>
+                    <div class="text-xs text-gray-600 mb-1">Total Belanja</div>
+                    <div class="text-lg font-bold text-gray-900" id="debtTotalAmount">Rp 0</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-600 mb-1">Dibayar</div>
+                    <div class="text-lg font-bold text-green-600" id="debtPaidAmount">Rp 0</div>
+                </div>
+                <div class="col-span-2">
+                    <div class="text-xs text-gray-600 mb-1">Sisa (Utang)</div>
+                    <div class="text-2xl font-bold text-red-600" id="debtRemainingAmount">Rp 0</div>
+                </div>
+            </div>
+
+            <form id="debtPaymentForm" class="space-y-4">
+                <input type="hidden" id="debtCustomerId" name="customer_id">
+                <input type="hidden" id="debtActualPaidAmount" name="paid_amount">
+
+                <!-- Customer Search/Name -->
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Nama Pelanggan <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="debtCustomerName" 
+                        name="customer_name"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                        placeholder="Cari atau ketik nama pelanggan..."
+                        required
+                        autocomplete="off">
+                    
+                    <!-- Customer Search Results -->
+                    <div id="customerSearchResults" class="hidden absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
+                        <!-- Results akan diisi via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Customer Phone -->
+                <div class="relative">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Nomor Telepon <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="debtCustomerPhone" 
+                        name="customer_phone"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                        placeholder="Contoh: 08123456789"
+                        required
+                        autocomplete="off">
+                </div>
+
+                <!-- Customer Email -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Email (Opsional)
+                    </label>
+                    <input 
+                        type="email" 
+                        id="debtCustomerEmail" 
+                        name="customer_email"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                        placeholder="email@example.com">
+                </div>
+
+                <!-- Customer Address -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Alamat (Opsional)
+                    </label>
+                    <textarea 
+                        id="debtCustomerAddress" 
+                        name="customer_address"
+                        rows="2"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none" 
+                        placeholder="Alamat lengkap pelanggan..."></textarea>
+                </div>
+
+                <!-- Customer Type -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Tipe Pelanggan <span class="text-red-500">*</span>
+                    </label>
+                    <select 
+                        id="debtCustomerType" 
+                        name="customer_type"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required>
+                        <option value="regular">Regular</option>
+                        <option value="reseller">Reseller</option>
+                        <option value="vip">VIP</option>
+                    </select>
+                </div>
+
+                <!-- Credit Limit -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Batas Kredit (Opsional)
+                    </label>
+                    <input 
+                        type="number" 
+                        id="debtCreditLimit" 
+                        name="credit_limit"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                        placeholder="0"
+                        min="0"
+                        step="1000">
+                    <p class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ada batas kredit</p>
+                </div>
+
+                <!-- Due Date -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Jatuh Tempo (Opsional)
+                    </label>
+                    <input 
+                        type="date" 
+                        id="debtDueDate" 
+                        name="due_date"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                </div>
+
+                <!-- Notes -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Catatan (Opsional)
+                    </label>
+                    <textarea 
+                        id="debtNotes" 
+                        name="notes"
+                        rows="2"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none" 
+                        placeholder="Catatan tambahan..."></textarea>
+                </div>
+            </form>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 flex gap-3 flex-shrink-0 bg-gray-50">
+            <button 
+                onclick="closeDebtPaymentModal()" 
+                class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                <i class="fas fa-times mr-2"></i>Batal
+            </button>
+            <button 
+                onclick="submitDebtPayment()" 
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
+                <i class="fas fa-check mr-2"></i>Proses Utang
+            </button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -1463,6 +1667,14 @@ let calcPreviousValue = '';
 let calcOperation = null;
 let calcHistory = [];
 let currentSaleId = null;
+
+let debounceTimer = null;
+let selectedCustomerData = null;
+let debtPaymentData = {
+    grandTotal: 0,
+    paidAmount: 0,
+    remainingAmount: 0
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     loadCalcHistory();
@@ -2779,37 +2991,87 @@ function calculateChange() {
 // ==================== PAYMENT FUNCTIONS ====================
 function processCashPayment() {
     const paid = parseFloat(document.getElementById('cashPaidAmount').value) || 0;
-    if (paid < (cartSummary.grand_total || 0)) {
-        showToast('error','Jumlah kurang');
+    const grandTotal = cartSummary.grand_total || 0;
+    
+    if (paid < grandTotal) {
+        const shortfall = grandTotal - paid;
+        
+        Swal.fire({
+            title: 'Jumlah Uang Kurang',
+            html: `
+                <div class="text-left space-y-3">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-600">Total:</span>
+                            <span class="font-bold text-gray-900">Rp ${formatNumber(grandTotal)}</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-600">Dibayar:</span>
+                            <span class="font-bold text-green-600">Rp ${formatNumber(paid)}</span>
+                        </div>
+                        <div class="flex justify-between pt-2 border-t border-gray-300">
+                            <span class="text-gray-600">Kekurangan:</span>
+                            <span class="font-bold text-red-600">Rp ${formatNumber(shortfall)}</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        Apakah pelanggan ini hanya membayar sebagian dan sisanya akan dicatat sebagai utang?
+                    </p>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f97316',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fas fa-check mr-2"></i>Ya, Catat Utang',
+            cancelButtonText: '<i class="fas fa-times mr-2"></i>Tidak, Batalkan',
+            customClass: {
+                popup: 'swal-wide',
+                confirmButton: 'px-6 py-3',
+                cancelButton: 'px-6 py-3'
+            },
+            backdrop: 'rgba(0, 0, 0, 0.5)'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                openDebtPaymentModal(grandTotal, paid, shortfall);
+            }
+        });
+        
         return;
     }
+    
+    // Process normal cash payment if amount is sufficient
     fetch('{{ route("payment.cash") }}', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
         body: JSON.stringify({ paid_amount: paid })
     })
-    .then(r=>r.json())
-    .then(async data=>{
+    .then(r => r.json())
+    .then(async data => {
         if (data.success) {
-            if (data.sale && data.sale.items) { 
-                updateProductStockFromSaleItems(data.sale.items); 
+            if (data.sale && data.sale.items) {
+                updateProductStockFromSaleItems(data.sale.items);
             }
-            // PERBAIKAN: Update stock dengan free items untuk BOGO
             if (activeDiscountPlan && activeDiscountPlan.discount_type === 'buy_x_get_y') {
                 updateProductStockWithFreeItems(activeDiscountPlan);
             }
             
-            await fetch('{{ route("pos.cart.clear") }}', { 
-                method:'POST', 
-                headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
+            await fetch('{{ route("pos.cart.clear") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
             });
             
-            // PERBAIKAN: Reset semua state
-            cart = {}; 
-            cartSummary = { subtotal:0,total_discount:0,tax:0,grand_total:0,total_items:0 };
-            activeDiscountPlan = null; // ⬅️ TAMBAHKAN INI
+            cart = {};
+            cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0, total_items: 0 };
+            activeDiscountPlan = null;
             
-            renderCart(); 
+            renderCart();
             setUIState('browse');
             openPaymentSuccessModal({
                 sale_id: data.sale.id,
@@ -2818,11 +3080,317 @@ function processCashPayment() {
                 grand_total: data.sale.grand_total,
                 change_amount: data.change
             });
-        } else { 
-            showToast('error', data.message); 
+        } else {
+            showToast('error', data.message);
         }
     })
-    .catch(()=>showToast('error','Gagal proses pembayaran'));
+    .catch(() => showToast('error', 'Gagal proses pembayaran'));
+}
+
+function openDebtPaymentModal(grandTotal, paidAmount, remainingAmount) {
+    debtPaymentData = {
+        grandTotal: grandTotal,
+        paidAmount: paidAmount,
+        remainingAmount: remainingAmount
+    };
+    
+    document.getElementById('debtTotalAmount').textContent = 'Rp ' + formatNumber(grandTotal);
+    document.getElementById('debtPaidAmount').textContent = 'Rp ' + formatNumber(paidAmount);
+    document.getElementById('debtRemainingAmount').textContent = 'Rp ' + formatNumber(remainingAmount);
+    document.getElementById('debtActualPaidAmount').value = paidAmount;
+    
+    // Reset form
+    resetDebtPaymentForm();
+    
+    document.getElementById('debtPaymentModal').classList.remove('hidden');
+    
+    // Initialize customer search
+    initCustomerSearch();
+    
+    setTimeout(() => {
+        document.getElementById('debtCustomerName').focus();
+    }, 200);
+}
+
+/**
+ * Close debt payment modal
+ */
+function closeDebtPaymentModal() {
+    document.getElementById('debtPaymentModal').classList.add('hidden');
+    resetDebtPaymentForm();
+}
+
+/**
+ * Reset debt payment form
+ */
+function resetDebtPaymentForm() {
+    document.getElementById('debtPaymentForm').reset();
+    document.getElementById('debtCustomerId').value = '';
+    selectedCustomerData = null;
+    hideCustomerSearchResults();
+}
+
+/**
+ * Initialize customer search with debounce
+ */
+function initCustomerSearch() {
+    const nameInput = document.getElementById('debtCustomerName');
+    const phoneInput = document.getElementById('debtCustomerPhone');
+    
+    nameInput.addEventListener('input', function() {
+        const searchTerm = this.value.trim();
+        performCustomerSearch(searchTerm);
+    });
+    
+    phoneInput.addEventListener('input', function() {
+        const searchTerm = this.value.trim();
+        performCustomerSearch(searchTerm);
+    });
+    
+    // Hide results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#debtCustomerName') && 
+            !e.target.closest('#debtCustomerPhone') && 
+            !e.target.closest('#customerSearchResults')) {
+            hideCustomerSearchResults();
+        }
+    });
+}
+
+/**
+ * Perform customer search with debounce (300ms)
+ */
+function performCustomerSearch(searchTerm) {
+    clearTimeout(debounceTimer);
+    
+    if (searchTerm.length < 2) {
+        hideCustomerSearchResults();
+        return;
+    }
+    
+    debounceTimer = setTimeout(() => {
+        fetch(`/debt/search-customer?search=${encodeURIComponent(searchTerm)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    displayCustomerSearchResults(data.customers);
+                }
+            })
+            .catch(err => {
+                console.error('Customer search error:', err);
+            });
+    }, 300);
+}
+
+/**
+ * Display customer search results
+ */
+function displayCustomerSearchResults(customers) {
+    const resultsContainer = document.getElementById('customerSearchResults');
+    
+    if (customers.length === 0) {
+        hideCustomerSearchResults();
+        return;
+    }
+    
+    let html = '';
+    customers.forEach(customer => {
+        html += `
+            <div class="customer-search-item" onclick="selectCustomer(${JSON.stringify(customer).replace(/"/g, '&quot;')})">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900">${customer.name}</div>
+                        <div class="text-sm text-gray-600">${customer.phone}</div>
+                        ${customer.email ? `<div class="text-xs text-gray-500">${customer.email}</div>` : ''}
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs px-2 py-1 rounded-full ${getCustomerTypeBadgeClass(customer.type)}">
+                            ${getCustomerTypeLabel(customer.type)}
+                        </div>
+                        ${customer.total_debt > 0 ? `
+                            <div class="text-xs text-red-600 mt-1">
+                                Utang: Rp ${formatNumber(customer.total_debt)}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    resultsContainer.innerHTML = html;
+    resultsContainer.classList.remove('hidden');
+}
+
+/**
+ * Hide customer search results
+ */
+function hideCustomerSearchResults() {
+    const resultsContainer = document.getElementById('customerSearchResults');
+    resultsContainer.classList.add('hidden');
+    resultsContainer.innerHTML = '';
+}
+
+/**
+ * Select customer from search results
+ */
+function selectCustomer(customer) {
+    selectedCustomerData = customer;
+    
+    document.getElementById('debtCustomerId').value = customer.id;
+    document.getElementById('debtCustomerName').value = customer.name;
+    document.getElementById('debtCustomerPhone').value = customer.phone;
+    document.getElementById('debtCustomerEmail').value = customer.email || '';
+    document.getElementById('debtCustomerAddress').value = customer.address || '';
+    document.getElementById('debtCustomerType').value = customer.type;
+    document.getElementById('debtCreditLimit').value = customer.credit_limit || '';
+    
+    hideCustomerSearchResults();
+    
+    showToast('success', `Pelanggan ${customer.name} dipilih`);
+}
+
+/**
+ * Submit debt payment
+ */
+function submitDebtPayment() {
+    const form = document.getElementById('debtPaymentForm');
+    const formData = new FormData(form);
+    
+    // Validate required fields
+    if (!formData.get('customer_name') || !formData.get('customer_phone')) {
+        showToast('error', 'Nama dan nomor telepon wajib diisi');
+        return;
+    }
+    
+    // Convert FormData to JSON
+    const data = {};
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
+    
+    // Show loading
+    Swal.fire({
+        title: 'Memproses...',
+        html: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetch('{{ route("debt.process") }}', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(async r => {
+        if (!r.ok) {
+            const text = await r.text();
+            console.error('Debt payment bad response:', r.status, text);
+            throw new Error('Server responded with status ' + r.status);
+        }
+        return r.json();
+    })
+    .then(async responseData => {
+        Swal.close();
+        
+        if (responseData.success) {
+            // Update stock on frontend
+            if (responseData.sale && responseData.sale.items) {
+                updateProductStockFromSaleItems(responseData.sale.items);
+            }
+            if (activeDiscountPlan && activeDiscountPlan.discount_type === 'buy_x_get_y') {
+                updateProductStockWithFreeItems(activeDiscountPlan);
+            }
+            
+            // Clear cart
+            await fetch('{{ route("pos.cart.clear") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+            
+            cart = {};
+            cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0, total_items: 0 };
+            activeDiscountPlan = null;
+            
+            renderCart();
+            closeDebtPaymentModal();
+            setUIState('browse');
+            
+            // Show success modal
+            Swal.fire({
+                icon: 'success',
+                title: 'Transaksi Berhasil!',
+                html: `
+                    <div class="text-left space-y-3 mt-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Invoice:</span>
+                                <span class="font-bold text-gray-900">${responseData.sale.invoice_number}</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Pelanggan:</span>
+                                <span class="font-bold text-gray-900">${responseData.sale.customer_name}</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Total:</span>
+                                <span class="font-bold text-gray-900">Rp ${formatNumber(responseData.sale.grand_total)}</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">Dibayar:</span>
+                                <span class="font-bold text-green-600">Rp ${formatNumber(responseData.sale.paid_amount)}</span>
+                            </div>
+                            <div class="flex justify-between pt-2 border-t border-gray-300">
+                                <span class="text-gray-600">Sisa Utang:</span>
+                                <span class="font-bold text-red-600">Rp ${formatNumber(responseData.sale.debt_amount)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                confirmButtonColor: '#f97316',
+                confirmButtonText: '<i class="fas fa-check mr-2"></i>OK'
+            });
+        } else {
+            showToast('error', responseData.message);
+        }
+    })
+    .catch(err => {
+        Swal.close();
+        console.error('Debt payment error:', err);
+        showToast('error', 'Terjadi kesalahan saat memproses utang');
+    });
+}
+
+/**
+ * Helper: Get customer type badge class
+ */
+function getCustomerTypeBadgeClass(type) {
+    const classes = {
+        'regular': 'bg-gray-100 text-gray-700',
+        'reseller': 'bg-blue-100 text-blue-700',
+        'vip': 'bg-purple-100 text-purple-700'
+    };
+    return classes[type] || classes['regular'];
+}
+
+/**
+ * Helper: Get customer type label
+ */
+function getCustomerTypeLabel(type) {
+    const labels = {
+        'regular': 'Regular',
+        'reseller': 'Reseller',
+        'vip': 'VIP'
+    };
+    return labels[type] || 'Regular';
 }
 
 function processTransferPayment() {
@@ -3092,7 +3660,8 @@ document.addEventListener('keydown', function(e) {
 let productSettings = {
     hideOutOfStock: false,
     sortBy: 'default',
-    hiddenProducts: []
+    hiddenProducts: [],
+    hideNavbar: false // Default false
 };
 
 function openProductSettingsModal() {
@@ -3112,6 +3681,11 @@ function loadProductSettings() {
             document.getElementById('hideOutOfStock').checked = productSettings.hideOutOfStock;
             document.getElementById('sortProducts').value = productSettings.sortBy;
             
+            // Load Navbar Setting
+            const hideNavbar = productSettings.hideNavbar || false;
+            document.getElementById('hideNavbarToggle').checked = hideNavbar;
+            toggleNavbarVisibility(hideNavbar, false); // false = jangan show toast saat load awal
+
             if (productSettings.hiddenProducts && productSettings.hiddenProducts.length > 0) {
                 document.getElementById('enableProductHiding').checked = true;
                 toggleProductListVisibility();
@@ -3130,6 +3704,26 @@ function loadProductSettings() {
 
 function saveProductSettings() {
     localStorage.setItem('pos_product_settings', JSON.stringify(productSettings));
+}
+
+function toggleNavbarVisibility(hide, showNotification = true) {
+    const navbar = document.getElementById('main-navbar');
+    if (!navbar) return;
+
+    if (hide) {
+        navbar.style.display = 'none';
+        document.body.classList.add('pos-fullscreen');
+    } else {
+        navbar.style.display = '';
+        document.body.classList.remove('pos-fullscreen');
+    }
+
+    productSettings.hideNavbar = hide;
+    saveProductSettings();
+
+    if (showNotification) {
+        showToast('success', hide ? 'Navbar disembunyikan' : 'Navbar ditampilkan');
+    }
 }
 
 function toggleProductListVisibility() {

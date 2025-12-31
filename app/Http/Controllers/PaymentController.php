@@ -703,4 +703,36 @@ class PaymentController extends Controller
 
         return redirect()->route('pos.index')->with('success', 'Pembayaran berhasil diproses. Invoice: '.$sale->invoice_number);
     }
+
+
+    /**
+     * Check if payment amount is sufficient
+     */
+    public function checkPaymentAmount(Request $request)
+    {
+        $request->validate([
+            'paid_amount' => 'required|numeric|min:0',
+        ]);
+
+        $cart = Session::get('pos_cart', []);
+        $discountPlan = Session::get('pos_discount_plan');
+
+        if (empty($cart)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Keranjang kosong',
+            ], 400);
+        }
+
+        $summary = $this->calculateCartSummaryWithDiscount($cart, $discountPlan);
+        $shortfall = $summary['grand_total'] - $request->paid_amount;
+
+        return response()->json([
+            'success' => true,
+            'is_sufficient' => $shortfall <= 0,
+            'grand_total' => $summary['grand_total'],
+            'paid_amount' => $request->paid_amount,
+            'shortfall' => max(0, $shortfall),
+        ]);
+    }
 }

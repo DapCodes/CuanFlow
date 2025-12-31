@@ -130,6 +130,16 @@ Route::middleware('auth')->group(function () {
     Route::get('sales/daily', [SaleController::class, 'daily'])->name('sales.daily');
     Route::post('sales/{sale}/refund', [SaleController::class, 'refund'])->name('sales.refund');
     Route::get('sales/{sale}', [SaleController::class, 'show'])->name('sales.show');
+
+    Route::prefix('debt')->name('debt.')->group(function () {
+        Route::get('/search-customer', [App\Http\Controllers\DebtPaymentController::class, 'searchCustomer'])
+            ->name('search-customer');
+        Route::post('/process', [App\Http\Controllers\DebtPaymentController::class, 'processDebtPayment'])
+            ->name('process');
+    });
+    
+    Route::post('/payment/check-amount', [PaymentController::class, 'checkPaymentAmount'])
+        ->name('payment.check-amount');
 });
 
 Route::middleware(['web', 'auth'])->group(function () {
