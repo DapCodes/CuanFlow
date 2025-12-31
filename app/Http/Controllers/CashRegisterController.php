@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CashRegister;
 use App\Models\DailySummary;
 use App\Models\Sale;
+use App\Services\AiInsightService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -94,6 +95,18 @@ class CashRegisterController extends Controller
                 DailySummary::generateForDate($outletId, $summaryDate);
             }
 
+            // FITUR BARU: Generate AI Insight otomatis
+            $insight = null;
+            try {
+                $aiService = new AiInsightService();
+                $insight = $aiService->generateDailyInsight($register);
+            } catch (\Exception $e) {
+                Log::warning('Failed to generate AI insight', [
+                    'register_id' => $register->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             DB::commit();
 
             Log::info('Cash register closed successfully', [
@@ -101,12 +114,20 @@ class CashRegisterController extends Controller
                 'user_id' => $userId,
                 'closing_amount' => $request->closing_amount,
                 'daily_report_generated' => $request->generate_daily_report ?? false,
+                'ai_insight_generated' => $insight !== null,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Toko berhasil ditutup'.($request->generate_daily_report ? ' dan laporan harian dibuat' : ''),
                 'register' => $register->fresh(),
+                'insight' => $insight ? [
+                    'id' => $insight->id,
+                    'title' => $insight->title,
+                    'content' => $insight->content,
+                    'data' => $insight->data,
+                    'severity' => $insight->severity,
+                ] : null,
             ]);
 
         } catch (\Exception $e) {

@@ -307,6 +307,7 @@
         </button>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
@@ -432,6 +433,8 @@ document.getElementById('closeRegisterForm').addEventListener('submit', function
     .then(data => {
         if (data.success) {
             showToast('success', data.message);
+            
+            // Tampilkan modal success
             setTimeout(() => {
                 document.getElementById('successModal').classList.remove('hidden');
             }, 500);
