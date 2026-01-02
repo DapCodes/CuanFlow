@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             OutletSeeder::class,
             RawMaterialSeeder::class,
             ProductWithRecipeSeeder::class,
+            FaqSeeder::class,
         ]);
     }
 }

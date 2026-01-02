@@ -286,4 +286,18 @@ Route::middleware(['auth'])->prefix('statistics')->name('statistics.')->group(fu
     Route::get('/expense-chart', [App\Http\Controllers\StatisticsController::class, 'getExpenseChart'])->name('expense-chart');
 });
 
+// FAQ Routes
+Route::middleware(['auth'])->prefix('faqs')->name('faqs.')->group(function () {
+    Route::get('/', [App\Http\Controllers\FaqController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\FaqController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\FaqController::class, 'store'])->name('store');
+    Route::get('/{faq}', [App\Http\Controllers\FaqController::class, 'show'])->name('show');
+    Route::get('/{faq}/edit', [App\Http\Controllers\FaqController::class, 'edit'])->name('edit');
+    Route::put('/{faq}', [App\Http\Controllers\FaqController::class, 'update'])->name('update');
+    Route::delete('/{faq}', [App\Http\Controllers\FaqController::class, 'destroy'])->name('destroy');
+    Route::post('/{faq}/toggle-status', [App\Http\Controllers\FaqController::class, 'toggleStatus'])->name('toggle-status');
+    Route::post('/{faq}/helpful', [App\Http\Controllers\FaqController::class, 'markHelpful'])->name('helpful');
+    Route::post('/{faq}/not-helpful', [App\Http\Controllers\FaqController::class, 'markNotHelpful'])->name('not-helpful');
+});
+
 require __DIR__.'/auth.php';
