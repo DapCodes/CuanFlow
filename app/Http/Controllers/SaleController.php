@@ -217,70 +217,125 @@ class SaleController extends Controller
         return $prefix.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 
-    public function daily(Request $request): JsonResponse
-    {
-        $request->validate(['date' => 'required|date']);
-        $outletId = auth()->user()->outlet_id;
+public function daily(Request $request): JsonResponse
+{
+    $request->validate(['date' => 'required|date']);
+    $outletId = auth()->user()->outlet_id;
 
-        $selectedDate = Carbon::parse($request->date)->format('Y-m-d');
-        $startOfDay = Carbon::parse($selectedDate)->startOfDay();
-        $endOfDay = Carbon::parse($selectedDate)->endOfDay();
+    $selectedDate = Carbon::parse($request->date)->format('Y-m-d');
+    $startOfDay = Carbon::parse($selectedDate)->startOfDay();
+    $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
-        $sales = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startOfDay, $endOfDay])
-            ->with(['cashier'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+    $sales = Sale::where('outlet_id', $outletId)
+        ->completed()
+        ->whereBetween('created_at', [$startOfDay, $endOfDay])
+        ->with(['cashier', 'customer', 'debt']) // ✅ Tambahkan 'debt' di sini
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
-        $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
-        $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
-        $totalRevenue = $sales->sum('grand_total');
+    $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
+    $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
+    $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
+    
+    // ✅ Hitung total debt dan yang sudah terbayar
+    $debtSales = $sales->where('payment_method', 'debt');
+    $debtTotal = $debtSales->sum('grand_total');
+    $debtPaid = $debtSales->sum('paid_amount');
+    
+    $totalRevenue = $sales->sum('grand_total');
 
-        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
-        $dailyExpenses = Expense::where('outlet_id', $outletId)
-            ->whereBetween('expense_date', [$startOfDay, $endOfDay])
-            ->where('amount', '>', 0)
-            ->sum('amount');
+    $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+    $dailyExpenses = Expense::where('outlet_id', $outletId)
+        ->whereBetween('expense_date', [$startOfDay, $endOfDay])
+        ->where('amount', '>', 0)
+        ->sum('amount');
 
-        $dailyNetIncome = $totalRevenue - $dailyExpenses;
-        $dailyTotalDiscount = $sales->sum('discount_amount');
+    $dailyNetIncome = $totalRevenue - $dailyExpenses;
+    $dailyTotalDiscount = $sales->sum('discount_amount');
 
-        // Get total refunds for the selected date
-        $totalRefunds = Sale::where('outlet_id', $outletId)
-            ->where('status', 'refunded')
-            ->whereBetween('created_at', [$startOfDay, $endOfDay])
-            ->sum('grand_total');
+    // Get total refunds for the selected date
+    $totalRefunds = Sale::where('outlet_id', $outletId)
+        ->where('status', 'refunded')
+        ->whereBetween('created_at', [$startOfDay, $endOfDay])
+        ->sum('grand_total');
 
-        return response()->json([
-            'selectedDate' => $selectedDate,
-            'sales' => $sales->map(fn ($s) => [
-                'id' => $s->id,
-                'invoice_number' => $s->invoice_number,
-                'time' => $s->created_at->format('H:i'),
-                'cashier' => $s->cashier?->name,
-                'payment_method' => $s->payment_method,
-                'grand_total' => (int) $s->grand_total,
-                'status' => $s->status,
-                'total_discount' => (int) $s->discount_amount,
-            ]),
-            'totals' => [
-                'cash' => (int) $cashTotal,
-                'qris' => (int) $qrisTotal,
-                'transfer' => (int) $transferTotal,
-                'revenue' => (int) $totalRevenue,
-            ],
-            'summary' => [
-                'revenue' => (int) $totalRevenue,
-                'transactions' => $sales->count(),
-                'profit' => (int) $dailyProfit,
-                'expenses' => (int) $dailyExpenses,
-                'discount' => (int) $dailyTotalDiscount,
-                'refunds' => (int) $totalRefunds,
-            ],
-        ]);
+    return response()->json([
+        'selectedDate' => $selectedDate,
+        'sales' => $sales->map(fn ($s) => [
+            'id' => $s->id,
+            'invoice_number' => $s->invoice_number,
+            'time' => $s->created_at->format('H:i'),
+            'customer_name' => $s->customer?->name, // ✅ Tambahkan customer_name
+            'cashier' => $s->cashier?->name,
+            'payment_method' => $s->payment_method,
+            'grand_total' => (int) $s->grand_total,
+            'status' => $s->status,
+            'total_discount' => (int) $s->discount_amount,
+            // ✅ Tambahkan info debt jika ada
+            'paid_amount' => $s->payment_method === 'debt' ? (int) $s->paid_amount : null,
+            'remaining_amount' => $s->payment_method === 'debt' && $s->debt 
+                ? (int) $s->debt->remaining_amount 
+                : null,
+        ]),
+        'totals' => [
+            'cash' => (int) $cashTotal,
+            'qris' => (int) $qrisTotal,
+            'transfer' => (int) $transferTotal,
+            'debt' => (int) $debtTotal, // ✅ Tambahkan total debt
+            'debt_paid' => (int) $debtPaid, // ✅ Tambahkan debt terbayar
+            'revenue' => (int) $totalRevenue,
+        ],
+        'summary' => [
+            'revenue' => (int) $totalRevenue,
+            'transactions' => $sales->count(),
+            'profit' => (int) $dailyProfit,
+            'expenses' => (int) $dailyExpenses,
+            'discount' => (int) $dailyTotalDiscount,
+            'refunds' => (int) $totalRefunds,
+        ],
+    ]);
+}
+
+public function showJson(Sale $sale)
+{
+    if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
+        abort(403, 'Akses ditolak');
     }
+
+    $sale->load(['items.product', 'customer', 'cashier', 'payments', 'debt']); // ✅ Tambahkan 'debt'
+
+    return response()->json([
+        'id' => $sale->id,
+        'invoice_number' => $sale->invoice_number,
+        'created_at' => $sale->created_at->format('d/m/Y H:i'), // ✅ Format lebih friendly
+        'cashier_name' => $sale->cashier->name ?? '-',
+        'customer_name' => $sale->customer->name ?? 'Umum', // ✅ Ubah dari 'Guest'
+        'subtotal' => (int) $sale->subtotal,
+        'tax' => (int) $sale->tax_amount, // ✅ Perbaiki dari 'tax' ke 'tax_amount'
+        'total_discount' => (int) $sale->discount_amount, // ✅ Perbaiki dari 'total_discount'
+        'grand_total' => (int) $sale->grand_total,
+        'payment_method' => $sale->payment_method,
+        'paid_amount' => (int) $sale->paid_amount,
+        'change_amount' => (int) $sale->change_amount,
+        'items' => $sale->items->map(function ($item) {
+            return [
+                'product_name' => $item->product_name, // ✅ Gunakan product_name langsung dari sale_items
+                'quantity' => $item->quantity,
+                'price' => (int) $item->price,
+                'discount_amount' => (int) ($item->discount_amount ?? 0), // ✅ Tambahkan discount per item
+                'subtotal' => (int) $item->subtotal,
+            ];
+        })->values(),
+        // ✅ Tambahkan info debt jika ada
+        'debt' => $sale->debt ? [
+            'amount' => (int) $sale->debt->amount,
+            'paid_amount' => (int) $sale->debt->paid_amount,
+            'remaining_amount' => (int) $sale->debt->remaining_amount,
+            'due_date' => $sale->debt->due_date?->format('d/m/Y'),
+            'status' => $sale->debt->status,
+        ] : null,
+    ]);
+}
 
     public function refund(Sale $sale)
     {
@@ -364,35 +419,4 @@ class SaleController extends Controller
         return view('sales.receipt', compact('sale'));
     }
 
-    public function showJson(Sale $sale)
-    {
-        if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
-            abort(403, 'Akses ditolak');
-        }
-
-        $sale->load(['items.product', 'customer', 'cashier', 'payments']);
-
-        return response()->json([
-            'id' => $sale->id,
-            'invoice_number' => $sale->invoice_number,
-            'created_at' => $sale->created_at->format('Y-m-d H:i:s'),
-            'cashier_name' => $sale->cashier->name ?? '-',
-            'customer_name' => $sale->customer->name ?? 'Guest',
-            'subtotal' => (int) $sale->subtotal,
-            'tax' => (int) $sale->tax,
-            'total_discount' => (int) $sale->total_discount,
-            'grand_total' => (int) $sale->grand_total,
-            'payment_method' => $sale->payment_method,
-            'paid_amount' => (int) $sale->paid_amount,
-            'change_amount' => (int) $sale->change_amount,
-            'items' => $sale->items->map(function ($item) {
-                return [
-                    'product_name' => $item->product->name,
-                    'quantity' => $item->quantity,
-                    'price' => (int) $item->price,
-                    'subtotal' => (int) $item->subtotal,
-                ];
-            })->values(),
-        ]);
-    }
 }

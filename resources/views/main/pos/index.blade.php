@@ -710,23 +710,437 @@
     color: #991b1b;
 }
 
-@media (max-width: 768px) {
-    #salesTodayModal .max-w-6xl {
-        max-width: 100%;
-        margin: 0;
-        border-radius: 0;
-        height: 100vh;
-        max-height: 100vh;
+/* ==================== UNIFIED MODAL SYSTEM ==================== */
+/* 
+ * All modals share:
+ * - Consistent rounded corners (rounded-2xl = 1rem)
+ * - Full-screen on mobile (≤640px)
+ * - Responsive sizing on tablet/desktop
+ */
+
+/* Base Modal Overlay - All modals */
+#startSalesModal,
+#paymentSuccessModal,
+#openingAmountModal,
+#calculatorModal,
+#productSettingsModal,
+#salesTodayModal,
+#saleDetailModal,
+#debtPaymentModal {
+    backdrop-filter: blur(2px);
+}
+
+/* Base Modal Content Box */
+.modal-content,
+#startSalesModal > div,
+#paymentSuccessModal > div,
+#openingAmountModal > div,
+#calculatorModal > div,
+#productSettingsModal > div,
+#debtPaymentModal > div {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    border-radius: 1rem; /* rounded-2xl */
+}
+
+/* Desktop Modal Sizes */
+@media (min-width: 641px) {
+    /* Large - Sales Today Modal */
+    #salesTodayModal .modal-content {
+        max-width: 1400px;
+        width: 95vw;
     }
     
-    #salesTodayModal table {
+    /* Medium Large - Product Settings */
+    #productSettingsModal > div {
+        max-width: 900px;
+        width: 90vw;
+    }
+    
+    /* Medium - Sale Detail, Calculator, Debt Payment */
+    #saleDetailModal .modal-content {
+        max-width: 900px;
+        width: 90vw;
+    }
+    
+    #calculatorModal > div {
+        max-width: 700px;
+        width: 90vw;
+    }
+    
+    #debtPaymentModal > div {
+        max-width: 650px;
+        width: 90vw;
+    }
+    
+    /* Small - Start Sales, Payment Success, Opening Amount */
+    #startSalesModal > div,
+    #paymentSuccessModal > div,
+    #openingAmountModal > div {
+        max-width: 420px;
+        width: 90vw;
+    }
+}
+
+/* ==================== MOBILE FULL-SCREEN MODALS ==================== */
+@media (max-width: 640px) {
+    /* All modals go full-screen */
+    #startSalesModal,
+    #paymentSuccessModal,
+    #openingAmountModal,
+    #calculatorModal,
+    #productSettingsModal,
+    #salesTodayModal,
+    #saleDetailModal,
+    #debtPaymentModal {
+        padding: 0 !important;
+    }
+    
+    #startSalesModal > div,
+    #paymentSuccessModal > div,
+    #openingAmountModal > div,
+    #calculatorModal > div,
+    #productSettingsModal > div,
+    #salesTodayModal .modal-content,
+    #saleDetailModal .modal-content,
+    #debtPaymentModal > div {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Ensure content scrolls properly - Small centered modals */
+    #startSalesModal > div,
+    #paymentSuccessModal > div,
+    #openingAmountModal > div {
+        overflow-y: auto;
+        justify-content: center;
+        padding: 1.5rem;
+        height: auto !important;
+        min-height: 100vh !important;
+    }
+    
+    /* Large complex modals - fixed layout */
+    #calculatorModal > div,
+    #productSettingsModal > div,
+    #debtPaymentModal > div {
+        overflow: hidden;
+        padding: 0;
+    }
+    
+    /* Ensure table-based modals have proper scrolling */
+    #salesTodayModal .modal-content,
+    #saleDetailModal .modal-content {
+        overflow: hidden;
+    }
+    
+    /* Mobile table font size adjustment */
+    #salesTodayModal table,
+    #saleDetailModal table {
         font-size: 0.75rem;
     }
     
     #salesTodayModal th,
-    #salesTodayModal td {
-        padding: 0.5rem;
+    #salesTodayModal td,
+    #saleDetailModal th,
+    #saleDetailModal td {
+        padding: 0.5rem 0.25rem;
     }
+}
+
+/* Scrollable Content Area */
+.modal-scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+}
+
+/* Table Wrapper untuk horizontal scroll */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper table {
+    min-width: 100%;
+    border-collapse: collapse;
+}
+
+/* Sticky Table Header */
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f9fafb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Summary Cards - Better Grid */
+.summary-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(to bottom, #f9fafb, #ffffff);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.summary-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.summary-card-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-card-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 0.25rem;
+}
+
+.summary-card-subvalue {
+    font-size: 0.813rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+}
+
+/* Mobile Optimizations - Summary Cards & Tables */
+@media (max-width: 1024px) {
+    .summary-cards-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    
+    .table-wrapper table {
+        font-size: 0.75rem;
+    }
+    
+    .table-wrapper th,
+    .table-wrapper td {
+        padding: 0.5rem 0.25rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 640px) {
+    .summary-cards-container {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 0.75rem;
+    }
+    
+    .table-wrapper {
+        font-size: 0.7rem;
+    }
+    
+    .table-wrapper th,
+    .table-wrapper td {
+        padding: 0.4rem 0.2rem;
+    }
+    
+    /* Compact summary cards */
+    .summary-card-value {
+        font-size: 1.25rem;
+    }
+    
+    .summary-card-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+}
+
+/* Custom Scrollbar untuk Modal */
+.modal-scrollable-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.modal-scrollable-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-scrollable-content::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+}
+
+.modal-scrollable-content::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Table Wrapper Scrollbar */
+.table-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+}
+
+/* Detail Modal - Better Layout */
+.detail-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.detail-info-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    transition: transform 0.2s;
+}
+
+.detail-info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Items Table - Better spacing */
+.items-table-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.items-table-container table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.items-table-container thead {
+    background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
+}
+
+.items-table-container tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Payment Summary Box */
+.payment-summary-box {
+    background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Better Badge Styling */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Action Buttons - Consistent sizing */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.813rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn-primary {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+}
+
+.action-btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.action-btn-danger {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+}
+
+.action-btn-danger:hover {
+    background-color: #dc2626;
+}
+
+.action-btn-secondary {
+    background-color: white;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+}
+
+.action-btn-secondary:hover {
+    background-color: #f9fafb;
+}
+
+/* Modal Header - Fixed */
+.modal-header-fixed {
+    flex-shrink: 0;
+    border-bottom: 1px solid #e5e7eb;
+    background: white;
+    z-index: 10;
+}
+
+/* Modal Footer - Fixed */
+.modal-footer-fixed {
+    flex-shrink: 0;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    z-index: 10;
 }
 </style>
 @endpush 
@@ -1312,8 +1726,9 @@
 
 <!-- Modal: Penjualan Hari Ini -->
 <div id="salesTodayModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl">
+        <!-- Header - Fixed -->
+        <div class="modal-header-fixed flex items-center justify-between p-6">
             <div>
                 <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                     <i class="fas fa-chart-line text-orange-600"></i>
@@ -1326,60 +1741,96 @@
             </button>
         </div>
         
-        <!-- Summary Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200 flex-shrink-0">
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                <div class="text-xs text-gray-600 mb-1">Total Transaksi</div>
-                <div class="text-xl font-bold text-gray-900" id="modalTotalTransactions">0</div>
+        <!-- Scrollable Content -->
+        <div class="modal-scrollable-content">
+            <!-- Summary Cards -->
+            <div class="summary-cards-container">
+                <!-- Total Transaksi -->
+                <div class="summary-card">
+                    <div class="summary-card-icon bg-blue-100 text-blue-600">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div class="summary-card-label">Total Transaksi</div>
+                    <div class="summary-card-value text-blue-600" id="modalTotalTransactions">0</div>
+                </div>
+
+                <!-- Total Pendapatan -->
+                <div class="summary-card">
+                    <div class="summary-card-icon bg-green-100 text-green-600">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="summary-card-label">Total Pendapatan</div>
+                    <div class="summary-card-value text-green-600" id="modalTotalRevenue">Rp 0</div>
+                </div>
+
+                <!-- Tunai -->
+                <div class="summary-card">
+                    <div class="summary-card-icon bg-indigo-100 text-indigo-600">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="summary-card-label">Tunai</div>
+                    <div class="summary-card-value text-indigo-600" id="modalCashTotal">Rp 0</div>
+                </div>
+
+                <!-- Non-Tunai -->
+                <div class="summary-card">
+                    <div class="summary-card-icon bg-purple-100 text-purple-600">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="summary-card-label">Non-Tunai</div>
+                    <div class="summary-card-value text-purple-600" id="modalNonCashTotal">Rp 0</div>
+                </div>
+
+                <!-- Total Piutang -->
+                <div class="summary-card">
+                    <div class="summary-card-icon bg-red-100 text-red-600">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="summary-card-label">Total Piutang</div>
+                    <div class="summary-card-value text-red-600" id="modalDebtTotal">Rp 0</div>
+                    <div class="summary-card-subvalue">
+                        Terbayar: <span id="modalDebtPaid" class="text-green-600 font-semibold">Rp 0</span>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                <div class="text-xs text-gray-600 mb-1">Total Pendapatan</div>
-                <div class="text-xl font-bold text-green-600" id="modalTotalRevenue">Rp 0</div>
-            </div>
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                <div class="text-xs text-gray-600 mb-1">Tunai</div>
-                <div class="text-lg font-bold text-blue-600" id="modalCashTotal">Rp 0</div>
-            </div>
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                <div class="text-xs text-gray-600 mb-1">Non-Tunai</div>
-                <div class="text-lg font-bold text-purple-600" id="modalNonCashTotal">Rp 0</div>
+            
+            <!-- Table Container -->
+            <div class="px-6 pb-6">
+                <div class="table-wrapper">
+                    <table class="w-full text-sm">
+                        <thead class="sticky-header">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">No. Invoice</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Waktu</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Pelanggan</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Kasir</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Metode</th>
+                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Total Diskon</th>
+                                <th class="px-4 py-3 text-right font-semibold text-gray-700">Total</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Status</th>
+                                <th class="px-4 py-3 text-center font-semibold text-gray-700">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody">
+                            <tr>
+                                <td colspan="9" class="px-4 py-8 text-center text-gray-500">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p>Memuat data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
-        <!-- Table Container -->
-        <div class="flex-1 overflow-auto p-6 custom-scrollbar">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-100 sticky top-0">
-                        <tr>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700">No. Invoice</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700">Waktu</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700">Kasir</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700">Metode</th>
-                            <th class="px-4 py-3 text-right font-semibold text-gray-700">Total Diskon</th>
-                            <th class="px-4 py-3 text-right font-semibold text-gray-700">Total</th>
-                            <th class="px-4 py-3 text-center font-semibold text-gray-700">Status</th>
-                            <th class="px-4 py-3 text-center font-semibold text-gray-700">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="salesTableBody">
-                        <tr>
-                            <td colspan="8" class="px-4 py-8 text-center text-gray-500">
-                                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                                <p>Memuat data...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="p-6 border-t border-gray-200 flex justify-end gap-3 flex-shrink-0">
-            <a href="{{ route('sales.index') }}" class="px-6 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors flex items-center gap-2">
+        <!-- Footer - Fixed -->
+        <div class="modal-footer-fixed p-6 flex justify-end gap-3">
+            <a href="{{ route('sales.index') }}" class="action-btn action-btn-primary">
                 <i class="fas fa-external-link-alt"></i>
                 Lihat Semua Penjualan
             </a>
-            <button onclick="closeSalesTodayModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+            <button onclick="closeSalesTodayModal()" class="action-btn action-btn-secondary">
                 Tutup
             </button>
         </div>
@@ -1388,8 +1839,9 @@
 
 <!-- Modal: Detail Penjualan -->
 <div id="saleDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl">
+        <!-- Header - Fixed -->
+        <div class="modal-header-fixed flex items-center justify-between p-6">
             <div>
                 <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                     <i class="fas fa-receipt text-orange-600"></i>
@@ -1402,76 +1854,118 @@
             </button>
         </div>
         
-        <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
-            <!-- Info Pelanggan & Kasir -->
-            <div class="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <div>
-                    <div class="text-xs text-gray-500 mb-1">Kasir</div>
-                    <div class="font-semibold text-gray-900" id="detailCashier">-</div>
+        <!-- Scrollable Content -->
+        <div class="modal-scrollable-content">
+            <div class="p-6 space-y-6">
+                <!-- Info Cards Grid -->
+                <div class="detail-info-grid">
+                    <div class="detail-info-card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                        <div class="text-xs text-blue-600 font-semibold mb-1 flex items-center gap-2">
+                            <i class="fas fa-user"></i> KASIR
+                        </div>
+                        <div class="font-bold text-gray-900" id="detailCashier">-</div>
+                    </div>
+                    
+                    <div class="detail-info-card bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                        <div class="text-xs text-green-600 font-semibold mb-1 flex items-center gap-2">
+                            <i class="fas fa-user-tag"></i> PELANGGAN
+                        </div>
+                        <div class="font-bold text-gray-900" id="detailCustomer">-</div>
+                    </div>
+                    
+                    <div class="detail-info-card bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                        <div class="text-xs text-purple-600 font-semibold mb-1 flex items-center gap-2">
+                            <i class="fas fa-clock"></i> WAKTU
+                        </div>
+                        <div class="font-bold text-gray-900" id="detailTime">-</div>
+                    </div>
+                    
+                    <div class="detail-info-card bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                        <div class="text-xs text-orange-600 font-semibold mb-1 flex items-center gap-2">
+                            <i class="fas fa-credit-card"></i> PEMBAYARAN
+                        </div>
+                        <div class="font-bold text-gray-900" id="detailPaymentMethod">-</div>
+                    </div>
                 </div>
-                <div>
-                    <div class="text-xs text-gray-500 mb-1">Pelanggan</div>
-                    <div class="font-semibold text-gray-900" id="detailCustomer">-</div>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-500 mb-1">Waktu</div>
-                    <div class="font-semibold text-gray-900" id="detailTime">-</div>
-                </div>
-                <div>
-                    <div class="text-xs text-gray-500 mb-1">Metode Pembayaran</div>
-                    <div class="font-semibold text-gray-900" id="detailPaymentMethod">-</div>
-                </div>
-            </div>
 
-            <!-- Daftar Item -->
-            <h4 class="font-bold text-gray-900 mb-3">Item Pembelian</h4>
-            <div class="border rounded-xl overflow-hidden mb-6">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-gray-600">Produk</th>
-                            <th class="px-4 py-2 text-center text-gray-600">Qty</th>
-                            <th class="px-4 py-2 text-right text-gray-600">Harga</th>
-                            <th class="px-4 py-2 text-right text-gray-600">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="detailItemsBody">
-                        <!-- Items will be populated here -->
-                    </tbody>
-                </table>
-            </div>
+                <!-- Daftar Item -->
+                <div>
+                    <h4 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-shopping-basket text-orange-600"></i>
+                        Item Pembelian
+                    </h4>
+                    <div class="items-table-container">
+                        <div class="table-wrapper">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-gray-600 font-semibold">Produk</th>
+                                        <th class="px-4 py-3 text-center text-gray-600 font-semibold">Qty</th>
+                                        <th class="px-4 py-3 text-right text-gray-600 font-semibold">Harga</th>
+                                        <th class="px-4 py-3 text-right text-gray-600 font-semibold">Diskon</th>
+                                        <th class="px-4 py-3 text-right text-gray-600 font-semibold">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detailItemsBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <i class="fas fa-spinner fa-spin"></i> Memuat...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Ringkasan Pembayaran -->
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span id="detailSubtotal">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-gray-600">
-                    <span>Pajak</span>
-                    <span id="detailTax">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-red-600">
-                    <span>Diskon</span>
-                    <span id="detailDiscount">-Rp 0</span>
-                </div>
-                <div class="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
-                    <span>Total Akhir</span>
-                    <span id="detailGrandTotal">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-gray-600 pt-2">
-                    <span>Bayar</span>
-                    <span id="detailPaid">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-green-600 font-semibold">
-                    <span>Kembalian</span>
-                    <span id="detailChange">Rp 0</span>
+                <!-- Ringkasan Pembayaran -->
+                <div class="payment-summary-box">
+                    <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i class="fas fa-calculator text-orange-600"></i>
+                        Ringkasan Pembayaran
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span class="font-semibold text-gray-900" id="detailSubtotal">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Pajak</span>
+                            <span class="font-semibold text-gray-900" id="detailTax">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Diskon</span>
+                            <span class="font-semibold text-red-600" id="detailDiscount">-Rp 0</span>
+                        </div>
+                        <div class="border-t-2 border-gray-300 pt-3 flex justify-between text-lg">
+                            <span class="font-bold text-gray-900">Total Akhir</span>
+                            <span class="font-bold text-orange-600" id="detailGrandTotal">Rp 0</span>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 space-y-2 border border-gray-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Bayar</span>
+                                <span class="font-semibold text-blue-600" id="detailPaid">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Kembalian</span>
+                                <span class="font-semibold text-green-600" id="detailChange">Rp 0</span>
+                            </div>
+                            <!-- Debt Info (Hidden by default) -->
+                            <div id="detailDebtInfo" class="hidden border-t pt-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Sisa Utang</span>
+                                    <span class="font-bold text-red-600" id="detailRemainingDebt">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="p-6 border-t border-gray-200 flex justify-end gap-3 flex-shrink-0 bg-gray-50">
-            <button onclick="closeSaleDetailModal()" class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors shadow-sm">
+        <!-- Footer - Fixed -->
+        <div class="modal-footer-fixed p-6 flex justify-end gap-3">
+            <button onclick="closeSaleDetailModal()" class="action-btn action-btn-secondary">
                 Tutup
             </button>
         </div>
@@ -3896,12 +4390,16 @@ function loadSalesToday() {
             const nonCash = data.totals.qris + data.totals.transfer;
             document.getElementById('modalNonCashTotal').textContent = 'Rp ' + formatNumber(nonCash);
             
+            // ✅ Update card Total Piutang
+            document.getElementById('modalDebtTotal').textContent = 'Rp ' + formatNumber(data.totals.debt || 0);
+            document.getElementById('modalDebtPaid').textContent = 'Rp ' + formatNumber(data.totals.debt_paid || 0);
+            
             // Render table
             const tbody = document.getElementById('salesTableBody');
             if (data.sales.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-2 opacity-50"></i>
                             <p>Belum ada transaksi hari ini</p>
                         </td>
@@ -3923,14 +4421,31 @@ function loadSalesToday() {
                     </button>`
                     : '-';
                 
+                const customerName = sale.customer_name || (sale.customer ? sale.customer.name : 'Umum');
+                
+                let totalHtml = `Rp ${formatNumber(sale.grand_total)}`;
+                if (sale.payment_method === 'debt') {
+                    const paid = sale.paid_amount || 0;
+                    const remaining = sale.remaining_amount || (sale.grand_total - paid);
+                    
+                    totalHtml = `
+                        <div>
+                            <div class="font-bold text-gray-900">Rp ${formatNumber(sale.grand_total)}</div>
+                            <div class="text-xs text-green-600 mt-1">Bayar: Rp ${formatNumber(paid)}</div>
+                            <div class="text-xs text-red-600 font-semibold">Sisa: Rp ${formatNumber(remaining)}</div>
+                        </div>
+                    `;
+                }
+
                 html += `
                     <tr>
                         <td class="px-4 py-3 font-mono text-xs">${sale.invoice_number}</td>
                         <td class="px-4 py-3">${sale.time}</td>
+                        <td class="px-4 py-3">${customerName}</td>
                         <td class="px-4 py-3">${sale.cashier || '-'}</td>
                         <td class="px-4 py-3">${paymentBadge}</td>
                         <td class="px-4 py-3 text-right font-semibold text-red-600">Rp ${formatNumber(sale.total_discount)}</td>
-                        <td class="px-4 py-3 text-right font-semibold">Rp ${formatNumber(sale.grand_total)}</td>
+                        <td class="px-4 py-3 text-right">${totalHtml}</td>
                         <td class="px-4 py-3 text-center">${statusBadge}</td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex items-center justify-center gap-2">
@@ -3950,7 +4465,7 @@ function loadSalesToday() {
             showToast('error', 'Gagal memuat data penjualan');
             document.getElementById('salesTableBody').innerHTML = `
                 <tr>
-                    <td colspan="8" class="px-4 py-8 text-center text-red-500">
+                    <td colspan="9" class="px-4 py-8 text-center text-red-500">
                         <i class="fas fa-exclamation-circle text-3xl mb-2"></i>
                         <p>Gagal memuat data</p>
                     </td>
@@ -3963,7 +4478,8 @@ function getPaymentBadge(method) {
     const badges = {
         'cash': '<span class="badge" style="background-color: #dbeafe; color: #1e40af;"><i class="fas fa-money-bill-wave mr-1"></i>Tunai</span>',
         'transfer': '<span class="badge" style="background-color: #fef3c7; color: #92400e;"><i class="fas fa-building-columns mr-1"></i>Transfer</span>',
-        'qris': '<span class="badge" style="background-color: #e9d5ff; color: #6b21a8;"><i class="fas fa-qrcode mr-1"></i>QRIS</span>'
+        'qris': '<span class="badge" style="background-color: #e9d5ff; color: #6b21a8;"><i class="fas fa-qrcode mr-1"></i>QRIS</span>',
+        'debt': '<span class="badge" style="background-color: #fee2e2; color: #991b1b;"><i class="fas fa-file-invoice-dollar mr-1"></i>Utang</span>'
     };
     return badges[method] || method;
 }
@@ -4014,11 +4530,10 @@ function formatDate(dateStr) {
 }
 
 function showSaleDetail(saleId) {
-    // Show loading state or just open modal with loader
     document.getElementById('saleDetailModal').classList.remove('hidden');
     
     // Reset content
-    document.getElementById('detailItemsBody').innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Memuat...</td></tr>';
+    document.getElementById('detailItemsBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Memuat...</td></tr>';
     
     fetch(`/api/sale/${saleId}`)
         .then(r => r.json())
@@ -4032,12 +4547,14 @@ function showSaleDetail(saleId) {
             // Render Items
             let itemsHtml = '';
             data.items.forEach(item => {
+                const itemDiscount = item.discount_amount || 0;
                 itemsHtml += `
-                    <tr class="border-b last:border-0">
-                        <td class="px-4 py-2 text-gray-800">${item.product_name}</td>
-                        <td class="px-4 py-2 text-center text-gray-600">${item.quantity}</td>
-                        <td class="px-4 py-2 text-right text-gray-600">Rp ${formatNumber(item.price)}</td>
-                        <td class="px-4 py-2 text-right font-medium text-gray-900">Rp ${formatNumber(item.subtotal)}</td>
+                    <tr class="border-b last:border-0 hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3 text-gray-800">${item.product_name}</td>
+                        <td class="px-4 py-3 text-center text-gray-600 font-semibold">${item.quantity}</td>
+                        <td class="px-4 py-3 text-right text-gray-600">Rp ${formatNumber(item.price)}</td>
+                        <td class="px-4 py-3 text-right text-red-600">${itemDiscount > 0 ? '-Rp ' + formatNumber(itemDiscount) : '-'}</td>
+                        <td class="px-4 py-3 text-right font-semibold text-gray-900">Rp ${formatNumber(item.subtotal)}</td>
                     </tr>
                 `;
             });
@@ -4050,6 +4567,15 @@ function showSaleDetail(saleId) {
             document.getElementById('detailGrandTotal').textContent = 'Rp ' + formatNumber(data.grand_total);
             document.getElementById('detailPaid').textContent = 'Rp ' + formatNumber(data.paid_amount);
             document.getElementById('detailChange').textContent = 'Rp ' + formatNumber(data.change_amount);
+            
+            // ✅ Handle debt info
+            if (data.payment_method === 'debt' && data.debt) {
+                const debtInfo = document.getElementById('detailDebtInfo');
+                debtInfo.classList.remove('hidden');
+                document.getElementById('detailRemainingDebt').textContent = 'Rp ' + formatNumber(data.debt.remaining_amount || 0);
+            } else {
+                document.getElementById('detailDebtInfo').classList.add('hidden');
+            }
         })
         .catch(err => {
             console.error(err);
