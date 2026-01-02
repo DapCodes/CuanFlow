@@ -137,9 +137,20 @@ Route::middleware('auth')->group(function () {
         Route::post('/process', [App\Http\Controllers\DebtPaymentController::class, 'processDebtPayment'])
             ->name('process');
     });
+
+    // Customer & Piutang Management
+    Route::prefix('customer-debts')->name('customer-debts.')->group(function () {
+        Route::get('/', [App\Http\Controllers\CustomerDebtController::class, 'index'])->name('index');
+        Route::get('/customers', [App\Http\Controllers\CustomerDebtController::class, 'getCustomers'])->name('customers');
+        Route::get('/debts', [App\Http\Controllers\CustomerDebtController::class, 'getDebts'])->name('debts');
+        Route::get('/{debt}/detail', [App\Http\Controllers\CustomerDebtController::class, 'getDebtDetail'])->name('detail');
+        Route::post('/{debt}/pay', [App\Http\Controllers\CustomerDebtController::class, 'payDebt'])->name('pay');
+        Route::post('/{debt}/midtrans-token', [App\Http\Controllers\CustomerDebtController::class, 'createMidtransToken'])->name('midtrans-token');
+    });
     
     Route::post('/payment/check-amount', [PaymentController::class, 'checkPaymentAmount'])
         ->name('payment.check-amount');
+
 });
 
 Route::middleware(['web', 'auth'])->group(function () {
@@ -188,7 +199,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/payment/cash', [PaymentController::class, 'processCashPayment'])->name('payment.cash');
     Route::post('/payment/transfer', [PaymentController::class, 'processTransferPayment'])->name('payment.transfer');
     Route::post('/payment/midtrans/token', [PaymentController::class, 'createMidtransToken'])->name('payment.midtrans.token');
-    Route::post('/payment/midtrans/notification', [PaymentController::class, 'handleMidtransNotification'])->name('payment.midtrans.notification');
     Route::get('/payment/midtrans/finish', [PaymentController::class, 'midtransFinish'])->name('payment.midtrans.finish');
 
     Route::prefix('discounts')->name('discounts.')->group(function () {

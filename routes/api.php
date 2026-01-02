@@ -21,9 +21,11 @@ Route::prefix('v1')->group(function () {
             ->middleware('throttle:6,1')
             ->name('api.verification.send');
     });
-    Route::get('/outlets', [OutletApiController::class, 'index']); // list + search
-    Route::get('/outlets/{outlet}', [OutletApiController::class, 'show']); // detail
+    Route::get('/outlets', [OutletApiController::class, 'index']);
+    Route::get('/outlets/{outlet}', [OutletApiController::class, 'show']);
 });
 
+// FIXED: Keep only ONE Midtrans webhook endpoint in api.php
+// Exclude this from CSRF protection in VerifyCsrfToken middleware
 Route::post('/payment/midtrans/notification', [PaymentController::class, 'handleMidtransNotification'])
     ->name('payment.midtrans.notification');

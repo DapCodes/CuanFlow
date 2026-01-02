@@ -306,46 +306,28 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Create Midtrans token
-     */
     public function createMidtransToken(Request $request)
     {
         $cart = Session::get('pos_cart', []);
         $discountPlan = Session::get('pos_discount_plan');
 
         if (empty($cart)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Keranjang kosong',
-            ], 400);
+            return response()->json(['success' => false, 'message' => 'Keranjang kosong'], 400);
         }
 
         $summary = $this->calculateCartSummaryWithDiscount($cart, $discountPlan);
 
         DB::beginTransaction();
         try {
-            $existingSale = Sale::where('outlet_id', auth()->user()->outlet_id)
-                ->where('cashier_id', auth()->id())
-                ->where('status', 'draft')
-                ->where('payment_status', 'pending')
-                ->where('payment_method', 'qris')
-                ->whereNotNull('midtrans_order_id')
-                ->latest()
-                ->first();
+            $sale = $this->createSaleWithDiscount($cart, $summary, $discountPlan, [
+                'payment_method' => 'qris',
+                'payment_status' => 'pending',
+                'status' => 'draft',
+                'paid_amount' => 0,
+            ]);
 
-            if ($existingSale) {
-                $sale = $existingSale;
-            } else {
-                $sale = $this->createSaleWithDiscount($cart, $summary, $discountPlan, [
-                    'payment_method' => 'qris',
-                    'payment_status' => 'pending',
-                    'status' => 'draft',
-                    'paid_amount' => 0,
-                ]);
-            }
-
-            $orderId = $sale->invoice_number.'-'.time().'-'.strtoupper(substr(md5(uniqid()), 0, 6));
+            // FIX: Use SALE prefix to distinguish from DEBT payments
+            $orderId = 'SALE-' . $sale->id . '-' . time();
 
             $itemDetails = [];
             foreach ($cart as $item) {
@@ -353,7 +335,7 @@ class PaymentController extends Controller
                     'id' => $item['product_code'],
                     'price' => (int) $item['unit_price'],
                     'quantity' => (int) $item['quantity'],
-                    'name' => $item['product_name'],
+                    'name' => substr($item['product_name'], 0, 50), // Limit length
                 ];
             }
 
@@ -362,45 +344,34 @@ class PaymentController extends Controller
                     'id' => 'DISCOUNT',
                     'price' => -(int) $summary['total_discount'],
                     'quantity' => 1,
-                    'name' => $discountPlan['discount_name'] ?? 'Diskon',
+                    'name' => 'Diskon',
                 ];
             }
 
-            if ($summary['tax'] > 0) {
-                $itemDetails[] = [
-                    'id' => 'TAX',
-                    'price' => (int) $summary['tax'],
-                    'quantity' => 1,
-                    'name' => 'Pajak',
-                ];
-            }
-
-            $transactionDetails = [
-                'order_id' => $orderId,
-                'gross_amount' => (int) $summary['grand_total'],
-            ];
-
-            $customerDetails = [
-                'first_name' => auth()->user()->name,
-                'email' => auth()->user()->email,
-                'phone' => auth()->user()->phone ?? '08123456789',
-            ];
-
+            // FIX: Use proper base URL
+            $appUrl = config('app.url');
+            
             $params = [
-                'transaction_details' => $transactionDetails,
+                'transaction_details' => [
+                    'order_id' => $orderId,
+                    'gross_amount' => (int) $summary['grand_total'],
+                ],
                 'item_details' => $itemDetails,
-                'customer_details' => $customerDetails,
-                'enabled_payments' => ['gopay', 'shopeepay', 'other_qris', 'bca_va', 'bni_va', 'bri_va'],
+                'customer_details' => [
+                    'first_name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                    'phone' => auth()->user()->phone ?? '08123456789',
+                ],
+                // FIX: Only enable QRIS options
+                'enabled_payments' => ['gopay', 'shopeepay', 'other_qris'],
                 'callbacks' => [
-                    'finish' => route('payment.midtrans.finish'),
+                    'finish' => $appUrl . '/payment/midtrans/finish',
                 ],
             ];
 
             $snapToken = Snap::getSnapToken($params);
 
-            $sale->update([
-                'midtrans_order_id' => $orderId,
-            ]);
+            $sale->update(['midtrans_order_id' => $orderId]);
 
             DB::commit();
 
@@ -412,131 +383,143 @@ class PaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Create Midtrans Token Error: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal membuat token pembayaran: '.$e->getMessage(),
-            ], 500);
+            \Log::error('Midtrans Token Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Handle Midtrans notification
+     * UNIFIED: Handle notifications for BOTH Sale & Debt Payment
      */
     public function handleMidtransNotification(Request $request)
     {
-        \Log::info('=== Midtrans Notification Received ===');
-        \Log::info('Request Body: ', $request->all());
+        \Log::info('=== Midtrans Notification ===', $request->all());
 
         try {
             $notification = new Notification;
-
-            $transactionStatus = $notification->transaction_status;
-            $fraudStatus = $notification->fraud_status ?? null;
             $orderId = $notification->order_id;
-            $transactionId = $notification->transaction_id;
-            $paymentType = $notification->payment_type;
 
-            $sale = Sale::where('midtrans_order_id', $orderId)->first();
+            // DETECT: Route to appropriate handler
+            if (str_starts_with($orderId, 'DEBT-')) {
+                return $this->handleDebtNotification($notification);
+            } else {
+                return $this->handleSaleNotification($notification);
+            }
 
-            if (! $sale) {
-                \Log::warning('Sale not found for order_id: '.$orderId);
+        } catch (\Exception $e) {
+            \Log::error('Notification Error: ' . $e->getMessage());
+            return response()->json(['message' => 'Invalid notification'], 400);
+        }
+    }
 
-                return response()->json(['message' => 'Sale not found'], 404);
+    private function handleSaleNotification($notification)
+    {
+        $sale = Sale::where('midtrans_order_id', $notification->order_id)->first();
+        if (!$sale) {
+            return response()->json(['message' => 'Sale not found'], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $shouldProcess = ($sale->payment_status !== 'paid');
+
+            if (in_array($notification->transaction_status, ['capture', 'settlement'])) {
+                $sale->update([
+                    'payment_status' => 'paid',
+                    'status' => 'completed',
+                    'midtrans_transaction_id' => $notification->transaction_id,
+                    'completed_at' => now(),
+                    'paid_amount' => $sale->grand_total,
+                ]);
+
+                $this->createOrUpdateSalePayment($sale, $notification);
+
+                if ($shouldProcess) {
+                    $this->reduceStockFromSale($sale);
+                    if ($sale->discount_amount > 0) {
+                        $this->incrementDiscountUsageFromSaleNotes($sale);
+                    }
+                }
+            }
+
+            DB::commit();
+            return response()->json(['success' => true], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Sale Notification Error: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed'], 500);
+        }
+    }
+
+    private function handleDebtNotification($notification)
+    {
+        $parts = explode('-', $notification->order_id);
+        $debtId = $parts[1] ?? null;
+        
+        $debt = \App\Models\CustomerDebt::find($debtId);
+        if (!$debt) {
+            return response()->json(['message' => 'Debt not found'], 404);
+        }
+
+        if (in_array($notification->transaction_status, ['capture', 'settlement'])) {
+            // Check duplicate
+            $exists = \App\Models\DebtPayment::where('reference_number', $notification->transaction_id)->exists();
+            if ($exists) {
+                return response()->json(['success' => true, 'message' => 'Already recorded'], 200);
             }
 
             DB::beginTransaction();
             try {
-                $shouldReduceStock = ($sale->payment_status !== 'paid' && $sale->status !== 'completed');
-                $shouldIncrementDiscount = $shouldReduceStock;
+                $amount = (float) ($notification->gross_amount ?? 0);
 
-                if ($transactionStatus == 'capture') {
-                    if ($fraudStatus == 'accept') {
-                        $sale->update([
-                            'payment_status' => 'paid',
-                            'status' => 'completed',
-                            'midtrans_transaction_id' => $transactionId,
-                            'midtrans_payment_type' => $paymentType,
-                            'midtrans_response' => json_encode($notification->getResponse()),
-                            'completed_at' => now(),
-                            'paid_amount' => $sale->grand_total,
-                        ]);
+                \App\Models\DebtPayment::create([
+                    'customer_debt_id' => $debt->id,
+                    'amount' => $amount,
+                    'payment_method' => 'qris',
+                    'reference_number' => $notification->transaction_id,
+                    'notes' => 'Midtrans - ' . $notification->payment_type,
+                    'received_by' => null,
+                ]);
 
-                        $this->createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification);
+                $debt->paid_amount += $amount;
+                $debt->remaining_amount -= $amount;
 
-                        if ($shouldReduceStock) {
-                            $this->reduceStockFromSale($sale);
-                        }
-
-                        if ($shouldIncrementDiscount && $sale->discount_amount > 0) {
-                            $this->incrementDiscountUsageFromSaleNotes($sale);
-                        }
-
-                        \Log::info('Payment captured and accepted for order: '.$orderId);
-                    }
-                } elseif ($transactionStatus == 'settlement') {
-                    $sale->update([
-                        'payment_status' => 'paid',
-                        'status' => 'completed',
-                        'midtrans_transaction_id' => $transactionId,
-                        'midtrans_payment_type' => $paymentType,
-                        'midtrans_response' => json_encode($notification->getResponse()),
-                        'completed_at' => now(),
-                        'paid_amount' => $sale->grand_total,
-                    ]);
-
-                    $this->createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification);
-
-                    if ($shouldReduceStock) {
-                        $this->reduceStockFromSale($sale);
-                    }
-
-                    if ($shouldIncrementDiscount && $sale->discount_amount > 0) {
-                        $this->incrementDiscountUsageFromSaleNotes($sale);
-                    }
-
-                    \Log::info('Payment settled for order: '.$orderId);
-
-                } elseif ($transactionStatus == 'pending') {
-                    $sale->update([
-                        'payment_status' => 'pending',
-                        'midtrans_transaction_id' => $transactionId,
-                        'midtrans_payment_type' => $paymentType,
-                        'midtrans_response' => json_encode($notification->getResponse()),
-                    ]);
-                } elseif ($transactionStatus == 'deny' || $transactionStatus == 'expire' || $transactionStatus == 'cancel') {
-                    $sale->update([
-                        'payment_status' => 'cancelled',
-                        'status' => 'cancelled',
-                        'midtrans_transaction_id' => $transactionId,
-                        'midtrans_payment_type' => $paymentType,
-                        'midtrans_response' => json_encode($notification->getResponse()),
-                    ]);
+                if ($debt->remaining_amount <= 0) {
+                    $debt->status = 'paid';
+                    $debt->remaining_amount = 0;
+                } else {
+                    $debt->status = 'partial';
                 }
 
-                DB::commit();
+                $debt->save();
+                $debt->customer->decrement('total_debt', $amount);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Notification handled successfully',
-                ], 200);
+                DB::commit();
+                return response()->json(['success' => true], 200);
 
             } catch (\Exception $e) {
                 DB::rollBack();
-                \Log::error('Failed to update sale: '.$e->getMessage());
-
-                return response()->json(['message' => 'Failed to update sale'], 500);
+                \Log::error('Debt Notification Error: ' . $e->getMessage());
+                return response()->json(['message' => 'Failed'], 500);
             }
-
-        } catch (\Exception $e) {
-            \Log::error('Midtrans Notification Error: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid notification',
-            ], 400);
         }
+
+        return response()->json(['success' => true, 'message' => 'Pending/Cancelled'], 200);
+    }
+
+    public function midtransFinish(Request $request)
+    {
+        $orderId = $request->order_id;
+        
+        if (str_starts_with($orderId, 'DEBT-')) {
+            return redirect()->route('customer-debts.index')
+                ->with('success', 'Pembayaran utang berhasil diproses');
+        }
+        
+        Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
+        return redirect()->route('pos.index')
+            ->with('success', 'Pembayaran berhasil diproses');
     }
 
     /**
@@ -649,79 +632,30 @@ class PaymentController extends Controller
         }
     }
 
-    private function createOrUpdateSalePayment($sale, $transactionId, $paymentType, $notification)
+    private function createOrUpdateSalePayment($sale, $notification)
     {
-        $salePayment = SalePayment::where('sale_id', $sale->id)
-            ->where('midtrans_transaction_id', $transactionId)
-            ->first();
-
-        $paymentDetails = [
-            'payment_type' => $paymentType,
-            'transaction_id' => $transactionId,
-            'transaction_time' => $notification->transaction_time ?? null,
-            'settlement_time' => $notification->settlement_time ?? null,
-            'gross_amount' => $notification->gross_amount ?? null,
-        ];
-
-        if (isset($notification->va_numbers)) {
-            $paymentDetails['va_numbers'] = $notification->va_numbers;
-        }
-
-        if (isset($notification->bill_key)) {
-            $paymentDetails['bill_key'] = $notification->bill_key;
-            $paymentDetails['biller_code'] = $notification->biller_code ?? null;
-        }
-
-        if ($salePayment) {
-            $salePayment->update([
-                'amount' => $sale->grand_total,
-                'payment_details' => json_encode($paymentDetails),
-            ]);
-        } else {
-            SalePayment::create([
-                'sale_id' => $sale->id,
+        SalePayment::updateOrCreate(
+            ['sale_id' => $sale->id, 'midtrans_transaction_id' => $notification->transaction_id],
+            [
                 'payment_method' => 'qris',
                 'amount' => $sale->grand_total,
-                'reference_number' => null,
-                'midtrans_transaction_id' => $transactionId,
-                'payment_details' => json_encode($paymentDetails),
+                'payment_details' => json_encode([
+                    'transaction_id' => $notification->transaction_id,
+                    'payment_type' => $notification->payment_type,
+                ]),
                 'received_by' => $sale->cashier_id,
-            ]);
-        }
-    }
-
-    public function midtransFinish(Request $request)
-    {
-        $orderId = $request->order_id;
-        $sale = Sale::where('midtrans_order_id', $orderId)->first();
-
-        if (! $sale) {
-            return redirect()->route('pos.index')->with('error', 'Transaksi tidak ditemukan');
-        }
-
-        Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
-
-        return redirect()->route('pos.index')->with('success', 'Pembayaran berhasil diproses. Invoice: '.$sale->invoice_number);
+            ]
+        );
     }
 
 
-    /**
-     * Check if payment amount is sufficient
-     */
     public function checkPaymentAmount(Request $request)
     {
-        $request->validate([
-            'paid_amount' => 'required|numeric|min:0',
-        ]);
-
         $cart = Session::get('pos_cart', []);
         $discountPlan = Session::get('pos_discount_plan');
-
+        
         if (empty($cart)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Keranjang kosong',
-            ], 400);
+            return response()->json(['success' => false, 'message' => 'Keranjang kosong'], 400);
         }
 
         $summary = $this->calculateCartSummaryWithDiscount($cart, $discountPlan);
@@ -731,7 +665,6 @@ class PaymentController extends Controller
             'success' => true,
             'is_sufficient' => $shortfall <= 0,
             'grand_total' => $summary['grand_total'],
-            'paid_amount' => $request->paid_amount,
             'shortfall' => max(0, $shortfall),
         ]);
     }

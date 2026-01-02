@@ -1726,7 +1726,7 @@
 
 <!-- Modal: Penjualan Hari Ini -->
 <div id="salesTodayModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="modal-content bg-white rounded-2xl shadow-2xl">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <!-- Header - Fixed -->
         <div class="modal-header-fixed flex items-center justify-between p-6">
             <div>
