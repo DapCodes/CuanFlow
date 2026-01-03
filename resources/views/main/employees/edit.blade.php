@@ -18,24 +18,33 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-4xl mx-auto">
+<main class="flex-grow py-2 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
         
         <form action="{{ route('employees.update', $employee->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
 
             {{-- Header --}}
-            <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5">
-                <div class="flex items-center gap-3 mb-1">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-teal-50 text-teal-500 border border-teal-100">
-                        <i class="fas fa-user-edit text-sm"></i>
-                    </span>
-                    <h1 class="text-xl font-semibold text-gray-900">Edit Data Pegawai</h1>
+            <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-teal-50 text-teal-500 border border-teal-100">
+                            <i class="fas fa-users text-sm"></i>
+                        </span>
+                        <span>Edit Data Pegawai</span>
+                    </h1>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Perbarui informasi pegawai {{ $employee->name }}
+                    </p>
                 </div>
-                <p class="text-sm text-gray-500 ml-12">
-                    Perbarui informasi pegawai {{ $employee->name }}
-                </p>
+                <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+                    <a href="{{ route('employees.index') }}"
+                    class="inline-flex items-center gap-2 rounded-lg bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-1">
+                        <i class="fas fa-arrow-left text-sm"></i>
+                        <span>Kembali</span>
+                    </a>
+                </div>
             </section>
 
             {{-- Informasi Pribadi --}}
