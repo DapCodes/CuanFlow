@@ -133,10 +133,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
-                        <span class="text-xs text-gray-500">Kuota:</span>
-                        <span class="text-sm font-semibold text-indigo-600"
-                            id="quotaDisplay">{{ auth()->user()->daily_chat_quota }}</span>
-                        <span class="text-xs text-gray-400">/3</span>
+                        <!-- Kuota display removed -->
                     </div>
                 </div>
             </div>
@@ -188,47 +185,29 @@
                 </div>
             </div>
 
-            <!-- Input Area -->
+            <!-- Input Area (quota removed, always available) -->
             <div class="bg-white border-t border-gray-200 flex-shrink-0" id="inputArea">
-                @if (auth()->user()->daily_chat_quota > 0)
-                    <div class="max-w-3xl mx-auto px-4 py-4">
-                        <form id="chatForm" class="flex gap-2">
-                            @csrf
-                            <input type="hidden" name="session_id" value="{{ $session->id }}">
-                            <div class="flex-1 relative">
-                                <input type="text" id="messageInput" name="message"
-                                    placeholder="Tanyakan sesuatu tentang bisnis Anda..."
-                                    class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition-shadow shadow-sm"
-                                    maxlength="1000" autocomplete="off">
-                            </div>
-                            <button type="submit" id="sendButton"
-                                class="px-5 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm hover:shadow">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                                </svg>
-                            </button>
-                        </form>
-                        <p class="text-xs text-gray-400 text-center mt-2">Clara AI dapat membuat kesalahan. Harap
-                            verifikasi informasi penting.</p>
-                    </div>
-                @else
-                    <div class="max-w-3xl mx-auto px-4 py-6">
-                        <div
-                            class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl px-6 py-4 text-center">
-                            <div class="flex items-center justify-center mb-2">
-                                <svg class="w-6 h-6 text-orange-500 mr-2" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <h4 class="text-sm font-semibold text-gray-900">Kuota Chat Habis</h4>
-                            </div>
-                            <p class="text-sm text-gray-600">Kuota chat harian Anda sudah habis. Kuota akan direset besok
-                                pukul 00:00 WIB</p>
+                <div class="max-w-3xl mx-auto px-4 py-4">
+                    <form id="chatForm" class="flex gap-2">
+                        @csrf
+                        <input type="hidden" name="session_id" value="{{ $session->id }}">
+                        <div class="flex-1 relative">
+                            <input type="text" id="messageInput" name="message"
+                                placeholder="Tanyakan sesuatu tentang bisnis Anda..."
+                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition-shadow shadow-sm"
+                                maxlength="1000" autocomplete="off">
                         </div>
-                    </div>
-                @endif
+                        <button type="submit" id="sendButton"
+                            class="px-5 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm hover:shadow">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                        </button>
+                    </form>
+                    <p class="text-xs text-gray-400 text-center mt-2">Clara AI dapat membuat kesalahan. Harap
+                        verifikasi informasi penting.</p>
+                </div>
             </div>
 
         </div>
@@ -236,7 +215,6 @@
 
     @push('scripts')
         <script>
-            let currentQuota = {{ auth()->user()->daily_chat_quota }};
             let currentSessionId = {{ $session->id }};
 
             // Toggle Sidebar
@@ -256,26 +234,7 @@
                 }
             });
 
-            function updateQuota(remaining) {
-                currentQuota = remaining;
-                document.getElementById('quotaDisplay').textContent = remaining;
-
-                if (remaining <= 0) {
-                    document.getElementById('inputArea').innerHTML = `
-            <div class="max-w-3xl mx-auto px-4 py-6">
-                <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl px-6 py-4 text-center">
-                    <div class="flex items-center justify-center mb-2">
-                        <svg class="w-6 h-6 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <h4 class="text-sm font-semibold text-gray-900">Kuota Chat Habis</h4>
-                    </div>
-                    <p class="text-sm text-gray-600">Kuota chat harian Anda sudah habis. Kuota akan direset besok pukul 00:00 WIB</p>
-                </div>
-            </div>
-        `;
-                }
-            }
+            // quota handling removed
 
             function updateSessionTitle(sessionId, newTitle) {
                 // Update title di sidebar
@@ -294,10 +253,6 @@
             }
 
             function createNewChat() {
-                if (currentQuota <= 0) {
-                    alert('Kuota chat Anda sudah habis. Silakan coba lagi besok.');
-                    return;
-                }
                 window.location.href = '{{ route('clara-ai.new-session') }}';
             }
 
@@ -360,10 +315,7 @@
 
                 if (!message) return;
 
-                if (currentQuota <= 0) {
-                    alert('Kuota chat Anda sudah habis.');
-                    return;
-                }
+                // quota removed — always allow submit
 
                 btn.disabled = true;
                 input.disabled = true;
@@ -436,9 +388,7 @@
                             updateSessionTitle(data.session_id, data.new_title);
                         }
 
-                        if (data.remaining_quota !== undefined) {
-                            updateQuota(data.remaining_quota);
-                        }
+                        // quota removed — no update needed
                     } else {
                         chatContent.insertAdjacentHTML('beforeend', `
                             <div class="flex gap-3 mb-4">

@@ -12,37 +12,37 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4 bg-gray-50">
-  <div class="max-w-7xl mx-auto space-y-6">
+<main class="flex-grow py-4 sm:py-8 px-3 sm:px-4 bg-gray-50">
+  <div class="max-w-7xl mx-auto space-y-4 sm:space-y-6">
 
     {{-- Header --}}
-    <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-          <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-purple-50 text-purple-600 border border-purple-100">
-            <i class="fas fa-lightbulb text-sm"></i>
+    <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+      <div class="flex-1">
+        <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-purple-50 text-purple-600 border border-purple-100">
+            <i class="fas fa-lightbulb text-xs sm:text-sm"></i>
           </span>
           <span>Insight Clara AI</span>
         </h1>
-        <p class="mt-1 text-sm text-gray-500">
+        <p class="mt-1 text-xs sm:text-sm text-gray-500">
           Klik tanggal di kalender untuk melihat insight. Ada status Belum Dibaca, Sudah Dibaca, dan Dismiss.
         </p>
       </div>
 
-      <div class="flex items-center gap-3 justify-start md:justify-end">
+      <div class="flex items-center gap-2 sm:gap-3 justify-start md:justify-end">
         <button id="btnToday"
-          class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 px-4 py-2 text-xs font-semibold text-white hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-1">
+          class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 px-3 sm:px-4 py-2 text-xs font-semibold text-white hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-1">
           Hari Ini
         </button>
       </div>
     </section>
 
     {{-- Layout: Calendar + Legend / Quick stats --}}
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
       {{-- Calendar --}}
       <div class="lg:col-span-8">
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <div class="border-b border-gray-200 px-5 py-4 flex items-center justify-between">
+          <div class="border-b border-gray-200 px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
               <h2 class="text-sm font-semibold text-gray-900">Kalender Insight</h2>
               <p class="text-xs text-gray-500 mt-0.5">Indikator: U=Unread, R=Read, D=Dismissed</p>
@@ -52,7 +52,7 @@
             </div>
           </div>
 
-          <div class="p-4">
+          <div class="p-3 sm:p-4">
             <div id="calendar" class="fc-theme-standard"></div>
           </div>
         </div>
@@ -60,26 +60,26 @@
 
       {{-- Side panel: legend (simple) --}}
       <div class="lg:col-span-4">
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-5">
           <h3 class="text-sm font-semibold text-gray-900 mb-3">Legenda</h3>
 
-          <div class="space-y-2 text-sm">
-            <div class="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-100">
+          <div class="space-y-2 text-xs sm:text-sm">
+            <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-purple-50 border border-purple-100">
               <span class="text-gray-700">Unread (U)</span>
               <span class="text-purple-700 font-semibold">badge ungu</span>
             </div>
-            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-100">
+            <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-gray-50 border border-gray-100">
               <span class="text-gray-700">Read (R)</span>
               <span class="text-gray-700 font-semibold">badge abu</span>
             </div>
-            <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+            <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-slate-50 border border-slate-200">
               <span class="text-gray-700">Dismissed (D)</span>
               <span class="text-slate-700 font-semibold">badge garis</span>
             </div>
           </div>
 
           <div class="mt-4 text-xs text-gray-500 leading-relaxed">
-            Tips: kalau kamu ingin semua insight cepat “rapi”, gunakan tombol “Tandai semua sudah dibaca” di modal tanggal yang dipilih.
+            Tips: kalau kamu ingin semua insight cepat "rapi", gunakan tombol "Tandai semua sudah dibaca" di modal tanggal yang dipilih.
           </div>
         </div>
       </div>
@@ -87,54 +87,61 @@
   </div>
 </main>
 
-{{-- Modal: Daily insights --}}
+{{-- Modal: Daily insights - IMPROVED RESPONSIVE --}}
 <div id="dailyModal" class="hidden fixed inset-0 z-50">
   <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
 
-  <div class="relative mx-auto w-full max-w-3xl px-4 top-10 sm:top-14">
-    <div class="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+  <div class="relative mx-auto w-full h-full sm:h-auto max-w-3xl px-2 sm:px-4 py-4 sm:py-0 sm:top-6 md:top-10 lg:top-14 flex items-start sm:items-center justify-center">
+    <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 overflow-hidden w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col">
+      
       {{-- Modal Header --}}
-      <div class="px-5 py-4 border-b border-gray-200 flex items-start justify-between gap-4">
-        <div>
+      <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-200 flex items-start justify-between gap-3 flex-shrink-0">
+        <div class="flex-1 min-w-0">
           <div class="text-xs text-gray-500">Insight tanggal</div>
-          <div id="modalDate" class="text-lg font-bold text-gray-900">-</div>
-          <div id="modalCounts" class="text-xs text-gray-500 mt-1">-</div>
+          <div id="modalDate" class="text-base sm:text-lg font-bold text-gray-900 truncate">-</div>
+          <div id="modalCounts" class="text-xs text-gray-500 mt-1 break-words">-</div>
         </div>
-        <button id="btnCloseModal" class="text-gray-400 hover:text-gray-700">
-          <i class="fas fa-times text-xl"></i>
+        <button id="btnCloseModal" class="text-gray-400 hover:text-gray-700 flex-shrink-0 p-1">
+          <i class="fas fa-times text-lg sm:text-xl"></i>
         </button>
       </div>
 
       {{-- Tabs --}}
-      <div class="px-5 py-3 border-b border-gray-200 flex flex-wrap gap-2 items-center">
-        <button data-tab="all" class="tabBtn px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 border border-purple-100">Semua</button>
-        <button data-tab="unread" class="tabBtn px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50">Belum Dibaca</button>
-        <button data-tab="read" class="tabBtn px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50">Sudah Dibaca</button>
-        <button data-tab="dismissed" class="tabBtn px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50">Dismiss</button>
+      <div class="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-gray-200 flex-shrink-0 overflow-x-auto">
+        <div class="flex flex-nowrap sm:flex-wrap gap-2 items-center min-w-max sm:min-w-0">
+          <button data-tab="all" class="tabBtn px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 whitespace-nowrap">Semua</button>
+          <button data-tab="unread" class="tabBtn px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap">Belum Dibaca</button>
+          <button data-tab="read" class="tabBtn px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap">Sudah Dibaca</button>
+          <button data-tab="dismissed" class="tabBtn px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap">Dismiss</button>
 
-        <div class="ml-auto flex gap-2">
-          <button id="btnMarkAllRead"
-            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 text-white hover:opacity-95">
-            Tandai semua sudah dibaca
-          </button>
+          <div class="hidden sm:flex ml-auto">
+            <button id="btnMarkAllRead"
+              class="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 text-white hover:opacity-95 whitespace-nowrap">
+              Tandai semua sudah dibaca
+            </button>
+          </div>
         </div>
+      </div>
+
+      {{-- Mark All Read Button for Mobile --}}
+      <div class="sm:hidden px-3 py-2 border-b border-gray-200 flex-shrink-0">
+        <button id="btnMarkAllReadMobile"
+          class="w-full px-3 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 text-white hover:opacity-95">
+          Tandai semua sudah dibaca
+        </button>
       </div>
 
       {{-- Modal Body --}}
-      <div class="p-5">
-        <div id="modalEmpty" class="hidden text-center py-10 text-gray-500">
+      <div class="flex-1 overflow-y-auto p-3 sm:p-5">
+        <div id="modalEmpty" class="hidden text-center py-8 sm:py-10 text-gray-500 text-sm">
           Tidak ada insight di tanggal ini.
         </div>
 
-        <div id="modalList" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1"></div>
+        <div id="modalList" class="space-y-2.5 sm:space-y-3"></div>
       </div>
 
       {{-- Modal Footer --}}
-      <div class="px-5 py-4 border-t border-gray-200 flex items-center justify-end">
-        <!-- <a href="{{ route('ai-insights.index') }}"
-           class="text-sm font-semibold text-purple-700 hover:text-purple-800">
-          Lihat halaman ini
-        </a> -->
+      <div class="px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-200 flex items-center justify-end flex-shrink-0">
         <button id="btnCloseModal2" class="text-sm font-semibold text-gray-700 hover:text-gray-900">
           Tutup
         </button>
@@ -154,10 +161,16 @@
   }
 
   .fc .fc-toolbar-title {
-    font-size: .9rem;
+    font-size: .75rem;
     font-weight: 800;
     color: #111827;
     letter-spacing: .02em;
+  }
+
+  @media (min-width: 640px) {
+    .fc .fc-toolbar-title {
+      font-size: .9rem;
+    }
   }
 
   .fc .fc-button {
@@ -166,9 +179,17 @@
     background: #fff;
     color: #6b7280;
     box-shadow: none;
-    padding: .35rem .6rem;
-    font-size: .8rem;
+    padding: .25rem .45rem;
+    font-size: .7rem;
   }
+
+  @media (min-width: 640px) {
+    .fc .fc-button {
+      padding: .35rem .6rem;
+      font-size: .8rem;
+    }
+  }
+
   .fc .fc-button:hover { background: #f3f4f6; color:#111827; }
   .fc .fc-today-button { display:none !important; }
 
@@ -176,17 +197,56 @@
   .cf-badge {
     display:inline-flex;
     align-items:center;
-    gap:.35rem;
-    padding:.15rem .35rem;
+    gap:.25rem;
+    padding:.1rem .25rem;
     border-radius: 9999px;
-    font-size: .7rem;
+    font-size: .6rem;
     font-weight: 800;
     line-height: 1;
     white-space: nowrap;
   }
+
+  @media (min-width: 640px) {
+    .cf-badge {
+      gap:.35rem;
+      padding:.15rem .35rem;
+      font-size: .7rem;
+    }
+  }
+
   .cf-unread { background: rgba(167,139,250,.18); color: #5b21b6; border: 1px solid rgba(167,139,250,.35); }
   .cf-read { background: #f3f4f6; color:#374151; border: 1px solid #e5e7eb; }
   .cf-dismiss { background: #fff; color:#334155; border: 1px dashed #cbd5e1; }
+
+  /* Responsive calendar day cells */
+  .fc-daygrid-day-number {
+    font-size: .75rem;
+    padding: .25rem;
+  }
+
+  @media (min-width: 640px) {
+    .fc-daygrid-day-number {
+      font-size: .875rem;
+      padding: .5rem;
+    }
+  }
+
+  /* Modal scroll improvements for mobile */
+  @media (max-width: 639px) {
+    #dailyModal .overflow-x-auto::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    #dailyModal .overflow-x-auto::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    #dailyModal .overflow-x-auto::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+  }
 </style>
 @endpush
 
@@ -211,6 +271,7 @@
   const btnClose2 = document.getElementById('btnCloseModal2');
   const btnToday = document.getElementById('btnToday');
   const btnMarkAllRead = document.getElementById('btnMarkAllRead');
+  const btnMarkAllReadMobile = document.getElementById('btnMarkAllReadMobile');
 
   let selectedDate = null;
   let currentTab = 'all';
@@ -266,31 +327,31 @@
     modalEmpty.classList.add('hidden');
 
     if(!items.length){
-      modalList.innerHTML = `<div class="text-center py-10 text-gray-500 text-sm">Tidak ada insight untuk filter ini.</div>`;
+      modalList.innerHTML = `<div class="text-center py-8 sm:py-10 text-gray-500 text-sm">Tidak ada insight untuk filter ini.</div>`;
       return;
     }
 
     modalList.innerHTML = items.map(i => `
-      <div class="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition">
-        <div class="flex items-start justify-between gap-3">
-          <div>
+      <div class="border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:bg-gray-50 transition">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div class="flex-1 min-w-0">
             <div class="text-xs text-gray-500">${i.time}</div>
-            <div class="font-semibold text-gray-900">${escapeHtml(i.title)}</div>
-            <div class="mt-1 text-xs inline-flex items-center gap-2">
-              <span class="px-2 py-1 rounded-full border ${pillSeverity(i.severity)} text-[11px] font-semibold">${i.severity.toUpperCase()}</span>
+            <div class="font-semibold text-gray-900 text-sm sm:text-base break-words">${escapeHtml(i.title)}</div>
+            <div class="mt-1.5 sm:mt-1 text-xs flex flex-wrap items-center gap-2">
+              <span class="px-2 py-1 rounded-full border ${pillSeverity(i.severity)} text-[10px] sm:text-[11px] font-semibold">${i.severity.toUpperCase()}</span>
               <span class="text-gray-600">${statusText(i)}</span>
             </div>
           </div>
-          <div class="flex gap-2">
+          <div class="flex flex-row sm:flex-row gap-2 flex-shrink-0">
             ${(!i.is_dismissed && !i.is_read) ? `
-              <button class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 hover:bg-purple-100"
+              <button class="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 hover:bg-purple-100 whitespace-nowrap"
                 onclick="markRead(${i.id})">Tandai dibaca</button>` : ``}
             ${(!i.is_dismissed) ? `
-              <button class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+              <button class="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap"
                 onclick="dismissInsight(${i.id})">Dismiss</button>` : ``}
           </div>
         </div>
-        <div class="mt-3 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+        <div class="mt-2.5 sm:mt-3 text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line break-words">
           ${escapeHtml(i.content)}
         </div>
       </div>
@@ -309,7 +370,7 @@
     setActiveTab();
 
     showModal();
-    modalList.innerHTML = `<div class="py-10 text-center text-gray-500 text-sm"><i class="fas fa-circle-notch fa-spin mr-2"></i>Memuat...</div>`;
+    modalList.innerHTML = `<div class="py-8 sm:py-10 text-center text-gray-500 text-sm"><i class="fas fa-circle-notch fa-spin mr-2"></i>Memuat...</div>`;
     modalEmpty.classList.add('hidden');
 
     const res = await fetch(`${routes.daily}?date=${dateStr}`, { headers: { 'X-Requested-With':'XMLHttpRequest' } });
@@ -377,7 +438,8 @@
     }
   }
 
-  btnMarkAllRead.addEventListener('click', async ()=>{
+  // Mark all read untuk desktop dan mobile
+  const markAllReadHandler = async () => {
     try{
       await postJson(routes.markAllRead);
       if(selectedDate) await refreshDailyAndCalendar();
@@ -385,7 +447,10 @@
       console.error(e);
       alert(e.message || 'Gagal menandai semua dibaca');
     }
-  });
+  };
+
+  btnMarkAllRead.addEventListener('click', markAllReadHandler);
+  btnMarkAllReadMobile.addEventListener('click', markAllReadHandler);
 
   let calendar = null;
   async function refreshDailyAndCalendar(){

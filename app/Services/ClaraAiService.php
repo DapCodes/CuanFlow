@@ -25,13 +25,7 @@ class ClaraAiService
     {
         $user = $session->user;
 
-        // Check dan reset quota harian
-        if (! $this->checkAndResetQuota($user)) {
-            return [
-                'success' => false,
-                'message' => 'Kuota chat harian Anda sudah habis. Kuota akan direset besok.',
-            ];
-        }
+        // (Quota check removed) — always allow chat
 
         // Save user message
         $session->addMessage('user', $userMessage);
@@ -53,7 +47,7 @@ class ClaraAiService
                 'Authorization' => 'Bearer '.$this->apiKey,
                 'Content-Type' => 'application/json',
             ])->timeout(60)->post($this->baseUrl.'/chat/completions', [
-                'model' => 'amazon/nova-2-lite-v1:free',
+                'model' => 'deepseek/deepseek-r1-0528:free',
                 'messages' => $messages,
                 'max_tokens' => 2000,
             ]);
@@ -106,13 +100,9 @@ class ClaraAiService
                 // Generate insight jika diperlukan
                 $this->generateInsightIfNeeded($session->outlet_id, $userMessage, $cleanResponse, $contextData);
 
-                // Kurangi quota
-                $user->decrement('daily_chat_quota');
-
                 return [
                     'success' => true,
                     'message' => $cleanResponse,
-                    'remaining_quota' => $user->daily_chat_quota,
                 ];
             }
 
@@ -179,19 +169,7 @@ class ClaraAiService
         return trim($response);
     }
 
-    private function checkAndResetQuota(User $user): bool
-    {
-        $today = now()->toDateString();
-
-        if ($user->last_chat_reset_date !== $today) {
-            $user->update([
-                'daily_chat_quota' => 3,
-                'last_chat_reset_date' => $today,
-            ]);
-        }
-
-        return $user->daily_chat_quota > 0;
-    }
+    // quota logic removed — no daily limit enforced
 
     private function getBusinessContext($outletId): array
     {

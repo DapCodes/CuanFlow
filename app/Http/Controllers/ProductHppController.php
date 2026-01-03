@@ -43,7 +43,6 @@ class ProductHppController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            // Step 1: Basic Info
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:30|unique:products,code',
             'barcode' => 'nullable|string|max:50',
@@ -51,48 +50,36 @@ class ProductHppController extends Controller
             'unit_id' => 'required|exists:units,id',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-
-            // Step 2: Recipe Info
             'recipe_name' => 'required|string|max:255',
             'output_quantity' => 'required|numeric|min:0.01',
             'estimated_time_minutes' => 'nullable|integer|min:1',
             'instructions' => 'nullable|string',
-
-            // Step 3: Recipe Items
             'recipe_items' => 'required|array|min:1',
             'recipe_items.*.raw_material_id' => 'required|exists:raw_materials,id',
             'recipe_items.*.quantity' => 'required|numeric|min:0.01',
             'recipe_items.*.notes' => 'nullable|string',
-
-            // Step 4: Additional Costs
             'additional_cost' => 'nullable|numeric|min:0',
-
-            // Step 5: Pricing
             'selling_price' => 'required|numeric|min:0',
             'reseller_price' => 'nullable|numeric|min:0',
             'promo_price' => 'nullable|numeric|min:0',
             'min_stock' => 'nullable|numeric|min:0',
             'shelf_life_days' => 'nullable|integer|min:1',
-
-            // Step 6: Sales Target (opsional)
             'enable_sales_target' => 'nullable|boolean',
             'monthly_target_revenue' => 'nullable|numeric|min:0',
             'daily_sales_target' => 'nullable|integer|min:0',
             'monthly_sales_target' => 'nullable|integer|min:0',
             'daily_revenue_target' => 'nullable|numeric|min:0',
-            'sales_pattern' => 'nullable|string', // JSON string dari hidden input
+            'sales_pattern' => 'nullable|string',
             'target_start_date' => 'nullable|date',
         ]);
 
         DB::beginTransaction();
         try {
-            // Handle image upload
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('products', 'public');
                 $validated['image'] = $imagePath;
             }
 
-            // Create Product
             $product = Product::create([
                 'code' => $validated['code'],
                 'name' => $validated['name'],
@@ -107,13 +94,12 @@ class ProductHppController extends Controller
                 'promo_price' => $validated['promo_price'] ?? null,
                 'min_stock' => $validated['min_stock'] ?? 0,
                 'shelf_life_days' => $validated['shelf_life_days'] ?? null,
-                'hpp' => 0, // Will be calculated
+                'hpp' => 0,
                 'is_active' => true,
                 'is_sellable' => true,
                 'track_stock' => true,
             ]);
 
-            // Create Recipe
             $recipe = Recipe::create([
                 'product_id' => $product->id,
                 'name' => $validated['recipe_name'],
@@ -124,12 +110,10 @@ class ProductHppController extends Controller
                 'is_default' => true,
             ]);
 
-            // Create Recipe Items & hitung biaya bahan baku
             $rawMaterialCost = 0;
             foreach ($validated['recipe_items'] as $index => $item) {
                 $rawMaterial = RawMaterial::find($item['raw_material_id']);
 
-                // Verify raw material belongs to outlet
                 if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
                     throw new \Exception('Bahan baku tidak valid untuk outlet ini.');
                 }
@@ -145,13 +129,11 @@ class ProductHppController extends Controller
                 $rawMaterialCost += ($item['quantity'] * $rawMaterial->purchase_price);
             }
 
-            // Calculate HPP
             $additionalCost = $validated['additional_cost'] ?? 0;
             $totalHpp = $rawMaterialCost + $additionalCost;
             $hppPerUnit = $totalHpp / $validated['output_quantity'];
 
-            // Create HPP Calculation
-            $hppCalculation = HppCalculation::create([
+            HppCalculation::create([
                 'product_id' => $product->id,
                 'recipe_id' => $recipe->id,
                 'raw_material_cost' => $rawMaterialCost,
@@ -175,26 +157,19 @@ class ProductHppController extends Controller
                 'margin_percent' => round($marginPercent, 2),
             ]);
 
-            /**
-             * SIMPAN PRODUCT SALES TARGET (Step 6)
-             * hanya jika checkbox "enable_sales_target" dicentang
-             * dan monthly_target_revenue > 0
-             */
-            if ($request->boolean('enable_sales_target') && ! empty($validated['monthly_target_revenue']) && $validated['monthly_target_revenue'] > 0) {
+            if ($request->boolean('enable_sales_target') && !empty($validated['monthly_target_revenue']) && $validated['monthly_target_revenue'] > 0) {
                 $monthlyTargetRevenue = (float) $validated['monthly_target_revenue'];
                 $sellingPrice = (float) $validated['selling_price'];
 
                 if ($sellingPrice > 0) {
-                    // Hitung ulang di backend (tidak tergantung JS)
                     $monthlySalesTarget = (int) ceil($monthlyTargetRevenue / $sellingPrice);
                     $dailySalesTarget = (int) ceil($monthlySalesTarget / 30);
                     $dailyRevenueTarget = $dailySalesTarget * $sellingPrice;
                     $profitPerUnit = $sellingPrice - $hppPerUnit;
                     $monthlyProfitTarget = $monthlySalesTarget * $profitPerUnit;
 
-                    // Decode pola penjualan harian kalau ada (dari chart Step 6)
                     $salesPattern = null;
-                    if (! empty($validated['sales_pattern'])) {
+                    if (!empty($validated['sales_pattern'])) {
                         $decoded = json_decode($validated['sales_pattern'], true);
                         if (json_last_error() === JSON_ERROR_NONE) {
                             $salesPattern = $decoded;
@@ -228,14 +203,12 @@ class ProductHppController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     public function show(Product $product)
     {
-        // Validasi outlet_id
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -247,7 +220,6 @@ class ProductHppController extends Controller
 
     public function edit(Product $product)
     {
-        // Validasi outlet_id
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -259,7 +231,6 @@ class ProductHppController extends Controller
             ->active()
             ->get();
 
-        // Load relasi yang diperlukan
         $product->load([
             'category',
             'unit',
@@ -272,13 +243,11 @@ class ProductHppController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        // Validasi outlet_id
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
 
         $validated = $request->validate([
-            // Step 1: Basic Info
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:30|unique:products,code,'.$product->id,
             'barcode' => 'nullable|string|max:50',
@@ -286,23 +255,15 @@ class ProductHppController extends Controller
             'unit_id' => 'required|exists:units,id',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-
-            // Step 2: Recipe Info
             'recipe_name' => 'required|string|max:255',
             'output_quantity' => 'required|numeric|min:0.01',
             'estimated_time_minutes' => 'nullable|integer|min:1',
             'instructions' => 'nullable|string',
-
-            // Step 3: Recipe Items
             'recipe_items' => 'required|array|min:1',
             'recipe_items.*.raw_material_id' => 'required|exists:raw_materials,id',
             'recipe_items.*.quantity' => 'required|numeric|min:0.01',
             'recipe_items.*.notes' => 'nullable|string',
-
-            // Step 4: Additional Costs
             'additional_cost' => 'nullable|numeric|min:0',
-
-            // Step 5: Pricing
             'selling_price' => 'required|numeric|min:0',
             'reseller_price' => 'nullable|numeric|min:0',
             'promo_price' => 'nullable|numeric|min:0',
@@ -312,16 +273,13 @@ class ProductHppController extends Controller
 
         DB::beginTransaction();
         try {
-            // Handle image upload
             if ($request->hasFile('image')) {
-                // Hapus gambar lama jika ada
                 if ($product->image && \Storage::disk('public')->exists($product->image)) {
                     \Storage::disk('public')->delete($product->image);
                 }
                 $validated['image'] = $request->file('image')->store('products', 'public');
             }
 
-            // Update Product
             $product->update([
                 'code' => $validated['code'],
                 'name' => $validated['name'],
@@ -337,7 +295,6 @@ class ProductHppController extends Controller
                 'shelf_life_days' => $validated['shelf_life_days'] ?? null,
             ]);
 
-            // Update atau Create Recipe
             $recipe = $product->defaultRecipe;
             if ($recipe) {
                 $recipe->update([
@@ -346,11 +303,8 @@ class ProductHppController extends Controller
                     'estimated_time_minutes' => $validated['estimated_time_minutes'] ?? null,
                     'instructions' => $validated['instructions'] ?? null,
                 ]);
-
-                // Hapus recipe items lama
                 $recipe->items()->delete();
             } else {
-                // Buat recipe baru jika belum ada
                 $recipe = Recipe::create([
                     'product_id' => $product->id,
                     'name' => $validated['recipe_name'],
@@ -362,12 +316,10 @@ class ProductHppController extends Controller
                 ]);
             }
 
-            // Create Recipe Items & hitung biaya bahan baku
             $rawMaterialCost = 0;
             foreach ($validated['recipe_items'] as $index => $item) {
                 $rawMaterial = RawMaterial::find($item['raw_material_id']);
 
-                // Verify raw material belongs to outlet
                 if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
                     throw new \Exception('Bahan baku tidak valid untuk outlet ini.');
                 }
@@ -383,12 +335,10 @@ class ProductHppController extends Controller
                 $rawMaterialCost += ($item['quantity'] * $rawMaterial->purchase_price);
             }
 
-            // Calculate HPP
             $additionalCost = $validated['additional_cost'] ?? 0;
             $totalHpp = $rawMaterialCost + $additionalCost;
             $hppPerUnit = $totalHpp / $validated['output_quantity'];
 
-            // Create HPP Calculation (history baru)
             HppCalculation::create([
                 'product_id' => $product->id,
                 'recipe_id' => $recipe->id,
@@ -404,12 +354,10 @@ class ProductHppController extends Controller
                 'calculated_by' => Auth::id(),
             ]);
 
-            // Calculate margin
             $marginPercent = $hppPerUnit > 0
                 ? (($validated['selling_price'] - $hppPerUnit) / $hppPerUnit) * 100
                 : 0;
 
-            // Update HPP dan margin di product
             $product->update([
                 'hpp' => $hppPerUnit,
                 'margin_percent' => round($marginPercent, 2),
@@ -422,7 +370,6 @@ class ProductHppController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
@@ -435,7 +382,7 @@ class ProductHppController extends Controller
                 : abort(404);
         }
 
-        $product->is_active = ! $product->is_active;
+        $product->is_active = !$product->is_active;
         $product->save();
 
         if ($request->wantsJson()) {
@@ -451,7 +398,6 @@ class ProductHppController extends Controller
 
     public function destroy(Product $product)
     {
-        // Validasi outlet_id
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -474,7 +420,7 @@ class ProductHppController extends Controller
     {
         $rawMaterial = RawMaterial::find($request->raw_material_id);
 
-        if (! $rawMaterial || $rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+        if (!$rawMaterial || $rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             return response()->json(['error' => 'Bahan baku tidak ditemukan'], 404);
         }
 
@@ -489,13 +435,11 @@ class ProductHppController extends Controller
         $date = now()->format('Ymd');
         $prefix = 'PRD'.$date;
 
-        // Cari kode terakhir dengan prefix yang sama
         $lastProduct = Product::where('code', 'LIKE', $prefix.'%')
             ->orderBy('code', 'desc')
             ->first();
 
         if ($lastProduct) {
-            // Ambil 3 digit terakhir dan tambah 1
             $lastNumber = intval(substr($lastProduct->code, -3));
             $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
         } else {
@@ -509,13 +453,9 @@ class ProductHppController extends Controller
 
     public function generateBarcode()
     {
-        // Generate barcode 13 digit (EAN-13 format)
-        // Format: 899 (Indonesia) + 9 digit random + 1 digit checksum
-
         do {
             $barcode = '899'.str_pad(rand(0, 999999999), 9, '0', STR_PAD_LEFT);
 
-            // Hitung checksum EAN-13
             $sum = 0;
             for ($i = 0; $i < 12; $i++) {
                 $sum += ($i % 2 == 0) ? (int) $barcode[$i] : (int) $barcode[$i] * 3;
@@ -523,7 +463,6 @@ class ProductHppController extends Controller
             $checksum = (10 - ($sum % 10)) % 10;
             $barcode .= $checksum;
 
-            // Cek apakah barcode sudah ada
             $exists = Product::where('barcode', $barcode)->exists();
         } while ($exists);
 
@@ -537,8 +476,7 @@ class ProductHppController extends Controller
         $productId = $request->product_id;
         $outletId = auth()->user()->outlet_id;
 
-        // Handle new product case
-        if ($productId === 'new' || ! $productId) {
+        if ($productId === 'new' || !$productId) {
             return response()->json([
                 'daily_pattern' => [
                     'Monday' => 0, 'Tuesday' => 0, 'Wednesday' => 0,
@@ -552,13 +490,11 @@ class ProductHppController extends Controller
             ]);
         }
 
-        // Validasi apakah product milik outlet user
         $product = Product::find($productId);
-        if (! $product || $product->outlet_id !== $outletId) {
+        if (!$product || $product->outlet_id !== $outletId) {
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        // Ambil data penjualan 30 hari terakhir
         $salesHistory = Sale::byOutlet($outletId)
             ->completed()
             ->whereBetween('created_at', [now()->subDays(30), now()])
@@ -570,7 +506,6 @@ class ProductHppController extends Controller
             }])
             ->get();
 
-        // Hitung pola penjualan per hari dalam seminggu
         $dailyPattern = [
             'Monday' => 0, 'Tuesday' => 0, 'Wednesday' => 0,
             'Thursday' => 0, 'Friday' => 0, 'Saturday' => 0, 'Sunday' => 0,
@@ -584,10 +519,8 @@ class ProductHppController extends Controller
             $totalSold += $quantity;
         }
 
-        // Rata-rata penjualan per hari
         $avgDailySales = $totalSold / 30;
 
-        // Trend penjualan mingguan
         $weeklyTrend = [];
         for ($i = 3; $i >= 0; $i--) {
             $weekStart = now()->subWeeks($i)->startOfWeek();
@@ -612,7 +545,6 @@ class ProductHppController extends Controller
             ];
         }
 
-        // Determine best and worst day
         $bestDay = '-';
         $worstDay = '-';
         if ($totalSold > 0) {
@@ -630,6 +562,11 @@ class ProductHppController extends Controller
         ]);
     }
 
+    /**
+     * ======================================
+     * AI RECIPE GENERATION - IMPROVED
+     * ======================================
+     */
     public function generateRecipeAI(Request $request)
     {
         $validated = $request->validate([
@@ -638,7 +575,6 @@ class ProductHppController extends Controller
         ]);
 
         try {
-            // Ambil raw materials yang tersedia untuk outlet ini
             $rawMaterials = RawMaterial::with('unit')
                 ->where('outlet_id', Auth::user()->outlet_id)
                 ->where('is_active', true)
@@ -655,19 +591,16 @@ class ProductHppController extends Controller
                 });
 
             if ($rawMaterials->isEmpty()) {
-                throw new \Exception('Tidak ada bahan baku tersedia di outlet ini. Mohon tambahkan bahan baku terlebih dahulu.');
+                throw new \Exception('Tidak ada bahan baku tersedia di outlet ini.');
             }
 
-            // Baca system prompt dari file
             $systemPromptPath = resource_path('ai-prompts/recipe-generator.txt');
-
-            if (! file_exists($systemPromptPath)) {
-                throw new \Exception('System prompt file not found. Please create: '.$systemPromptPath);
+            if (!file_exists($systemPromptPath)) {
+                throw new \Exception('System prompt file not found: '.$systemPromptPath);
             }
 
             $systemPrompt = file_get_contents($systemPromptPath);
 
-            // Prepare user message
             $userMessage = json_encode([
                 'menu_name' => $validated['product_name'],
                 'output' => (float) $validated['output_quantity'],
@@ -680,14 +613,14 @@ class ProductHppController extends Controller
                 'raw_materials_count' => $rawMaterials->count(),
             ]);
 
-            // Panggil AI API
-            $response = Http::timeout(90)
+            // Panggil AI API dengan timeout lebih lama
+            $response = Http::timeout(120)
                 ->withHeaders([
                     'Authorization' => 'Bearer '.env('CLARA_AI_API_KEY'),
                     'Content-Type' => 'application/json',
                 ])
                 ->post('https://openrouter.ai/api/v1/chat/completions', [
-                    'model' => 'amazon/nova-2-lite-v1:free',
+                    'model' => 'arcee-ai/trinity-mini:free',
                     'messages' => [
                         [
                             'role' => 'system',
@@ -699,58 +632,88 @@ class ProductHppController extends Controller
                         ],
                     ],
                     'temperature' => 0.7,
-                    'max_tokens' => 3000,
-                    'response_format' => ['type' => 'json_object'], // Force JSON response
+                    'max_tokens' => 8000, // Increased from 3000 to handle longer responses
+                    // REMOVED: response_format - DeepSeek doesn't always respect this
                 ]);
 
             if ($response->failed()) {
                 \Log::error('AI API Request Failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
+                    'headers' => $response->headers(),
                 ]);
-                throw new \Exception('AI API request failed: '.$response->status().' - '.$response->body());
+                throw new \Exception('AI API request gagal: '.$response->status().' - '.$response->body());
             }
 
-            $data = $response->json();
-            $aiContent = $data['choices'][0]['message']['content'] ?? null;
-
-            if (! $aiContent) {
-                throw new \Exception('Empty response from AI');
-            }
-
-            \Log::info('AI Raw Response', [
-                'content_length' => strlen($aiContent),
-                'first_100_chars' => substr($aiContent, 0, 100),
+            \Log::info('API Response received', [
+                'status' => $response->status(),
+                'body_length' => strlen($response->body()),
+                'body_sample' => substr($response->body(), 0, 500),
             ]);
 
-            // ✅ MULTIPLE CLEANING STRATEGIES
-            $recipe = $this->parseAIResponse($aiContent);
+            $data = $response->json();
+            
+            \Log::info('Response decoded to array', [
+                'is_array' => is_array($data),
+                'keys' => is_array($data) ? array_keys($data) : 'not_array',
+            ]);
+            
+            // Log the ENTIRE response for debugging
+            \Log::debug('Full API Response Structure', [
+                'full_response' => json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            ]);
+            
+            $aiContent = $this->extractAIContent($data);
 
-            // Validasi struktur response
-            if (! isset($recipe['ingredients']) || ! is_array($recipe['ingredients'])) {
-                throw new \Exception('Invalid recipe structure - missing ingredients array');
+            if (!$aiContent) {
+                \Log::error('AI Response Empty After Extraction', [
+                    'response_status' => $response->status(),
+                    'response_body_full' => $response->body(), // Log full body for debugging
+                    'decoded_data' => json_encode($data, JSON_PRETTY_PRINT),
+                ]);
+                throw new \Exception('Respons AI kosong atau tidak valid. Cek Laravel logs untuk detail.');
             }
 
-            if (empty($recipe['ingredients'])) {
-                throw new \Exception('AI generated empty recipe. Please try again.');
+            \Log::info('AI Raw Response Received', [
+                'content_length' => strlen($aiContent),
+                'has_backslash' => (strpos($aiContent, '\\') !== false),
+            ]);
+            
+            // Log FULL content to separate entry for debugging
+            \Log::debug('Full AI Response Content', [
+                'full_content' => $aiContent
+            ]);
+
+            $recipe = $this->parseAIResponse($aiContent);
+
+            if (!$this->isValidRecipe($recipe)) {
+                $reason = $this->extractErrorReason($aiContent, $recipe);
+                
+                \Log::warning('AI returned invalid recipe', [
+                    'product_name' => $validated['product_name'],
+                    'reason' => $reason,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'error' => 'AI gagal membuat resep: '.($reason ?? 'struktur tidak valid'),
+                ], 200);
             }
 
             // Validasi setiap ingredient
             foreach ($recipe['ingredients'] as $index => $ingredient) {
-                if (! isset($ingredient['raw_material_id']) || ! isset($ingredient['quantity'])) {
-                    throw new \Exception("Invalid ingredient at index {$index}: missing required fields");
+                if (!isset($ingredient['raw_material_id']) || !isset($ingredient['quantity'])) {
+                    throw new \Exception("Ingredient tidak valid pada index {$index}");
                 }
 
-                // Pastikan raw_material_id valid
                 $rmExists = $rawMaterials->where('id', $ingredient['raw_material_id'])->first();
-                if (! $rmExists) {
-                    throw new \Exception("Invalid raw_material_id: {$ingredient['raw_material_id']} not found in outlet materials");
+                if (!$rmExists) {
+                    throw new \Exception("Bahan baku ID {$ingredient['raw_material_id']} tidak ditemukan");
                 }
             }
 
             \Log::info('AI Recipe Generation Success', [
                 'ingredients_count' => count($recipe['ingredients']),
-                'missing_ingredients' => $recipe['missing_ingredients'] ?? [],
             ]);
 
             return response()->json([
@@ -761,9 +724,7 @@ class ProductHppController extends Controller
         } catch (\Exception $e) {
             \Log::error('AI Recipe Generation Error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
                 'product_name' => $validated['product_name'] ?? null,
-                'outlet_id' => Auth::user()->outlet_id,
             ]);
 
             return response()->json([
@@ -774,55 +735,283 @@ class ProductHppController extends Controller
     }
 
     /**
-     * Parse AI response with multiple fallback strategies
+     * Extract AI content from various response formats
      */
-    private function parseAIResponse(string $content): array
+    private function extractAIContent($data): ?string
     {
-        // Strategy 1: Remove markdown code blocks
-        $cleaned = preg_replace('/```json\s*|\s*```/i', '', trim($content));
+        \Log::info('Extracting AI content', [
+            'data_keys' => is_array($data) ? array_keys($data) : 'not_array',
+            'has_choices' => isset($data['choices']),
+            'choices_count' => isset($data['choices']) ? count($data['choices']) : 0,
+        ]);
 
-        // Strategy 2: Remove control characters
-        $cleaned = preg_replace('/[\x00-\x1F\x7F]/u', '', $cleaned);
-
-        // Strategy 3: Fix common JSON issues
-        $cleaned = str_replace(["\r\n", "\r", "\n"], ' ', $cleaned);
-        $cleaned = preg_replace('/\s+/', ' ', $cleaned);
-
-        // Try parsing
-        $recipe = json_decode($cleaned, true);
-
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $recipe;
+        // Check for error in response
+        if (isset($data['error'])) {
+            \Log::error('API returned error', ['error' => $data['error']]);
+            throw new \Exception('API Error: ' . ($data['error']['message'] ?? json_encode($data['error'])));
         }
 
-        // Strategy 4: Try to extract JSON from text
-        if (preg_match('/\{.*"menu_name".*"ingredients".*\}/s', $content, $matches)) {
-            $extracted = $matches[0];
-            $extracted = preg_replace('/[\x00-\x1F\x7F]/u', '', $extracted);
-            $recipe = json_decode($extracted, true);
-
-            if (json_last_error() === JSON_ERROR_NONE) {
-                return $recipe;
+        // OpenAI-like format: choices[0].message.content
+        if (isset($data['choices'][0]['message']['content'])) {
+            $content = $data['choices'][0]['message']['content'];
+            
+            // Check finish_reason to understand truncation
+            $finishReason = $data['choices'][0]['finish_reason'] ?? 'unknown';
+            
+            \Log::info('Found content in choices[0].message.content', [
+                'content_type' => gettype($content),
+                'is_string' => is_string($content),
+                'content_length' => is_string($content) ? strlen($content) : 'n/a',
+                'finish_reason' => $finishReason,
+                'usage' => $data['usage'] ?? 'no usage data',
+            ]);
+            
+            if ($finishReason === 'length') {
+                \Log::warning('Response was truncated due to max_tokens limit!');
+            }
+            
+            if (is_string($content)) {
+                // DeepSeek-R1 returns content wrapped in <think> and </think> tags
+                // We need to extract the actual JSON from these tags
+                
+                // Try to extract content between <think> tags first
+                if (preg_match('/<think>(.*?)<\/think>/s', $content, $matches)) {
+                    \Log::info('Found content in <think> tags');
+                    // The actual JSON should be after </think>
+                    $afterThink = preg_replace('/<think>.*?<\/think>/s', '', $content);
+                    $content = trim($afterThink);
+                }
+                
+                // Log FULL content for debugging truncation issues
+                \Log::info('Full AI content extracted', [
+                    'full_content' => $content
+                ]);
+                
+                return $content;
+            }
+            
+            if (is_array($content)) {
+                if (isset($content['value'])) {
+                    return is_string($content['value']) ? $content['value'] : json_encode($content['value']);
+                }
+                return json_encode($content);
             }
         }
 
-        // Strategy 5: Try fixing common escape issues
-        $cleaned = stripslashes($cleaned);
-        $recipe = json_decode($cleaned, true);
+        // Alternative: choices[0].text
+        if (isset($data['choices'][0]['text'])) {
+            \Log::info('Found content in choices[0].text');
+            return $data['choices'][0]['text'];
+        }
 
-        if (json_last_error() === JSON_ERROR_NONE) {
+        // Alternative: choices[0].delta.content (streaming format)
+        if (isset($data['choices'][0]['delta']['content'])) {
+            \Log::info('Found content in choices[0].delta.content');
+            return $data['choices'][0]['delta']['content'];
+        }
+
+        // Alternative: output format
+        if (isset($data['output'][0]['content'][0]['text'])) {
+            \Log::info('Found content in output[0].content[0].text');
+            return $data['output'][0]['content'][0]['text'];
+        }
+
+        // Check if response is the content itself
+        if (is_string($data)) {
+            \Log::info('Response is direct string');
+            return $data;
+        }
+
+        // Log full structure for debugging
+        \Log::error('Could not extract content from AI response', [
+            'response_structure' => is_array($data) ? json_encode($data, JSON_PRETTY_PRINT) : 'not_array',
+            'keys' => is_array($data) ? array_keys($data) : 'not_array',
+            'data_sample' => is_string($data) ? substr($data, 0, 500) : json_encode($data),
+        ]);
+
+        return null;
+    }
+
+    /**
+     * Parse AI response with improved error handling
+     */
+    private function parseAIResponse(string $content): array
+    {
+        \Log::info('Starting AI response parse', [
+            'content_length' => strlen($content),
+            'has_backslash' => (strpos($content, '\\') !== false),
+            'backslash_count' => substr_count($content, '\\'),
+            'has_think_tags' => (strpos($content, '<think>') !== false),
+        ]);
+
+        // Strategy 1: Remove <think> reasoning tags (DeepSeek-R1 specific)
+        $cleaned = trim($content);
+        
+        // Remove <think>...</think> tags which contain reasoning
+        if (strpos($cleaned, '<think>') !== false) {
+            \Log::info('Removing <think> reasoning tags');
+            $cleaned = preg_replace('/<think>.*?<\/think>/s', '', $cleaned);
+            $cleaned = trim($cleaned);
+        }
+        
+        // Remove markdown code blocks
+        $cleaned = preg_replace('/```json\s*/i', '', $cleaned);
+        $cleaned = preg_replace('/\s*```/i', '', $cleaned);
+        
+        // Remove BOM
+        $cleaned = preg_replace('/^\xEF\xBB\xBF/', '', $cleaned);
+        
+        // CRITICAL FIX: Remove ALL control characters including newlines in strings
+        // This is more aggressive but necessary for JSON parsing
+        $cleaned = preg_replace('/[\x00-\x1F\x7F]/u', '', $cleaned);
+        
+        // Fix problematic backslashes
+        $cleaned = $this->cleanInvalidBackslashes($cleaned);
+        
+        \Log::info('After cleaning', [
+            'cleaned_length' => strlen($cleaned),
+            'backslash_count' => substr_count($cleaned, '\\'),
+            'sample' => substr($cleaned, 0, 300),
+            'ends_with' => substr($cleaned, -50),
+        ]);
+
+        // Try parsing cleaned version
+        $recipe = json_decode($cleaned, true);
+        if (json_last_error() === JSON_ERROR_NONE && $this->isValidRecipe($recipe)) {
+            \Log::info('Parse successful with Strategy 1');
             return $recipe;
         }
 
-        // All strategies failed
-        \Log::error('JSON Parse Failed - All Strategies', [
-            'original_length' => strlen($content),
-            'cleaned_length' => strlen($cleaned),
-            'json_error' => json_last_error_msg(),
-            'first_200_chars' => substr($cleaned, 0, 200),
-            'last_200_chars' => substr($cleaned, -200),
+        $firstError = json_last_error_msg();
+        \Log::warning('Strategy 1 failed', [
+            'error' => $firstError,
+            'cleaned_full' => $cleaned, // Log full cleaned JSON for debugging
         ]);
 
-        throw new \Exception('Invalid JSON from AI: '.json_last_error_msg().'. Raw response logged for debugging.');
+        // Strategy 2: Extract JSON with regex
+        if (preg_match('/\{(?:[^{}]|(?R))*\}/s', $content, $matches)) {
+            $extracted = $matches[0];
+            $extracted = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $extracted);
+            $extracted = $this->cleanInvalidBackslashes($extracted);
+            
+            $recipe = json_decode($extracted, true);
+            if (json_last_error() === JSON_ERROR_NONE && $this->isValidRecipe($recipe)) {
+                \Log::info('Parse successful with Strategy 2');
+                return $recipe;
+            }
+            
+            \Log::warning('Strategy 2 failed', ['error' => json_last_error_msg()]);
+        }
+
+        // Strategy 3: Extract ingredients directly
+        if (preg_match('/"ingredients"\s*:\s*\[(.*?)\]/s', $content, $matches)) {
+            $ingredientsJson = '[' . $matches[1] . ']';
+            $ingredientsJson = $this->cleanInvalidBackslashes($ingredientsJson);
+            
+            $ingredients = json_decode($ingredientsJson, true);
+            
+            if (json_last_error() === JSON_ERROR_NONE && is_array($ingredients) && !empty($ingredients)) {
+                \Log::info('Parse successful with Strategy 3 (partial)');
+                return [
+                    'menu_name' => 'Generated Recipe',
+                    'ingredients' => $ingredients,
+                    'assumptions' => 'Parsed from partial response',
+                    'missing_ingredients' => []
+                ];
+            }
+            
+            \Log::warning('Strategy 3 failed', ['error' => json_last_error_msg()]);
+        }
+
+        // Strategy 4: Try stripslashes
+        $stripped = stripslashes($cleaned);
+        $recipe = json_decode($stripped, true);
+        if (json_last_error() === JSON_ERROR_NONE && $this->isValidRecipe($recipe)) {
+            \Log::info('Parse successful with Strategy 4');
+            return $recipe;
+        }
+
+        // All failed - detailed error log
+        \Log::error('All parse strategies failed', [
+            'json_error' => json_last_error_msg(),
+            'content_sample' => substr($cleaned, 0, 1000),
+            'backslashes' => substr_count($content, '\\'),
+        ]);
+
+        throw new \Exception('Gagal memproses respons AI. Error: '.json_last_error_msg());
+    }
+
+    /**
+     * Clean invalid backslash sequences from string
+     * Removes backslashes that are NOT valid JSON escapes
+     */
+    private function cleanInvalidBackslashes(string $text): string
+    {
+        $result = '';
+        $length = strlen($text);
+        
+        for ($i = 0; $i < $length; $i++) {
+            if ($text[$i] === '\\' && $i + 1 < $length) {
+                $nextChar = $text[$i + 1];
+                
+                // Valid JSON escape sequences: \" \\ \/ \b \f \n \r \t \uXXXX
+                if (in_array($nextChar, ['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'])) {
+                    $result .= $text[$i]; // Keep the backslash
+                } else {
+                    // Skip invalid backslash, keep next char
+                    continue;
+                }
+            } else {
+                $result .= $text[$i];
+            }
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Validate recipe structure
+     */
+    private function isValidRecipe($data): bool
+    {
+        if (!is_array($data)) {
+            return false;
+        }
+
+        if (!isset($data['ingredients']) || !is_array($data['ingredients'])) {
+            return false;
+        }
+
+        if (empty($data['ingredients'])) {
+            return false;
+        }
+
+        foreach ($data['ingredients'] as $ingredient) {
+            if (!isset($ingredient['raw_material_id']) || !isset($ingredient['quantity'])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Extract error reason from AI response
+     */
+    private function extractErrorReason($content, $parsedData): ?string
+    {
+        if (is_array($parsedData) && isset($parsedData['reasoning'])) {
+            return $parsedData['reasoning'];
+        }
+
+        if (preg_match('/"reasoning"\s*:\s*"([^"]{10,500})"/i', $content, $m)) {
+            return $m[1];
+        }
+
+        if (preg_match('/does not include|missing|not include|not found|tidak ada|tidak termasuk/i', $content)) {
+            return 'Beberapa bahan baku tidak tersedia di outlet';
+        }
+
+        return null;
     }
 }
