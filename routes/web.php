@@ -15,6 +15,7 @@ use App\Http\Controllers\RawMaterialAndSupplierController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -150,6 +151,18 @@ Route::middleware('auth')->group(function () {
     
     Route::post('/payment/check-amount', [PaymentController::class, 'checkPaymentAmount'])
         ->name('payment.check-amount');
+
+    // Employee CRUD
+    Route::resource('employees', EmployeeController::class);
+    
+    // Toggle Employee Status (Active/Inactive)
+    Route::post('employees/{employee}/toggle-status', [EmployeeController::class, 'toggleStatus'])
+        ->name('employees.toggle-status');
+    
+    // Resend Verification Email
+    Route::post('employees/{employee}/resend-verification', [EmployeeController::class, 'resendVerification'])
+        ->name('employees.resend-verification');
+
 
 });
 
