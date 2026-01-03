@@ -37,10 +37,10 @@
 
 - **Backend:** Laravel 12.x (PHP 8.2+)
 - **Frontend:** Tailwind CSS 4.0, Alpine.js, Blade Templates
-- **Database:** MySQL / PostgreSQL / SQLite
+- **Database:** MySQL
 - **Integrations:**
     - **Midtrans:** Payment Gateway
-    - **OpenAI / Gemini:** AI Insights & Clara Assistant
+    - **Gemini:** AI Insights & Clara Assistant
     - **Maatwebsite Excel:** Report Exporting
     - **Spatie Activitylog:** Audit Trails
     - **Spatie Backup:** Automated Backups
