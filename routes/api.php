@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Auth\ResendVerificationController;
 use App\Http\Controllers\Api\OutletApiController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\VerifyEmailController;
 
 Route::prefix('v1')->group(function () {
     Route::post('/auth/register', [RegisterController::class, 'register']);

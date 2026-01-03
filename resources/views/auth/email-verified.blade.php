@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CuanFlow - Verifikasi Email</title>
+    <title>CuanFlow - Email Terverifikasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="{{ asset('assets/image/logo.svg') }}" type="image/x-icon">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Satoshi', sans-serif;
@@ -45,15 +44,6 @@
             }
         }
         
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-        }
-        
         /* Animation Classes */
         .animate-fade-in-up {
             animation: fadeInUp 0.8s ease-out forwards;
@@ -65,10 +55,6 @@
         
         .animate-float {
             animation: float 8s ease-in-out infinite;
-        }
-        
-        .animate-pulse {
-            animation: pulse 2s ease-in-out infinite;
         }
         
         /* Delay Classes */
@@ -102,8 +88,10 @@
         }
         
         .btn-secondary:hover {
+            border-color: #31694E;
             color: #31694E;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(49, 105, 78, 0.1);
         }
         
         .btn-secondary:active {
@@ -129,29 +117,6 @@
         .bg-pattern:nth-child(3) {
             animation-delay: 4s;
             animation-duration: 14s;
-        }
-        
-        /* Custom SweetAlert2 Styles */
-        .swal2-popup {
-            font-family: 'Satoshi', sans-serif !important;
-            border-radius: 12px !important;
-        }
-        
-        .swal2-title {
-            color: #1f2937 !important;
-            font-size: 24px !important;
-            font-weight: 700 !important;
-        }
-        
-        .swal2-confirm {
-            background-color: #31694E !important;
-            border-radius: 8px !important;
-            padding: 12px 32px !important;
-            font-weight: 600 !important;
-        }
-        
-        .swal2-confirm:hover {
-            background-color: #658C58 !important;
         }
     </style>
     <script>
@@ -185,52 +150,40 @@
     <div class="relative z-10 w-full max-w-md px-6 sm:px-8 py-12 text-center">
         
         <!-- Logo -->
-        <div class="mb-10 sm:mb-12 animate-on-load animate-scale-in flex justify-center">
+        <div class="mb-10 sm:mb-12 animate-on-load animate-scale-in flex justify-center animate-on-load animate-fade-in-up delay-200">
             <img 
                 src="{{ asset('assets/image/full-logo.svg') }}" 
                 alt="CuanFlow Logo"
                 class="w-full max-w-[140px] sm:max-w-[160px] h-auto"
             />
         </div>
-
+    
         <!-- Title -->
         <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 animate-on-load animate-fade-in-up delay-200">
-            Verifikasi Email Anda
+            Email Terverifikasi
         </h1>
         
         <!-- Description -->
-        <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-8 max-w-sm mx-auto animate-on-load animate-fade-in-up delay-300">
-            Terima kasih telah mendaftar! Sebelum memulai, silakan verifikasi alamat email Anda dengan mengklik tautan yang baru saja kami kirimkan. Jika Anda tidak menerima email tersebut, kami akan dengan senang hati mengirimkan yang baru.
+        <p class="text-gray-600 text-sm sm:text-base leading-relaxed mb-10 max-w-sm mx-auto animate-on-load animate-fade-in-up delay-300">
+            Akun Anda telah berhasil diverifikasi dan siap digunakan. Silakan login untuk mengakses dashboard CuanFlow.
         </p>
-        
-        <!-- Success Message -->
-        @if (session('status') == 'verification-link-sent')
-        <div class="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg animate-fade-in-up">
-            <p class="text-sm text-green-700 font-medium">
-                Link verifikasi baru telah dikirim ke alamat email yang Anda berikan saat pendaftaran.
-            </p>
-        </div>
-        @endif
         
         <!-- Action Buttons -->
         <div class="space-y-3 mb-8 animate-on-load animate-fade-in-up delay-400">
-            <form method="POST" action="{{ route('verification.send') }}" class="w-full">
-                @csrf
-                <button 
-                    type="submit"
-                    class="btn-primary w-full py-3.5 bg-cuan-dark text-white font-semibold rounded-lg text-base"
-                >
-                    Kirim Ulang Email Verifikasi
-                </button>
-            </form>
+            <a 
+                href="{{ route('dashboard') }}"
+                class="btn-primary block w-full py-3.5 bg-cuan-dark text-white font-semibold rounded-lg text-base"
+            >
+                Masuk ke Dashboard
+            </a>
             
             <form method="POST" action="{{ route('logout') }}" class="w-full">
                 @csrf
                 <button 
                     type="submit"
-                    class="btn-secondary w-full py-3 text-gray-600 font-medium text-sm hover:text-cuan-dark"
+                    class="btn-secondary w-full py-3.5 bg-white text-gray-700 font-medium rounded-lg border-2 border-gray-200 text-base"
                 >
-                    Keluar
+                    Keluar, Kembali ke Halaman Login
                 </button>
             </form>
         </div>
@@ -247,28 +200,6 @@
         </p>
         
     </div>
-    
-    <script>
-        // SweetAlert2 Configuration
-        const Toast = Swal.mixin({
-            customClass: {
-                popup: 'swal2-popup',
-                title: 'swal2-title',
-                confirmButton: 'swal2-confirm'
-            },
-            buttonsStyling: false
-        });
-
-        // Show success message if verification link sent
-        @if (session('status') == 'verification-link-sent')
-            Toast.fire({
-                icon: 'success',
-                title: 'Email Terkirim!',
-                text: 'Link verifikasi baru telah dikirim ke email Anda.',
-                confirmButtonText: 'Mengerti'
-            });
-        @endif
-    </script>
     
 </body>
 </html>

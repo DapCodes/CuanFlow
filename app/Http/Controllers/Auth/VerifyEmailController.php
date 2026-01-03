@@ -10,22 +10,28 @@ use Illuminate\Support\Facades\Auth;
 
 class VerifyEmailController extends Controller
 {
+    /**
+     * Handle email verification untuk WEB
+     */
     public function __invoke(Request $request, int $id, string $hash)
     {
         $user = User::findOrFail($id);
 
-        // validasi hash dari email
+        // Validasi hash
         if (! hash_equals(sha1($user->email), $hash)) {
-            abort(403);
+            abort(403, 'Link verifikasi tidak valid.');
         }
 
-        if (is_null($user->email_verified_at)) {
-            $user->forceFill(['email_verified_at' => now()])->save();
+        // Verifikasi email jika belum
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
             event(new Verified($user));
         }
 
+        // Login otomatis untuk web
         Auth::login($user);
 
-        return redirect()->route('dashboard')->with('success', 'Email berhasil diverifikasi!');
+        // Tampilkan halaman custom
+        return view('auth.email-verified');
     }
 }

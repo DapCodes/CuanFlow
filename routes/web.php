@@ -16,11 +16,18 @@ use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+// Email Verification untuk WEB
+Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
+    ->middleware(['signed'])
+    ->name('verification.verify');
+
 
 Route::get('/dashboard', [MenuController::class, 'index'])
     ->middleware(['auth', 'verified', \App\Http\Middleware\TriggerInsightOnOnline::class])
