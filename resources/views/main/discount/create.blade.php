@@ -398,16 +398,30 @@
 
                 {{-- Status Aktif --}}
                 <div>
-                    <div class="flex items-center">
-                        <input type="checkbox"
-                               name="is_active"
-                               id="is_active"
-                               value="1"
-                               {{ old('is_active', true) ? 'checked' : '' }}
-                               class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
-                        <label for="is_active" class="ml-3 text-sm font-medium text-gray-700">
-                            Aktifkan diskon sekarang
-                        </label>
+                    <div class="flex items-center gap-6">
+                        <div class="flex items-center">
+                            <input type="checkbox"
+                                   name="is_voucher"
+                                   id="is_voucher"
+                                   value="1"
+                                   {{ old('is_voucher') ? 'checked' : '' }}
+                                   class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <label for="is_voucher" class="ml-3 text-sm font-medium text-gray-700">
+                                Gunakan sebagai voucher / kupon
+                            </label>
+                        </div>
+
+                        <div class="flex items-center">
+                            <input type="checkbox"
+                                   name="is_active"
+                                   id="is_active"
+                                   value="1"
+                                   {{ old('is_active', true) ? 'checked' : '' }}
+                                   class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                            <label for="is_active" class="ml-3 text-sm font-medium text-gray-700">
+                                Aktifkan diskon sekarang
+                            </label>
+                        </div>
                     </div>
                 </div>
 

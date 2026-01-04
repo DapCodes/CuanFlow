@@ -202,6 +202,17 @@
                                 @endif
                             </dd>
                         </div>
+
+                        <div class="py-3 flex items-start justify-between gap-4">
+                            <dt class="text-gray-500 w-32 md:w-40">Tipe Kode</dt>
+                            <dd class="flex-1 font-medium text-gray-900">
+                                @if($discount->is_voucher)
+                                    Voucher / Kode
+                                @else
+                                    Bukan voucher
+                                @endif
+                            </dd>
+                        </div>
                     </dl>
                 </div>
 

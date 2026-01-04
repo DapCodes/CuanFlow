@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Production;
-use App\Models\ProductionItem;
+use App\Models\Product;
 use App\Models\ProductStock;
-use App\Models\RawMaterial;
-use App\Models\RawMaterialStock;
 use App\Models\Recipe;
+use App\Models\RawMaterialStock;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,36 +16,32 @@ class ProductionController extends Controller
 {
     public function index()
     {
-        $outletId = Auth::user()->outlet_id;
-
-        // Get products with stock info
-        $products = Product::with(['unit', 'category', 'defaultRecipe'])
+        $outletId = auth()->user()->outlet_id;
+        
+        $products = Product::with(['unit', 'category', 'stocks', 'defaultRecipe'])
             ->where('outlet_id', $outletId)
             ->where('is_active', true)
             ->get()
             ->map(function ($product) use ($outletId) {
-                $stock = $product->getStockQuantity($outletId);
-                $isLowStock = $product->isLowStock($outletId);
-
+                $stock = $product->getStockByOutlet($outletId);
                 return [
                     'id' => $product->id,
                     'code' => $product->code,
                     'name' => $product->name,
-                    'category' => $product->category?->name,
-                    'unit' => $product->unit?->name,
-                    'stock' => $stock,
-                    'min_stock' => $product->min_stock,
-                    'is_low_stock' => $isLowStock,
-                    'has_recipe' => $product->defaultRecipe !== null,
                     'image' => $product->image,
+                    'unit' => $product->unit->name ?? '-',
+                    'category' => $product->category->name ?? null,
+                    'stock' => $stock ? $stock->quantity : 0,
+                    'min_stock' => $product->min_stock,
+                    'is_low_stock' => $product->isLowStock($outletId),
+                    'has_recipe' => $product->defaultRecipe !== null,
                 ];
             });
 
-        // Get recent productions
-        $recentProductions = Production::with(['product.unit', 'recipe', 'createdBy'])
+        $recentProductions = Production::with(['product', 'createdBy'])
             ->where('outlet_id', $outletId)
             ->latest()
-            ->take(10)
+            ->limit(5)
             ->get();
 
         return view('main.production.index', compact('products', 'recentProductions'));
@@ -55,463 +49,43 @@ class ProductionController extends Controller
 
     public function create(Request $request)
     {
-        $outletId = Auth::user()->outlet_id;
+        $outletId = auth()->user()->outlet_id;
         $productId = $request->get('product_id');
 
-        // Get all products with recipes
         $products = Product::with(['unit', 'defaultRecipe'])
             ->where('outlet_id', $outletId)
             ->where('is_active', true)
             ->whereHas('defaultRecipe')
             ->get();
 
-        // If product_id provided, get specific product data
         $selectedProduct = null;
         $recipe = null;
-        $rawMaterials = collect();
+        $requiredMaterials = [];
 
         if ($productId) {
-            $selectedProduct = Product::with(['unit', 'defaultRecipe.items.rawMaterial.unit', 'defaultRecipe.additionalCosts'])
-                ->findOrFail($productId);
+            $selectedProduct = Product::with(['unit', 'defaultRecipe.items.rawMaterial.unit'])
+                ->find($productId);
 
-            $recipe = $selectedProduct->defaultRecipe;
-
-            if ($recipe) {
-                // Get raw materials with current stock
-                $rawMaterials = $recipe->items->map(function ($item) use ($outletId) {
-                    $stock = $item->rawMaterial->getStockQuantity($outletId);
+            if ($selectedProduct && $selectedProduct->defaultRecipe) {
+                $recipe = $selectedProduct->defaultRecipe;
+                $requiredMaterials = $recipe->items->map(function ($item) use ($outletId) {
+                    $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
+                        ->where('outlet_id', $outletId)
+                        ->first();
 
                     return [
                         'id' => $item->raw_material_id,
                         'name' => $item->rawMaterial->name,
-                        'unit' => $item->rawMaterial->unit?->name,
-                        'required_quantity' => $item->quantity,
-                        'current_stock' => $stock,
-                        'unit_price' => $item->rawMaterial->purchase_price,
-                        'notes' => $item->notes,
+                        'quantity_per_unit' => $item->quantity,
+                        'unit' => $item->rawMaterial->unit->name ?? '-',
+                        'available_stock' => $stock ? $stock->quantity : 0,
+                        'unit_price' => $item->rawMaterial->purchase_price ?? 0,
                     ];
                 });
             }
         }
 
-        return view('main.production.create', compact('products', 'selectedProduct', 'recipe', 'rawMaterials'));
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'recipe_id' => 'required|exists:recipes,id',
-            'planned_quantity' => 'required|numeric|min:0.01',
-            'notes' => 'nullable|string',
-            'start_production' => 'boolean',
-        ]);
-
-        $outletId = Auth::user()->outlet_id;
-        $product = Product::findOrFail($validated['product_id']);
-        $recipe = Recipe::with('items.rawMaterial')->findOrFail($validated['recipe_id']);
-
-        // Validate product belongs to user's outlet
-        if ($product->outlet_id != $outletId) {
-            return back()->with('error', 'Produk tidak ditemukan di outlet Anda.');
-        }
-
-        // Calculate material requirements
-        $multiplier = $validated['planned_quantity'] / $recipe->output_quantity;
-        $insufficientMaterials = [];
-
-        foreach ($recipe->items as $item) {
-            $required = $item->quantity * $multiplier;
-            $available = $item->rawMaterial->getStockQuantity($outletId);
-
-            if ($available < $required) {
-                $insufficientMaterials[] = [
-                    'name' => $item->rawMaterial->name,
-                    'required' => $required,
-                    'available' => $available,
-                    'shortage' => $required - $available,
-                ];
-            }
-        }
-
-        // Only check if starting production immediately
-        if ($request->boolean('start_production') && ! empty($insufficientMaterials)) {
-            return back()
-                ->withInput()
-                ->with('error', 'Stok bahan baku tidak mencukupi!')
-                ->with('insufficient_materials', $insufficientMaterials);
-        }
-
-        DB::beginTransaction();
-        try {
-            // Create production
-            $production = Production::create([
-                'outlet_id' => $outletId,
-                'product_id' => $validated['product_id'],
-                'recipe_id' => $validated['recipe_id'],
-                'planned_quantity' => $validated['planned_quantity'],
-                'status' => $request->boolean('start_production') ? 'in_progress' : 'planned',
-                'started_at' => $request->boolean('start_production') ? now() : null,
-                'notes' => $validated['notes'],
-                'created_by' => Auth::id(),
-            ]);
-
-            // Create production items and calculate costs
-            $totalMaterialCost = 0;
-
-            foreach ($recipe->items as $item) {
-                $quantity = $item->quantity * $multiplier;
-                $unitPrice = $item->rawMaterial->purchase_price;
-
-                ProductionItem::create([
-                    'production_id' => $production->id,
-                    'raw_material_id' => $item->raw_material_id,
-                    'planned_quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'total_price' => $quantity * $unitPrice,
-                ]);
-
-                $totalMaterialCost += $quantity * $unitPrice;
-
-                // Only reduce stock if starting production immediately
-                if ($request->boolean('start_production')) {
-                    $rawMaterialStock = RawMaterialStock::firstOrCreate(
-                        [
-                            'raw_material_id' => $item->raw_material_id,
-                            'outlet_id' => $outletId,
-                        ],
-                        ['quantity' => 0]
-                    );
-
-                    $quantityBefore = $rawMaterialStock->quantity;
-                    $rawMaterialStock->decrement('quantity', $quantity);
-                    $quantityAfter = $rawMaterialStock->quantity;
-
-                    // Record stock movement
-                    StockMovement::create([
-                        'outlet_id' => $outletId,
-                        'stockable_type' => RawMaterial::class,
-                        'stockable_id' => $item->raw_material_id,
-                        'type' => 'production',
-                        'quantity' => $quantity,
-                        'quantity_before' => $quantityBefore,
-                        'quantity_after' => $quantityAfter,
-                        'unit_price' => $unitPrice,
-                        'reference_type' => Production::class,
-                        'reference_id' => $production->id,
-                        'notes' => "Produksi #{$production->batch_number}",
-                        'created_by' => Auth::id(),
-                    ]);
-                }
-            }
-
-            // Calculate additional costs
-            $totalAdditionalCost = 0;
-            if ($recipe->additionalCosts) {
-                foreach ($recipe->additionalCosts as $cost) {
-                    $amount = match ($cost->cost_type) {
-                        'fixed' => $cost->amount,
-                        'per_unit' => $cost->amount * $validated['planned_quantity'],
-                        'percentage' => $totalMaterialCost * ($cost->amount / 100),
-                        default => 0,
-                    };
-                    $totalAdditionalCost += $amount;
-                }
-            }
-
-            // Update production costs
-            $production->update([
-                'total_material_cost' => $totalMaterialCost,
-                'total_additional_cost' => $totalAdditionalCost,
-                'total_cost' => $totalMaterialCost + $totalAdditionalCost,
-            ]);
-
-            DB::commit();
-
-            return redirect()
-                ->route('production.show', $production->id)
-                ->with('success', 'Produksi berhasil dibuat! Batch: '.$production->batch_number);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return back()
-                ->withInput()
-                ->with('error', 'Gagal membuat produksi: '.$e->getMessage());
-        }
-    }
-
-    public function show(Production $production)
-    {
-        // Check if user has access to this production
-        if ($production->outlet_id != Auth::user()->outlet_id) {
-            abort(403, 'Unauthorized access');
-        }
-
-        $production->load([
-            'product.unit',
-            'recipe.items.rawMaterial.unit',
-            'items.rawMaterial.unit',
-            'createdBy',
-            'completedBy',
-            'outlet',
-        ]);
-
-        return view('main.production.show', compact('production'));
-    }
-
-    public function complete(Request $request, Production $production)
-    {
-        // Check access
-        if ($production->outlet_id != Auth::user()->outlet_id) {
-            abort(403, 'Unauthorized access');
-        }
-
-        $validated = $request->validate([
-            'actual_quantity' => 'required|numeric|min:0',
-            'waste_quantity' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string',
-        ]);
-
-        if ($production->status === 'completed') {
-            return back()->with('error', 'Produksi sudah selesai.');
-        }
-
-        if ($production->status === 'cancelled') {
-            return back()->with('error', 'Produksi sudah dibatalkan.');
-        }
-
-        DB::beginTransaction();
-        try {
-            $actualQty = $validated['actual_quantity'];
-            $wasteQty = $validated['waste_quantity'] ?? 0;
-
-            // Validate waste quantity
-            if ($wasteQty > $actualQty) {
-                return back()->with('error', 'Jumlah waste tidak boleh melebihi jumlah aktual produksi.');
-            }
-
-            // Calculate net quantity for stock (actual - waste)
-            $netStockQuantity = $actualQty - $wasteQty;
-
-            // Update production items with actual quantities
-            foreach ($production->items as $item) {
-                $item->update([
-                    'actual_quantity' => $item->planned_quantity,
-                ]);
-            }
-
-            // Update production
-            $completionNotes = $validated['notes'] ? "\n\nCatatan Penyelesaian:\n".$validated['notes'] : '';
-            $production->update([
-                'status' => 'completed',
-                'actual_quantity' => $netStockQuantity, // Store net quantity (after waste deduction)
-                'waste_quantity' => $wasteQty,
-                'completed_at' => now(),
-                'completed_by' => Auth::id(),
-                'notes' => $production->notes.$completionNotes,
-            ]);
-
-            // Add product stock using net quantity
-            if ($netStockQuantity > 0) {
-                $productStock = ProductStock::firstOrCreate(
-                    [
-                        'product_id' => $production->product_id,
-                        'outlet_id' => $production->outlet_id,
-                    ],
-                    ['quantity' => 0]
-                );
-
-                $quantityBefore = $productStock->quantity;
-                $productStock->increment('quantity', $netStockQuantity);
-                $quantityAfter = $productStock->quantity;
-
-                // Calculate unit price based on net quantity
-                $unitPrice = $netStockQuantity > 0 ? ($production->total_cost / $netStockQuantity) : 0;
-
-                // Record stock movement
-                StockMovement::create([
-                    'outlet_id' => $production->outlet_id,
-                    'stockable_type' => Product::class,
-                    'stockable_id' => $production->product_id,
-                    'type' => 'production',
-                    'quantity' => $netStockQuantity,
-                    'quantity_before' => $quantityBefore,
-                    'quantity_after' => $quantityAfter,
-                    'unit_price' => $unitPrice,
-                    'reference_type' => Production::class,
-                    'reference_id' => $production->id,
-                    'notes' => "Produksi selesai #{$production->batch_number}".
-                            ($wasteQty > 0 ? " (Waste: {$wasteQty})" : ''),
-                    'created_by' => Auth::id(),
-                ]);
-            }
-
-            DB::commit();
-
-            return redirect()
-                ->route('production.show', $production->id)
-                ->with('success', 'Produksi berhasil diselesaikan!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return back()->with('error', 'Gagal menyelesaikan produksi: '.$e->getMessage());
-        }
-    }
-
-    public function start(Production $production)
-    {
-        // Check access
-        if ($production->outlet_id != Auth::user()->outlet_id) {
-            abort(403, 'Unauthorized access');
-        }
-
-        if ($production->status !== 'planned') {
-            return back()->with('error', 'Produksi tidak dapat dimulai.');
-        }
-
-        // Check material availability
-        $outletId = Auth::user()->outlet_id;
-        $insufficientMaterials = [];
-
-        foreach ($production->items as $item) {
-            $available = $item->rawMaterial->getStockQuantity($outletId);
-
-            if ($available < $item->planned_quantity) {
-                $insufficientMaterials[] = [
-                    'name' => $item->rawMaterial->name,
-                    'required' => $item->planned_quantity,
-                    'available' => $available,
-                    'shortage' => $item->planned_quantity - $available,
-                ];
-            }
-        }
-
-        if (! empty($insufficientMaterials)) {
-            return back()
-                ->with('error', 'Stok bahan baku tidak mencukupi!')
-                ->with('insufficient_materials', $insufficientMaterials);
-        }
-
-        DB::beginTransaction();
-        try {
-            // Reduce raw material stock
-            foreach ($production->items as $item) {
-                $rawMaterialStock = RawMaterialStock::firstOrCreate(
-                    [
-                        'raw_material_id' => $item->raw_material_id,
-                        'outlet_id' => $outletId,
-                    ],
-                    ['quantity' => 0]
-                );
-
-                $quantityBefore = $rawMaterialStock->quantity;
-                $rawMaterialStock->decrement('quantity', $item->planned_quantity);
-                $quantityAfter = $rawMaterialStock->quantity;
-
-                // Record stock movement
-                StockMovement::create([
-                    'outlet_id' => $outletId,
-                    'stockable_type' => RawMaterial::class,
-                    'stockable_id' => $item->raw_material_id,
-                    'type' => 'production',
-                    'quantity' => $item->planned_quantity,
-                    'quantity_before' => $quantityBefore,
-                    'quantity_after' => $quantityAfter,
-                    'unit_price' => $item->unit_price,
-                    'reference_type' => Production::class,
-                    'reference_id' => $production->id,
-                    'notes' => "Produksi dimulai #{$production->batch_number}",
-                    'created_by' => Auth::id(),
-                ]);
-            }
-
-            $production->update([
-                'status' => 'in_progress',
-                'started_at' => now(),
-            ]);
-
-            DB::commit();
-
-            return redirect()
-                ->route('production.show', $production->id)
-                ->with('success', 'Produksi berhasil dimulai!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return back()->with('error', 'Gagal memulai produksi: '.$e->getMessage());
-        }
-    }
-
-    public function cancel(Production $production)
-    {
-        // Check access
-        if ($production->outlet_id != Auth::user()->outlet_id) {
-            abort(403, 'Unauthorized access');
-        }
-
-        if ($production->status === 'completed') {
-            return back()->with('error', 'Produksi yang sudah selesai tidak dapat dibatalkan.');
-        }
-
-        if ($production->status === 'cancelled') {
-            return back()->with('error', 'Produksi sudah dibatalkan.');
-        }
-
-        DB::beginTransaction();
-        try {
-            // Return raw materials to stock only if production was started
-            if ($production->status === 'in_progress') {
-                foreach ($production->items as $item) {
-                    $rawMaterialStock = RawMaterialStock::firstOrCreate(
-                        [
-                            'raw_material_id' => $item->raw_material_id,
-                            'outlet_id' => $production->outlet_id,
-                        ],
-                        ['quantity' => 0]
-                    );
-
-                    $quantityBefore = $rawMaterialStock->quantity;
-                    $rawMaterialStock->increment('quantity', $item->planned_quantity);
-                    $quantityAfter = $rawMaterialStock->quantity;
-
-                    // Record stock movement
-                    StockMovement::create([
-                        'outlet_id' => $production->outlet_id,
-                        'stockable_type' => RawMaterial::class,
-                        'stockable_id' => $item->raw_material_id,
-                        'type' => 'in',
-                        'quantity' => $item->planned_quantity,
-                        'quantity_before' => $quantityBefore,
-                        'quantity_after' => $quantityAfter,
-                        'unit_price' => $item->unit_price,
-                        'reference_type' => Production::class,
-                        'reference_id' => $production->id,
-                        'notes' => "Pembatalan produksi #{$production->batch_number}",
-                        'created_by' => Auth::id(),
-                    ]);
-                }
-            }
-
-            $production->update(['status' => 'cancelled']);
-
-            DB::commit();
-
-            $message = $production->status === 'in_progress'
-                ? 'Produksi berhasil dibatalkan dan bahan baku dikembalikan.'
-                : 'Produksi berhasil dibatalkan.';
-
-            return redirect()
-                ->route('production.index')
-                ->with('success', $message);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return back()->with('error', 'Gagal membatalkan produksi: '.$e->getMessage());
-        }
+        return view('main.production.create', compact('products', 'selectedProduct', 'recipe', 'requiredMaterials'));
     }
 
     public function getRecipeDetails($productId)
@@ -521,22 +95,26 @@ class ProductionController extends Controller
             ->where('outlet_id', $outletId)
             ->findOrFail($productId);
 
-        if (! $product->defaultRecipe) {
+        if (!$product->defaultRecipe) {
             return response()->json(['error' => 'Produk tidak memiliki resep'], 404);
         }
 
         $recipe = $product->defaultRecipe;
         $materials = $recipe->items->map(function ($item) use ($outletId) {
-            $stock = $item->rawMaterial->getStockQuantity($outletId);
+            $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
+                ->where('outlet_id', $outletId)
+                ->first();
+
+            $currentStock = $stock ? $stock->quantity : 0;
 
             return [
                 'id' => $item->raw_material_id,
                 'name' => $item->rawMaterial->name,
                 'unit' => $item->rawMaterial->unit?->name ?? '-',
                 'required_quantity' => $item->quantity,
-                'current_stock' => $stock,
-                'is_sufficient' => $stock >= $item->quantity,
-                'unit_price' => $item->rawMaterial->purchase_price,
+                'current_stock' => $currentStock,
+                'is_sufficient' => $currentStock >= $item->quantity,
+                'unit_price' => $item->rawMaterial->purchase_price ?? 0,
             ];
         });
 
@@ -549,39 +127,469 @@ class ProductionController extends Controller
         ]);
     }
 
-    public function history(Request $request)
-    {
-        $outletId = Auth::user()->outlet_id;
+public function show(Production $production)
+{
+    $production->load([
+        'product.unit',
+        'recipe.items.rawMaterial.unit',
+        'items.rawMaterial.unit',
+        'createdBy',
+        'completedBy'
+    ]);
 
-        $query = Production::with(['product.unit', 'recipe', 'createdBy', 'completedBy'])
-            ->where('outlet_id', $outletId);
+    $outletId = auth()->user()->outlet_id;
+    
+    $expiredStocks = [];
+    $expiringStocks = [];
+    $validStocks = [];
+    
+    if ($production->product->shelf_life_days) {
+        $completedProductions = Production::where('product_id', $production->product_id)
+            ->where('outlet_id', $outletId)
+            ->where('status', 'completed')
+            ->whereNotNull('completed_at')
+            ->whereNotNull('expired_at')
+            ->orderBy('completed_at', 'desc')
+            ->get();
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        $now = now();
+        $warningDays = 7;
+
+        foreach ($completedProductions as $prod) {
+            $daysUntilExpiry = $now->diffInDays($prod->expired_at, false);
+            $stockQty = $prod->actual_quantity - $prod->waste_quantity;
+
+            if ($stockQty <= 0) continue;
+
+            $item = [
+                'batch_number' => $prod->batch_number,
+                'quantity' => $stockQty,
+                'completed_at' => $prod->completed_at,
+                'expired_at' => $prod->expired_at,
+                'days_until_expiry' => $daysUntilExpiry,
+                'production_id' => $prod->id,
+            ];
+
+            if ($daysUntilExpiry < 0) {
+                $expiredStocks[] = $item;
+            } elseif ($daysUntilExpiry <= $warningDays) {
+                $expiringStocks[] = $item;
+            } else {
+                $validStocks[] = $item;
+            }
         }
-
-        // Filter by date range
-        if ($request->filled('start_date')) {
-            $query->whereDate('created_at', '>=', $request->start_date);
-        }
-        if ($request->filled('end_date')) {
-            $query->whereDate('created_at', '<=', $request->end_date);
-        }
-
-        // Search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('batch_number', 'like', "%{$search}%")
-                    ->orWhereHas('product', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        $productions = $query->latest()->paginate(20);
-
-        return view('main.production.history', compact('productions'));
     }
+
+    $stats = [
+        'expired_count' => count($expiredStocks),
+        'expired_quantity' => collect($expiredStocks)->sum('quantity'),
+        'expiring_count' => count($expiringStocks),
+        'expiring_quantity' => collect($expiringStocks)->sum('quantity'),
+        'valid_count' => count($validStocks),
+        'valid_quantity' => collect($validStocks)->sum('quantity'),
+    ];
+
+    return view('main.production.show', compact(
+        'production',
+        'expiredStocks',
+        'expiringStocks',
+        'validStocks',
+        'stats'
+    ));
+}
+
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'product_id' => 'required|exists:products,id',
+        'planned_quantity' => 'required|numeric|min:0.01',
+        'notes' => 'nullable|string',
+    ]);
+
+    $outletId = auth()->user()->outlet_id;
+    $product = Product::with('defaultRecipe.items.rawMaterial')->findOrFail($validated['product_id']);
+
+    if (!$product->defaultRecipe) {
+        return back()->with('error', 'Produk tidak memiliki resep default.');
+    }
+
+    $recipe = $product->defaultRecipe;
+    $multiplier = $validated['planned_quantity'] / $recipe->output_quantity;
+
+    $insufficientMaterials = [];
+    foreach ($recipe->items as $item) {
+        $required = $item->quantity * $multiplier;
+        $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
+            ->where('outlet_id', $outletId)
+            ->first();
+
+        $available = $stock ? $stock->quantity : 0;
+
+        if ($available < $required) {
+            $insufficientMaterials[] = [
+                'name' => $item->rawMaterial->name,
+                'required' => $required,
+                'available' => $available,
+                'shortage' => $required - $available,
+            ];
+        }
+    }
+
+    if (!empty($insufficientMaterials)) {
+        return back()->with('insufficient_materials', $insufficientMaterials);
+    }
+
+    DB::beginTransaction();
+    try {
+        $production = Production::create([
+            'outlet_id' => $outletId,
+            'product_id' => $product->id,
+            'recipe_id' => $recipe->id,
+            'planned_quantity' => $validated['planned_quantity'],
+            'status' => 'planned',
+            'notes' => $validated['notes'],
+            'created_by' => auth()->id(),
+        ]);
+
+        foreach ($recipe->items as $item) {
+            $quantity = $item->quantity * $multiplier;
+            $unitPrice = $item->rawMaterial->purchase_price ?? 0;
+
+            $production->items()->create([
+                'raw_material_id' => $item->raw_material_id,
+                'planned_quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'total_price' => $quantity * $unitPrice,
+            ]);
+        }
+
+        $production->calculateCosts();
+
+        DB::commit();
+        return redirect()->route('production.show', $production)->with('success', 'Rencana produksi berhasil dibuat.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Gagal membuat produksi: ' . $e->getMessage());
+    }
+}
+
+    public function start(Production $production)
+    {
+        if ($production->status !== 'planned') {
+            return back()->with('error', 'Hanya produksi dengan status "Direncanakan" yang dapat dimulai.');
+        }
+
+        DB::beginTransaction();
+        try {
+            foreach ($production->items as $item) {
+                $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
+                    ->where('outlet_id', $production->outlet_id)
+                    ->first();
+
+                if (!$stock || $stock->quantity < $item->planned_quantity) {
+                    throw new \Exception('Stok bahan baku tidak mencukupi.');
+                }
+
+                $stock->reduceStock($item->planned_quantity);
+
+                StockMovement::create([
+                    'stockable_type' => 'App\Models\RawMaterial',
+                    'stockable_id' => $item->raw_material_id,
+                    'outlet_id' => $production->outlet_id,
+                    'type' => 'out',
+                    'quantity' => $item->planned_quantity,
+                    'reference_type' => 'App\Models\Production',
+                    'reference_id' => $production->id,
+                    'notes' => 'Produksi #' . $production->batch_number,
+                    'created_by' => auth()->id(),
+                ]);
+            }
+
+            $production->start();
+
+            DB::commit();
+            return back()->with('success', 'Produksi dimulai. Stok bahan baku telah dikurangi.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function complete(Request $request, Production $production)
+    {
+        $validated = $request->validate([
+            'actual_quantity' => 'required|numeric|min:0',
+            'waste_quantity' => 'required|numeric|min:0',
+            'notes' => 'nullable|string',
+        ]);
+
+        if ($production->status !== 'in_progress') {
+            return back()->with('error', 'Hanya produksi "Sedang Proses" yang dapat diselesaikan.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $netQuantity = $validated['actual_quantity'] - $validated['waste_quantity'];
+            
+            $expiredAt = null;
+            if ($production->product->shelf_life_days) {
+                $expiredAt = now()->addDays($production->product->shelf_life_days);
+            }
+
+            $production->complete(
+                $validated['actual_quantity'],
+                $validated['waste_quantity'],
+                auth()->id()
+            );
+
+            $production->update([
+                'expired_at' => $expiredAt,
+                'notes' => $validated['notes'] ?? $production->notes,
+            ]);
+
+            if ($netQuantity > 0) {
+                $stock = ProductStock::firstOrCreate(
+                    [
+                        'product_id' => $production->product_id,
+                        'outlet_id' => $production->outlet_id,
+                    ],
+                    ['quantity' => 0]
+                );
+
+                $stock->addStock($netQuantity);
+
+                StockMovement::create([
+                    'stockable_type' => 'App\Models\Product',
+                    'stockable_id' => $production->product_id,
+                    'outlet_id' => $production->outlet_id,
+                    'type' => 'in',
+                    'quantity' => $netQuantity,
+                    'reference_type' => 'App\Models\Production',
+                    'reference_id' => $production->id,
+                    'notes' => 'Produksi selesai #' . $production->batch_number,
+                    'created_by' => auth()->id(),
+                ]);
+            }
+
+            DB::commit();
+            return back()->with('success', 'Produksi berhasil diselesaikan. Stok produk telah ditambahkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menyelesaikan produksi: ' . $e->getMessage());
+        }
+    }
+
+    public function cancel(Production $production)
+    {
+        if (!in_array($production->status, ['planned', 'in_progress'])) {
+            return back()->with('error', 'Produksi tidak dapat dibatalkan.');
+        }
+
+        DB::beginTransaction();
+        try {
+            if ($production->status === 'in_progress') {
+                foreach ($production->items as $item) {
+                    $stock = RawMaterialStock::firstOrCreate(
+                        [
+                            'raw_material_id' => $item->raw_material_id,
+                            'outlet_id' => $production->outlet_id,
+                        ],
+                        ['quantity' => 0]
+                    );
+
+                    $stock->addStock($item->planned_quantity);
+
+                    StockMovement::create([
+                        'stockable_type' => 'App\Models\RawMaterial',
+                        'stockable_id' => $item->raw_material_id,
+                        'outlet_id' => $production->outlet_id,
+                        'type' => 'in',
+                        'quantity' => $item->planned_quantity,
+                        'reference_type' => 'App\Models\Production',
+                        'reference_id' => $production->id,
+                        'notes' => 'Pembatalan produksi #' . $production->batch_number,
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+            }
+
+            $production->update(['status' => 'cancelled']);
+
+            DB::commit();
+            return redirect()->route('production.index')->with('success', 'Produksi berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal membatalkan produksi: ' . $e->getMessage());
+        }
+    }
+
+    public function removeExpired(Request $request, Production $production)
+    {
+        $validated = $request->validate([
+            'batch_numbers' => 'required|array',
+            'batch_numbers.*' => 'required|string',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $totalRemoved = 0;
+            $productions = Production::where('product_id', $production->product_id)
+                ->where('outlet_id', auth()->user()->outlet_id)
+                ->whereIn('batch_number', $validated['batch_numbers'])
+                ->where('status', 'completed')
+                ->get();
+
+            foreach ($productions as $prod) {
+                $stockQty = $prod->actual_quantity - $prod->waste_quantity;
+                if ($stockQty <= 0) continue;
+
+                $stock = ProductStock::where('product_id', $prod->product_id)
+                    ->where('outlet_id', $prod->outlet_id)
+                    ->first();
+
+                if ($stock && $stock->quantity >= $stockQty) {
+                    $stock->reduceStock($stockQty);
+
+                    StockMovement::create([
+                        'stockable_type' => 'App\Models\Product',
+                        'stockable_id' => $prod->product_id,
+                        'outlet_id' => $prod->outlet_id,
+                        'type' => 'out',
+                        'quantity' => $stockQty,
+                        'reference_type' => 'App\Models\Production',
+                        'reference_id' => $prod->id,
+                        'notes' => 'Penghapusan stok kadaluarsa #' . $prod->batch_number,
+                        'created_by' => auth()->id(),
+                    ]);
+
+                    $totalRemoved += $stockQty;
+                }
+            }
+
+            DB::commit();
+            return back()->with('success', "Berhasil menghapus " . number_format($totalRemoved, 2) . " unit stok kadaluarsa.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menghapus stok kadaluarsa: ' . $e->getMessage());
+        }
+    }
+
+public function showStock(Product $product)
+{
+    $product->load('unit');
+    $outletId = auth()->user()->outlet_id;
+    
+    $stock = $product->getStockByOutlet($outletId);
+    $totalStock = $stock ? $stock->quantity : 0;
+    
+    $expiredStocks = [];
+    $expiringStocks = [];
+    $validStocks = [];
+    
+    if ($product->shelf_life_days) {
+        $completedProductions = Production::where('product_id', $product->id)
+            ->where('outlet_id', $outletId)
+            ->where('status', 'completed')
+            ->whereNotNull('completed_at')
+            ->whereNotNull('expired_at')
+            ->orderBy('completed_at', 'desc')
+            ->get();
+
+        $now = now();
+        $warningDays = 7;
+
+        foreach ($completedProductions as $prod) {
+            $daysUntilExpiry = $now->diffInDays($prod->expired_at, false);
+            $stockQty = $prod->actual_quantity - $prod->waste_quantity;
+
+            if ($stockQty <= 0) continue;
+
+            $item = [
+                'batch_number' => $prod->batch_number,
+                'quantity' => $stockQty,
+                'completed_at' => $prod->completed_at,
+                'expired_at' => $prod->expired_at,
+                'days_until_expiry' => $daysUntilExpiry,
+                'production_id' => $prod->id,
+            ];
+
+            if ($daysUntilExpiry < 0) {
+                $expiredStocks[] = $item;
+            } elseif ($daysUntilExpiry <= $warningDays) {
+                $expiringStocks[] = $item;
+            } else {
+                $validStocks[] = $item;
+            }
+        }
+    }
+
+    $stats = [
+        'expired_count' => count($expiredStocks),
+        'expired_quantity' => collect($expiredStocks)->sum('quantity'),
+        'expiring_count' => count($expiringStocks),
+        'expiring_quantity' => collect($expiringStocks)->sum('quantity'),
+        'valid_count' => count($validStocks),
+        'valid_quantity' => collect($validStocks)->sum('quantity'),
+    ];
+
+    return view('main.production.stock-show', compact(
+        'product',
+        'totalStock',
+        'expiredStocks',
+        'expiringStocks',
+        'validStocks',
+        'stats'
+    ));
+}
+
+public function removeExpiredStock(Request $request, Product $product)
+{
+    $validated = $request->validate([
+        'batch_numbers' => 'required|array',
+        'batch_numbers.*' => 'required|string',
+    ]);
+
+    DB::beginTransaction();
+    try {
+        $totalRemoved = 0;
+        $productions = Production::where('product_id', $product->id)
+            ->where('outlet_id', auth()->user()->outlet_id)
+            ->whereIn('batch_number', $validated['batch_numbers'])
+            ->where('status', 'completed')
+            ->get();
+
+        foreach ($productions as $prod) {
+            $stockQty = $prod->actual_quantity - $prod->waste_quantity;
+            if ($stockQty <= 0) continue;
+
+            $stock = ProductStock::where('product_id', $prod->product_id)
+                ->where('outlet_id', $prod->outlet_id)
+                ->first();
+
+            if ($stock && $stock->quantity >= $stockQty) {
+                $stock->reduceStock($stockQty);
+
+                StockMovement::create([
+                    'stockable_type' => 'App\Models\Product',
+                    'stockable_id' => $prod->product_id,
+                    'outlet_id' => $prod->outlet_id,
+                    'type' => 'out',
+                    'quantity' => $stockQty,
+                    'reference_type' => 'App\Models\Production',
+                    'reference_id' => $prod->id,
+                    'notes' => 'Penghapusan stok kadaluarsa #' . $prod->batch_number,
+                    'created_by' => auth()->id(),
+                ]);
+
+                $totalRemoved += $stockQty;
+            }
+        }
+
+        DB::commit();
+        return back()->with('success', "Berhasil menghapus " . number_format($totalRemoved, 2) . " unit stok kadaluarsa.");
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Gagal menghapus stok kadaluarsa: ' . $e->getMessage());
+    }
+}
 }

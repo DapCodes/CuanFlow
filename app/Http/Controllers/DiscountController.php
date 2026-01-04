@@ -51,6 +51,7 @@ class DiscountController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'usage_limit' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
+            'is_voucher' => 'boolean',
         ];
 
         // Validasi khusus untuk buy_x_get_y
@@ -75,6 +76,7 @@ class DiscountController extends Controller
         $validated['used_count'] = 0;
         $validated['outlet_id'] = auth()->user()->outlet_id;
         $validated['is_active'] = $request->has('is_active');
+        $validated['is_voucher'] = $request->has('is_voucher');
 
         if ($validated['type'] === 'buy_x_get_y') {
             $validated['value'] = 0; // atau nilai lain kalau mau
@@ -118,6 +120,7 @@ class DiscountController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'usage_limit' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
+            'is_voucher' => 'boolean',
         ];
 
         if ($request->type === 'buy_x_get_y') {
@@ -137,6 +140,7 @@ class DiscountController extends Controller
 
         $validated['min_purchase'] = $validated['min_purchase'] ?? 0;
         $validated['is_active'] = $request->has('is_active');
+        $validated['is_voucher'] = $request->has('is_voucher');
 
         $discount->update($validated);
 

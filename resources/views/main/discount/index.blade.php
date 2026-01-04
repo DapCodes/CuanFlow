@@ -171,6 +171,9 @@
                                 Penggunaan
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                Voucher
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 Status
                             </th>
                             <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -188,7 +191,8 @@
                                 data-name="{{ strtolower($discount->name) }}"
                                 data-code="{{ strtolower($discount->code) }}"
                                 data-type="{{ $discount->type }}"
-                                data-status="{{ $isExpired ? 'expired' : ($discount->is_active ? 'active' : 'inactive') }}">
+                                data-status="{{ $isExpired ? 'expired' : ($discount->is_active ? 'active' : 'inactive') }}"
+                                data-is-voucher="{{ $discount->is_voucher ? '1' : '0' }}">
                                 {{-- Kode --}}
                                 <td class="px-6 py-3 whitespace-nowrap">
                                     <span
@@ -284,6 +288,14 @@
                                     </div>
                                 </td>
 
+                                    {{-- Voucher --}}
+                                    <td class="px-6 py-3 whitespace-nowrap text-center">
+                                        @if($discount->is_voucher)
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">Ya</span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">Tidak</span>
+                                        @endif
+                                    </td>
                                 {{-- Status --}}
                                 <td class="px-6 py-3 whitespace-nowrap">
                                     @if($isExpired)
@@ -344,7 +356,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-16 text-center">
+                                <td colspan="9" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center justify-center text-center">
                                         <div
                                             class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">

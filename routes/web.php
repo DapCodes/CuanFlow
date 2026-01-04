@@ -118,16 +118,20 @@ Route::middleware('auth')->group(function () {
             ->name('suppliers.destroy');
     });
 
-    Route::prefix('production')->name('production.')->group(function () {
-        Route::get('/', [ProductionController::class, 'index'])->name('index');
-        Route::get('/create', [ProductionController::class, 'create'])->name('create');
-        Route::post('/', [ProductionController::class, 'store'])->name('store');
-        Route::get('/{production}', [ProductionController::class, 'show'])->name('show');
-        Route::post('/{production}/start', [ProductionController::class, 'start'])->name('start');
-        Route::post('/{production}/complete', [ProductionController::class, 'complete'])->name('complete');
-        Route::post('/{production}/cancel', [ProductionController::class, 'cancel'])->name('cancel');
-        Route::get('/api/recipe-details/{product}', [ProductionController::class, 'getRecipeDetails'])->name('recipe-details');
-    });
+Route::prefix('production')->name('production.')->group(function () {
+    Route::get('/', [ProductionController::class, 'index'])->name('index');
+    Route::get('/create', [ProductionController::class, 'create'])->name('create');
+    Route::post('/', [ProductionController::class, 'store'])->name('store');
+    Route::get('/{production}', [ProductionController::class, 'show'])->name('show');
+    Route::post('/{production}/start', [ProductionController::class, 'start'])->name('start');
+    Route::post('/{production}/complete', [ProductionController::class, 'complete'])->name('complete');
+    Route::post('/{production}/cancel', [ProductionController::class, 'cancel'])->name('cancel');
+    Route::post('/{production}/remove-expired', [ProductionController::class, 'removeExpired'])->name('remove-expired');
+    Route::get('/api/recipe-details/{product}', [ProductionController::class, 'getRecipeDetails'])->name('recipe-details');
+    
+    Route::get('/stock/{product}', [ProductionController::class, 'showStock'])->name('stock.show');
+    Route::post('/stock/{product}/remove-expired', [ProductionController::class, 'removeExpiredStock'])->name('stock.remove-expired');
+});
 
     Route::get('/api/sale/{sale}', [SaleController::class, 'showJson'])->name('sale.api.show');
 

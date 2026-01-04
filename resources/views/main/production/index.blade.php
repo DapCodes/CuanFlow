@@ -12,191 +12,177 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
         
         @if(session('success'))
-        <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                <div class="flex-1">
-                    <p class="text-sm text-green-700">{{ session('success') }}</p>
-                </div>
+            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
+                <p class="text-green-800">{{ session('success') }}</p>
             </div>
-        </div>
         @endif
 
         @if(session('error'))
-        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
-                <div class="flex-1">
-                    <p class="text-sm text-red-700">{{ session('error') }}</p>
-                </div>
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
+                <p class="text-red-800">{{ session('error') }}</p>
             </div>
-        </div>
         @endif
 
-        <!-- Products Stock Overview -->
-        <x-card-container>
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-flask text-blue-600 mr-3"></i>
-                            Stok Produk
-                        </h2>
-                        <p class="text-sm text-gray-600 mt-1">Kelola produksi dan stok produk jadi</p>
-                    </div>
-                </div>
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-500 border border-blue-100">
+                        <i class="fas fa-flask text-sm"></i>
+                    </span>
+                    <span>Stok Produk</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Kelola produksi dan stok produk jadi
+                </p>
             </div>
+        </section>
 
-            <!-- Filter & Search -->
-            <div class="p-6 bg-gray-50 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row gap-4">
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div class="border-b border-gray-200 px-4 md:px-6 py-4 bg-gray-50">
+                <div class="flex flex-col md:flex-row gap-3">
                     <div class="flex-1">
+                        <label class="text-xs font-medium text-gray-500 mb-1 block">Cari produk</label>
                         <div class="relative">
-                            <input type="text" id="searchProduct" placeholder="Cari produk..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="searchProduct" placeholder="Cari berdasarkan nama produk..." 
+                                class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                         </div>
                     </div>
-                    <select id="filterStock" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Semua Stok</option>
-                        <option value="low">Stok Menipis</option>
-                        <option value="available">Stok Tersedia</option>
-                        <option value="empty">Stok Kosong</option>
-                    </select>
+                    <div class="w-full sm:w-40 md:w-44">
+                        <label class="text-xs font-medium text-gray-500 mb-1 block">Status Stok</label>
+                        <select id="filterStock" class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
+                            <option value="">Semua Stok</option>
+                            <option value="low">Stok Menipis</option>
+                            <option value="available">Stok Tersedia</option>
+                            <option value="empty">Stok Kosong</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <!-- Products Table -->
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-barcode mr-1 text-gray-400"></i>
-                                Kode
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-box mr-1 text-gray-400"></i>
-                                Produk
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-folder mr-1 text-gray-400"></i>
-                                Kategori
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-cubes mr-1 text-gray-400"></i>
-                                Stok
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-exclamation-triangle mr-1 text-gray-400"></i>
-                                Min. Stok
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-clipboard-check mr-1 text-gray-400"></i>
-                                Status
-                            </th>
-                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-cog mr-1 text-gray-400"></i>
-                                Aksi
-                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Kode</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Produk</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Kategori</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Stok</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Min. Stok</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200" id="productTableBody">
+                    <tbody class="divide-y divide-gray-100 bg-white" id="productTableBody">
                         @forelse($products as $product)
                         <tr class="hover:bg-gray-50 transition-colors product-row" 
                             data-name="{{ strtolower($product['name']) }}"
                             data-stock-status="{{ $product['stock'] == 0 ? 'empty' : ($product['is_low_stock'] ? 'low' : 'available') }}">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-mono font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded">
+                            <td class="px-6 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-800 font-mono border border-gray-200">
                                     {{ $product['code'] }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
+                            <td class="px-6 py-3 whitespace-nowrap">
+                                <div class="flex items-center gap-3">
                                     @if($product['image'])
-                                    <img src="{{ Storage::url($product['image']) }}" alt="{{ $product['name'] }}" class="h-12 w-12 rounded-lg object-cover mr-3 border-2 border-gray-200 shadow-sm">
+                                    <img src="{{ Storage::url($product['image']) }}" alt="{{ $product['name'] }}" 
+                                        class="h-10 w-10 rounded-lg object-cover border border-gray-200">
                                     @else
-                                    <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center mr-3 shadow-sm">
-                                        <i class="fas fa-flask text-white text-lg"></i>
+                                    <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                                        <i class="fas fa-flask text-white text-sm"></i>
                                     </div>
                                     @endif
                                     <div>
                                         <div class="text-sm font-semibold text-gray-900">{{ $product['name'] }}</div>
-                                        <div class="text-xs text-gray-500 flex items-center mt-1">
-                                            <i class="fas fa-ruler-combined mr-1"></i>
+                                        <div class="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                                            <i class="fas fa-ruler-combined text-[10px]"></i>
                                             {{ $product['unit'] }}
                                         </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-3 whitespace-nowrap">
                                 @if($product['category'])
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    <i class="fas fa-tag mr-1"></i>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                    <i class="fas fa-tag mr-1 text-[10px]"></i>
                                     {{ $product['category'] }}
                                 </span>
                                 @else
                                 <span class="text-sm text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-3 whitespace-nowrap">
                                 <div class="text-sm">
-                                    <span class="font-bold {{ $product['stock'] == 0 ? 'text-red-600' : ($product['is_low_stock'] ? 'text-yellow-600' : 'text-green-600') }}">
+                                    <span class="font-semibold {{ $product['stock'] == 0 ? 'text-red-600' : ($product['is_low_stock'] ? 'text-yellow-600' : 'text-green-600') }}">
                                         {{ number_format($product['stock'], 2) }}
                                     </span>
                                     <span class="text-gray-500 ml-1">{{ $product['unit'] }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-3 whitespace-nowrap">
                                 <span class="text-sm text-gray-600">
                                     {{ number_format($product['min_stock'], 2) }} {{ $product['unit'] }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-3 whitespace-nowrap">
                                 @if($product['stock'] == 0)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                    <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100">
+                                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
                                     Kosong
                                 </span>
                                 @elseif($product['is_low_stock'])
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                                    <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-100">
+                                    <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1.5"></span>
                                     Menipis
                                 </span>
                                 @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100">
+                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></span>
                                     Tersedia
                                 </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                @if($product['has_recipe'])
-                                <a href="{{ route('production.create', ['product_id' => $product['id']]) }}" 
-                                   class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-br from-blue-400 to-blue-700 text-white rounded-lg hover:from-blue-500 hover:to-blue-800 transition-all text-sm font-medium shadow-sm"  
-                                   title="Produksi">
-                                    <i class="fas fa-plus-circle mr-2"></i>
-                                    Produksi
-                                </a>
-                                @else
-                                <span class="text-xs text-gray-400 italic">Tidak ada resep</span>
-                                @endif
+                            <td class="px-6 py-3 whitespace-nowrap text-center">
+                                <div class="inline-flex items-center gap-1.5">
+                                    <a href="{{ route('production.stock.show', $product['id']) }}" 
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                                       title="Detail Stok">
+                                        <i class="fas fa-chart-line text-xs"></i>
+                                    </a>
+                                    @if($product['has_recipe'])
+                                    <a href="{{ route('production.create', ['product_id' => $product['id']]) }}" 
+                                       class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs font-semibold"
+                                       title="Produksi">
+                                        <i class="fas fa-plus-circle text-xs"></i>
+                                        <span>Produksi</span>
+                                    </a>
+                                    @else
+                                    <span class="text-xs text-gray-400 italic px-2">Tidak ada resep</span>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
                             <td colspan="7" class="px-6 py-16 text-center">
                                 <div class="flex flex-col items-center justify-center">
-                                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                        <i class="fas fa-box-open text-5xl text-gray-300"></i>
+                                    <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                        <i class="fas fa-box-open text-3xl text-gray-300"></i>
                                     </div>
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Produk</h3>
-                                    <p class="text-sm text-gray-500 mb-6">Tambahkan produk terlebih dahulu untuk memulai produksi</p>
-                                    <a href="{{ route('products-hpp.create') }}" class="inline-flex items-center px-5 py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-cuan-olive transition-colors">
-                                        <i class="fas fa-plus-circle mr-2"></i>
+                                    <h3 class="text-base font-semibold text-gray-900 mb-1">Belum Ada Produk</h3>
+                                    <p class="text-sm text-gray-500 mb-4 max-w-sm">
+                                        Tambahkan produk terlebih dahulu untuk memulai produksi
+                                    </p>
+                                    <a href="{{ route('products-hpp.create') }}" 
+                                       class="inline-flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-600">
+                                        <i class="fas fa-plus-circle text-xs"></i>
                                         Tambah Produk
                                     </a>
                                 </div>
@@ -206,35 +192,34 @@
                     </tbody>
                 </table>
             </div>
-        </x-card-container>
+        </section>
 
-        <!-- Recent Productions -->
         @if($recentProductions->count() > 0)
-        <x-card-container class="mt-6">
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
-                <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                    <i class="fas fa-history text-blue-600 mr-3"></i>
-                    Riwayat Produksi Terbaru
-                </h3>
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-history text-blue-500"></i>
+                    <span>Riwayat Produksi Terbaru</span>
+                </h2>
             </div>
 
             <div class="p-6">
-                <div class="space-y-4">
+                <div class="space-y-3">
                     @foreach($recentProductions as $production)
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div class="flex items-center space-x-4 flex-1">
-                            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center shadow-sm">
-                                <i class="fas fa-flask text-white text-lg"></i>
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-100">
+                        <div class="flex items-center gap-4 flex-1 min-w-0">
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-700 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-flask text-white text-sm"></i>
                             </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3">
-                                    <h4 class="text-sm font-bold text-gray-900">{{ $production->product->name }}</h4>
-                                    <span class="text-xs font-mono bg-gray-200 px-2 py-1 rounded">{{ $production->batch_number }}</span>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h4 class="text-sm font-semibold text-gray-900 truncate">{{ $production->product->name }}</h4>
+                                    <span class="text-xs font-mono bg-gray-200 px-2 py-0.5 rounded border border-gray-300 flex-shrink-0">{{ $production->batch_number }}</span>
                                 </div>
-                                <div class="flex items-center gap-4 mt-1">
+                                <div class="flex items-center gap-3 mt-1 flex-wrap">
                                     <p class="text-xs text-gray-600">
                                         <i class="fas fa-cubes mr-1"></i>
-                                        {{ number_format($production->actual_quantity, 2) }} {{ $production->product->unit->name ?? '' }}
+                                        {{ number_format($production->actual_quantity ?? $production->planned_quantity, 2) }} {{ $production->product->unit->name ?? '' }}
                                     </p>
                                     <p class="text-xs text-gray-500">
                                         <i class="fas fa-user mr-1"></i>
@@ -247,31 +232,31 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 ml-4 flex-shrink-0">
                             @php
                                 $statusConfig = [
-                                    'planned' => ['class' => 'bg-gray-100 text-gray-700', 'icon' => 'fa-clock', 'text' => 'Direncanakan'],
-                                    'in_progress' => ['class' => 'bg-blue-100 text-blue-700', 'icon' => 'fa-spinner', 'text' => 'Sedang Proses'],
-                                    'completed' => ['class' => 'bg-green-100 text-green-700', 'icon' => 'fa-check-circle', 'text' => 'Selesai'],
-                                    'cancelled' => ['class' => 'bg-red-100 text-red-700', 'icon' => 'fa-times-circle', 'text' => 'Dibatalkan'],
+                                    'planned' => ['class' => 'bg-gray-50 text-gray-700 border-gray-200', 'icon' => 'fa-clock', 'text' => 'Direncanakan'],
+                                    'in_progress' => ['class' => 'bg-blue-50 text-blue-700 border-blue-200', 'icon' => 'fa-spinner', 'text' => 'Proses'],
+                                    'completed' => ['class' => 'bg-green-50 text-green-700 border-green-200', 'icon' => 'fa-check-circle', 'text' => 'Selesai'],
+                                    'cancelled' => ['class' => 'bg-red-50 text-red-700 border-red-200', 'icon' => 'fa-times-circle', 'text' => 'Batal'],
                                 ];
                                 $config = $statusConfig[$production->status] ?? $statusConfig['planned'];
                             @endphp
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $config['class'] }}">
-                                <i class="fas {{ $config['icon'] }} mr-1"></i>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border {{ $config['class'] }}">
+                                <i class="fas {{ $config['icon'] }} mr-1.5"></i>
                                 {{ $config['text'] }}
                             </span>
                             <a href="{{ route('production.show', $production->id) }}" 
-                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"  
+                               class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                                title="Detail">
-                                <i class="fas fa-eye text-sm"></i>
+                                <i class="fas fa-eye text-xs"></i>
                             </a>
                         </div>
                     </div>
                     @endforeach
                 </div>
             </div>
-        </x-card-container>
+        </section>
         @endif
 
     </div>
@@ -285,14 +270,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const productRows = document.querySelectorAll('.product-row');
 
     function filterProducts() {
-        const searchTerm = searchInput.value.toLowerCase();
+        const searchTerm = (searchInput.value || '').toLowerCase();
         const stockFilter = filterStock.value;
 
         productRows.forEach(row => {
-            const productName = row.dataset.name;
-            const stockStatus = row.dataset.stockStatus;
+            const productName = row.dataset.name || '';
+            const stockStatus = row.dataset.stockStatus || '';
 
-            const matchesSearch = productName.includes(searchTerm);
+            const matchesSearch = !searchTerm || productName.includes(searchTerm);
             const matchesFilter = !stockFilter || stockStatus === stockFilter;
 
             row.style.display = (matchesSearch && matchesFilter) ? '' : 'none';

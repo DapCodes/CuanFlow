@@ -34,17 +34,21 @@
         height: 44px;
         right: 10px;
     }
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
 </style>
 @endpush
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
 
         @if($errors->any())
-        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
                 <div class="flex-1">
                     <h3 class="font-semibold text-red-800 mb-2">Terjadi kesalahan!</h3>
                     <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
@@ -54,13 +58,11 @@
                     </ul>
                 </div>
             </div>
-        </div>
         @endif
 
         @if(session('insufficient_materials'))
-        <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-3"></i>
+            <div class="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-exclamation-triangle mt-0.5 text-yellow-500"></i>
                 <div class="flex-1">
                     <h3 class="font-semibold text-yellow-800 mb-2">Stok Bahan Baku Tidak Mencukupi!</h3>
                     <ul class="list-disc list-inside text-sm text-yellow-700 space-y-1">
@@ -75,44 +77,63 @@
                     </ul>
                 </div>
             </div>
-        </div>
         @endif
 
-        <x-card-container>
-            <!-- Progress Steps -->
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-6 border-b border-gray-200">
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div class="border-b border-gray-200 px-6 py-5">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-500 border border-blue-100">
+                                <i class="fas fa-plus-circle text-sm"></i>
+                            </span>
+                            <span>Buat Produksi Baru</span>
+                        </h1>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Ikuti langkah-langkah untuk membuat rencana produksi baru
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('production.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-arrow-left text-sm"></i>
+                            <span>Kembali</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-b border-gray-200 px-6 py-5 bg-gray-50">
                 <div class="flex justify-between items-center relative">
-                    <!-- Progress Line -->
                     <div class="absolute top-5 left-0 right-0 h-0.5 bg-gray-200" style="z-index: 0;">
-                        <div id="progressLine" class="h-full bg-gradient-to-br from-blue-400 to-blue-700 transition-all duration-300" style="width: 0%;"></div>
+                        <div id="progressLine" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%;"></div>
                     </div>
 
-                    <!-- Step 1 -->
                     <div class="flex-1 text-center step-indicator active relative z-10" data-step="1">
-                        <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-2 shadow-md">
-                            <i class="fas fa-box text-white"></i>
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2 shadow-md">
+                            <i class="fas fa-box text-white text-sm"></i>
                         </div>
+                        <p class="text-xs font-medium text-gray-600 hidden sm:block">Pilih Produk</p>
                     </div>
 
-                    <!-- Step 2 -->
                     <div class="flex-1 text-center step-indicator relative z-10" data-step="2">
                         <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-list-ul text-gray-400"></i>
+                            <i class="fas fa-list-ul text-gray-400 text-sm"></i>
                         </div>
+                        <p class="text-xs font-medium text-gray-400 hidden sm:block">Bahan Baku</p>
                     </div>
 
-                    <!-- Step 3 -->
                     <div class="flex-1 text-center step-indicator relative z-10" data-step="3">
                         <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-calculator text-gray-400"></i>
+                            <i class="fas fa-calculator text-gray-400 text-sm"></i>
                         </div>
+                        <p class="text-xs font-medium text-gray-400 hidden sm:block">Detail</p>
                     </div>
 
-                    <!-- Step 4 -->
                     <div class="flex-1 text-center step-indicator relative z-10" data-step="4">
                         <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-check-circle text-gray-400"></i>
+                            <i class="fas fa-check-circle text-gray-400 text-sm"></i>
                         </div>
+                        <p class="text-xs font-medium text-gray-400 hidden sm:block">Konfirmasi</p>
                     </div>
                 </div>
             </div>
@@ -120,19 +141,17 @@
             <form action="{{ route('production.store') }}" method="POST" id="productionForm">
                 @csrf
 
-                <!-- Step 1: Select Product -->
                 <div class="step-content p-6" id="step1">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-box text-blue-600 mr-2"></i>
-                            Pilih Produk
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-box text-blue-500"></i>
+                            <span>Pilih Produk</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">Pilih produk yang akan diproduksi</p>
                     </div>
                     
                     <div class="max-w-2xl">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-cube text-gray-400 mr-1"></i>
                             Produk <span class="text-red-500">*</span>
                         </label>
                         <select name="product_id" id="productSelect" class="select2-product w-full" required>
@@ -150,31 +169,33 @@
 
                     <div id="productInfo" class="mt-6 hidden">
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
-                            <h4 class="font-semibold text-gray-800 mb-3">Informasi Produk</h4>
+                            <h4 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                <i class="fas fa-info-circle text-blue-500"></i>
+                                Informasi Produk
+                            </h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <p class="text-xs text-gray-600">Nama Resep</p>
-                                    <p class="font-semibold text-gray-900" id="recipeName">-</p>
+                                    <p class="text-xs font-medium text-gray-500 mb-1">Nama Resep</p>
+                                    <p class="text-sm font-semibold text-gray-900" id="recipeName">-</p>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-gray-600">Output Per Batch</p>
-                                    <p class="font-semibold text-gray-900" id="outputQuantity">-</p>
+                                    <p class="text-xs font-medium text-gray-500 mb-1">Output Per Batch</p>
+                                    <p class="text-sm font-semibold text-gray-900" id="outputQuantity">-</p>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-gray-600">Satuan Output</p>
-                                    <p class="font-semibold text-gray-900" id="outputUnit">-</p>
+                                    <p class="text-xs font-medium text-gray-500 mb-1">Satuan Output</p>
+                                    <p class="text-sm font-semibold text-gray-900" id="outputUnit">-</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 2: Recipe Materials -->
                 <div class="step-content p-6 hidden" id="step2">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-list-ul text-blue-600 mr-2"></i>
-                            Bahan Baku yang Dibutuhkan
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-list-ul text-blue-500"></i>
+                            <span>Bahan Baku yang Dibutuhkan</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">Periksa ketersediaan bahan baku untuk produksi</p>
                     </div>
@@ -182,26 +203,24 @@
                     <input type="hidden" name="recipe_id" id="recipeIdInput">
                     
                     <div id="materialsContainer" class="space-y-4">
-                        <!-- Materials will be loaded here -->
                     </div>
 
                     <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div class="flex items-start">
-                            <i class="fas fa-info-circle text-yellow-600 mt-0.5 mr-3"></i>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-info-circle text-yellow-600 mt-0.5 flex-shrink-0"></i>
                             <p class="text-sm text-yellow-800">
                                 Pastikan semua bahan baku tersedia dalam jumlah yang cukup. 
-                                Stok bahan baku akan otomatis berkurang setelah produksi dibuat.
+                                Stok bahan baku akan otomatis berkurang setelah produksi dimulai.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 3: Production Details -->
                 <div class="step-content p-6 hidden" id="step3">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-calculator text-blue-600 mr-2"></i>
-                            Detail Produksi
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-calculator text-blue-500"></i>
+                            <span>Detail Produksi</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">Tentukan jumlah yang akan diproduksi</p>
                     </div>
@@ -209,7 +228,6 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-cubes text-gray-400 mr-1"></i>
                                 Jumlah Produksi <span class="text-red-500">*</span>
                             </label>
                             <input type="number" step="0.01" name="planned_quantity" id="plannedQuantity" 
@@ -221,18 +239,16 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-balance-scale text-gray-400 mr-1"></i>
                                 Multiplier
                             </label>
                             <input type="text" id="multiplierDisplay" readonly
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600" 
                                 value="1x">
                             <p class="text-xs text-gray-500 mt-1">Pengali dari resep standar</p>
                         </div>
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-sticky-note text-gray-400 mr-1"></i>
                                 Catatan
                             </label>
                             <textarea name="notes" rows="3" 
@@ -241,88 +257,71 @@
                         </div>
                     </div>
 
-                    <div class="mt-6 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6">
-                        <h4 class="text-base font-bold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-clipboard-list text-blue-600 mr-2"></i>
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-clipboard-list text-blue-500"></i>
                             Kebutuhan Bahan Baku
                         </h4>
                         <div id="materialRequirements" class="space-y-3">
-                            <!-- Material requirements will be calculated here -->
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 4: Confirmation -->
                 <div class="step-content p-6 hidden" id="step4">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-check-circle text-blue-600 mr-2"></i>
-                            Konfirmasi Produksi
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-check-circle text-blue-500"></i>
+                            <span>Konfirmasi Produksi</span>
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">Periksa kembali detail produksi sebelum menyimpan</p>
                     </div>
 
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border-2 border-blue-300">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="bg-white rounded-lg p-4 shadow-sm">
-                                <p class="text-xs text-gray-600 mb-1">Produk</p>
-                                <p class="font-bold text-gray-900" id="confirmProduct">-</p>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Produk</p>
+                                <p class="text-sm font-semibold text-gray-900" id="confirmProduct">-</p>
                             </div>
-                            <div class="bg-white rounded-lg p-4 shadow-sm">
-                                <p class="text-xs text-gray-600 mb-1">Resep</p>
-                                <p class="font-bold text-gray-900" id="confirmRecipe">-</p>
+                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Resep</p>
+                                <p class="text-sm font-semibold text-gray-900" id="confirmRecipe">-</p>
                             </div>
-                            <div class="bg-white rounded-lg p-4 shadow-sm">
-                                <p class="text-xs text-gray-600 mb-1">Jumlah Produksi</p>
-                                <p class="font-bold text-green-600 text-xl" id="confirmQuantity">-</p>
+                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Jumlah Produksi</p>
+                                <p class="text-xl font-bold text-green-600" id="confirmQuantity">-</p>
                             </div>
-                            <div class="bg-white rounded-lg p-4 shadow-sm">
-                                <p class="text-xs text-gray-600 mb-1">Estimasi Biaya</p>
-                                <p class="font-bold text-blue-600 text-xl" id="confirmCost">Rp 0</p>
+                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Estimasi Biaya</p>
+                                <p class="text-xl font-bold text-blue-600" id="confirmCost">Rp 0</p>
                             </div>
                         </div>
 
-                        <div class="mt-6 bg-white rounded-lg p-4 shadow-sm">
-                            <h5 class="font-semibold text-gray-800 mb-3">Bahan yang Akan Digunakan:</h5>
+                        <div class="mt-6 bg-white rounded-lg p-4 border border-gray-200">
+                            <h5 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                <i class="fas fa-list text-blue-500"></i>
+                                Bahan yang Akan Digunakan
+                            </h5>
                             <div id="confirmMaterials" class="space-y-2">
-                                <!-- Materials summary -->
                             </div>
                         </div>
-                    </div>
-
-                    <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <label class="flex items-start cursor-pointer">
-                            <input type="checkbox" name="start_production" value="1" id="startProductionCheck" class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
-                            <span class="ml-3">
-                                <span class="block text-sm font-semibold text-gray-800">
-                                    <i class="fas fa-play-circle mr-1 text-blue-600"></i>
-                                    Mulai Produksi Sekarang
-                                </span>
-                                <span class="block text-xs text-gray-600 mt-1">
-                                    Jika dicentang, produksi akan langsung dimulai dan stok bahan baku akan dikurangi. 
-                                    Jika tidak, produksi akan berstatus "Direncanakan" dan dapat dimulai nanti.
-                                </span>
-                            </span>
-                        </label>
                     </div>
                 </div>
 
-                <!-- Navigation Buttons -->
-                <div class="px-6 py-6 bg-gray-50 border-t border-gray-200">
+                <div class="px-6 py-5 bg-gray-50 border-t border-gray-200 rounded-b-xl">
                     <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-                        <button type="button" id="prevBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold" style="display: none;">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Sebelumnya
+                        <button type="button" id="prevBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm" style="display: none;">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Sebelumnya</span>
                         </button>
                         <div class="hidden sm:block"></div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <button type="button" id="nextBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-br from-blue-400 to-blue-700 text-white rounded-lg hover:from-blue-500 hover:to-blue-800 transition-all font-semibold shadow-md hover:shadow-lg">
-                                Selanjutnya
-                                <i class="fas fa-arrow-right ml-2"></i>
+                            <button type="button" id="nextBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold text-sm shadow-sm">
+                                <span>Selanjutnya</span>
+                                <i class="fas fa-arrow-right"></i>
                             </button>
-                            <button type="submit" id="submitBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-br from-blue-400 to-blue-700 text-white rounded-lg hover:from-blue-500 hover:to-blue-800 transition-all font-semibold shadow-md hover:shadow-lg" style="display: none;">
-                                <i class="fas fa-save mr-2"></i>
-                                Buat Produksi
+                            <button type="submit" id="submitBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold text-sm shadow-sm" style="display: none;">
+                                <i class="fas fa-save"></i>
+                                <span>Buat Produksi</span>
                             </button>
                         </div>
                     </div>
@@ -330,7 +329,7 @@
 
             </form>
 
-        </x-card-container>
+        </section>
 
     </div>
 </main>
@@ -347,7 +346,6 @@ let materialsData = [];
 let outputQuantityPerBatch = 1;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Select2
     $('.select2-product').select2({
         theme: 'default',
         width: '100%',
@@ -356,7 +354,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     showStep(currentStep);
     
-    // Product selection
     $('#productSelect').on('change', function() {
         const productId = $(this).val();
         const recipeId = $(this).find(':selected').data('recipe-id');
@@ -368,13 +365,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Quantity change
     $('#plannedQuantity').on('input', function() {
         updateMultiplier();
         calculateMaterialRequirements();
     });
     
-    // Next button
     $('#nextBtn').on('click', function() {
         if (validateStep(currentStep)) {
             currentStep++;
@@ -382,13 +377,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Previous button
     $('#prevBtn').on('click', function() {
         currentStep--;
         showStep(currentStep);
     });
 
-    // Load recipe if product is pre-selected
     @if($selectedProduct && $recipe)
         loadRecipeDetails({{ $selectedProduct->id }});
     @endif
@@ -427,27 +420,32 @@ function displayMaterials() {
         const statusIcon = isSufficient ? 'fa-check-circle text-green-600' : 'fa-exclamation-circle text-red-600';
         
         const html = `
-            <div class="border ${statusClass} rounded-lg p-5">
+            <div class="border ${statusClass} rounded-lg p-4">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                            <h4 class="font-semibold text-gray-900">${material.name}</h4>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100">
+                                <i class="fas fa-box text-orange-500 text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-semibold text-gray-900">${material.name}</h4>
+                            </div>
                             <i class="fas ${statusIcon}"></i>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                             <div>
-                                <p class="text-xs text-gray-600">Dibutuhkan</p>
-                                <p class="font-semibold text-gray-900">${material.required_quantity} ${material.unit}</p>
+                                <p class="text-xs font-medium text-gray-500 mb-1">Dibutuhkan</p>
+                                <p class="text-sm font-semibold text-gray-900">${material.required_quantity} ${material.unit}</p>
                             </div>
                             <div>
-                                <p class="text-xs text-gray-600">Stok Saat Ini</p>
-                                <p class="font-semibold ${isSufficient ? 'text-green-600' : 'text-red-600'}">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Stok Saat Ini</p>
+                                <p class="text-sm font-semibold ${isSufficient ? 'text-green-600' : 'text-red-600'}">
                                     ${material.current_stock} ${material.unit}
                                 </p>
                             </div>
                             <div>
-                                <p class="text-xs text-gray-600">Harga Satuan</p>
-                                <p class="font-semibold text-gray-900">Rp ${formatNumber(material.unit_price)}</p>
+                                <p class="text-xs font-medium text-gray-500 mb-1">Harga Satuan</p>
+                                <p class="text-sm font-semibold text-gray-900">Rp ${formatNumber(material.unit_price)}</p>
                             </div>
                         </div>
                     </div>
@@ -484,7 +482,7 @@ function calculateMaterialRequirements() {
         const html = `
             <div class="flex justify-between items-center py-2 border-b border-blue-100">
                 <div class="flex items-center gap-2">
-                    <i class="fas ${statusIcon}"></i>
+                    <i class="fas ${statusIcon} text-xs"></i>
                     <span class="text-sm font-medium text-gray-900">${material.name}</span>
                 </div>
                 <div class="text-right">
@@ -498,8 +496,8 @@ function calculateMaterialRequirements() {
     
     container.append(`
         <div class="flex justify-between items-center pt-3 mt-3 border-t-2 border-blue-300">
-            <span class="font-bold text-gray-900">Total Estimasi Biaya:</span>
-            <span class="text-xl font-bold text-green-600">Rp ${formatNumber(totalCost)}</span>
+            <span class="text-sm font-bold text-gray-900">Total Estimasi Biaya:</span>
+            <span class="text-lg font-bold text-green-600">Rp ${formatNumber(totalCost)}</span>
         </div>
     `);
     
@@ -525,7 +523,7 @@ function showConfirmation() {
     materialsData.forEach(material => {
         const requiredQty = material.required_quantity * multiplier;
         const html = `
-            <div class="flex justify-between text-sm py-1">
+            <div class="flex justify-between items-center text-sm py-2 border-b border-gray-100">
                 <span class="text-gray-700">${material.name}</span>
                 <span class="font-semibold text-gray-900">${requiredQty.toFixed(2)} ${material.unit}</span>
             </div>
@@ -548,7 +546,6 @@ function validateStep(step) {
             return true;
             
         case 2:
-            // Check if all materials are sufficient
             const plannedQty = parseFloat($('#plannedQuantity').val()) || 1;
             const multiplier = outputQuantityPerBatch > 0 ? (plannedQty / outputQuantityPerBatch) : 1;
             
@@ -585,39 +582,38 @@ function showStep(step) {
     $('.step-content').addClass('hidden');
     $(`#step${step}`).removeClass('hidden');
     
-    // Update progress indicators
     $('.step-indicator').each(function(index) {
         const stepNum = index + 1;
-        const circle = $(this).find('div');
+        const circle = $(this).find('div').first();
         const icon = circle.find('i');
+        const label = $(this).find('p');
         
         if (stepNum < step) {
-            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-gradient-to-br from-blue-400 to-blue-700 shadow-md');
+            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-blue-500 shadow-sm');
             icon.removeClass('text-gray-400').addClass('text-white');
+            label.removeClass('text-gray-400').addClass('text-gray-600');
         } else if (stepNum === step) {
-            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-gradient-to-br from-blue-400 to-blue-700 shadow-md ring-4 ring-blue-200');
+            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-blue-500 shadow-md ring-4 ring-blue-200');
             icon.removeClass('text-gray-400').addClass('text-white');
+            label.removeClass('text-gray-400').addClass('text-blue-600 font-semibold');
         } else {
-            circle.removeClass('bg-gradient-to-br from-blue-400 to-blue-700 shadow-md ring-4 ring-blue-200').addClass('bg-white border-2 border-gray-300');
+            circle.removeClass('bg-blue-500 shadow-md ring-4 ring-blue-200 shadow-sm').addClass('bg-white border-2 border-gray-300');
             icon.removeClass('text-white').addClass('text-gray-400');
+            label.removeClass('text-blue-600 font-semibold text-gray-600').addClass('text-gray-400');
         }
     });
     
-    // Update progress line
     const progressPercent = ((step - 1) / (totalSteps - 1)) * 100;
     $('#progressLine').css('width', progressPercent + '%');
     
-    // Show/hide buttons
     $('#prevBtn').toggle(step > 1);
     $('#nextBtn').toggle(step < totalSteps);
     $('#submitBtn').toggle(step === totalSteps);
     
-    // Load confirmation data on last step
     if (step === 4) {
         showConfirmation();
     }
     
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

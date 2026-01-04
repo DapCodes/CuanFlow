@@ -18,132 +18,122 @@
 @endsection
 
 @section('content')
-
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
 
         @if(session('success'))
-        <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                <p class="text-sm text-green-700">{{ session('success') }}</p>
+            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
+                <p class="text-green-800">{{ session('success') }}</p>
             </div>
-        </div>
         @endif
 
         @if(session('error'))
-        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
-                <p class="text-sm text-red-700">{{ session('error') }}</p>
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
+                <p class="text-red-800">{{ session('error') }}</p>
             </div>
-        </div>
         @endif
 
-        @if(session('insufficient_materials'))
-        <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-3"></i>
-                <div class="flex-1">
-                    <h3 class="font-semibold text-yellow-800 mb-2">Stok Bahan Baku Tidak Mencukupi!</h3>
-                    <ul class="list-disc list-inside text-sm text-yellow-700 space-y-1">
-                        @foreach(session('insufficient_materials') as $material)
-                        <li>
-                            <strong>{{ $material['name'] }}</strong>: 
-                            Dibutuhkan {{ number_format($material['required'], 2) }}, 
-                            Tersedia {{ number_format($material['available'], 2) }}, 
-                            Kurang {{ number_format($material['shortage'], 2) }}
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-500 border border-blue-100">
+                        <i class="fas fa-flask text-sm"></i>
+                    </span>
+                    <span>Produksi #{{ $production->batch_number }}</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Detail informasi produksi dan status kadaluarsa
+                </p>
             </div>
-        </div>
-        @endif
+            <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+                @if($production->status === 'planned')
+                    <form action="{{ route('production.start', $production->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin memulai produksi ini?')">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-600">
+                            <i class="fas fa-play text-sm"></i>
+                            <span>Mulai Produksi</span>
+                        </button>
+                    </form>
+                    <button onclick="openCancelModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600">
+                        <i class="fas fa-times-circle text-sm"></i>
+                        <span>Batalkan</span>
+                    </button>
+                @endif
+
+                @if($production->status === 'in_progress')
+                    <button onclick="openCompleteModal()" class="inline-flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-600">
+                        <i class="fas fa-check-circle text-sm"></i>
+                        <span>Selesaikan</span>
+                    </button>
+                    <button onclick="openCancelModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600">
+                        <i class="fas fa-times-circle text-sm"></i>
+                        <span>Batalkan</span>
+                    </button>
+                @endif
+
+                <a href="{{ route('production.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-arrow-left text-sm"></i>
+                    <span>Kembali</span>
+                </a>
+            </div>
+        </section>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Main Content -->
             <div class="lg:col-span-2 space-y-6">
                 
-                <!-- Production Status Card -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                                    Produksi #{{ $production->batch_number }}
-                                </h2>
-                                <p class="text-sm text-gray-600 mt-1">Detail informasi produksi</p>
-                            </div>
-                            <div class="flex flex-col sm:flex-row flex-wrap gap-2 md:gap-3">
-                                @if($production->status === 'planned')
-                                    <form action="{{ route('production.start', $production->id) }}" method="POST" class="w-full sm:w-auto" onsubmit="return confirm('Apakah Anda yakin ingin memulai produksi ini? Stok bahan baku akan langsung dikurangi.')">
-                                        @csrf
-                                        <button type="submit" 
-                                            class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-br from-blue-400 to-blue-700 text-white rounded-lg hover:from-blue-500 hover:to-blue-800 transition-all font-medium shadow-md hover:shadow-lg text-sm md:text-base">
-                                            <i class="fas fa-play mr-2"></i>
-                                            Mulai Produksi
-                                        </button>
-                                    </form>
-                                    <button onclick="openCancelModal()" 
-                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm md:text-base">
-                                        <i class="fas fa-times-circle mr-2"></i>
-                                        Batalkan
-                                    </button>
-                                @endif
-
-                                @if($production->status === 'in_progress')
-                                    <button onclick="openCompleteModal()" 
-                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm md:text-base">
-                                        <i class="fas fa-check-circle mr-2"></i>
-                                        Selesaikan
-                                    </button>
-                                    <button onclick="openCancelModal()" 
-                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-md hover:shadow-lg text-sm md:text-base">
-                                        <i class="fas fa-times-circle mr-2"></i>
-                                        Batalkan
-                                    </button>
-                                @endif
-
-                                <a href="{{ route('production.index') }}" 
-                                    class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
-                                    <i class="fas fa-arrow-left mr-2"></i>
-                                    Kembali
-                                </a>
-                            </div>
-                        </div>
+                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-info-circle text-blue-500"></i>
+                            <span>Informasi Produksi</span>
+                        </h2>
                     </div>
-
-                    <div class="p-6 space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <p class="text-xs text-gray-600 mb-1">Status</p>
+                                <p class="text-xs font-medium text-gray-500 mb-1">Status</p>
                                 @php
                                     $statusConfig = [
-                                        'planned' => ['class' => 'bg-gray-100 text-gray-700 border-gray-300', 'icon' => 'fa-clock', 'text' => 'Direncanakan'],
-                                        'in_progress' => ['class' => 'bg-blue-100 text-blue-700 border-blue-300', 'icon' => 'fa-spinner fa-spin', 'text' => 'Sedang Proses'],
-                                        'completed' => ['class' => 'bg-green-100 text-green-700 border-green-300', 'icon' => 'fa-check-circle', 'text' => 'Selesai'],
-                                        'cancelled' => ['class' => 'bg-red-100 text-red-700 border-red-300', 'icon' => 'fa-times-circle', 'text' => 'Dibatalkan'],
+                                        'planned' => ['class' => 'bg-gray-50 text-gray-700 border-gray-200', 'icon' => 'fa-clock', 'text' => 'Direncanakan'],
+                                        'in_progress' => ['class' => 'bg-blue-50 text-blue-700 border-blue-200', 'icon' => 'fa-spinner', 'text' => 'Sedang Proses'],
+                                        'completed' => ['class' => 'bg-green-50 text-green-700 border-green-200', 'icon' => 'fa-check-circle', 'text' => 'Selesai'],
+                                        'cancelled' => ['class' => 'bg-red-50 text-red-700 border-red-200', 'icon' => 'fa-times-circle', 'text' => 'Dibatalkan'],
                                     ];
                                     $config = $statusConfig[$production->status] ?? $statusConfig['planned'];
                                 @endphp
-                                <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold {{ $config['class'] }} border-2">
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold border {{ $config['class'] }}">
                                     <i class="fas {{ $config['icon'] }} mr-2"></i>
                                     {{ $config['text'] }}
                                 </span>
                             </div>
 
                             <div>
-                                <p class="text-xs text-gray-600 mb-1">Batch Number</p>
-                                <p class="text-lg font-bold font-mono text-gray-900 bg-gray-100 px-3 py-2 rounded inline-block">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Batch Number</p>
+                                <p class="text-sm font-semibold font-mono text-gray-900 bg-gray-50 px-3 py-1.5 rounded-lg inline-block border border-gray-200">
                                     {{ $production->batch_number }}
                                 </p>
                             </div>
 
                             <div>
-                                <p class="text-xs text-gray-600 mb-1">Dibuat Oleh</p>
-                                <p class="font-semibold text-gray-900">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Produk</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ $production->product->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $production->product->code }}</p>
+                            </div>
+
+                            @if($production->recipe)
+                            <div>
+                                <p class="text-xs font-medium text-gray-500 mb-1">Resep</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ $production->recipe->name }}</p>
+                                <p class="text-xs text-gray-500">Output: {{ $production->recipe->output_quantity }} {{ $production->product->unit->name ?? '' }}</p>
+                            </div>
+                            @endif
+
+                            <div>
+                                <p class="text-xs font-medium text-gray-500 mb-1">Dibuat Oleh</p>
+                                <p class="text-sm font-semibold text-gray-900">
                                     <i class="fas fa-user text-gray-400 mr-1"></i>
                                     {{ $production->createdBy->name ?? '-' }}
                                 </p>
@@ -152,8 +142,8 @@
 
                             @if($production->started_at)
                             <div>
-                                <p class="text-xs text-gray-600 mb-1">Dimulai Pada</p>
-                                <p class="font-semibold text-gray-900">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Dimulai Pada</p>
+                                <p class="text-sm font-semibold text-gray-900">
                                     <i class="fas fa-play-circle text-blue-500 mr-1"></i>
                                     {{ $production->started_at->format('d M Y, H:i') }}
                                 </p>
@@ -163,8 +153,8 @@
 
                             @if($production->completed_at)
                             <div>
-                                <p class="text-xs text-gray-600 mb-1">Diselesaikan Oleh</p>
-                                <p class="font-semibold text-gray-900">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Diselesaikan Oleh</p>
+                                <p class="text-sm font-semibold text-gray-900">
                                     <i class="fas fa-user-check text-green-500 mr-1"></i>
                                     {{ $production->completedBy->name ?? '-' }}
                                 </p>
@@ -173,89 +163,62 @@
 
                             @if($production->started_at)
                             <div>
-                                <p class="text-xs text-gray-600 mb-1">Durasi Produksi</p>
-                                <p class="font-semibold text-gray-900">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Durasi Produksi</p>
+                                <p class="text-sm font-semibold text-gray-900">
                                     <i class="fas fa-stopwatch text-purple-500 mr-1"></i>
                                     {{ $production->started_at->diffForHumans($production->completed_at, true) }}
                                 </p>
                             </div>
                             @endif
                             @endif
-                        </div>
-                    </div>
-                </x-card-container>
 
-                <!-- Product & Recipe Info -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-box text-blue-600 mr-2"></i>
-                            Informasi Produk & Resep
-                        </h2>
-                    </div>
-
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            @if($production->expired_at)
                             <div>
-                                <p class="text-xs text-gray-600 mb-2">Produk</p>
-                                <div class="flex items-center gap-3 bg-green-50 p-4 rounded-lg border border-green-200">
-                                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-sm">
-                                        <i class="fas fa-cube text-white text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-gray-900">{{ $production->product->name }}</p>
-                                        <p class="text-xs text-gray-600">{{ $production->product->code }}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            @if($production->recipe)
-                            <div>
-                                <p class="text-xs text-gray-600 mb-2">Resep</p>
-                                <div class="flex items-center gap-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-sm">
-                                        <i class="fas fa-file-alt text-white text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-gray-900">{{ $production->recipe->name }}</p>
-                                        <p class="text-xs text-gray-600">Output: {{ $production->recipe->output_quantity }} {{ $production->product->unit->name ?? '' }}</p>
-                                    </div>
-                                </div>
+                                <p class="text-xs font-medium text-gray-500 mb-1">Tanggal Kadaluarsa</p>
+                                <p class="text-sm font-semibold text-gray-900">
+                                    <i class="fas fa-calendar-times text-red-500 mr-1"></i>
+                                    {{ $production->expired_at->format('d M Y') }}
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    @if($production->expired_at->isPast())
+                                        <span class="text-red-600 font-semibold">Sudah kadaluarsa</span>
+                                    @else
+                                        {{ $production->expired_at->diffForHumans() }}
+                                    @endif
+                                </p>
                             </div>
                             @endif
                         </div>
                     </div>
-                </x-card-container>
+                </section>
 
-                <!-- Materials Used -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-cubes text-blue-600 mr-2"></i>
-                            Bahan Baku yang Digunakan
+                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-cubes text-blue-500"></i>
+                            <span>Bahan Baku yang Digunakan</span>
                         </h2>
                     </div>
-
                     <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-gray-50">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Bahan Baku</th>
-                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Qty Rencana</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Bahan Baku</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Qty Rencana</th>
                                     @if($production->status === 'completed')
-                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Qty Aktual</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Qty Aktual</th>
                                     @endif
-                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Harga Satuan</th>
-                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Total</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Harga Satuan</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="divide-y divide-gray-100 bg-white">
                                 @foreach($production->items as $item)
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center mr-3 shadow-sm">
-                                                <i class="fas fa-box text-white"></i>
+                                    <td class="px-6 py-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100">
+                                                <i class="fas fa-box text-orange-500 text-xs"></i>
                                             </div>
                                             <div>
                                                 <p class="text-sm font-semibold text-gray-900">{{ $item->rawMaterial->name }}</p>
@@ -263,38 +226,38 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 text-right">
+                                    <td class="px-6 py-3 text-right">
                                         <span class="text-sm font-semibold text-gray-900">
                                             {{ number_format($item->planned_quantity, 2) }}
                                         </span>
                                     </td>
                                     @if($production->status === 'completed')
-                                    <td class="px-6 py-4 text-right">
+                                    <td class="px-6 py-3 text-right">
                                         <span class="text-sm font-semibold text-green-600">
                                             {{ number_format($item->actual_quantity ?? $item->planned_quantity, 2) }}
                                         </span>
                                     </td>
                                     @endif
-                                    <td class="px-6 py-4 text-right">
+                                    <td class="px-6 py-3 text-right">
                                         <span class="text-sm text-gray-600">
                                             Rp {{ number_format($item->unit_price, 0, ',', '.') }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <span class="text-sm font-bold text-gray-900">
+                                    <td class="px-6 py-3 text-right">
+                                        <span class="text-sm font-semibold text-gray-900">
                                             Rp {{ number_format($item->total_price, 0, ',', '.') }}
                                         </span>
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="bg-gray-50">
+                            <tfoot class="bg-gray-50 border-t border-gray-200">
                                 <tr>
-                                    <td colspan="{{ $production->status === 'completed' ? 4 : 3 }}" class="px-6 py-4 text-right font-bold text-gray-900">
+                                    <td colspan="{{ $production->status === 'completed' ? 4 : 3 }}" class="px-6 py-3 text-right text-sm font-semibold text-gray-900">
                                         Total Biaya Bahan:
                                     </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <span class="text-lg font-bold text-green-600">
+                                    <td class="px-6 py-3 text-right">
+                                        <span class="text-base font-bold text-green-600">
                                             Rp {{ number_format($production->total_material_cost, 0, ',', '.') }}
                                         </span>
                                     </td>
@@ -302,90 +265,266 @@
                             </tfoot>
                         </table>
                     </div>
-                </x-card-container>
+                </section>
 
-                <!-- Notes -->
                 @if($production->notes)
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-sticky-note text-gray-600 mr-2"></i>
-                            Catatan
+                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-sticky-note text-blue-500"></i>
+                            <span>Catatan</span>
                         </h2>
                     </div>
                     <div class="p-6">
-                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                             <p class="text-sm text-gray-700 whitespace-pre-line">{{ $production->notes }}</p>
                         </div>
                     </div>
-                </x-card-container>
+                </section>
+                @endif
+
+                @if($production->product->shelf_life_days && ($stats['expired_count'] > 0 || $stats['expiring_count'] > 0 || $stats['valid_count'] > 0))
+                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-calendar-times text-blue-500"></i>
+                            <span>Status Kadaluarsa Produk</span>
+                        </h2>
+                    </div>
+
+                    <div class="p-6 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs font-medium uppercase tracking-wide text-red-600">Kadaluarsa</p>
+                                        <p class="mt-1 text-xl font-bold text-red-700">{{ $stats['expired_count'] }}</p>
+                                        <p class="text-xs text-red-600 mt-0.5">{{ number_format($stats['expired_quantity'], 2) }} unit</p>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center border border-red-200">
+                                        <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs font-medium uppercase tracking-wide text-yellow-600">Segera Kadaluarsa</p>
+                                        <p class="mt-1 text-xl font-bold text-yellow-700">{{ $stats['expiring_count'] }}</p>
+                                        <p class="text-xs text-yellow-600 mt-0.5">{{ number_format($stats['expiring_quantity'], 2) }} unit</p>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center border border-yellow-200">
+                                        <i class="fas fa-clock text-yellow-600 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs font-medium uppercase tracking-wide text-green-600">Masih Valid</p>
+                                        <p class="mt-1 text-xl font-bold text-green-700">{{ $stats['valid_count'] }}</p>
+                                        <p class="text-xs text-green-600 mt-0.5">{{ number_format($stats['valid_quantity'], 2) }} unit</p>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center border border-green-200">
+                                        <i class="fas fa-check-circle text-green-600 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(count($expiredStocks) > 0)
+                        <div class="border border-red-200 rounded-lg overflow-hidden">
+                            <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-red-800 flex items-center gap-2">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Stok Kadaluarsa ({{ count($expiredStocks) }})</span>
+                                </h3>
+                                <button onclick="openRemoveExpiredModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">
+                                    <i class="fas fa-trash"></i>
+                                    <span>Hapus Semua</span>
+                                </button>
+                            </div>
+                            <div class="divide-y divide-red-100">
+                                @foreach($expiredStocks as $stock)
+                                <div class="px-4 py-3 bg-white hover:bg-red-50 transition-colors">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3">
+                                                <input type="checkbox" class="expired-checkbox w-4 h-4 text-red-600 border-gray-300 rounded" value="{{ $stock['batch_number'] }}">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-gray-900">Batch #{{ $stock['batch_number'] }}</p>
+                                                    <div class="flex items-center gap-4 mt-1">
+                                                        <p class="text-xs text-gray-600">
+                                                            <i class="fas fa-cubes mr-1"></i>
+                                                            {{ number_format($stock['quantity'], 2) }} {{ $production->product->unit->name ?? '' }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-500">
+                                                            <i class="fas fa-calendar mr-1"></i>
+                                                            Produksi: {{ $stock['completed_at']->format('d M Y') }}
+                                                        </p>
+                                                        <p class="text-xs text-red-600 font-semibold">
+                                                            <i class="fas fa-calendar-times mr-1"></i>
+                                                            Kadaluarsa: {{ $stock['expired_at']->format('d M Y') }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                                            {{ abs($stock['days_until_expiry']) }} hari lewat
+                                        </span>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+
+                        @if(count($expiringStocks) > 0)
+                        <div class="border border-yellow-200 rounded-lg overflow-hidden">
+                            <div class="bg-yellow-50 px-4 py-3 border-b border-yellow-200">
+                                <h3 class="text-sm font-semibold text-yellow-800 flex items-center gap-2">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Segera Kadaluarsa ({{ count($expiringStocks) }})</span>
+                                </h3>
+                            </div>
+                            <div class="divide-y divide-yellow-100">
+                                @foreach($expiringStocks as $stock)
+                                <div class="px-4 py-3 bg-white hover:bg-yellow-50 transition-colors">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-semibold text-gray-900">Batch #{{ $stock['batch_number'] }}</p>
+                                            <div class="flex items-center gap-4 mt-1">
+                                                <p class="text-xs text-gray-600">
+                                                    <i class="fas fa-cubes mr-1"></i>
+                                                    {{ number_format($stock['quantity'], 2) }} {{ $production->product->unit->name ?? '' }}
+                                                </p>
+                                                <p class="text-xs text-gray-500">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    Produksi: {{ $stock['completed_at']->format('d M Y') }}
+                                                </p>
+                                                <p class="text-xs text-yellow-600 font-semibold">
+                                                    <i class="fas fa-calendar-times mr-1"></i>
+                                                    Kadaluarsa: {{ $stock['expired_at']->format('d M Y') }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200">
+                                            {{ $stock['days_until_expiry'] }} hari lagi
+                                        </span>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+
+                        @if(count($validStocks) > 0)
+                        <div class="border border-green-200 rounded-lg overflow-hidden">
+                            <div class="bg-green-50 px-4 py-3 border-b border-green-200">
+                                <h3 class="text-sm font-semibold text-green-800 flex items-center gap-2">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Stok Valid ({{ count($validStocks) }})</span>
+                                </h3>
+                            </div>
+                            <div class="divide-y divide-green-100 max-h-64 overflow-y-auto">
+                                @foreach($validStocks as $stock)
+                                <div class="px-4 py-3 bg-white hover:bg-green-50 transition-colors">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-semibold text-gray-900">Batch #{{ $stock['batch_number'] }}</p>
+                                            <div class="flex items-center gap-4 mt-1">
+                                                <p class="text-xs text-gray-600">
+                                                    <i class="fas fa-cubes mr-1"></i>
+                                                    {{ number_format($stock['quantity'], 2) }} {{ $production->product->unit->name ?? '' }}
+                                                </p>
+                                                <p class="text-xs text-gray-500">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    Produksi: {{ $stock['completed_at']->format('d M Y') }}
+                                                </p>
+                                                <p class="text-xs text-green-600">
+                                                    <i class="fas fa-calendar-check mr-1"></i>
+                                                    Kadaluarsa: {{ $stock['expired_at']->format('d M Y') }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                                            {{ $stock['days_until_expiry'] }} hari lagi
+                                        </span>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </section>
                 @endif
 
             </div>
 
-            <!-- Sidebar -->
             <div class="space-y-6">
                 
-                <!-- Production Summary -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-chart-pie text-blue-600 mr-2"></i>
-                            Ringkasan Produksi
+                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-chart-pie text-blue-500"></i>
+                            <span>Ringkasan Produksi</span>
                         </h3>
                     </div>
 
                     <div class="p-6 space-y-4">
-                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-200">
-                            <p class="text-xs text-green-700 mb-1">Jumlah Rencana</p>
-                            <p class="text-2xl font-bold text-green-600">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <p class="text-xs font-medium text-green-600 mb-1">Jumlah Rencana</p>
+                            <p class="text-2xl font-bold text-green-700">
                                 {{ number_format($production->planned_quantity, 2) }}
                             </p>
                             <p class="text-xs text-green-600 mt-1">{{ $production->product->unit->name ?? '' }}</p>
                         </div>
 
                         @if($production->status === 'completed')
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border-2 border-blue-200">
-                            <p class="text-xs text-blue-700 mb-1">Jumlah Aktual</p>
-                            <p class="text-2xl font-bold text-blue-600">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p class="text-xs font-medium text-blue-600 mb-1">Jumlah Aktual</p>
+                            <p class="text-2xl font-bold text-blue-700">
                                 {{ number_format($production->actual_quantity, 2) }}
                             </p>
                             <p class="text-xs text-blue-600 mt-1">{{ $production->product->unit->name ?? '' }}</p>
                         </div>
 
                         @if($production->waste_quantity > 0)
-                        <div class="bg-gradient-to-br from-red-50 to-pink-50 p-4 rounded-lg border-2 border-red-200">
-                            <p class="text-xs text-red-700 mb-1">Waste/Sisa</p>
-                            <p class="text-2xl font-bold text-red-600">
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <p class="text-xs font-medium text-red-600 mb-1">Waste/Sisa</p>
+                            <p class="text-2xl font-bold text-red-700">
                                 {{ number_format($production->waste_quantity, 2) }}
                             </p>
                             <p class="text-xs text-red-600 mt-1">{{ $production->product->unit->name ?? '' }}</p>
                         </div>
                         @endif
 
-                        <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-200">
-                            <p class="text-xs text-purple-700 mb-1">Efisiensi Produksi</p>
-                            <p class="text-2xl font-bold text-purple-600">
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <p class="text-xs font-medium text-purple-600 mb-1">Efisiensi Produksi</p>
+                            <p class="text-2xl font-bold text-purple-700">
                                 {{ $production->planned_quantity > 0 ? number_format(($production->actual_quantity / $production->planned_quantity) * 100, 1) : 0 }}%
                             </p>
                         </div>
                         @endif
                     </div>
-                </x-card-container>
+                </section>
 
-                <!-- Cost Summary -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 border-b border-gray-200">
-                        <h3 class="text-lg font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-money-bill-wave text-blue-600 mr-2"></i>
-                            Ringkasan Biaya
+                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-money-bill-wave text-blue-500"></i>
+                            <span>Ringkasan Biaya</span>
                         </h3>
                     </div>
 
                     <div class="p-6 space-y-3">
                         <div class="flex justify-between items-center pb-3 border-b border-gray-200">
                             <span class="text-sm text-gray-600">Biaya Bahan Baku</span>
-                            <span class="font-bold text-gray-900">
+                            <span class="text-sm font-semibold text-gray-900">
                                 Rp {{ number_format($production->total_material_cost, 0, ',', '.') }}
                             </span>
                         </div>
@@ -393,29 +532,29 @@
                         @if($production->total_additional_cost > 0)
                         <div class="flex justify-between items-center pb-3 border-b border-gray-200">
                             <span class="text-sm text-gray-600">Biaya Tambahan</span>
-                            <span class="font-bold text-gray-900">
+                            <span class="text-sm font-semibold text-gray-900">
                                 Rp {{ number_format($production->total_additional_cost, 0, ',', '.') }}
                             </span>
                         </div>
                         @endif
 
-                        <div class="flex justify-between items-center pt-3 bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border-2 border-green-200">
-                            <span class="font-bold text-green-700">Total Biaya</span>
-                            <span class="text-xl font-bold text-green-600">
+                        <div class="flex justify-between items-center pt-3 bg-green-50 border border-green-200 p-4 rounded-lg">
+                            <span class="text-sm font-semibold text-green-700">Total Biaya</span>
+                            <span class="text-lg font-bold text-green-700">
                                 Rp {{ number_format($production->total_cost, 0, ',', '.') }}
                             </span>
                         </div>
 
                         @if($production->status === 'completed' && $production->actual_quantity > 0)
-                        <div class="flex justify-between items-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border-2 border-blue-200">
-                            <span class="font-bold text-blue-700">HPP per Unit</span>
-                            <span class="text-xl font-bold text-blue-600">
+                        <div class="flex justify-between items-center bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                            <span class="text-sm font-semibold text-blue-700">HPP per Unit</span>
+                            <span class="text-lg font-bold text-blue-700">
                                 Rp {{ number_format($production->total_cost / $production->actual_quantity, 0, ',', '.') }}
                             </span>
                         </div>
                         @endif
                     </div>
-                </x-card-container>
+                </section>
 
             </div>
 
@@ -424,23 +563,21 @@
     </div>
 </main>
 
-<!-- Complete Production Modal -->
 <div id="completeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div class="sticky top-0 bg-gradient-to-r from-green-500 to-emerald-500 p-4 md:p-6 rounded-t-xl">
-            <h3 class="text-lg md:text-xl font-bold text-white flex items-center">
-                <i class="fas fa-check-circle mr-2 md:mr-3"></i>
-                Selesaikan Produksi
+        <div class="sticky top-0 bg-green-500 p-4 md:p-6 rounded-t-xl">
+            <h3 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                <i class="fas fa-check-circle"></i>
+                <span>Selesaikan Produksi</span>
             </h3>
         </div>
         
         <form action="{{ route('production.complete', $production->id) }}" method="POST">
             @csrf
             <div class="p-4 md:p-6 space-y-4">
-                <!-- Info Box -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-                    <div class="flex items-start">
-                        <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-2 flex-shrink-0"></i>
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-info-circle text-blue-500 mt-0.5 flex-shrink-0"></i>
                         <p class="text-blue-700">Jumlah yang masuk ke stok = Total Produksi - Waste</p>
                     </div>
                 </div>
@@ -466,7 +603,6 @@
                     <p class="text-xs text-gray-500 mt-1">Produk rusak/tidak sesuai standar</p>
                 </div>
 
-                <!-- Calculation Preview -->
                 <div id="calculationPreview" class="hidden bg-green-50 border border-green-200 rounded-lg p-3">
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
@@ -494,7 +630,7 @@
                 </div>
             </div>
 
-            <div class="sticky bottom-0 flex flex-col sm:flex-row gap-2 sm:gap-3 p-4 md:p-6 bg-gray-50 rounded-b-xl">
+            <div class="sticky bottom-0 flex flex-col sm:flex-row gap-2 sm:gap-3 p-4 md:p-6 bg-gray-50 rounded-b-xl border-t border-gray-200">
                 <button type="button" onclick="closeCompleteModal()" 
                     class="w-full sm:flex-1 px-4 py-2 md:py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm md:text-base">
                     Batal
@@ -509,13 +645,12 @@
     </div>
 </div>
 
-<!-- Cancel Production Modal -->
 <div id="cancelModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
-        <div class="bg-gradient-to-r from-red-500 to-pink-500 p-4 md:p-6 rounded-t-xl">
-            <h3 class="text-lg md:text-xl font-bold text-white flex items-center">
-                <i class="fas fa-times-circle mr-2 md:mr-3"></i>
-                Batalkan Produksi
+        <div class="bg-red-500 p-4 md:p-6 rounded-t-xl">
+            <h3 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                <i class="fas fa-times-circle"></i>
+                <span>Batalkan Produksi</span>
             </h3>
         </div>
         
@@ -523,8 +658,8 @@
             @csrf
             <div class="p-4 md:p-6 space-y-4">
                 <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
-                    <div class="flex items-start">
-                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-0.5 mr-2 flex-shrink-0"></i>
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-0.5 flex-shrink-0"></i>
                         <p class="text-sm text-yellow-800">
                             @if($production->status === 'in_progress')
                                 Bahan baku akan dikembalikan ke stok.
@@ -553,7 +688,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 p-4 md:p-6 bg-gray-50 rounded-b-xl">
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 p-4 md:p-6 bg-gray-50 rounded-b-xl border-t border-gray-200">
                 <button type="button" onclick="closeCancelModal()" 
                     class="w-full sm:flex-1 px-4 py-2 md:py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm md:text-base">
                     Tidak
@@ -568,10 +703,55 @@
     </div>
 </div>
 
+<div id="removeExpiredModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+        <div class="bg-red-500 p-4 md:p-6 rounded-t-xl">
+            <h3 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                <i class="fas fa-trash"></i>
+                <span>Hapus Stok Kadaluarsa</span>
+            </h3>
+        </div>
+        
+        <form action="{{ route('production.remove-expired', $production->id) }}" method="POST" id="removeExpiredForm">
+            @csrf
+            <div class="p-4 md:p-6 space-y-4">
+                <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
+                    <div class="flex items-start gap-2">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-0.5 flex-shrink-0"></i>
+                        <p class="text-sm text-yellow-800">
+                            Stok yang dipilih akan dihapus dari sistem dan tidak dapat dikembalikan.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-3 md:p-4 text-sm">
+                    <p class="text-gray-700">
+                        <span class="font-semibold" id="selectedCount">0</span> batch dipilih untuk dihapus
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 p-4 md:p-6 bg-gray-50 rounded-b-xl border-t border-gray-200">
+                <button type="button" onclick="closeRemoveExpiredModal()" 
+                    class="w-full sm:flex-1 px-4 py-2 md:py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm md:text-base">
+                    Batal
+                </button>
+                <button type="submit" 
+                    class="w-full sm:flex-1 px-4 py-2 md:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm md:text-base">
+                    <i class="fas fa-trash mr-2"></i>
+                    Hapus Sekarang
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@push('scripts')
 <script>
     function openCompleteModal() {
         document.getElementById('completeModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        updateCalculationPreview();
     }
 
     function closeCompleteModal() {
@@ -589,74 +769,67 @@
         document.body.style.overflow = 'auto';
     }
 
-    // Close modals when clicking outside
-    document.getElementById('completeModal')?.addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeCompleteModal();
+    function openRemoveExpiredModal() {
+        const checkboxes = document.querySelectorAll('.expired-checkbox:checked');
+        if (checkboxes.length === 0) {
+            alert('Pilih minimal satu batch untuk dihapus');
+            return;
         }
+        
+        const form = document.getElementById('removeExpiredForm');
+        form.querySelectorAll('input[name="batch_numbers[]"]').forEach(el => el.remove());
+        
+        checkboxes.forEach(checkbox => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'batch_numbers[]';
+            input.value = checkbox.value;
+            form.appendChild(input);
+        });
+        
+        document.getElementById('selectedCount').textContent = checkboxes.length;
+        document.getElementById('removeExpiredModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeRemoveExpiredModal() {
+        document.getElementById('removeExpiredModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    document.getElementById('completeModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeCompleteModal();
     });
 
     document.getElementById('cancelModal')?.addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeCancelModal();
-        }
+        if (e.target === this) closeCancelModal();
     });
 
-    // Close modals with ESC key
+    document.getElementById('removeExpiredModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeRemoveExpiredModal();
+    });
+
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeCompleteModal();
             closeCancelModal();
+            closeRemoveExpiredModal();
         }
     });
 
-    // Auto-hide alerts after 5 seconds
-    setTimeout(function() {
-        const alerts = document.querySelectorAll('[role="alert"]');
-        alerts.forEach(function(alert) {
-            alert.style.transition = 'opacity 0.5s ease-out';
-            alert.style.opacity = '0';
-            setTimeout(function() {
-                alert.remove();
-            }, 500);
-        });
-    }, 5000);
+    // setTimeout(function() {
+    //     const alerts = document.querySelectorAll('[role="alert"], .border-green-200, .border-red-200');
+    //     alerts.forEach(function(alert) {
+    //         if (alert.classList.contains('border-green-200') || alert.classList.contains('border-red-200')) {
+    //             alert.style.transition = 'opacity 0.5s ease-out';
+    //             alert.style.opacity = '0';
+    //             setTimeout(function() {
+    //                 alert.remove();
+    //             }, 500);
+    //         }
+    //     });
+    // }, 5000);
 
-    // Form validation for complete production
-    document.querySelector('#completeModal form')?.addEventListener('submit', function(e) {
-        const actualQty = parseFloat(document.querySelector('input[name="actual_quantity"]').value);
-        const wasteQty = parseFloat(document.querySelector('input[name="waste_quantity"]').value) || 0;
-        
-        if (actualQty < 0) {
-            e.preventDefault();
-            alert('Jumlah aktual produksi tidak boleh negatif!');
-            return false;
-        }
-        
-        if (wasteQty < 0) {
-            e.preventDefault();
-            alert('Jumlah waste tidak boleh negatif!');
-            return false;
-        }
-
-        // Optional: Confirm if actual quantity is significantly different from planned
-        const plannedQty = {{ $production->planned_quantity }};
-        const difference = Math.abs(actualQty - plannedQty);
-        const percentDiff = (difference / plannedQty) * 100;
-        
-        if (percentDiff > 20) {
-            const confirmed = confirm(
-                `Jumlah aktual (${actualQty}) berbeda ${percentDiff.toFixed(1)}% dari rencana (${plannedQty}). ` +
-                'Apakah Anda yakin data sudah benar?'
-            );
-            if (!confirmed) {
-                e.preventDefault();
-                return false;
-            }
-        }
-    });
-
-    // Real-time calculation preview
     const actualInput = document.querySelector('input[name="actual_quantity"]');
     const wasteInput = document.querySelector('input[name="waste_quantity"]');
     const calculationPreview = document.getElementById('calculationPreview');
@@ -676,7 +849,6 @@
             previewWaste.textContent = waste.toFixed(2) + ' ' + unit;
             previewNet.textContent = net.toFixed(2) + ' ' + unit;
             
-            // Warning if waste is high
             const wastePercent = actual > 0 ? (waste / actual * 100) : 0;
             if (wastePercent > 20) {
                 calculationPreview.classList.remove('bg-green-50', 'border-green-200');
@@ -689,7 +861,6 @@
             calculationPreview.classList.add('hidden');
         }
         
-        // Validate waste not exceeding actual
         if (waste > actual) {
             wasteInput.setCustomValidity('Waste tidak boleh melebihi total produksi');
         } else {
@@ -700,58 +871,37 @@
     actualInput?.addEventListener('input', updateCalculationPreview);
     wasteInput?.addEventListener('input', updateCalculationPreview);
 
-    // Initialize on modal open
-    function openCompleteModal() {
-        document.getElementById('completeModal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        updateCalculationPreview();
-    }
-
-    // Print functionality (optional enhancement)
-    function printProduction() {
-        window.print();
-    }
-
-    // Add keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-        // Ctrl/Cmd + P for print
-        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    document.querySelector('#completeModal form')?.addEventListener('submit', function(e) {
+        const actualQty = parseFloat(document.querySelector('input[name="actual_quantity"]').value);
+        const wasteQty = parseFloat(document.querySelector('input[name="waste_quantity"]').value) || 0;
+        
+        if (actualQty < 0) {
             e.preventDefault();
-            printProduction();
+            alert('Jumlah aktual produksi tidak boleh negatif!');
+            return false;
         }
         
-        // Ctrl/Cmd + Enter to complete production (if in progress)
-        @if($production->status === 'in_progress')
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        if (wasteQty < 0) {
             e.preventDefault();
-            openCompleteModal();
+            alert('Jumlah waste tidak boleh negatif!');
+            return false;
         }
-        @endif
+
+        const plannedQty = {{ $production->planned_quantity }};
+        const difference = Math.abs(actualQty - plannedQty);
+        const percentDiff = (difference / plannedQty) * 100;
+        
+        if (percentDiff > 20) {
+            const confirmed = confirm(
+                `Jumlah aktual (${actualQty}) berbeda ${percentDiff.toFixed(1)}% dari rencana (${plannedQty}). ` +
+                'Apakah Anda yakin data sudah benar?'
+            );
+            if (!confirmed) {
+                e.preventDefault();
+                return false;
+            }
+        }
     });
 </script>
-
-<style>
-    @media print {
-        /* Hide non-essential elements when printing */
-        nav, .no-print, button, form button {
-            display: none !important;
-        }
-        
-        /* Adjust layout for print */
-        .max-w-7xl {
-            max-width: 100% !important;
-        }
-        
-        .lg\:col-span-2 {
-            grid-column: span 3 !important;
-        }
-        
-        /* Ensure colors are visible in print */
-        * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-    }
-</style>
-
+@endpush
 @endsection
