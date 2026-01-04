@@ -13,14 +13,15 @@ class DiscountController extends Controller
     public function index()
     {
         $discounts = Discount::with(['product', 'category'])
+            ->where('outlet_id', auth()->user()->outlet_id)
             ->latest()
             ->paginate(15);
 
         $stats = [
-            'total' => Discount::count(),
-            'active' => Discount::active()->count(),
-            'expired' => Discount::where('end_date', '<', now())->count(),
-            'used' => Discount::where('used_count', '>', 0)->count(),
+            'total' => Discount::where('outlet_id', auth()->user()->outlet_id)->count(),
+            'active' => Discount::where('outlet_id', auth()->user()->outlet_id)->active()->count(),
+            'expired' => Discount::where('outlet_id', auth()->user()->outlet_id)->where('end_date', '<', now())->count(),
+            'used' => Discount::where('outlet_id', auth()->user()->outlet_id)->where('used_count', '>', 0)->count(),
         ];
 
         return view('main.discount.index', compact('discounts', 'stats'));

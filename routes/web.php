@@ -16,6 +16,7 @@ use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\OutletPaymentLinkController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -322,6 +323,17 @@ Route::middleware(['auth'])->prefix('faqs')->name('faqs.')->group(function () {
     Route::post('/{faq}/toggle-status', [App\Http\Controllers\FaqController::class, 'toggleStatus'])->name('toggle-status');
     Route::post('/{faq}/helpful', [App\Http\Controllers\FaqController::class, 'markHelpful'])->name('helpful');
     Route::post('/{faq}/not-helpful', [App\Http\Controllers\FaqController::class, 'markNotHelpful'])->name('not-helpful');
+});
+
+Route::middleware(['auth'])->prefix('outlet-payment-links')->name('outlet-payment-links.')->group(function () {
+    Route::get('/', [OutletPaymentLinkController::class, 'index'])->name('index');
+    Route::get('/create', [OutletPaymentLinkController::class, 'create'])->name('create');
+    Route::post('/', [OutletPaymentLinkController::class, 'store'])->name('store');
+    Route::get('/{outletPaymentLink}', [OutletPaymentLinkController::class, 'show'])->name('show');
+    Route::get('/{outletPaymentLink}/edit', [OutletPaymentLinkController::class, 'edit'])->name('edit');
+    Route::put('/{outletPaymentLink}', [OutletPaymentLinkController::class, 'update'])->name('update');
+    Route::delete('/{outletPaymentLink}', [OutletPaymentLinkController::class, 'destroy'])->name('destroy');
+    Route::post('/{outletPaymentLink}/toggle-status', [OutletPaymentLinkController::class, 'toggleStatus'])->name('toggle-status');
 });
 
 require __DIR__.'/auth.php';

@@ -313,7 +313,8 @@
     .menu-card:nth-child(16) { animation-delay: 0.8s; }
     .menu-card:nth-child(17) { animation-delay: 0.85s; }
     .menu-card:nth-child(18) { animation-delay: 0.9s; }
-    .menu-card:nth-child(19) { animation-delay: 0.9s; }
+    .menu-card:nth-child(19) { animation-delay: 0.95s; }
+    .menu-card:nth-child(20) { animation-delay: 1s; }
 
     .backdrop-blur-effect { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 
@@ -598,6 +599,19 @@
         </div>
         <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
             Keuangan
+        </span>
+    </a>
+
+    <a href="{{ route('outlet-payment-links.index') }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="4"
+       data-title="Metode Pembayaran"
+       data-intro="<strong>Atur metode pembayaran.</strong> Menu ini membantu Anda mengatur metode pembayaran yang tersedia.">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+            <i class="fa-solid fa-qrcode text-4xl sm:text-5xl text-white"></i>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Metode Pembayaran
         </span>
     </a>
 

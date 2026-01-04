@@ -19,6 +19,7 @@ class Sale extends Model
         'invoice_number', 'outlet_id', 'customer_id', 'cashier_id', 'refunded_at', 'is_reported',
         'subtotal', 'discount_amount', 'tax_amount', 'tax_percent', 'grand_total',
         'paid_amount', 'change_amount', 'payment_method', 'payment_status',
+        'outlet_payment_link_id', // TAMBAHAN BARU
         'midtrans_order_id', 'midtrans_transaction_id', 'midtrans_payment_type', 'midtrans_response',
         'notes', 'customer_notes', 'status', 'is_synced', 'completed_at',
     ];
@@ -75,6 +76,12 @@ class Sale extends Model
     public function debt(): HasOne
     {
         return $this->hasOne(CustomerDebt::class);
+    }
+
+    // TAMBAHAN BARU: Relasi ke OutletPaymentLink
+    public function outletPaymentLink(): BelongsTo
+    {
+        return $this->belongsTo(OutletPaymentLink::class);
     }
 
     public function calculateTotals(): void
@@ -138,5 +145,11 @@ class Sale extends Model
     public function scopeNotSynced($q)
     {
         return $q->where('is_synced', false);
+    }
+
+    // TAMBAHAN BARU: Scope untuk filter berdasarkan QRIS payment
+    public function scopeByQrisPayment($q)
+    {
+        return $q->where('payment_method', 'qris')->whereNotNull('outlet_payment_link_id');
     }
 }

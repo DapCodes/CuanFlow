@@ -141,4 +141,21 @@ class Product extends Model
             ->where('is_active', true)
             ->latest();
     }
+
+    /**
+     * Get product name initials
+     */
+    public function getInitialsAttribute(): string
+    {
+        // Remove non-alphanumeric except space
+        $cleanName = preg_replace('/[^a-zA-Z\s]/', '', $this->name);
+        $words = explode(' ', $cleanName);
+        $initials = '';
+        foreach ($words as $word) {
+            if (!empty($word)) {
+                $initials .= strtoupper(substr($word, 0, 1));
+            }
+        }
+        return substr($initials, 0, 3); // Limit to 3 characters max
+    }
 }

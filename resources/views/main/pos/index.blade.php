@@ -227,6 +227,10 @@
         font-size: 1.5rem;
     }
 
+    .product-placeholder span {
+        /* font-family: 'Outfit', sans-serif; */
+    }
+
     .product-name {
         font-size: 0.78rem;
         font-weight: 600;
@@ -1271,7 +1275,7 @@
                                 <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="product-image">
                             @else
                                 <div class="product-placeholder">
-                                    <i class="fas fa-utensils text-white text-2xl"></i>
+                                    <span class="text-gray-400 text-3xl font-bold tracking-wider">{{ $product->initials }}</span>
                                 </div>
                             @endif
                             <div class="product-name">{{ $product->name }}</div>
@@ -1297,9 +1301,15 @@
 
                 <!-- Payment Selection View -->
                 <div id="view-select" class="hidden payment-view">
-                    <button onclick="backToBrowse()" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 text-sm">
-                        <i class="fas fa-arrow-left"></i> Kembali
+                    <button onclick="backToBrowse()" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 text-sm font-medium">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Menu
                     </button>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-8 flex flex-col items-center justify-center text-center">
+                        <p class="text-sm text-gray-500 uppercase tracking-wider mb-1 font-semibold">Total Pembayaran</p>
+                        <p class="text-4xl font-extrabold text-gray-900" id="selectTotal">Rp 0</p>
+                    </div>
+
                     <h3 class="text-lg font-bold text-gray-900 mb-4">Pilih Metode Pembayaran</h3>
                     <div class="payment-methods">
                         <div class="payment-method" onclick="setUIState('cash')">
@@ -1349,7 +1359,7 @@
                     <input type="number" id="cashPaidAmount" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-base font-semibold mb-4 qty-input" placeholder="0" onkeyup="calculateChange()">
                     <div class="p-4 bg-gray-50 rounded-xl mb-4">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Kembalian:</span>
+                            <span class="text-sm text-gray-600" id="changeLabel">Kembalian:</span>
                             <span class="text-lg font-bold text-green-600" id="changeAmount">Rp 0</span>
                         </div>
                     </div>
@@ -3402,6 +3412,7 @@ function renderCart() {
     document.getElementById('summaryGrandTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
 
     document.getElementById('cashTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
+    if (document.getElementById('selectTotal')) document.getElementById('selectTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
     document.getElementById('transferTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
     document.getElementById('midtransTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total || 0);
 
@@ -3440,10 +3451,27 @@ function setUIState(state) {
     const active = document.getElementById(`view-${state}`);
     if (active) active.classList.remove('hidden');
 
+    // Toggle Toolbar Visibility (Only hide the search/filter area)
+    const toolbar = document.querySelector('.products-toolbar');
+
+    if (state === 'browse') {
+        if (toolbar) toolbar.classList.remove('hidden');
+    } else {
+        if (toolbar) toolbar.classList.add('hidden');
+        
+        // Auto scroll to top for all screens
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const contentArea = document.querySelector('.products-content');
+        if (contentArea) {
+            contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
     updateRightActions();
     renderCart();
 
     if (state === 'cash') {
+        calculateChange();
         setTimeout(()=>document.getElementById('cashPaidAmount').focus(), 120);
     }
 }
@@ -3479,7 +3507,20 @@ function showPaymentSelection() {
 function calculateChange() {
     const paid = parseFloat(document.getElementById('cashPaidAmount').value) || 0;
     const change = paid - (cartSummary.grand_total || 0);
-    document.getElementById('changeAmount').textContent = 'Rp ' + formatNumber(Math.max(0, change));
+    const amountEl = document.getElementById('changeAmount');
+    const labelEl = document.getElementById('changeLabel');
+
+    if (change < 0) {
+        labelEl.textContent = 'Sisa:';
+        amountEl.textContent = '- Rp ' + formatNumber(Math.abs(change));
+        amountEl.classList.remove('text-green-600');
+        amountEl.classList.add('text-red-600');
+    } else {
+        labelEl.textContent = 'Kembalian:';
+        amountEl.textContent = 'Rp ' + formatNumber(change);
+        amountEl.classList.remove('text-red-600');
+        amountEl.classList.add('text-green-600');
+    }
 }
 
 // ==================== PAYMENT FUNCTIONS ====================
