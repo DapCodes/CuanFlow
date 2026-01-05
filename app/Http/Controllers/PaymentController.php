@@ -228,6 +228,7 @@ class PaymentController extends Controller
         $request->validate([
             'transfer_method' => 'required|string',
             'reference_number' => 'nullable|string',
+            'outlet_payment_link_id' => 'nullable|exists:outlet_payment_links,id',
         ]);
 
         $cart = Session::get('pos_cart', []);
@@ -245,7 +246,8 @@ class PaymentController extends Controller
         DB::beginTransaction();
         try {
             $sale = $this->createSaleWithDiscount($cart, $summary, $discountPlan, [
-                'payment_method' => 'transfer',
+                'payment_method' => 'transfer', // Tetap 'transfer' atau bisa diubah jadi 'card' jika diperlukan
+                'outlet_payment_link_id' => $request->outlet_payment_link_id, // Simpan ID link
                 'paid_amount' => $summary['grand_total'],
                 'payment_status' => 'paid',
                 'status' => 'completed',

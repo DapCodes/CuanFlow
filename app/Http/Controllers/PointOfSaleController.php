@@ -48,7 +48,13 @@ class PointOfSaleController extends Controller
         // PERBAIKAN: Hitung cart summary dari session
         $cartSummary = $this->calculateCartSummary($cart);
 
-        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories', 'cartSummary', 'activeDiscountPlan'));
+        // Fetch active outlet payment links
+        $outletPaymentLinks = \App\Models\OutletPaymentLink::where('outlet_id', $outletId)
+            ->where('is_active', true)
+            ->with(['paymentMethod'])
+            ->get();
+
+        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories', 'cartSummary', 'activeDiscountPlan', 'outletPaymentLinks'));
     }
 
     public function checkCashRegister()

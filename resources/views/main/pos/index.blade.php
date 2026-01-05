@@ -1324,11 +1324,11 @@
                         </div>
                         <div class="payment-method" onclick="setUIState('transfer')">
                             <div class="payment-icon">
-                                <i class="fas fa-building-columns"></i>
+                                <i class="fas fa-credit-card"></i>
                             </div>
                             <div class="payment-info">
-                                <div class="payment-title">Transfer</div>
-                                <div class="payment-subtitle">Transfer Bank / QR</div>
+                                <div class="payment-title">Card</div>
+                                <div class="payment-subtitle">Debit / Credit / Transfer</div>
                             </div>
                             <i class="fas fa-chevron-right text-gray-400"></i>
                         </div>
@@ -1369,34 +1369,92 @@
                     </button>
                 </div>
 
-                <!-- Transfer Payment View -->
+                <!-- Card Payment View -->
                 <div id="view-transfer" class="hidden payment-view">
                     <button onclick="setUIState('select')" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 text-sm">
                         <i class="fas fa-arrow-left"></i> Kembali ke Metode
                     </button>
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Pembayaran Transfer</h3>
-                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                        <p class="text-xs text-gray-600 mb-1">Total:</p>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Pembayaran Digital / Card</h3>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                        <p class="text-xs text-gray-600 mb-1">Total yang harus dibayar:</p>
                         <p class="text-2xl font-bold text-blue-600" id="transferTotal">Rp 0</p>
                     </div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Metode Transfer:</label>
-                    <select id="transferMethod" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-sm">
-                        <option value="">-- Pilih --</option>
-                        <option value="BCA">Bank BCA</option>
-                        <option value="BRI">Bank BRI</option>
-                        <option value="BNI">Bank BNI</option>
-                        <option value="Mandiri">Bank Mandiri</option>
-                        <option value="QRIS">QRIS</option>
-                        <option value="GoPay">GoPay</option>
-                        <option value="OVO">OVO</option>
-                        <option value="DANA">DANA</option>
-                    </select>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">No. Referensi (Opsional):</label>
-                    <input type="text" id="transferReference" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-sm" placeholder="Nomor referensi">
-                    <button onclick="processTransferPayment()" class="btn-primary">
-                        <i class="fas fa-check-circle"></i>
-                        Konfirmasi Pembayaran
-                    </button>
+
+                    <!-- 1. Selection Grid (Minimalist) -->
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Pilih Metode Pembayaran:</label>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-6">
+                        @forelse($outletPaymentLinks as $link)
+                            <div class="payment-card-option flex flex-col items-center justify-center gap-2 p-3 border border-gray-200 rounded-2xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all bg-white text-center h-24 shadow-sm"
+                                 onclick="selectCardOption(this, '{{ $link->id }}', '{{ $link->paymentMethod->name }}', '{{ $link->account_number }}', '{{ $link->account_name }}', '{{ $link->qr_image ? Storage::url($link->qr_image) : '' }}')">
+                                
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                                    @if($link->paymentMethod->icon && Storage::disk('public')->exists($link->paymentMethod->icon))
+                                        <img src="{{ Storage::url($link->paymentMethod->icon) }}" class="w-full h-full object-contain filter drop-shadow-sm">
+                                    @else
+                                        <div class="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                            <i class="fas fa-wallet text-sm sm:text-base"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="text-[10px] sm:text-xs font-bold text-gray-700 leading-tight line-clamp-2 w-full">{{ $link->paymentMethod->name }}</div>
+                            </div>
+                        @empty
+                            <div class="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                                <i class="fas fa-wallet text-3xl mb-2 opacity-30"></i>
+                                <p class="text-xs">Belum ada metode pembayaran.</p>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <!-- 2. Detail Reveal Area -->
+                    <div id="cardPaymentDetails" class="hidden">
+                        <div class="bg-white border-2 border-dashed border-blue-200 rounded-xl p-5 mb-5 flex flex-col items-center text-center relative overflow-hidden">
+                             
+                             <!-- Bank/Method Name -->
+                             <div class="mb-4 w-full">
+                                 <h4 class="text-base font-bold text-gray-900" id="detailMethodName">-</h4>
+                                 
+                                 <!-- Account Info -->
+                                 <div id="detailAccountInfo" class="mt-2 p-2 bg-gray-50 rounded-lg inline-block min-w-[200px]">
+                                     <p class="text-sm font-mono font-bold text-gray-800 tracking-wide" id="detailAccNumber"></p>
+                                     <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold mt-0.5" id="detailAccName"></p>
+                                 </div>
+                             </div>
+
+                             <!-- QR Code Area -->
+                             <div id="detailQrContainer" class="hidden w-full flex flex-col items-center animate-fadeIn">
+                                  <div class="relative group cursor-pointer" onclick="openQrFullscreen(document.getElementById('detailQrImage').src)">
+                                      <div class="p-3 bg-white rounded-2xl border border-gray-200 shadow-lg mb-2 transition-transform transform group-hover:scale-105">
+                                          <img id="detailQrImage" src="" class="w-48 h-48 sm:w-56 sm:h-56 object-contain">
+                                      </div>
+                                      <!-- Hover Overlay Hint -->
+                                      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                          <span class="bg-black bg-opacity-70 text-white px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
+                                              <i class="fas fa-expand mr-1"></i> Perbesar
+                                          </span>
+                                      </div>
+                                  </div>
+                                  <p class="text-[11px] text-blue-600 font-medium bg-blue-50 px-3 py-1.5 rounded-full mt-2 cursor-pointer hover:bg-blue-100 transition-colors" onclick="openQrFullscreen(document.getElementById('detailQrImage').src)">
+                                      <i class="fas fa-search-plus mr-1"></i>Klik gambar untuk memperbesar
+                                  </p>
+                             </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="selectedCardId" value="">
+                    <input type="hidden" id="selectedCardName" value="">
+
+                    <!-- 3. Action Section -->
+                    <div id="cardPaymentActions" class="hidden">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">No. Referensi (Opsional):</label>
+                        <input type="text" id="transferReference" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-sm font-medium" placeholder="Contoh: REF-123456">
+                        
+                        <button onclick="processTransferPayment()" class="btn-primary w-full py-3.5 text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
+                            <i class="fas fa-check-circle text-lg"></i>
+                            <span>Konfirmasi Pembayaran</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Midtrans Payment View -->
@@ -2151,6 +2209,23 @@
                 <i class="fas fa-check mr-2"></i>Proses Utang
             </button>
         </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Modal: QR Fullscreen -->
+<div id="qrFullscreenModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-[70] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300" onclick="if(event.target === this) closeQrFullscreen()">
+    <div class="relative w-full max-w-lg h-auto flex flex-col items-center justify-center animate-scaleIn">
+         <button onclick="closeQrFullscreen()" class="absolute -top-12 right-0 sm:-right-8 text-white hover:text-gray-300 transition-colors p-2 bg-white bg-opacity-10 rounded-full w-10 h-10 flex items-center justify-center">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+        <div class="bg-white p-3 rounded-2xl shadow-2xl">
+            <img id="qrFullscreenImage" src="" class="w-full h-auto max-h-[70vh] object-contain rounded-lg">
+        </div>
+        <p class="text-white text-sm mt-5 font-medium bg-white bg-opacity-10 px-4 py-2 rounded-full backdrop-blur-md">
+            <i class="fas fa-qrcode mr-2"></i>Scan QR Code untuk membayar
+        </p>
     </div>
 </div>
 
@@ -3928,17 +4003,84 @@ function getCustomerTypeLabel(type) {
     return labels[type] || 'Regular';
 }
 
+// Helper: Select Card
+function selectCardOption(el, id, name, accNum, accName, qrUrl) {
+    // 1. Highlight Selection
+    document.querySelectorAll('.payment-card-option').forEach(opt => {
+        opt.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'scale-95');
+        opt.classList.add('border-gray-200', 'bg-white');
+    });
+    
+    // Add active styles
+    el.classList.remove('border-gray-200', 'bg-white');
+    el.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'scale-95');
+
+    // 2. Set Hidden Values
+    document.getElementById('selectedCardId').value = id;
+    document.getElementById('selectedCardName').value = name;
+
+    // 3. Populate Details
+    document.getElementById('detailMethodName').textContent = name;
+    
+    const accInfoDiv = document.getElementById('detailAccountInfo');
+    const accNumEl = document.getElementById('detailAccNumber');
+    const accNameEl = document.getElementById('detailAccName');
+    
+    if (accNum) {
+        accInfoDiv.classList.remove('hidden');
+        accNumEl.textContent = accNum;
+        accNameEl.textContent = accName || '';
+    } else {
+        accInfoDiv.classList.add('hidden');
+    }
+
+    // 4. Handle QR
+    const qrContainer = document.getElementById('detailQrContainer');
+    const qrImg = document.getElementById('detailQrImage');
+    
+    if (qrUrl) {
+        qrContainer.classList.remove('hidden');
+        qrImg.src = qrUrl;
+        
+        // Scroll to QR if visible
+        setTimeout(() => {
+            qrContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    } else {
+        qrContainer.classList.add('hidden');
+        qrImg.src = '';
+    }
+
+    // 5. Show Detail Section & Actions with animation
+    const detailsSection = document.getElementById('cardPaymentDetails');
+    const actionsSection = document.getElementById('cardPaymentActions');
+    
+    detailsSection.classList.remove('hidden');
+    actionsSection.classList.remove('hidden');
+    
+    // Simple fade in effect
+    detailsSection.style.animation = 'fadeIn 0.3s ease-out';
+    actionsSection.style.animation = 'fadeIn 0.3s ease-out 0.1s both';
+}
+
 function processTransferPayment() {
-    const method = document.getElementById('transferMethod').value;
+    const cardId = document.getElementById('selectedCardId').value;
+    const cardName = document.getElementById('selectedCardName').value;
     const ref = document.getElementById('transferReference').value;
-    if (!method) {
-        showToast('warning','Pilih metode transfer');
+    
+    if (!cardId) {
+        showToast('warning', 'Pilih kartu pembayaran');
         return;
     }
+    
     fetch('{{ route("payment.transfer") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
-        body: JSON.stringify({ transfer_method: method, reference_number: ref })
+        body: JSON.stringify({ 
+            transfer_method: cardName, 
+            outlet_payment_link_id: cardId,
+            reference_number: ref 
+        })
     })
     .then(r=>r.json())
     .then(async data=>{
@@ -4294,6 +4436,40 @@ function toggleProductVisibility(productId, isVisible) {
     applyProductSettings();
 }
 
+
+
+function openQrFullscreen(src) {
+    const modal = document.getElementById('qrFullscreenModal');
+    const img = document.getElementById('qrFullscreenImage');
+    if(modal && img && src) {
+        img.src = src;
+        modal.classList.remove('hidden');
+        // Prevent scrolling on body
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeQrFullscreen() {
+    const modal = document.getElementById('qrFullscreenModal');
+    if(modal) {
+        modal.classList.add('hidden');
+        // Restore scrolling
+        document.body.style.overflow = '';
+    }
+    
+    // Clean src after closing
+    setTimeout(() => {
+        const img = document.getElementById('qrFullscreenImage');
+        if(img) img.src = '';
+    }, 300);
+}
+
+// Close fullscreen on ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === "Escape") {
+        closeQrFullscreen();
+    }
+});
 function applyProductSettings() {
     // Save current settings
     productSettings.hideOutOfStock = document.getElementById('hideOutOfStock').checked;
