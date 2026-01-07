@@ -16,7 +16,7 @@ class FaqController extends Controller
             return redirect()->route('outlets.register.index');
         }
 
-        $query = Faq::where('outlet_id', $outlet->id);
+        $query = Faq::where('is_active', true);
 
         // Filter by type
         if ($request->filled('type')) {

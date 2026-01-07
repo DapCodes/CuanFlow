@@ -264,6 +264,12 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center gap-2">
+                                        <button type="button" 
+                                                onclick="openBarcodeModal('{{ $product->id }}', '{{ $product->name }}', '{{ $product->barcode }}')"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-md bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors"
+                                                title="Barcode">
+                                            <i class="fas fa-barcode text-xs"></i>
+                                        </button>
                                         <a href="{{ route('products-hpp.show', $product->id) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-md bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
                                            title="Detail">
@@ -345,6 +351,50 @@
                 </div>
             @endif
         </section>
+    </div>
+
+    {{-- Barcode Modal --}}
+    <div id="barcodeModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeBarcodeModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-barcode text-purple-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Barcode Produk
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500 mb-4" id="barcodeProductTitle">
+                                    Name
+                                </p>
+                                
+                                <div id="barcodeDisplayArea" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 min-h-[150px]">
+                                    <img id="barcodeImage" src="" alt="Barcode" class="max-w-full h-auto shadow-sm p-2 bg-white hidden">
+                                    <p id="barcodeValue" class="mt-2 text-lg font-mono font-bold tracking-widest text-gray-800"></p>
+                                    <p id="noBarcodeMsg" class="text-gray-400 italic hidden">Produk ini belum memiliki barcode.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <a id="downloadBarcodeBtn" href="#" target="_blank" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        <i class="fas fa-download mr-2"></i> Download
+                    </a>
+                    <button type="button" onclick="printBarcode()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        <i class="fas fa-print mr-2"></i> Print
+                    </button>
+                    <button type="button" onclick="closeBarcodeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 @endsection
@@ -431,5 +481,74 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+</script>
+<script>
+    // Global functions for Barcode Modal
+    function openBarcodeModal(id, name, barcode) {
+        document.getElementById('barcodeProductTitle').textContent = name;
+        const img = document.getElementById('barcodeImage');
+        const val = document.getElementById('barcodeValue');
+        const noMsg = document.getElementById('noBarcodeMsg');
+        const dlBtn = document.getElementById('downloadBarcodeBtn');
+        
+        if (barcode) {
+             // Construct URLs manually since we can't use route() with js var easily in blade without placeholder
+             // Assuming URL structure /products-hpp/{id}/...
+             const baseUrl = "{{ route('products-hpp.index') }}";
+             const previewUrl = `${baseUrl}/${id}/barcode-preview`;
+             const downloadUrl = `${baseUrl}/${id}/barcode-download`;
+
+            img.src = previewUrl;
+            img.classList.remove('hidden');
+            val.textContent = barcode;
+            val.classList.remove('hidden');
+            noMsg.classList.add('hidden');
+            
+            dlBtn.href = downloadUrl;
+            dlBtn.classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+            img.src = "";
+            img.classList.add('hidden');
+            val.textContent = "";
+            val.classList.add('hidden');
+            noMsg.classList.remove('hidden');
+            
+            dlBtn.href = "#";
+            dlBtn.classList.add('opacity-50', 'pointer-events-none');
+        }
+        
+        document.getElementById('barcodeModal').classList.remove('hidden');
+    }
+
+    function closeBarcodeModal() {
+        document.getElementById('barcodeModal').classList.add('hidden');
+    }
+
+    function printBarcode() {
+        const content = document.getElementById('barcodeDisplayArea').innerHTML;
+        const name = document.getElementById('barcodeProductTitle').textContent;
+        const win = window.open('', '', 'height=600,width=800');
+        
+        win.document.write('<html><head><title>Print Barcode</title>');
+        win.document.write('<style>');
+        win.document.write('body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }');
+        win.document.write('.barcode-container { text-align: center; }');
+        win.document.write('img { max-width: 100%; height: auto; }');
+        win.document.write('p { margin-top: 10px; font-size: 24px; font-weight: bold; font-family: monospace; }');
+        win.document.write('</style>');
+        win.document.write('</head><body>');
+        win.document.write('<h2>' + name + '</h2>');
+        win.document.write('<div class="barcode-container">' + content + '</div>');
+        win.document.write('</body></html>');
+        
+        win.document.close();
+        win.focus();
+        
+        // Wait for image to load before printing
+        setTimeout(() => {
+            win.print();
+            win.close();
+        }, 500);
+    }
 </script>
 @endpush

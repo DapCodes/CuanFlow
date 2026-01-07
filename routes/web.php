@@ -57,6 +57,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');
         Route::get('/generate-barcode', [App\Http\Controllers\ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
         Route::get('/ajax/raw-material-price', [App\Http\Controllers\ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
+        Route::get('/{product}/barcode-preview', [App\Http\Controllers\ProductHppController::class, 'barcodePreview'])->name('barcode-preview');
+        Route::get('/{product}/barcode-download', [App\Http\Controllers\ProductHppController::class, 'barcodeDownload'])->name('barcode-download');
 
         Route::get('/', [App\Http\Controllers\ProductHppController::class, 'index'])->name('index');
         Route::get('/create', [App\Http\Controllers\ProductHppController::class, 'create'])->name('create');
@@ -334,6 +336,18 @@ Route::middleware(['auth'])->prefix('outlet-payment-links')->name('outlet-paymen
     Route::put('/{outletPaymentLink}', [OutletPaymentLinkController::class, 'update'])->name('update');
     Route::delete('/{outletPaymentLink}', [OutletPaymentLinkController::class, 'destroy'])->name('destroy');
     Route::post('/{outletPaymentLink}/toggle-status', [OutletPaymentLinkController::class, 'toggleStatus'])->name('toggle-status');
+});
+
+
+// Stock Opname Routes
+Route::middleware(['auth'])->prefix('stock-opname')->name('stock-opname.')->group(function () {
+    Route::get('/', [App\Http\Controllers\StockOpnameController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\StockOpnameController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\StockOpnameController::class, 'store'])->name('store');
+    Route::get('/{stockOpname}', [App\Http\Controllers\StockOpnameController::class, 'show'])->name('show');
+    Route::put('/{stockOpname}', [App\Http\Controllers\StockOpnameController::class, 'update'])->name('update');
+    Route::post('/{stockOpname}/finalize', [App\Http\Controllers\StockOpnameController::class, 'finalize'])->name('finalize');
+    Route::delete('/{stockOpname}', [App\Http\Controllers\StockOpnameController::class, 'destroy'])->name('destroy');
 });
 
 require __DIR__.'/auth.php';

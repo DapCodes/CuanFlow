@@ -471,6 +471,57 @@ class ProductHppController extends Controller
         ]);
     }
 
+    public function barcodePreview(Product $product)
+    {
+        if ($product->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
+        if (!$product->barcode) {
+            // Return empty 1x1 pixel or standard error image
+            return response('')->header('Content-Type', 'image/png');
+        }
+
+        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+        
+        // Determine type: EAN-13 if 13 digits, otherwise Code 128
+        $type = $generator::TYPE_CODE_128;
+        if (strlen($product->barcode) === 13 && ctype_digit($product->barcode)) {
+             $type = $generator::TYPE_EAN_13;
+        }
+
+        // Width factor 2, Height 50
+        $barcodeData = $generator->getBarcode($product->barcode, $type, 2, 50);
+
+        return response($barcodeData)->header('Content-Type', 'image/png');
+    }
+
+    public function barcodeDownload(Product $product)
+    {
+        if ($product->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
+        if (!$product->barcode) {
+            return back()->with('error', 'Produk tidak memiliki barcode.');
+        }
+
+        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+        
+        $type = $generator::TYPE_CODE_128;
+        if (strlen($product->barcode) === 13 && ctype_digit($product->barcode)) {
+             $type = $generator::TYPE_EAN_13;
+        }
+
+        $barcodeData = $generator->getBarcode($product->barcode, $type, 3, 50);
+        
+        $filename = 'barcode-'.$product->barcode . '.png';
+
+        return response()->streamDownload(function () use ($barcodeData) {
+            echo $barcodeData;
+        }, $filename, ['Content-Type' => 'image/png']);
+    }
+
     public function getSalesAnalytics(Request $request)
     {
         $productId = $request->product_id;

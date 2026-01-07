@@ -1241,18 +1241,23 @@
         <!-- Left Panel: Products -->
         <div class="products-panel">
             <div class="products-toolbar">
-                <div class="flex gap-2">
-                    <div class="search-box">
-                        <i class="fas fa-search search-icon"></i>
-                        <input 
-                            type="text" 
-                            id="searchProduct" 
-                            class="search-input" 
-                            placeholder="Cari produk...">
+                <div class="flex gap-2 justify-between" >
+                    <div class="flex gap-2">
+                        <div class="search-box">
+                            <i class="fas fa-search search-icon"></i>
+                            <input 
+                                type="text" 
+                                id="searchProduct" 
+                                class="search-input" 
+                                placeholder="Cari produk...">
+                        </div>
+                        <select id="filterCategory" class="filter-select">
+                            <option value="">Semua Kategori</option>
+                        </select>
                     </div>
-                    <select id="filterCategory" class="filter-select">
-                        <option value="">Semua Kategori</option>
-                    </select>
+                    <button onclick="openScanner()" class="h-[38px] w-[38px] flex items-center justify-center rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors border border-purple-200" title="Scan Barcode">
+                        <i class="fas fa-qrcode"></i>
+                    </button>
                 </div>
                 <div class="category-tabs" id="categoryTabs">
                 </div>
@@ -1267,6 +1272,7 @@
                             data-product-id="{{ $product->id }}"
                             data-product-name="{{ $product->name }}"
                             data-product-code="{{ $product->code }}"
+                            data-product-barcode="{{ $product->barcode }}"
                             data-product-price="{{ $product->selling_price }}"
                             data-product-hpp="{{ $product->hpp }}"
                             data-category="{{ $product->category_id }}"
@@ -1572,6 +1578,24 @@
             </div>
         </div>
     </div>
+
+<!-- Modal: Scanner -->
+<div id="scannerModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
+        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-gray-900">Scan Barcode</h3>
+            <button onclick="closeScanner()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-0 relative bg-black">
+            <div id="reader" class="w-full"></div>
+        </div>
+        <div class="p-4 bg-gray-50 text-center text-xs text-gray-500">
+            Arahkan kamera ke barcode produk
+        </div>
+    </div>
+</div>
 </div>
 
 <!-- Modal: Input Modal Awal -->
@@ -4805,5 +4829,93 @@ function closeSaleDetailModal() {
     document.getElementById('saleDetailModal').classList.add('hidden');
 }
 
+
+</script>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+    let html5QrcodeScanner = null;
+
+    function openScanner() {
+        document.getElementById('scannerModal').classList.remove('hidden');
+        
+        // Initialize scanner if not already
+        if (!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5Qrcode("reader");
+        }
+        
+        const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+        
+        // Prefer back camera
+        html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+        .catch(err => {
+            console.error("Error starting scanner", err);
+            showToast('error', 'Gagal membuka kamera: ' + err);
+            closeScanner();
+        });
+    }
+
+    function closeScanner() {
+        document.getElementById('scannerModal').classList.add('hidden');
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.stop().then(() => {
+                console.log("Scanner stopped");
+            }).catch(err => {
+                console.error("Failed to stop scanner", err);
+            });
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+        
+        // Stop scanning temporarily or close modal?
+        // Let's close modal first to prevent multiple scans
+        closeScanner();
+
+        // 1. Cari produk di DOM berdasarkan barcode
+        const productCard = document.querySelector(`.product-card[data-product-barcode="${decodedText}"]`);
+
+        if (productCard) {
+            // 2. Add to cart
+            addProductToCart(productCard);
+            
+            // Audio feedback
+            playBeep();
+            
+            showToast('success', 'Produk ditemukan & ditambahkan!');
+        } else {
+            // Play error sound?
+            showToast('error', `Produk dengan barcode ${decodedText} tidak ditemukan`);
+            
+            // Re-open scanner after delay? Or keep it closed?
+            // User might want to try again.
+        }
+    }
+
+    function onScanFailure(error) {
+        // handle scan failure, usually better to ignore and keep scanning.
+        // console.warn(`Code scan error = ${error}`);
+    }
+
+    function playBeep() {
+        // Simple beep using AudioContext
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime); // 1000Hz
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1); // 100ms beep
+        } catch (e) {
+            console.error("Audio beep failed", e);
+        }
+    }
 </script>
 @endpush
