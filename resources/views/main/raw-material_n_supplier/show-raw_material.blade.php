@@ -7,19 +7,19 @@
     <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
     </svg>
-    <a href="{{ route('raw-materials.index') }}" class="text-gray-500 hover:text-gray-700">Stok Bahan Baku</a>
+    <a href="{{ route('raw-materials.index') }}" class="text-gray-500 hover:text-red-600 transition-colors">Bahan Baku</a>
 </li>
 <li class="flex items-center">
     <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
     </svg>
-    <span class="text-gray-900 font-medium">Detail Bahan Baku</span>
+    <span class="text-gray-900 font-medium">Detail</span>
 </li>
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
         
         @php
             $stock = $rawMaterial->stocks->first();
@@ -28,368 +28,242 @@
             $isOutOfStock = $currentStock <= 0;
         @endphp
 
-        <x-card-container>
-            <!-- Header -->
-            <div class="bg-gradient-to-br from-orange-50 to-red-50 p-6 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div class="flex items-center gap-4">
-                        @if($rawMaterial->image)
-                        <img src="{{ Storage::url($rawMaterial->image) }}" alt="{{ $rawMaterial->name }}" class="w-20 h-20 rounded-lg object-cover border-2 border-white shadow-lg">
-                        @else
-                        <div class="w-20 h-20 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg">
-                            <i class="fas fa-cube text-white text-3xl"></i>
-                        </div>
-                        @endif
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900">{{ $rawMaterial->name }}</h2>
-                            <p class="text-sm text-gray-500 mt-1">
-                                <span class="font-mono font-semibold bg-white px-2 py-1 rounded">{{ $rawMaterial->code }}</span>
-                                @if($rawMaterial->barcode)
-                                <span class="ml-2 font-mono text-gray-400">| {{ $rawMaterial->barcode }}</span>
-                                @endif
-                            </p>
-                        </div>
+        {{-- Header Section --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                @if($rawMaterial->image)
+                    <img src="{{ Storage::url($rawMaterial->image) }}" alt="{{ $rawMaterial->name }}" class="w-16 h-16 rounded-lg object-cover border border-gray-200 shadow-sm">
+                @else
+                    <div class="w-16 h-16 rounded-lg bg-red-50 flex items-center justify-center border border-red-100 text-red-400 shadow-sm">
+                        <i class="fas fa-cube text-2xl"></i>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Kembali
-                        </a>
-                        <a href="{{ route('raw-materials.edit', $rawMaterial) }}" class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all duration-200 shadow-md">
-                            <i class="fas fa-edit mr-2"></i>
-                            Edit
-                        </a>
+                @endif
+                <div>
+                    <h1 class="text-xl md:text-2xl font-semibold text-gray-900">{{ $rawMaterial->name }}</h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                            {{ $rawMaterial->code }}
+                        </span>
+                        @if($rawMaterial->barcode)
+                            <span class="text-xs text-gray-400">|</span>
+                            <span class="text-xs text-gray-500 font-mono"><i class="fas fa-barcode mr-1"></i>{{ $rawMaterial->barcode }}</span>
+                        @endif
                     </div>
                 </div>
             </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali
+                </a>
+                <a href="{{ route('raw-materials.edit', $rawMaterial) }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
+                    <i class="fas fa-edit mr-2"></i>
+                    Edit
+                </a>
+            </div>
+        </section>
 
-            <div class="p-6">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- Left Column: Main Information -->
-                    <div class="lg:col-span-2 space-y-6">
-                        
-                        <!-- Informasi Dasar -->
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-info-circle text-orange-500 mr-2"></i>
-                                Informasi Dasar
-                            </h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Nama Bahan</label>
-                                    <p class="text-sm font-medium text-gray-900 mt-1">{{ $rawMaterial->name }}</p>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Kode</label>
-                                    <p class="text-sm font-mono font-semibold text-gray-900 mt-1 bg-white px-2 py-1 rounded inline-block">{{ $rawMaterial->code }}</p>
-                                </div>
-                                @if($rawMaterial->barcode)
-                                <div>
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Barcode</label>
-                                    <p class="text-sm font-mono text-gray-900 mt-1">{{ $rawMaterial->barcode }}</p>
-                                </div>
-                                @endif
-                                <div>
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Kategori</label>
-                                    <p class="text-sm text-gray-900 mt-1">
-                                        @if($rawMaterial->category)
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">
-                                            <i class="fas fa-tag mr-1"></i>
-                                            {{ $rawMaterial->category->name }}
-                                        </span>
-                                        @else
-                                        <span class="text-gray-400">-</span>
-                                        @endif
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Satuan</label>
-                                    <p class="text-sm font-medium text-gray-900 mt-1">{{ $rawMaterial->unit->name ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Status</label>
-                                    <p class="text-sm mt-1">
-                                        @if($rawMaterial->is_active)
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                            Aktif
-                                        </span>
-                                        @else
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                                            <span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                                            Nonaktif
-                                        </span>
-                                        @endif
-                                    </p>
-                                </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {{-- Left Column: Information --}}
+            <div class="lg:col-span-2 space-y-6">
+                
+                {{-- Stock Info Card --}}
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                           <i class="fas fa-warehouse text-gray-400"></i> Status Stok
+                        </h3>
+                        @if($isOutOfStock)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Stok Habis
+                            </span>
+                        @elseif($isLowStock)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Stok Menipis
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Stok Aman
+                            </span>
+                        @endif
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                            <div class="text-center p-4 rounded-lg bg-gray-50 border border-gray-100">
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Tersedia</p>
+                                <p class="mt-2 text-3xl font-bold {{ $isOutOfStock ? 'text-red-600' : ($isLowStock ? 'text-yellow-600' : 'text-gray-900') }}">
+                                    {{ number_format($currentStock, 2) }}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">{{ $rawMaterial->unit->name }}</p>
                             </div>
-
-                            @if($rawMaterial->description)
-                            <div class="mt-6 pt-6 border-t border-gray-200">
-                                <label class="text-xs font-semibold text-gray-500 uppercase">Deskripsi</label>
-                                <p class="text-sm text-gray-700 mt-2 leading-relaxed">{{ $rawMaterial->description }}</p>
+                            <div class="text-center p-4 rounded-lg bg-white border border-gray-200">
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Min. Stok</p>
+                                <p class="mt-2 text-3xl font-bold text-gray-900">
+                                    {{ number_format($rawMaterial->min_stock, 2) }}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">{{ $rawMaterial->unit->name }}</p>
                             </div>
-                            @endif
-                        </div>
-
-                        <!-- Supplier & Harga -->
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-truck text-orange-500 mr-2"></i>
-                                Supplier & Harga
-                            </h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="md:col-span-2">
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Supplier</label>
-                                    @if($rawMaterial->supplier)
-                                    <div class="mt-2 bg-white rounded-lg p-4 border border-gray-200">
-                                        <div class="flex items-start justify-between">
-                                            <div>
-                                                <p class="text-sm font-semibold text-gray-900">{{ $rawMaterial->supplier->name }}</p>
-                                                @if($rawMaterial->supplier->contact_person)
-                                                <p class="text-xs text-gray-500 mt-1">
-                                                    <i class="fas fa-user mr-1"></i>
-                                                    {{ $rawMaterial->supplier->contact_person }}
-                                                </p>
-                                                @endif
-                                                @if($rawMaterial->supplier->phone)
-                                                <p class="text-xs text-gray-500 mt-1">
-                                                    <i class="fas fa-phone mr-1"></i>
-                                                    {{ $rawMaterial->supplier->phone }}
-                                                </p>
-                                                @endif
-                                                @if($rawMaterial->supplier->email)
-                                                <p class="text-xs text-gray-500 mt-1">
-                                                    <i class="fas fa-envelope mr-1"></i>
-                                                    {{ $rawMaterial->supplier->email }}
-                                                </p>
-                                                @endif
-                                            </div>
-                                            @if($rawMaterial->supplier->is_active)
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                                Aktif
-                                            </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    @else
-                                    <p class="text-sm text-gray-400 mt-2">Tidak ada supplier terkait</p>
-                                    @endif
-                                </div>
-                                
-                                <div>
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Harga Beli</label>
-                                    <p class="text-2xl font-bold text-gray-900 mt-1">
-                                        Rp {{ number_format($rawMaterial->purchase_price, 0, ',', '.') }}
-                                    </p>
-                                    <p class="text-xs text-gray-500">per {{ $rawMaterial->unit->name ?? 'unit' }}</p>
-                                </div>
-
-                                @if($stock && $stock->avg_purchase_price > 0)
-                                <div>
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Harga Rata-rata</label>
-                                    <p class="text-2xl font-bold text-orange-600 mt-1">
-                                        Rp {{ number_format($stock->avg_purchase_price, 0, ',', '.') }}
-                                    </p>
-                                    <p class="text-xs text-gray-500">per {{ $rawMaterial->unit->name ?? 'unit' }}</p>
-                                </div>
-                                @endif
+                            <div class="text-center p-4 rounded-lg bg-white border border-gray-200">
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Masa Simpan</p>
+                                <p class="mt-2 text-3xl font-bold text-gray-900">
+                                    {{ $rawMaterial->shelf_life_days ?? '-' }}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">Hari</p>
                             </div>
                         </div>
 
-                        <!-- Stok Information -->
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-warehouse text-orange-500 mr-2"></i>
-                                Informasi Stok
-                            </h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="bg-white rounded-lg p-4 border-2 border-gray-200">
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Stok Tersedia</label>
-                                    <p class="text-3xl font-bold mt-2
-                                        {{ $isOutOfStock ? 'text-red-600' : ($isLowStock ? 'text-yellow-600' : 'text-green-600') }}">
-                                        {{ number_format($currentStock, 2) }}
-                                    </p>
-                                    <p class="text-sm text-gray-500 mt-1">{{ $rawMaterial->unit->name ?? 'unit' }}</p>
-                                    
-                                    @if($isOutOfStock)
-                                    <div class="mt-3">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                                            <i class="fas fa-times-circle mr-1"></i>
-                                            Stok Habis
-                                        </span>
-                                    </div>
-                                    @elseif($isLowStock)
-                                    <div class="mt-3">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">
-                                            <i class="fas fa-exclamation-triangle mr-1"></i>
-                                            Stok Menipis
-                                        </span>
-                                    </div>
-                                    @else
-                                    <div class="mt-3">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                                            <i class="fas fa-check-circle mr-1"></i>
-                                            Stok Aman
-                                        </span>
-                                    </div>
-                                    @endif
-                                </div>
-
-                                <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Minimum Stok</label>
-                                    <p class="text-3xl font-bold text-gray-900 mt-2">
-                                        {{ number_format($rawMaterial->min_stock, 2) }}
-                                    </p>
-                                    <p class="text-sm text-gray-500 mt-1">{{ $rawMaterial->unit->name ?? 'unit' }}</p>
-                                </div>
-
-                                @if($rawMaterial->shelf_life_days)
-                                <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                    <label class="text-xs font-semibold text-gray-500 uppercase">Masa Simpan</label>
-                                    <p class="text-3xl font-bold text-gray-900 mt-2">
-                                        {{ $rawMaterial->shelf_life_days }}
-                                    </p>
-                                    <p class="text-sm text-gray-500 mt-1">hari</p>
-                                </div>
-                                @endif
-                            </div>
-
-                            @if($currentStock > 0)
-                            <div class="mt-6 pt-6 border-t border-gray-200">
-                                <label class="text-xs font-semibold text-gray-500 uppercase mb-3 block">Persentase Stok</label>
-                                <div class="relative pt-1">
+                         @if($currentStock > 0)
+                            <div class="mt-6">
+                                <div class="flex justify-between items-end mb-1">
+                                    <span class="text-xs font-medium text-gray-500">Kapasitas Aman</span>
                                     @php
+                                        // Simple calc: assume double min stock is "full enough" for visualization
                                         $percentage = ($currentStock / ($rawMaterial->min_stock * 2)) * 100;
                                         $percentage = min($percentage, 100);
                                     @endphp
-                                    <div class="flex mb-2 items-center justify-between">
-                                        <div>
-                                            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full
-                                                {{ $isOutOfStock ? 'text-red-600 bg-red-200' : ($isLowStock ? 'text-yellow-600 bg-yellow-200' : 'text-green-600 bg-green-200') }}">
-                                                {{ number_format($percentage, 1) }}%
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="overflow-hidden h-3 text-xs flex rounded-full bg-gray-200">
-                                        <div style="width: {{ $percentage }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center
-                                            {{ $isOutOfStock ? 'bg-red-500' : ($isLowStock ? 'bg-yellow-500' : 'bg-green-500') }}
-                                            transition-all duration-500">
-                                        </div>
-                                    </div>
+                                    <span class="text-xs font-bold text-gray-700">{{ number_format($percentage, 0) }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="h-2.5 rounded-full {{ $isOutOfStock ? 'bg-red-500' : ($isLowStock ? 'bg-yellow-500' : 'bg-emerald-500') }}" style="width: {{ $percentage }}%"></div>
                                 </div>
                             </div>
-                            @endif
-                        </div>
-
-                    </div>
-
-                    <!-- Right Column: Quick Stats & Actions -->
-                    <div class="space-y-6">
-                        
-                        <!-- Quick Actions -->
-                        <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-6 border border-orange-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-bolt text-orange-500 mr-2"></i>
-                                Aksi Cepat
-                            </h3>
-                            
-                            <div class="space-y-3">
-                                <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
-                                    <i class="fas fa-box-open mr-2"></i>
-                                    Kelola Stok
-                                </a>
-                                
-                                <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}?type=add" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-all border-2 border-green-300 hover:border-green-400">
-                                    <i class="fas fa-plus-circle mr-2"></i>
-                                    Tambah Stok
-                                </a>
-                                
-                                <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}?type=reduce" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-all border-2 border-red-300 hover:border-red-400">
-                                    <i class="fas fa-minus-circle mr-2"></i>
-                                    Kurangi Stok
-                                </a>
-                                
-                                <a href="{{ route('raw-materials.stock-history', $rawMaterial) }}" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all border border-gray-300">
-                                    <i class="fas fa-history mr-2"></i>
-                                    Riwayat Pergerakan
-                                </a>
-
-                                <a href="{{ route('raw-materials.edit', $rawMaterial) }}" class="w-full inline-flex items-center justify-center px-4 py-3 bg-white text-orange-600 rounded-lg font-semibold hover:bg-orange-50 transition-all border-2 border-orange-300 hover:border-orange-400">
-                                    <i class="fas fa-edit mr-2"></i>
-                                    Edit Bahan Baku
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Value Stats -->
-                        <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-                            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-4">Nilai Stok</h3>
-                            
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="text-xs text-gray-500">Berdasarkan Harga Beli</label>
-                                    <p class="text-xl font-bold text-gray-900 mt-1">
-                                        Rp {{ number_format($currentStock * $rawMaterial->purchase_price, 0, ',', '.') }}
-                                    </p>
-                                </div>
-                                
-                                @if($stock && $stock->avg_purchase_price > 0)
-                                <div class="pt-4 border-t border-gray-200">
-                                    <label class="text-xs text-gray-500">Berdasarkan Harga Rata-rata</label>
-                                    <p class="text-xl font-bold text-orange-600 mt-1">
-                                        Rp {{ number_format($currentStock * $stock->avg_purchase_price, 0, ',', '.') }}
-                                    </p>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Timestamps -->
-                        <div class="bg-white rounded-lg p-6 border border-gray-200">
-                            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-4">Informasi Waktu</h3>
-                            
-                            <div class="space-y-3 text-sm">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-gray-500">Dibuat</span>
-                                    <span class="font-medium text-gray-900">{{ $rawMaterial->created_at->format('d M Y H:i') }}</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-gray-500">Diperbarui</span>
-                                    <span class="font-medium text-gray-900">{{ $rawMaterial->updated_at->format('d M Y H:i') }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Delete Action -->
-                        <div class="bg-red-50 rounded-lg p-6 border border-red-200">
-                            <h3 class="text-sm font-semibold text-red-900 mb-2 flex items-center">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
-                                Zona Berbahaya
-                            </h3>
-                            <p class="text-xs text-red-600 mb-4">Tindakan ini tidak dapat dibatalkan</p>
-                            
-                            <form action="{{ route('raw-materials.destroy', $rawMaterial) }}" 
-                                  method="POST" 
-                                  onsubmit="return confirm('Yakin ingin menghapus bahan baku {{ $rawMaterial->name }}? Tindakan ini tidak dapat dibatalkan!')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors">
-                                    <i class="fas fa-trash mr-2"></i>
-                                    Hapus Bahan Baku
-                                </button>
-                            </form>
-                        </div>
-
+                        @endif
                     </div>
                 </div>
+
+                {{-- Basic Info Card --}}
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                           <i class="fas fa-info-circle text-gray-400"></i> Detail Informasi
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div>
+                                <label class="text-xs font-medium text-gray-500 uppercase block mb-1">Kategori</label>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-sm font-medium bg-red-50 text-red-700">
+                                    {{ $rawMaterial->category->name ?? '-' }}
+                                </span>
+                             </div>
+                             <div>
+                                <label class="text-xs font-medium text-gray-500 uppercase block mb-1">Status Sistem</label>
+                                @if($rawMaterial->is_active)
+                                    <span class="inline-flex items-center text-sm font-medium text-green-600">
+                                        <i class="fas fa-check-circle mr-1.5"></i> Aktif
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center text-sm font-medium text-gray-500">
+                                        <i class="fas fa-ban mr-1.5"></i> Nonaktif
+                                    </span>
+                                @endif
+                             </div>
+                             <div class="md:col-span-2">
+                                <label class="text-xs font-medium text-gray-500 uppercase block mb-1">Deskripsi</label>
+                                <p class="text-sm text-gray-700 leading-relaxed">
+                                    {{ $rawMaterial->description ?: 'Tidak ada deskripsi.' }}
+                                </p>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Supplier Info --}}
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                     <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                           <i class="fas fa-truck text-gray-400"></i> Supplier & Harga
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="text-xs font-medium text-gray-500 uppercase block mb-1">Supplier Utama</label>
+                                @if($rawMaterial->supplier)
+                                    <p class="text-base font-medium text-gray-900">{{ $rawMaterial->supplier->name }}</p>
+                                    @if($rawMaterial->supplier->phone)
+                                        <p class="text-sm text-gray-500 mt-1"><i class="fas fa-phone mr-1"></i> {{ $rawMaterial->supplier->phone }}</p>
+                                    @endif
+                                @else
+                                    <p class="text-sm text-gray-400 italic">Tidak ada data supplier</p>
+                                @endif
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-gray-500 uppercase block mb-1">Harga Beli Terakhir</label>
+                                <p class="text-xl font-bold text-gray-900">Rp {{ number_format($rawMaterial->purchase_price, 0, ',', '.') }}</p>
+                                <p class="text-xs text-gray-500">per {{ $rawMaterial->unit->name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-        </x-card-container>
+             {{-- Right Column: Actions --}}
+             <div class="lg:col-span-1 space-y-6">
+                 
+                 {{-- Quick Actions --}}
+                 <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="font-semibold text-gray-900">Aksi Cepat</h3>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" class="flex items-center justify-between w-full px-4 py-3 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors group border border-red-100">
+                            <span class="font-medium"><i class="fas fa-box-open mr-2"></i> Kelola Stok</span>
+                            <i class="fas fa-chevron-right text-red-400 group-hover:text-red-600"></i>
+                        </a>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}?type=add" class="flex flex-col items-center justify-center px-4 py-3 bg-white text-emerald-600 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all">
+                                <i class="fas fa-plus-circle text-lg mb-1"></i>
+                                <span class="text-xs font-semibold">Tambah</span>
+                            </a>
+                            <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}?type=reduce" class="flex flex-col items-center justify-center px-4 py-3 bg-white text-orange-600 rounded-lg border border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all">
+                                <i class="fas fa-minus-circle text-lg mb-1"></i>
+                                <span class="text-xs font-semibold">Kurang</span>
+                            </a>
+                        </div>
+
+                        <a href="{{ route('raw-materials.stock-history', $rawMaterial) }}" class="flex items-center justify-between w-full px-4 py-3 bg-white text-gray-700 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group">
+                            <span class="font-medium"><i class="fas fa-history mr-2"></i> Riwayat Stok</span>
+                            <i class="fas fa-chevron-right text-gray-400 group-hover:text-gray-600"></i>
+                        </a>
+                    </div>
+                 </div>
+
+                 {{-- Valuation --}}
+                 <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                     <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="font-semibold text-gray-900">Valuasi Stok</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-sm text-gray-500">Total Nilai</span>
+                            <span class="text-lg font-bold text-gray-900">
+                                Rp {{ number_format($currentStock * $rawMaterial->purchase_price, 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2 text-right">Estimasi berdasarkan harga beli terakhir</p>
+                    </div>
+                 </div>
+
+                 {{-- Delete Zone --}}
+                 <div class="bg-red-50 border border-red-100 rounded-xl shadow-sm p-6 text-center">
+                    <h4 class="text-sm font-semibold text-red-900 mb-2">Hapus Bahan Baku</h4>
+                    <p class="text-xs text-red-600 mb-4">Tindakan ini tidak dapat dibatalkan dan akan menghapus semua riwayat stok.</p>
+                    <form action="{{ route('raw-materials.destroy', $rawMaterial) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus bahan baku ini? Data yang dihapus tidak dapat dikembalikan.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">
+                            <i class="fas fa-trash-alt mr-2"></i> Hapus Permanen
+                        </button>
+                    </form>
+                 </div>
+
+             </div>
+
+        </div>
 
     </div>
 </main>

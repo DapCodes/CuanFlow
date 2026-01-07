@@ -296,16 +296,9 @@
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open"
                         class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
-                        @if(auth()->user()->avatar)
-                            <img src="{{ Storage::url(auth()->user()->avatar) }}"
-                                alt="{{ auth()->user()->name }}"
-                                class="h-8 w-8 rounded-full object-cover">
-                        @else
-                            <div
-                                class="h-8 w-8 rounded-full bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold">
-                                {{ substr(auth()->user()->name, 0, 1) }}
-                            </div>
-                        @endif
+                        <img src="{{ auth()->user()->avatar_url }}"
+                            alt="{{ auth()->user()->name }}"
+                            class="h-8 w-8 rounded-full object-cover">
                         <span class="text-sm font-medium text-gray-900 max-w-[180px] truncate">
                             {{ auth()->user()->name }}
                         </span>
@@ -332,8 +325,8 @@
 
                         <a href="{{ route('profile.edit') }}"
                             class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">
-                            <i class="fa-solid fa-user mr-2"></i>
-                            Profile
+                            <i class="fa-solid fa-gear mr-2"></i>
+                            Pengaturan Akun
                         </a>
 
                         <form method="POST" action="{{ route('logout') }}">
@@ -377,15 +370,9 @@
         <div class="px-4 py-3 space-y-3">
             <!-- User info -->
             <div class="flex items-center space-x-3">
-                @if(auth()->user()->avatar)
-                    <img src="{{ Storage::url(auth()->user()->avatar) }}"
-                        alt="{{ auth()->user()->name }}"
-                        class="h-10 w-10 rounded-full object-cover">
-                @else
-                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold">
-                        {{ substr(auth()->user()->name, 0, 1) }}
-                    </div>
-                @endif
+                <img src="{{ auth()->user()->avatar_url }}"
+                    alt="{{ auth()->user()->name }}"
+                    class="h-10 w-10 rounded-full object-cover">
                 <div class="min-w-0">
                     <p class="text-sm font-semibold text-gray-900 truncate">{{ auth()->user()->name }}</p>
                     @if(auth()->user()->outlet_id)
@@ -443,8 +430,8 @@
             <div class="pt-2 border-t border-gray-100 space-y-2">
                 <a href="{{ route('profile.edit') }}"
                     class="nav-link flex items-center w-full px-3 py-2 rounded-lg hover:bg-cuan-yellow/20 text-gray-900">
-                    <i class="fa-solid fa-user mr-2"></i>
-                    Profile
+                    <i class="fa-solid fa-gear mr-2"></i>
+                    Pengaturan Akun
                 </a>
 
                 <form method="POST" action="{{ route('logout') }}">

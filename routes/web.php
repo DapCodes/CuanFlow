@@ -17,6 +17,7 @@ use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OutletPaymentLinkController;
+use App\Http\Controllers\OutletPolicyController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -281,10 +282,19 @@ Route::middleware(['auth'])->prefix('pos/discounts')->name('pos.discounts.')->gr
 
 Route::middleware(['auth'])->prefix('finance')->name('finance.')->group(function () {
     Route::get('/', [FinanceController::class, 'index'])->name('index');
+    
     Route::get('/income/create', [FinanceController::class, 'createIncome'])->name('income.create');
     Route::post('/income', [FinanceController::class, 'storeIncome'])->name('income.store');
+    Route::get('/income/{expense}/edit', [FinanceController::class, 'editIncome'])->name('income.edit');
+    Route::put('/income/{expense}', [FinanceController::class, 'updateIncome'])->name('income.update');
+
     Route::get('/expense/create', [FinanceController::class, 'createExpense'])->name('expense.create');
     Route::post('/expense', [FinanceController::class, 'storeExpense'])->name('expense.store');
+    Route::get('/expense/{expense}/edit', [FinanceController::class, 'editExpense'])->name('expense.edit');
+    Route::put('/expense/{expense}', [FinanceController::class, 'updateExpense'])->name('expense.update');
+
+    Route::delete('/{expense}', [FinanceController::class, 'destroy'])->name('destroy');
+    
     Route::post('/validate-revenue', [FinanceController::class, 'validateRevenue'])->name('validate-revenue');
     Route::get('/daily', [FinanceController::class, 'daily'])->name('daily');
 
@@ -348,6 +358,10 @@ Route::middleware(['auth'])->prefix('stock-opname')->name('stock-opname.')->grou
     Route::put('/{stockOpname}', [App\Http\Controllers\StockOpnameController::class, 'update'])->name('update');
     Route::post('/{stockOpname}/finalize', [App\Http\Controllers\StockOpnameController::class, 'finalize'])->name('finalize');
     Route::delete('/{stockOpname}', [App\Http\Controllers\StockOpnameController::class, 'destroy'])->name('destroy');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('outlet-policies', OutletPolicyController::class);
 });
 
 require __DIR__.'/auth.php';

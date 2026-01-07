@@ -7,7 +7,7 @@
     <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
     </svg>
-    <a href="{{ route('raw-materials.suppliers') }}" class="text-gray-500 hover:text-orange-600 transition-colors">Supplier</a>
+    <a href="{{ route('raw-materials.suppliers') }}" class="text-gray-500 hover:text-red-600 transition-colors">Supplier</a>
 </li>
 <li class="flex items-center">
     <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
@@ -18,195 +18,145 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
         
-        <x-card-container>
-            <!-- Header -->
-            <div class="bg-gradient-to-br from-orange-50 to-red-50 p-6 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            Edit Supplier
-                        </h2>
-                        <p class="text-sm text-gray-500 mt-1">Perbarui informasi supplier: <span class="font-semibold">{{ $supplier->name }}</span></p>
+        {{-- Header Section --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-orange-50 text-orange-500 border border-orange-100">
+                        <i class="fas fa-edit text-sm"></i>
+                    </span>
+                    <span>Edit Supplier</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Memperbarui informasi untuk supplier: <strong class="text-gray-900">{{ $supplier->name }}</strong>
+                </p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('raw-materials.suppliers') }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali
+                </a>
+            </div>
+        </section>
+
+        {{-- Form Container --}}
+        <form action="{{ route('raw-materials.suppliers.update', $supplier) }}" method="POST">
+            @csrf
+            @method('PUT')
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {{-- Left Column: Main Form --}}
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    {{-- Basic Info --}}
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fas fa-info-circle text-gray-400"></i> Informasi Supplier
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label for="code" class="block text-sm font-medium text-gray-700 mb-1">Kode Supplier</label>
+                                <input type="text" name="code" id="code" value="{{ old('code', $supplier->code) }}" readonly
+                                    class="w-full rounded-lg border-gray-300 bg-gray-50 text-gray-500 text-sm shadow-sm py-2.5 cursor-not-allowed">
+                                <p class="text-[10px] text-gray-400 mt-1 italic">* Kode tidak dapat diubah</p>
+                                @error('code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Supplier <span class="text-red-500">*</span></label>
+                                <input type="text" name="name" id="name" value="{{ old('name', $supplier->name) }}" required
+                                    class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="contact_person" class="block text-sm font-medium text-gray-700 mb-1">Kontak Person</label>
+                                <input type="text" name="contact_person" id="contact_person" value="{{ old('contact_person', $supplier->contact_person) }}"
+                                    class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                @error('contact_person') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon / WhatsApp</label>
+                                <input type="text" name="phone" id="phone" value="{{ old('phone', $supplier->phone) }}"
+                                    class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                @error('phone') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Alamat Email</label>
+                                <input type="email" name="email" id="email" value="{{ old('email', $supplier->email) }}"
+                                    class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
                     </div>
-                    <a href="{{ route('raw-materials.suppliers') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Kembali
-                    </a>
+
+                    {{-- Address & Notes --}}
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fas fa-map-marker-alt text-gray-400"></i> Detail Tambahan
+                        </h3>
+                        <div class="space-y-5">
+                            <div>
+                                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
+                                <textarea name="address" id="address" rows="3"
+                                    class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm">{{ old('address', $supplier->address) }}</textarea>
+                                @error('address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                                <textarea name="notes" id="notes" rows="2"
+                                    class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm">{{ old('notes', $supplier->notes) }}</textarea>
+                                @error('notes') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                {{-- Right Column: Status & Actions --}}
+                <div class="lg:col-span-1 space-y-6">
+                    
+                    {{-- Status Card --}}
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+                         <h3 class="text-sm font-semibold text-gray-900 mb-4 uppercase">Status</h3>
+                         <div class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                             <div class="flex items-center h-5">
+                                <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', $supplier->is_active) ? 'checked' : '' }}
+                                    class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                             </div>
+                             <div class="text-sm">
+                                <label for="is_active" class="font-medium text-gray-700">Aktif</label>
+                                <p class="text-xs text-gray-500">Supplier dapat dipilih dalam pengadaan bahan baku.</p>
+                             </div>
+                         </div>
+                    </div>
+
+                    {{-- Action Buttons --}}
+                    <div class="pt-4">
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-3 bg-red-600 border border-transparent rounded-lg text-sm font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-lg transition-all">
+                            <i class="fas fa-save mr-2"></i> Update Supplier
+                        </button>
+                        <a href="{{ route('raw-materials.suppliers') }}" class="mt-3 w-full inline-flex items-center justify-center px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all text-center">
+                            Batal
+                        </a>
+                    </div>
+
+                     {{-- Danger Zone --}}
+                     <div class="bg-red-50 border border-red-100 rounded-xl p-4 text-center">
+                        <p class="text-xs text-red-600 mb-3 text-left">Ingin menghapus supplier ini? Tindakan ini tidak dapat dibatalkan jika sudah ada data transaksi terkait.</p>
+                        <form action="{{ route('raw-materials.suppliers.destroy', $supplier) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus supplier ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-xs font-semibold text-red-700 hover:underline">
+                                <i class="fas fa-trash-alt mr-1"></i> Hapus Supplier
+                            </button>
+                        </form>
+                    </div>
+
                 </div>
             </div>
-
-            <!-- Form -->
-            <form action="{{ route('raw-materials.suppliers.update', $supplier) }}" method="POST" class="p-6">
-                @csrf
-                @method('PUT')
-
-                <div class="space-y-6">
-                    <!-- Informasi Dasar -->
-                    <div class="bg-gray-50 rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-info-circle text-orange-500 mr-2"></i>
-                            Informasi Dasar
-                        </h3>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Code -->
-                            <div>
-                                <label for="code" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Kode Supplier <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" 
-                                       name="code" 
-                                       id="code" 
-                                       value="{{ old('code', $supplier->code) }}"
-                                       readonly
-                                       class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-not-allowed @error('code') border-red-500 @enderror">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Kode tidak dapat diubah
-                                </p>
-                                @error('code')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Name -->
-                            <div>
-                                <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Nama Supplier <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" 
-                                       name="name" 
-                                       id="name" 
-                                       value="{{ old('name', $supplier->name) }}"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('name') border-red-500 @enderror" 
-                                       required>
-                                @error('name')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Contact Person -->
-                            <div>
-                                <label for="contact_person" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Kontak Person
-                                </label>
-                                <input type="text" 
-                                       name="contact_person" 
-                                       id="contact_person" 
-                                       value="{{ old('contact_person', $supplier->contact_person) }}"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('contact_person') border-red-500 @enderror">
-                                @error('contact_person')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Phone -->
-                            <div>
-                                <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Telepon
-                                </label>
-                                <input type="text" 
-                                       name="phone" 
-                                       id="phone" 
-                                       value="{{ old('phone', $supplier->phone) }}"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('phone') border-red-500 @enderror">
-                                @error('phone')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Email -->
-                            <div class="md:col-span-2">
-                                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Email
-                                </label>
-                                <input type="email" 
-                                       name="email" 
-                                       id="email" 
-                                       value="{{ old('email', $supplier->email) }}"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('email') border-red-500 @enderror">
-                                @error('email')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Alamat & Catatan -->
-                    <div class="bg-gray-50 rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-map-marker-alt text-orange-500 mr-2"></i>
-                            Alamat & Catatan
-                        </h3>
-                        
-                        <div class="space-y-6">
-                            <!-- Address -->
-                            <div>
-                                <label for="address" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Alamat
-                                </label>
-                                <textarea name="address" 
-                                          id="address" 
-                                          rows="3"
-                                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('address') border-red-500 @enderror">{{ old('address', $supplier->address) }}</textarea>
-                                @error('address')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Notes -->
-                            <div>
-                                <label for="notes" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Catatan
-                                </label>
-                                <textarea name="notes" 
-                                          id="notes" 
-                                          rows="3"
-                                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('notes') border-red-500 @enderror">{{ old('notes', $supplier->notes) }}</textarea>
-                                @error('notes')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Status -->
-                    <div class="bg-gray-50 rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-toggle-on text-orange-500 mr-2"></i>
-                            Status
-                        </h3>
-                        
-                        <div class="flex items-center">
-                            <input type="checkbox" 
-                                   name="is_active" 
-                                   id="is_active" 
-                                   value="1"
-                                   {{ old('is_active', $supplier->is_active) ? 'checked' : '' }}
-                                   class="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500">
-                            <label for="is_active" class="ml-2 text-sm font-medium text-gray-900">
-                                Aktifkan supplier ini
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-col sm:flex-row items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-                    <a href="{{ route('raw-materials.suppliers') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
-                        <i class="fas fa-times mr-2"></i>
-                        Batal
-                    </a>
-                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
-                        <i class="fas fa-save mr-2"></i>
-                        Update Supplier
-                    </button>
-                </div>
-            </form>
-        </x-card-container>
+        </form>
 
     </div>
 </main>

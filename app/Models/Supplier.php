@@ -29,4 +29,30 @@ class Supplier extends Model
     {
         return $q->where('is_active', true);
     }
+
+    public function getWhatsappUrlAttribute()
+    {
+        if (empty($this->phone)) {
+            return null;
+        }
+
+        // Remove non-numeric characters
+        $number = preg_replace('/[^0-9]/', '', $this->phone);
+
+        // Check for empty after cleanup
+        if (empty($number)) {
+            return null;
+        }
+
+        // If starts with '0', replace with '62'
+        if (str_starts_with($number, '0')) {
+            $number = '62' . substr($number, 1);
+        }
+        // If it doesn't start with '62' at this point, prepend '62'
+        elseif (!str_starts_with($number, '62')) {
+            $number = '62' . $number;
+        }
+
+        return "https://wa.me/{$number}";
+    }
 }

@@ -88,4 +88,13 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->isOwner() || $this->outlet_id == $outletId;
     }
+
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar && \Storage::disk('public')->exists($this->avatar)) {
+            return \Storage::url($this->avatar);
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=31694E&background=F0E491';
+    }
 }

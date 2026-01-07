@@ -11,6 +11,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
+use Illuminate\Support\Facades\DB;
 
 class RawMaterialAndSupplierController extends Controller
 {
@@ -260,10 +265,13 @@ class RawMaterialAndSupplierController extends Controller
 
         $stock = $rawMaterial->stocks->first();
         $currentStock = $stock ? $stock->quantity : 0;
+        
+        $expenseCategories = ExpenseCategory::all();
 
         return view('main.raw-material_n_supplier.manage-raw_material_stock', compact(
             'rawMaterial',
-            'currentStock'
+            'currentStock',
+            'expenseCategories'
         ));
     }
 
@@ -282,58 +290,116 @@ class RawMaterialAndSupplierController extends Controller
             'notes' => 'nullable|string|max:500',
             'batch_number' => 'nullable|string|max:50',
             'expired_at' => 'nullable|date|after:today',
+            // fields for adding stock (purchase/expense)
+            'expense_category_id' => 'required_if:type,add|nullable|exists:expense_categories,id',
+            'payment_method' => 'required_if:type,add|in:cash,transfer,card',
+            'unit_price' => 'nullable|numeric|min:0', // Optional, defaults to raw material price
         ]);
 
-        $stock = $rawMaterial->stocks()
-            ->where('outlet_id', Auth::user()->outlet_id)
-            ->first();
+        return DB::transaction(function () use ($request, $rawMaterial, $validated) {
+            $stock = $rawMaterial->stocks()
+                ->where('outlet_id', Auth::user()->outlet_id)
+                ->first();
 
-        if (! $stock) {
-            $stock = $rawMaterial->stocks()->create([
-                'outlet_id' => Auth::user()->outlet_id,
-                'quantity' => 0,
-                'avg_purchase_price' => $rawMaterial->purchase_price,
-            ]);
-        }
-
-        $quantityBefore = $stock->quantity;
-
-        if ($validated['type'] === 'add') {
-            $quantityAfter = $quantityBefore + $validated['quantity'];
-            $movementType = 'in';
-            $message = 'Stok berhasil ditambahkan!';
-        } else {
-            if ($quantityBefore < $validated['quantity']) {
-                return redirect()->back()
-                    ->withErrors(['quantity' => 'Jumlah pengurangan melebihi stok tersedia!'])
-                    ->withInput();
+            if (! $stock) {
+                $stock = $rawMaterial->stocks()->create([
+                    'outlet_id' => Auth::user()->outlet_id,
+                    'quantity' => 0,
+                    'avg_purchase_price' => $rawMaterial->purchase_price,
+                ]);
             }
-            $quantityAfter = $quantityBefore - $validated['quantity'];
-            $movementType = 'out';
-            $message = 'Stok berhasil dikurangi!';
-        }
 
-        $stock->update(['quantity' => $quantityAfter]);
+            $quantityBefore = $stock->quantity;
+            $outletId = Auth::user()->outlet_id;
+            $userId = Auth::id();
 
-        StockMovement::create([
-            'outlet_id' => Auth::user()->outlet_id,
-            'stockable_type' => RawMaterial::class,
-            'stockable_id' => $rawMaterial->id,
-            'type' => $movementType,
-            'quantity' => $validated['quantity'],
-            'quantity_before' => $quantityBefore,
-            'quantity_after' => $quantityAfter,
-            'unit_price' => $rawMaterial->purchase_price,
-            'reference_type' => 'manual_adjustment',
-            'reference_id' => null,
-            'notes' => $validated['notes'],
-            'batch_number' => $validated['batch_number'] ?? null,
-            'expired_at' => $validated['expired_at'] ?? null,
-            'created_by' => Auth::id(),
-        ]);
+            if ($validated['type'] === 'add') {
+                $quantityAfter = $quantityBefore + $validated['quantity'];
+                $movementType = 'in';
+                $message = 'Stok berhasil ditambahkan dan tercatat sebagai pembelian!';
+                
+                // --- 1. Create Purchase ---
+                $purchaseNumber = 'PUR-' . date('Ymd') . '-' . strtoupper(Str::random(5));
+                $unitPrice = $request->filled('unit_price') ? $request->unit_price : $rawMaterial->purchase_price;
+                $totalAmount = $validated['quantity'] * $unitPrice;
 
-        return redirect()->route('raw-materials.index')
-            ->with('success', $message);
+                $purchase = Purchase::create([
+                    'purchase_number' => $purchaseNumber,
+                    'outlet_id' => $outletId,
+                    'supplier_id' => $rawMaterial->supplier_id,
+                    'subtotal' => $totalAmount,
+                    'grand_total' => $totalAmount,
+                    'paid_amount' => $totalAmount, // Assuming fully paid for quick stock add
+                    'payment_status' => 'paid',
+                    'status' => 'received',
+                    'purchase_date' => now(),
+                    'received_date' => now(),
+                    'notes' => $validated['notes'] ?? 'Quick stock add',
+                    'created_by' => $userId,
+                ]);
+
+                // --- 2. Create Purchase Item ---
+                PurchaseItem::create([
+                    'purchase_id' => $purchase->id,
+                    'raw_material_id' => $rawMaterial->id,
+                    'quantity' => $validated['quantity'],
+                    'received_quantity' => $validated['quantity'],
+                    'unit_price' => $unitPrice,
+                    'subtotal' => $totalAmount,
+                    'expired_at' => $validated['expired_at'] ?? null,
+                    'batch_number' => $validated['batch_number'] ?? null,
+                ]);
+
+                // --- 3. Create Expense ---
+                $expenseNumber = 'EXP-' . date('Ymd') . '-' . strtoupper(Str::random(5));
+                
+                Expense::create([
+                    'expense_number' => $expenseNumber,
+                    'outlet_id' => $outletId,
+                    'expense_category_id' => $validated['expense_category_id'],
+                    'amount' => $totalAmount,
+                    'expense_date' => now(),
+                    'description' => 'Pembelian Stok: ' . $rawMaterial->name,
+                    'payment_method' => $validated['payment_method'],
+                    'reference_number' => $purchaseNumber,
+                    'notes' => $validated['notes'],
+                    'created_by' => $userId,
+                    'status' => 'approved',
+                ]);
+
+            } else {
+                if ($quantityBefore < $validated['quantity']) {
+                    // We can't return redirect inside transaction easily without throwing exception
+                    // So we handle validation before transaction or throw exception
+                     throw new \Exception('Jumlah pengurangan melebihi stok tersedia!');
+                }
+                $quantityAfter = $quantityBefore - $validated['quantity'];
+                $movementType = 'out';
+                $message = 'Stok berhasil dikurangi!';
+            }
+
+            $stock->update(['quantity' => $quantityAfter]);
+
+            StockMovement::create([
+                'outlet_id' => $outletId,
+                'stockable_type' => RawMaterial::class,
+                'stockable_id' => $rawMaterial->id,
+                'type' => $movementType,
+                'quantity' => $validated['quantity'],
+                'quantity_before' => $quantityBefore,
+                'quantity_after' => $quantityAfter,
+                'unit_price' => $rawMaterial->purchase_price,
+                'reference_type' => 'manual_adjustment',
+                'reference_id' => isset($purchase) ? $purchase->id : null,
+                'notes' => $validated['notes'],
+                'batch_number' => $validated['batch_number'] ?? null,
+                'expired_at' => $validated['expired_at'] ?? null,
+                'created_by' => $userId,
+            ]);
+
+            return redirect()->route('raw-materials.index')
+                ->with('success', $message);
+        });
     }
 
     /**

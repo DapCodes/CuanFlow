@@ -12,70 +12,127 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
         
         @if(session('success'))
-        <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                <div class="flex-1">
-                    <p class="text-sm text-green-700">{{ session('success') }}</p>
-                </div>
-            </div>
+        <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
+            <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
+            <p class="text-green-800">{{ session('success') }}</p>
         </div>
         @endif
 
         @if(session('error'))
-        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg" role="alert">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
-                <div class="flex-1">
-                    <p class="text-sm text-red-700">{{ session('error') }}</p>
-                </div>
-            </div>
+        <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
+            <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
+            <p class="text-red-800">{{ session('error') }}</p>
         </div>
         @endif
 
-        <x-card-container>
-            <!-- Header -->
-            <div class="bg-gradient-to-br from-orange-50 to-red-50 p-6 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- Header Section --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-500 border border-red-100">
+                        <i class="fas fa-boxes text-sm"></i>
+                    </span>
+                    <span>Stok Bahan Baku</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Kelola stok, monitor ketersediaan, dan atur supplier bahan baku Anda.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('raw-materials.suppliers') }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
+                    <i class="fas fa-truck mr-2"></i>
+                    Kelola Supplier
+                </a>
+                <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    Tambah Bahan Baku
+                </a>
+            </div>
+        </section>
+
+        {{-- Stats Overview --}}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-boxes text-red-400 mr-3"></i>
-                            Stok Bahan Baku
-                        </h2>
-                        <p class="text-sm text-gray-500 mt-1">Kelola dan monitor stok bahan baku Anda</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Bahan Baku</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ $rawMaterials->total() }}</p>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <a href="{{ route('raw-materials.suppliers') }}" class="inline-flex items-center justify-center px-5 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-500 transition-all duration-200 shadow-md hover:shadow-lg">
-                            <i class="fas fa-truck mr-2"></i>
-                            Kelola Supplier
-                        </a>
-                        <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
-                            <i class="fas fa-plus-circle mr-2"></i>
-                            Tambah Bahan Baku
-                        </a>
+                    <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
+                        <i class="fas fa-box text-gray-400 text-lg"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- Filter & Search -->
-            <div class="p-6 bg-gray-50 border-b border-gray-200">
-                <form method="GET" action="{{ route('raw-materials.index') }}" class="space-y-4">
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <div class="flex-1">
-                            <div class="relative">
-                                <input type="text" 
-                                       name="search" 
-                                       value="{{ request('search') }}"
-                                       placeholder="Cari bahan baku..." 
-                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            </div>
-                        </div>
-                        <select name="category_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Stok Menipis</p>
+                        <p class="mt-1 text-2xl font-bold text-yellow-600">
+                             {{ $rawMaterials->filter(function($m) {
+                                $stock = $m->stocks->first();
+                                $currentStock = $stock ? $stock->quantity : 0;
+                                return $currentStock <= $m->min_stock && $currentStock > 0;
+                            })->count() }}
+                        </p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center border border-yellow-100">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Stok Habis</p>
+                        <p class="mt-1 text-2xl font-bold text-red-600">
+                            {{ $rawMaterials->filter(function($m) {
+                                $stock = $m->stocks->first();
+                                return ($stock ? $stock->quantity : 0) <= 0;
+                            })->count() }}
+                        </p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center border border-red-100">
+                        <i class="fas fa-times-circle text-red-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Bahan Aktif</p>
+                        <p class="mt-1 text-2xl font-bold text-emerald-600">{{ $rawMaterials->where('is_active', true)->count() }}</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                        <i class="fas fa-check-circle text-emerald-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            {{-- Filter & Search --}}
+            <div class="p-5 border-b border-gray-200 space-y-4">
+                <form method="GET" action="{{ route('raw-materials.index') }}" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    {{-- Search --}}
+                    <div class="md:col-span-4 relative">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ request('search') }}"
+                               placeholder="Cari nama, kode, atau barcode..." 
+                               class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all shadow-sm">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    </div>
+                    
+                    {{-- Filters --}}
+                    <div class="md:col-span-2">
+                         <select name="category_id" class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm text-gray-600">
                             <option value="">Semua Kategori</option>
                             @foreach($categories as $category)
                             <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
@@ -83,7 +140,16 @@
                             </option>
                             @endforeach
                         </select>
-                        <select name="supplier_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <select name="stock_status" class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm text-gray-600">
+                            <option value="">Semua Stok</option>
+                            <option value="low" {{ request('stock_status') == 'low' ? 'selected' : '' }}>Menipis</option>
+                            <option value="out" {{ request('stock_status') == 'out' ? 'selected' : '' }}>Habis</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <select name="supplier_id" class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm text-gray-600">
                             <option value="">Semua Supplier</option>
                             @foreach($suppliers as $supplier)
                             <option value="{{ $supplier->id }}" {{ request('supplier_id') == $supplier->id ? 'selected' : '' }}>
@@ -92,69 +158,33 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <select name="stock_status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                            <option value="">Semua Stok</option>
-                            <option value="low" {{ request('stock_status') == 'low' ? 'selected' : '' }}>Stok Menipis</option>
-                            <option value="out" {{ request('stock_status') == 'out' ? 'selected' : '' }}>Stok Habis</option>
-                        </select>
-                        <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                            <option value="">Semua Status</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
-                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Nonaktif</option>
-                        </select>
-                        <div class="flex gap-2">
-                            <button type="submit" class="px-6 py-2 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg hover:from-orange-500 hover:to-red-600 transition-all shadow-sm">
-                                <i class="fas fa-filter mr-2"></i>Filter
-                            </button>
-                            <a href="{{ route('raw-materials.index') }}" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
-                                <i class="fas fa-redo mr-2"></i>Reset
-                            </a>
-                        </div>
+
+                    <div class="md:col-span-2 flex gap-2">
+                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-sm transition-all">
+                            <i class="fas fa-search mr-2"></i>Cari
+                        </button>
+                        <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center justify-center px-3 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all" title="Reset Filter">
+                            <i class="fas fa-undo"></i>
+                        </a>
                     </div>
                 </form>
             </div>
 
-            <!-- Table -->
+            {{-- Table --}}
             <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-200 uppercase tracking-wider">
                         <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-barcode mr-1 text-gray-400"></i>
-                                Kode
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-box mr-1 text-gray-400"></i>
-                                Bahan Baku
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-truck mr-1 text-gray-400"></i>
-                                Supplier
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-tags mr-1 text-gray-400"></i>
-                                Harga Beli
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-warehouse mr-1 text-gray-400"></i>
-                                Stok Tersedia
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-exclamation-triangle mr-1 text-gray-400"></i>
-                                Min. Stok
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-toggle-on mr-1 text-gray-400"></i>
-                                Status
-                            </th>
-                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                <i class="fas fa-cog mr-1 text-gray-400"></i>
-                                Aksi
-                            </th>
+                            <th class="px-6 py-3 w-16">Kode</th>
+                            <th class="px-6 py-3">Bahan Baku</th>
+                            <th class="px-6 py-3">Supplier</th>
+                            <th class="px-6 py-3">Stok Tersedia</th>
+                            <th class="px-6 py-3">Harga Beli</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3 text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-100 bg-white">
                         @forelse($rawMaterials as $material)
                         @php
                             $stock = $material->stocks->first();
@@ -162,129 +192,110 @@
                             $isLowStock = $currentStock <= $material->min_stock;
                             $isOutOfStock = $currentStock <= 0;
                         @endphp
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-mono font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded">
+                        <tr class="hover:bg-gray-50 transition-colors group">
+                            <td class="px-6 py-4 whitespace-nowrap align-top">
+                                <span class="text-xs font-mono font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded border border-gray-200">
                                     {{ $material->code }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
+                            <td class="px-6 py-4 align-top">
+                                <div class="flex items-start gap-3">
                                     @if($material->image)
-                                    <img src="{{ Storage::url($material->image) }}" alt="{{ $material->name }}" class="h-12 w-12 rounded-lg object-cover mr-3 border-2 border-gray-200 shadow-sm">
+                                        <img src="{{ Storage::url($material->image) }}" alt="{{ $material->name }}" class="h-10 w-10 rounded-lg object-cover border border-gray-200">
                                     @else
-                                    <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center mr-3 shadow-sm">
-                                        <i class="fas fa-cube text-white text-lg"></i>
-                                    </div>
+                                        <div class="h-10 w-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-200 text-gray-400">
+                                            <i class="fas fa-cube text-lg"></i>
+                                        </div>
                                     @endif
                                     <div>
-                                        <div class="text-sm font-semibold text-gray-900">{{ $material->name }}</div>
-                                        <div class="text-xs text-gray-500 flex items-center mt-1">
-                                            <i class="fas fa-tag mr-1"></i>
-                                            {{ $material->category->name ?? '-' }}
+                                        <div class="font-medium text-gray-900 group-hover:text-red-600 transition-colors">{{ $material->name }}</div>
+                                        <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5">
+                                            @if($material->category)
+                                            <span class="inline-flex items-center gap-1">
+                                                <i class="fas fa-tag text-[10px]"></i> {{ $material->category->name }}
+                                            </span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 align-top">
                                 @if($material->supplier)
-                                <div class="text-sm font-medium text-gray-900">{{ $material->supplier->name }}</div>
-                                @if($material->supplier->phone)
-                                <div class="text-xs text-gray-500 flex items-center mt-1">
-                                    <i class="fas fa-phone mr-1"></i>
-                                    {{ $material->supplier->phone }}
-                                </div>
-                                @endif
+                                    <div class="text-gray-900">{{ $material->supplier->name }}</div>
+                                    @if($material->supplier->phone)
+                                        <div class="text-xs text-gray-500 mt-0.5"><i class="fas fa-phone text-[10px] mr-1"></i>{{ $material->supplier->phone }}</div>
+                                    @endif
                                 @else
-                                <span class="text-sm text-gray-400">-</span>
+                                    <span class="text-gray-400 italic">Umum</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-bold text-gray-900">
-                                    Rp {{ number_format($material->purchase_price, 0, ',', '.') }}
+                            <td class="px-6 py-4 align-top">
+                                <div class="flex items-center gap-2">
+                                     <span class="font-semibold {{ $isOutOfStock ? 'text-red-600' : ($isLowStock ? 'text-yellow-600' : 'text-gray-900') }}">
+                                        {{ number_format($currentStock, 2) }}
+                                     </span>
+                                     <span class="text-xs text-gray-500">{{ $material->unit->name }}</span>
                                 </div>
-                                <div class="text-xs text-gray-500">per {{ $material->unit->name ?? 'unit' }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
                                 @if($isOutOfStock)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-100 text-red-700">
-                                    <i class="fas fa-times-circle mr-1"></i>
-                                    {{ number_format($currentStock, 2) }} {{ $material->unit->name ?? '' }}
-                                </span>
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-600 border border-red-100 mt-1">
+                                        Habis
+                                    </span>
                                 @elseif($isLowStock)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-yellow-100 text-yellow-700">
-                                    <i class="fas fa-exclamation-triangle mr-1"></i>
-                                    {{ number_format($currentStock, 2) }} {{ $material->unit->name ?? '' }}
-                                </span>
-                                @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700">
-                                    <i class="fas fa-check-circle mr-1"></i>
-                                    {{ number_format($currentStock, 2) }} {{ $material->unit->name ?? '' }}
-                                </span>
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-50 text-yellow-600 border border-yellow-100 mt-1">
+                                        Menipis
+                                    </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
-                                    {{ number_format($material->min_stock, 2) }} {{ $material->unit->name ?? '' }}
-                                </div>
+                            <td class="px-6 py-4 whitespace-nowrap align-top">
+                                <div class="text-gray-900 font-medium">Rp {{ number_format($material->purchase_price, 0, ',', '.') }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap align-top">
                                 @if($material->is_active)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                    Aktif
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span> Aktif
                                 </span>
                                 @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                                    <span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                                    Nonaktif
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span> Nonaktif
                                 </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <a href="{{ route('raw-materials.show', $material) }}" 
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors" 
-                                    title="Detail">
-                                        <i class="fas fa-eye text-sm"></i>
-                                    </a>
+                            <td class="px-6 py-4 whitespace-nowrap text-center align-top">
+                                <div class="flex items-center justify-center gap-1">
                                     <a href="{{ route('raw-materials.manage-stock', $material) }}" 
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors" 
-                                    title="Kelola Stok">
-                                        <i class="fas fa-box-open text-sm"></i>
+                                       class="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                       title="Kelola Stok">
+                                        <i class="fas fa-boxes"></i>
+                                    </a>
+                                    <a href="{{ route('raw-materials.stock-history', $material) }}" 
+                                       class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                       title="Riwayat">
+                                        <i class="fas fa-history"></i>
                                     </a>
                                     <a href="{{ route('raw-materials.edit', $material) }}" 
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition-colors" 
-                                    title="Edit">
-                                        <i class="fas fa-edit text-sm"></i>
+                                       class="p-1.5 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                                       title="Edit">
+                                        <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('raw-materials.destroy', $material) }}" 
-                                        method="POST" 
-                                        class="inline-block" 
-                                        onsubmit="return confirm('Yakin ingin menghapus bahan baku {{ $material->name }}?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" 
-                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors" 
-                                                title="Hapus">
-                                            <i class="fas fa-trash text-sm"></i>
-                                        </button>
-                                    </form>
+                                    <a href="{{ route('raw-materials.show', $material) }}" 
+                                        class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                        title="Detail">
+                                         <i class="fas fa-eye"></i>
+                                     </a>
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-16 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
-                                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                        <i class="fas fa-boxes text-5xl text-gray-300"></i>
+                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                        <i class="fas fa-box-open text-3xl text-gray-300"></i>
                                     </div>
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Bahan Baku</h3>
-                                    <p class="text-sm text-gray-500 mb-6">Mulai dengan menambahkan bahan baku pertama Anda</p>
-                                    <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-red-600 transition-all shadow-md">
-                                        <i class="fas fa-plus-circle mr-2"></i>
-                                        Tambah Bahan Baku
+                                    <h3 class="text-base font-semibold text-gray-900">Belum Ada Bahan Baku</h3>
+                                    <p class="text-sm text-gray-500 mt-1 mb-4 max-w-sm">Mulai tambahkan bahan baku untuk memonitor stok dan produksi Anda.</p>
+                                    <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-sm transition-all">
+                                        <i class="fas fa-plus mr-2"></i> Tambah Baru
                                     </a>
                                 </div>
                             </td>
@@ -294,81 +305,12 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             @if($rawMaterials->hasPages())
-            <div class="px-6 py-4 bg-white border-t border-gray-200">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="text-sm text-gray-700">
-                        Menampilkan {{ $rawMaterials->firstItem() }} - {{ $rawMaterials->lastItem() }} dari {{ $rawMaterials->total() }} bahan baku
-                    </div>
-                    <div>
-                        {{ $rawMaterials->links() }}
-                    </div>
-                </div>
+            <div class="px-6 py-4 border-t border-gray-200">
+                {{ $rawMaterials->links() }}
             </div>
             @endif
-
-            <!-- Summary Statistics -->
-            <div class="bg-gradient-to-r from-orange-50 to-red-50 p-6 border-t border-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Total Bahan Baku</p>
-                                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $rawMaterials->total() }}</p>
-                            </div>
-                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-boxes text-orange-600 text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Bahan Aktif</p>
-                                <p class="text-2xl font-bold text-green-600 mt-1">{{ $rawMaterials->where('is_active', true)->count() }}</p>
-                            </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Stok Menipis</p>
-                                <p class="text-2xl font-bold text-yellow-600 mt-1">
-                                    {{ $rawMaterials->filter(function($m) {
-                                        $stock = $m->stocks->first();
-                                        $currentStock = $stock ? $stock->quantity : 0;
-                                        return $currentStock <= $m->min_stock && $currentStock > 0;
-                                    })->count() }}
-                                </p>
-                            </div>
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Stok Habis</p>
-                                <p class="text-2xl font-bold text-red-600 mt-1">
-                                    {{ $rawMaterials->filter(function($m) {
-                                        $stock = $m->stocks->first();
-                                        return ($stock ? $stock->quantity : 0) <= 0;
-                                    })->count() }}
-                                </p>
-                            </div>
-                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-times-circle text-red-600 text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </x-card-container>
+        </section>
 
     </div>
 </main>

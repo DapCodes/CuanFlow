@@ -28,31 +28,48 @@ class FinanceController extends Controller
         $startOfDay = Carbon::parse($selectedDate)->startOfDay();
         $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
-        $dailyRevenue = Sale::where('outlet_id', $outletId)
+        $dailySales = Sale::where('outlet_id', $outletId)
             ->completed()
-            ->where('is_reported', true)
             ->whereBetween('created_at', [$startOfDay, $endOfDay])
             ->sum('grand_total');
+        
+        $dailyOtherIncome = abs(Expense::where('outlet_id', $outletId)
+            ->whereDate('expense_date', Carbon::parse($selectedDate))
+            ->where('amount', '<', 0)->sum('amount'));
+
+        $dailyRevenue = $dailySales + $dailyOtherIncome;
 
         // Pendapatan Minggu Ini (7 hari terakhir)
         $startOfWeek = Carbon::now()->subDays(6)->startOfDay();
         $endOfWeek = Carbon::now()->endOfDay();
 
-        $weeklyRevenue = Sale::where('outlet_id', $outletId)
+        $weeklySales = Sale::where('outlet_id', $outletId)
             ->completed()
-            ->where('is_reported', true)
             ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
             ->sum('grand_total');
+
+        $weeklyOtherIncome = abs(Expense::where('outlet_id', $outletId)
+            ->whereDate('expense_date', '>=', $startOfWeek->toDateString())
+            ->whereDate('expense_date', '<=', $endOfWeek->toDateString())
+            ->where('amount', '<', 0)->sum('amount'));
+
+        $weeklyRevenue = $weeklySales + $weeklyOtherIncome;
 
         // Pendapatan Bulan Ini
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
 
-        $monthlyRevenue = Sale::where('outlet_id', $outletId)
+        $monthlySales = Sale::where('outlet_id', $outletId)
             ->completed()
-            ->where('is_reported', true)
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('grand_total');
+
+        $monthlyOtherIncome = abs(Expense::where('outlet_id', $outletId)
+            ->whereDate('expense_date', '>=', $startOfMonth->toDateString())
+            ->whereDate('expense_date', '<=', $endOfMonth->toDateString())
+            ->where('amount', '<', 0)->sum('amount'));
+
+        $monthlyRevenue = $monthlySales + $monthlyOtherIncome;
 
         // ==================== PENGELUARAN ====================
 
@@ -64,38 +81,57 @@ class FinanceController extends Controller
 
         // Pengeluaran Minggu Ini (7 hari terakhir)
         $weeklyExpenses = Expense::where('outlet_id', $outletId)
-            ->whereBetween('expense_date', [$startOfWeek, $endOfWeek])
+            ->whereDate('expense_date', '>=', $startOfWeek->toDateString())
+            ->whereDate('expense_date', '<=', $endOfWeek->toDateString())
             ->where('amount', '>', 0)
             ->sum('amount');
 
         // Pengeluaran Bulan Ini
         $monthlyExpenses = Expense::where('outlet_id', $outletId)
-            ->whereBetween('expense_date', [$startOfMonth, $endOfMonth])
+            ->whereDate('expense_date', '>=', $startOfMonth->toDateString())
+            ->whereDate('expense_date', '<=', $endOfMonth->toDateString())
             ->where('amount', '>', 0)
             ->sum('amount');
 
-        // ==================== TOTAL & SALDO ====================
+        // ==================== TOTAL & SALDO (ALL TIME) ====================
 
-        // Total Revenue (Saldo Kas Total) - All Time
-        $totalRevenue = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->where('is_reported', true)
-            ->sum('grand_total');
+        // Total Sales by Category (All Time)
+        $allTimeSalesQuery = Sale::where('outlet_id', $outletId)
+            ->completed();
 
-        // Total Expenses - All Time
-        $allTimeExpenses = Expense::where('outlet_id', $outletId)
-            ->where('amount', '>', 0)
-            ->sum('amount');
+        $allTimeTotalSales = (clone $allTimeSalesQuery)->sum('grand_total');
+        $allTimeCashSales = (clone $allTimeSalesQuery)->where('payment_method', 'cash')->sum('grand_total');
+        $allTimeQrisSales = (clone $allTimeSalesQuery)->where('payment_method', 'qris')->sum('grand_total');
+        $allTimeTransferSales = (clone $allTimeSalesQuery)->where('payment_method', 'transfer')->sum('grand_total');
+
+        // Total Expenses & Other Incomes (All Time)
+        $allTimeExpenseSummary = Expense::where('outlet_id', $outletId)
+            ->selectRaw("
+                SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as total_spent,
+                SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) as total_other_income,
+                SUM(CASE WHEN amount > 0 AND payment_method IN ('cash', 'qris') THEN amount ELSE 0 END) as cash_qris_spent,
+                SUM(CASE WHEN amount < 0 AND payment_method IN ('cash', 'qris') THEN ABS(amount) ELSE 0 END) as cash_qris_other_income,
+                SUM(CASE WHEN amount > 0 AND payment_method = 'transfer' THEN amount ELSE 0 END) as transfer_spent,
+                SUM(CASE WHEN amount < 0 AND payment_method = 'transfer' THEN ABS(amount) ELSE 0 END) as transfer_other_income
+            ")
+            ->first();
+
+        $allTimeExpenses = $allTimeExpenseSummary->total_spent ?? 0;
+        $allTimeOtherIncomeTotal = $allTimeExpenseSummary->total_other_income ?? 0;
+
+        // Total Gross Revenue (Sales + Other Incomes)
+        $totalRevenue = $allTimeTotalSales + $allTimeOtherIncomeTotal;
 
         // Net Income (Saldo Bersih)
         $totalNetIncome = $totalRevenue - $allTimeExpenses;
+        $cashQrisNetIncome = ($allTimeCashSales + $allTimeQrisSales) + ($allTimeExpenseSummary->cash_qris_other_income ?? 0) - ($allTimeExpenseSummary->cash_qris_spent ?? 0);
+        $transferNetIncome = $allTimeTransferSales + ($allTimeExpenseSummary->transfer_other_income ?? 0) - ($allTimeExpenseSummary->transfer_spent ?? 0);
 
         // ==================== PAYMENT METHODS (Daily) ====================
 
         $sales = Sale::where('outlet_id', $outletId)
             ->completed()
             ->whereBetween('created_at', [$startOfDay, $endOfDay])
-            ->where('is_reported', true)
             ->with(['customer', 'cashier'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -104,7 +140,12 @@ class FinanceController extends Controller
         $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
         $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
 
-        // ==================== PROFIT CALCULATIONS ====================
+        // ==================== PROFIT & DAILY NET CALCULATIONS ====================
+
+        $dailyOtherIncome = abs(Expense::where('outlet_id', $outletId)
+            ->whereDate('expense_date', Carbon::parse($selectedDate))
+            ->where('amount', '<', 0)
+            ->sum('amount'));
 
         $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
         $dailyNetIncome = $dailyRevenue - $dailyExpenses;
@@ -131,9 +172,9 @@ class FinanceController extends Controller
 
         $expenses = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$expenseStart, $expenseEnd])
-            ->where('amount', '>', 0)
             ->with(['category', 'creator'])
-            ->orderBy('amount', 'desc')
+            ->orderBy('expense_date', 'desc')
+            ->orderBy('created_at', 'desc')
             ->paginate(15, ['*'], 'expense_page');
 
         $expenseCategories = ExpenseCategory::where('is_active', true)->get();
@@ -152,7 +193,7 @@ class FinanceController extends Controller
             'selectedDate',
             'dailyRevenue', 'weeklyRevenue', 'monthlyRevenue',
             'dailyExpenses', 'weeklyExpenses', 'monthlyExpenses',
-            'totalRevenue', 'totalNetIncome',
+            'totalRevenue', 'totalNetIncome', 'cashQrisNetIncome', 'transferNetIncome',
             'sales', 'salesList', 'cashTotal', 'qrisTotal', 'transferTotal',
             'dailyProfit', 'dailyNetIncome',
             'allTimeRevenue', 'allTimeProfit', 'allTimeExpenses', 'allTimeNetIncome',
@@ -291,6 +332,48 @@ class FinanceController extends Controller
         return redirect()->route('finance.index')->with('success', 'Pemasukan berhasil ditambahkan');
     }
 
+    public function editIncome(Expense $expense)
+    {
+        // Ensure this belongs to the outlet
+        if ($expense->outlet_id !== auth()->user()->outlet_id) {
+            abort(403);
+        }
+
+        // Must be an income (negative amount)
+        if ($expense->amount >= 0) {
+            return redirect()->route('finance.expense.edit', $expense);
+        }
+
+        return view('main.finance.edit-income', compact('expense'));
+    }
+
+    public function updateIncome(Request $request, Expense $expense)
+    {
+        if ($expense->outlet_id !== auth()->user()->outlet_id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'description' => 'required|string|max:255',
+            'income_date' => 'required|date',
+            'payment_method' => 'required|in:cash,transfer,card',
+            'reference_number' => 'nullable|string|max:100',
+            'notes' => 'nullable|string',
+        ]);
+
+        $expense->update([
+            'amount' => -abs($validated['amount']),
+            'expense_date' => $validated['income_date'],
+            'description' => $validated['description'],
+            'payment_method' => $validated['payment_method'],
+            'reference_number' => $validated['reference_number'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        return redirect()->route('finance.index')->with('success', 'Pemasukan berhasil diperbarui');
+    }
+
     public function createExpense()
     {
         $categories = ExpenseCategory::where('is_active', true)->get();
@@ -331,6 +414,68 @@ class FinanceController extends Controller
         ]);
 
         return redirect()->route('finance.index')->with('success', 'Pengeluaran berhasil ditambahkan');
+    }
+
+    public function editExpense(Expense $expense)
+    {
+        if ($expense->outlet_id !== auth()->user()->outlet_id) {
+            abort(403);
+        }
+
+        // If it's actually an income, redirect to edit income
+        if ($expense->amount < 0) {
+            return redirect()->route('finance.income.edit', $expense);
+        }
+
+        $categories = ExpenseCategory::where('is_active', true)->get();
+
+        return view('main.finance.edit-expense', compact('expense', 'categories'));
+    }
+
+    public function updateExpense(Request $request, Expense $expense)
+    {
+        if ($expense->outlet_id !== auth()->user()->outlet_id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'expense_category_id' => 'required|exists:expense_categories,id',
+            'amount' => 'required|numeric|min:0',
+            'description' => 'required|string|max:255',
+            'expense_date' => 'required|date',
+            'payment_method' => 'required|in:cash,transfer,card',
+            'reference_number' => 'nullable|string|max:100',
+            'notes' => 'nullable|string',
+            'receipt_image' => 'nullable|image|max:2048',
+        ]);
+
+        if ($request->hasFile('receipt_image')) {
+            $validated['receipt_image'] = $request->file('receipt_image')->store('receipts', 'public');
+        }
+
+        $expense->update([
+            'expense_category_id' => $validated['expense_category_id'],
+            'amount' => $validated['amount'],
+            'expense_date' => $validated['expense_date'],
+            'description' => $validated['description'],
+            'payment_method' => $validated['payment_method'],
+            'reference_number' => $validated['reference_number'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'receipt_image' => $validated['receipt_image'] ?? $expense->receipt_image,
+        ]);
+
+        return redirect()->route('finance.index')->with('success', 'Pengeluaran berhasil diperbarui');
+    }
+
+    public function destroy(Expense $expense)
+    {
+        if ($expense->outlet_id !== auth()->user()->outlet_id) {
+            abort(403);
+        }
+
+        $expense->delete();
+
+        return redirect()->route('finance.index')->with('success', 'Data berhasil dihapus');
     }
 
     private function getExpenseDateRange($period, $startDate, $endDate)
