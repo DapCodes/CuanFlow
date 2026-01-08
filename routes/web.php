@@ -400,6 +400,7 @@ Route::middleware(['auth'])->group(function () {
 
 // Public Landing Page
 Route::post('/testimonials', [App\Http\Controllers\TestimonialController::class, 'store'])->name('testimonials.store');
+Route::get('/store/{id}/analytics', [App\Http\Controllers\LandingPageController::class, 'getAnalytics'])->name('landing-pages.analytics');
 Route::get('/store/{id}/{slug?}', [App\Http\Controllers\LandingPageController::class, 'show'])->name('landing-pages.show');
 
 require __DIR__.'/auth.php';

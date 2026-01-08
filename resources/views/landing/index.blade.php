@@ -60,6 +60,37 @@
             </div>
         </section>
 
+        {{-- ANALYTICS CHART SECTION --}}
+        @if($outlet && $outlet->landingPage)
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">Traffic Pengunjung</h2>
+                    <p class="text-sm text-gray-500">Statistik kunjungan halaman landing page Anda.</p>
+                </div>
+                
+                <div class="flex items-center bg-gray-100 rounded-lg p-1">
+                    <a href="{{ route('landing-pages.index') }}?period=7d" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $period === '7d' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">7 Hari</a>
+                    <a href="{{ route('landing-pages.index') }}?period=1m" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $period === '1m' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">1 Bulan</a>
+                    <a href="{{ route('landing-pages.index') }}?period=6m" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $period === '6m' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">6 Bulan</a>
+                    <a href="{{ route('landing-pages.index') }}?period=1y" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $period === '1y' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">1 Tahun</a>
+                </div>
+            </div>
+
+            <div class="relative h-72 w-full">
+                <canvas id="trafficChart"></canvas>
+            </div>
+            
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <p class="text-xs text-blue-600 font-semibold uppercase tracking-wide">Total Kunjungan</p>
+                    <h3 class="text-2xl font-bold text-blue-900 mt-1">{{ $totalVisits }}</h3>
+                </div>
+                <!-- Additional stats can be added here -->
+            </div>
+        </section>
+        @endif
+
         {{-- KONTEN UTAMA --}}
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             @if($outlet)
@@ -174,3 +205,77 @@
     </div>
 </main>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        
+        // Data injected from Controller
+        const labels = @json($chartLabels);
+        const data = @json($chartData);
+
+        // Gradient Fill
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.2)');
+        gradient.addColorStop(1, 'rgba(79, 70, 229, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Kunjungan',
+                    data: data,
+                    borderColor: '#4F46E5',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#1F2937',
+                        bodyColor: '#4B5563',
+                        borderColor: '#E5E7EB',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        grid: { color: '#F3F4F6' },
+                        ticks: { 
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+    });
+</script>
+@endpush

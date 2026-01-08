@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\LandingPage;
 use App\Models\Outlet;
 use App\Models\Product;
+use App\Models\LandingPageVisit;
 use App\Models\Testimonial;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -13,10 +15,14 @@ use Illuminate\Support\Str;
 
 class LandingPageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $outlet = null;
+        $chartLabels = [];
+        $chartData = [];
+        $totalVisits = 0;
+        $period = $request->input('period', '7d');
         
         if ($user->outlet_id) {
             $outlet = Outlet::with('landingPage')->find($user->outlet_id);
@@ -25,9 +31,16 @@ class LandingPageController extends Controller
                 $outlet->landingPage()->create();
                 $outlet->load('landingPage');
             }
+
+            if ($outlet && $outlet->landingPage) {
+                $analytics = $this->calculateAnalytics($outlet->landingPage, $period);
+                $chartLabels = $analytics['labels'];
+                $chartData = $analytics['data'];
+                $totalVisits = array_sum($chartData);
+            }
         }
         
-        return view('landing.index', compact('outlet'));
+        return view('landing.index', compact('outlet', 'chartLabels', 'chartData', 'totalVisits', 'period'));
     }
 
     public function show($id, $slug = null)
@@ -40,7 +53,22 @@ class LandingPageController extends Controller
         if ($slug !== $correctSlug) {
             return redirect()->route('landing-pages.show', [$id, $correctSlug]);
         }
-        
+
+        // Record Visit if no visit from same IP in last 3 minutes
+        $lastVisit = LandingPageVisit::where('landing_page_id', $landingPage->id)
+            ->where('ip_address', request()->ip())
+            ->where('visited_at', '>=', now()->subMinutes(3))
+            ->exists();
+
+        if (!$lastVisit) {
+            LandingPageVisit::create([
+                'landing_page_id' => $landingPage->id,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'visited_at' => now(),
+            ]);
+        }
+
         // Calculate simplified sales count integers (e.g. 152 -> 150+)
         $salesCount = $outlet->sales()->count();
         $displaySales = $this->formatNumber($salesCount);
@@ -105,7 +133,7 @@ class LandingPageController extends Controller
             'cta_button_text' => 'nullable|string|max:100',
             'whatsapp_number' => 'nullable|string|max:20',
             'footer_text' => 'nullable|string',
-            'footer_text' => 'nullable|string',
+
             'selected_product_ids' => 'nullable|array',
             'selected_testimonial_ids' => 'nullable|array',
             'social_media' => 'nullable|array',
@@ -233,5 +261,71 @@ class LandingPageController extends Controller
         }
 
         return redirect()->back()->with('error', 'Landing page belum dikonfigurasi.');
+    }
+
+    private function calculateAnalytics($landingPage, $period)
+    {
+        $query = LandingPageVisit::where('landing_page_id', $landingPage->id);
+        $labels = [];
+        $data = [];
+        $dateFormat = 'd M'; // Default format
+
+        switch ($period) {
+            case '1m':
+                $startDate = Carbon::now()->subDays(30);
+                $interval = 'day';
+                break;
+            case '6m':
+                $startDate = Carbon::now()->subMonths(6);
+                $interval = 'month';
+                $dateFormat = 'M Y';
+                break;
+            case '1y':
+                $startDate = Carbon::now()->subYear();
+                $interval = 'month';
+                $dateFormat = 'M Y';
+                break;
+            case '7d':
+            default:
+                // Strictly 7 days ago dynamically
+                $startDate = Carbon::now()->subDays(7); 
+                $interval = 'day';
+                break;
+        }
+
+        $query->where('visited_at', '>=', $startDate);
+
+        // Get visits
+        $visitsGrouped = $query->orderBy('visited_at')->get()
+            ->groupBy(function($visit) use ($interval) {
+                return $visit->visited_at->format($interval === 'month' ? 'Y-m' : 'Y-m-d');
+            });
+        
+        $currentDate = clone $startDate;
+        $endDate = Carbon::now(); // Up to this exact second
+
+        if ($interval === 'day') {
+            $loopDate = $currentDate->copy()->startOfDay();
+            $loopEnd = $endDate->copy()->endOfDay();
+            
+            while ($loopDate <= $loopEnd) {
+                $key = $loopDate->format('Y-m-d');
+                $labels[] = $loopDate->format('d M');
+                $data[] = $visitsGrouped->has($key) ? $visitsGrouped[$key]->count() : 0;
+                $loopDate->addDay();
+            }
+        } else {
+            $loopDate = $currentDate->copy()->startOfMonth();
+            $loopEnd = $endDate->copy()->endOfMonth();
+            
+            while ($loopDate <= $loopEnd) {
+                $key = $loopDate->format('Y-m');
+                $labels[] = $loopDate->format($dateFormat);
+                $data[] = $visitsGrouped->has($key) ? $visitsGrouped[$key]->count() : 0;
+                $loopDate->addMonth();
+            }
+        }
+
+        return ['labels' => $labels, 'data' => $data];
     }
 }
