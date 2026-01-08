@@ -305,7 +305,18 @@
                                 @foreach($sale->items as $item)
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2">
-                                            <div class="font-semibold text-gray-900">{{ $item->product_name }}</div>
+                                            <div class="font-semibold text-gray-900 cursor-pointer hover:text-indigo-600 transition" 
+                                                 onclick="showProductDetail({{ json_encode([
+                                                     'name' => $item->product_name,
+                                                     'price' => number_format($item->unit_price, 0, ',', '.'),
+                                                     'description' => $item->product->description ?? 'Tidak ada deskripsi produk.',
+                                                     'image' => $item->product->image ?? null ? Storage::url($item->product->image) : null,
+                                                     'category' => $item->product->category->name ?? 'Umum',
+                                                     'unit' => $item->product->unit->name ?? 'pcs'
+                                                 ]) }})">
+                                                {{ $item->product_name }}
+                                                <i class="fas fa-external-link-alt text-[10px] ml-1 opacity-50"></i>
+                                            </div>
                                             @if(isset($item->product->unit->name))
                                                 <div class="text-xs text-gray-500">{{ $item->product->unit->name }}</div>
                                             @endif
@@ -353,3 +364,46 @@
     </div>
 </main>
 @endsection
+
+@push('scripts')
+<script>
+    function showProductDetail(product) {
+        let imageHtml = '';
+        if (product.image) {
+            imageHtml = `<img src="${product.image}" class="w-full h-48 object-cover rounded-xl mb-4 shadow-sm">`;
+        } else {
+            imageHtml = `<div class="w-full h-48 bg-gray-100 flex items-center justify-center rounded-xl mb-4 text-gray-300">
+                            <i class="fas fa-box text-5xl"></i>
+                         </div>`;
+        }
+
+        Swal.fire({
+            title: `<div class="text-left"><span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md mb-2 inline-block">${product.category}</span><br>${product.name}</div>`,
+            html: `
+                <div class="text-left">
+                    ${imageHtml}
+                    <div class="mb-4">
+                        <p class="text-2xl font-black text-gray-900">
+                            <span class="text-sm">Rp</span> ${product.price}
+                        </p>
+                        <p class="text-xs text-gray-400 mt-1">Satuan: <b>${product.unit}</b></p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Deskripsi</p>
+                        <p class="text-sm text-gray-600 leading-relaxed">${product.description}</p>
+                    </div>
+                </div>
+            `,
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: '400px',
+            padding: '1.5rem',
+            customClass: {
+                popup: 'rounded-3xl',
+                title: 'text-left p-0 mb-4',
+                htmlContainer: 'p-0 m-0'
+            }
+        });
+    }
+</script>
+@endpush

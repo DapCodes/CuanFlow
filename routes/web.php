@@ -384,6 +384,22 @@ Route::middleware(['auth'])->prefix('stock-opname')->name('stock-opname.')->grou
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('outlet-policies', OutletPolicyController::class);
+    
+    // Landing Page Management
+    Route::prefix('landing-pages')->name('landing-pages.')->group(function () {
+        Route::get('/', [App\Http\Controllers\LandingPageController::class, 'index'])->name('index');
+        Route::get('/{id}/edit', [App\Http\Controllers\LandingPageController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\LandingPageController::class, 'update'])->name('update');
+        Route::post('/{id}/toggle-status', [App\Http\Controllers\LandingPageController::class, 'toggleStatus'])->name('toggle-status');
+    });
+
+    // Testimonial Management
+    Route::resource('testimonials', App\Http\Controllers\TestimonialController::class)->only(['index', 'destroy']);
+    Route::post('testimonials/{testimonial}/toggle-status', [App\Http\Controllers\TestimonialController::class, 'toggleStatus'])->name('testimonials.toggle-status');
 });
+
+// Public Landing Page
+Route::post('/testimonials', [App\Http\Controllers\TestimonialController::class, 'store'])->name('testimonials.store');
+Route::get('/store/{id}/{slug?}', [App\Http\Controllers\LandingPageController::class, 'show'])->name('landing-pages.show');
 
 require __DIR__.'/auth.php';

@@ -104,6 +104,11 @@ class Outlet extends Model
         return $this->hasMany(Table::class);
     }
 
+    public function landingPage(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(LandingPage::class);
+    }
+
     public function scopeActive($q)
     {
         return $q->where('is_active', true);

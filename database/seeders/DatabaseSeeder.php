@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             RawMaterialSeeder::class,
             ProductWithRecipeSeeder::class,
             FaqSeeder::class,
+            TableSeeder::class,
+            PaymentMethodSeeder::class,
         ]);
     }
 }

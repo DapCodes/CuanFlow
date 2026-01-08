@@ -315,6 +315,10 @@
     .menu-card:nth-child(18) { animation-delay: 0.9s; }
     .menu-card:nth-child(19) { animation-delay: 0.95s; }
     .menu-card:nth-child(20) { animation-delay: 1s; }
+    .menu-card:nth-child(21) { animation-delay: 1.05s; }
+    .menu-card:nth-child(22) { animation-delay: 1.1s; }
+    .menu-card:nth-child(23) { animation-delay: 1.15s; }
+
 
     .backdrop-blur-effect { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 
@@ -721,6 +725,32 @@
         <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
             Informasi Outlet
         </span>
+    </a>
+
+    <a href="{{ route('landing-pages.index') }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="12"
+       data-title="Landing Page"
+       data-intro="<strong>Bangun kehadiran digital Anda.</strong> Buat halaman promosi menarik untuk outlet Anda dengan mudah dan cepat.">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-lg group-hover:shadow-purple-200 transition-all duration-300">
+        <i class="fa-solid fa-rocket text-4xl sm:text-5xl text-white"></i>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Landing Page
+        </span>
+    </a>
+
+    <a href="{{ route('testimonials.index') }}"
+        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+        data-step="13"
+        data-title="Testimoni Pelanggan"
+        data-intro="<strong>Tingkatkan kepercayaan pelanggan.</strong> Kelola ulasan positif dari pelanggan Anda untuk ditampilkan di halaman promosi.">
+            <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-lg group-hover:shadow-blue-200 transition-all duration-300">
+                <i class="fa-solid fa-quote-left text-4xl sm:text-5xl text-white"></i>
+            </div>
+            <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+                Testimoni
+            </span>
     </a>
 
     <a href="{{ route('employees.index') }}"
