@@ -11,27 +11,31 @@ class LandingPage extends Model
 
     protected $fillable = [
         'outlet_id',
+        'template_id',
         'hero_title',
         'hero_subtitle',
         'hero_image',
         'about_image',
-        'primary_color',
-        'secondary_color',
         'about_text',
         'vision_text',
         'mission_text',
         'tagline_text',
+        'primary_color',
+        'secondary_color',
+        'font_heading',
+        'font_body',
         'services_section',
         'testimonials_section',
         'gallery_images',
         'cta_text',
         'cta_button_text',
         'whatsapp_number',
+        'social_media',
         'footer_text',
+        'visit_count', // simple counter if we use it
+        'is_active',
         'selected_product_ids',
         'selected_testimonial_ids',
-        'social_media',
-        'is_active',
     ];
 
     protected $casts = [

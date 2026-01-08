@@ -19,8 +19,8 @@ class OutletResource extends JsonResource
             'logo_url' => $this->logo ? asset('storage/'.$this->logo) : null,
 
             'latitude' => $this->latitude !== null ? (float) $this->latitude : null,
-            // DB: longtitude -> API: longitude
-            'longitude' => $this->longtitude !== null ? (float) $this->longtitude : null,
+            // DB: longitude -> API: longitude
+            'longitude' => $this->longitude !== null ? (float) $this->longitude : null,
 
             'settings' => $this->settings,
             'is_active' => (bool) $this->is_active,

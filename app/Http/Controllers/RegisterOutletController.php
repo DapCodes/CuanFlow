@@ -33,7 +33,7 @@ class RegisterOutletController extends Controller
             'business_type' => 'required|string|max:100',
             'business_category' => 'required|string|max:100',
             'latitude' => 'nullable|numeric',
-            'longtitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'has_table_system' => 'nullable|boolean',
         ]);
 
@@ -56,7 +56,7 @@ class RegisterOutletController extends Controller
                 'owner_id' => Auth::id(),
                 'address' => $request->address,
                 'latitude' => $request->latitude,
-                'longtitude' => $request->longtitude,
+                'longitude' => $request->longitude,
                 'phone' => $request->phone,
                 'email' => $request->email,
                 'logo' => $logoPath,

@@ -76,7 +76,7 @@ class LandingPageController extends Controller
         // Get selected products
         $products = [];
         if ($landingPage->selected_product_ids) {
-            $products = Product::whereIn('id', $landingPage->selected_product_ids)->get();
+            $products = Product::with(['unit', 'category'])->whereIn('id', $landingPage->selected_product_ids)->get();
         }
 
         // Get selected testimonials
@@ -97,17 +97,20 @@ class LandingPageController extends Controller
         // Ensure landing page entry exists
         $landingPage = $outlet->landingPage ?? $outlet->landingPage()->create();
         
-        $landingPage = $outlet->landingPage ?? $outlet->landingPage()->create();
-        
-        $products = Product::where('outlet_id', $id)->get();
+        // Get all products for this outlet
+        $products = Product::with(['unit', 'category'])->where('outlet_id', $id)->get();
         
         // Fetch published testimonials for selection
         $testimonials = Testimonial::where('outlet_id', $id)
                                    ->where('is_published', true)
                                    ->latest()
                                    ->get();
+        
+        // Calculate formatted sales count for display (e.g., 152 -> 150+)
+        $salesCount = $outlet->sales()->count();
+        $displaySales = $this->formatNumber($salesCount);
 
-        return view('landing.edit', compact('outlet', 'landingPage', 'products', 'testimonials'));
+        return view('landing.edit', compact('outlet', 'landingPage', 'products', 'testimonials', 'displaySales'));
     }
 
     public function update(Request $request, $id)
@@ -116,12 +119,15 @@ class LandingPageController extends Controller
         $landingPage = $outlet->landingPage;
 
         $data = $request->validate([
-            'hero_title' => 'nullable|string|max:255',
+            'hero_title' => 'required|string|max:255',
             'hero_subtitle' => 'nullable|string|max:255',
-            'hero_image' => 'nullable|image|max:5120',
-            'about_image' => 'nullable|image|max:5120',
-            'primary_color' => 'required|string|max:20',
-            'secondary_color' => 'required|string|max:20',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // Max 5MB
+            'about_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // Max 5MB
+            'primary_color' => 'required|string|max:7',
+            'secondary_color' => 'required|string|max:7',
+            'template_id' => 'required|integer|min:1|max:5',
+            'font_heading' => 'required|string',
+            'font_body' => 'required|string',
             'about_text' => 'nullable|string',
             'vision_text' => 'nullable|string',
             'mission_text' => 'nullable|string',

@@ -366,13 +366,13 @@
                                             Longitude
                                         </label>
                                         <input type="text" 
-                                               name="longtitude" 
+                                               name="longitude" 
                                                id="longitude"
-                                               value="{{ old('longtitude', $outlet->longtitude) }}"
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('longtitude') border-red-500 @enderror"
+                                               value="{{ old('longitude', $outlet->longitude) }}"
+                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('longitude') border-red-500 @enderror"
                                                placeholder="106.816666"
                                                readonly>
-                                        @error('longtitude')
+                                        @error('longitude')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                         @enderror
                                     </div>
@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Leaflet Map Handler
     const currentLat = {{ $outlet->latitude ?? -6.2088 }};
-    const currentLng = {{ $outlet->longtitude ?? 106.8456 }};
+    const currentLng = {{ $outlet->longitude ?? 106.8456 }};
     
     // Initialize map with current location
     const map = L.map('map').setView([currentLat, currentLng], 15);

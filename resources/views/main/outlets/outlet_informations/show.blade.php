@@ -136,7 +136,7 @@
                             <p class="text-sm text-gray-900 leading-relaxed">{{ $outlet->address }}</p>
                         </div>
 
-                        @if($outlet->latitude && $outlet->longtitude)
+                        @if($outlet->latitude && $outlet->longitude)
                         <div class="border-t border-gray-200 pt-4">
                             <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
                                 <i class="fas fa-globe text-blue-500 mr-2"></i>
@@ -149,10 +149,10 @@
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-500 mb-1">Longitude</p>
-                                    <p class="text-sm font-mono text-gray-900">{{ number_format($outlet->longtitude, 6) }}</p>
+                                    <p class="text-sm font-mono text-gray-900">{{ number_format($outlet->longitude, 6) }}</p>
                                 </div>
                             </div>
-                            <a href="https://www.google.com/maps?q={{ $outlet->latitude }},{{ $outlet->longtitude }}" 
+                            <a href="https://www.google.com/maps?q={{ $outlet->latitude }},{{ $outlet->longitude }}" 
                                target="_blank"
                                class="mt-3 inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium">
                                 <i class="fas fa-external-link-alt mr-1"></i>

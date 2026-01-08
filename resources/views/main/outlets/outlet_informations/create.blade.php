@@ -313,13 +313,13 @@
                                             Longitude
                                         </label>
                                         <input type="text" 
-                                               name="longtitude" 
+                                               name="longitude" 
                                                id="longitude"
-                                               value="{{ old('longtitude') }}"
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('longtitude') border-red-500 @enderror"
+                                               value="{{ old('longitude') }}"
+                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('longitude') border-red-500 @enderror"
                                                placeholder="106.816666"
                                                readonly>
-                                        @error('longtitude')
+                                        @error('longitude')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                         @enderror
                                     </div>

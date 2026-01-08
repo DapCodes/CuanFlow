@@ -49,7 +49,7 @@ class OutletInformationController extends Controller
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
             'latitude' => 'nullable|numeric',
-            'longtitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'boolean',
         ]);
@@ -149,7 +149,7 @@ class OutletInformationController extends Controller
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
             'latitude' => 'nullable|numeric',
-            'longtitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'boolean',
         ]);

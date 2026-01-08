@@ -32,7 +32,7 @@ class OutletApiController extends Controller
         }
 
         if ($hasCoord) {
-            $query->whereNotNull('latitude')->whereNotNull('longtitude');
+            $query->whereNotNull('latitude')->whereNotNull('longitude');
         }
 
         if ($q !== '') {

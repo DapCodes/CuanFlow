@@ -13,7 +13,7 @@ class Outlet extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'code', 'name', 'address', 'latitude', 'longtitude', 'phone', 'email', 'logo', 'settings', 'is_active',
+        'code', 'name', 'address', 'latitude', 'longitude', 'phone', 'email', 'logo', 'settings', 'is_active',
         'owner_id', 'has_table_system',
     ];
 

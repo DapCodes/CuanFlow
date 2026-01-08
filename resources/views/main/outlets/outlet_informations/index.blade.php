@@ -188,9 +188,9 @@
                                     <div class="text-sm text-gray-900 max-w-xs">
                                         {{ Str::limit($outlet->address, 50) }}
                                     </div>
-                                    @if($outlet->latitude && $outlet->longtitude)
+                                    @if($outlet->latitude && $outlet->longitude)
                                         <div class="text-xs text-gray-500 mt-1">
-                                            {{ number_format($outlet->latitude, 6) }}, {{ number_format($outlet->longtitude, 6) }}
+                                            {{ number_format($outlet->latitude, 6) }}, {{ number_format($outlet->longitude, 6) }}
                                         </div>
                                     @endif
                                 </td>

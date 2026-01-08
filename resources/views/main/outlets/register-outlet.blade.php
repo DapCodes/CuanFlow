@@ -431,7 +431,7 @@
 
                                 <!-- Hidden Inputs -->
                                 <input type="hidden" name="latitude" id="latInput">
-                                <input type="hidden" name="longtitude" id="lngInput">
+                                <input type="hidden" name="longitude" id="lngInput">
 
                                 <!-- Manual Address Textarea -->
                                 <div class="pt-1">
@@ -758,7 +758,7 @@
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(position => {
                         const lat = position.coords.latitude;
-                        const lng = position.coords.longtitude;
+                        const lng = position.coords.longitude;
                         map.setView([lat, lng], 16);
                         setLocation(lat, lng);
                     }, () => {
