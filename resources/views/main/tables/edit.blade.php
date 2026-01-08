@@ -112,25 +112,18 @@
                     {{-- Status --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Status Saat Ini
+                            Status Meja <span class="text-red-500">*</span>
                         </label>
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium
-                                @if($table->status === 'available') bg-emerald-50 text-emerald-700 border border-emerald-200
-                                @elseif($table->status === 'occupied') bg-red-50 text-red-700 border border-red-200
-                                @elseif($table->status === 'reserved') bg-yellow-50 text-yellow-700 border border-yellow-200
-                                @else bg-gray-50 text-gray-700 border border-gray-200
-                                @endif">
-                                <span class="w-2 h-2 rounded-full mr-2
-                                    @if($table->status === 'available') bg-emerald-500
-                                    @elseif($table->status === 'occupied') bg-red-500
-                                    @elseif($table->status === 'reserved') bg-yellow-500
-                                    @else bg-gray-500
-                                    @endif"></span>
-                                {{ $table->getStatusLabel() }}
-                            </span>
-                            <p class="text-xs text-gray-500">Status diubah melalui halaman utama meja.</p>
-                        </div>
+                        <select name="status" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-colors @error('status') border-red-500 @enderror" required>
+                            @foreach(\App\Models\Table::getStatusOptions() as $value => $label)
+                                <option value="{{ $value }}" {{ old('status', $table->status) === $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('status')
+                            <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     {{-- Active Status --}}

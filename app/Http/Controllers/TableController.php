@@ -108,10 +108,10 @@ class TableController extends Controller
             'capacity' => 'required|integer|min:1|max:50',
             'location' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:500',
+            'status' => 'required|string|in:available,occupied,reserved,maintenance',
         ]);
 
         $validated['outlet_id'] = $outlet->id;
-        $validated['status'] = 'available';
         $validated['is_active'] = true;
 
         // Auto generate code if not provided
@@ -172,6 +172,7 @@ class TableController extends Controller
             'location' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:500',
             'is_active' => 'boolean',
+            'status' => 'required|string|in:available,occupied,reserved,maintenance',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');

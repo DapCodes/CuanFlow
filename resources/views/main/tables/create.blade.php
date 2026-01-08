@@ -97,7 +97,7 @@
                     </div>
 
                     {{-- Lokasi --}}
-                    <div class="md:col-span-2">
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Lokasi
                         </label>
@@ -105,6 +105,23 @@
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-colors"
                                placeholder="Contoh: Indoor, Outdoor, Lantai 2, Teras">
                         <p class="text-xs text-gray-500 mt-1">Area atau zona di mana meja berada.</p>
+                    </div>
+
+                    {{-- Status --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Status Meja <span class="text-red-500">*</span>
+                        </label>
+                        <select name="status" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-colors @error('status') border-red-500 @enderror" required>
+                            @foreach(\App\Models\Table::getStatusOptions() as $value => $label)
+                                <option value="{{ $value }}" {{ old('status', 'available') === $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('status')
+                            <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     {{-- Catatan --}}
