@@ -12,7 +12,9 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4 bg-[#f9fafb]" x-data="{ activeTab: 'profile' }">
+<main class="flex-grow py-8 px-4 bg-[#f9fafb]" x-data="{ 
+    activeTab: '{{ session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() ? 'security' : ($errors->userDeletion->isNotEmpty() ? 'danger' : 'profile') }}' 
+}">
     <div class="max-w-6xl mx-auto space-y-8">
         
         {{-- Page Header --}}
@@ -31,6 +33,30 @@
                         <i class="fas fa-check text-xs"></i>
                     </div>
                     <span class="text-sm font-bold">Profil Berhasil Diperbarui</span>
+                </div>
+                <button @click="show = false" class="text-white/50 hover:text-white transition-colors"><i class="fas fa-times text-xs"></i></button>
+            </div>
+        @endif
+
+        @if (session('status') === 'password-updated')
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" class="px-4 py-3 bg-emerald-600 text-white rounded-2xl shadow-lg flex items-center justify-between animate-fade-in-down border border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <i class="fas fa-key text-xs"></i>
+                    </div>
+                    <span class="text-sm font-bold">Kata Sandi Berhasil Diperbarui</span>
+                </div>
+                <button @click="show = false" class="text-white/50 hover:text-white transition-colors"><i class="fas fa-times text-xs"></i></button>
+            </div>
+        @endif
+
+        @if ($errors->updatePassword->isNotEmpty())
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="px-4 py-3 bg-red-600 text-white rounded-2xl shadow-lg flex items-center justify-between animate-fade-in-down border border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <i class="fas fa-exclamation-circle text-xs"></i>
+                    </div>
+                    <span class="text-sm font-bold">Gagal Memperbarui Kata Sandi. Silakan periksa kembali form Anda.</span>
                 </div>
                 <button @click="show = false" class="text-white/50 hover:text-white transition-colors"><i class="fas fa-times text-xs"></i></button>
             </div>
@@ -91,6 +117,15 @@
                 <section x-show="activeTab === 'profile'" class="animate-fade-in-up" x-cloak>
                     <div class="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden divide-y divide-gray-100">
                         <div class="p-6 md:p-8 lg:p-10">
+                            <div class="flex items-center gap-4 mb-10">
+                                <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-sm border border-blue-100/50">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-black text-gray-900">Profil</h2>
+                                    <p class="text-xs text-gray-500 font-medium mt-0.5">Lindungi akun Anda dengan password yang kuat dan unik.</p>
+                                </div>
+                            </div>
                             <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-10">
                                 @csrf
                                 @method('PATCH')
@@ -286,7 +321,7 @@
                                 </div>
                             </div>
 
-                            <button onclick="confirmAccountDeletion()" class="w-full sm:w-auto px-10 py-4 bg-red-600 text-white rounded-2xl shadow-2xl shadow-red-200 hover:bg-black transition-all text-xs font-black uppercase tracking-[0.2em] active:scale-95">
+                            <button type="button" onclick="confirmAccountDeletion()" class="no-loader w-full sm:w-auto px-10 py-4 bg-red-600 text-white rounded-2xl shadow-2xl shadow-red-200 hover:bg-black transition-all text-xs font-black uppercase tracking-[0.2em] active:scale-95">
                                 Hapus Akun Saya Permanen
                             </button>
                         </div>
@@ -319,8 +354,11 @@
             
             <div class="space-y-3">
                 <label class="text-[11px] font-black uppercase text-gray-400 tracking-widest pl-1">Masukkkan Kata Sandi</label>
-                <input type="password" name="password" required placeholder="• • • • • • • • •"
-                    class="w-full px-6 py-4 bg-[#f9fafb] border-gray-200 rounded-2xl text-center text-lg focus:ring-4 focus:ring-red-500/10 focus:border-red-600 transition-all font-bold tracking-widest">
+                <input type="password" name="password" id="delete_password" required placeholder="• • • • • • • • •"
+                    class="w-full px-6 py-4 bg-[#f9fafb] border-gray-200 rounded-2xl text-center text-lg focus:ring-4 focus:ring-red-500/10 focus:border-red-600 transition-all font-bold tracking-widest @error('password', 'userDeletion') border-red-500 @enderror">
+                @error('password', 'userDeletion')
+                    <p class="text-[11px] text-red-500 font-bold mt-1.5 text-center italic">{{ $message }}</p>
+                @enderror
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -370,6 +408,12 @@
         modal.classList.add('hidden');
         modal.classList.remove('flex');
     }
+
+    @if ($errors->userDeletion->isNotEmpty())
+        document.addEventListener('DOMContentLoaded', function() {
+            confirmAccountDeletion();
+        });
+    @endif
 </script>
 
 <style>

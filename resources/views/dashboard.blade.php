@@ -723,7 +723,7 @@
         </span>
     </a>
 
-    <a href="#"
+    <a href="{{ route('employees.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="13"
        data-title="Pegawai & Hak Akses"
@@ -780,7 +780,7 @@
     <!-- BANTUAN & PENGATURAN -->
     <a href="{{ route('outlet-policies.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="14"
+       data-step="17"
        data-title="Kebijakan Outlet"
        data-intro="<strong>Catatan aturan usaha.</strong> Simpan SOP dan kebijakan sederhana agar semua pegawai bekerja dengan cara yang sama.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
@@ -793,7 +793,7 @@
 
     <a href="{{ route('profile.edit') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="17"
+       data-step="18"
        data-title="Pengaturan Akun"
        data-intro="<strong>Atur profil akun Anda.</strong> Ubah nama, kata sandi, dan kontak untuk menjaga keamanan dan kerapihan data.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-500 to-gray-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
@@ -806,7 +806,7 @@
 
     <a href="{{ route('faqs.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="18"
+       data-step="19"
        data-title="Bantuan & FAQ"
        data-intro="<strong>Panduan penggunaan aplikasi.</strong> Baca langkah-langkah sederhana dan jawaban pertanyaan umum saat Anda membutuhkan bantuan.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
