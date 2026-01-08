@@ -749,7 +749,6 @@
         </span>
     </a>
 
-    @if(auth()->user()->outlet && auth()->user()->outlet->has_table_system)
     <a href="{{ route('tables.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="15"
@@ -762,7 +761,6 @@
             Kelola Meja
         </span>
     </a>
-    @endif
 
     <!-- AI & INSIGHT -->
     <a href="{{ route('ai-insights.index') }}"

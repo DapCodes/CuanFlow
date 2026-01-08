@@ -19,10 +19,15 @@ class Sale extends Model
         'invoice_number', 'outlet_id', 'customer_id', 'cashier_id', 'refunded_at', 'is_reported',
         'subtotal', 'discount_amount', 'tax_amount', 'tax_percent', 'grand_total',
         'paid_amount', 'change_amount', 'payment_method', 'payment_status',
-        'outlet_payment_link_id', // TAMBAHAN BARU
+        'outlet_payment_link_id', 'service_type', 'table_id',
         'midtrans_order_id', 'midtrans_transaction_id', 'midtrans_payment_type', 'midtrans_response',
         'notes', 'customer_notes', 'status', 'is_synced', 'completed_at',
     ];
+
+    public function table(): BelongsTo
+    {
+        return $this->belongsTo(Table::class);
+    }
 
     protected $casts = [
         'subtotal' => 'decimal:2', 'discount_amount' => 'decimal:2', 'tax_amount' => 'decimal:2',

@@ -255,6 +255,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{table}/quick-toggle', [TableController::class, 'quickToggle'])->name('quick-toggle');
     });
 
+    Route::get('/api/tables', [TableController::class, 'getTablesApi']);
+    Route::post('/api/outlet/toggle-table-system', [TableController::class, 'toggleTableSystemApi']);
+
     Route::get('/api/sale/{id}', function ($id) {
         $sale = \App\Models\Sale::with('items')->findOrFail($id);
 

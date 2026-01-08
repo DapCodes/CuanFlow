@@ -56,6 +56,8 @@ class DebtPaymentController extends Controller
             'credit_limit' => 'nullable|numeric|min:0',
             'due_date' => 'nullable|date|after:today',
             'paid_amount' => 'required|numeric|min:0',
+            'service_type' => 'nullable|string|in:dine_in,take_away',
+            'table_id' => 'nullable|exists:tables,id',
             'notes' => 'nullable|string',
         ]);
 
@@ -121,11 +123,18 @@ class DebtPaymentController extends Controller
             $sale = $this->createSaleWithDebt($cart, $summary, $discountPlan, $customer, [
                 'payment_method' => 'debt',
                 'paid_amount' => $request->paid_amount,
+                'service_type' => $request->service_type ?? 'take_away',
+                'table_id' => $request->table_id,
                 'payment_status' => $request->paid_amount > 0 ? 'partial' : 'pending',
                 'status' => 'completed',
                 'completed_at' => now(),
                 'notes' => $request->notes,
             ]);
+
+            // Mark table as occupied if dine-in
+            if ($request->service_type === 'dine_in' && $request->table_id) {
+                \App\Models\Table::find($request->table_id)->update(['status' => 'occupied']);
+            }
 
             // Create customer debt record
             $customerDebt = CustomerDebt::create([

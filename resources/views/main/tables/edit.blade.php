@@ -19,7 +19,7 @@
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-3xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-6">
 
         {{-- HEADER --}}
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">

@@ -17,10 +17,10 @@ class TableController extends Controller
         $outlet = Auth::user()->outlet;
         
         // Check if outlet has table system enabled
-        if (!$outlet->has_table_system) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Fitur sistem meja belum diaktifkan untuk outlet ini.');
-        }
+        // if (!$outlet->has_table_system) {
+        //     return redirect()->route('dashboard')
+        //         ->with('error', 'Fitur sistem meja belum diaktifkan untuk outlet ini.');
+        // }
 
         $query = Table::byOutlet($outlet->id)->latest();
 
@@ -72,10 +72,10 @@ class TableController extends Controller
     {
         $outlet = Auth::user()->outlet;
         
-        if (!$outlet->has_table_system) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Fitur sistem meja belum diaktifkan untuk outlet ini.');
-        }
+        // if (!$outlet->has_table_system) {
+        //     return redirect()->route('dashboard')
+        //         ->with('error', 'Fitur sistem meja belum diaktifkan untuk outlet ini.');
+        // }
 
         return view('main.tables.create');
     }
@@ -269,5 +269,38 @@ class TableController extends Controller
         } while ($exists);
 
         return response()->json(['code' => $code]);
+    }
+
+    /**
+     * List all tables for API (POS).
+     */
+    public function getTablesApi()
+    {
+        $outletId = auth()->user()->outlet_id;
+        $tables = Table::byOutlet($outletId)
+            ->active()
+            ->orderBy('table_number')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'tables' => $tables
+        ]);
+    }
+
+    /**
+     * Toggle table system for outlet.
+     */
+    public function toggleTableSystemApi(Request $request)
+    {
+        $outlet = auth()->user()->outlet;
+        $enabled = $request->boolean('enabled');
+        
+        $outlet->update(['has_table_system' => $enabled]);
+
+        return response()->json([
+            'success' => true,
+            'enabled' => $enabled
+        ]);
     }
 }

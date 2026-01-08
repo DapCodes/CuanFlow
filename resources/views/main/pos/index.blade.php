@@ -746,6 +746,7 @@
 #salesTodayModal,
 #saleDetailModal,
 #debtPaymentModal,
+#tableManagementModal,
 #financeModal {
     backdrop-filter: blur(2px);
 }
@@ -770,8 +771,9 @@
         width: 95vw;
     }
     
-    /* Medium Large - Product Settings */
-    #productSettingsModal > div {
+    /* Medium Large - Product Settings, Table Management */
+    #productSettingsModal .modal-content,
+    #tableManagementModal .modal-content {
         max-width: 900px;
         width: 90vw;
     }
@@ -782,12 +784,12 @@
         width: 90vw;
     }
     
-    #calculatorModal > div {
+    #calculatorModal .modal-content {
         max-width: 700px;
         width: 90vw;
     }
     
-    #debtPaymentModal > div {
+    #debtPaymentModal .modal-content {
         max-width: 650px;
         width: 90vw;
     }
@@ -812,6 +814,7 @@
     #salesTodayModal,
     #saleDetailModal,
     #debtPaymentModal,
+    #tableManagementModal,
     #financeModal {
         padding: 0 !important;
     }
@@ -824,6 +827,7 @@
     #salesTodayModal .modal-content,
     #saleDetailModal .modal-content,
     #debtPaymentModal .modal-content,
+    #tableManagementModal .modal-content,
     #financeModal .modal-content {
         width: 100vw !important;
         max-width: 100vw !important;
@@ -847,14 +851,16 @@
     /* Large complex modals - fixed layout */
     #calculatorModal > div,
     #productSettingsModal > div,
-    #debtPaymentModal > div {
+    #debtPaymentModal > div,
+    #tableManagementModal .modal-content {
         overflow: hidden;
         padding: 0;
     }
     
     /* Ensure table-based modals have proper scrolling */
     #salesTodayModal .modal-content,
-    #saleDetailModal .modal-content {
+    #saleDetailModal .modal-content,
+    #tableManagementModal .modal-content {
         overflow: hidden;
     }
     
@@ -1321,11 +1327,107 @@
                     </div>
                 </div>
 
-                <!-- Payment Selection View -->
-                <div id="view-select" class="hidden payment-view">
+                <!-- Service Type View -->
+                <div id="view-service" class="hidden payment-view">
                     <button onclick="backToBrowse()" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 text-sm font-medium">
                         <i class="fas fa-arrow-left"></i> Kembali ke Menu
                     </button>
+                    
+                    <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-8 flex flex-col items-center justify-center text-center">
+                        <p class="text-sm text-gray-500 uppercase tracking-wider mb-1 font-semibold">Total Pembayaran</p>
+                        <p class="text-4xl font-extrabold text-gray-900" id="serviceSelectTotal">Rp 0</p>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 text-center">Pilih Tipe Layanan</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div onclick="selectServiceType('dine_in')" class="flex flex-col items-center gap-4 p-8 bg-white border-2 border-gray-200 rounded-2xl cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition-all group">
+                            <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i class="fas fa-utensils text-3xl text-amber-600"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-lg font-bold text-gray-900">Makan di Tempat</p>
+                                <p class="text-sm text-gray-500">Dine In</p>
+                            </div>
+                        </div>
+
+                        <div onclick="selectServiceType('take_away')" class="flex flex-col items-center gap-4 p-8 bg-white border-2 border-gray-200 rounded-2xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
+                            <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i class="fas fa-shopping-bag text-3xl text-blue-600"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-lg font-bold text-gray-900">Bawa Pulang</p>
+                                <p class="text-sm text-gray-500">Take Away</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Selection View (only if has_table_system) -->
+                <div id="view-table" class="hidden payment-view">
+                    <button onclick="setUIState('service')" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 text-sm font-medium">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Tipe Layanan
+                    </button>
+
+                    <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-6 flex flex-col items-center justify-center text-center">
+                        <p class="text-sm text-gray-500 uppercase tracking-wider mb-1 font-semibold">Total Pembayaran</p>
+                        <p class="text-4xl font-extrabold text-gray-900" id="tableSelectTotal">Rp 0</p>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chair text-amber-500"></i>
+                        Pilih Meja
+                    </h3>
+                    
+                    <div id="tableSelectionGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-6 max-h-[300px] overflow-y-auto custom-scrollbar">
+                        <!-- Tables will be loaded dynamically -->
+                    </div>
+
+                    <div id="selectedTableInfo" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chair text-amber-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Meja Dipilih</p>
+                                    <p class="font-bold text-gray-900" id="selectedTableNumber">-</p>
+                                </div>
+                            </div>
+                            <button onclick="clearSelectedTable()" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onclick="proceedToPaymentSelection()" id="btnProceedPayment" disabled class="btn-primary w-full opacity-50 cursor-not-allowed">
+                        <i class="fas fa-arrow-right mr-2"></i>
+                        Lanjut ke Pembayaran
+                    </button>
+
+                    <button onclick="skipTableSelection()" class="w-full mt-3 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-forward mr-2"></i>
+                        Lewati (Tanpa Meja)
+                    </button>
+                </div>
+
+                <!-- Payment Selection View -->
+                <div id="view-select" class="hidden payment-view">
+                    <button onclick="backFromPaymentSelection()" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 text-sm font-medium">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </button>
+
+                    <!-- Service & Table Badge -->
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <div id="paymentServiceBadge" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-2">
+                            <i id="serviceIcon" class="fas fa-shopping-bag text-blue-600"></i>
+                            <span class="text-sm font-medium text-blue-800" id="paymentServiceText">Bawa Pulang (Take Away)</span>
+                        </div>
+                        <div id="paymentTableBadge" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
+                            <i class="fas fa-chair text-amber-600"></i>
+                            <span class="text-sm font-medium text-amber-800">Meja: <span id="paymentTableNumber">-</span></span>
+                        </div>
+                    </div>
 
                     <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 mb-8 flex flex-col items-center justify-center text-center">
                         <p class="text-sm text-gray-500 uppercase tracking-wider mb-1 font-semibold">Total Pembayaran</p>
@@ -1540,6 +1642,12 @@
                         <button onclick="openFinanceModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-emerald-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-file-invoice-dollar w-4 text-emerald-600"></i>
                             <span>Operasional (Kas)</span>
+                        </button>
+
+                        <!-- Kelola Meja -->
+                        <button onclick="openTableManagementModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
+                            <i class="fas fa-chair w-4 text-amber-600"></i>
+                            <span>Kelola Meja</span>
                         </button>
 
                         <button onclick="openProductSettingsModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-orange-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
@@ -1771,6 +1879,23 @@
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="hideNavbarToggle" class="sr-only peer" onchange="toggleNavbarVisibility(this.checked)">
                     <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                </label>
+            </div>
+
+            <!-- Toggle: Sistem Meja -->
+            <div class="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-200">
+                <div class="flex-1">
+                    <div class="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                        <i class="fas fa-chair text-amber-600"></i>
+                        Sistem Meja
+                    </div>
+                    <div class="text-sm text-gray-600">Aktifkan untuk memilih meja sebelum pembayaran</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="tableSystemToggle" class="sr-only peer" 
+                           {{ auth()->user()->outlet && auth()->user()->outlet->has_table_system ? 'checked' : '' }}
+                           onchange="toggleTableSystem(this.checked)">
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                 </label>
             </div>
 
@@ -2255,6 +2380,91 @@
                 onclick="submitDebtPayment()" 
                 class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
                 <i class="fas fa-check mr-2"></i>Proses Utang
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Kelola Meja -->
+<div id="tableManagementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <!-- Header - Fixed -->
+        <div class="modal-header-fixed flex items-center justify-between p-6">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-chair text-amber-600"></i>
+                    Kelola Status Meja
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Pantau dan ubah status ketersediaan meja outlet</p>
+            </div>
+            <button onclick="closeTableManagementModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Scrollable Content -->
+        <div class="modal-scrollable-content">
+            <!-- Stats -->
+            <div class="summary-cards-container">
+                <div class="summary-card">
+                    <div class="summary-card-icon bg-gray-100 text-gray-600">
+                        <i class="fas fa-list-ol"></i>
+                    </div>
+                    <div class="summary-card-label">Total Meja</div>
+                    <div class="summary-card-value text-gray-900" id="tmTotalTables">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-icon bg-emerald-100 text-emerald-600">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="summary-card-label">Tersedia</div>
+                    <div class="summary-card-value text-emerald-600" id="tmAvailableTables">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-icon bg-red-100 text-red-600">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="summary-card-label">Terisi</div>
+                    <div class="summary-card-value text-red-600" id="tmOccupiedTables">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-icon bg-amber-100 text-amber-600">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                    <div class="summary-card-label">Dipesan</div>
+                    <div class="summary-card-value text-amber-600" id="tmReservedTables">0</div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <!-- Tables Grid -->
+                <div id="tableManagementGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Tables will be loaded dynamically -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="tableManagementEmpty" class="hidden text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 mx-auto max-w-2xl">
+                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-100">
+                        <i class="fas fa-chair text-gray-200 text-3xl"></i>
+                    </div>
+                    <h4 class="text-gray-900 font-bold text-lg mb-1">Meja Belum Tersedia</h4>
+                    <p class="text-gray-500 text-sm mb-6">Silakan tambahkan data meja melalui menu pengaturan meja</p>
+                    <a href="{{ route('tables.create') }}" class="inline-flex items-center gap-2 px-8 py-3 bg-amber-600 text-white rounded-full font-bold text-sm hover:bg-amber-700 transition-all shadow-lg hover:shadow-amber-200 active:scale-95">
+                        <i class="fas fa-plus"></i> 
+                        Tambah Meja Sekarang
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer - Fixed -->
+        <div class="modal-footer-fixed p-6 flex justify-end gap-3">
+            <a href="{{ route('tables.index') }}" class="action-btn action-btn-primary !bg-amber-600 hover:!bg-amber-700">
+                <i class="fas fa-external-link-alt"></i>
+                Pengaturan Meja Lengkap
+            </a>
+            <button onclick="closeTableManagementModal()" class="action-btn action-btn-secondary">
+                Tutup
             </button>
         </div>
     </div>
@@ -3696,7 +3906,7 @@ function onQtyBlur(cartKey, value) {
 // ==================== UI STATE FUNCTIONS ====================
 function setUIState(state) {
     UI_STATE = state;
-    const views = ['browse','select','cash','transfer','midtrans'];
+    const views = ['browse','service','table','select','cash','transfer','midtrans'];
     views.forEach(v => {
         const el = document.getElementById(`view-${v}`);
         if (el) el.classList.add('hidden');
@@ -3749,11 +3959,7 @@ function backToBrowse(){
 }
 
 function showPaymentSelection() {
-    if (!cart || Object.keys(cart).length === 0) {
-        showToast('warning','Keranjang kosong');
-        return;
-    }
-    setUIState('select');
+    initiatePaymentFlow();
 }
 
 // ==================== PAYMENT FUNCTIONS ====================
@@ -3835,7 +4041,11 @@ function processCashPayment() {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
-        body: JSON.stringify({ paid_amount: paid })
+        body: JSON.stringify({ 
+            paid_amount: paid,
+            service_type: selectedServiceType,
+            table_id: selectedTableId
+        })
     })
     .then(r => r.json())
     .then(async data => {
@@ -3907,6 +4117,318 @@ function closeDebtPaymentModal() {
     document.getElementById('debtPaymentModal').classList.add('hidden');
     resetDebtPaymentForm();
 }
+
+// ==================== TABLE MANAGEMENT FUNCTIONS ====================
+let tablesData = [];
+let selectedTableId = null;
+let selectedTableNumber = null;
+let selectedServiceType = 'take_away'; // default
+let hasTableSystem = {{ auth()->user()->outlet && auth()->user()->outlet->has_table_system ? 'true' : 'false' }};
+
+async function loadTablesData() {
+    try {
+        const response = await fetch('/api/tables');
+        const data = await response.json();
+        tablesData = data.tables || [];
+        return tablesData;
+    } catch (error) {
+        console.error('Error loading tables:', error);
+        tablesData = [];
+        return [];
+    }
+}
+
+function openTableManagementModal() {
+    document.getElementById('tableManagementModal').classList.remove('hidden');
+    loadAndRenderTableManagement();
+}
+
+function closeTableManagementModal() {
+    document.getElementById('tableManagementModal').classList.add('hidden');
+}
+
+async function loadAndRenderTableManagement() {
+    await loadTablesData();
+    const grid = document.getElementById('tableManagementGrid');
+    const empty = document.getElementById('tableManagementEmpty');
+    
+    if (tablesData.length === 0) {
+        grid.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+    }
+    
+    grid.classList.remove('hidden');
+    empty.classList.add('hidden');
+    
+    // Update stats
+    document.getElementById('tmTotalTables').textContent = tablesData.length;
+    document.getElementById('tmAvailableTables').textContent = tablesData.filter(t => t.status === 'available').length;
+    document.getElementById('tmOccupiedTables').textContent = tablesData.filter(t => t.status === 'occupied').length;
+    document.getElementById('tmReservedTables').textContent = tablesData.filter(t => t.status === 'reserved').length;
+    
+    // Render tables
+    grid.innerHTML = tablesData.map(table => {
+        const statusColors = {
+            available: { 
+                bg: 'bg-white', 
+                border: 'border-emerald-100', 
+                icon: 'bg-emerald-100 text-emerald-600', 
+                badge: 'bg-emerald-500 text-white',
+                shadow: 'hover:shadow-emerald-200'
+            },
+            occupied: { 
+                bg: 'bg-white', 
+                border: 'border-red-100', 
+                icon: 'bg-red-100 text-red-600', 
+                badge: 'bg-red-500 text-white',
+                shadow: 'hover:shadow-red-200'
+            },
+            reserved: { 
+                bg: 'bg-white', 
+                border: 'border-amber-100', 
+                icon: 'bg-amber-100 text-amber-600', 
+                badge: 'bg-amber-500 text-white',
+                shadow: 'hover:shadow-amber-200'
+            },
+            maintenance: { 
+                bg: 'bg-white', 
+                border: 'border-gray-100', 
+                icon: 'bg-gray-100 text-gray-600', 
+                badge: 'bg-gray-500 text-white',
+                shadow: 'hover:shadow-gray-200'
+            }
+        };
+        const colors = statusColors[table.status] || statusColors.maintenance;
+        const statusLabels = { available: 'Tersedia', occupied: 'Terisi', reserved: 'Dipesan', maintenance: 'Maintenance' };
+        
+        return `
+            <div class="${colors.bg} ${colors.border} border-2 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer hover:shadow-xl ${colors.shadow} transition-all duration-300 group relative overflow-hidden"
+                 onclick="toggleTableStatusFromModal(${table.id})">
+                <div class="absolute top-0 right-0 p-1.5">
+                    <div class="w-2.5 h-2.5 rounded-full ${colors.badge.split(' ')[0]} animate-pulse"></div>
+                </div>
+                <div class="w-16 h-16 ${colors.icon} rounded-2xl flex flex-col items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-gray-50">
+                    <span class="text-xl font-black leading-none">${table.table_number}</span>
+                    <span class="text-[9px] font-bold mt-1 opacity-60">KAP: ${table.capacity}</span>
+                </div>
+                <div class="text-sm font-bold text-gray-900 group-hover:text-amber-600 transition-colors truncate w-full text-center px-1">
+                    ${table.name || 'Meja ' + table.table_number}
+                </div>
+                <div class="text-[10px] font-medium text-gray-400 mt-0.5 tracking-tighter truncate w-full text-center">
+                    <i class="fas fa-map-marker-alt text-[8px] mr-1"></i>${table.location || 'Area Umum'}
+                </div>
+                <div class="mt-3 w-full">
+                    <div class="text-[10px] font-black ${colors.badge} rounded-lg py-1.5 w-full text-center shadow-sm uppercase tracking-wider">
+                        ${statusLabels[table.status] || table.status}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function toggleTableStatusFromModal(tableId) {
+    try {
+        const response = await fetch(`/tables/${tableId}/quick-toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            showToast('success', `Status meja berhasil diubah ke ${data.status_label}`);
+            loadAndRenderTableManagement();
+        }
+    } catch (error) {
+        showToast('error', 'Gagal mengubah status meja');
+    }
+}
+
+async function toggleTableSystem(enabled) {
+    try {
+        const response = await fetch('/api/outlet/toggle-table-system', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ enabled })
+        });
+        const data = await response.json();
+        if (data.success) {
+            hasTableSystem = enabled;
+            showToast('success', enabled ? 'Sistem meja diaktifkan' : 'Sistem meja dinonaktifkan');
+        }
+    } catch (error) {
+        showToast('error', 'Gagal mengubah pengaturan sistem meja');
+        document.getElementById('tableSystemToggle').checked = !enabled;
+    }
+}
+
+// Payment Flow: Service Type Selection
+function initiatePaymentFlow() {
+    if (Object.keys(cart).length === 0) {
+        showToast('warning', 'Keranjang masih kosong');
+        return;
+    }
+    
+    if (hasTableSystem) {
+        document.getElementById('serviceSelectTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total);
+        setUIState('service');
+    } else {
+        selectedServiceType = 'take_away';
+        selectedTableId = null;
+        selectedTableNumber = null;
+        proceedToPaymentSelection();
+    }
+}
+
+function selectServiceType(type) {
+    selectedServiceType = type;
+    
+    if (type === 'dine_in') {
+        document.getElementById('tableSelectTotal').textContent = 'Rp ' + formatNumber(cartSummary.grand_total);
+        renderTableSelection();
+        clearSelectedTable();
+        setUIState('table');
+    } else {
+        selectedTableId = null;
+        selectedTableNumber = null;
+        proceedToPaymentSelection();
+    }
+}
+
+// Table Selection for Payment Flow
+async function renderTableSelection() {
+    await loadTablesData();
+    const grid = document.getElementById('tableSelectionGrid');
+    
+    const availableTables = tablesData.filter(t => t.status === 'available');
+    
+    if (availableTables.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full text-center py-8">
+                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-chair text-gray-300"></i>
+                </div>
+                <p class="text-sm text-gray-500">Tidak ada meja tersedia</p>
+                <button onclick="skipTableSelection()" class="mt-4 text-amber-600 font-semibold text-sm">Tetap lanjut tanpa meja</button>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = availableTables.map(table => `
+        <div class="table-select-item bg-white border-2 border-gray-200 rounded-xl p-3 text-center cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-all"
+             onclick="selectTable(${table.id}, '${table.table_number}', '${table.name || ''}')">
+            <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span class="text-sm font-bold text-emerald-700">${table.table_number}</span>
+            </div>
+            <p class="text-xs font-medium text-gray-900 truncate">${table.name || 'Meja ' + table.table_number}</p>
+            <p class="text-[10px] text-gray-500"><i class="fas fa-users"></i> ${table.capacity}</p>
+        </div>
+    `).join('');
+}
+
+function selectTable(tableId, tableNumber, tableName) {
+    selectedTableId = tableId;
+    selectedTableNumber = tableNumber;
+    
+    // Update UI
+    document.querySelectorAll('.table-select-item').forEach(el => {
+        el.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-300');
+    });
+    event.currentTarget.classList.add('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-300');
+    
+    // Show selected info
+    document.getElementById('selectedTableInfo').classList.remove('hidden');
+    document.getElementById('selectedTableNumber').textContent = tableName ? `${tableName} (No. ${tableNumber})` : `Meja ${tableNumber}`;
+    
+    // Enable proceed button
+    const btn = document.getElementById('btnProceedPayment');
+    btn.disabled = false;
+    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+}
+
+function clearSelectedTable() {
+    selectedTableId = null;
+    selectedTableNumber = null;
+    
+    document.querySelectorAll('.table-select-item').forEach(el => {
+        el.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-300');
+    });
+    
+    document.getElementById('selectedTableInfo').classList.add('hidden');
+    
+    const btn = document.getElementById('btnProceedPayment');
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+}
+
+function proceedToPaymentSelection() {
+    // Update Service Type Badge
+    const serviceBadge = document.getElementById('paymentServiceBadge');
+    const serviceText = document.getElementById('paymentServiceText');
+    const serviceIcon = document.getElementById('serviceIcon');
+    
+    if (serviceBadge) {
+        serviceBadge.classList.remove('hidden');
+        if (selectedServiceType === 'dine_in') {
+            serviceBadge.className = 'bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2';
+            serviceText.className = 'text-sm font-medium text-amber-800';
+            serviceText.textContent = 'Makan di Tempat (Dine In)';
+            serviceIcon.className = 'fas fa-utensils text-amber-600';
+        } else {
+            serviceBadge.className = 'bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-2';
+            serviceText.className = 'text-sm font-medium text-blue-800';
+            serviceText.textContent = 'Bawa Pulang (Take Away)';
+            serviceIcon.className = 'fas fa-shopping-bag text-blue-600';
+        }
+    }
+
+    // Update Table Badge
+    const tableBadge = document.getElementById('paymentTableBadge');
+    if (tableBadge) {
+        if (selectedTableId) {
+            tableBadge.classList.remove('hidden');
+            document.getElementById('paymentTableNumber').textContent = selectedTableNumber;
+        } else {
+            tableBadge.classList.add('hidden');
+        }
+    }
+    
+    // Update Select Total
+    const selectTotal = document.getElementById('selectTotal');
+    if (selectTotal) {
+        selectTotal.textContent = 'Rp ' + formatNumber(cartSummary.grand_total);
+    }
+    
+    setUIState('select');
+}
+
+function skipTableSelection() {
+    selectedTableId = null;
+    selectedTableNumber = null;
+    proceedToPaymentSelection();
+}
+
+function backFromPaymentSelection() {
+    if (hasTableSystem) {
+        if (selectedServiceType === 'dine_in') {
+            setUIState('table');
+        } else {
+            setUIState('service');
+        }
+    } else {
+        backToBrowse();
+    }
+}
+
 
 // ==================== FINANCE MODAL FUNCTIONS ====================
 let currentFinanceTab = 'income';
@@ -4167,6 +4689,10 @@ function submitDebtPayment() {
     formData.forEach((value, key) => {
         data[key] = value;
     });
+
+    // Add service type and table id
+    data.service_type = selectedServiceType;
+    data.table_id = selectedTableId;
     
     // Show loading
     Swal.fire({
@@ -4368,7 +4894,9 @@ function processTransferPayment() {
         body: JSON.stringify({ 
             transfer_method: cardName, 
             outlet_payment_link_id: cardId,
-            reference_number: ref 
+            reference_number: ref,
+            service_type: selectedServiceType,
+            table_id: selectedTableId
         })
     })
     .then(r=>r.json())
@@ -4414,7 +4942,11 @@ function openMidtransPayment() {
     }
     fetch('{{ route("payment.midtrans.token") }}', {
         method:'POST',
-        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'}
+        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
+        body: JSON.stringify({
+            service_type: selectedServiceType,
+            table_id: selectedTableId
+        })
     })
     .then(r=>r.json())
     .then(data=>{

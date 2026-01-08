@@ -133,6 +133,8 @@ class PaymentController extends Controller
     {
         $request->validate([
             'paid_amount' => 'required|numeric|min:0',
+            'service_type' => 'nullable|string|in:dine_in,take_away',
+            'table_id' => 'nullable|exists:tables,id',
         ]);
 
         $cart = Session::get('pos_cart', []);
@@ -160,10 +162,17 @@ class PaymentController extends Controller
                 'payment_method' => 'cash',
                 'paid_amount' => $request->paid_amount,
                 'change_amount' => $request->paid_amount - $summary['grand_total'],
+                'service_type' => $request->service_type ?? 'take_away',
+                'table_id' => $request->table_id,
                 'payment_status' => 'paid',
                 'status' => 'completed',
                 'completed_at' => now(),
             ]);
+
+            // Mark table as occupied if dine-in
+            if ($request->service_type === 'dine_in' && $request->table_id) {
+                \App\Models\Table::find($request->table_id)->update(['status' => 'occupied']);
+            }
 
             SalePayment::create([
                 'sale_id' => $sale->id,
@@ -229,6 +238,8 @@ class PaymentController extends Controller
             'transfer_method' => 'required|string',
             'reference_number' => 'nullable|string',
             'outlet_payment_link_id' => 'nullable|exists:outlet_payment_links,id',
+            'service_type' => 'nullable|string|in:dine_in,take_away',
+            'table_id' => 'nullable|exists:tables,id',
         ]);
 
         $cart = Session::get('pos_cart', []);
@@ -249,11 +260,18 @@ class PaymentController extends Controller
                 'payment_method' => 'transfer', // Tetap 'transfer' atau bisa diubah jadi 'card' jika diperlukan
                 'outlet_payment_link_id' => $request->outlet_payment_link_id, // Simpan ID link
                 'paid_amount' => $summary['grand_total'],
+                'service_type' => $request->service_type ?? 'take_away',
+                'table_id' => $request->table_id,
                 'payment_status' => 'paid',
                 'status' => 'completed',
                 'notes' => 'Transfer via '.$request->transfer_method,
                 'completed_at' => now(),
             ]);
+
+            // Mark table as occupied if dine-in
+            if ($request->service_type === 'dine_in' && $request->table_id) {
+                \App\Models\Table::find($request->table_id)->update(['status' => 'occupied']);
+            }
 
             $sale->load('items');
 
@@ -310,6 +328,11 @@ class PaymentController extends Controller
 
     public function createMidtransToken(Request $request)
     {
+        $request->validate([
+            'service_type' => 'nullable|string|in:dine_in,take_away',
+            'table_id' => 'nullable|exists:tables,id',
+        ]);
+
         $cart = Session::get('pos_cart', []);
         $discountPlan = Session::get('pos_discount_plan');
 
@@ -325,6 +348,8 @@ class PaymentController extends Controller
                 'payment_method' => 'qris',
                 'payment_status' => 'pending',
                 'status' => 'draft',
+                'service_type' => $request->service_type ?? 'take_away',
+                'table_id' => $request->table_id,
                 'paid_amount' => 0,
             ]);
 
@@ -433,6 +458,11 @@ class PaymentController extends Controller
                     'completed_at' => now(),
                     'paid_amount' => $sale->grand_total,
                 ]);
+
+                // Mark table as occupied if dine-in
+                if ($sale->service_type === 'dine_in' && $sale->table_id) {
+                    \App\Models\Table::find($sale->table_id)->update(['status' => 'occupied']);
+                }
 
                 $this->createOrUpdateSalePayment($sale, $notification);
 
