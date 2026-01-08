@@ -202,6 +202,101 @@ class FinanceController extends Controller
         ));
     }
 
+    public function getCategoriesAjax()
+    {
+        $categories = ExpenseCategory::where('is_active', true)->get();
+        return response()->json($categories);
+    }
+
+    public function storeIncomeAjax(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'amount' => 'required|numeric|min:0.01',
+                'description' => 'required|string|max:255',
+                'income_date' => 'required|date',
+                'payment_method' => 'required|in:cash,transfer,card',
+                'reference_number' => 'nullable|string|max:100',
+                'notes' => 'nullable|string',
+            ]);
+
+            $expense = Expense::create([
+                'expense_number' => $this->generateExpenseNumber(),
+                'outlet_id' => auth()->user()->outlet_id,
+                'expense_category_id' => ExpenseCategory::firstOrCreate(
+                    ['code' => 'OTHER_INCOME'],
+                    ['name' => 'Pendapatan Lainnya', 'description' => 'Pendapatan di luar penjualan']
+                )->id,
+                'amount' => -abs($validated['amount']),
+                'expense_date' => $validated['income_date'],
+                'description' => $validated['description'],
+                'payment_method' => $validated['payment_method'],
+                'reference_number' => $validated['reference_number'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'created_by' => auth()->id(),
+                'status' => 'approved',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pemasukan berhasil dicatat',
+                'data' => $expense
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
+
+    public function storeExpenseAjax(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'expense_category_id' => 'required|exists:expense_categories,id',
+                'amount' => 'required|numeric|min:0.01',
+                'description' => 'required|string|max:255',
+                'expense_date' => 'required|date',
+                'payment_method' => 'required|in:cash,transfer,card',
+                'reference_number' => 'nullable|string|max:100',
+                'notes' => 'nullable|string',
+                'receipt_image' => 'nullable|image|max:2048',
+            ]);
+
+            $receiptPath = null;
+            if ($request->hasFile('receipt_image')) {
+                $receiptPath = $request->file('receipt_image')->store('receipts', 'public');
+            }
+
+            $expense = Expense::create([
+                'expense_number' => $this->generateExpenseNumber(),
+                'outlet_id' => auth()->user()->outlet_id,
+                'expense_category_id' => $validated['expense_category_id'],
+                'amount' => $validated['amount'],
+                'expense_date' => $validated['expense_date'],
+                'description' => $validated['description'],
+                'payment_method' => $validated['payment_method'],
+                'reference_number' => $validated['reference_number'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'receipt_image' => $receiptPath,
+                'created_by' => auth()->id(),
+                'status' => 'approved',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengeluaran berhasil dicatat',
+                'data' => $expense
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
+
     public function getRevenueChart(Request $request): JsonResponse
     {
         $outletId = auth()->user()->outlet_id;

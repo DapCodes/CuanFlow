@@ -295,6 +295,11 @@ Route::middleware(['auth'])->prefix('finance')->name('finance.')->group(function
 
     Route::delete('/{expense}', [FinanceController::class, 'destroy'])->name('destroy');
     
+    // AJAX Routes (BARU untuk POS)
+    Route::get('/categories-ajax', [FinanceController::class, 'getCategoriesAjax'])->name('categories.ajax');
+    Route::post('/income-ajax', [FinanceController::class, 'storeIncomeAjax'])->name('income.store.ajax');
+    Route::post('/expense-ajax', [FinanceController::class, 'storeExpenseAjax'])->name('expense.store.ajax');
+
     Route::post('/validate-revenue', [FinanceController::class, 'validateRevenue'])->name('validate-revenue');
     Route::get('/daily', [FinanceController::class, 'daily'])->name('daily');
 

@@ -730,7 +730,8 @@
 #productSettingsModal,
 #salesTodayModal,
 #saleDetailModal,
-#debtPaymentModal {
+#debtPaymentModal,
+#financeModal {
     backdrop-filter: blur(2px);
 }
 
@@ -1520,6 +1521,12 @@
                             <span>Kalkulator</span>
                         </button>
 
+                        <!-- Operasional (Kas) -->
+                        <button onclick="openFinanceModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-emerald-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
+                            <i class="fas fa-file-invoice-dollar w-4 text-emerald-600"></i>
+                            <span>Operasional (Kas)</span>
+                        </button>
+
                         <button onclick="openProductSettingsModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-orange-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-cog w-4 text-orange-600"></i>
                             <span>Pengaturan</span>
@@ -2231,6 +2238,136 @@
                 onclick="submitDebtPayment()" 
                 class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
                 <i class="fas fa-check mr-2"></i>Proses Utang
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Operasional (Pemasukan/Pengeluaran) -->
+<div id="financeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-file-invoice-dollar text-emerald-600"></i>
+                    Operasional (Kas)
+                </h3>
+                <p class="text-xs text-gray-500 mt-1">Catat pemasukan atau pengeluaran non-penjualan</p>
+            </div>
+            <button onclick="closeFinanceModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-100 bg-gray-50/50">
+            <button onclick="switchFinanceTab('income')" id="tab-income" class="flex-1 py-4 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 border-emerald-600 text-emerald-600 bg-white">
+                <i class="fas fa-plus-circle"></i>
+                Pemasukan
+            </button>
+            <button onclick="switchFinanceTab('expense')" id="tab-expense" class="flex-1 py-4 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 border-transparent text-gray-500 hover:text-red-600 hover:bg-red-50/30">
+                <i class="fas fa-minus-circle"></i>
+                Pengeluaran
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            <!-- Pemasukan Form -->
+            <form id="incomeForm" class="space-y-4">
+                @csrf
+                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 mb-6">
+                    <label class="block text-xs font-bold text-emerald-700 uppercase mb-2">Jumlah Pemasukan (Rp)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-emerald-500 font-bold">Rp</span>
+                        <input type="number" name="amount" required step="0.01" min="0.01"
+                            class="w-full pl-12 pr-4 py-3 bg-white border-2 border-emerald-200 rounded-xl text-2xl font-black text-emerald-600 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 placeholder-emerald-100"
+                            placeholder="0">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Deskripsi / Judul <span class="text-red-500">*</span></label>
+                        <input type="text" name="description" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="Contoh: Dana awal, Jual aset">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Metode <span class="text-red-500">*</span></label>
+                        <select name="payment_method" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 text-sm">
+                            <option value="cash">Tunai (Cash)</option>
+                            <option value="transfer">Transfer Bank</option>
+                            <option value="card">Kartu Debit/Kredit</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal <span class="text-red-500">*</span></label>
+                        <input type="date" name="income_date" value="{{ date('Y-m-d') }}" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">No. Referensi (Opsional)</label>
+                        <input type="text" name="reference_number" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="No. Resi / Bukti">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Catatan Tambahan</label>
+                    <textarea name="notes" rows="2" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 text-sm resize-none" placeholder="Detail tambahan..."></textarea>
+                </div>
+            </form>
+
+            <!-- Pengeluaran Form -->
+            <form id="expenseForm" class="hidden space-y-4" enctype="multipart/form-data">
+                @csrf
+                <div class="bg-red-50 p-4 rounded-xl border border-red-100 mb-6">
+                    <label class="block text-xs font-bold text-red-700 uppercase mb-2">Jumlah Biaya (Rp)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-red-500 font-bold">Rp</span>
+                        <input type="number" name="amount" required step="0.01" min="0.01"
+                            class="w-full pl-12 pr-4 py-3 bg-white border-2 border-red-200 rounded-xl text-2xl font-black text-red-600 focus:ring-4 focus:ring-red-500/10 focus:border-red-500 placeholder-red-100"
+                            placeholder="0">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kategori <span class="text-red-500">*</span></label>
+                        <select name="expense_category_id" id="finance_expense_category" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 text-sm">
+                            <option value="" disabled selected>Pilih Kategori</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Metode <span class="text-red-500">*</span></label>
+                        <select name="payment_method" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 text-sm">
+                            <option value="cash">Tunai (Kas Toko)</option>
+                            <option value="transfer">Transfer Bank</option>
+                            <option value="card">Kartu Debit/Kredit</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Deskripsi <span class="text-red-500">*</span></label>
+                        <input type="text" name="description" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 text-sm" placeholder="Contoh: Belanja bahan, Listrik">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal <span class="text-red-500">*</span></label>
+                        <input type="date" name="expense_date" value="{{ date('Y-m-d') }}" required class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Bukti (Optional)</label>
+                        <input type="file" name="receipt_image" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Catatan Internal</label>
+                    <textarea name="notes" rows="2" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 text-sm resize-none" placeholder="Keterangan tambahan..."></textarea>
+                </div>
+            </form>
+        </div>
+        
+        <div class="p-6 border-t border-gray-200 flex gap-3 flex-shrink-0">
+            <button onclick="closeFinanceModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                Batal
+            </button>
+            <button id="btnSubmitFinance" onclick="submitFinanceForm()" class="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2">
+                <i class="fas fa-save"></i>
+                <span>Simpan Pemasukan</span>
             </button>
         </div>
     </div>
@@ -3752,6 +3889,117 @@ function openDebtPaymentModal(grandTotal, paidAmount, remainingAmount) {
 function closeDebtPaymentModal() {
     document.getElementById('debtPaymentModal').classList.add('hidden');
     resetDebtPaymentForm();
+}
+
+// ==================== FINANCE MODAL FUNCTIONS ====================
+let currentFinanceTab = 'income';
+
+function openFinanceModal() {
+    document.getElementById('financeModal').classList.remove('hidden');
+    switchFinanceTab('income'); // Reset to income
+    loadFinanceCategories();
+}
+
+function closeFinanceModal() {
+    document.getElementById('financeModal').classList.add('hidden');
+    document.getElementById('incomeForm').reset();
+    document.getElementById('expenseForm').reset();
+}
+
+function switchFinanceTab(tab) {
+    currentFinanceTab = tab;
+    const incomeForm = document.getElementById('incomeForm');
+    const expenseForm = document.getElementById('expenseForm');
+    const incomeTabBtn = document.getElementById('tab-income');
+    const expenseTabBtn = document.getElementById('tab-expense');
+    const submitBtn = document.getElementById('btnSubmitFinance');
+    const submitIcon = submitBtn.querySelector('i');
+    const submitText = submitBtn.querySelector('span');
+
+    if (tab === 'income') {
+        incomeForm.classList.remove('hidden');
+        expenseForm.classList.add('hidden');
+        
+        // Tab styling
+        incomeTabBtn.className = 'flex-1 py-4 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 border-emerald-600 text-emerald-600 bg-white';
+        expenseTabBtn.className = 'flex-1 py-4 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 border-transparent text-gray-500 hover:text-red-600 hover:bg-red-50/30';
+        
+        // Button styling
+        submitBtn.className = 'flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2';
+        submitText.textContent = 'Simpan Pemasukan';
+    } else {
+        incomeForm.classList.add('hidden');
+        expenseForm.classList.remove('hidden');
+        
+        // Tab styling
+        expenseTabBtn.className = 'flex-1 py-4 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 border-red-600 text-red-600 bg-white';
+        incomeTabBtn.className = 'flex-1 py-4 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 border-transparent text-gray-500 hover:text-emerald-600 hover:bg-emerald-50/30';
+        
+        // Button styling
+        submitBtn.className = 'flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2';
+        submitText.textContent = 'Simpan Pengeluaran';
+    }
+}
+
+function loadFinanceCategories() {
+    const select = document.getElementById('finance_expense_category');
+    if (select.options.length > 1) return; // Already loaded
+
+    fetch('{{ route("finance.categories.ajax") }}')
+        .then(r => r.json())
+        .then(categories => {
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat.id;
+                opt.textContent = cat.name;
+                select.appendChild(opt);
+            });
+        });
+}
+
+function submitFinanceForm() {
+    const isIncome = (currentFinanceTab === 'income');
+    const form = isIncome ? document.getElementById('incomeForm') : document.getElementById('expenseForm');
+    const url = isIncome ? '{{ route("finance.income.store.ajax") }}' : '{{ route("finance.expense.store.ajax") }}';
+    
+    // Basic validation
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const btn = document.getElementById('btnSubmitFinance');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Menyimpan...</span>';
+    btn.disabled = true;
+
+    const formData = new FormData(form);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('success', data.message);
+            closeFinanceModal();
+            // Optional: refresh other data here
+        } else {
+            showToast('error', data.message || 'Gagal menyimpan data');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast('error', 'Terjadi kesalahan sistem');
+    })
+    .finally(() => {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    });
 }
 
 /**
