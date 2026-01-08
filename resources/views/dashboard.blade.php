@@ -749,6 +749,21 @@
         </span>
     </a>
 
+    @if(auth()->user()->outlet && auth()->user()->outlet->has_table_system)
+    <a href="{{ route('tables.index') }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="15"
+       data-title="Kelola Meja"
+       data-intro="<strong>Atur sistem meja outlet Anda.</strong> Kelola penomoran meja untuk kafe atau restoran, pantau status terisi atau tersedia secara real-time.">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+            <i class="fa-solid fa-chair text-4xl sm:text-5xl text-white"></i>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Kelola Meja
+        </span>
+    </a>
+    @endif
+
     <!-- AI & INSIGHT -->
     <a href="{{ route('ai-insights.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"

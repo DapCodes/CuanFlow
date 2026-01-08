@@ -490,8 +490,32 @@
                                             <option value="Grocery">Toko Kelontong</option>
                                             <option value="Fashion">Fashion</option>
                                             <option value="Electronics">Elektronik</option>
-                                            <option value="Other">Lainnya</option>
-                                        </select>
+                                    </select>
+                                    </div>
+                                </div>
+
+                                <!-- Sistem Meja -->
+                                <div class="bg-amber-50/80 border border-amber-100 rounded-2xl p-4 space-y-3">
+                                    <div class="flex items-start gap-3">
+                                        <div class="mt-0.5 w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                                            <i class="fa-solid fa-chair text-amber-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-gray-900 text-sm">Apakah outlet Anda memerlukan sistem meja?</p>
+                                            <p class="text-xs text-gray-500 mt-0.5">Aktifkan jika outlet Anda seperti kafe, restoran, atau tempat makan dengan sistem penomoran meja.</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-3 ml-11">
+                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                            <input type="radio" name="has_table_system" value="1" 
+                                                   class="w-4 h-4 text-cuan-primary border-gray-300 focus:ring-cuan-primary">
+                                            <span class="text-sm font-medium text-gray-700 group-hover:text-cuan-primary transition-colors">Ya, saya butuh sistem meja</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                            <input type="radio" name="has_table_system" value="0" checked
+                                                   class="w-4 h-4 text-cuan-primary border-gray-300 focus:ring-cuan-primary">
+                                            <span class="text-sm font-medium text-gray-700 group-hover:text-cuan-primary transition-colors">Tidak perlu</span>
+                                        </label>
                                     </div>
                                 </div>
 

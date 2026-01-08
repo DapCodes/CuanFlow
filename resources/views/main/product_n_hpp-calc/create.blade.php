@@ -1027,8 +1027,10 @@ let dailyPatternChart = null;
 let projectionChart = null;
 
 // Draft Management Variables
-const STORAGE_KEY = 'cuanflow_product_create_form_v1';
-const DRAFT_TIMESTAMP_KEY = 'cuanflow_product_draft_timestamp';
+const USER_ID = {{ auth()->id() }};
+const OUTLET_ID = {{ auth()->user()->outlet_id }};
+const STORAGE_KEY = `cuanflow_product_create_form_u${USER_ID}_o${OUTLET_ID}_v1`;
+const DRAFT_TIMESTAMP_KEY = `cuanflow_product_draft_timestamp_u${USER_ID}_o${OUTLET_ID}`;
 let isDraftLoaded = false;
 let formHasChanges = false;
 let isNavigatingAway = false;

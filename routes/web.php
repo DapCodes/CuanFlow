@@ -18,6 +18,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OutletPaymentLinkController;
 use App\Http\Controllers\OutletPolicyController;
+use App\Http\Controllers\TableController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -239,6 +240,19 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{discount}', [App\Http\Controllers\DiscountController::class, 'update'])->name('update');
         Route::delete('/{discount}', [App\Http\Controllers\DiscountController::class, 'destroy'])->name('destroy');
         Route::post('/{discount}/toggle-status', [App\Http\Controllers\DiscountController::class, 'toggleStatus'])->name('toggle-status');
+    });
+
+    // Table Management (Sistem Meja)
+    Route::prefix('tables')->name('tables.')->group(function () {
+        Route::get('/generate-code', [TableController::class, 'generateCode'])->name('generate-code');
+        Route::get('/', [TableController::class, 'index'])->name('index');
+        Route::get('/create', [TableController::class, 'create'])->name('create');
+        Route::post('/', [TableController::class, 'store'])->name('store');
+        Route::get('/{table}/edit', [TableController::class, 'edit'])->name('edit');
+        Route::put('/{table}', [TableController::class, 'update'])->name('update');
+        Route::delete('/{table}', [TableController::class, 'destroy'])->name('destroy');
+        Route::post('/{table}/toggle-status', [TableController::class, 'toggleStatus'])->name('toggle-status');
+        Route::post('/{table}/quick-toggle', [TableController::class, 'quickToggle'])->name('quick-toggle');
     });
 
     Route::get('/api/sale/{id}', function ($id) {

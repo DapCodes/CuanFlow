@@ -14,12 +14,13 @@ class Outlet extends Model
 
     protected $fillable = [
         'code', 'name', 'address', 'latitude', 'longtitude', 'phone', 'email', 'logo', 'settings', 'is_active',
-        'owner_id',
+        'owner_id', 'has_table_system',
     ];
 
     protected $casts = [
         'settings' => 'array',
         'is_active' => 'boolean',
+        'has_table_system' => 'boolean',
     ];
 
     // Relasi ke User yang menjadi owner outlet ini
@@ -96,6 +97,11 @@ class Outlet extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function tables(): HasMany
+    {
+        return $this->hasMany(Table::class);
     }
 
     public function scopeActive($q)

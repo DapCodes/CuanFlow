@@ -3,6 +3,9 @@
 @section('title', 'Point of Sale - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @push('styles')
+{{-- Fix for Midtrans Snap CORS/PNA error on Localhost/127.0.0.1 --}}
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <style>
     /* ===================== GLOBAL & LAYOUT ===================== */
     html,
@@ -535,14 +538,26 @@
 
     /* ===================== CALCULATOR ===================== */
     .calc-btn {
-        border-radius: 8px;
+        border-radius: 12px;
         border: 1px solid #e5e7eb;
         background-color: #ffffff;
-        padding: 0.6rem 0.2rem;
-        font-size: 0.95rem;
-        font-weight: 500;
+        padding: 0.8rem 0.2rem;
+        font-size: 1.1rem;
+        font-weight: 700;
         cursor: pointer;
-        transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    @media (max-width: 640px) {
+        .calc-btn {
+            padding: 1.25rem 0.5rem;
+            font-size: 1.25rem;
+            border-radius: 16px;
+        }
     }
 
     .calc-btn:hover {
@@ -739,13 +754,11 @@
 .modal-content,
 #startSalesModal > div,
 #paymentSuccessModal > div,
-#openingAmountModal > div,
-#calculatorModal > div,
-#productSettingsModal > div,
-#debtPaymentModal > div {
+#openingAmountModal > div {
     display: flex;
     flex-direction: column;
     max-height: 90vh;
+    overflow: hidden;
     border-radius: 1rem; /* rounded-2xl */
 }
 
@@ -798,18 +811,20 @@
     #productSettingsModal,
     #salesTodayModal,
     #saleDetailModal,
-    #debtPaymentModal {
+    #debtPaymentModal,
+    #financeModal {
         padding: 0 !important;
     }
     
     #startSalesModal > div,
     #paymentSuccessModal > div,
     #openingAmountModal > div,
-    #calculatorModal > div,
-    #productSettingsModal > div,
+    #calculatorModal .modal-content,
+    #productSettingsModal .modal-content,
     #salesTodayModal .modal-content,
     #saleDetailModal .modal-content,
-    #debtPaymentModal > div {
+    #debtPaymentModal .modal-content,
+    #financeModal .modal-content {
         width: 100vw !important;
         max-width: 100vw !important;
         height: 100vh !important;
@@ -1651,8 +1666,8 @@
 
 <!-- Modal: Kalkulator -->
 <div id="calculatorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col">
-        <div class="flex items-center justify-between mb-4 flex-shrink-0">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <i class="fas fa-calculator text-orange-600"></i>
                 Kalkulator
@@ -1662,56 +1677,58 @@
             </button>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-1 overflow-hidden">
-            <!-- Calculator -->
-            <div class="lg:col-span-3">
-                <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200">
-                    <!-- Display -->
-                    <div class="bg-white rounded-lg p-4 mb-4 shadow-inner">
-                        <div class="text-right text-sm text-gray-500 h-6" id="calcExpression"></div>
-                        <div class="text-right text-3xl font-bold text-gray-900 break-all" id="calcDisplay">0</div>
-                    </div>
-                    
-                    <!-- Buttons -->
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="calcClear()" class="calc-btn bg-red-500 hover:bg-red-600 text-white col-span-2 font-semibold">C</button>
-                        <button onclick="calcDelete()" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white font-semibold">DEL</button>
-                        <button onclick="calcOperator('/')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">÷</button>
+        <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 h-full">
+                <!-- Calculator -->
+                <div class="lg:col-span-3">
+                    <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200">
+                        <!-- Display -->
+                        <div class="bg-white rounded-lg p-4 mb-4 shadow-inner">
+                            <div class="text-right text-sm text-gray-500 h-6" id="calcExpression"></div>
+                            <div class="text-right text-3xl font-bold text-gray-900 break-all" id="calcDisplay">0</div>
+                        </div>
                         
-                        <button onclick="calcNumber('7')" class="calc-btn">7</button>
-                        <button onclick="calcNumber('8')" class="calc-btn">8</button>
-                        <button onclick="calcNumber('9')" class="calc-btn">9</button>
-                        <button onclick="calcOperator('*')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">×</button>
-                        
-                        <button onclick="calcNumber('4')" class="calc-btn">4</button>
-                        <button onclick="calcNumber('5')" class="calc-btn">5</button>
-                        <button onclick="calcNumber('6')" class="calc-btn">6</button>
-                        <button onclick="calcOperator('-')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">−</button>
-                        
-                        <button onclick="calcNumber('1')" class="calc-btn">1</button>
-                        <button onclick="calcNumber('2')" class="calc-btn">2</button>
-                        <button onclick="calcNumber('3')" class="calc-btn">3</button>
-                        <button onclick="calcOperator('+')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">+</button>
-                        
-                        <button onclick="calcNumber('0')" class="calc-btn col-span-2">0</button>
-                        <button onclick="calcDecimal()" class="calc-btn">.</button>
-                        <button onclick="calcEquals()" class="calc-btn bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xl">=</button>
+                        <!-- Buttons -->
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="calcClear()" class="calc-btn bg-red-500 hover:bg-red-600 text-white col-span-2 font-black">C</button>
+                            <button onclick="calcDelete()" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white font-black text-xs">DEL</button>
+                            <button onclick="calcOperator('/')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">÷</button>
+                            
+                            <button onclick="calcNumber('7')" class="calc-btn">7</button>
+                            <button onclick="calcNumber('8')" class="calc-btn">8</button>
+                            <button onclick="calcNumber('9')" class="calc-btn">9</button>
+                            <button onclick="calcOperator('*')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">×</button>
+                            
+                            <button onclick="calcNumber('4')" class="calc-btn">4</button>
+                            <button onclick="calcNumber('5')" class="calc-btn">5</button>
+                            <button onclick="calcNumber('6')" class="calc-btn">6</button>
+                            <button onclick="calcOperator('-')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">−</button>
+                            
+                            <button onclick="calcNumber('1')" class="calc-btn">1</button>
+                            <button onclick="calcNumber('2')" class="calc-btn">2</button>
+                            <button onclick="calcNumber('3')" class="calc-btn">3</button>
+                            <button onclick="calcOperator('+')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">+</button>
+                            
+                            <button onclick="calcNumber('0')" class="calc-btn col-span-2">0</button>
+                            <button onclick="calcDecimal()" class="calc-btn">.</button>
+                            <button onclick="calcEquals()" class="calc-btn bg-orange-600 hover:bg-orange-700 text-white font-black text-xl">=</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- History -->
-            <div class="lg:col-span-2 flex flex-col overflow-hidden">
-                <div class="flex items-center justify-between mb-3 flex-shrink-0">
-                    <h4 class="text-sm font-bold text-gray-700">Riwayat</h4>
-                    <button onclick="calcClearHistory()" class="text-xs text-red-600 hover:text-red-700 font-medium">
-                        <i class="fas fa-trash mr-1"></i>Hapus Semua
-                    </button>
-                </div>
-                <div id="calcHistory" class="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
-                    <div class="text-center text-gray-400 text-sm py-8">
-                        <i class="fas fa-history text-3xl mb-2 opacity-50"></i>
-                        <p>Belum ada riwayat</p>
+                
+                <!-- History -->
+                <div class="lg:col-span-2 flex flex-col h-full lg:min-h-[400px]">
+                    <div class="flex items-center justify-between mb-3 flex-shrink-0">
+                        <h4 class="text-sm font-bold text-gray-700 uppercase tracking-widest">Riwayat</h4>
+                        <button onclick="calcClearHistory()" class="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1">
+                            <i class="fas fa-trash text-[10px]"></i>Hapus
+                        </button>
+                    </div>
+                    <div id="calcHistory" class="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
+                        <div class="text-center text-gray-400 text-sm py-8 border-2 border-dashed border-gray-100 rounded-xl">
+                            <i class="fas fa-history text-3xl mb-2 opacity-30"></i>
+                            <p class="font-medium">Belum ada riwayat</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1721,7 +1738,7 @@
 
 <!-- Modal: Atur Produk -->
 <div id="productSettingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <i class="fas fa-cog text-orange-600"></i>
@@ -2072,7 +2089,7 @@
 </div>
 
 <div id="debtPaymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <div>
                 <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -2245,7 +2262,7 @@
 
 <!-- Modal: Operasional (Pemasukan/Pengeluaran) -->
 <div id="financeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <div>
                 <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
