@@ -1,0 +1,125 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+
+class UserController extends Controller
+{
+    public function index()
+    {
+        $users = User::with('roles')
+            ->latest()
+            ->paginate(15);
+            
+        return view('admin.master.users.index', compact('users'));
+    }
+
+    public function create()
+    {
+        $roles = Role::orderBy('name')->get();
+        $permissions = Permission::orderBy('name')->get();
+        
+        return view('admin.master.users.create', compact('roles', 'permissions'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+            'is_active' => ['boolean'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['exists:roles,name'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['exists:permissions,name'],
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'is_active' => $request->boolean('is_active', true),
+            'email_verified_at' => now(), // Auto verify for admin-created users
+        ]);
+
+        if (!empty($validated['roles'])) {
+            $user->syncRoles($validated['roles']);
+        }
+
+        if (!empty($validated['permissions'])) {
+            $user->syncPermissions($validated['permissions']);
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User berhasil dibuat.');
+    }
+
+    public function show(User $user)
+    {
+        $user->load(['roles', 'permissions', 'outlet']);
+        return view('admin.master.users.show', compact('user'));
+    }
+
+    public function edit(User $user)
+    {
+        $roles = Role::orderBy('name')->get();
+        $permissions = Permission::orderBy('name')->get();
+        $userRoles = $user->roles->pluck('name')->toArray();
+        $userPermissions = $user->getDirectPermissions()->pluck('name')->toArray();
+        
+        return view('admin.master.users.edit', compact('user', 'roles', 'permissions', 'userRoles', 'userPermissions'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'password' => ['nullable', 'confirmed', Password::defaults()],
+            'is_active' => ['boolean'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['exists:roles,name'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['exists:permissions,name'],
+        ]);
+
+        $data = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'is_active' => $request->boolean('is_active', true),
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($data);
+        $user->syncRoles($validated['roles'] ?? []);
+        $user->syncPermissions($validated['permissions'] ?? []);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User berhasil diperbarui.');
+    }
+
+    public function destroy(User $user)
+    {
+        // Prevent self-deletion
+        if ($user->id === auth()->id()) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Tidak dapat menghapus akun sendiri.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User berhasil dihapus.');
+    }
+}

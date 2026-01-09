@@ -22,5 +22,21 @@ class DatabaseSeeder extends Seeder
             TableSeeder::class,
             PaymentMethodSeeder::class,
         ]);
+
+        // Buat Akun Admin
+        $admin = \App\Models\User::updateOrCreate(
+            ['email' => 'admin@cuanflow.com'],
+            [
+                'name' => 'Admin CuanFlow',
+                'password' => \Illuminate\Support\Facades\Hash::make('12345678'),
+                'email_verified_at' => now(),
+                'outlet_id' => null,
+                'phone' => null,
+                'avatar' => null,
+                'is_active' => true,
+            ]
+        );
+
+        $admin->assignRole('admin');
     }
 }
