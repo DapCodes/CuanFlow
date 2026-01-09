@@ -20,6 +20,7 @@ use App\Http\Controllers\OutletPaymentLinkController;
 use App\Http\Controllers\OutletPolicyController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\WithdrawController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -178,6 +179,15 @@ Route::prefix('production')->name('production.')->group(function () {
     // Resend Verification Email
     Route::post('employees/{employee}/resend-verification', [EmployeeController::class, 'resendVerification'])
         ->name('employees.resend-verification');
+
+    // Withdrawal Routes
+    Route::prefix('withdraw')->name('withdraw.')->group(function () {
+        Route::get('/confirm-password', [WithdrawController::class, 'showConfirmPassword'])->name('confirm-password');
+        Route::post('/confirm-password', [WithdrawController::class, 'confirmPassword'])->name('confirm-password.post');
+        Route::get('/create', [WithdrawController::class, 'create'])->name('create');
+        Route::post('/store', [WithdrawController::class, 'store'])->name('store');
+        Route::get('/history', [WithdrawController::class, 'index'])->name('index');
+    });
 
 
 });

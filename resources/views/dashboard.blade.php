@@ -606,6 +606,19 @@
         </span>
     </a>
 
+    <a href="{{ route('withdraw.index') }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="4"
+       data-title="Penarikan Saldo"
+       data-intro="<strong>Tarik saldo keuntungan Anda.</strong> Ajukan penarikan saldo hasil penjualan Anda ke rekening bank atau QRIS.">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+            <i class="fa-solid fa-hand-holding-dollar text-4xl sm:text-5xl text-white"></i>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Penarikan Saldo
+        </span>
+    </a>
+
     <a href="{{ route('outlet-payment-links.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="4"

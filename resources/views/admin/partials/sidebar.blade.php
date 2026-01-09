@@ -91,6 +91,23 @@
                     </li>
                 </ul>
             </li>
+
+            <!-- Withdrawals -->
+            <li>
+                <a href="{{ route('admin.withdrawals.index') }}" 
+                   class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:text-white {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}">
+                    <i class="fas fa-money-bill-transfer w-5 text-center"></i>
+                    <span class="font-medium">Penarikan</span>
+                    @php
+                        $pendingCount = \App\Models\Withdrawal::pending()->count();
+                    @endphp
+                    @if($pendingCount > 0)
+                        <span class="ml-auto inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                            {{ $pendingCount }}
+                        </span>
+                    @endif
+                </a>
+            </li>
         </ul>
         
         <!-- Bottom Section -->

@@ -75,6 +75,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Outlet::class, 'owner_id');
     }
 
+    public function withdrawals(): HasMany
+    {
+        return $this->hasMany(Withdrawal::class);
+    }
+
+    public function withdrawLock(): HasOne
+    {
+        return $this->hasOne(UserWithdrawLock::class);
+    }
+
     public function scopeActive($q)
     {
         return $q->where('is_active', true);

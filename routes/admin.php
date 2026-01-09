@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AdminWithdrawController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,4 +36,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('users', UserController::class)->names('admin.users');
     Route::resource('units', UnitController::class)->names('admin.units');
     Route::resource('expense-categories', ExpenseCategoryController::class)->names('admin.expense-categories');
+
+    // Withdrawals Management
+    Route::prefix('withdrawals')->name('admin.withdrawals.')->group(function () {
+        Route::get('/', [AdminWithdrawController::class, 'index'])->name('index');
+        Route::get('/settings', [AdminWithdrawController::class, 'taxSettings'])->name('tax-settings');
+        Route::post('/settings', [AdminWithdrawController::class, 'updateTaxSettings'])->name('tax-settings.update');
+        Route::get('/{withdrawal}', [AdminWithdrawController::class, 'show'])->name('show');
+        Route::post('/{withdrawal}/approve', [AdminWithdrawController::class, 'approve'])->name('approve');
+        Route::post('/{withdrawal}/reject', [AdminWithdrawController::class, 'reject'])->name('reject');
+        Route::post('/{withdrawal}/paid', [AdminWithdrawController::class, 'markAsPaid'])->name('paid');
+    });
 });

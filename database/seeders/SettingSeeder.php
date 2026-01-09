@@ -34,9 +34,13 @@ class SettingSeeder extends Seeder
             ['group' => 'backup', 'key' => 'backup_frequency', 'value' => 'daily', 'type' => 'string'],
             ['group' => 'backup', 'key' => 'backup_time', 'value' => '02:00', 'type' => 'string'],
             ['group' => 'backup', 'key' => 'retention_days', 'value' => '30', 'type' => 'integer'],
+            ['group' => 'withdraw', 'key' => 'tax_percent', 'value' => '2.5', 'type' => 'float'],
         ];
         foreach ($settings as $s) {
-            Setting::create(array_merge($s, ['outlet_id' => null]));
+            Setting::updateOrCreate(
+                ['outlet_id' => null, 'group' => $s['group'], 'key' => $s['key']],
+                ['value' => $s['value'], 'type' => $s['type']]
+            );
         }
     }
 }
