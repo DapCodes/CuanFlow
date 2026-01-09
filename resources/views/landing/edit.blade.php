@@ -33,6 +33,10 @@
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
+    <!-- Swiper.js for Carousel Preview -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
     <style>
         * { box-sizing: border-box; }
         html {
@@ -676,20 +680,13 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     // Update all hero sections across templates
-                    document.querySelectorAll('.hero-section').forEach(el => {
-                         // Some templates use img tag, some bg image. 
-                         // Template 1 uses specific CSS logic? No, template 1 in this file used .hero-section CSS.
-                         // But we removed the CSS rule in head that targets .hero-section bg image?
-                         // Wait, the dynamic style in head: .hero-section { background-image: ... }
-                         // This targets ALL .hero-section classes.
-                         // So updating the style tag or style attribute is best.
-                         el.style.backgroundImage = `linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('${e.target.result}')`;
+                    document.querySelectorAll('.hero-section, .hero-parallax-bg').forEach(el => {
+                         // Use setProperty with important to ensure it overrides template styles
+                         el.style.setProperty('background-image', `linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url('${e.target.result}')`, 'important');
                     });
                     
-                    // Also update any img tags used in other layouts?
-                    // Template 2 uses <img>.
+                    // Also update any img tags used in other layouts
                     document.querySelectorAll('img.hero-bg-img').forEach(img => img.src = e.target.result);
-                    // I need to add class hero-bg-img to templates.
 
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Background berhasil diubah', showConfirmButton: false, timer: 2000 });
                 };
@@ -723,16 +720,8 @@
                     // Count currently selected in master
                     const checkedCount = document.querySelectorAll('.master-product-checkbox:checked').length;
                     
-                    if (checkedCount > 3) {
-                        this.checked = false;
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Maksimal 3 Produk',
-                            text: 'Anda hanya dapat memilih maksimal 3 produk unggulan.',
-                            confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
-                        });
-                        return;
-                    }
+                    // Limit is removed for Carousel support, but maybe suggest a healthy amount?
+                    // For now, let user choose as many as they want for the carousel.
                     
                     // Sync to template checkboxes (for visual only)
                     templateCheckboxes.forEach(cb => {
@@ -817,6 +806,20 @@
                 text: '{{ session('success') }}',
                 confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
                 timer: 3000
+            });
+        @endif
+
+        // ========== ERROR MESSAGES ==========
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menyimpan!',
+                html: `<ul class="text-left text-sm space-y-1">
+                    @foreach($errors->all() as $error)
+                        <li><i class="fas fa-exclamation-circle mr-1"></i> {{ $error }}</li>
+                    @endforeach
+                </ul>`,
+                confirmButtonColor: '#EF4444'
             });
         @endif
         // ========== TOOLBAR TOGGLE ==========

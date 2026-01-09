@@ -87,7 +87,13 @@ class LandingPageController extends Controller
                                        ->get();
         }
 
-        return view('landing.show', compact('landingPage', 'outlet', 'displaySales', 'products', 'testimonials'));
+        // Get ALL products for "View All" feature
+        $allProducts = Product::with(['unit', 'category'])
+            ->where('outlet_id', $id)
+            // ->where('is_published', true)
+            ->get();
+
+        return view('landing.show', compact('landingPage', 'outlet', 'displaySales', 'products', 'testimonials', 'allProducts'));
     }
 
     public function edit($id)

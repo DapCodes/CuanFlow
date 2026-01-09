@@ -40,6 +40,10 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
+    <!-- Swiper.js for Carousels -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
     <style>
         * { box-sizing: border-box; }
         html {
@@ -224,6 +228,59 @@
         </div>
     </div>
 
+    <!-- ========== ALL PRODUCTS SECTION (THEMED OVERLAY) ========== -->
+    <div id="allProductsOverlay" class="fixed inset-0 z-[80] hidden overflow-y-auto bg-gray-50/95 backdrop-blur-xl">
+        <div class="min-h-screen px-4 py-12 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto">
+                <!-- Header Overlay -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12" data-aos="fade-down">
+                    <div>
+                        <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter mb-2">Semua Koleksi</h2>
+                        <div class="h-1.5 w-20 bg-primary rounded-full"></div>
+                    </div>
+                    <button onclick="toggleAllProducts()" class="self-start md:self-center flex items-center gap-2 bg-white border border-gray-200 text-gray-800 px-6 py-3 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+                    </button>
+                </div>
+
+                <!-- Products Listing -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16" data-aos="fade-up">
+                    @foreach($allProducts as $product)
+                        <div class="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 p-4 cursor-pointer"
+                             onclick="showProductDetail({{ json_encode([
+                                'name' => $product->name,
+                                'price' => number_format($product->selling_price, 0, ',', '.'),
+                                'description' => $product->description ?? 'Tidak ada deskripsi tersedia.',
+                                'image' => $product->image ? Storage::url($product->image) : null,
+                                'category' => $product->category->name ?? 'Umum',
+                                'unit' => $product->unit->name ?? 'pcs'
+                             ]) }})">
+                            <div class="aspect-square rounded-2xl overflow-hidden mb-6 relative">
+                                @if($product->image)
+                                    <img src="{{ Storage::url($product->image) }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                                @else
+                                    <div class="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50">
+                                        <i class="fas fa-box text-4xl"></i>
+                                    </div>
+                                @endif
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span class="bg-white text-gray-900 px-6 py-2 rounded-full font-bold text-sm shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform">Lihat Detail</span>
+                                </div>
+                            </div>
+                            <div class="px-2">
+                                <span class="text-[10px] font-bold uppercase tracking-widest text-primary mb-2 block">{{ $product->category->name ?? 'Koleksi' }}</span>
+                                <h3 class="font-bold text-lg text-gray-900 mb-1 truncate">{{ $product->name }}</h3>
+                                <p class="text-primary font-black">
+                                    <span class="text-xs">Rp</span> {{ number_format($product->selling_price, 0, ',', '.') }}
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -244,6 +301,20 @@
             const overlay = document.getElementById('mobileOverlay');
             if(menu) menu.classList.toggle('active');
             if(overlay) overlay.classList.toggle('active');
+        }
+
+        function toggleAllProducts() {
+            const overlay = document.getElementById('allProductsOverlay');
+            const isHidden = overlay.classList.contains('hidden');
+            
+            if (isHidden) {
+                overlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                overlay.scrollTop = 0;
+            } else {
+                overlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
         }
 
         // Product Modal Functions

@@ -116,57 +116,87 @@
             </h2>
 
             @if(isset($is_editor) && $is_editor)
-                <p class="text-center mb-8 text-gray-600"><i class="fas fa-check-circle text-primary"></i> Click to select products</p>
+                <p class="text-center mb-8 text-gray-600">
+                    <i class="fas fa-check-circle text-primary"></i> Pilih produk unggulan untuk ditampilkan di carousel
+                </p>
+                <script>
+                    // Swiper Init
+                    (function() {
+                        new Swiper('.products-carousel', {
+                            slidesPerView: 1,
+                            spaceBetween: 20,
+                            pagination: { el: '.swiper-pagination', clickable: true },
+                            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+                            breakpoints: {
+                                640: { slidesPerView: 2, spaceBetween: 20 },
+                                1024: { slidesPerView: 3, spaceBetween: 30 }
+                            },
+                            autoplay: { delay: 3000, disableOnInteraction: false }
+                        });
+                    })();
+                </script>
             @endif
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                @foreach($products as $product)
-                    @if(isset($is_editor) && $is_editor)
-                        <label class="bg-white rounded-[2rem] p-4 shadow-xl hover:shadow-2xl transition transform hover:-translate-y-2 cursor-pointer border border-gray-100">
-                            <input type="checkbox" data-product-id="{{ $product->id }}" value="{{ $product->id }}" class="peer sr-only product-checkbox" {{ in_array($product->id, $landingPage->selected_product_ids ?? []) ? 'checked' : '' }}>
-                            <div class="rounded-[1.5rem] overflow-hidden bg-gray-100 aspect-video mb-4 relative ring-offset-2 peer-checked:ring-4 peer-checked:ring-primary">
-                                @if($product->image)
-                                <img src="{{ Storage::url($product->image) }}" class="w-full h-full object-cover">
-                                @else
-                                <div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fas fa-image text-3xl"></i></div>
-                                @endif
-                                <div class="absolute top-4 right-4 bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold opacity-0 peer-checked:opacity-100">
-                                    <i class="fas fa-check text-xs"></i>
+            @if(count($products) > 0)
+                <div class="swiper products-carousel pb-12">
+                <div class="swiper-wrapper">
+                    @foreach($products as $product)
+                        <div class="swiper-slide h-auto">
+                            @if(isset($is_editor) && $is_editor)
+                                {{-- Editor Mode --}}
+                                <label class="block bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary/50 transition-all duration-300 group h-full">
+                                    <input type="checkbox" data-product-id="{{ $product->id }}" value="{{ $product->id }}" class="peer sr-only product-checkbox" {{ in_array($product->id, $landingPage->selected_product_ids ?? []) ? 'checked' : '' }}>
+                                    <div class="h-56 sm:h-64 bg-gray-100 overflow-hidden relative ring-offset-2 peer-checked:ring-4 peer-checked:ring-primary">
+                                        @if($product->image)
+                                            <img src="{{ Storage::url($product->image) }}" class="w-full h-full object-cover">
+                                        @else
+                                            <div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fas fa-box text-5xl"></i></div>
+                                        @endif
+                                        <div class="absolute top-3 right-3 bg-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg opacity-0 peer-checked:opacity-100 transition-opacity">
+                                            <i class="fas fa-check text-primary font-bold"></i>
+                                        </div>
+                                    </div>
+                                    <div class="p-5 sm:p-6 peer-checked:bg-primary/5">
+                                        <h3 class="text-lg font-bold text-gray-900 mb-2 truncate">{{ $product->name }}</h3>
+                                        <p class="text-primary font-bold text-xl">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</p>
+                                    </div>
+                                </label>
+                            @else
+                                {{-- Public View --}}
+                                <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 border border-gray-100 group h-full">
+                                    <div class="h-56 sm:h-64 bg-gray-100 overflow-hidden relative">
+                                        @if($product->image)
+                                            <img src="{{ Storage::url($product->image) }}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                                        @else
+                                            <div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fas fa-box text-5xl"></i></div>
+                                        @endif
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                                            <button type="button" onclick="showProductDetail({{ json_encode(['name' => $product->name,'price' => number_format($product->selling_price, 0, ',', '.'),'description' => $product->description ?? '','image' => $product->image ? Storage::url($product->image) : null,'category' => $product->category->name ?? '','unit' => $product->unit->name ?? '']) }})"
+                                                    class="bg-white text-gray-900 px-6 py-3 rounded-full font-bold shadow-xl hover:scale-105 transition-all">Lihat Detail</button>
+                                        </div>
+                                    </div>
+                                    <div class="p-5 sm:p-6 text-center">
+                                        <h3 class="text-lg font-bold text-gray-900 mb-2 truncate">{{ $product->name }}</h3>
+                                        <p class="text-primary font-bold text-xl">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="px-2 pb-2">
-                                <h3 class="font-bold text-xl text-gray-900">{{ $product->name }}</h3>
-                                <p class="text-primary font-black text-lg">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</p>
-                            </div>
-                        </label>
-                    @else
-                        <div class="bg-white rounded-[2rem] p-4 shadow-xl hover:shadow-2xl transition transform hover:-translate-y-2 cursor-pointer border border-gray-100"
-                             onclick="showProductDetail({{ json_encode([
-                                 'name' => $product->name,
-                                 'price' => 'Rp ' . number_format($product->selling_price, 0, ',', '.'),
-                                 'description' => $product->description ?? 'No description available.',
-                                 'image' => $product->image ? Storage::url($product->image) : null,
-                                 'category' => $product->category->name ?? 'General',
-                                 'unit' => $product->unit->name ?? 'pcs'
-                             ]) }})">
-                            <div class="rounded-[1.5rem] overflow-hidden bg-gray-100 aspect-video mb-4 relative">
-                                @if($product->image)
-                                <img src="{{ Storage::url($product->image) }}" class="w-full h-full object-cover">
-                                @else
-                                <div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fas fa-image text-3xl"></i></div>
-                                @endif
-                                <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-                                    New
-                                </div>
-                            </div>
-                            <div class="px-2 pb-2">
-                                <h3 class="font-bold text-xl text-gray-900">{{ $product->name }}</h3>
-                                <p class="text-primary font-black text-lg">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</p>
-                            </div>
+                            @endif
                         </div>
-                    @endif
-                @endforeach
+                    @endforeach
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next !text-primary after:!text-xl bg-white/80 backdrop-blur w-10 h-10 rounded-full shadow-lg !hidden md:!flex"></div>
+                <div class="swiper-button-prev !text-primary after:!text-xl bg-white/80 backdrop-blur w-10 h-10 rounded-full shadow-lg !hidden md:!flex"></div>
             </div>
+
+                <div class="text-center mt-12">
+                    <button onclick="toggleAllProducts()" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-full font-bold shadow-lg transform active:scale-95 transition-all">
+                        Lihat Semua Produk
+                    </button>
+                </div>
+            @else
+                <p class="text-center text-gray-500">No products available yet.</p>
+            @endif
         </div>
     </section>
 
