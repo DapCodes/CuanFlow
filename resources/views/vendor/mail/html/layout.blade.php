@@ -35,11 +35,11 @@ width: 100% !important;
 
 <!-- Email Body -->
 <tr>
-<td class="body" width="100%" cellpadding="0" cellspacing="0" style="border: hidden !important;">
-<table class="inner-body" align="center" width="570" cellpadding="0" cellspacing="0" role="presentation">
+<td class="body" width="100%" cellpadding="0" cellspacing="0" style="background-color: #F0E491; padding: 20px 0;">
+<table class="inner-body" align="center" width="570" cellpadding="0" cellspacing="0" role="presentation" style="border-top: 8px solid #31694E; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
 <!-- Body content -->
 <tr>
-<td class="content-cell">
+<td class="content-cell" style="background-color: #ffffff;">
 {!! Illuminate\Mail\Markdown::parse($slot) !!}
 
 {!! $subcopy ?? '' !!}

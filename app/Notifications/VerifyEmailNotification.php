@@ -10,6 +10,22 @@ use Illuminate\Support\Facades\URL;
 class VerifyEmailNotification extends BaseVerifyEmail
 {
     /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail($notifiable)
+    {
+        $verificationUrl = $this->verificationUrl($notifiable);
+
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->subject('Verifikasi Alamat Email Anda')
+            ->greeting('Halo!')
+            ->line('Klik tombol di bawah ini untuk memverifikasi alamat email Anda.')
+            ->action('Verifikasi Email', $verificationUrl)
+            ->line('Jika Anda tidak membuat akun, tidak ada tindakan lebih lanjut yang diperlukan.')
+            ->salutation('Salam hangat, Tim CuanFlow');
+    }
+
+    /**
      * Get the verification URL for the given notifiable.
      */
     protected function verificationUrl($notifiable)

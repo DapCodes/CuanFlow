@@ -332,7 +332,7 @@
                                 <i class="fas fa-receipt"></i>
                             </div>
                             <div>
-                                <h3 class="text-sm font-bold text-gray-900">Data Pengeluaran</h3>
+                                <h3 class="text-sm font-bold text-gray-900">Data Pengeluaran & Pemasukan (Non Sales)</h3>
                                 <p class="text-[11px] text-gray-500">Menampilkan histori pengeluaran terakhir</p>
                             </div>
                         </div>

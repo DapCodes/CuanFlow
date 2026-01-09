@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PermissionCategory;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -17,25 +18,25 @@ class EmployeeController extends Controller
     {
         $employees = User::with(['roles', 'permissions', 'outlet'])
             ->whereHas('roles', function ($query) {
-                $query->whereIn('name', ['kasir', 'produksi', 'inventaris']);
+                $query->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']);
             })
             ->where('outlet_id', auth()->user()->outlet_id)
             ->latest()
             ->paginate(15);
 
         $stats = [
-            'total' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['kasir', 'produksi', 'inventaris']))
+            'total' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->count(),
-            'active' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['kasir', 'produksi', 'inventaris']))
+            'active' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->where('is_active', true)
                 ->count(),
-            'inactive' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['kasir', 'produksi', 'inventaris']))
+            'inactive' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->where('is_active', false)
                 ->count(),
-            'verified' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['kasir', 'produksi', 'inventaris']))
+            'verified' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->whereNotNull('email_verified_at')
                 ->count(),
@@ -46,10 +47,21 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        $roles = Role::whereIn('name', ['kasir', 'produksi', 'inventaris'])->get();
-        $permissions = Permission::all();
+        // Ambil roles yang diizinkan
+        $roles = Role::whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris'])->get();
+        
+        // Ambil permissions dengan kategori, diurutkan berdasarkan kategori
+        $permissionCategories = PermissionCategory::with(['permissions' => function ($query) {
+            $query->orderBy('name');
+        }])->ordered()->get();
+        
+        // Ambil data permission untuk setiap role (untuk auto-check saat role dipilih)
+        $rolePermissions = [];
+        foreach ($roles as $role) {
+            $rolePermissions[$role->name] = $role->permissions->pluck('name')->toArray();
+        }
 
-        return view('main.employees.create', compact('roles', 'permissions'));
+        return view('main.employees.create', compact('roles', 'permissionCategories', 'rolePermissions'));
     }
 
     public function store(Request $request)
@@ -112,10 +124,27 @@ class EmployeeController extends Controller
             abort(403);
         }
 
-        $roles = Role::whereIn('name', ['kasir', 'produksi', 'inventaris'])->get();
-        $permissions = Permission::all();
+        // Ambil roles yang diizinkan
+        $roles = Role::whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris'])->get();
+        
+        // Ambil permissions dengan kategori, diurutkan berdasarkan kategori
+        $permissionCategories = PermissionCategory::with(['permissions' => function ($query) {
+            $query->orderBy('name');
+        }])->ordered()->get();
+        
+        // Ambil data permission untuk setiap role (untuk auto-check saat role dipilih)
+        $rolePermissions = [];
+        foreach ($roles as $role) {
+            $rolePermissions[$role->name] = $role->permissions->pluck('name')->toArray();
+        }
+        
+        // Ambil permission yang dimiliki employee (direct permissions, bukan dari role)
+        $employeeDirectPermissions = $employee->getDirectPermissions()->pluck('name')->toArray();
+        
+        // Ambil role yang dimiliki employee
+        $employeeRoles = $employee->roles->pluck('name')->toArray();
 
-        return view('main.employees.edit', compact('employee', 'roles', 'permissions'));
+        return view('main.employees.edit', compact('employee', 'roles', 'permissionCategories', 'rolePermissions', 'employeeDirectPermissions', 'employeeRoles'));
     }
 
     public function update(Request $request, User $employee)

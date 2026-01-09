@@ -17,11 +17,48 @@
 </li>
 @endsection
 
+@push('styles')
+<style>
+    .role-card {
+        transition: all 0.2s ease;
+    }
+    .role-card:hover {
+        transform: translateY(-2px);
+    }
+    .role-card.selected {
+        transform: scale(1.02);
+    }
+    .permission-item {
+        transition: all 0.15s ease;
+    }
+    .permission-item:hover {
+        background-color: #f8fafc;
+    }
+    .category-section {
+        scroll-margin-top: 1rem;
+    }
+    .permission-checkbox:checked + .permission-label {
+        background-color: #f0fdfa;
+        border-color: #14b8a6;
+    }
+    .search-highlight {
+        background-color: #fef08a;
+        padding: 0 2px;
+        border-radius: 2px;
+    }
+    .hidden-by-search {
+        display: none !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <main class="flex-grow py-2 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
+        <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
+            {{-- Header --}}
             <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
@@ -140,67 +177,199 @@
                 </div>
             </section>
 
-            {{-- Role & Permission --}}
+            {{-- Role --}}
             <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-base font-semibold text-gray-900">Role & Hak Akses</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Tentukan role dan permission untuk pegawai</p>
+                    <h2 class="text-base font-semibold text-gray-900">Pilih Role</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Pilih satu atau lebih role untuk pegawai. Permission akan otomatis terisi sesuai role.</p>
                 </div>
-                <div class="px-6 py-5 space-y-5">
-                    {{-- Roles --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Role <span class="text-red-500">*</span>
-                        </label>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            @foreach($roles as $role)
-                                @php
-                                    $roleColors = [
-                                        'kasir' => 'peer-checked:bg-cyan-50 peer-checked:border-cyan-400 peer-checked:text-cyan-700',
-                                        'produksi' => 'peer-checked:bg-teal-50 peer-checked:border-teal-400 peer-checked:text-teal-700',
-                                        'inventaris' => 'peer-checked:bg-emerald-50 peer-checked:border-emerald-400 peer-checked:text-emerald-700',
-                                    ];
-                                    $colorClass = $roleColors[$role->name] ?? 'peer-checked:bg-gray-50 peer-checked:border-gray-400';
-                                @endphp
-                                <label class="relative cursor-pointer">
-                                    <input type="checkbox" name="roles[]" value="{{ $role->name }}" class="peer sr-only"
-                                           {{ in_array($role->name, old('roles', [])) ? 'checked' : '' }}>
-                                    <div class="block p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 {{ $colorClass }} transition-all">
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-user-tag"></i>
-                                            <span class="font-semibold">{{ ucfirst($role->name) }}</span>
+                <div class="px-6 py-5">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        @php
+                            $roleConfig = [
+                                'supervisor' => [
+                                    'icon' => 'fa-user-tie',
+                                    'color' => 'purple',
+                                    'bgGradient' => 'from-purple-500 to-indigo-500',
+                                    'description' => 'Pengawas operasional'
+                                ],
+                                'kasir' => [
+                                    'icon' => 'fa-cash-register',
+                                    'color' => 'cyan',
+                                    'bgGradient' => 'from-cyan-500 to-blue-500',
+                                    'description' => 'Akses kasir & transaksi'
+                                ],
+                                'produksi' => [
+                                    'icon' => 'fa-flask',
+                                    'color' => 'teal',
+                                    'bgGradient' => 'from-teal-500 to-emerald-500',
+                                    'description' => 'Kelola produksi'
+                                ],
+                                'inventaris' => [
+                                    'icon' => 'fa-boxes-stacked',
+                                    'color' => 'amber',
+                                    'bgGradient' => 'from-amber-500 to-orange-500',
+                                    'description' => 'Kelola stok & gudang'
+                                ],
+                            ];
+                        @endphp
+                        
+                        @foreach($roles as $role)
+                            @php
+                                $config = $roleConfig[$role->name] ?? [
+                                    'icon' => 'fa-user-tag',
+                                    'color' => 'gray',
+                                    'bgGradient' => 'from-gray-500 to-gray-600',
+                                    'description' => 'Role pegawai'
+                                ];
+                            @endphp
+                            <label class="role-card relative cursor-pointer group" data-role="{{ $role->name }}">
+                                <input type="checkbox" name="roles[]" value="{{ $role->name }}" 
+                                       class="peer sr-only role-checkbox"
+                                       data-role-name="{{ $role->name }}"
+                                       {{ in_array($role->name, old('roles', [])) ? 'checked' : '' }}>
+                                <div class="block p-4 border-2 border-gray-200 rounded-xl 
+                                            peer-checked:border-{{ $config['color'] }}-400 
+                                            peer-checked:bg-{{ $config['color'] }}-50 
+                                            hover:border-gray-300 transition-all">
+                                    <div class="flex flex-col items-center text-center gap-2">
+                                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br {{ $config['bgGradient'] }} flex items-center justify-center shadow-lg">
+                                            <i class="fas {{ $config['icon'] }} text-white text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <span class="font-semibold text-gray-900 block">{{ ucfirst($role->name) }}</span>
+                                            <span class="text-xs text-gray-500 hidden sm:block">{{ $config['description'] }}</span>
                                         </div>
                                     </div>
-                                </label>
-                            @endforeach
-                        </div>
-                        @error('roles')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
+                                    {{-- Checkmark --}}
+                                    <div class="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-gray-300 
+                                                peer-checked:border-{{ $config['color'] }}-500 peer-checked:bg-{{ $config['color'] }}-500 
+                                                flex items-center justify-center transition-all">
+                                        <i class="fas fa-check text-white text-xs opacity-0 peer-checked:opacity-100"></i>
+                                    </div>
+                                </div>
+                            </label>
+                        @endforeach
                     </div>
+                    @error('roles')
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </section>
 
-                    {{-- Permissions --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Permission Tambahan <span class="text-xs text-gray-500">(Opsional)</span>
-                        </label>
-                        <div class="border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                @foreach($permissions as $permission)
-                                    <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                                        <input type="checkbox" name="permissions[]" value="{{ $permission->name }}"
-                                               class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-                                               {{ in_array($permission->name, old('permissions', [])) ? 'checked' : '' }}>
-                                        <span class="text-sm text-gray-700">{{ str_replace('-', ' ', ucfirst($permission->name)) }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
+            {{-- Permissions --}}
+            <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-900">Permission / Hak Akses</h2>
+                            <p class="text-xs text-gray-500 mt-0.5">Centang permission untuk mengatur akses pegawai</p>
                         </div>
-                        @error('permissions')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
+                        <div class="flex items-center gap-2">
+                            {{-- Search --}}
+                            <div class="relative">
+                                <input type="text" id="permissionSearch" placeholder="Cari permission..."
+                                       class="w-48 sm:w-64 pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            </div>
+                            {{-- Toggle All --}}
+                            <button type="button" id="toggleAllPermissions" 
+                                    class="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-check-double mr-1"></i>
+                                Pilih Semua
+                            </button>
+                        </div>
                     </div>
                 </div>
+                
+                <div class="px-6 py-4 max-h-[500px] overflow-y-auto" id="permissionsContainer">
+                    {{-- Stats Bar --}}
+                    <div class="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center gap-4 text-sm">
+                            <span class="text-gray-600">
+                                <i class="fas fa-check-circle text-teal-500 mr-1"></i>
+                                Terpilih: <strong id="selectedCount">0</strong>
+                            </span>
+                            <span class="text-gray-600">
+                                <i class="fas fa-list text-gray-400 mr-1"></i>
+                                Total: <strong>{{ $permissionCategories->sum(fn($c) => $c->permissions->count()) }}</strong>
+                            </span>
+                        </div>
+                        <button type="button" id="clearAllPermissions" 
+                                class="text-xs text-red-500 hover:text-red-700 font-medium">
+                            <i class="fas fa-times mr-1"></i>
+                            Hapus Semua
+                        </button>
+                    </div>
+
+                    {{-- Permission Categories --}}
+                    <div class="space-y-4" id="permissionsList">
+                        @foreach($permissionCategories as $category)
+                            @if($category->permissions->count() > 0)
+                                <div class="category-section border border-gray-200 rounded-lg overflow-hidden" data-category="{{ $category->slug }}">
+                                    {{-- Category Header --}}
+                                    <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200 cursor-pointer category-toggle"
+                                         data-category-id="{{ $category->id }}">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg flex items-center justify-center" 
+                                                 style="background-color: {{ $category->color }}20;">
+                                                <i class="{{ $category->icon }}" style="color: {{ $category->color }};"></i>
+                                            </div>
+                                            <div>
+                                                <span class="font-semibold text-gray-900 text-sm">{{ $category->name }}</span>
+                                                <span class="text-xs text-gray-500 ml-2">
+                                                    (<span class="category-selected-count" data-category="{{ $category->id }}">0</span>/{{ $category->permissions->count() }})
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" class="select-all-category px-2 py-1 text-xs font-medium text-teal-600 hover:bg-teal-50 rounded transition-colors"
+                                                    data-category="{{ $category->id }}">
+                                                Pilih Semua
+                                            </button>
+                                            <i class="fas fa-chevron-down text-gray-400 text-xs transition-transform category-chevron"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    {{-- Permissions Grid --}}
+                                    <div class="p-3 category-content" data-category-id="{{ $category->id }}">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                            @foreach($category->permissions as $permission)
+                                                <label class="permission-item flex items-center gap-2.5 p-2.5 rounded-lg border border-transparent hover:border-gray-200 cursor-pointer transition-all"
+                                                       data-permission-name="{{ $permission->name }}">
+                                                    <input type="checkbox" name="permissions[]" value="{{ $permission->name }}"
+                                                           class="permission-checkbox w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-offset-0"
+                                                           data-category="{{ $category->id }}"
+                                                           {{ in_array($permission->name, old('permissions', [])) ? 'checked' : '' }}>
+                                                    <div class="flex-1 min-w-0">
+                                                        <span class="permission-label text-sm text-gray-700 block truncate">
+                                                            {{ ucfirst($permission->name) }}
+                                                        </span>
+                                                        @if($permission->description)
+                                                            <span class="text-xs text-gray-400 block truncate">{{ $permission->description }}</span>
+                                                        @endif
+                                                    </div>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                    
+                    {{-- No Results --}}
+                    <div id="noSearchResults" class="hidden py-8 text-center text-gray-500">
+                        <i class="fas fa-search text-3xl mb-2 text-gray-300"></i>
+                        <p>Tidak ada permission yang ditemukan</p>
+                    </div>
+                </div>
+                
+                @error('permissions')
+                    <div class="px-6 pb-4">
+                        <p class="text-xs text-red-600">{{ $message }}</p>
+                    </div>
+                @enderror
             </section>
 
             {{-- Status --}}
@@ -236,12 +405,26 @@
         </form>
     </div>
 </main>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Role permissions mapping from server
+    const rolePermissions = @json($rolePermissions);
+    
+    // Elements
     const avatarInput = document.getElementById('avatar');
     const avatarPreview = document.getElementById('avatarPreview');
-
+    const roleCheckboxes = document.querySelectorAll('.role-checkbox');
+    const permissionCheckboxes = document.querySelectorAll('.permission-checkbox');
+    const searchInput = document.getElementById('permissionSearch');
+    const toggleAllBtn = document.getElementById('toggleAllPermissions');
+    const clearAllBtn = document.getElementById('clearAllPermissions');
+    const selectedCountEl = document.getElementById('selectedCount');
+    const permissionsList = document.getElementById('permissionsList');
+    const noSearchResults = document.getElementById('noSearchResults');
+    
+    // Avatar preview
     avatarInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -252,6 +435,156 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsDataURL(file);
         }
     });
+    
+    // Role selection - auto check permissions
+    roleCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const roleName = this.dataset.roleName;
+            const permissions = rolePermissions[roleName] || [];
+            
+            if (this.checked) {
+                // Check all permissions for this role
+                permissions.forEach(permName => {
+                    const permCheckbox = document.querySelector(`.permission-checkbox[value="${permName}"]`);
+                    if (permCheckbox) {
+                        permCheckbox.checked = true;
+                    }
+                });
+            } else {
+                // Get all checked roles
+                const checkedRoles = Array.from(document.querySelectorAll('.role-checkbox:checked'))
+                    .map(cb => cb.dataset.roleName);
+                
+                // Get all permissions that should remain checked
+                const remainingPermissions = new Set();
+                checkedRoles.forEach(role => {
+                    (rolePermissions[role] || []).forEach(p => remainingPermissions.add(p));
+                });
+                
+                // Uncheck permissions that are not in remaining roles
+                permissions.forEach(permName => {
+                    if (!remainingPermissions.has(permName)) {
+                        const permCheckbox = document.querySelector(`.permission-checkbox[value="${permName}"]`);
+                        if (permCheckbox) {
+                            permCheckbox.checked = false;
+                        }
+                    }
+                });
+            }
+            
+            updateCounts();
+        });
+    });
+    
+    // Permission checkbox change
+    permissionCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateCounts);
+    });
+    
+    // Update selected counts
+    function updateCounts() {
+        const total = document.querySelectorAll('.permission-checkbox:checked').length;
+        selectedCountEl.textContent = total;
+        
+        // Update category counts
+        document.querySelectorAll('.category-selected-count').forEach(el => {
+            const categoryId = el.dataset.category;
+            const count = document.querySelectorAll(`.permission-checkbox[data-category="${categoryId}"]:checked`).length;
+            el.textContent = count;
+        });
+    }
+    
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        let hasVisibleItems = false;
+        
+        document.querySelectorAll('.category-section').forEach(category => {
+            let categoryHasVisible = false;
+            
+            category.querySelectorAll('.permission-item').forEach(item => {
+                const permName = item.dataset.permissionName.toLowerCase();
+                const isMatch = query === '' || permName.includes(query);
+                
+                if (isMatch) {
+                    item.classList.remove('hidden-by-search');
+                    categoryHasVisible = true;
+                    hasVisibleItems = true;
+                } else {
+                    item.classList.add('hidden-by-search');
+                }
+            });
+            
+            // Show/hide entire category
+            if (categoryHasVisible) {
+                category.classList.remove('hidden-by-search');
+            } else {
+                category.classList.add('hidden-by-search');
+            }
+        });
+        
+        // Show/hide no results message
+        if (hasVisibleItems || query === '') {
+            noSearchResults.classList.add('hidden');
+            permissionsList.classList.remove('hidden');
+        } else {
+            noSearchResults.classList.remove('hidden');
+            permissionsList.classList.add('hidden');
+        }
+    });
+    
+    // Toggle all permissions
+    let allSelected = false;
+    toggleAllBtn.addEventListener('click', function() {
+        allSelected = !allSelected;
+        permissionCheckboxes.forEach(cb => {
+            if (!cb.closest('.hidden-by-search')) {
+                cb.checked = allSelected;
+            }
+        });
+        this.innerHTML = allSelected 
+            ? '<i class="fas fa-times mr-1"></i> Batalkan Semua'
+            : '<i class="fas fa-check-double mr-1"></i> Pilih Semua';
+        updateCounts();
+    });
+    
+    // Clear all permissions
+    clearAllBtn.addEventListener('click', function() {
+        permissionCheckboxes.forEach(cb => cb.checked = false);
+        roleCheckboxes.forEach(cb => cb.checked = false);
+        allSelected = false;
+        toggleAllBtn.innerHTML = '<i class="fas fa-check-double mr-1"></i> Pilih Semua';
+        updateCounts();
+    });
+    
+    // Select all in category
+    document.querySelectorAll('.select-all-category').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const categoryId = this.dataset.category;
+            const categoryCheckboxes = document.querySelectorAll(`.permission-checkbox[data-category="${categoryId}"]`);
+            const allChecked = Array.from(categoryCheckboxes).every(cb => cb.checked);
+            
+            categoryCheckboxes.forEach(cb => cb.checked = !allChecked);
+            this.textContent = allChecked ? 'Pilih Semua' : 'Batalkan';
+            updateCounts();
+        });
+    });
+    
+    // Category toggle (collapse/expand)
+    document.querySelectorAll('.category-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const categoryId = this.dataset.categoryId;
+            const content = document.querySelector(`.category-content[data-category-id="${categoryId}"]`);
+            const chevron = this.querySelector('.category-chevron');
+            
+            content.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+        });
+    });
+    
+    // Initial count
+    updateCounts();
 });
 </script>
 @endpush
