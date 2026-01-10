@@ -131,6 +131,13 @@ class PaymentController extends Controller
      */
     public function processCashPayment(Request $request)
     {
+        if (!auth()->user()->can('proses pembayaran tunai')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk memproses pembayaran tunai',
+            ], 403);
+        }
+
         $request->validate([
             'paid_amount' => 'required|numeric|min:0',
             'service_type' => 'nullable|string|in:dine_in,take_away',
@@ -234,6 +241,13 @@ class PaymentController extends Controller
      */
     public function processTransferPayment(Request $request)
     {
+        if (!auth()->user()->can('proses pembayaran transfer')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk memproses pembayaran transfer',
+            ], 403);
+        }
+
         $request->validate([
             'transfer_method' => 'required|string',
             'reference_number' => 'nullable|string',
@@ -328,6 +342,13 @@ class PaymentController extends Controller
 
     public function createMidtransToken(Request $request)
     {
+        if (!auth()->user()->can('proses pembayaran digital')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk memproses pembayaran digital',
+            ], 403);
+        }
+
         $request->validate([
             'service_type' => 'nullable|string|in:dine_in,take_away',
             'table_id' => 'nullable|exists:tables,id',

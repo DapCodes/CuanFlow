@@ -277,6 +277,13 @@ class TableController extends Controller
      */
     public function getTablesApi()
     {
+        if (!auth()->user()->can('pilih meja pos')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk memilih meja',
+            ], 403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $tables = Table::byOutlet($outletId)
             ->active()

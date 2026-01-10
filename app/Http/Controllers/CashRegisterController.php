@@ -14,6 +14,10 @@ class CashRegisterController extends Controller
 {
     public function showClosePage()
     {
+        if (!auth()->user()->can('tutup kasir')) {
+            abort(403, 'Anda tidak memiliki izin untuk menutup kasir');
+        }
+
         $userId = auth()->id();
         $outletId = auth()->user()->outlet_id;
 
@@ -48,6 +52,13 @@ class CashRegisterController extends Controller
      */
     public function processClose(Request $request)
     {
+        if (!auth()->user()->can('tutup kasir')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk menutup kasir',
+            ], 403);
+        }
+
         $request->validate([
             'closing_amount' => 'required|numeric|min:0',
             'notes' => 'nullable|string|max:1000',
@@ -149,6 +160,10 @@ class CashRegisterController extends Controller
      */
     public function history()
     {
+        if (!auth()->user()->can('lihat riwayat kasir')) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat riwayat kasir');
+        }
+
         $userId = auth()->id();
         $outletId = auth()->user()->outlet_id;
 
@@ -167,6 +182,10 @@ class CashRegisterController extends Controller
      */
     public function show($id)
     {
+        if (!auth()->user()->can('lihat riwayat kasir')) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat riwayat kasir');
+        }
+
         $register = CashRegister::with(['user', 'outlet'])
             ->findOrFail($id);
 

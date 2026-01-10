@@ -1197,9 +1197,11 @@
             <button onclick="declineStartSales()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
                 Tidak
             </button>
+            @can('buka kasir')
             <button onclick="openOpeningAmountModal()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg">
                 Ya, Mulai
             </button>
+            @endcan
         </div>
     </div>
 </div>
@@ -1436,6 +1438,7 @@
 
                     <h3 class="text-lg font-bold text-gray-900 mb-4">Pilih Metode Pembayaran</h3>
                     <div class="payment-methods">
+                        @can('proses pembayaran tunai')
                         <div class="payment-method" onclick="setUIState('cash')">
                             <div class="payment-icon">
                                 <i class="fas fa-money-bill-wave"></i>
@@ -1446,6 +1449,9 @@
                             </div>
                             <i class="fas fa-chevron-right text-gray-400"></i>
                         </div>
+                        @endcan
+
+                        @can('proses pembayaran transfer')
                         <div class="payment-method" onclick="setUIState('transfer')">
                             <div class="payment-icon">
                                 <i class="fas fa-credit-card"></i>
@@ -1456,6 +1462,9 @@
                             </div>
                             <i class="fas fa-chevron-right text-gray-400"></i>
                         </div>
+                        @endcan
+
+                        @can('proses pembayaran digital')
                         <div class="payment-method" onclick="setUIState('midtrans')">
                             <div class="payment-icon">
                                 <i class="fas fa-qrcode"></i>
@@ -1466,6 +1475,7 @@
                             </div>
                             <i class="fas fa-chevron-right text-gray-400"></i>
                         </div>
+                        @endcan
                     </div>
                 </div>
 
@@ -1617,20 +1627,26 @@
                     <!-- Dropdown Menu -->
                     <div id="posDropdownMenu" class="hidden absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-50 min-w-[200px] overflow-hidden">
                         <!-- Buka/Tutup Toko -->
+                        @can('tutup kasir')
                         <button onclick="handleCloseCashRegister()" id="menuCloseCashRegister" class="hidden w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 transition-colors flex items-center gap-2 text-red-600 font-medium border-b border-gray-100">
                             <i class="fas fa-sign-out-alt w-4"></i>
                             <span>Tutup Toko</span>
                         </button>
+                        @endcan
+                        @can('buka kasir')
                         <button onclick="openOpeningAmountModal(); togglePOSMenu();" id="menuOpenCashRegister" class="hidden w-full px-4 py-2.5 text-left text-sm hover:bg-green-50 transition-colors flex items-center gap-2 text-green-600 font-medium border-b border-gray-100">
                             <i class="fas fa-door-open w-4"></i>
                             <span>Buka Toko</span>
                         </button>
+                        @endcan
                         
                         <!-- Penjualan Hari Ini -->
+                        @can('lihat riwayat kasir')
                         <button onclick="openSalesTodayModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-indigo-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-chart-line w-4 text-indigo-600"></i>
                             <span>Penjualan Hari Ini</span>
                         </button>
+                        @endcan
                         
                         <!-- Kalkulator -->
                         <button onclick="openCalculator(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 transition-colors flex items-center gap-2 text-gray-700 0 border-b border-gray-100">
@@ -1646,16 +1662,20 @@
 
                         <!-- Kelola Meja -->
                         @if(auth()->user()->outlet->has_table_system == true)
+                            @can('pilih meja pos')
                             <button onclick="openTableManagementModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                                 <i class="fas fa-chair w-4 text-amber-600"></i>
                                 <span>Kelola Meja</span>
                             </button>
+                            @endcan
                         @endif
 
+                        @can('atur tampilan produk pos')
                         <button onclick="openProductSettingsModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-orange-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-cog w-4 text-orange-600"></i>
                             <span>Pengaturan</span>
                         </button>
+                        @endcan
 
                          <!-- Penjualan Hari Ini -->
                         <a href="{{ route('dashboard') }}" class="block w-full px-4 py-2.5 text-left text-sm hover:bg-indigo-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
@@ -1695,10 +1715,12 @@
                         <i class="fas fa-credit-card"></i>
                         <span>Bayar Sekarang</span>
                     </button>
+                    @can('batalkan transaksi')
                     <button id="btnClearCart" onclick="clearCart()" class="btn-secondary text-red-600 hover:bg-red-50">
                         <i class="fas fa-trash-alt mr-2"></i>
                         Kosongkan Keranjang
                     </button>
+                    @endcan
                 </div>
 
                 <div id="actionsPayflowSummary" class="hidden mt-4">
@@ -2069,10 +2091,12 @@
         
         <!-- Footer - Fixed -->
         <div class="modal-footer-fixed p-6 flex justify-end gap-3">
+            @can('lihat riwayat kasir')
             <a href="{{ route('sales.index') }}" class="action-btn action-btn-primary">
                 <i class="fas fa-external-link-alt"></i>
                 Lihat Semua Penjualan
             </a>
+            @endcan
             <button onclick="closeSalesTodayModal()" class="action-btn action-btn-secondary">
                 Tutup
             </button>

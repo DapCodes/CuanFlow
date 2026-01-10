@@ -20,6 +20,10 @@ class PointOfSaleController extends Controller
 
     public function index()
     {
+        if (!auth()->user()->can('akses pos')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengakses Point of Sale.');
+        }
+
         $outletId = auth()->user()->outlet_id;
 
         $products = Product::where('outlet_id', $outletId)
@@ -100,6 +104,13 @@ class PointOfSaleController extends Controller
 
     public function startCashRegister(Request $request)
     {
+        if (!auth()->user()->can('buka kasir')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk membuka kasir',
+            ], 403);
+        }
+
         $request->validate([
             'opening_amount' => 'required|numeric|min:0',
         ]);
@@ -162,6 +173,13 @@ class PointOfSaleController extends Controller
 
     public function addToCart(Request $request)
     {
+        if (!auth()->user()->can('akses pos')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk mengakses Point of Sale',
+            ], 403);
+        }
+
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|numeric|min:0.01',
@@ -231,6 +249,13 @@ class PointOfSaleController extends Controller
 
     public function updateCartItem(Request $request)
     {
+        if (!auth()->user()->can('akses pos')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk mengakses Point of Sale',
+            ], 403);
+        }
+
         $request->validate([
             'cart_key' => 'required',
             'quantity' => 'required|numeric|min:0',
@@ -293,6 +318,13 @@ class PointOfSaleController extends Controller
 
     public function removeCartItem(Request $request)
     {
+        if (!auth()->user()->can('akses pos')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk mengakses Point of Sale',
+            ], 403);
+        }
+
         $request->validate(['cart_key' => 'required']);
 
         $cart = Session::get('pos_cart', []);
@@ -321,6 +353,13 @@ class PointOfSaleController extends Controller
 
     public function clearCart()
     {
+        if (!auth()->user()->can('batalkan transaksi')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk membatalkan transaksi',
+            ], 403);
+        }
+
         Session::forget('pos_cart');
         Session::forget('pos_customer_id');
         Session::forget('pos_discount_code');
@@ -334,6 +373,13 @@ class PointOfSaleController extends Controller
 
     public function setCustomer(Request $request)
     {
+        if (!auth()->user()->can('pilih pelanggan pos')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk memilih pelanggan',
+            ], 403);
+        }
+
         $request->validate(['customer_id' => 'nullable|exists:customers,id']);
 
         if ($request->customer_id) {
@@ -410,6 +456,13 @@ class PointOfSaleController extends Controller
 
     public function closeSilent(Request $request)
     {
+        if (!auth()->user()->can('tutup kasir')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk menutup kasir',
+            ], 403);
+        }
+
         $cashRegister = CashRegister::where('outlet_id', auth()->user()->outlet_id)
             ->where('user_id', auth()->id())
             ->where('status', 'open')
@@ -440,6 +493,13 @@ class PointOfSaleController extends Controller
 
     public function setOpeningAmount(Request $request)
     {
+        if (!auth()->user()->can('atur saldo awal kasir')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk mengatur saldo awal kasir',
+            ], 403);
+        }
+
         $request->validate([
             'opening_amount' => 'required|numeric|min:0',
         ]);
@@ -533,6 +593,13 @@ class PointOfSaleController extends Controller
 
     public function applyDiscount(Request $request)
     {
+        if (!auth()->user()->can('terapkan diskon pos')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk menerapkan diskon',
+            ], 403);
+        }
+
         $request->validate([
             'discount_code' => 'nullable|string',
         ]);
@@ -787,6 +854,13 @@ class PointOfSaleController extends Controller
 
     public function toggleProductVisibility(Request $request, Product $product)
     {
+        if (!auth()->user()->can('atur tampilan produk pos')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk mengatur tampilan produk',
+            ], 403);
+        }
+
         if ($product->outlet_id !== auth()->user()->outlet_id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }

@@ -409,6 +409,10 @@ public function showJson(Sale $sale)
      */
     public function printReceipt(Sale $sale)
     {
+        if (!auth()->user()->can('cetak ulang struk')) {
+            abort(403, 'Anda tidak memiliki izin untuk mencetak ulang struk');
+        }
+
         // Pastikan user hanya bisa akses sale dari outlet-nya
         if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
             abort(403, 'Akses ditolak');

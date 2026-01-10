@@ -539,6 +539,7 @@
 <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-6 max-w-8xl w-full">
 
     <!-- OPERASIONAL UTAMA (Prioritas Tertinggi) -->
+@can('akses pos')
 <a href="{{ route('pos.index') }}"
    class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300 relative"
    data-step="1"
@@ -566,6 +567,7 @@
         Point of Sale
     </span>
 </a>
+@endcan
 
 
     <a href="{{ route('sales.index') }}"
