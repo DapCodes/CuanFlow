@@ -48,10 +48,12 @@
                 </p>
             </div>
             <div class="flex items-center gap-3">
+                @can('kelola stok bahan baku')
                 <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all">
                     <i class="fas fa-boxes text-sm text-red-500"></i>
                     <span>Manage Transaksi</span>
                 </a>
+                @endcan
                 <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all">
                     <i class="fas fa-arrow-left text-sm"></i>
                     <span>Kembali</span>
@@ -157,21 +159,27 @@
                             <div class="border border-red-200 rounded-lg overflow-hidden shadow-sm">
                                 <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex items-center justify-between">
                                     <h3 class="text-sm font-bold text-red-800 flex items-center gap-2">
+                                        @can('update stok bahan baku')
                                         <input type="checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500" title="Pilih Semua">
+                                        @endcan
                                         <i class="fas fa-exclamation-triangle"></i>
                                         <span>Stok Kadaluarsa ({{ count($expiredStocks) }})</span>
                                     </h3>
+                                    @can('update stok bahan baku')
                                     <button onclick="openRemoveExpiredModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 shadow-sm transition-all">
                                         <i class="fas fa-trash"></i>
                                         <span>BUANG STOK TERPILIH</span>
                                     </button>
+                                    @endcan
                                 </div>
                                 <div class="divide-y divide-red-100">
                                     @foreach($expiredStocks as $stock)
                                     <div class="px-4 py-3 bg-white hover:bg-red-50 transition-colors">
                                         <div class="flex items-center justify-between flex-wrap gap-3">
                                             <div class="flex items-center gap-3 flex-1 min-w-0">
+                                                @can('update stok bahan baku')
                                                 <input type="checkbox" class="expired-checkbox w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500" value="{{ $stock['id'] }}">
+                                                @endcan
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-sm font-bold text-gray-900 truncate">Batch #{{ $stock['batch_number'] }}</p>
                                                     <div class="flex items-center gap-3 mt-1 flex-wrap text-[10px]">
@@ -344,14 +352,18 @@
                         <div class="mt-4 pt-4 border-t border-gray-100">
                             <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Quick Actions</h4>
                             <div class="grid grid-cols-1 gap-2">
+                                @can('lihat riwayat stok bahan baku')
                                 <a href="{{ route('raw-materials.stock-history', $rawMaterial) }}" class="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all border border-gray-200">
                                     <i class="fas fa-history text-gray-400"></i>
                                     Lihat Riwayat Stok
                                 </a>
+                                @endcan
+                                @can('kelola stok bahan baku')
                                 <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" class="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all border border-gray-200">
                                     <i class="fas fa-plus-circle text-gray-400"></i>
                                     Update Persediaan
                                 </a>
+                                @endcan
                             </div>
                         </div>
                     </div>

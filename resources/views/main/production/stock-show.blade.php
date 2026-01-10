@@ -153,23 +153,27 @@
                         <div class="border border-red-200 rounded-lg overflow-hidden">
                             <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex items-center justify-between">
                                 <h3 class="text-sm font-semibold text-red-800 flex items-center gap-2">
+                                    @can('hapus produk kadaluarsa')
                                     <input type="checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 text-red-600 border-gray-300 rounded mr-1" title="Pilih Semua">
+                                    @endcan
                                     <i class="fas fa-exclamation-triangle"></i>
                                     <span>Stok Kadaluarsa ({{ count($expiredStocks) }})</span>
                                 </h3>
-                                @if(count($expiredStocks) > 0)
+                                @can('hapus produk kadaluarsa')
                                 <button onclick="openRemoveExpiredModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">
                                     <i class="fas fa-trash"></i>
                                     <span>Hapus Baris Terpilih</span>
                                 </button>
-                                @endif
+                                @endcan
                             </div>
                             <div class="divide-y divide-red-100">
                                 @foreach($expiredStocks as $stock)
                                 <div class="px-4 py-3 bg-white hover:bg-red-50 transition-colors">
                                     <div class="flex items-center justify-between flex-wrap gap-3">
                                         <div class="flex items-center gap-3 flex-1 min-w-0">
+                                            @can('hapus produk kadaluarsa')
                                             <input type="checkbox" class="expired-checkbox w-4 h-4 text-red-600 border-gray-300 rounded flex-shrink-0" value="{{ $stock['batch_number'] }}">
+                                            @endcan
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-semibold text-gray-900 truncate">Batch #{{ $stock['batch_number'] }}</p>
                                                 <div class="flex items-center gap-3 mt-1 flex-wrap text-xs">

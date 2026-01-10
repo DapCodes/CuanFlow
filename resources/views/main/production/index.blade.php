@@ -167,18 +167,22 @@
                             </td>
                             <td class="px-6 py-3 whitespace-nowrap text-center">
                                 <div class="inline-flex items-center gap-1.5">
+                                    @can('lihat stok produksi')
                                     <a href="{{ route('production.stock.show', $product['id']) }}" 
                                        class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                                        title="Detail Stok">
                                         <i class="fas fa-chart-line text-xs"></i>
                                     </a>
+                                    @endcan
                                     @if($product['has_recipe'])
+                                    @can('buat produksi')
                                     <a href="{{ route('production.create', ['product_id' => $product['id']]) }}" 
                                        class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs font-semibold"
                                        title="Produksi">
                                         <i class="fas fa-plus-circle text-xs"></i>
                                         <span>Produksi</span>
                                     </a>
+                                    @endcan
                                     @else
                                     <span class="text-xs text-gray-400 italic px-2">Tidak ada resep</span>
                                     @endif
@@ -196,11 +200,13 @@
                                     <p class="text-sm text-gray-500 mb-4 max-w-sm">
                                         Tambahkan produk terlebih dahulu untuk memulai produksi
                                     </p>
+                                    @can('buat produk')
                                     <a href="{{ route('products-hpp.create') }}" 
                                        class="inline-flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-600">
                                         <i class="fas fa-plus-circle text-xs"></i>
                                         Tambah Produk
                                     </a>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -268,11 +274,13 @@
                                 <i class="fas {{ $config['icon'] }} mr-1.5"></i>
                                 {{ $config['text'] }}
                             </span>
-                            <a href="{{ route('production.show', $production->id) }}" 
+                            @can('lihat produksi')
+                             <a href="{{ route('production.show', $production->id) }}" 
                                class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                                title="Detail">
                                 <i class="fas fa-eye text-xs"></i>
                             </a>
+                            @endcan
                         </div>
                     </div>
                     @endforeach

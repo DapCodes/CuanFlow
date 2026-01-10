@@ -49,6 +49,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
                 @if($production->status === 'planned')
+                    @can('mulai produksi')
                     <form action="{{ route('production.start', $production->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin memulai produksi ini?')">
                         @csrf
                         <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-600">
@@ -56,21 +57,28 @@
                             <span>Mulai Produksi</span>
                         </button>
                     </form>
+                    @endcan
+                    @can('batalkan produksi')
                     <button onclick="openCancelModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600">
                         <i class="fas fa-times-circle text-sm"></i>
                         <span>Batalkan</span>
                     </button>
+                    @endcan
                 @endif
 
                 @if($production->status === 'in_progress')
+                    @can('selesaikan produksi')
                     <button onclick="openCompleteModal()" class="inline-flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-600">
                         <i class="fas fa-check-circle text-sm"></i>
                         <span>Selesaikan</span>
                     </button>
+                    @endcan
+                    @can('batalkan produksi')
                     <button onclick="openCancelModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600">
                         <i class="fas fa-times-circle text-sm"></i>
                         <span>Batalkan</span>
                     </button>
+                    @endcan
                 @endif
 
                 <a href="{{ route('production.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
@@ -338,16 +346,20 @@
                         <div class="border border-red-200 rounded-lg overflow-hidden">
                             <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex items-center justify-between">
                                 <div class="flex items-center gap-3">
+                                    @can('hapus produk kadaluarsa')
                                     <input type="checkbox" id="selectAllExpired" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500" onchange="toggleSelectAll(this)">
+                                    @endcan
                                     <h3 class="text-sm font-semibold text-red-800 flex items-center gap-2">
                                         <i class="fas fa-exclamation-triangle"></i>
                                         <span>Stok Kadaluarsa ({{ count($expiredStocks) }})</span>
                                     </h3>
                                 </div>
+                                @can('hapus produk kadaluarsa')
                                 <button onclick="openRemoveExpiredModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">
                                     <i class="fas fa-trash"></i>
                                     <span>Hapus Baris Terpilih</span>
                                 </button>
+                                @endcan
                             </div>
                             <div class="divide-y divide-red-100">
                                 @foreach($expiredStocks as $stock)
@@ -355,7 +367,9 @@
                                     <div class="flex items-center justify-between">
                                         <div class="flex-1">
                                             <div class="flex items-center gap-3">
+                                                @can('hapus produk kadaluarsa')
                                                 <input type="checkbox" class="expired-checkbox w-4 h-4 text-red-600 border-gray-300 rounded" value="{{ $stock['batch_number'] }}">
+                                                @endcan
                                                 <div>
                                                     <p class="text-sm font-semibold text-gray-900">Batch #{{ $stock['batch_number'] }}</p>
                                                     <div class="flex items-center gap-4 mt-1">

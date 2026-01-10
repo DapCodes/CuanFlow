@@ -19,6 +19,10 @@ class ProductionController extends Controller
 {
     public function index()
     {
+        if (!auth()->user()->can('lihat produksi')) {
+            abort(403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $now = now();
         $warningDays = 7;
@@ -97,6 +101,10 @@ class ProductionController extends Controller
 
     public function create(Request $request)
     {
+        if (!auth()->user()->can('buat produksi')) {
+            abort(403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $productId = $request->get('product_id');
 
@@ -138,6 +146,9 @@ class ProductionController extends Controller
 
     public function getRecipeDetails($productId)
     {
+        if (!auth()->user()->can('buat produksi')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
         $outletId = Auth::user()->outlet_id;
         $product = Product::with(['defaultRecipe.items.rawMaterial.unit', 'unit'])
             ->where('outlet_id', $outletId)
@@ -177,6 +188,9 @@ class ProductionController extends Controller
 
 public function show(Production $production)
 {
+    if (!auth()->user()->can('lihat produksi')) {
+        abort(403);
+    }
     $production->load([
         'product.unit',
         'recipe.items.rawMaterial.unit',
@@ -249,6 +263,9 @@ public function show(Production $production)
 
 public function store(Request $request)
 {
+    if (!auth()->user()->can('buat produksi')) {
+        abort(403);
+    }
     $validated = $request->validate([
         'product_id' => 'required|exists:products,id',
         'planned_quantity' => 'required|numeric|min:0.01',
@@ -324,6 +341,9 @@ public function store(Request $request)
 
     public function start(Production $production)
     {
+        if (!auth()->user()->can('mulai produksi')) {
+            abort(403);
+        }
         if ($production->status !== 'planned') {
             return back()->with('error', 'Hanya produksi dengan status "Direncanakan" yang dapat dimulai.');
         }
@@ -389,6 +409,9 @@ public function store(Request $request)
 
     public function complete(Request $request, Production $production)
     {
+        if (!auth()->user()->can('selesaikan produksi')) {
+            abort(403);
+        }
         $validated = $request->validate([
             'actual_quantity' => 'required|numeric|min:0',
             'waste_quantity' => 'required|numeric|min:0',
@@ -456,6 +479,9 @@ public function store(Request $request)
 
     public function cancel(Production $production)
     {
+        if (!auth()->user()->can('batalkan produksi')) {
+            abort(403);
+        }
         if (!in_array($production->status, ['planned', 'in_progress'])) {
             return back()->with('error', 'Produksi tidak dapat dibatalkan.');
         }
@@ -530,6 +556,9 @@ public function store(Request $request)
 
     public function removeExpired(Request $request, Production $production)
     {
+        if (!auth()->user()->can('hapus produk kadaluarsa')) {
+            abort(403);
+        }
         $validated = $request->validate([
             'batch_numbers' => 'required|array',
             'batch_numbers.*' => 'required|string',
@@ -591,6 +620,9 @@ public function store(Request $request)
 
 public function showStock(Product $product)
 {
+    if (!auth()->user()->can('lihat stok produksi')) {
+        abort(403);
+    }
     $product->load('unit');
     $outletId = auth()->user()->outlet_id;
     
@@ -660,6 +692,9 @@ public function showStock(Product $product)
 
 public function removeExpiredStock(Request $request, Product $product)
 {
+    if (!auth()->user()->can('hapus produk kadaluarsa')) {
+        abort(403);
+    }
     $validated = $request->validate([
         'batch_numbers' => 'required|array',
         'batch_numbers.*' => 'required|string',

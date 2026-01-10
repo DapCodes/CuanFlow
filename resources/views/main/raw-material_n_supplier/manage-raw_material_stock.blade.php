@@ -118,7 +118,9 @@
                                     <p class="text-lg font-bold text-red-600">{{ number_format($expiredQty, 2) }}</p>
                                 </div>
                             </div>
+                            @can('lihat detail bahan baku')
                             <a href="{{ route('raw-materials.stock-show', $rawMaterial) }}" class="text-[10px] font-bold px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-100 hover:bg-red-100 transition-colors">DETAIL</a>
+                            @endcan
                         </div>
 
                         {{-- Expiring --}}
@@ -132,7 +134,9 @@
                                     <p class="text-lg font-bold text-yellow-600">{{ number_format($expiringQty, 2) }}</p>
                                 </div>
                             </div>
+                            @can('lihat detail bahan baku')
                             <a href="{{ route('raw-materials.stock-show', $rawMaterial) }}" class="text-[10px] font-bold px-2 py-0.5 rounded bg-yellow-50 text-yellow-700 border border-yellow-100 hover:bg-yellow-100 transition-colors">DETAIL</a>
+                            @endcan
                         </div>
 
                         {{-- Valid --}}
@@ -146,7 +150,9 @@
                                     <p class="text-lg font-bold text-emerald-600">{{ number_format($validQty, 2) }}</p>
                                 </div>
                             </div>
+                            @can('lihat detail bahan baku')
                             <a href="{{ route('raw-materials.stock-show', $rawMaterial) }}" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100 transition-colors">DETAIL</a>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -319,10 +325,12 @@
                                class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all">
                                 Batal
                             </a>
+                            @can('update stok bahan baku')
                             <button type="submit" 
                                     class="px-5 py-2.5 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-md transition-all">
                                 Simpan Transaksi
                             </button>
+                            @endcan
                         </div>
                     </form>
                 </div>

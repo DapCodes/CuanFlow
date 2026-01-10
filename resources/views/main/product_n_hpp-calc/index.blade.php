@@ -46,15 +46,17 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+                @can('buat produk')
                 <a href="{{ route('products-hpp.create') }}"
                    class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cuan-olive focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-1 shadow-sm">
                     <i class="fas fa-plus-circle text-sm"></i>
                     <span>Tambah Produk</span>
                 </a>
+                @endcan
             </div>
         </section>
 
-        {{-- RINGKASAN STATISTIK (disusun seperti card di discounts.index) --}}
+        @can('lihat produk')
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
                 <div class="flex items-center justify-between">
@@ -110,6 +112,7 @@
                 </div>
             </div>
         </section>
+        @endcan
 
         {{-- KONTEN UTAMA: TOOLBAR + TABEL + PAGINATION (pola sama dengan discounts.index) --}}
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
@@ -264,22 +267,29 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center gap-2">
+                                        @can('generate barcode produk')
                                         <button type="button" 
                                                 onclick="openBarcodeModal('{{ $product->id }}', '{{ $product->name }}', '{{ $product->barcode }}')"
                                                 class="inline-flex items-center justify-center w-8 h-8 rounded-md bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors"
                                                 title="Barcode">
                                             <i class="fas fa-barcode text-xs"></i>
                                         </button>
+                                        @endcan
+                                        @can('lihat detail produk')
                                         <a href="{{ route('products-hpp.show', $product->id) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-md bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
                                            title="Detail">
                                             <i class="fas fa-eye text-xs"></i>
                                         </a>
+                                        @endcan
+                                        @can('edit produk')
                                         <a href="{{ route('products-hpp.edit', $product->id) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-md bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition-colors"
                                            title="Edit">
                                             <i class="fas fa-edit text-xs"></i>
                                         </a>
+                                        @endcan
+                                        @can('aktifkan nonaktifkan produk')
                                         <form action="{{ route('products-hpp.toggle-status', $product->id) }}"
                                               method="POST"
                                               class="inline ajax-toggle-status"
@@ -292,6 +302,8 @@
                                                 <i class="fas fa-{{ $product->is_active ? 'toggle-on' : 'toggle-off' }} text-xs"></i>
                                             </button>
                                         </form>
+                                        @endcan
+                                        @can('hapus produk')
                                         <form action="{{ route('products-hpp.destroy', $product->id) }}"
                                               method="POST"
                                               class="inline-block"
@@ -304,6 +316,7 @@
                                                 <i class="fas fa-trash text-xs"></i>
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>
@@ -318,11 +331,13 @@
                                         <p class="text-sm text-gray-500 mb-4 max-w-sm">
                                             Mulai dengan menambahkan produk pertama Anda.
                                         </p>
+                                        @can('buat produk')
                                         <a href="{{ route('products-hpp.create') }}"
                                            class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cuan-olive">
                                             <i class="fas fa-plus-circle text-xs"></i>
                                             Tambah Produk
                                         </a>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>
@@ -383,9 +398,12 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    @can('unduh barcode produk')
                     <a id="downloadBarcodeBtn" href="#" target="_blank" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
                         <i class="fas fa-download mr-2"></i> Download
                     </a>
+                    @endcan
+                    {{-- Assuming we don't have a specific print barcode permission yet, but let's use cetak struk as a proxy or just let it be if they can see it --}}
                     <button type="button" onclick="printBarcode()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         <i class="fas fa-print mr-2"></i> Print
                     </button>

@@ -50,9 +50,11 @@
             </div>
             
             <div class="flex flex-col sm:flex-row gap-2">
+                @can('edit produk')
                 <a href="{{ route('products-hpp.edit', $product->id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-cuan-green text-white rounded-lg font-semibold hover:bg-cuan-olive transition-all duration-200 shadow-sm hover:shadow text-sm">
                     <i class="fas fa-edit mr-2"></i> Ubah Produk
                 </a>
+                @endcan
                 <a href="{{ route('products-hpp.index') }}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
                     <i class="fas fa-arrow-left mr-2"></i> Kembali
                 </a>
@@ -165,6 +167,7 @@
             $hasTarget = $salesTarget && $salesTarget->is_active;
         @endphp
 
+        @can('lihat analitik produk')
         @if($hasTarget)
             <x-card-container>
                 <div class="bg-gradient-to-r from-purple-50 to-blue-50 p-6 border-b border-gray-200 rounded-t-xl">
@@ -366,6 +369,7 @@
                 </div>
             </x-card-container>
         @endif
+        @endcan
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {{-- RESEP PRODUK --}}
@@ -516,6 +520,7 @@
             @endif
         </div>
 
+        @can('lihat analitik produk')
         {{-- ANALISIS HARGA & MARGIN --}}
         <x-card-container>
             <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-gray-200 rounded-t-xl">
@@ -594,6 +599,7 @@
                 @endif
             </div>
         </x-card-container>
+        @endcan
 
         {{-- INFORMASI TAMBAHAN --}}
         <x-card-container>

@@ -43,14 +43,18 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
+                @can('lihat supplier')
                 <a href="{{ route('raw-materials.suppliers') }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
                     <i class="fas fa-truck mr-2"></i>
                     Kelola Supplier
                 </a>
+                @endcan
+                @can('buat bahan baku')
                 <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
                     <i class="fas fa-plus-circle mr-2"></i>
                     Tambah Bahan Baku
                 </a>
+                @endcan
             </div>
         </section>
 
@@ -297,26 +301,34 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center align-top">
                                 <div class="flex items-center justify-center gap-1">
+                                    @can('kelola stok bahan baku')
                                     <a href="{{ route('raw-materials.manage-stock', $material) }}" 
                                        class="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                                        title="Kelola Stok">
                                         <i class="fas fa-boxes"></i>
                                     </a>
+                                    @endcan
+                                    @can('lihat riwayat stok bahan baku')
                                     <a href="{{ route('raw-materials.stock-history', $material) }}" 
                                        class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                        title="Riwayat">
                                         <i class="fas fa-history"></i>
                                     </a>
+                                    @endcan
+                                    @can('edit bahan baku')
                                     <a href="{{ route('raw-materials.edit', $material) }}" 
                                        class="p-1.5 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
                                        title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @endcan
+                                    @can('lihat detail bahan baku')
                                     <a href="{{ route('raw-materials.stock-show', $material) }}" 
                                         class="p-1.5 text-gray-500 hover:text-gray-100 hover:bg-gray-100 rounded-lg transition-colors"
                                         title="Detail Stok">
                                          <i class="fas fa-chart-line"></i>
                                      </a>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -329,9 +341,11 @@
                                     </div>
                                     <h3 class="text-base font-semibold text-gray-900">Belum Ada Bahan Baku</h3>
                                     <p class="text-sm text-gray-500 mt-1 mb-4 max-w-sm">Mulai tambahkan bahan baku untuk memonitor stok dan produksi Anda.</p>
+                                    @can('buat bahan baku')
                                     <a href="{{ route('raw-materials.create') }}" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-sm transition-all">
                                         <i class="fas fa-plus mr-2"></i> Tambah Baru
                                     </a>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

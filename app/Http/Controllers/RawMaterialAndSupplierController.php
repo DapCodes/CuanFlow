@@ -24,6 +24,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function indexRawMaterial(Request $request)
     {
+        if (!auth()->user()->can('lihat bahan baku')) {
+            abort(403);
+        }
         $query = RawMaterial::where('outlet_id', Auth::user()->outlet_id)
             ->with(['category', 'unit', 'supplier', 'stocks' => function ($q) {
                 $q->where('outlet_id', Auth::user()->outlet_id);
@@ -139,6 +142,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function createRawMaterial()
     {
+        if (!auth()->user()->can('buat bahan baku')) {
+            abort(403);
+        }
         $categories = Category::orderBy('name')->get();
         $units = Unit::orderBy('name')->get();
         $suppliers = Supplier::active()->orderBy('name')->get();
@@ -155,6 +161,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function storeRawMaterial(Request $request)
     {
+        if (!auth()->user()->can('buat bahan baku')) {
+            abort(403);
+        }
         $validated = $request->validate([
             'code' => 'required|string|max:30|unique:raw_materials,code',
             'name' => 'required|string|max:255',
@@ -198,6 +207,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function showRawMaterial(RawMaterial $rawMaterial)
     {
+        if (!auth()->user()->can('lihat detail bahan baku')) {
+            abort(403);
+        }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -214,6 +226,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function editRawMaterial(RawMaterial $rawMaterial)
     {
+        if (!auth()->user()->can('edit bahan baku')) {
+            abort(403);
+        }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -235,6 +250,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function updateRawMaterial(Request $request, RawMaterial $rawMaterial)
     {
+        if (!auth()->user()->can('edit bahan baku')) {
+            abort(403);
+        }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -286,6 +304,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function destroyRawMaterial(RawMaterial $rawMaterial)
     {
+        if (!auth()->user()->can('hapus bahan baku')) {
+            abort(403);
+        }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -306,6 +327,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function manageStock(RawMaterial $rawMaterial)
     {
+        if (!auth()->user()->can('kelola stok bahan baku')) {
+            abort(403);
+        }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -366,6 +390,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function stockShow(RawMaterial $rawMaterial)
     {
+        if (!auth()->user()->can('lihat detail bahan baku')) {
+            abort(403);
+        }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -447,6 +474,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function updateStock(Request $request, RawMaterial $rawMaterial)
     {
+        if (!auth()->user()->can('update stok bahan baku')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -575,6 +605,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function removeExpired(Request $request, RawMaterial $rawMaterial)
     {
+        if (!auth()->user()->can('update stok bahan baku')) {
+            abort(403);
+        }
         $validated = $request->validate([
             'batch_ids' => 'required|array',
             'batch_ids.*' => 'required|exists:purchase_items,id',
@@ -632,6 +665,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function stockHistory(RawMaterial $rawMaterial)
     {
+        if (!auth()->user()->can('lihat riwayat stok bahan baku')) {
+            abort(403);
+        }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -653,6 +689,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function indexSupplier(Request $request)
     {
+        if (!auth()->user()->can('lihat supplier')) {
+            abort(403);
+        }
         $query = Supplier::withCount('rawMaterials');
 
         // Search
@@ -681,6 +720,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function createSupplier()
     {
+        if (!auth()->user()->can('buat supplier')) {
+            abort(403);
+        }
         // Generate unique supplier code
         $lastSupplier = Supplier::orderBy('id', 'desc')->first();
         $nextNumber = $lastSupplier ? (int) substr($lastSupplier->code, 4) + 1 : 1;
@@ -694,6 +736,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function storeSupplier(Request $request)
     {
+        if (!auth()->user()->can('buat supplier')) {
+            abort(403);
+        }
         $validated = $request->validate([
             'code' => 'required|string|max:20|unique:suppliers,code',
             'name' => 'required|string|max:255',
@@ -718,6 +763,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function showSupplier(Supplier $supplier)
     {
+        if (!auth()->user()->can('lihat detail supplier')) {
+            abort(403);
+        }
         $supplier->loadCount('rawMaterials');
         $supplier->load(['rawMaterials' => function ($query) {
             $query->where('outlet_id', Auth::user()->outlet_id)
@@ -734,6 +782,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function editSupplier(Supplier $supplier)
     {
+        if (!auth()->user()->can('edit supplier')) {
+            abort(403);
+        }
         return view('main.raw-material_n_supplier.edit-supplier', compact('supplier'));
     }
 
@@ -742,6 +793,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function updateSupplier(Request $request, Supplier $supplier)
     {
+        if (!auth()->user()->can('edit supplier')) {
+            abort(403);
+        }
         $validated = $request->validate([
             'code' => 'required|string|max:20|unique:suppliers,code,'.$supplier->id,
             'name' => 'required|string|max:255',
@@ -766,6 +820,9 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function destroySupplier(Supplier $supplier)
     {
+        if (!auth()->user()->can('hapus supplier')) {
+            abort(403);
+        }
         // Check if supplier has raw materials
         if ($supplier->rawMaterials()->count() > 0) {
             return redirect()->back()

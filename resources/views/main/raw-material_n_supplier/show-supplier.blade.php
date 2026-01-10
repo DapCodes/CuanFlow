@@ -50,10 +50,12 @@
                     <i class="fas fa-arrow-left mr-2"></i>
                     Kembali
                 </a>
+                @can('edit supplier')
                 <a href="{{ route('raw-materials.suppliers.edit', $supplier) }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
                     <i class="fas fa-edit mr-2"></i>
                     Edit
                 </a>
+                @endcan
             </div>
         </section>
 
@@ -144,9 +146,11 @@
                                     <p class="text-[11px] text-gray-400 font-mono">{{ $material->code }}</p>
                                 </div>
                             </div>
+                            @can('lihat detail bahan baku')
                             <a href="{{ route('raw-materials.show', $material) }}" class="p-2 text-gray-400 hover:text-red-600 hover:bg-white rounded-lg transition-all border border-transparent hover:border-red-100 shadow-none hover:shadow-sm">
                                 <i class="fas fa-arrow-right text-xs"></i>
                             </a>
+                            @endcan
                         </div>
                         @empty
                         <div class="p-8 text-center text-gray-400 italic text-sm">
@@ -167,9 +171,11 @@
                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Item Disuplai</p>
                         <p class="mt-2 text-3xl font-bold text-gray-900">{{ $supplier->raw_materials_count }}</p>
                         <hr class="my-4 border-gray-100">
+                        @can('buat bahan baku')
                         <a href="{{ route('raw-materials.create') }}?supplier_id={{ $supplier->id }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors border border-red-100">
                             <i class="fas fa-plus-circle"></i> Item Baru untuk Supplier ini
                         </a>
+                        @endcan
                     </div>
                  </div>
 
@@ -191,6 +197,7 @@
                  </div>
 
                  {{-- Danger Zone --}}
+                 @can('hapus supplier')
                  <div class="bg-red-50 border border-red-100 rounded-xl shadow-sm p-6 text-center">
                     <h4 class="text-sm font-semibold text-red-900 mb-2">Hapus Supplier</h4>
                     <p class="text-xs text-red-600 mb-4">Pastikan tidak ada bahan baku aktif yang menggunakan supplier ini sebelum menghapus.</p>
@@ -202,6 +209,7 @@
                         </button>
                     </form>
                  </div>
+                 @endcan
 
              </div>
 

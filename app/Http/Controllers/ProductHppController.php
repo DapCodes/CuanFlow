@@ -20,6 +20,10 @@ class ProductHppController extends Controller
 {
     public function index()
     {
+        if (!auth()->user()->can('lihat produk')) {
+            abort(403, 'Akses ditolak');
+        }
+
         $products = Product::with(['category', 'unit', 'defaultRecipe', 'latestHppCalculation'])
             ->where('outlet_id', Auth::user()->outlet_id)
             ->latest()
@@ -30,6 +34,10 @@ class ProductHppController extends Controller
 
     public function create()
     {
+        if (!auth()->user()->can('buat produk')) {
+            abort(403, 'Akses ditolak');
+        }
+
         $categories = Category::where('type', 'product')->get();
         $units = Unit::all();
         $rawMaterials = RawMaterial::with('unit')
@@ -42,6 +50,10 @@ class ProductHppController extends Controller
 
     public function store(Request $request)
     {
+        if (!auth()->user()->can('buat produk')) {
+            abort(403, 'Akses ditolak');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:30|unique:products,code',
@@ -209,6 +221,10 @@ class ProductHppController extends Controller
 
     public function show(Product $product)
     {
+        if (!auth()->user()->can('lihat detail produk')) {
+            abort(403, 'Akses ditolak');
+        }
+
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -220,6 +236,10 @@ class ProductHppController extends Controller
 
     public function edit(Product $product)
     {
+        if (!auth()->user()->can('edit produk')) {
+            abort(403, 'Akses ditolak');
+        }
+
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -243,6 +263,10 @@ class ProductHppController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        if (!auth()->user()->can('edit produk')) {
+            abort(403, 'Akses ditolak');
+        }
+
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -376,6 +400,12 @@ class ProductHppController extends Controller
 
     public function toggleStatus(Request $request, Product $product)
     {
+        if (!auth()->user()->can('aktifkan nonaktifkan produk')) {
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Akses ditolak'], 403)
+                : abort(403, 'Akses ditolak');
+        }
+
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Not found'], 404)
@@ -398,6 +428,10 @@ class ProductHppController extends Controller
 
     public function destroy(Product $product)
     {
+        if (!auth()->user()->can('hapus produk')) {
+            abort(403, 'Akses ditolak');
+        }
+
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -432,6 +466,10 @@ class ProductHppController extends Controller
 
     public function generateCode()
     {
+        if (!auth()->user()->can('generate kode produk')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
+
         $date = now()->format('Ymd');
         $prefix = 'PRD'.$date;
 
@@ -453,6 +491,10 @@ class ProductHppController extends Controller
 
     public function generateBarcode()
     {
+        if (!auth()->user()->can('generate barcode produk')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
+
         do {
             $barcode = '899'.str_pad(rand(0, 999999999), 9, '0', STR_PAD_LEFT);
 
@@ -473,6 +515,10 @@ class ProductHppController extends Controller
 
     public function barcodePreview(Product $product)
     {
+        if (!auth()->user()->can('generate barcode produk')) {
+            abort(403, 'Akses ditolak');
+        }
+
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -498,6 +544,10 @@ class ProductHppController extends Controller
 
     public function barcodeDownload(Product $product)
     {
+        if (!auth()->user()->can('unduh barcode produk')) {
+            abort(403, 'Akses ditolak');
+        }
+
         if ($product->outlet_id !== Auth::user()->outlet_id) {
             abort(404);
         }
@@ -524,6 +574,10 @@ class ProductHppController extends Controller
 
     public function getSalesAnalytics(Request $request)
     {
+        if (!auth()->user()->can('lihat analitik produk')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
+
         $productId = $request->product_id;
         $outletId = auth()->user()->outlet_id;
 
@@ -620,6 +674,10 @@ class ProductHppController extends Controller
      */
     public function generateRecipeAI(Request $request)
     {
+        if (!auth()->user()->can('generate resep ai')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         $validated = $request->validate([
             'product_name' => 'required|string|max:255',
             'output_quantity' => 'required|numeric|min:0.01',

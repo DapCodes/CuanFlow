@@ -242,11 +242,13 @@
                                 <input type="text" name="code" id="productCode" value="{{ old('code') }}"
                                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                        placeholder="Contoh: PRD001" required>
+                                @can('generate kode produk')
                                 <button type="button" id="generateCode"
                                         class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-semibold">
                                     <i class="fas fa-magic mr-2"></i>
                                     Buat Otomatis
                                 </button>
+                                @endcan
                             </div>
                             <p class="mt-1 text-xs text-gray-500">
                                 Kode bebas, yang penting mudah dibaca tim Anda.
@@ -272,11 +274,13 @@
                                 <input type="text" name="barcode" id="productBarcode" value="{{ old('barcode') }}"
                                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                        placeholder="Opsional">
+                                @can('generate barcode produk')
                                 <button type="button" id="generateBarcode"
                                         class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-semibold">
                                     <i class="fas fa-magic mr-2"></i>
                                     Buat Otomatis
                                 </button>
+                                @endcan
                             </div>
                             <p class="mt-1 text-xs text-gray-500">
                                 Jika belum pakai barcode, bisa dikosongkan dulu.
@@ -434,11 +438,13 @@
                                         berdasarkan <span class="font-semibold">nama produk</span> dan
                                         <span class="font-semibold">bahan yang sudah terdaftar</span> di outlet Anda.
                                     </p>
+                                    @can('generate resep ai')
                                     <button type="button" id="generateRecipeAI"
                                             class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm">
                                         <i class="fas fa-sparkles mr-2"></i>
                                         Buat Resep Otomatis
                                     </button>
+                                    @endcan
                                     <p class="mt-2 text-xs text-gray-500">
                                         Hasil AI tetap bisa Anda ubah lagi sesuai bahan di dapur.
                                     </p>

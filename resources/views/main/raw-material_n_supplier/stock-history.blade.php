@@ -9,12 +9,14 @@
     </svg>
     <a href="{{ route('raw-materials.index') }}" class="text-gray-500 hover:text-red-600 transition-colors">Bahan Baku</a>
 </li>
+@can('lihat detail bahan baku')
 <li class="flex items-center">
     <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
     </svg>
     <a href="{{ route('raw-materials.show', $rawMaterial) }}" class="text-gray-500 hover:text-red-600 transition-colors">{{ $rawMaterial->name }}</a>
 </li>
+@endcan
 <li class="flex items-center">
     <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -41,14 +43,18 @@
                 </p>
             </div>
             <div class="flex items-center gap-3">
+                 @can('lihat detail bahan baku')
                  <a href="{{ route('raw-materials.show', $rawMaterial) }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Kembali
                 </a>
+                @endcan
+                @can('kelola stok bahan baku')
                 <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
                     <i class="fas fa-box-open mr-2"></i>
                     Kelola Stok
                 </a>
+                @endcan
             </div>
         </section>
 

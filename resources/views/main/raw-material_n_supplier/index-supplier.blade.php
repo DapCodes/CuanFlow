@@ -47,10 +47,12 @@
                     <i class="fas fa-boxes mr-2"></i>
                     Kelola Stok
                 </a>
+                @can('buat supplier')
                 <a href="{{ route('raw-materials.suppliers.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
                     <i class="fas fa-plus-circle mr-2"></i>
                     Tambah Supplier
                 </a>
+                @endcan
             </div>
         </section>
 
@@ -198,16 +200,21 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center align-top">
                                 <div class="flex items-center justify-center gap-1">
+                                    @can('lihat detail supplier')
                                     <a href="{{ route('raw-materials.suppliers.show', $supplier) }}" 
                                         class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                         title="Detail">
                                          <i class="fas fa-eye"></i>
                                      </a>
+                                    @endcan
+                                    @can('edit supplier')
                                     <a href="{{ route('raw-materials.suppliers.edit', $supplier) }}" 
                                        class="p-1.5 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
                                        title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @endcan
+                                    @can('hapus supplier')
                                     <form action="{{ route('raw-materials.suppliers.destroy', $supplier) }}" 
                                           method="POST" 
                                           class="inline-block" 
@@ -220,6 +227,7 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -231,9 +239,11 @@
                                         <i class="fas fa-truck text-3xl text-gray-300"></i>
                                     </div>
                                     <p class="text-sm font-medium">Belum ada data supplier.</p>
+                                    @can('buat supplier')
                                     <a href="{{ route('raw-materials.suppliers.create') }}" class="mt-4 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-sm transition-all focus:ring-2 focus:ring-red-500">
                                         <i class="fas fa-plus mr-2"></i> Tambah Supplier Baru
                                     </a>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

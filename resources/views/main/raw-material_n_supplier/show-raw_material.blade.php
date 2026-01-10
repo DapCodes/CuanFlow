@@ -56,10 +56,12 @@
                     <i class="fas fa-arrow-left mr-2"></i>
                     Kembali
                 </a>
+                @can('edit bahan baku')
                 <a href="{{ route('raw-materials.edit', $rawMaterial) }}" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-all">
                     <i class="fas fa-edit mr-2"></i>
                     Edit
                 </a>
+                @endcan
             </div>
         </section>
 
@@ -209,6 +211,7 @@
                         <h3 class="font-semibold text-gray-900">Aksi Cepat</h3>
                     </div>
                     <div class="p-4 space-y-3">
+                        @can('kelola stok bahan baku')
                         <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" class="flex items-center justify-between w-full px-4 py-3 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors group border border-red-100">
                             <span class="font-medium"><i class="fas fa-box-open mr-2"></i> Kelola Stok</span>
                             <i class="fas fa-chevron-right text-red-400 group-hover:text-red-600"></i>
@@ -224,11 +227,14 @@
                                 <span class="text-xs font-semibold">Kurang</span>
                             </a>
                         </div>
+                        @endcan
 
+                        @can('lihat riwayat stok bahan baku')
                         <a href="{{ route('raw-materials.stock-history', $rawMaterial) }}" class="flex items-center justify-between w-full px-4 py-3 bg-white text-gray-700 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group">
                             <span class="font-medium"><i class="fas fa-history mr-2"></i> Riwayat Stok</span>
                             <i class="fas fa-chevron-right text-gray-400 group-hover:text-gray-600"></i>
                         </a>
+                        @endcan
                     </div>
                  </div>
 
@@ -249,6 +255,7 @@
                  </div>
 
                  {{-- Delete Zone --}}
+                 @can('hapus bahan baku')
                  <div class="bg-red-50 border border-red-100 rounded-xl shadow-sm p-6 text-center">
                     <h4 class="text-sm font-semibold text-red-900 mb-2">Hapus Bahan Baku</h4>
                     <p class="text-xs text-red-600 mb-4">Tindakan ini tidak dapat dibatalkan dan akan menghapus semua riwayat stok.</p>
@@ -260,6 +267,7 @@
                         </button>
                     </form>
                  </div>
+                 @endcan
 
              </div>
 
