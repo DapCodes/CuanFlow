@@ -132,6 +132,7 @@
         {{-- CHARTS ROW 1 - Sales Trend & Payment Methods --}}
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {{-- Sales Trend Chart --}}
+            @can('lihat grafik penjualan')
             <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm">
                 <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                     <h3 class="font-semibold text-gray-900 flex items-center gap-2">
@@ -143,6 +144,7 @@
                     <canvas id="salesChart" height="280"></canvas>
                 </div>
             </div>
+            @endcan
 
             {{-- Payment Methods Chart --}}
             <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
@@ -161,6 +163,7 @@
         {{-- CHARTS ROW 2 - Top Products & Categories --}}
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {{-- Top Products Chart --}}
+            @can('lihat grafik produk terlaris')
             <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
                 <div class="px-5 py-4 border-b border-gray-100">
                     <h3 class="font-semibold text-gray-900 flex items-center gap-2">
@@ -172,8 +175,10 @@
                     <canvas id="topProductsChart" height="300"></canvas>
                 </div>
             </div>
+            @endcan
 
             {{-- Categories Chart --}}
+            @can('lihat grafik kategori')
             <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
                 <div class="px-5 py-4 border-b border-gray-100">
                     <h3 class="font-semibold text-gray-900 flex items-center gap-2">
@@ -185,11 +190,13 @@
                     <canvas id="categoryChart" height="260"></canvas>
                 </div>
             </div>
+            @endcan
         </section>
 
         {{-- CHARTS ROW 3 - Hourly & Revenue vs Expense --}}
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {{-- Hourly Sales Chart --}}
+            @can('lihat grafik per jam')
             <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
                 <div class="px-5 py-4 border-b border-gray-100">
                     <h3 class="font-semibold text-gray-900 flex items-center gap-2">
@@ -201,6 +208,7 @@
                     <canvas id="hourlyChart" height="260"></canvas>
                 </div>
             </div>
+            @endcan
 
             {{-- Revenue vs Expense Chart --}}
             <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
@@ -327,13 +335,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Sales Trend Chart
     async function loadSalesChart() {
+        const ctx = document.getElementById('salesChart');
+        if (!ctx) return;
         try {
             const res = await fetch(`/statistics/sales-chart?period=${currentPeriod}`);
             const data = await res.json();
 
             if (charts.sales) charts.sales.destroy();
 
-            charts.sales = new Chart(document.getElementById('salesChart'), {
+            charts.sales = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.labels,
@@ -366,13 +376,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Payment Methods Chart
     async function loadPaymentChart() {
+        const ctx = document.getElementById('paymentChart');
+        if (!ctx) return;
         try {
             const res = await fetch(`/statistics/payment-method-chart?period=${currentPeriod}`);
             const data = await res.json();
 
             if (charts.payment) charts.payment.destroy();
 
-            charts.payment = new Chart(document.getElementById('paymentChart'), {
+            charts.payment = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: data.labels,
@@ -401,13 +413,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Top Products Chart
     async function loadTopProductsChart() {
+        const ctx = document.getElementById('topProductsChart');
+        if (!ctx) return;
         try {
             const res = await fetch(`/statistics/top-products-chart?period=${currentPeriod}`);
             const data = await res.json();
 
             if (charts.topProducts) charts.topProducts.destroy();
 
-            charts.topProducts = new Chart(document.getElementById('topProductsChart'), {
+            charts.topProducts = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: data.labels,
@@ -438,13 +452,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Category Chart
     async function loadCategoryChart() {
+        const ctx = document.getElementById('categoryChart');
+        if (!ctx) return;
         try {
             const res = await fetch(`/statistics/category-chart?period=${currentPeriod}`);
             const data = await res.json();
 
             if (charts.category) charts.category.destroy();
 
-            charts.category = new Chart(document.getElementById('categoryChart'), {
+            charts.category = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: data.labels,
@@ -473,13 +489,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Hourly Chart
     async function loadHourlyChart() {
+        const ctx = document.getElementById('hourlyChart');
+        if (!ctx) return;
         try {
             const res = await fetch(`/statistics/hourly-chart?period=${currentPeriod}`);
             const data = await res.json();
 
             if (charts.hourly) charts.hourly.destroy();
 
-            charts.hourly = new Chart(document.getElementById('hourlyChart'), {
+            charts.hourly = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: data.labels,
@@ -509,13 +527,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Expense Chart
     async function loadExpenseChart() {
+        const ctx = document.getElementById('expenseChart');
+        if (!ctx) return;
         try {
             const res = await fetch(`/statistics/expense-chart?period=${currentPeriod}`);
             const data = await res.json();
 
             if (charts.expense) charts.expense.destroy();
 
-            charts.expense = new Chart(document.getElementById('expenseChart'), {
+            charts.expense = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.labels,

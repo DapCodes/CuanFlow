@@ -170,7 +170,7 @@ class StatisticsController extends Controller
      */
     public function getSalesChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (!auth()->user()->can('lihat grafik penjualan')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -279,7 +279,7 @@ class StatisticsController extends Controller
      */
     public function getTopProductsChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (!auth()->user()->can('lihat grafik produk terlaris')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -317,7 +317,7 @@ class StatisticsController extends Controller
      */
     public function getCategoryChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (!auth()->user()->can('lihat grafik kategori')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -356,7 +356,7 @@ class StatisticsController extends Controller
      */
     public function getHourlyChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (!auth()->user()->can('lihat grafik per jam')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
