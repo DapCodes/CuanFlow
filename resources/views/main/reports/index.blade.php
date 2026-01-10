@@ -33,12 +33,16 @@
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-2">
+                    @can('ekspor laporan excel')
                     <button @click="openExportModal('excel')" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm">
                         <i class="fas fa-file-excel"></i> <span class="hidden sm:inline">Export Excel</span>
                     </button>
+                    @endcan
+                    @can('ekspor laporan pdf')
                     <button @click="openExportModal('pdf')" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm">
                         <i class="fas fa-file-pdf"></i> <span class="hidden sm:inline">Export PDF</span>
                     </button>
+                    @endcan
                 </div>
             </div>
 

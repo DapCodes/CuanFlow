@@ -1239,18 +1239,22 @@
             </div>
         </div>
         <div class="space-y-2.5">
+            @can('cetak struk')
             <button onclick="printReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                 </svg>
                 <span>Cetak Struk</span>
             </button>
+            @endcan
+            @can('unduh struk')
             <button onclick="downloadReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-orange-200 text-orange-600 rounded-xl text-sm font-semibold hover:bg-orange-50 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 <span>Download Struk (PDF)</span>
             </button>
+            @endcan
             <button onclick="closePaymentSuccessModal()" class="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-all">
                 Selesai
             </button>
@@ -2231,7 +2235,8 @@
         </div>
 
         <!-- Footer - Fixed -->
-        <div class="modal-footer-fixed p-6 flex justify-end gap-3">
+        <div class="modal-footer-fixed p-6 flex justify-end gap-3" id="saleDetailFooter">
+            <div id="detailActionButtons" class="flex gap-2"></div>
             <button onclick="closeSaleDetailModal()" class="action-btn action-btn-secondary">
                 Tutup
             </button>
@@ -2647,6 +2652,16 @@
 
 @push('scripts')
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+<script>
+    window.permissions = {
+        cetakStruk: @json(auth()->user()->can('cetak struk')),
+        unduhStruk: @json(auth()->user()->can('unduh struk')),
+        cetakStrukPenjualan: @json(auth()->user()->can('cetak struk penjualan')),
+        unduhStrukPenjualan: @json(auth()->user()->can('unduh struk penjualan')),
+        refundPenjualan: @json(auth()->user()->can('refund penjualan')),
+        lihatDetailPenjualan: @json(auth()->user()->can('lihat detail penjualan'))
+    };
+</script>
 <script>
 // ==================== GLOBAL VARIABLES ====================
 let UI_STATE = 'browse';
@@ -5479,7 +5494,7 @@ function loadSalesToday() {
                     ? '<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>Selesai</span>'
                     : '<span class="badge badge-danger"><i class="fas fa-undo mr-1"></i>Refund</span>';
                 
-                const refundButton = (sale.status === 'completed' && (sale.payment_method === 'cash' || sale.payment_method === 'transfer'))
+                const refundButton = (window.permissions.refundPenjualan && sale.status === 'completed' && (sale.payment_method === 'cash' || sale.payment_method === 'transfer'))
                     ? `<button onclick="confirmRefund(${sale.id})" class="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-semibold hover:bg-red-600 transition-colors">
                         <i class="fas fa-undo mr-1"></i>Refund
                     </button>`
@@ -5501,6 +5516,12 @@ function loadSalesToday() {
                     `;
                 }
 
+                const detailButton = window.permissions.lihatDetailPenjualan
+                    ? `<button onclick="showSaleDetail(${sale.id})" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors border border-blue-200">
+                        <i class="fas fa-eye mr-1"></i>Detail
+                       </button>`
+                    : '';
+                
                 html += `
                     <tr>
                         <td class="px-4 py-3 font-mono text-xs">${sale.invoice_number}</td>
@@ -5513,9 +5534,7 @@ function loadSalesToday() {
                         <td class="px-4 py-3 text-center">${statusBadge}</td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex items-center justify-center gap-2">
-                                <button onclick="showSaleDetail(${sale.id})" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors border border-blue-200">
-                                    <i class="fas fa-eye mr-1"></i>Detail
-                                </button>
+                                ${detailButton}
                                 ${refundButton}
                             </div>
                         </td>
@@ -5639,6 +5658,27 @@ function showSaleDetail(saleId) {
                 document.getElementById('detailRemainingDebt').textContent = 'Rp ' + formatNumber(data.debt.remaining_amount || 0);
             } else {
                 document.getElementById('detailDebtInfo').classList.add('hidden');
+            }
+
+            // Render Action Buttons
+            const actionContainer = document.getElementById('detailActionButtons');
+            actionContainer.innerHTML = '';
+            
+            if (data.status === 'completed') {
+                if (window.permissions.unduhStrukPenjualan) {
+                    actionContainer.innerHTML += `
+                        <a href="/receipt/${data.id}/download" target="_blank" class="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors flex items-center gap-2">
+                            <i class="fas fa-file-pdf"></i> Download
+                        </a>
+                    `;
+                }
+                if (window.permissions.cetakStrukPenjualan) {
+                    actionContainer.innerHTML += `
+                        <a href="/sales/${data.id}/print" target="_blank" class="px-4 py-2 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 transition-colors flex items-center gap-2">
+                            <i class="fas fa-print"></i> Cetak
+                        </a>
+                    `;
+                }
             }
         })
         .catch(err => {

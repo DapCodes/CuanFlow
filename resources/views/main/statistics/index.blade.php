@@ -43,12 +43,14 @@
                         Bulan Ini
                     </button>
                 </div>
+                @can('ekspor statistik')
                 <a href="{{ route('statistics.export', ['period' => $period]) }}" data-no-loader target="_blank" rel="noopener"
                    id="exportBtn"
                    class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-semibold rounded-lg shadow hover:from-green-600 hover:to-emerald-700 transition-all duration-200">
                     <i class="fas fa-file-excel"></i>
                     <span>Export Excel</span>
                 </a>
+                @endcan
             </div>
         </section>
 

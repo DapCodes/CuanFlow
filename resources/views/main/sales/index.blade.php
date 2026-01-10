@@ -229,9 +229,11 @@
                                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                                 Status
                                             </th>
+                                            @if(auth()->user()->can('lihat detail penjualan') || auth()->user()->can('refund penjualan'))
                                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide w-32">
                                                 Aksi
                                             </th>
+                                            @endif
                                         </tr>
                                     </thead>
 
@@ -295,22 +297,28 @@
                                                         </span>
                                                     @endif
                                                 </td>
+                                                @if(auth()->user()->can('lihat detail penjualan') || auth()->user()->can('refund penjualan'))
                                                 <td class="px-4 py-3 text-center">
                                                     <div class="flex items-center justify-center gap-2">
+                                                        @can('lihat detail penjualan')
                                                         <a href="{{ route('sales.show', $sale->id) }}"
                                                            class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-medium transition-colors">
                                                             <i class="fas fa-eye mr-1"></i>Detail
                                                         </a>
+                                                        @endcan
                                                         @if($sale->status == 'completed' && in_array($sale->payment_method, ['cash', 'transfer']))
+                                                            @can('refund penjualan')
                                                             <button
                                                                 onclick="confirmRefund('{{ $sale->id }}', '{{ $sale->invoice_number }}', {{ $sale->grand_total }})"
                                                                 class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-xs font-medium transition-colors">
                                                                 <i class="fas fa-undo mr-1"></i>
                                                                 Refund
                                                             </button>
+                                                            @endcan
                                                         @endif
                                                     </div>
                                                 </td>
+                                                @endif
                                             </tr>
                                         @empty
                                             <tr>
@@ -664,6 +672,12 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script>
+    window.permissions = {
+        lihatDetail: @json(auth()->user()->can('lihat detail penjualan')),
+        refundPenjualan: @json(auth()->user()->can('refund penjualan')),
+    };
+</script>
+<script>
   const rupiah = (n) => new Intl.NumberFormat('id-ID', {style:'currency', currency:'IDR', maximumFractionDigits:0}).format(n);
 
   function methodBadge(method) {
@@ -709,7 +723,26 @@
     if (!payload.sales.length) {
       tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl mb-2 block"></i><p>Tidak ada transaksi pada tanggal ini</p></td></tr>`;
     } else {
-      tbody.innerHTML = payload.sales.map(s => `
+      const showAksi = window.permissions.lihatDetail || window.permissions.refundPenjualan;
+      tbody.innerHTML = payload.sales.map(s => {
+        let actionColumn = '';
+        if (showAksi) {
+          actionColumn = `
+            <td class="px-4 py-3 text-center">
+              <div class="flex items-center justify-center gap-2">
+                ${window.permissions.lihatDetail ? `
+                <a href="/sales/${s.id}" class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-medium transition-colors">
+                  <i class="fas fa-eye mr-1"></i>Detail
+                </a>` : ''}
+                ${(window.permissions.refundPenjualan && s.status === 'completed' && ['cash', 'transfer'].includes(s.payment_method))
+                  ? `<button onclick="confirmRefund('${s.id}', '${s.invoice_number}', ${s.grand_total})" class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-xs font-medium transition-colors"><i class="fas fa-undo mr-1"></i>Refund</button>`
+                  : ''
+                }
+              </div>
+            </td>`;
+        }
+        
+        return `
         <tr class="hover:bg-gray-50">
           <td class="px-4 py-3 text-sm font-medium text-gray-900">${s.invoice_number}</td>
           <td class="px-4 py-3 text-sm text-gray-600">${s.time}</td>
@@ -718,18 +751,9 @@
           <td class="px-4 py-3 text-sm text-right font-medium text-orange-600">${rupiah(s.total_discount)}</td>
           <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">${rupiah(s.grand_total)}</td>
           <td class="px-4 py-3 text-center">${statusBadge(s.status)}</td>
-          <td class="px-4 py-3 text-center">
-            <div class="flex items-center justify-center gap-2">
-              <a href="/sales/${s.id}" class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-medium transition-colors">
-                <i class="fas fa-eye mr-1"></i>Detail
-              </a>
-              ${s.status === 'completed' && ['cash', 'transfer'].includes(s.payment_method) 
-                ? `<button onclick="confirmRefund('${s.id}', '${s.invoice_number}', ${s.grand_total})" class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-xs font-medium transition-colors"><i class="fas fa-undo mr-1"></i>Refund</button>`
-                : ''
-              }
-            </div>
-          </td>
-        </tr>`).join('');
+          ${actionColumn}
+        </tr>`;
+      }).join('');
     }
 
     document.getElementById('cashTotalText').innerText = rupiah(payload.totals.cash);

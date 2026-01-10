@@ -12,6 +12,10 @@ class ReceiptController extends Controller
      */
     public function downloadReceipt($saleId)
     {
+        if (!auth()->user()->can('unduh struk penjualan') && !auth()->user()->can('unduh struk')) {
+            abort(403, 'Anda tidak memiliki izin untuk mengunduh struk');
+        }
+
         $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product'])
             ->findOrFail($saleId);
 
@@ -31,6 +35,10 @@ class ReceiptController extends Controller
      */
     public function printReceipt($saleId)
     {
+        if (!auth()->user()->can('cetak struk penjualan') && !auth()->user()->can('cetak struk')) {
+            abort(403, 'Anda tidak memiliki izin untuk mencetak struk');
+        }
+
         $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product'])
             ->findOrFail($saleId);
 

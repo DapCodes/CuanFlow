@@ -23,6 +23,10 @@ class StatisticsController extends Controller
      */
     public function index(Request $request)
     {
+        if (!auth()->user()->can('lihat statistik')) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat statistik');
+        }
+
         $outletId = auth()->user()->outlet_id;
         $period = $request->get('period', '30'); // Default 30 hari
 
@@ -166,6 +170,10 @@ class StatisticsController extends Controller
      */
     public function getSalesChart(Request $request): JsonResponse
     {
+        if (!auth()->user()->can('lihat statistik')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $period = $request->get('period', '30');
         [$startDate, $endDate] = $this->getDateRange($period);
@@ -214,6 +222,10 @@ class StatisticsController extends Controller
      */
     public function getPaymentMethodChart(Request $request): JsonResponse
     {
+        if (!auth()->user()->can('lihat statistik')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $period = $request->get('period', '30');
         [$startDate, $endDate] = $this->getDateRange($period);
@@ -267,6 +279,10 @@ class StatisticsController extends Controller
      */
     public function getTopProductsChart(Request $request): JsonResponse
     {
+        if (!auth()->user()->can('lihat statistik')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $period = $request->get('period', '30');
         [$startDate, $endDate] = $this->getDateRange($period);
@@ -301,6 +317,10 @@ class StatisticsController extends Controller
      */
     public function getCategoryChart(Request $request): JsonResponse
     {
+        if (!auth()->user()->can('lihat statistik')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $period = $request->get('period', '30');
         [$startDate, $endDate] = $this->getDateRange($period);
@@ -336,6 +356,10 @@ class StatisticsController extends Controller
      */
     public function getHourlyChart(Request $request): JsonResponse
     {
+        if (!auth()->user()->can('lihat statistik')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $period = $request->get('period', '30');
         [$startDate, $endDate] = $this->getDateRange($period);
@@ -378,6 +402,10 @@ class StatisticsController extends Controller
      */
     public function getExpenseChart(Request $request): JsonResponse
     {
+        if (!auth()->user()->can('lihat statistik')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $period = $request->get('period', '30');
         [$startDate, $endDate] = $this->getDateRange($period);
@@ -447,6 +475,10 @@ class StatisticsController extends Controller
      */
     public function export(Request $request)
     {
+        if (!auth()->user()->can('ekspor statistik')) {
+            abort(403, 'Anda tidak memiliki izin untuk mengekspor statistik');
+        }
+
         $outletId = auth()->user()->outlet_id;
         $outletName = auth()->user()->outlet->name ?? 'CuanFlow';
         $period = $request->get('period', '30');

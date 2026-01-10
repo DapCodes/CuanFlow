@@ -24,6 +24,10 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
+        if (!auth()->user()->can('lihat laporan')) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat laporan bisnis');
+        }
+
         $period = $request->get('period', 'today');
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
@@ -44,6 +48,10 @@ class ReportController extends Controller
 
     public function ajaxData(Request $request)
     {
+        if (!auth()->user()->can('lihat laporan')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         $period = $request->get('period', 'today');
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
@@ -307,6 +315,10 @@ class ReportController extends Controller
 
     public function exportPdf(Request $request)
     {
+        if (!auth()->user()->can('ekspor laporan pdf')) {
+            abort(403, 'Anda tidak memiliki izin untuk mengekspor laporan PDF');
+        }
+
         $period = $request->get('period', 'today');
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
@@ -333,6 +345,10 @@ class ReportController extends Controller
 
     public function exportExcel(Request $request)
     {
+        if (!auth()->user()->can('ekspor laporan excel')) {
+            abort(403, 'Anda tidak memiliki izin untuk mengekspor laporan Excel');
+        }
+
         $period = $request->get('period', 'today');
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');

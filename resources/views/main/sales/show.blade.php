@@ -345,16 +345,36 @@
                     </div>
 
                     {{-- Footer mini total --}}
-                    <div class="mt-3 pt-3 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div class="mt-3 pt-3 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left">
                         <p class="text-sm text-gray-600">
                             Total transaksi:
                             <span class="font-bold text-gray-900">Rp {{ number_format($sale->grand_total, 0, ',', '.') }}</span>
                         </p>
 
-                        <a href="{{ url()->previous() }}"
-                           class="inline-flex justify-center sm:justify-end px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                            Kembali
-                        </a>
+                        <div class="flex flex-wrap justify-center sm:justify-end gap-2">
+                            @if($sale->status === 'completed')
+                                @can('unduh struk penjualan')
+                                <a href="{{ route('receipt.download', $sale->id) }}" target="_blank"
+                                   class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-all shadow-sm">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>Export PDF</span>
+                                </a>
+                                @endcan
+
+                                @can('cetak struk penjualan')
+                                <a href="{{ route('sales.print', $sale->id) }}" target="_blank"
+                                   class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md">
+                                    <i class="fas fa-print"></i>
+                                    <span>Cetak Struk</span>
+                                </a>
+                                @endcan
+                            @endif
+
+                            <a href="{{ url()->previous() }}"
+                               class="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                                Kembali
+                            </a>
+                        </div>
                     </div>
                 </div>
 

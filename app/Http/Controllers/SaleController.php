@@ -15,6 +15,10 @@ class SaleController extends Controller
 {
     public function index(Request $request)
     {
+        if (!auth()->user()->can('lihat penjualan')) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat daftar penjualan');
+        }
+
         $outletId = auth()->user()->outlet_id;
         $selectedDate = $request->get('date', now()->format('Y-m-d'));
         $expensePeriod = $request->get('expense_period', 'today');
@@ -25,18 +29,29 @@ class SaleController extends Controller
         $startOfDay = Carbon::parse($selectedDate)->startOfDay();
         $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
-        $sales = Sale::where('outlet_id', $outletId)
+        $salesQuery = Sale::where('outlet_id', $outletId)
             ->completed()
-            ->whereBetween('created_at', [$startOfDay, $endOfDay])
-            ->with(['customer', 'cashier'])
+            ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+
+        if (!auth()->user()->can('lihat semua penjualan')) {
+            $salesQuery->where('cashier_id', auth()->id());
+        }
+
+        $sales = $salesQuery->with(['customer', 'cashier'])
             ->orderBy('created_at', 'desc')
             ->get();
 
         $totalTransactions = $sales->count();
-        $totalRefunds = Sale::where('outlet_id', $outletId)
+        
+        $refundQuery = Sale::where('outlet_id', $outletId)
             ->where('status', 'refunded')
-            ->whereBetween('created_at', [$startOfDay, $endOfDay])
-            ->sum('grand_total');
+            ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        
+        if (!auth()->user()->can('lihat semua penjualan')) {
+            $refundQuery->where('cashier_id', auth()->id());
+        }
+        
+        $totalRefunds = $refundQuery->sum('grand_total');
 
         // Calculate payment method totals
         $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
@@ -56,14 +71,17 @@ class SaleController extends Controller
         $dailyTotalDiscount = $sales->sum('discount_amount');
 
         // Get all-time summary (if no date selected or for comparison)
-        $allTimeRevenue = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->sum('grand_total');
+        $allTimeRevenueQuery = Sale::where('outlet_id', $outletId)->completed();
+        if (!auth()->user()->can('lihat semua penjualan')) {
+            $allTimeRevenueQuery->where('cashier_id', auth()->id());
+        }
+        $allTimeRevenue = $allTimeRevenueQuery->sum('grand_total');
 
-        $allTimeProfit = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->get()
-            ->sum(fn ($s) => $s->getTotalProfit());
+        $allTimeProfitQuery = Sale::where('outlet_id', $outletId)->completed();
+        if (!auth()->user()->can('lihat semua penjualan')) {
+            $allTimeProfitQuery->where('cashier_id', auth()->id());
+        }
+        $allTimeProfit = $allTimeProfitQuery->get()->sum(fn ($s) => $s->getTotalProfit());
 
         $allTimeExpenses = Expense::where('outlet_id', $outletId)
             ->where('amount', '>', 0)
@@ -219,6 +237,10 @@ class SaleController extends Controller
 
 public function daily(Request $request): JsonResponse
 {
+    if (!auth()->user()->can('lihat penjualan harian')) {
+        return response()->json(['success' => false, 'message' => 'Anda tidak memiliki izin untuk melihat ringkasan harian'], 403);
+    }
+
     $request->validate(['date' => 'required|date']);
     $outletId = auth()->user()->outlet_id;
 
@@ -226,10 +248,15 @@ public function daily(Request $request): JsonResponse
     $startOfDay = Carbon::parse($selectedDate)->startOfDay();
     $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
-    $sales = Sale::where('outlet_id', $outletId)
+    $salesQuery = Sale::where('outlet_id', $outletId)
         ->completed()
-        ->whereBetween('created_at', [$startOfDay, $endOfDay])
-        ->with(['cashier', 'customer', 'debt']) // ✅ Tambahkan 'debt' di sini
+        ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+
+    if (!auth()->user()->can('lihat semua penjualan')) {
+        $salesQuery->where('cashier_id', auth()->id());
+    }
+
+    $sales = $salesQuery->with(['cashier', 'customer', 'debt']) // ✅ Tambahkan 'debt' di sini
         ->orderBy('created_at', 'desc')
         ->get();
 
@@ -339,6 +366,10 @@ public function showJson(Sale $sale)
 
     public function refund(Sale $sale)
     {
+        if (!auth()->user()->can('refund penjualan')) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak memiliki izin untuk melakukan refund'], 403);
+        }
+
         if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
@@ -389,11 +420,12 @@ public function showJson(Sale $sale)
         }
     }
 
-    /**
-     * Tampilkan detail penjualan
-     */
     public function show(Sale $sale)
     {
+        if (!auth()->user()->can('lihat detail penjualan')) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat detail penjualan');
+        }
+
         // Pastikan user hanya bisa akses sale dari outlet-nya
         if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
             abort(403, 'Akses ditolak');
@@ -409,8 +441,8 @@ public function showJson(Sale $sale)
      */
     public function printReceipt(Sale $sale)
     {
-        if (!auth()->user()->can('cetak ulang struk')) {
-            abort(403, 'Anda tidak memiliki izin untuk mencetak ulang struk');
+        if (!auth()->user()->can('cetak struk penjualan') && !auth()->user()->can('cetak ulang struk')) {
+            abort(403, 'Anda tidak memiliki izin untuk mencetak struk penjualan');
         }
 
         // Pastikan user hanya bisa akses sale dari outlet-nya

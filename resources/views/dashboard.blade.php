@@ -570,6 +570,7 @@
 @endcan
 
 
+@can('lihat penjualan')
     <a href="{{ route('sales.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="2"
@@ -582,6 +583,7 @@
             Penjualan
         </span>
     </a>
+@endcan
 
     <a href="{{ route('discounts.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -636,6 +638,7 @@
     </a>
 
     <!-- MONITORING & ANALISIS -->
+@can('lihat statistik')
     <a href="{{ route('statistics.index') }}"
        class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="5"
@@ -648,8 +651,10 @@
             Dashboard & Statistik
         </span>
     </a>
+@endcan
 
 
+@can('lihat laporan')
     <a href="{{ route('reports.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="6"
@@ -662,6 +667,7 @@
             Laporan Keseluruhan
         </span>
     </a>
+@endcan
 
     <!-- MANAJEMEN PRODUK & INVENTORI -->
     <a href="{{ route('products-hpp.index') }}"
