@@ -230,12 +230,20 @@ class RolePermissionSeeder extends Seeder
                 'order' => 25,
             ],
             [
+                'name' => 'Task Management',
+                'slug' => 'task-management',
+                'description' => 'Kelola tugas dan pekerjaan internal',
+                'icon' => 'fa-solid fa-tasks',
+                'color' => '#8b5cf6',
+                'order' => 26,
+            ],
+            [
                 'name' => 'Role & Permission',
                 'slug' => 'role-permission',
                 'description' => 'Kelola hak akses pengguna',
                 'icon' => 'fa-solid fa-shield-halved',
                 'color' => '#dc2626',
-                'order' => 26,
+                'order' => 27,
             ],
         ];
 
@@ -460,6 +468,14 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'preview struk', 'category' => 'struk', 'description' => 'Melihat preview struk'],
             ['name' => 'lihat struk publik', 'category' => 'struk', 'description' => 'Melihat struk publik'],
 
+            // Task Management
+            ['name' => 'tasks.view', 'category' => 'task-management', 'description' => 'Melihat daftar task'],
+            ['name' => 'tasks.create', 'category' => 'task-management', 'description' => 'Membuat task baru'],
+            ['name' => 'tasks.update', 'category' => 'task-management', 'description' => 'Mengubah task'],
+            ['name' => 'tasks.delete', 'category' => 'task-management', 'description' => 'Menghapus task'],
+            ['name' => 'tasks.assign', 'category' => 'task-management', 'description' => 'Assign task ke user lain'],
+            ['name' => 'task-labels.manage', 'category' => 'task-management', 'description' => 'Kelola label task'],
+
             // Role & Permission
             ['name' => 'lihat roles', 'category' => 'role-permission', 'description' => 'Melihat daftar role'],
             ['name' => 'buat roles', 'category' => 'role-permission', 'description' => 'Membuat role baru'],
@@ -547,6 +563,8 @@ class RolePermissionSeeder extends Seeder
             'edit profil', 'update profil',
             // Struk
             'cetak struk', 'unduh struk', 'preview struk',
+            // Task Management
+            'tasks.view', 'tasks.create', 'tasks.update', 'tasks.delete', 'tasks.assign', 'task-labels.manage',
         ]);
 
         // KASIR
@@ -579,6 +597,8 @@ class RolePermissionSeeder extends Seeder
             'edit profil', 'update profil',
             // Struk
             'cetak struk', 'unduh struk', 'preview struk',
+            // Task Management
+            'tasks.view', 'tasks.create', 'tasks.update', 'tasks.assign',
         ]);
 
         // INVENTARIS (Gudang / Stock)
@@ -603,6 +623,8 @@ class RolePermissionSeeder extends Seeder
             'lihat faq', 'lihat detail faq', 'tandai faq membantu', 'tandai faq tidak membantu',
             // Profil
             'edit profil', 'update profil',
+            // Task Management
+            'tasks.view', 'tasks.create', 'tasks.update', 'tasks.assign',
         ]);
 
         // PRODUKSI
@@ -625,6 +647,8 @@ class RolePermissionSeeder extends Seeder
             'lihat faq', 'lihat detail faq', 'tandai faq membantu', 'tandai faq tidak membantu',
             // Profil
             'edit profil', 'update profil',
+            // Task Management
+            'tasks.view', 'tasks.create', 'tasks.update', 'tasks.assign',
         ]);
 
         // PELANGGAN (Customer)

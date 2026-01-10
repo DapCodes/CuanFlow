@@ -319,6 +319,7 @@
     .menu-card:nth-child(22) { animation-delay: 1.1s; }
     .menu-card:nth-child(23) { animation-delay: 1.15s; }
     .menu-card:nth-child(24) { animation-delay: 1.2s; }
+    .menu-card:nth-child(25) { animation-delay: 1.25s; }
 
 
     .backdrop-blur-effect { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
@@ -639,6 +640,21 @@
         </div>
         <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
             Metode Pembayaran
+        </span>
+    </a>
+@endcan
+
+@can('tasks.view')
+    <a href="{{ route('tasks.index') }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="5"
+       data-title="Manajemen Tugas"
+       data-intro="<strong>Kelola tugas tim.</strong> Atur pekerjaan, pantau progress, dan kolaborasi dengan tim menggunakan Kanban board.">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+            <i class="fa-solid fa-list-check text-4xl sm:text-5xl text-white"></i>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Manajemen Tugas
         </span>
     </a>
 @endcan

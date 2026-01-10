@@ -11,6 +11,8 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PointOfSaleController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\RawMaterialAndSupplierController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RegisterOutletController;
@@ -191,6 +193,25 @@ Route::prefix('production')->name('production.')->group(function () {
         Route::post('/store', [WithdrawController::class, 'store'])->name('store');
         Route::get('/history', [WithdrawController::class, 'index'])->name('index');
     });
+
+    // Task & Kanban Board Management
+    Route::prefix('tasks')->name('tasks.')->group(function () {
+        Route::get('/', [TaskController::class, 'index'])->name('index');
+        Route::get('/table', [TaskController::class, 'tableView'])->name('table');
+        Route::get('/calendar', [TaskController::class, 'calendarView'])->name('calendar');
+        Route::get('/calendar-data', [TaskController::class, 'getCalendarTasks'])->name('calendar-data');
+        Route::post('/', [TaskController::class, 'store'])->name('store');
+        Route::get('/{task}', [TaskController::class, 'show'])->name('show');
+        Route::put('/{task}', [TaskController::class, 'update'])->name('update');
+        Route::delete('/{task}', [TaskController::class, 'destroy'])->name('destroy');
+        
+        // AJAX endpoints
+        Route::post('/{task}/update-status', [TaskController::class, 'updateStatus'])->name('update-status');
+        Route::post('/{task}/assign-users', [TaskController::class, 'assignUsers'])->name('assign-users');
+        Route::get('/{task}/activities', [TaskController::class, 'getActivities'])->name('activities');
+    });
+
+    Route::resource('task-labels', TaskLabelController::class);
 
 
 });
