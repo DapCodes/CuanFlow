@@ -104,6 +104,7 @@ Route::middleware('auth')->group(function () {
         // Route untuk kelola stok
         Route::get('/{rawMaterial}/manage-stock', [RawMaterialAndSupplierController::class, 'manageStock'])
             ->name('manage-stock');
+        Route::get('/{rawMaterial}/stock-show', [RawMaterialAndSupplierController::class, 'stockShow'])->name('stock-show');
         Route::post('/{rawMaterial}/update-stock', [RawMaterialAndSupplierController::class, 'updateStock'])
             ->name('update-stock');
         Route::get('/{rawMaterial}/stock-history', [RawMaterialAndSupplierController::class, 'stockHistory'])

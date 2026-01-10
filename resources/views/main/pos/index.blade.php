@@ -1645,10 +1645,12 @@
                         </button>
 
                         <!-- Kelola Meja -->
-                        <button onclick="openTableManagementModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
-                            <i class="fas fa-chair w-4 text-amber-600"></i>
-                            <span>Kelola Meja</span>
-                        </button>
+                        @if(auth()->user()->outlet->has_table_system == true)
+                            <button onclick="openTableManagementModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
+                                <i class="fas fa-chair w-4 text-amber-600"></i>
+                                <span>Kelola Meja</span>
+                            </button>
+                        @endif
 
                         <button onclick="openProductSettingsModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-orange-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-cog w-4 text-orange-600"></i>

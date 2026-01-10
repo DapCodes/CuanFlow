@@ -319,6 +319,7 @@ class RawMaterialAndSupplierController extends Controller
         
         $expenseCategories = ExpenseCategory::all();
 
+        // Calculate basic status for overview
         $now = now();
         $warningDays = 7;
         
@@ -330,6 +331,64 @@ class RawMaterialAndSupplierController extends Controller
             ->where('is_disposed', false)
             ->get();
 
+        $expiredQty = 0;
+        $expiringQty = 0;
+        $validQty = 0;
+
+        foreach ($batches as $batch) {
+            if (!$batch->expired_at) {
+                $validQty += $batch->remaining_quantity;
+                continue;
+            }
+
+            $daysUntilExpiry = $now->diffInDays($batch->expired_at, false);
+            if ($daysUntilExpiry < 0) {
+                $expiredQty += $batch->remaining_quantity;
+            } elseif ($daysUntilExpiry <= $warningDays) {
+                $expiringQty += $batch->remaining_quantity;
+            } else {
+                $validQty += $batch->remaining_quantity;
+            }
+        }
+
+        return view('main.raw-material_n_supplier.manage-raw_material_stock', compact(
+            'rawMaterial',
+            'currentStock',
+            'expenseCategories',
+            'expiredQty',
+            'expiringQty',
+            'validQty'
+        ));
+    }
+
+    /**
+     * Show detailed stock information for a specific raw material
+     */
+    public function stockShow(RawMaterial $rawMaterial)
+    {
+        if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
+        $rawMaterial->load(['category', 'unit', 'supplier', 'stocks' => function ($q) {
+            $q->where('outlet_id', Auth::user()->outlet_id);
+        }]);
+
+        $stock = $rawMaterial->stocks->first();
+        $currentStock = $stock ? $stock->quantity : 0;
+
+        $now = now();
+        $warningDays = 7;
+        
+        $batches = PurchaseItem::where('raw_material_id', $rawMaterial->id)
+            ->whereHas('purchase', function ($q) {
+                $q->where('outlet_id', Auth::user()->outlet_id);
+            })
+            ->where('remaining_quantity', '>', 0)
+            ->where('is_disposed', false)
+            ->orderByRaw('expired_at IS NULL, expired_at ASC')
+            ->get();
+
         $expiredStocks = [];
         $expiringStocks = [];
         $validStocks = [];
@@ -337,6 +396,7 @@ class RawMaterialAndSupplierController extends Controller
         foreach ($batches as $batch) {
             if (!$batch->expired_at) {
                 $validStocks[] = [
+                    'id' => $batch->id,
                     'batch_number' => $batch->batch_number ?? '-',
                     'quantity' => $batch->remaining_quantity,
                     'expired_at' => null,
@@ -347,11 +407,11 @@ class RawMaterialAndSupplierController extends Controller
 
             $daysUntilExpiry = $now->diffInDays($batch->expired_at, false);
             $item = [
+                'id' => $batch->id,
                 'batch_number' => $batch->batch_number ?? '-',
                 'quantity' => $batch->remaining_quantity,
                 'expired_at' => $batch->expired_at,
-                'days_until_expiry' => $daysUntilExpiry,
-                'id' => $batch->id
+                'days_until_expiry' => $daysUntilExpiry
             ];
 
             if ($daysUntilExpiry < 0) {
@@ -363,13 +423,22 @@ class RawMaterialAndSupplierController extends Controller
             }
         }
 
-        return view('main.raw-material_n_supplier.manage-raw_material_stock', compact(
+        $stats = [
+            'expired_count' => count($expiredStocks),
+            'expired_quantity' => collect($expiredStocks)->sum('quantity'),
+            'expiring_count' => count($expiringStocks),
+            'expiring_quantity' => collect($expiringStocks)->sum('quantity'),
+            'valid_count' => count($validStocks),
+            'valid_quantity' => collect($validStocks)->sum('quantity'),
+        ];
+
+        return view('main.raw-material_n_supplier.stock-show', compact(
             'rawMaterial',
             'currentStock',
-            'expenseCategories',
             'expiredStocks',
             'expiringStocks',
-            'validStocks'
+            'validStocks',
+            'stats'
         ));
     }
 

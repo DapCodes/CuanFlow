@@ -312,10 +312,10 @@
                                        title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="{{ route('raw-materials.show', $material) }}" 
-                                        class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                                        title="Detail">
-                                         <i class="fas fa-eye"></i>
+                                    <a href="{{ route('raw-materials.stock-show', $material) }}" 
+                                        class="p-1.5 text-gray-500 hover:text-gray-100 hover:bg-gray-100 rounded-lg transition-colors"
+                                        title="Detail Stok">
+                                         <i class="fas fa-chart-line"></i>
                                      </a>
                                 </div>
                             </td>
