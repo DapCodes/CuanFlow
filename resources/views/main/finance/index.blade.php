@@ -37,16 +37,20 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
+                @can('buat pengeluaran')
                 <a href="{{ route('finance.expense.create') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-sm font-semibold hover:bg-red-100 transition-all">
                     <i class="fas fa-arrow-down text-xs"></i>
                     <span>Catat Pengeluaran</span>
                 </a>
+                @endcan
+                @can('buat pemasukan')
                 <a href="{{ route('finance.income.create') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-all">
                     <i class="fas fa-arrow-up text-xs"></i>
                     <span>Catat Pemasukan</span>
                 </a>
+                @endcan
             </div>
         </section>
 
@@ -276,7 +280,9 @@
                                     <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kasir / Pelanggan</th>
                                     <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Metode</th>
                                     <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Total Tagihan</th>
+                                    @if(auth()->user()->can('lihat detail penjualan') || auth()->user()->can('cetak struk penjualan'))
                                     <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -305,12 +311,16 @@
                                     </td>
                                     <td class="px-5 py-4 text-center">
                                         <div class="flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <a href="{{ route('sales.show', $sale->id) }}" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-100 rounded-lg shadow-sm transition-all">
+                                            @can('lihat detail penjualan')
+                                            <a href="{{ route('sales.show', $sale->id) }}" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-100 rounded-lg shadow-sm transition-all" title="Detail">
                                                 <i class="fas fa-eye text-[10px]"></i>
                                             </a>
-                                            <a href="{{ route('receipt.preview', $sale->id) }}" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-emerald-500 hover:border-emerald-100 rounded-lg shadow-sm transition-all">
+                                            @endcan
+                                            @can('cetak struk penjualan')
+                                            <a href="{{ route('receipt.preview', $sale->id) }}" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-emerald-500 hover:border-emerald-100 rounded-lg shadow-sm transition-all" title="Cetak Struk">
                                                 <i class="fas fa-print text-[10px]"></i>
                                             </a>
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>
@@ -377,13 +387,20 @@
                                          <div class="flex items-center justify-center gap-2">
                                             {{-- Edit --}}
                                             @php
+                                                $editPermission = $expense->amount < 0 ? 'edit pemasukan' : 'edit pengeluaran';
                                                 $editRoute = $expense->amount < 0 ? route('finance.income.edit', $expense->id) : route('finance.expense.edit', $expense->id);
                                             @endphp
+                                            @can($editPermission)
                                             <a href="{{ $editRoute }}" class="p-1.5 text-gray-400 hover:text-emerald-500 transition-colors">
                                                <i class="fas fa-edit text-[10px]"></i>
                                             </a>
-
+                                            @endcan
+                                            
                                             {{-- Delete --}}
+                                            @php
+                                                $deletePermission = $expense->amount < 0 ? 'hapus pemasukan' : 'hapus pengeluaran';
+                                            @endphp
+                                            @can($deletePermission)
                                             <form action="{{ route('finance.destroy', $expense->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                                                 @csrf
                                                 @method('DELETE')
@@ -391,6 +408,7 @@
                                                    <i class="fas fa-trash text-[10px]"></i>
                                                 </button>
                                             </form>
+                                            @endcan
                                          </div>
                                     </td>
                                 </tr>

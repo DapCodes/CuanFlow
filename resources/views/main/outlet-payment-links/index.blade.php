@@ -43,6 +43,7 @@
                     Kelola metode pembayaran QRIS untuk outlet Anda. Tambahkan rekening bank, e-wallet, atau QR code untuk memudahkan transaksi.
                 </p>
             </div>
+            @can('buat metode pembayaran')
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
                 <a href="{{ route('outlet-payment-links.create') }}"
                    class="inline-flex items-center gap-2 rounded-lg bg-pink-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-1">
@@ -50,6 +51,7 @@
                     <span>Tambah Metode</span>
                 </a>
             </div>
+            @endcan
         </section>
 
         {{-- RINGKASAN STATISTIK --}}
@@ -202,11 +204,14 @@
                                            title="Detail">
                                             <i class="fas fa-eye text-xs"></i>
                                         </a>
+                                        @can('edit metode pembayaran')
                                         <a href="{{ route('outlet-payment-links.edit', $link->id) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-yellow-200 bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
                                            title="Edit">
                                             <i class="fas fa-edit text-xs"></i>
                                         </a>
+                                        @endcan
+                                        @can('aktifkan nonaktifkan metode pembayaran')
                                         <form action="{{ route('outlet-payment-links.toggle-status', $link->id) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit"
@@ -216,6 +221,8 @@
                                                 <i class="fas fa-{{ $link->is_active ? 'toggle-on' : 'toggle-off' }} text-xs"></i>
                                             </button>
                                         </form>
+                                        @endcan
+                                        @can('hapus metode pembayaran')
                                         <form action="{{ route('outlet-payment-links.destroy', $link->id) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Apakah Anda yakin ingin menghapus metode pembayaran ini?')">
                                             @csrf
@@ -226,6 +233,7 @@
                                                 <i class="fas fa-trash text-xs"></i>
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>
@@ -240,11 +248,13 @@
                                         <p class="text-sm text-gray-500 mb-4 max-w-sm">
                                             Tambahkan metode pembayaran untuk memudahkan pelanggan melakukan transaksi dengan QRIS.
                                         </p>
+                                        @can('buat metode pembayaran')
                                         <a href="{{ route('outlet-payment-links.create') }}"
                                            class="inline-flex items-center gap-2 rounded-lg bg-pink-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-pink-600">
                                             <i class="fas fa-plus-circle text-xs"></i>
                                             Tambah Metode
                                         </a>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

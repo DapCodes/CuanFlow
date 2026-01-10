@@ -45,6 +45,7 @@
                     Atur promo dan diskon produk dengan tampilan sederhana, jelas, dan mudah dipahami untuk semua tim.
                 </p>
             </div>
+            @can('buat diskon')
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
                 <a href="{{ route('discounts.create') }}"
                    class="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1">
@@ -52,6 +53,7 @@
                     <span>Tambah Diskon</span>
                 </a>
             </div>
+            @endcan
         </section>
 
         {{-- RINGKASAN STATISTIK (BLOK YANG BISA DIJADIKAN POLA DI HALAMAN LAIN) --}}
@@ -327,11 +329,14 @@
                                            title="Detail">
                                             <i class="fas fa-eye text-xs"></i>
                                         </a>
+                                        @can('edit diskon')
                                         <a href="{{ route('discounts.edit', $discount->id) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-yellow-200 bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
                                            title="Edit">
                                             <i class="fas fa-edit text-xs"></i>
                                         </a>
+                                        @endcan
+                                        @can('aktifkan nonaktifkan diskon')
                                         <form action="{{ route('discounts.toggle-status', $discount->id) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit"
@@ -341,6 +346,8 @@
                                                 <i class="fas fa-{{ $discount->is_active ? 'toggle-on' : 'toggle-off' }} text-xs"></i>
                                             </button>
                                         </form>
+                                        @endcan
+                                        @can('hapus diskon')
                                         <form action="{{ route('discounts.destroy', $discount->id) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Apakah Anda yakin ingin menghapus diskon ini?')">
                                             @csrf
@@ -351,6 +358,7 @@
                                                 <i class="fas fa-trash text-xs"></i>
                                             </button>
                                         </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>
@@ -366,11 +374,13 @@
                                         <p class="text-sm text-gray-500 mb-4 max-w-sm">
                                             Mulai buat diskon untuk menarik lebih banyak pelanggan dan meningkatkan penjualan.
                                         </p>
+                                        @can('buat diskon')
                                         <a href="{{ route('discounts.create') }}"
                                            class="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600">
                                             <i class="fas fa-plus-circle text-xs"></i>
                                             Tambah Diskon
                                         </a>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

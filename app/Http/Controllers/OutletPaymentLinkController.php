@@ -11,6 +11,10 @@ class OutletPaymentLinkController extends Controller
 {
     public function index()
     {
+        if (!auth()->user()->can('lihat metode pembayaran')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk melihat metode pembayaran.');
+        }
+
         $outletId = auth()->user()->outlet_id;
         
         $paymentLinks = OutletPaymentLink::with('paymentMethod')
@@ -29,6 +33,10 @@ class OutletPaymentLinkController extends Controller
 
     public function create()
     {
+        if (!auth()->user()->can('buat metode pembayaran')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk menambah metode pembayaran.');
+        }
+
         $paymentMethods = PaymentMethod::active()->get();
         $outletId = auth()->user()->outlet_id;
         
@@ -42,6 +50,10 @@ class OutletPaymentLinkController extends Controller
 
     public function store(Request $request)
     {
+        if (!auth()->user()->can('buat metode pembayaran')) {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'payment_method_id' => 'required|exists:payment_methods,id',
             'account_number' => 'nullable|string|max:50',
@@ -88,6 +100,10 @@ class OutletPaymentLinkController extends Controller
 
     public function show(OutletPaymentLink $outletPaymentLink)
     {
+        if (!auth()->user()->can('lihat metode pembayaran')) {
+            abort(403);
+        }
+
         // Validasi outlet_id
         if ($outletPaymentLink->outlet_id !== auth()->user()->outlet_id) {
             abort(403, 'Anda tidak memiliki akses ke metode pembayaran ini');
@@ -100,6 +116,10 @@ class OutletPaymentLinkController extends Controller
 
     public function edit(OutletPaymentLink $outletPaymentLink)
     {
+        if (!auth()->user()->can('edit metode pembayaran')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengubah metode pembayaran.');
+        }
+
         // Validasi outlet_id
         if ($outletPaymentLink->outlet_id !== auth()->user()->outlet_id) {
             abort(403, 'Anda tidak memiliki akses ke metode pembayaran ini');
@@ -110,6 +130,10 @@ class OutletPaymentLinkController extends Controller
 
     public function update(Request $request, OutletPaymentLink $outletPaymentLink)
     {
+        if (!auth()->user()->can('edit metode pembayaran')) {
+            abort(403);
+        }
+
         // Validasi outlet_id
         if ($outletPaymentLink->outlet_id !== auth()->user()->outlet_id) {
             abort(403, 'Anda tidak memiliki akses ke metode pembayaran ini');
@@ -151,6 +175,10 @@ class OutletPaymentLinkController extends Controller
 
     public function destroy(OutletPaymentLink $outletPaymentLink)
     {
+        if (!auth()->user()->can('hapus metode pembayaran')) {
+            abort(403);
+        }
+
         // Validasi outlet_id
         if ($outletPaymentLink->outlet_id !== auth()->user()->outlet_id) {
             abort(403, 'Anda tidak memiliki akses ke metode pembayaran ini');
@@ -169,6 +197,10 @@ class OutletPaymentLinkController extends Controller
 
     public function toggleStatus(OutletPaymentLink $outletPaymentLink)
     {
+        if (!auth()->user()->can('aktifkan nonaktifkan metode pembayaran')) {
+            abort(403);
+        }
+
         // Validasi outlet_id
         if ($outletPaymentLink->outlet_id !== auth()->user()->outlet_id) {
             abort(403, 'Anda tidak memiliki akses ke metode pembayaran ini');

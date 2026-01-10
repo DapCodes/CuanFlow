@@ -12,6 +12,10 @@ class DiscountController extends Controller
 {
     public function index()
     {
+        if (!auth()->user()->can('lihat diskon')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk melihat daftar diskon.');
+        }
+
         $discounts = Discount::with(['product', 'category'])
             ->where('outlet_id', auth()->user()->outlet_id)
             ->latest()
@@ -29,6 +33,10 @@ class DiscountController extends Controller
 
     public function create()
     {
+        if (!auth()->user()->can('buat diskon')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk membuat diskon baru.');
+        }
+
         $products = Product::where('outlet_id', auth()->user()->outlet_id)
             ->where('is_active', true)
             ->orderBy('name')
@@ -41,6 +49,10 @@ class DiscountController extends Controller
 
     public function store(Request $request)
     {
+        if (!auth()->user()->can('buat diskon')) {
+            abort(403);
+        }
+
         $rules = [
             'code' => 'required|string|max:30|unique:discounts,code',
             'name' => 'required|string|max:255',
@@ -91,6 +103,10 @@ class DiscountController extends Controller
 
     public function show(Discount $discount)
     {
+        if (!auth()->user()->can('lihat diskon')) {
+            abort(403);
+        }
+
         $discount->load(['product', 'category']);
 
         return view('main.discount.show', compact('discount'));
@@ -98,6 +114,10 @@ class DiscountController extends Controller
 
     public function edit(Discount $discount)
     {
+        if (!auth()->user()->can('edit diskon')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengubah data diskon.');
+        }
+
         $products = Product::where('outlet_id', auth()->user()->outlet_id)
             ->where('is_active', true)
             ->orderBy('name')
@@ -110,6 +130,10 @@ class DiscountController extends Controller
 
     public function update(Request $request, Discount $discount)
     {
+        if (!auth()->user()->can('edit diskon')) {
+            abort(403);
+        }
+
         $rules = [
             'code' => 'required|string|max:30|unique:discounts,code,'.$discount->id,
             'name' => 'required|string|max:255',
@@ -151,6 +175,10 @@ class DiscountController extends Controller
 
     public function destroy(Discount $discount)
     {
+        if (!auth()->user()->can('hapus diskon')) {
+            abort(403);
+        }
+
         $discount->delete();
 
         return redirect()->route('discounts.index')
@@ -159,6 +187,10 @@ class DiscountController extends Controller
 
     public function toggleStatus(Discount $discount)
     {
+        if (!auth()->user()->can('aktifkan nonaktifkan diskon')) {
+            abort(403);
+        }
+
         $discount->update([
             'is_active' => ! $discount->is_active,
         ]);
@@ -171,6 +203,10 @@ class DiscountController extends Controller
 
     public function generateCode()
     {
+        if (!auth()->user()->can('generate kode diskon')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
+
         do {
             $code = 'DISC-'.strtoupper(Str::random(8));
         } while (Discount::where('code', $code)->exists());

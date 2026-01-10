@@ -16,6 +16,10 @@ class FinanceController extends Controller
 {
     public function index(Request $request)
     {
+        if (!auth()->user()->can('lihat keuangan')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk melihat halaman keuangan.');
+        }
+
         $outletId = auth()->user()->outlet_id;
         $selectedDate = $request->get('date', now()->format('Y-m-d'));
         $expensePeriod = $request->get('expense_period', 'today');
@@ -204,12 +208,20 @@ class FinanceController extends Controller
 
     public function getCategoriesAjax()
     {
+        if (!auth()->user()->can('buat pemasukan') && !auth()->user()->can('buat pengeluaran')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
+
         $categories = ExpenseCategory::where('is_active', true)->get();
         return response()->json($categories);
     }
 
     public function storeIncomeAjax(Request $request)
     {
+        if (!auth()->user()->can('buat pemasukan')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         try {
             $validated = $request->validate([
                 'amount' => 'required|numeric|min:0.01',
@@ -252,6 +264,10 @@ class FinanceController extends Controller
 
     public function storeExpenseAjax(Request $request)
     {
+        if (!auth()->user()->can('buat pengeluaran')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
+
         try {
             $validated = $request->validate([
                 'expense_category_id' => 'required|exists:expense_categories,id',
@@ -299,6 +315,10 @@ class FinanceController extends Controller
 
     public function getRevenueChart(Request $request): JsonResponse
     {
+        if (!auth()->user()->can('lihat grafik keuangan')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $period = $request->get('period', 'month'); // week, month, year
 
@@ -341,6 +361,10 @@ class FinanceController extends Controller
 
     public function getExpenseChart(Request $request): JsonResponse
     {
+        if (!auth()->user()->can('lihat grafik keuangan')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
+
         $outletId = auth()->user()->outlet_id;
         $period = $request->get('period', 'month'); // week, month, year
 
@@ -391,6 +415,10 @@ class FinanceController extends Controller
 
     public function createIncome(Request $request)
     {
+        if (!auth()->user()->can('buat pemasukan')) {
+            abort(403);
+        }
+
         $categories = ExpenseCategory::where('is_active', true)->get();
 
         return view('main.finance.create-income', compact('categories'));
@@ -398,6 +426,10 @@ class FinanceController extends Controller
 
     public function storeIncome(Request $request)
     {
+        if (!auth()->user()->can('buat pemasukan')) {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string|max:255',
@@ -429,6 +461,10 @@ class FinanceController extends Controller
 
     public function editIncome(Expense $expense)
     {
+        if (!auth()->user()->can('edit pemasukan')) {
+            abort(403);
+        }
+
         // Ensure this belongs to the outlet
         if ($expense->outlet_id !== auth()->user()->outlet_id) {
             abort(403);
@@ -444,6 +480,10 @@ class FinanceController extends Controller
 
     public function updateIncome(Request $request, Expense $expense)
     {
+        if (!auth()->user()->can('edit pemasukan')) {
+            abort(403);
+        }
+
         if ($expense->outlet_id !== auth()->user()->outlet_id) {
             abort(403);
         }
@@ -471,6 +511,10 @@ class FinanceController extends Controller
 
     public function createExpense()
     {
+        if (!auth()->user()->can('buat pengeluaran')) {
+            abort(403);
+        }
+
         $categories = ExpenseCategory::where('is_active', true)->get();
 
         return view('main.finance.create-expense', compact('categories'));
@@ -478,6 +522,10 @@ class FinanceController extends Controller
 
     public function storeExpense(Request $request)
     {
+        if (!auth()->user()->can('buat pengeluaran')) {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
             'amount' => 'required|numeric|min:0',
@@ -513,6 +561,10 @@ class FinanceController extends Controller
 
     public function editExpense(Expense $expense)
     {
+        if (!auth()->user()->can('edit pengeluaran')) {
+            abort(403);
+        }
+
         if ($expense->outlet_id !== auth()->user()->outlet_id) {
             abort(403);
         }
@@ -529,6 +581,10 @@ class FinanceController extends Controller
 
     public function updateExpense(Request $request, Expense $expense)
     {
+        if (!auth()->user()->can('edit pengeluaran')) {
+            abort(403);
+        }
+
         if ($expense->outlet_id !== auth()->user()->outlet_id) {
             abort(403);
         }
@@ -564,6 +620,11 @@ class FinanceController extends Controller
 
     public function destroy(Expense $expense)
     {
+        $permission = $expense->amount < 0 ? 'hapus pemasukan' : 'hapus pengeluaran';
+        if (!auth()->user()->can($permission)) {
+            abort(403);
+        }
+
         if ($expense->outlet_id !== auth()->user()->outlet_id) {
             abort(403);
         }
@@ -598,6 +659,10 @@ class FinanceController extends Controller
 
     public function daily(Request $request): JsonResponse
     {
+        if (!auth()->user()->can('lihat keuangan harian')) {
+            return response()->json(['message' => 'Akses ditolak'], 403);
+        }
+
         $request->validate(['date' => 'required|date']);
         $outletId = auth()->user()->outlet_id;
 

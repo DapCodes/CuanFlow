@@ -585,6 +585,7 @@
     </a>
 @endcan
 
+@can('lihat diskon')
     <a href="{{ route('discounts.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="3"
@@ -597,7 +598,9 @@
             Diskon
         </span>
     </a>
+@endcan
 
+@can('lihat keuangan')
     <a href="{{ route('finance.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="4"
@@ -610,6 +613,7 @@
             Keuangan
         </span>
     </a>
+@endcan
 
     <a href="{{ route('withdraw.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -624,6 +628,7 @@
         </span>
     </a>
 
+@can('lihat metode pembayaran')
     <a href="{{ route('outlet-payment-links.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="4"
@@ -636,6 +641,7 @@
             Metode Pembayaran
         </span>
     </a>
+@endcan
 
     <!-- MONITORING & ANALISIS -->
 @can('lihat statistik')
