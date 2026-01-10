@@ -108,6 +108,8 @@ Route::middleware('auth')->group(function () {
             ->name('update-stock');
         Route::get('/{rawMaterial}/stock-history', [RawMaterialAndSupplierController::class, 'stockHistory'])
             ->name('stock-history');
+        Route::post('/{rawMaterial}/remove-expired', [RawMaterialAndSupplierController::class, 'removeExpired'])
+            ->name('remove-expired');
 
         // Route untuk supplier CRUD
         Route::get('/suppliers/create', [RawMaterialAndSupplierController::class, 'createSupplier'])

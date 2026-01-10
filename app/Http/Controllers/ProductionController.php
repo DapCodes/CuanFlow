@@ -8,22 +8,64 @@ use App\Models\ProductStock;
 use App\Models\Recipe;
 use App\Models\RawMaterialStock;
 use App\Models\StockMovement;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ProductionController extends Controller
 {
     public function index()
     {
         $outletId = auth()->user()->outlet_id;
+        $now = now();
+        $warningDays = 7;
         
-        $products = Product::with(['unit', 'category', 'stocks', 'defaultRecipe'])
+        $products = Product::with([
+                'unit', 
+                'category', 
+                'stocks', 
+                'defaultRecipe',
+                'productions' => function($q) use ($outletId) {
+                    $q->where('outlet_id', $outletId)
+                      ->where('status', 'completed')
+                      ->where('is_disposed', false)
+                      ->whereNotNull('expired_at');
+                }
+            ])
             ->where('outlet_id', $outletId)
             ->where('is_active', true)
             ->get()
-            ->map(function ($product) use ($outletId) {
+            ->map(function ($product) use ($outletId, $now, $warningDays) {
                 $stock = $product->getStockByOutlet($outletId);
+                
+                $expiredCount = 0;
+                $expiringCount = 0;
+                $validCount = 0;
+                $totalExpiredQty = 0;
+                $totalExpiringQty = 0;
+                $totalValidQty = 0;
+                
+                foreach ($product->productions as $batch) {
+                    $stockQty = $batch->actual_quantity - $batch->waste_quantity;
+                    if ($stockQty <= 0) continue;
+                    
+                    $daysUntilExpiry = $now->diffInDays($batch->expired_at, false);
+                    
+                    if ($daysUntilExpiry < 0) {
+                        $expiredCount++;
+                        $totalExpiredQty += $stockQty;
+                    } elseif ($daysUntilExpiry <= $warningDays) {
+                        $expiringCount++;
+                        $totalExpiringQty += $stockQty;
+                    } else {
+                        $validCount++;
+                        $totalValidQty += $stockQty;
+                    }
+                }
+
                 return [
                     'id' => $product->id,
                     'code' => $product->code,
@@ -35,6 +77,12 @@ class ProductionController extends Controller
                     'min_stock' => $product->min_stock,
                     'is_low_stock' => $product->isLowStock($outletId),
                     'has_recipe' => $product->defaultRecipe !== null,
+                    'expired_batches_count' => $expiredCount,
+                    'expiring_batches_count' => $expiringCount,
+                    'valid_batches_count' => $validCount,
+                    'total_expired_qty' => $totalExpiredQty,
+                    'total_expiring_qty' => $totalExpiringQty,
+                    'total_valid_qty' => $totalValidQty,
                 ];
             });
 
@@ -147,6 +195,7 @@ public function show(Production $production)
         $completedProductions = Production::where('product_id', $production->product_id)
             ->where('outlet_id', $outletId)
             ->where('status', 'completed')
+            ->where('is_disposed', false) // Exclude disposed batches
             ->whereNotNull('completed_at')
             ->whereNotNull('expired_at')
             ->orderBy('completed_at', 'desc')
@@ -290,7 +339,28 @@ public function store(Request $request)
                     throw new \Exception('Stok bahan baku tidak mencukupi.');
                 }
 
+                $qtyBefore = $stock->quantity;
                 $stock->reduceStock($item->planned_quantity);
+
+                // --- FIFO Consumption from Batches ---
+                $needed = $item->planned_quantity;
+                $batches = PurchaseItem::where('raw_material_id', $item->raw_material_id)
+                    ->whereHas('purchase', function($q) use ($production) {
+                        $q->where('outlet_id', $production->outlet_id);
+                    })
+                    ->where('remaining_quantity', '>', 0)
+                    ->where('is_disposed', false)
+                    ->orderByRaw('expired_at IS NULL, expired_at ASC') // Expiring first
+                    ->orderBy('created_at', 'ASC')
+                    ->get();
+
+                foreach ($batches as $batch) {
+                    if ($needed <= 0) break;
+
+                    $consume = min($batch->remaining_quantity, $needed);
+                    $batch->decrement('remaining_quantity', $consume);
+                    $needed -= $consume;
+                }
 
                 StockMovement::create([
                     'stockable_type' => 'App\Models\RawMaterial',
@@ -298,6 +368,8 @@ public function store(Request $request)
                     'outlet_id' => $production->outlet_id,
                     'type' => 'out',
                     'quantity' => $item->planned_quantity,
+                    'quantity_before' => $qtyBefore,
+                    'quantity_after' => $qtyBefore - $item->planned_quantity,
                     'reference_type' => 'App\Models\Production',
                     'reference_id' => $production->id,
                     'notes' => 'Produksi #' . $production->batch_number,
@@ -356,6 +428,7 @@ public function store(Request $request)
                     ['quantity' => 0]
                 );
 
+                $qtyBefore = $stock->quantity;
                 $stock->addStock($netQuantity);
 
                 StockMovement::create([
@@ -364,6 +437,8 @@ public function store(Request $request)
                     'outlet_id' => $production->outlet_id,
                     'type' => 'in',
                     'quantity' => $netQuantity,
+                    'quantity_before' => $qtyBefore,
+                    'quantity_after' => $qtyBefore + $netQuantity,
                     'reference_type' => 'App\Models\Production',
                     'reference_id' => $production->id,
                     'notes' => 'Produksi selesai #' . $production->batch_number,
@@ -397,7 +472,35 @@ public function store(Request $request)
                         ['quantity' => 0]
                     );
 
+                    $qtyBefore = $stock->quantity;
                     $stock->addStock($item->planned_quantity);
+
+                    // --- Create a Return Batch to keep batches in sync ---
+                    $purchase = Purchase::create([
+                        'purchase_number' => 'RET-' . date('Ymd') . '-' . strtoupper(Str::random(5)),
+                        'outlet_id' => $production->outlet_id,
+                        'supplier_id' => $item->rawMaterial->supplier_id,
+                        'subtotal' => 0,
+                        'grand_total' => 0,
+                        'paid_amount' => 0,
+                        'payment_status' => 'paid',
+                        'status' => 'received',
+                        'purchase_date' => now(),
+                        'received_date' => now(),
+                        'notes' => 'Pengembalian stok dari pembatalan produksi #' . $production->batch_number,
+                        'created_by' => auth()->id(),
+                    ]);
+
+                    PurchaseItem::create([
+                        'purchase_id' => $purchase->id,
+                        'raw_material_id' => $item->raw_material_id,
+                        'quantity' => $item->planned_quantity,
+                        'received_quantity' => $item->planned_quantity,
+                        'remaining_quantity' => $item->planned_quantity,
+                        'unit_price' => $item->unit_price,
+                        'subtotal' => 0,
+                        'notes' => 'Batch pengembalian (Produksi #' . $production->batch_number . ')',
+                    ]);
 
                     StockMovement::create([
                         'stockable_type' => 'App\Models\RawMaterial',
@@ -405,6 +508,8 @@ public function store(Request $request)
                         'outlet_id' => $production->outlet_id,
                         'type' => 'in',
                         'quantity' => $item->planned_quantity,
+                        'quantity_before' => $qtyBefore,
+                        'quantity_after' => $qtyBefore + $item->planned_quantity,
                         'reference_type' => 'App\Models\Production',
                         'reference_id' => $production->id,
                         'notes' => 'Pembatalan produksi #' . $production->batch_number,
@@ -448,7 +553,15 @@ public function store(Request $request)
                     ->first();
 
                 if ($stock && $stock->quantity >= $stockQty) {
+                    $qtyBefore = $stock->quantity;
                     $stock->reduceStock($stockQty);
+
+                    // Update production to reflect that all items are now "waste" (expired) and officially "disposed"
+                    $prod->update([
+                        'is_disposed' => true,
+                        'waste_quantity' => $prod->actual_quantity,
+                        'notes' => ($prod->notes ? $prod->notes . "\n" : "") . "Stok kadaluarsa dihapus/dibuang pada " . now()->format('d M Y H:i')
+                    ]);
 
                     StockMovement::create([
                         'stockable_type' => 'App\Models\Product',
@@ -456,6 +569,8 @@ public function store(Request $request)
                         'outlet_id' => $prod->outlet_id,
                         'type' => 'out',
                         'quantity' => $stockQty,
+                        'quantity_before' => $qtyBefore,
+                        'quantity_after' => $qtyBefore - $stockQty,
                         'reference_type' => 'App\Models\Production',
                         'reference_id' => $prod->id,
                         'notes' => 'Penghapusan stok kadaluarsa #' . $prod->batch_number,
@@ -490,6 +605,7 @@ public function showStock(Product $product)
         $completedProductions = Production::where('product_id', $product->id)
             ->where('outlet_id', $outletId)
             ->where('status', 'completed')
+            ->where('is_disposed', false) // Exclude disposed batches
             ->whereNotNull('completed_at')
             ->whereNotNull('expired_at')
             ->orderBy('completed_at', 'desc')
@@ -567,7 +683,16 @@ public function removeExpiredStock(Request $request, Product $product)
                 ->first();
 
             if ($stock && $stock->quantity >= $stockQty) {
+                $qtyBefore = $stock->quantity;
                 $stock->reduceStock($stockQty);
+
+                // Update production to reflect that all items are now "waste" (expired) and officially "disposed"
+                // This ensures it doesn't show up again in the expired list
+                $prod->update([
+                    'is_disposed' => true,
+                    'waste_quantity' => $prod->actual_quantity,
+                    'notes' => ($prod->notes ? $prod->notes . "\n" : "") . "Stok kadaluarsa dihapus/dibuang pada " . now()->format('d M Y H:i')
+                ]);
 
                 StockMovement::create([
                     'stockable_type' => 'App\Models\Product',
@@ -575,6 +700,8 @@ public function removeExpiredStock(Request $request, Product $product)
                     'outlet_id' => $prod->outlet_id,
                     'type' => 'out',
                     'quantity' => $stockQty,
+                    'quantity_before' => $qtyBefore,
+                    'quantity_after' => $qtyBefore - $stockQty,
                     'reference_type' => 'App\Models\Production',
                     'reference_id' => $prod->id,
                     'notes' => 'Penghapusan stok kadaluarsa #' . $prod->batch_number,

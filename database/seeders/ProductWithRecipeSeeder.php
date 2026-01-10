@@ -8,10 +8,18 @@ use App\Models\HppCalculation;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\RawMaterial;
+use App\Models\RawMaterialStock;
 use App\Models\Recipe;
 use App\Models\RecipeItem;
+use App\Models\Production;
+use App\Models\ProductionItem;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
+use App\Models\StockMovement;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ProductWithRecipeSeeder extends Seeder
 {
@@ -20,6 +28,8 @@ class ProductWithRecipeSeeder extends Seeder
         $units = DB::table('units')->pluck('id', 'abbreviation')->toArray();
         $categories = Category::where('type', 'product')->pluck('id', 'slug')->toArray();
         $targetOutletId = 1;
+        $admin = User::where('email', 'admin@cuanflow.com')->first() ?? User::first();
+        $adminId = $admin ? $admin->id : null;
 
         if (empty($units) || empty($categories)) {
             echo "Pastikan UnitSeeder dan CategorySeeder sudah dijalankan.\n";
@@ -42,8 +52,8 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 25000.00,
                 'reseller_price' => 22000.00,
                 'min_stock' => 10.0,
-                'shelf_life_days' => 1,
-                'description' => 'Takoyaki original dengan isian gurita asli, saus takoyaki, mayones, katsuobushi, dan aonori',
+                'shelf_life_days' => 2,
+                'description' => 'Takoyaki original dengan isian gurita asli',
                 'recipe' => [
                     'name' => 'Resep Takoyaki Original (6 pcs)',
                     'output_quantity' => 6,
@@ -78,8 +88,8 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 40000.00,
                 'reseller_price' => 36000.00,
                 'min_stock' => 10.0,
-                'shelf_life_days' => 1,
-                'description' => 'Takoyaki jumbo pack dengan 10 pcs, cocok untuk berbagi',
+                'shelf_life_days' => 2,
+                'description' => 'Takoyaki jumbo pack dengan 10 pcs',
                 'recipe' => [
                     'name' => 'Resep Takoyaki Jumbo (10 pcs)',
                     'output_quantity' => 10,
@@ -116,7 +126,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 35000.00,
                 'reseller_price' => 30000.00,
                 'min_stock' => 15.0,
-                'shelf_life_days' => 3,
+                'shelf_life_days' => 14,
                 'description' => 'Roti sobek lembut dengan isian selai cokelat',
                 'recipe' => [
                     'name' => 'Resep Roti Sobek Cokelat',
@@ -147,7 +157,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 28000.00,
                 'reseller_price' => 24000.00,
                 'min_stock' => 15.0,
-                'shelf_life_days' => 4,
+                'shelf_life_days' => 14,
                 'description' => 'Roti tawar lembut untuk sandwich (12 slice)',
                 'recipe' => [
                     'name' => 'Resep Roti Tawar Sandwich',
@@ -178,7 +188,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 45000.00,
                 'reseller_price' => 40000.00,
                 'min_stock' => 10.0,
-                'shelf_life_days' => 5,
+                'shelf_life_days' => 30,
                 'description' => 'Brownies cokelat premium dengan taburan kacang almond',
                 'recipe' => [
                     'name' => 'Resep Brownies Cokelat Kacang',
@@ -208,7 +218,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 25000.00,
                 'reseller_price' => 22000.00,
                 'min_stock' => 15.0,
-                'shelf_life_days' => 3,
+                'shelf_life_days' => 7,
                 'description' => 'Bolu kukus lembut rasa pandan (8 potong)',
                 'recipe' => [
                     'name' => 'Resep Bolu Kukus Pandan',
@@ -238,7 +248,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 18000.00,
                 'reseller_price' => 15000.00,
                 'min_stock' => 20.0,
-                'shelf_life_days' => 2,
+                'shelf_life_days' => 7,
                 'description' => 'Croissant klasik dengan lapisan mentega berlimpah',
                 'recipe' => [
                     'name' => 'Resep Croissant Butter',
@@ -266,7 +276,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 20000.00,
                 'reseller_price' => 17000.00,
                 'min_stock' => 20.0,
-                'shelf_life_days' => 2,
+                'shelf_life_days' => 7,
                 'description' => 'Danish pastry dengan selai strawberry segar',
                 'recipe' => [
                     'name' => 'Resep Danish Strawberry',
@@ -298,7 +308,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 18000.00,
                 'reseller_price' => 15000.00,
                 'min_stock' => 30.0,
-                'shelf_life_days' => 1,
+                'shelf_life_days' => 3,
                 'description' => 'Kopi arabica dengan susu dan gula aren (16oz)',
                 'recipe' => [
                     'name' => 'Resep Es Kopi Susu Gula Aren',
@@ -325,7 +335,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 22000.00,
                 'reseller_price' => 19000.00,
                 'min_stock' => 30.0,
-                'shelf_life_days' => 1,
+                'shelf_life_days' => 3,
                 'description' => 'Matcha premium dengan susu segar (16oz)',
                 'recipe' => [
                     'name' => 'Resep Matcha Latte',
@@ -352,7 +362,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 25000.00,
                 'reseller_price' => 22000.00,
                 'min_stock' => 25.0,
-                'shelf_life_days' => 1,
+                'shelf_life_days' => 3,
                 'description' => 'Milkshake cokelat dengan whipped cream (22oz)',
                 'recipe' => [
                     'name' => 'Resep Chocolate Milkshake',
@@ -380,7 +390,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 20000.00,
                 'reseller_price' => 17000.00,
                 'min_stock' => 25.0,
-                'shelf_life_days' => 1,
+                'shelf_life_days' => 5,
                 'description' => 'Milk tea dengan boba dan gula aren (22oz)',
                 'recipe' => [
                     'name' => 'Resep Boba Brown Sugar Milk Tea',
@@ -408,7 +418,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 8000.00,
                 'reseller_price' => 7000.00,
                 'min_stock' => 50.0,
-                'shelf_life_days' => 2,
+                'shelf_life_days' => 7,
                 'description' => 'Donat empuk dengan topping cokelat',
                 'recipe' => [
                     'name' => 'Resep Donat Cokelat',
@@ -438,8 +448,8 @@ class ProductWithRecipeSeeder extends Seeder
                 'selling_price' => 9000.00,
                 'reseller_price' => 8000.00,
                 'min_stock' => 50.0,
-                'shelf_life_days' => 2,
-                'description' => 'Donat dengan taburan keju parut melimpah',
+                'shelf_life_days' => 7,
+                'description' => 'Donat dengan taburan keju melimpah',
                 'recipe' => [
                     'name' => 'Resep Donat Keju',
                     'output_quantity' => 1,
@@ -488,13 +498,11 @@ class ProductWithRecipeSeeder extends Seeder
                 }
             }
 
-            // Biaya tambahan (listrik, gas, tenaga kerja) - estimasi 15% dari raw material cost
             $additionalCost = $rawMaterialCost * 0.15;
             $totalHpp = $rawMaterialCost + $additionalCost;
             $outputQuantity = $productData['recipe']['output_quantity'];
             $hppPerUnit = $totalHpp / $outputQuantity;
 
-            // Hitung margin berdasarkan harga jual
             $selling_price = $productData['selling_price'];
             $margin_percent = $totalHpp > 0 ? (($selling_price - $totalHpp) / $selling_price) * 100 : 0;
 
@@ -577,27 +585,176 @@ class ProductWithRecipeSeeder extends Seeder
                 'updated_at' => now(),
             ]);
 
-            // Buat stok awal produk
-            ProductStock::create([
+            // Initialize Product Stock
+            $productStock = ProductStock::create([
                 'product_id' => $product->id,
                 'outlet_id' => $targetOutletId,
-                'quantity' => 100,
+                'quantity' => 0, // Start from 0, will be filled by production
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            echo "✓ Produk '{$product->name}' berhasil dibuat!\n";
-            echo '  Biaya Bahan: Rp '.number_format($rawMaterialCost, 0, ',', '.')."\n";
-            echo '  Biaya Tambahan (15%): Rp '.number_format($additionalCost, 0, ',', '.')."\n";
-            echo '  Total HPP: Rp '.number_format($totalHpp, 0, ',', '.')."\n";
-            echo '  Harga Jual: Rp '.number_format($selling_price, 0, ',', '.')."\n";
-            echo '  Margin: '.number_format($margin_percent, 2)."%\n";
-            echo '  Profit: Rp '.number_format($selling_price - $totalHpp, 0, ',', '.')."\n\n";
+            // SEEDING PRODUKSI & STOCK MOVEMENTS (COMPLEXITY ENHANCEMENT)
+            $isIntegerUnit = in_array($productData['unit_abbreviation'], ['pcs', 'pack', 'box', 'btr', 'sct', 'lsn']);
+            
+            // Create a randomized history for each product (3-6 batches)
+            $batchCount = rand(3, 6);
+            for ($i = 0; $i < $batchCount; $i++) {
+                // $i = 0 is latest, $i = batchCount-1 is oldest
+                $daysAgo = $i * (rand(1, 2)); 
+                $multiplier = rand(5, 15);
+                $wastePercent = rand(0, 500) / 100; // 0% to 5%
+                
+                $plannedQty = $recipe->output_quantity * $multiplier;
+                $wasteQty = ($plannedQty * $wastePercent) / 100;
+                $actualQty = $plannedQty - $wasteQty;
+
+                // Round based on unit type
+                if ($isIntegerUnit) {
+                    $plannedQty = ceil($plannedQty);
+                    $wasteQty = floor($wasteQty);
+                    $actualQty = $plannedQty - $wasteQty;
+                } else {
+                    $plannedQty = round($plannedQty, 2);
+                    $wasteQty = round($wasteQty, 4);
+                    $actualQty = round($actualQty, 4);
+                }
+                
+                $isOldest = ($i === $batchCount - 1);
+                $isLatest = ($i === 0);
+                
+                $status = ($isLatest && rand(1, 10) > 8) ? 'in_progress' : 'completed';
+                $isDisposed = ($isOldest && $status === 'completed' && rand(1, 10) > 6);
+                
+                $prodDate = now()->subDays($daysAgo)->subHours(rand(1, 12));
+
+                // 1. Buat Record Produksi
+                $production = Production::create([
+                    'batch_number' => 'BATCH-' . Str::upper(Str::random(8)),
+                    'outlet_id' => $targetOutletId,
+                    'product_id' => $product->id,
+                    'recipe_id' => $recipe->id,
+                    'planned_quantity' => $plannedQty,
+                    'actual_quantity' => $status === 'completed' ? $plannedQty : null,
+                    'waste_quantity' => $status === 'completed' ? ($isDisposed ? $plannedQty : $wasteQty) : 0,
+                    'status' => $status,
+                    'is_disposed' => $isDisposed,
+                    'started_at' => (clone $prodDate)->subMinutes($recipe->estimated_time_minutes * $multiplier),
+                    'completed_at' => $status === 'completed' ? $prodDate : null,
+                    'expired_at' => ($status === 'completed' && $product->shelf_life_days) ? (clone $prodDate)->addDays($product->shelf_life_days)->endOfDay() : null,
+                    'total_material_cost' => round($rawMaterialCost * $multiplier, 2),
+                    'total_additional_cost' => round($additionalCost * $multiplier, 2),
+                    'total_cost' => round($totalHpp * $multiplier, 2),
+                    'notes' => $isDisposed ? 'Historical batch - already disposed (expired).' : 'Historical production batch generated by seeder.',
+                    'created_by' => $adminId,
+                    'completed_by' => $status === 'completed' ? $adminId : null,
+                    'created_at' => $prodDate,
+                    'updated_at' => $prodDate,
+                ]);
+
+                // 2. Buat Production Items & Stock Movement Out untuk Bahan Baku
+                foreach ($productData['recipe']['items'] as $item) {
+                    $rawMaterial = $rawMaterials->get($item['code']);
+                    if ($rawMaterial) {
+                        $usageQty = $item['quantity'] * $multiplier;
+                        $rmUnit = DB::table('units')->where('id', $rawMaterial->unit_id)->value('abbreviation');
+                        $isRmInteger = in_array($rmUnit, ['pcs', 'pack', 'box', 'btr', 'sct']);
+
+                        if ($isRmInteger) {
+                            $usageQty = ceil($usageQty);
+                        } else {
+                            $usageQty = round($usageQty, 4);
+                        }
+                        
+                        // Production Item
+                        ProductionItem::create([
+                            'production_id' => $production->id,
+                            'raw_material_id' => $rawMaterial->id,
+                            'planned_quantity' => $usageQty,
+                            'actual_quantity' => $status === 'completed' ? $usageQty : null,
+                            'unit_price' => $rawMaterial->purchase_price,
+                            'total_price' => $rawMaterial->purchase_price * $usageQty,
+                        ]);
+
+                        // Stock Movement Out (Bahan Baku)
+                        if ($status === 'completed' || $status === 'in_progress') {
+                            $rmStock = RawMaterialStock::where('raw_material_id', $rawMaterial->id)
+                                ->where('outlet_id', $targetOutletId)
+                                ->first();
+                            
+                            if ($rmStock) {
+                                $qtyBefore = $rmStock->quantity;
+                                $rmStock->decrement('quantity', $usageQty);
+                                
+                                // --- FIFO Consumption from Batches for Seeder ---
+                                $needed = $usageQty;
+                                $batches = PurchaseItem::where('raw_material_id', $rawMaterial->id)
+                                    ->whereHas('purchase', function($q) use ($targetOutletId) {
+                                        $q->where('outlet_id', $targetOutletId);
+                                    })
+                                    ->where('remaining_quantity', '>', 0)
+                                    ->orderByRaw('expired_at IS NULL, expired_at ASC')
+                                    ->orderBy('created_at', 'ASC')
+                                    ->get();
+
+                                foreach ($batches as $batch) {
+                                    if ($needed <= 0) break;
+                                    $consume = min($batch->remaining_quantity, $needed);
+                                    $batch->decrement('remaining_quantity', $consume);
+                                    $needed -= $consume;
+                                }
+
+                                StockMovement::create([
+                                    'outlet_id' => $targetOutletId,
+                                    'stockable_type' => RawMaterial::class,
+                                    'stockable_id' => $rawMaterial->id,
+                                    'type' => 'out',
+                                    'quantity' => $usageQty,
+                                    'quantity_before' => $qtyBefore,
+                                    'quantity_after' => $qtyBefore - $usageQty,
+                                    'unit_price' => $rawMaterial->purchase_price,
+                                    'reference_type' => Production::class,
+                                    'reference_id' => $production->id,
+                                    'notes' => 'Usage for production batch ' . $production->batch_number,
+                                    'created_by' => $adminId,
+                                    'created_at' => $prodDate,
+                                ]);
+                            }
+                        }
+                    }
+                }
+
+                // 3. Stock Movement In untuk Produk Jadi (Hanya jika COMPLETED dan TIDAK DISPOSED)
+                if ($status === 'completed' && !$isDisposed) {
+                    $qtyBeforeProd = $productStock->quantity;
+                    $productStock->increment('quantity', $actualQty);
+
+                    StockMovement::create([
+                        'outlet_id' => $targetOutletId,
+                        'stockable_type' => Product::class,
+                        'stockable_id' => $product->id,
+                        'type' => 'production',
+                        'quantity' => $actualQty,
+                        'quantity_before' => $qtyBeforeProd,
+                        'quantity_after' => $qtyBeforeProd + $actualQty,
+                        'unit_price' => round($production->total_cost / ($actualQty ?: 1), 2),
+                        'reference_type' => Production::class,
+                        'reference_id' => $production->id,
+                        'notes' => 'Production entry batch ' . $production->batch_number,
+                        'created_by' => $adminId,
+                        'created_at' => $prodDate,
+                    ]);
+                }
+            }
+
+            echo "✓ Produk '{$product->name}' berhasil dibuat dengan riwayat produksi!\n";
+            echo '  Total Stok: ' . $productStock->quantity . ' ' . $productData['unit_abbreviation'] . "\n";
+            echo '  HPP per unit: Rp ' . number_format($hppPerUnit, 0, ',', '.') . "\n\n";
         }
 
         echo "========================================\n";
-        echo "Seeder produk berhasil dijalankan!\n";
-        echo 'Total produk: '.count($productsData)."\n";
+        echo "Seeder produk & produksi berhasil dijalankan!\n";
+        echo 'Total produk: ' . count($productsData) . "\n";
         echo "========================================\n\n";
 
         // ============ SEEDER DISKON ============

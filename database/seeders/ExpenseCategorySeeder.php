@@ -16,6 +16,7 @@ class ExpenseCategorySeeder extends Seeder
             ['code' => 'TRANS', 'name' => 'Transportasi', 'description' => 'Ongkir, bensin'],
             ['code' => 'MAINT', 'name' => 'Perawatan', 'description' => 'Perawatan & perbaikan'],
             ['code' => 'MARK', 'name' => 'Marketing', 'description' => 'Promosi & iklan'],
+            ['code' => 'STOCK', 'name' => 'Stok Bahan Baku', 'description' => 'Pembelian stok bahan baku'],
             ['code' => 'MISC', 'name' => 'Lain-lain', 'description' => 'Pengeluaran lainnya'],
         ];
         foreach ($cats as $c) {

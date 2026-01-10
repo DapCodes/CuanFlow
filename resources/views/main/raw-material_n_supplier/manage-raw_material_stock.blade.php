@@ -91,23 +91,63 @@
                 {{-- Current Stock Status --}}
                 <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
                     <div class="text-center">
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">Stok Saat Ini ({{ $rawMaterial->unit->name }})</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">Total Stok ({{ $rawMaterial->unit->name }})</p>
                         <h2 class="text-4xl font-bold {{ $currentStock <= $rawMaterial->min_stock ? 'text-red-500' : 'text-gray-900' }}">
                             {{ number_format($currentStock, 2) }}
                         </h2>
-                        @if($currentStock <= 0)
-                            <span class="inline-flex items-center gap-1 mt-2 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">
-                                <i class="fas fa-exclamation-circle text-[10px]"></i> Stok Habis
-                            </span>
-                        @elseif($currentStock <= $rawMaterial->min_stock)
-                            <span class="inline-flex items-center gap-1 mt-2 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-100">
-                                <i class="fas fa-exclamation-triangle text-[10px]"></i> Stok Menipis
-                            </span>
-                        @else
-                            <span class="inline-flex items-center gap-1 mt-2 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                <i class="fas fa-check-circle text-[10px]"></i> Stok Aman
-                            </span>
-                        @endif
+                    </div>
+                </div>
+
+                {{-- Status Breakdown --}}
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-chart-pie"></i>
+                            Rincian Kondisi Stok
+                        </h3>
+                    </div>
+                    <div class="divide-y divide-gray-100">
+                        {{-- Expired --}}
+                        <div class="p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                                    <i class="fas fa-calendar-times text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Kadaluarsa</p>
+                                    <p class="text-lg font-bold text-red-600">{{ number_format(collect($expiredStocks)->sum('quantity'), 2) }}</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-100">{{ count($expiredStocks) }} Batch</span>
+                        </div>
+
+                        {{-- Expiring --}}
+                        <div class="p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center">
+                                    <i class="fas fa-hourglass-half text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Segera Kadaluarsa</p>
+                                    <p class="text-lg font-bold text-yellow-600">{{ number_format(collect($expiringStocks)->sum('quantity'), 2) }}</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-yellow-50 text-yellow-700 border border-yellow-100">{{ count($expiringStocks) }} Batch</span>
+                        </div>
+
+                        {{-- Valid --}}
+                        <div class="p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Aman/Valid</p>
+                                    <p class="text-lg font-bold text-emerald-600">{{ number_format(collect($validStocks)->sum('quantity'), 2) }}</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">{{ count($validStocks) }} Batch</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -286,10 +326,157 @@
                         </div>
                     </form>
                 </div>
+
+                {{-- Batch Breakdown List --}}
+                <div class="mt-8 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-layer-group text-gray-400"></i>
+                            Daftar Batch Bahan Baku
+                        </h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {{-- Expired Batches --}}
+                        <div class="space-y-4">
+                            <div class="bg-red-50 px-4 py-3 border border-red-200 rounded-lg flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-red-800 flex items-center gap-2">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Kadaluarsa ({{ count($expiredStocks) }})</span>
+                                </h3>
+                                @if(count($expiredStocks) > 0)
+                                <button onclick="openRemoveExpiredModal()" class="text-[10px] font-bold text-red-700 hover:text-red-900 uppercase">Hapus</button>
+                                @endif
+                            </div>
+                            <div class="space-y-3">
+                                @forelse($expiredStocks as $stock)
+                                <div class="bg-white border border-red-100 rounded-xl p-4 shadow-sm relative overflow-hidden group">
+                                    <div class="absolute top-0 right-0 p-2">
+                                        <input type="checkbox" class="expired-checkbox w-3.5 h-3.5 text-red-600 border-gray-300 rounded focus:ring-red-500" value="{{ $stock['id'] }}">
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <span class="text-[10px] font-mono font-bold text-red-400">#{{ $stock['batch_number'] }}</span>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xl font-black text-gray-900">{{ number_format($stock['quantity'], 2) }}</span>
+                                            <span class="text-xs font-medium text-gray-500">{{ $rawMaterial->unit->abbreviation }}</span>
+                                        </div>
+                                        <div class="mt-2 flex items-center justify-between text-[10px]">
+                                            <span class="text-gray-500">KADALUARSA:</span>
+                                            <span class="font-bold text-red-600 uppercase">{{ $stock['expired_at']->diffForHumans() }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @empty
+                                <div class="text-center py-8 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl">
+                                    <p class="text-xs text-gray-400">Tidak ada batch kadaluarsa</p>
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        {{-- Expiring Soon --}}
+                        <div class="space-y-4">
+                            <div class="bg-yellow-50 px-4 py-3 border border-yellow-200 rounded-lg">
+                                <h3 class="text-sm font-semibold text-yellow-800 flex items-center gap-2">
+                                    <i class="fas fa-hourglass-start"></i>
+                                    <span>Segera Kadaluarsa ({{ count($expiringStocks) }})</span>
+                                </h3>
+                            </div>
+                            <div class="space-y-3">
+                                @forelse($expiringStocks as $stock)
+                                <div class="bg-white border border-yellow-100 rounded-xl p-4 shadow-sm relative overflow-hidden">
+                                    <div class="flex flex-col gap-1">
+                                        <span class="text-[10px] font-mono font-bold text-yellow-500">#{{ $stock['batch_number'] }}</span>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xl font-black text-gray-900">{{ number_format($stock['quantity'], 2) }}</span>
+                                            <span class="text-xs font-medium text-gray-500">{{ $rawMaterial->unit->abbreviation }}</span>
+                                        </div>
+                                        <div class="mt-2 flex items-center justify-between text-[10px]">
+                                            <span class="text-gray-500">KADALUARSA:</span>
+                                            <span class="font-bold text-yellow-600 uppercase">{{ $stock['expired_at']->diffForHumans() }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @empty
+                                <div class="text-center py-8 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl">
+                                    <p class="text-xs text-gray-400">Tidak ada batch kritis</p>
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        {{-- Valid --}}
+                        <div class="space-y-4">
+                            <div class="bg-emerald-50 px-4 py-3 border border-emerald-200 rounded-lg">
+                                <h3 class="text-sm font-semibold text-emerald-800 flex items-center gap-2">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Stok Aman/Valid ({{ count($validStocks) }})</span>
+                                </h3>
+                            </div>
+                            <div class="space-y-3">
+                                @forelse($validStocks as $stock)
+                                <div class="bg-white border border-emerald-100 rounded-xl p-4 shadow-sm relative overflow-hidden">
+                                    <div class="flex flex-col gap-1">
+                                        <span class="text-[10px] font-mono font-bold text-emerald-500">#{{ $stock['batch_number'] }}</span>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xl font-black text-gray-900">{{ number_format($stock['quantity'], 2) }}</span>
+                                            <span class="text-xs font-medium text-gray-500">{{ $rawMaterial->unit->abbreviation }}</span>
+                                        </div>
+                                        <div class="mt-2 flex items-center justify-between text-[10px]">
+                                            <span class="text-gray-500">KADALUARSA:</span>
+                                            <span class="font-bold text-emerald-600 uppercase">{{ $stock['expired_at'] ? $stock['expired_at']->diffForHumans() : 'Selamanya (Aman)' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @empty
+                                <div class="text-center py-8 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl">
+                                    <p class="text-xs text-gray-400">Tidak ada stok valid</p>
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </main>
+
+{{-- Remove Expired Modal --}}
+<div id="removeExpiredModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeRemoveExpiredModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-trash-alt text-red-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">Konfirmasi Penghapusan Stok</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">
+                                Anda yakin ingin menghapus <span id="selectedCount" class="font-bold text-red-600">0</span> batch stok yang kadaluarsa? Tindakan ini tidak dapat dibatalkan dan akan mengurangi stok tersedia.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+                <form id="removeExpiredForm" action="{{ route('raw-materials.remove-expired', $rawMaterial) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm">
+                        Ya, Hapus Stok
+                    </button>
+                </form>
+                <button type="button" onclick="closeRemoveExpiredModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:text-sm">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
 <script>
@@ -331,6 +518,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial check
     toggleFields();
+
+    window.openRemoveExpiredModal = function() {
+        const checkboxes = document.querySelectorAll('.expired-checkbox:checked');
+        if (checkboxes.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Opps...',
+                text: 'Pilih minimal satu batch untuk dihapus',
+            });
+            return;
+        }
+        
+        const form = document.getElementById('removeExpiredForm');
+        form.querySelectorAll('input[name="batch_ids[]"]').forEach(el => el.remove());
+        
+        checkboxes.forEach(checkbox => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'batch_ids[]';
+            input.value = checkbox.value;
+            form.appendChild(input);
+        });
+        
+        document.getElementById('selectedCount').textContent = checkboxes.length;
+        document.getElementById('removeExpiredModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    window.closeRemoveExpiredModal = function() {
+        document.getElementById('removeExpiredModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
 
     // Validation for reduce
     document.getElementById('stockForm').addEventListener('submit', function(e) {

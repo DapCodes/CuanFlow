@@ -55,11 +55,11 @@
         </section>
 
         {{-- Stats Overview --}}
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Bahan Baku</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Bahan Baku</p>
                         <p class="mt-1 text-2xl font-bold text-gray-900">{{ $rawMaterials->total() }}</p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
@@ -71,17 +71,13 @@
             <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Stok Menipis</p>
-                        <p class="mt-1 text-2xl font-bold text-yellow-600">
-                             {{ $rawMaterials->filter(function($m) {
-                                $stock = $m->stocks->first();
-                                $currentStock = $stock ? $stock->quantity : 0;
-                                return $currentStock <= $m->min_stock && $currentStock > 0;
-                            })->count() }}
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Stok Kadaluarsa</p>
+                        <p class="mt-1 text-2xl font-bold text-red-600">
+                            {{ $rawMaterials->filter(fn($m) => $m->total_expired_qty > 0)->count() }}
                         </p>
                     </div>
-                    <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center border border-yellow-100">
-                        <i class="fas fa-exclamation-triangle text-yellow-500 text-lg"></i>
+                    <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center border border-red-100">
+                        <i class="fas fa-calendar-times text-red-500 text-lg"></i>
                     </div>
                 </div>
             </div>
@@ -89,16 +85,31 @@
             <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Stok Habis</p>
-                        <p class="mt-1 text-2xl font-bold text-red-600">
-                            {{ $rawMaterials->filter(function($m) {
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Segera Kadaluarsa</p>
+                        <p class="mt-1 text-2xl font-bold text-yellow-600">
+                            {{ $rawMaterials->filter(fn($m) => $m->total_expiring_qty > 0)->count() }}
+                        </p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center border border-yellow-100">
+                        <i class="fas fa-hourglass-half text-yellow-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Stok Menipis</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-700">
+                             {{ $rawMaterials->filter(function($m) {
                                 $stock = $m->stocks->first();
-                                return ($stock ? $stock->quantity : 0) <= 0;
+                                $currentStock = $stock ? $stock->quantity : 0;
+                                return $currentStock <= $m->min_stock && $currentStock > 0;
                             })->count() }}
                         </p>
                     </div>
-                    <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center border border-red-100">
-                        <i class="fas fa-times-circle text-red-500 text-lg"></i>
+                    <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
+                        <i class="fas fa-exclamation-triangle text-gray-400 text-lg"></i>
                     </div>
                 </div>
             </div>
@@ -146,6 +157,8 @@
                             <option value="">Semua Stok</option>
                             <option value="low" {{ request('stock_status') == 'low' ? 'selected' : '' }}>Menipis</option>
                             <option value="out" {{ request('stock_status') == 'out' ? 'selected' : '' }}>Habis</option>
+                            <option value="expired" {{ request('stock_status') == 'expired' ? 'selected' : '' }}>Kadaluarsa</option>
+                            <option value="expiring" {{ request('stock_status') == 'expiring' ? 'selected' : '' }}>Segera Kadaluarsa</option>
                         </select>
                     </div>
                     <div class="md:col-span-2">
@@ -230,21 +243,43 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 align-top">
-                                <div class="flex items-center gap-2">
-                                     <span class="font-semibold {{ $isOutOfStock ? 'text-red-600' : ($isLowStock ? 'text-yellow-600' : 'text-gray-900') }}">
-                                        {{ number_format($currentStock, 2) }}
-                                     </span>
-                                     <span class="text-xs text-gray-500">{{ $material->unit->name }}</span>
+                                <div class="flex flex-col gap-1.5">
+                                    {{-- Valid/Safe Stock --}}
+                                    <div class="flex items-center justify-between gap-4">
+                                        <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 flex-grow text-center">
+                                            {{ number_format($material->total_valid_qty, 2) }} {{ $material->unit->abbreviation }} AMAN
+                                        </span>
+                                    </div>
+
+                                    {{-- Expiring Soon Stock --}}
+                                    @if($material->total_expiring_qty > 0)
+                                    <div class="flex items-center justify-between gap-4">
+                                        <span class="text-xs font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded border border-yellow-100 flex-grow text-center">
+                                            {{ number_format($material->total_expiring_qty, 2) }} {{ $material->unit->abbreviation }} SEGERA KADALUARSA
+                                        </span>
+                                    </div>
+                                    @endif
+
+                                    {{-- Expired Stock --}}
+                                    @if($material->total_expired_qty > 0)
+                                    <div class="flex items-center justify-between gap-4">
+                                        <span class="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-100 flex-grow text-center animate-pulse">
+                                            {{ number_format($material->total_expired_qty, 2) }} {{ $material->unit->abbreviation }} KADALUARSA
+                                        </span>
+                                    </div>
+                                    @endif
+
+                                    {{-- Low/Empty Stock Warning --}}
+                                    @if($isOutOfStock)
+                                        <span class="text-[10px] font-bold text-white bg-red-600 px-2 py-0.5 rounded text-center">
+                                            STOK HABIS
+                                        </span>
+                                    @elseif($isLowStock)
+                                        <span class="text-[10px] font-bold text-yellow-700 bg-yellow-200 px-2 py-0.5 rounded text-center">
+                                            STOK MENIPIS
+                                        </span>
+                                    @endif
                                 </div>
-                                @if($isOutOfStock)
-                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-600 border border-red-100 mt-1">
-                                        Habis
-                                    </span>
-                                @elseif($isLowStock)
-                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-50 text-yellow-600 border border-yellow-100 mt-1">
-                                        Menipis
-                                    </span>
-                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap align-top">
                                 <div class="text-gray-900 font-medium">Rp {{ number_format($material->purchase_price, 0, ',', '.') }}</div>

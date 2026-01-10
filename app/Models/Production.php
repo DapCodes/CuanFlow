@@ -14,7 +14,7 @@ class Production extends Model
 
     protected $fillable = [
         'batch_number', 'outlet_id', 'product_id', 'recipe_id',
-        'planned_quantity', 'actual_quantity', 'waste_quantity', 'status',
+        'planned_quantity', 'actual_quantity', 'waste_quantity', 'status', 'is_disposed',
         'started_at', 'completed_at', 'expired_at',
         'total_material_cost', 'total_additional_cost', 'total_cost',
         'notes', 'created_by', 'completed_by',
@@ -24,6 +24,7 @@ class Production extends Model
         'planned_quantity' => 'decimal:4', 'actual_quantity' => 'decimal:4', 'waste_quantity' => 'decimal:4',
         'total_material_cost' => 'decimal:2', 'total_additional_cost' => 'decimal:2', 'total_cost' => 'decimal:2',
         'started_at' => 'datetime', 'completed_at' => 'datetime', 'expired_at' => 'date',
+        'is_disposed' => 'boolean',
     ];
 
     protected static function boot()

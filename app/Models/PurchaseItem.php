@@ -11,15 +11,15 @@ class PurchaseItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'purchase_id', 'raw_material_id', 'quantity', 'received_quantity',
+        'purchase_id', 'raw_material_id', 'quantity', 'received_quantity', 'remaining_quantity',
         'unit_price', 'discount_percent', 'discount_amount', 'subtotal',
-        'expired_at', 'batch_number', 'notes',
+        'expired_at', 'batch_number', 'notes', 'is_disposed',
     ];
 
     protected $casts = [
-        'quantity' => 'decimal:4', 'received_quantity' => 'decimal:4', 'unit_price' => 'decimal:2',
-        'discount_percent' => 'decimal:4', 'discount_amount' => 'decimal:2', 'subtotal' => 'decimal:2',
-        'expired_at' => 'date',
+        'quantity' => 'decimal:4', 'received_quantity' => 'decimal:4', 'remaining_quantity' => 'decimal:4', 
+        'unit_price' => 'decimal:2', 'discount_percent' => 'decimal:4', 'discount_amount' => 'decimal:2', 
+        'subtotal' => 'decimal:2', 'expired_at' => 'date', 'is_disposed' => 'boolean',
     ];
 
     protected static function boot()

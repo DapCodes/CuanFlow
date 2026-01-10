@@ -67,10 +67,61 @@ class RawMaterialAndSupplierController extends Controller
                     $q->where('outlet_id', $outletId)
                         ->where('quantity', '<=', 0);
                 });
+            } elseif ($request->stock_status === 'expired') {
+                $query->whereHas('purchaseItems', function ($q) use ($outletId) {
+                    $q->whereHas('purchase', fn($p) => $p->where('outlet_id', $outletId))
+                        ->where('remaining_quantity', '>', 0)
+                        ->where('is_disposed', false)
+                        ->whereNotNull('expired_at')
+                        ->where('expired_at', '<', now());
+                });
+            } elseif ($request->stock_status === 'expiring') {
+                $query->whereHas('purchaseItems', function ($q) use ($outletId) {
+                    $q->whereHas('purchase', fn($p) => $p->where('outlet_id', $outletId))
+                        ->where('remaining_quantity', '>', 0)
+                        ->where('is_disposed', false)
+                        ->whereNotNull('expired_at')
+                        ->where('expired_at', '>=', now())
+                        ->where('expired_at', '<=', now()->addDays(7));
+                });
             }
         }
 
+        $outletId = Auth::user()->outlet_id;
+        $now = now();
+        $warningDays = 7;
+
         $rawMaterials = $query->latest()->paginate(15);
+        $rawMaterials->getCollection()->transform(function ($material) use ($outletId, $now, $warningDays) {
+            $batches = PurchaseItem::where('raw_material_id', $material->id)
+                ->whereHas('purchase', function ($q) use ($outletId) {
+                    $q->where('outlet_id', $outletId);
+                })
+                ->where('remaining_quantity', '>', 0)
+                ->where('is_disposed', false)
+                ->get();
+
+            $material->total_expired_qty = 0;
+            $material->total_expiring_qty = 0;
+            $material->total_valid_qty = 0;
+
+            foreach ($batches as $batch) {
+                if (!$batch->expired_at) {
+                    $material->total_valid_qty += $batch->remaining_quantity;
+                    continue;
+                }
+
+                $daysUntilExpiry = $now->diffInDays($batch->expired_at, false);
+                if ($daysUntilExpiry < 0) {
+                    $material->total_expired_qty += $batch->remaining_quantity;
+                } elseif ($daysUntilExpiry <= $warningDays) {
+                    $material->total_expiring_qty += $batch->remaining_quantity;
+                } else {
+                    $material->total_valid_qty += $batch->remaining_quantity;
+                }
+            }
+            return $material;
+        });
 
         // Get filter options
         $categories = Category::orderBy('name')->get();
@@ -268,10 +319,57 @@ class RawMaterialAndSupplierController extends Controller
         
         $expenseCategories = ExpenseCategory::all();
 
+        $now = now();
+        $warningDays = 7;
+        
+        $batches = PurchaseItem::where('raw_material_id', $rawMaterial->id)
+            ->whereHas('purchase', function ($q) {
+                $q->where('outlet_id', Auth::user()->outlet_id);
+            })
+            ->where('remaining_quantity', '>', 0)
+            ->where('is_disposed', false)
+            ->get();
+
+        $expiredStocks = [];
+        $expiringStocks = [];
+        $validStocks = [];
+
+        foreach ($batches as $batch) {
+            if (!$batch->expired_at) {
+                $validStocks[] = [
+                    'batch_number' => $batch->batch_number ?? '-',
+                    'quantity' => $batch->remaining_quantity,
+                    'expired_at' => null,
+                    'days_until_expiry' => 999
+                ];
+                continue;
+            }
+
+            $daysUntilExpiry = $now->diffInDays($batch->expired_at, false);
+            $item = [
+                'batch_number' => $batch->batch_number ?? '-',
+                'quantity' => $batch->remaining_quantity,
+                'expired_at' => $batch->expired_at,
+                'days_until_expiry' => $daysUntilExpiry,
+                'id' => $batch->id
+            ];
+
+            if ($daysUntilExpiry < 0) {
+                $expiredStocks[] = $item;
+            } elseif ($daysUntilExpiry <= $warningDays) {
+                $expiringStocks[] = $item;
+            } else {
+                $validStocks[] = $item;
+            }
+        }
+
         return view('main.raw-material_n_supplier.manage-raw_material_stock', compact(
             'rawMaterial',
             'currentStock',
-            'expenseCategories'
+            'expenseCategories',
+            'expiredStocks',
+            'expiringStocks',
+            'validStocks'
         ));
     }
 
@@ -344,6 +442,7 @@ class RawMaterialAndSupplierController extends Controller
                     'raw_material_id' => $rawMaterial->id,
                     'quantity' => $validated['quantity'],
                     'received_quantity' => $validated['quantity'],
+                    'remaining_quantity' => $validated['quantity'],
                     'unit_price' => $unitPrice,
                     'subtotal' => $totalAmount,
                     'expired_at' => $validated['expired_at'] ?? null,
@@ -399,6 +498,63 @@ class RawMaterialAndSupplierController extends Controller
 
             return redirect()->route('raw-materials.index')
                 ->with('success', $message);
+        });
+    }
+
+    /**
+     * Remove expired batches manually
+     */
+    public function removeExpired(Request $request, RawMaterial $rawMaterial)
+    {
+        $validated = $request->validate([
+            'batch_ids' => 'required|array',
+            'batch_ids.*' => 'required|exists:purchase_items,id',
+        ]);
+
+        return DB::transaction(function () use ($request, $rawMaterial, $validated) {
+            $totalRemoved = 0;
+            $items = PurchaseItem::whereIn('id', $validated['batch_ids'])
+                ->where('raw_material_id', $rawMaterial->id)
+                ->where('is_disposed', false)
+                ->get();
+
+            $stock = $rawMaterial->stocks()
+                ->where('outlet_id', Auth::user()->outlet_id)
+                ->first();
+
+            foreach ($items as $item) {
+                $qtyToRemove = $item->remaining_quantity;
+                if ($qtyToRemove <= 0) continue;
+
+                if ($stock) {
+                    $qtyBefore = $stock->quantity;
+                    $stock->reduceStock($qtyToRemove);
+
+                    StockMovement::create([
+                        'outlet_id' => Auth::user()->outlet_id,
+                        'stockable_type' => RawMaterial::class,
+                        'stockable_id' => $rawMaterial->id,
+                        'type' => 'out',
+                        'quantity' => $qtyToRemove,
+                        'quantity_before' => $qtyBefore,
+                        'quantity_after' => $qtyBefore - $qtyToRemove,
+                        'unit_price' => $item->unit_price,
+                        'reference_type' => 'manual_adjustment',
+                        'reference_id' => $item->purchase_id,
+                        'notes' => 'Penghapusan stok kadaluarsa (Batch ' . ($item->batch_number ?? '-') . ')',
+                        'created_by' => Auth::id(),
+                    ]);
+                }
+
+                $item->update([
+                    'is_disposed' => true,
+                    'remaining_quantity' => 0,
+                ]);
+
+                $totalRemoved += $qtyToRemove;
+            }
+
+            return back()->with('success', "Berhasil menghapus " . number_format($totalRemoved, 2) . " unit stok kadaluarsa.");
         });
     }
 

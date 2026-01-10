@@ -5,8 +5,15 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\RawMaterial;
 use App\Models\RawMaterialStock;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
+use App\Models\User;
+use App\Models\StockMovement;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class RawMaterialSeeder extends Seeder
 {
@@ -300,35 +307,107 @@ class RawMaterialSeeder extends Seeder
         }
 
         RawMaterial::insert($rawMaterialRecords);
-
         $rawMaterials = RawMaterial::all();
 
-        $rawMaterialStocks = [];
-        foreach ($rawMaterials as $rawMaterial) {
-            $unitAbbreviation = DB::table('units')->where('id', $rawMaterial->unit_id)->value('abbreviation');
+        DB::transaction(function () use ($rawMaterials, $targetOutletId) {
+            $adminId = User::where('email', 'admin@cuanflow.com')->first()?->id ?? User::first()?->id;
 
-            $initialStock = match ($unitAbbreviation) {
-                'kg' => fake()->numberBetween(50, 200),
-                'L' => fake()->numberBetween(30, 100),
-                'g' => fake()->numberBetween(5000, 20000),
-                'ml' => fake()->numberBetween(5000, 20000),
-                'pcs' => fake()->numberBetween(500, 2000),
-                default => fake()->numberBetween(100, 500),
-            };
+            foreach ($rawMaterials as $rawMaterial) {
+                $unitAbbreviation = DB::table('units')->where('id', $rawMaterial->unit_id)->value('abbreviation');
 
-            $avgPurchasePrice = $rawMaterial->purchase_price;
+                $initialStock = match ($unitAbbreviation) {
+                    'kg', 'L' => fake()->randomFloat(2, 5000, 15000),
+                    'g', 'ml' => fake()->randomFloat(2, 5000000, 15000000),
+                    'ons' => fake()->randomFloat(2, 10000, 50000),
+                    'pcs', 'pack', 'box', 'krg', 'btr', 'sct', 'lsn' => fake()->numberBetween(50000, 200000),
+                    default => fake()->numberBetween(10000, 50000),
+                };
 
-            $rawMaterialStocks[] = [
-                'raw_material_id' => $rawMaterial->id,
-                'outlet_id' => $targetOutletId,
-                'quantity' => $initialStock,
-                'avg_purchase_price' => round($avgPurchasePrice, 2),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
+                RawMaterialStock::create([
+                    'raw_material_id' => $rawMaterial->id,
+                    'outlet_id' => $targetOutletId,
+                    'quantity' => $initialStock,
+                    'avg_purchase_price' => round($rawMaterial->purchase_price, 2),
+                ]);
 
-        RawMaterialStock::insert($rawMaterialStocks);
+                // Create 3 batches for each material: Expired, Expiring Soon, and Valid
+                $batchScenarios = [
+                    ['days' => -10, 'percent' => 0.1], // 10% Expired
+                    ['days' => 5, 'percent' => 0.2],  // 20% Expiring Soon
+                    ['days' => 60, 'percent' => 0.7], // 70% Valid
+                ];
+
+                foreach ($batchScenarios as $scenario) {
+                    $batchQty = $initialStock * $scenario['percent'];
+                    if ($batchQty <= 0) continue;
+
+                    $purchaseDate = now()->subDays(30);
+                    $expiredAt = (clone $purchaseDate)->addDays($rawMaterial->shelf_life_days ?? 30);
+                    
+                    // Override expired_at based on scenario for variety
+                    $targetExpiredAt = now()->addDays($scenario['days']);
+
+                    $purchase = Purchase::create([
+                        'purchase_number' => 'PUR-' . date('Ymd') . '-' . strtoupper(Str::random(5)),
+                        'outlet_id' => $targetOutletId,
+                        'supplier_id' => $rawMaterial->supplier_id,
+                        'subtotal' => $batchQty * $rawMaterial->purchase_price,
+                        'grand_total' => $batchQty * $rawMaterial->purchase_price,
+                        'paid_amount' => $batchQty * $rawMaterial->purchase_price,
+                        'payment_status' => 'paid',
+                        'status' => 'received',
+                        'purchase_date' => $purchaseDate,
+                        'received_date' => $purchaseDate,
+                        'notes' => 'Initial batch from seeder (' . ($scenario['days'] < 0 ? 'Expired' : ($scenario['days'] < 7 ? 'Expiring' : 'Valid')) . ')',
+                        'created_by' => $adminId,
+                    ]);
+
+                    PurchaseItem::create([
+                        'purchase_id' => $purchase->id,
+                        'raw_material_id' => $rawMaterial->id,
+                        'quantity' => $batchQty,
+                        'received_quantity' => $batchQty,
+                        'remaining_quantity' => $batchQty,
+                        'unit_price' => $rawMaterial->purchase_price,
+                        'subtotal' => $batchQty * $rawMaterial->purchase_price,
+                        'expired_at' => $targetExpiredAt,
+                        'batch_number' => 'BATCH-' . strtoupper(Str::random(6)),
+                    ]);
+
+                    StockMovement::create([
+                        'outlet_id' => $targetOutletId,
+                        'stockable_type' => RawMaterial::class,
+                        'stockable_id' => $rawMaterial->id,
+                        'type' => 'in',
+                        'quantity' => $batchQty,
+                        'quantity_before' => 0, // Simplified for seeder
+                        'quantity_after' => $batchQty,
+                        'unit_price' => $rawMaterial->purchase_price,
+                        'reference_type' => Purchase::class,
+                        'reference_id' => $purchase->id,
+                        'notes' => 'Initial stock seeding (' . ($scenario['days'] < 0 ? 'Expired' : ($scenario['days'] < 7 ? 'Expiring' : 'Valid')) . ')',
+                        'created_by' => $adminId,
+                        'created_at' => $purchaseDate,
+                    ]);
+
+                    // Create Expense for each purchase
+                    $stockCategoryId = ExpenseCategory::where('code', 'STOCK')->first()?->id ?? 1;
+                    Expense::create([
+                        'expense_number' => 'EXP-' . $purchaseDate->format('Ymd') . '-' . strtoupper(Str::random(5)),
+                        'outlet_id' => $targetOutletId,
+                        'expense_category_id' => $stockCategoryId,
+                        'amount' => $batchQty * $rawMaterial->purchase_price,
+                        'expense_date' => $purchaseDate,
+                        'description' => 'Pembelian stok bahan baku: ' . $rawMaterial->name,
+                        'payment_method' => 'cash',
+                        'reference_number' => $purchase->purchase_number,
+                        'status' => 'approved',
+                        'created_by' => $adminId,
+                        'created_at' => $purchaseDate,
+                    ]);
+                }
+            }
+        });
 
         echo "✓ Seeder bahan baku berhasil dijalankan!\n";
         echo 'Total bahan baku: '.count($rawMaterialRecords)."\n";

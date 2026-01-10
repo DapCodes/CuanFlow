@@ -132,22 +132,38 @@
                                 </span>
                             </td>
                             <td class="px-6 py-3 whitespace-nowrap">
-                                @if($product['stock'] == 0)
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100">
-                                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
-                                    Kosong
-                                </span>
-                                @elseif($product['is_low_stock'])
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-100">
-                                    <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1.5"></span>
-                                    Menipis
-                                </span>
-                                @else
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100">
-                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></span>
-                                    Tersedia
-                                </span>
-                                @endif
+                                <div class="flex flex-col gap-1.5">
+                                    @if($product['stock'] == 0)
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100 w-fit">
+                                        <span class="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
+                                        Kosong
+                                    </span>
+                                    @elseif($product['is_low_stock'])
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-100 w-fit">
+                                        <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1.5"></span>
+                                        Menipis
+                                    </span>
+                                    @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-600 text-white border border-green-700 w-fit shadow-sm">
+                                        <i class="fas fa-check-circle mr-1 text-[10px]"></i>
+                                        {{ number_format($product['total_valid_qty'], 0) }} STOCK TERSEDIA
+                                    </span>
+                                    @endif
+
+                                    @if($product['total_expired_qty'] > 0)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-600 text-white border border-red-700 w-fit animate-pulse shadow-sm">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        {{ number_format($product['total_expired_qty'], 0) }} STOCK KADALUARSA
+                                    </span>
+                                    @endif
+
+                                    @if($product['total_expiring_qty'] > 0)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200 w-fit">
+                                        <i class="fas fa-clock mr-1 text-[10px]"></i>
+                                        {{ number_format($product['total_expiring_qty'], 0) }} STOCK SEGERA KADALUARSA
+                                    </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-3 whitespace-nowrap text-center">
                                 <div class="inline-flex items-center gap-1.5">
@@ -234,13 +250,19 @@
                         </div>
                         <div class="flex items-center gap-2 ml-4 flex-shrink-0">
                             @php
+                                $statusKey = $production->status;
+                                if ($production->is_disposed) {
+                                    $statusKey = 'disposed';
+                                }
+                                
                                 $statusConfig = [
                                     'planned' => ['class' => 'bg-gray-50 text-gray-700 border-gray-200', 'icon' => 'fa-clock', 'text' => 'Direncanakan'],
                                     'in_progress' => ['class' => 'bg-blue-50 text-blue-700 border-blue-200', 'icon' => 'fa-spinner', 'text' => 'Proses'],
                                     'completed' => ['class' => 'bg-green-50 text-green-700 border-green-200', 'icon' => 'fa-check-circle', 'text' => 'Selesai'],
                                     'cancelled' => ['class' => 'bg-red-50 text-red-700 border-red-200', 'icon' => 'fa-times-circle', 'text' => 'Batal'],
+                                    'disposed' => ['class' => 'bg-orange-50 text-orange-700 border-orange-200', 'icon' => 'fa-trash', 'text' => 'Terbuang'],
                                 ];
-                                $config = $statusConfig[$production->status] ?? $statusConfig['planned'];
+                                $config = $statusConfig[$statusKey] ?? $statusConfig['planned'];
                             @endphp
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border {{ $config['class'] }}">
                                 <i class="fas {{ $config['icon'] }} mr-1.5"></i>

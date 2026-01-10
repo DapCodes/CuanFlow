@@ -153,13 +153,14 @@
                         <div class="border border-red-200 rounded-lg overflow-hidden">
                             <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex items-center justify-between">
                                 <h3 class="text-sm font-semibold text-red-800 flex items-center gap-2">
+                                    <input type="checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 text-red-600 border-gray-300 rounded mr-1" title="Pilih Semua">
                                     <i class="fas fa-exclamation-triangle"></i>
                                     <span>Stok Kadaluarsa ({{ count($expiredStocks) }})</span>
                                 </h3>
                                 @if(count($expiredStocks) > 0)
                                 <button onclick="openRemoveExpiredModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">
                                     <i class="fas fa-trash"></i>
-                                    <span>Hapus Semua</span>
+                                    <span>Hapus Baris Terpilih</span>
                                 </button>
                                 @endif
                             </div>
@@ -188,7 +189,7 @@
                                             </div>
                                         </div>
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200 flex-shrink-0">
-                                            {{ abs($stock['days_until_expiry']) }} hari lewat
+                                            {{ $stock['expired_at']->diffForHumans() }}
                                         </span>
                                     </div>
                                 </div>
@@ -227,7 +228,7 @@
                                             </div>
                                         </div>
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200 flex-shrink-0">
-                                            {{ $stock['days_until_expiry'] }} hari lagi
+                                            {{ $stock['expired_at']->diffForHumans() }}
                                         </span>
                                     </div>
                                 </div>
@@ -388,14 +389,37 @@
 
 @push('scripts')
 <script>
+    function toggleSelectAll(checkbox) {
+        document.querySelectorAll('.expired-checkbox').forEach(cb => {
+            cb.checked = checkbox.checked;
+        });
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('.expired-checkbox:checked').length;
+        document.getElementById('selectedCount').textContent = count;
+    }
+
+    // Add event listeners for checkboxes
+    document.querySelectorAll('.expired-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+
     function openRemoveExpiredModal() {
         const checkboxes = document.querySelectorAll('.expired-checkbox:checked');
         if (checkboxes.length === 0) {
-            alert('Pilih minimal satu batch untuk dihapus');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Pilih Batch',
+                text: 'Silakan pilih minimal satu batch untuk dihapus.',
+                confirmButtonColor: '#EF4444'
+            });
             return;
         }
         
         const form = document.getElementById('removeExpiredForm');
+        // Clear existing hidden inputs
         form.querySelectorAll('input[name="batch_numbers[]"]').forEach(el => el.remove());
         
         checkboxes.forEach(checkbox => {
@@ -406,7 +430,7 @@
             form.appendChild(input);
         });
         
-        document.getElementById('selectedCount').textContent = checkboxes.length;
+        updateSelectedCount();
         document.getElementById('removeExpiredModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
