@@ -8,9 +8,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TaskAssignedNotification extends Notification implements ShouldQueue
+class TaskAssignedNotification extends Notification
 {
-    use Queueable;
 
     public function __construct(public Task $task)
     {
@@ -23,13 +22,26 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject('Anda ditugaskan ke task: ' . $this->task->title)
+        $creatorName = $this->task->creator->name ?? 'Tim CuanFlow';
+        $deadline = $this->task->deadline ? $this->task->deadline->format('d M Y, H:i') : 'Tidak ada deadline';
+
+        $mailMessage = (new MailMessage)
+            ->subject('Penugasan Baru: ' . $this->task->title)
             ->greeting('Halo ' . $notifiable->name . ',')
-            ->line('Anda baru saja ditambahkan sebagai assignee untuk task ini.')
-            ->line('Judul: **' . $this->task->title . '**')
-            ->line('Status Saat Ini: ' . $this->task->status->name)
-            ->action('Lihat Task', route('tasks.index'))
+            ->line('Anda telah ditugaskan untuk mengerjakan tugas baru oleh **' . $creatorName . '**.')
+            ->line('Detail Tugas:')
+            ->line('• Judul: **' . $this->task->title . '**')
+            ->line('• Prioritas: ' . $this->task->priority_label)
+            ->line('• Deadline: ' . $deadline)
+            ->line('• Status: ' . $this->task->status->name);
+
+        if ($this->task->description) {
+            $mailMessage->line('Deskripsi: ' . \Illuminate\Support\Str::limit($this->task->description, 100));
+        }
+
+        return $mailMessage
+            ->action('Buka Kanban Board', route('tasks.index'))
+            ->line('Mohon segera tinjau tugas tersebut dan update progresnya secara berkala.')
             ->line('Terima kasih telah menggunakan CuanFlow.');
     }
 }

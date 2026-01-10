@@ -207,7 +207,7 @@ class TaskController extends Controller
                 // Send notifications to assignees
                 $assignees = User::whereIn('id', $validated['assignees'])->get();
                 foreach ($assignees as $assignee) {
-                    $assignee->notify(new TaskCreatedNotification($task));
+                    $assignee->notify(new TaskAssignedNotification($task));
                 }
             }
 

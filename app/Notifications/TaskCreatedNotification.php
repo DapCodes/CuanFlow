@@ -8,9 +8,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TaskCreatedNotification extends Notification implements ShouldQueue
+class TaskCreatedNotification extends Notification
 {
-    use Queueable;
 
     public function __construct(public Task $task)
     {
