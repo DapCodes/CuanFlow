@@ -18,7 +18,7 @@ class OutletSeeder extends Seeder
         // 2) OUTLETS (JAWA BARAT SAJA, NYEBAR)
         $outletsData = [
             // BANDUNG + CIMAHI
-            ['code' => 'BTG-BDG', 'name' => 'Batagor Kings Bandung', 'address' => 'Jl. Braga, Bandung', 'latitude' => -6.9175, 'longitude' => 107.6191, 'phone' => '081200000101', 'email' => 'batagor.bdg@outlet.com', 'is_active' => true],
+            ['code' => 'TKY-BDG', 'name' => 'Takoyaki Didi', 'address' => 'Jl. Braga, Bandung', 'latitude' => -6.9175, 'longitude' => 107.6191, 'phone' => '081200000101', 'email' => 'batagor.bdg@outlet.com', 'is_active' => true],
             ['code' => 'MKK-BDG', 'name' => 'Mie Kocok Mang Dadang', 'address' => 'Jl. Cihampelas, Bandung', 'latitude' => -6.8937, 'longitude' => 107.6047, 'phone' => '081200000102', 'email' => 'miekocok.bdg@outlet.com', 'is_active' => true],
             ['code' => 'SBK-BDG', 'name' => 'Seblak Jeletet Sunda', 'address' => 'Jl. Dago, Bandung', 'latitude' => -6.8839, 'longitude' => 107.6130, 'phone' => '081200000103', 'email' => 'seblak.bdg@outlet.com', 'is_active' => true],
             ['code' => 'SRB-CMH', 'name' => 'Surabi Oncom Cimahi', 'address' => 'Jl. Gatot Subroto, Cimahi', 'latitude' => -6.8720, 'longitude' => 107.5420, 'phone' => '081200000104', 'email' => 'surabi.cimahi@outlet.com', 'is_active' => true],

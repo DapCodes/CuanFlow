@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             TableSeeder::class,
             PaymentMethodSeeder::class,
             SaleSeeder::class,
+            EmployeeSeeder::class,
         ]);
 
         // Buat Akun Admin
