@@ -10,7 +10,7 @@ class DebtPayment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['customer_debt_id', 'amount', 'payment_method', 'reference_number', 'notes', 'received_by'];
+    protected $fillable = ['customer_debt_id', 'amount', 'payment_method', 'reference_number', 'notes', 'received_by', 'outlet_payment_link_id'];
 
     protected $casts = ['amount' => 'decimal:2'];
 

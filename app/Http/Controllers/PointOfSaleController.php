@@ -399,18 +399,23 @@ class PointOfSaleController extends Controller
         $subtotal = 0;
         $totalDiscount = 0;
         $totalItems = 0;
+        $itemDiscounts = 0;
 
         foreach ($cart as $item) {
             $subtotal += ($item['unit_price'] * $item['quantity']);
-            // $totalDiscount += $item['discount_amount'];
             $totalItems += $item['quantity'];
+            $itemDiscounts += ($item['discount_amount'] ?? 0);
         }
 
         // Get discount from session plan
         $plan = Session::get('pos_discount_plan');
+        $planDiscount = 0;
         if ($plan) {
-            $totalDiscount = $plan['total_discount'];
+            $planDiscount = $plan['total_discount'] ?? 0;
         }
+
+        // Final total discount is the higher of accumulated item discounts OR plan discount
+        $totalDiscount = max($itemDiscounts, $planDiscount);
 
         $tax = 0;
         $taxPercent = 0;
@@ -670,6 +675,7 @@ class PointOfSaleController extends Controller
             ], 400);
         }
 
+        $this->decorateCartWithDiscount($cart, $plan);
         Session::put('pos_discount_plan', $plan);
 
         return response()->json([
@@ -718,6 +724,29 @@ class PointOfSaleController extends Controller
     /**
      * Auto-apply non-voucher discounts when cart changes
      */
+    private function decorateCartWithDiscount(&$cart, $plan)
+    {
+        if ($plan && isset($plan['affected_items'])) {
+            foreach ($cart as $key => $item) {
+                $affected = collect($plan['affected_items'])->firstWhere('product_id', $item['product_id']);
+                if ($affected) {
+                    $cart[$key]['discount_amount'] = (float) $affected['discount_amount'];
+                    $cart[$key]['subtotal'] = ($cart[$key]['unit_price'] * $cart[$key]['quantity']) - (float) $affected['discount_amount'];
+                } else {
+                    $cart[$key]['discount_amount'] = 0;
+                    $cart[$key]['subtotal'] = $cart[$key]['unit_price'] * $cart[$key]['quantity'];
+                }
+            }
+        } else {
+            foreach ($cart as $key => $item) {
+                $cart[$key]['discount_amount'] = 0;
+                $cart[$key]['subtotal'] = $cart[$key]['unit_price'] * $cart[$key]['quantity'];
+            }
+        }
+        
+        Session::put('pos_cart', $cart);
+    }
+
     private function autoApplyNonVoucherDiscount()
     {
         $cart = Session::get('pos_cart', []);
@@ -764,6 +793,7 @@ class PointOfSaleController extends Controller
                 }
 
                 // Update plan with new calculation (e.g. if percentage, amount changes)
+                $this->decorateCartWithDiscount($cart, $newPlan);
                 Session::put('pos_discount_plan', $newPlan);
 
                 return;

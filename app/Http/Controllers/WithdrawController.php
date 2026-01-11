@@ -21,6 +21,9 @@ class WithdrawController extends Controller
      */
     public function showConfirmPassword()
     {
+        // Selalu hapus verifikasi lama saat memasuki halaman konfirmasi password
+        session()->forget(['withdraw_verified', 'withdraw_verified_at']);
+
         $user = Auth::user();
         $lock = UserWithdrawLock::getForUser($user->id);
         
@@ -81,11 +84,14 @@ class WithdrawController extends Controller
      */
     public function create()
     {
-        // Check if verified
+        // Cek apakah sudah verifikasi
         if (!$this->isVerified()) {
             return redirect()->route('withdraw.confirm-password')
                 ->with('error', 'Silakan verifikasi password terlebih dahulu.');
         }
+
+        // Perbarui waktu verifikasi agar tetap valid selama pengisian form
+        session(['withdraw_verified_at' => now()]);
 
         $user = Auth::user();
         $outletId = session('outlet_id');
@@ -188,13 +194,25 @@ class WithdrawController extends Controller
      */
     public function index()
     {
+        // Hapus status verifikasi saat kembali ke halaman riwayat
+        session()->forget(['withdraw_verified', 'withdraw_verified_at']);
+
         $user = Auth::user();
         
-        $withdrawals = Withdrawal::byUser($user->id)
+        $query = Withdrawal::byUser($user->id);
+
+        $stats = [
+            'total_count' => (clone $query)->count(),
+            'pending_count' => (clone $query)->whereIn('status', ['pending', 'approved'])->count(),
+            'paid_total' => (clone $query)->where('status', 'paid')->sum('net_amount'),
+            'total_request' => (clone $query)->sum('amount'),
+        ];
+
+        $withdrawals = (clone $query)
             ->latest()
             ->paginate(10);
         
-        return view('withdraw.index', compact('withdrawals'));
+        return view('withdraw.index', compact('withdrawals', 'stats'));
     }
 
     /**
@@ -211,8 +229,8 @@ class WithdrawController extends Controller
             return false;
         }
         
-        // Verification valid for 10 minutes
-        return now()->diffInMinutes($verifiedAt) < 10;
+        // Verifikasi hanya berlaku selama 5 menit untuk aktivitas di halaman tersebut
+        return now()->diffInMinutes($verifiedAt) < 5;
     }
 
     /**

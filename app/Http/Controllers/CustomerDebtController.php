@@ -56,7 +56,13 @@ class CustomerDebtController extends Controller implements HasMiddleware
                 ->sum('amount'),
         ];
 
-        return view('main.customer-debt.index', compact('stats'));
+        // Payment methods
+        $outletPaymentLinks = \App\Models\OutletPaymentLink::where('outlet_id', $outletId)
+            ->where('is_active', true)
+            ->with('paymentMethod')
+            ->get();
+
+        return view('main.customer-debt.index', compact('stats', 'outletPaymentLinks'));
     }
 
     /**
@@ -175,6 +181,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
             'payment_method' => 'required|in:cash,transfer,qris',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
+            'outlet_payment_link_id' => 'nullable|exists:outlet_payment_links,id',
         ]);
 
         if ($debt->status === 'paid') {
@@ -196,6 +203,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
                 'reference_number' => $request->reference_number,
                 'notes' => $request->notes,
                 'received_by' => auth()->id(),
+                'outlet_payment_link_id' => $request->outlet_payment_link_id,
             ]);
 
             // Update debt amounts

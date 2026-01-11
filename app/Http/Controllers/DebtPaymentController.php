@@ -110,7 +110,47 @@ class DebtPaymentController extends Controller
                 ]);
             }
 
-            // Check credit limit
+            // Update cart item prices if customer is reseller
+            if ($customer->type === 'reseller') {
+                foreach ($cart as $key => $item) {
+                    $product = \App\Models\Product::find($item['product_id']);
+                    if ($product && $product->reseller_price) {
+                        $cart[$key]['unit_price'] = (float) $product->reseller_price;
+                    }
+                }
+            } else {
+                // If regular customer, ensure we use selling price
+                foreach ($cart as $key => $item) {
+                    $product = \App\Models\Product::find($item['product_id']);
+                    if ($product) {
+                        $cart[$key]['unit_price'] = (float) $product->selling_price;
+                    }
+                }
+            }
+
+            // Re-apply discount plan if customer changed or to ensure it's up to date
+            $discountService = app(\App\Services\DiscountService::class);
+            $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
+            
+            // Find automatic (non-voucher) candidates for this specific customer
+            $candidates = $discountService->findCandidates(array_values($cart), null, $customer->id);
+            $nonVoucherPlan = $discountService->calculateDiscountPlan(array_values($cart), $candidates->filter(fn($d) => !$d->is_voucher), $subtotal);
+
+            // If a voucher was already applied, we should probably keep it if it's still valid
+            // Otherwise, use the better of the two (voucher vs automatic)
+            if ($discountPlan && isset($discountPlan['is_voucher']) && $discountPlan['is_voucher']) {
+                // Keep voucher if it's better or exists
+                // (Logic can be more complex, but let's assume we use the latest session plan for vouchers)
+            } else {
+                $discountPlan = $nonVoucherPlan;
+            }
+
+            // Update summary with the potentially new discount plan
+            $summary = $this->calculateCartSummary($cart, $discountPlan);
+            $grandTotal = $summary['grand_total'];
+            $remaining = $grandTotal - $paidAmount;
+
+            // Final credit limit check with updated remaining amount
             if ($customer->credit_limit > 0 && ($customer->total_debt + $remaining) > $customer->credit_limit) {
                 DB::rollBack();
                 return response()->json([
@@ -217,8 +257,23 @@ class DebtPaymentController extends Controller
 
     private function calculateCartSummary($cart, $discountPlan)
     {
-        $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
-        $totalDiscount = $discountPlan['total_discount'] ?? 0;
+        $subtotal = 0;
+        $totalItems = 0;
+        $itemDiscounts = 0;
+
+        foreach ($cart as $item) {
+            $subtotal += ($item['unit_price'] * $item['quantity']);
+            $totalItems += $item['quantity'];
+            $itemDiscounts += ($item['discount_amount'] ?? 0);
+        }
+
+        // Get discount from session plan
+        $planDiscount = $discountPlan['total_discount'] ?? 0;
+        
+        // Final total discount is the higher of item-level discounts OR plan discount
+        // (usually plan discount already includes itemized discounts from DiscountService)
+        $totalDiscount = max($itemDiscounts, $planDiscount);
+
         $tax = 0;
         $taxPercent = 0;
         $grandTotal = $subtotal - $totalDiscount + $tax;
@@ -229,7 +284,7 @@ class DebtPaymentController extends Controller
             'tax' => $tax,
             'tax_percent' => $taxPercent,
             'grand_total' => $grandTotal,
-            'total_items' => collect($cart)->sum('quantity'),
+            'total_items' => $totalItems,
         ];
     }
 

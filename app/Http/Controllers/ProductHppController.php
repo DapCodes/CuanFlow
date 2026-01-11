@@ -24,12 +24,28 @@ class ProductHppController extends Controller
             abort(403, 'Akses ditolak');
         }
 
+        $query = Product::where('outlet_id', Auth::user()->outlet_id);
+
+        $stats = [
+            'total' => (clone $query)->count(),
+            'active' => (clone $query)->where('is_active', true)->count(),
+            'avg_hpp' => (clone $query)->avg('hpp') ?: 0,
+            'avg_margin' => (clone $query)->avg('margin_percent') ?: 0,
+        ];
+
         $products = Product::with(['category', 'unit', 'defaultRecipe', 'latestHppCalculation'])
             ->where('outlet_id', Auth::user()->outlet_id)
             ->latest()
             ->paginate(20);
 
-        return view('main.product_n_hpp-calc.index', compact('products'));
+        $categories = Category::where('type', 'product')
+            ->where(function($q) {
+                $q->whereNull('outlet_id')
+                  ->orWhere('outlet_id', Auth::user()->outlet_id);
+            })
+            ->get();
+
+        return view('main.product_n_hpp-calc.index', compact('products', 'categories', 'stats'));
     }
 
     public function create()

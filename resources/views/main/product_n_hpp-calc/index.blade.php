@@ -62,7 +62,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Produk</p>
-                        <p class="mt-1 text-2xl font-semibold text-gray-900">{{ $products->total() }}</p>
+                        <p class="mt-1 text-2xl font-semibold text-gray-900">{{ number_format($stats['total']) }}</p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100">
                         <i class="fas fa-cube text-blue-500 text-lg"></i>
@@ -75,7 +75,7 @@
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Produk Aktif</p>
                         <p class="mt-1 text-2xl font-semibold text-green-600">
-                            {{ $products->where('is_active', true)->count() }}
+                            {{ number_format($stats['active']) }}
                         </p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center border border-green-100">
@@ -89,7 +89,7 @@
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Rata-rata HPP</p>
                         <p class="mt-1 text-2xl font-semibold text-gray-900">
-                            Rp {{ number_format($products->avg('hpp'), 0, ',', '.') }}
+                            Rp {{ number_format($stats['avg_hpp'], 0, ',', '.') }}
                         </p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center border border-yellow-100">
@@ -103,7 +103,7 @@
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Avg Margin</p>
                         <p class="mt-1 text-2xl font-semibold text-cuan-green">
-                            {{ number_format($products->avg('margin_percent'), 1) }}%
+                            {{ number_format($stats['avg_margin'], 1) }}%
                         </p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center border border-green-100">
@@ -121,7 +121,7 @@
                 <div class="w-full md:max-w-md">
                     <label class="text-xs font-medium text-gray-500 mb-1 block">Cari produk</label>
                     <div class="relative">
-                        <input type="text" placeholder="Cari berdasarkan nama atau kode..."
+                        <input type="text" id="searchTerm" placeholder="Cari berdasarkan nama atau kode..."
                                class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                     </div>
@@ -130,17 +130,18 @@
                 <div class="flex flex-wrap gap-3 w-full md:w-auto">
                     <div class="w-full sm:w-40 md:w-44">
                         <label class="text-xs font-medium text-gray-500 mb-1 block">Kategori</label>
-                        <select
+                        <select id="filterCategory"
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
                             <option value="">Semua Kategori</option>
-                            <option value="makanan">Makanan</option>
-                            <option value="minuman">Minuman</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
                         </select>
                     </div>
 
                     <div class="w-full sm:w-40 md:w-44">
                         <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
-                        <select
+                        <select id="filterStatus"
                             class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
                             <option value="">Semua Status</option>
                             <option value="active">Aktif</option>
@@ -181,9 +182,13 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
+                    <tbody class="bg-white divide-y divide-gray-100" id="productTableBody">
                         @forelse($products as $product)
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="product-row hover:bg-gray-50 transition-colors"
+                                data-name="{{ strtolower($product->name) }}"
+                                data-code="{{ strtolower($product->code) }}"
+                                data-category="{{ $product->category_id }}"
+                                data-status="{{ $product->is_active ? 'active' : 'inactive' }}">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm font-mono font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded">
                                         {{ $product->code }}
@@ -498,6 +503,38 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
+ 
+  // Filtering logic (seperti di discounts.index)
+  const searchInput = document.getElementById('searchTerm');
+  const filterCategory = document.getElementById('filterCategory');
+  const filterStatus = document.getElementById('filterStatus');
+  const productRows = document.querySelectorAll('.product-row');
+
+  function filterProducts() {
+    const searchTerm = (searchInput.value || '').toLowerCase();
+    const categoryFilter = filterCategory.value;
+    const statusFilter = filterStatus.value;
+
+    productRows.forEach(row => {
+      const name = row.dataset.name || '';
+      const code = row.dataset.code || '';
+      const category = row.dataset.category || '';
+      const status = row.dataset.status || '';
+
+      const matchesSearch = !searchTerm
+        || name.includes(searchTerm)
+        || code.includes(searchTerm);
+
+      const matchesCategory = !categoryFilter || category === categoryFilter;
+      const matchesStatus = !statusFilter || status === statusFilter;
+
+      row.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
+    });
+  }
+
+  searchInput.addEventListener('input', filterProducts);
+  filterCategory.addEventListener('change', filterProducts);
+  filterStatus.addEventListener('change', filterProducts);
 });
 </script>
 <script>

@@ -351,13 +351,55 @@
                 </div>
             </div>
 
-            {{-- Transfer Reference (hidden by default) --}}
+            {{-- Transfer Options --}}
             <div id="transferOptions" class="mb-6 hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Pilih Rekening Tujuan:</label>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    @forelse($outletPaymentLinks as $link)
+                        <div onclick="selectTransferMethod(this, '{{ $link->id }}', '{{ $link->paymentMethod->name }}', '{{ $link->account_number }}', '{{ $link->account_name }}', '{{ $link->qr_image ? Storage::url($link->qr_image) : '' }}')" 
+                             class="transfer-method-card flex flex-col items-center justify-center p-3 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-teal-200 hover:bg-teal-50 transition-all text-center group"
+                             data-link-id="{{ $link->id }}">
+                            <div class="w-10 h-10 flex items-center justify-center mb-1">
+                                @if($link->paymentMethod->icon && Storage::disk('public')->exists($link->paymentMethod->icon))
+                                    <img src="{{ Storage::url($link->paymentMethod->icon) }}" class="w-full h-full object-contain filter group-hover:drop-shadow-sm">
+                                @else
+                                    <div class="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-white transition-colors">
+                                        <i class="fas fa-university text-sm"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-700 leading-tight">{{ $link->paymentMethod->name }}</p>
+                        </div>
+                    @empty
+                        <div class="col-span-2 text-center py-4 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                            <p class="text-xs">Belum ada metode transfer.</p>
+                        </div>
+                    @endforelse
+                </div>
+                
+                <div id="selectedTransferDetail" class="hidden mb-4 p-3 bg-teal-50 border border-teal-100 rounded-xl animate-fadeIn">
+                    <div class="flex flex-col items-center text-center">
+                        <p class="text-[10px] text-teal-600 font-bold uppercase tracking-wider mb-1" id="transferMethodLabel">-</p>
+                        
+                        <div id="transferAccInfoSection">
+                            <p class="text-sm font-mono font-bold text-gray-900 tracking-wider" id="transferAccNumber">-</p>
+                            <p class="text-[10px] text-gray-500 font-medium" id="transferAccName">-</p>
+                        </div>
+
+                        <div id="transferQrSection" class="hidden mt-2">
+                            <img id="transferQrImage" src="" class="w-40 h-40 object-contain rounded-lg border border-gray-200 bg-white p-2">
+                            <p class="text-[9px] text-teal-600 font-medium mt-1">Scan QR untuk membayar</p>
+                        </div>
+                    </div>
+                </div>
+
                 <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Referensi (Opsional)</label>
                 <input type="text" id="referenceNumber" 
                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
                        placeholder="Masukkan nomor referensi transfer">
             </div>
+
+            <input type="hidden" id="selectedOutletPaymentLinkId" value="">
 
             {{-- Notes --}}
             <div class="mb-6">
@@ -698,9 +740,42 @@ function openPaymentModal(debt) {
             card.classList.add('selected');
         }
     });
-    document.getElementById('transferOptions').classList.add('hidden');
-    
+    document.getElementById('selectedOutletPaymentLinkId').value = '';
+    document.getElementById('selectedTransferDetail').classList.add('hidden');
+    document.querySelectorAll('.transfer-method-card').forEach(c => c.classList.remove('border-teal-400', 'bg-teal-50', 'ring-2', 'ring-teal-200'));
+
     document.getElementById('paymentModal').classList.remove('hidden');
+}
+
+function selectTransferMethod(element, linkId, methodName, accNumber, accName, qrImage) {
+    // Reset other cards
+    document.querySelectorAll('.transfer-method-card').forEach(c => {
+        c.classList.remove('border-teal-400', 'bg-teal-50', 'ring-2', 'ring-teal-200');
+        c.classList.add('border-gray-100');
+    });
+
+    // Select this card
+    element.classList.remove('border-gray-100');
+    element.classList.add('border-teal-400', 'bg-teal-50', 'ring-2', 'ring-teal-200');
+
+    // Set value
+    document.getElementById('selectedOutletPaymentLinkId').value = linkId;
+
+    // Show details
+    document.getElementById('transferMethodLabel').textContent = methodName;
+    
+    if (qrImage) {
+        document.getElementById('transferQrImage').src = qrImage;
+        document.getElementById('transferQrSection').classList.remove('hidden');
+        document.getElementById('transferAccInfoSection').classList.add('hidden');
+    } else {
+        document.getElementById('transferAccNumber').textContent = accNumber || '-';
+        document.getElementById('transferAccName').textContent = accName || '-';
+        document.getElementById('transferQrSection').classList.add('hidden');
+        document.getElementById('transferAccInfoSection').classList.remove('hidden');
+    }
+    
+    document.getElementById('selectedTransferDetail').classList.remove('hidden');
 }
 
 function closePaymentModal() {
@@ -757,6 +832,7 @@ function processCashTransferPayment(amount) {
         payment_method: selectedPaymentMethod,
         reference_number: document.getElementById('referenceNumber').value,
         notes: document.getElementById('paymentNotes').value,
+        outlet_payment_link_id: document.getElementById('selectedOutletPaymentLinkId').value,
     };
     
     fetch(`/customer-debts/${currentDebt.id}/pay`, {
