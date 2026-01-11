@@ -99,6 +99,11 @@ class Outlet extends Model
         return $this->hasMany(Product::class);
     }
 
+    public function rawMaterials(): HasMany
+    {
+        return $this->hasMany(RawMaterial::class);
+    }
+
     public function tables(): HasMany
     {
         return $this->hasMany(Table::class);
