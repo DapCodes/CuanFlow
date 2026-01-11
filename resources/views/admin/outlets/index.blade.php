@@ -4,18 +4,24 @@
 @section('page-title', 'Manajemen Outlet')
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <i class="fas fa-chevron-right mx-2 text-gray-400 text-xs"></i>
-    <span class="text-gray-700">Daftar Outlet</span>
+<li class="flex items-center gap-2">
+    <i class="fas fa-chevron-right text-[10px] text-gray-300"></i>
+    <span class="text-emerald-600 font-semibold tracking-wide text-sm">Manajemen Outlet</span>
 </li>
 @endsection
 
 @section('content')
 <div class="space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900">Semua Outlet</h2>
-            <p class="text-sm text-gray-500 mt-1">Daftar seluruh outlet yang terdaftar di sistem CuanFlow</p>
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm shadow-emerald-100/50">
+                <i class="fas fa-store text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Manajemen Outlet</h1>
+                <p class="text-sm text-gray-500 mt-0.5 font-medium">Monitoring performa dan pengaturan seluruh cabang outlet</p>
+            </div>
         </div>
     </div>
 

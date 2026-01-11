@@ -726,23 +726,23 @@
     <a href="{{ route('raw-materials.suppliers') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="9"
-       data-title="Supplier"
-       data-intro="<strong>Daftar pemasok bahan.</strong> Simpan nama, kontak, dan catatan supplier agar mudah dihubungi saat membutuhkan barang.">
+       data-title="Pemasok"
+       data-intro="<strong>Daftar pemasok bahan.</strong> Simpan nama, kontak, dan catatan pemasok agar mudah dihubungi saat membutuhkan barang.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-truck-field text-4xl sm:text-5xl text-white"></i>
         </div>
         <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
-            Supplier
+            Pemasok
         </span>
     </a>
 @endcan
 
-@can('lihat supplier')
+@can('lihat reseller applications')
     <a href="{{ route('reseller-applications.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="10"
        data-title="Lamaran Reseller"
-       data-intro="<strong>Ajukan kemitraan.</strong> Kelola atau ajukan lamaran untuk menjadi reseller resmi di outlet.">
+       data-intro="<strong>Manajemen mitra reseller.</strong> Review dan kelola permohonan kemitraan reseller yang masuk.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-handshake text-4xl sm:text-5xl text-white"></i>
         </div>

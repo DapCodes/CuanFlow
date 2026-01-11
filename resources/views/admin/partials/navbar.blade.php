@@ -19,15 +19,18 @@
             <!-- User Dropdown -->
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open" 
-                        class="flex items-center gap-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors">
-                    <img src="{{ auth()->user()->avatar_url }}" 
-                         alt="{{ auth()->user()->name }}" 
-                         class="w-8 h-8 rounded-full object-cover border-2 border-cuan-olive">
-                    <div class="hidden sm:block text-left">
-                        <span class="block text-sm font-medium text-gray-900">{{ auth()->user()->name }}</span>
-                        <span class="block text-xs text-gray-500">Administrator</span>
+                        class="flex items-center gap-2.5 hover:bg-gray-50 rounded-xl px-2.5 py-1.5 transition-all duration-200">
+                    <div class="relative">
+                        <img src="{{ auth()->user()->avatar_url }}" 
+                             alt="{{ auth()->user()->name }}" 
+                             class="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-50">
+                        <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></div>
                     </div>
-                    <i class="fas fa-chevron-down text-xs text-gray-400 hidden sm:block"></i>
+                    <div class="hidden sm:block text-left">
+                        <span class="block text-sm font-semibold text-gray-900 leading-tight">{{ auth()->user()->name }}</span>
+                        <span class="block text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Super Admin</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-[10px] text-gray-400 ml-1 transition-transform" :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 
                 <!-- Dropdown Menu -->

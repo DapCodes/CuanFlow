@@ -6,22 +6,38 @@
 @section('content')
 <div class="space-y-6">
     <!-- Welcome Section -->
-    <div class="bg-gradient-to-r from-cuan-dark to-cuan-green rounded-2xl p-6 lg:p-8 text-white">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div class="bg-white border border-gray-100 rounded-[2rem] p-8 mb-8 shadow-sm shadow-emerald-100/20 relative overflow-hidden">
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-                <h2 class="text-2xl lg:text-3xl font-bold">Selamat Datang, {{ auth()->user()->name }}! 👋</h2>
-                <p class="mt-2 text-white/80">Kelola data master dan pengaturan sistem CuanFlow dari sini.</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <div class="text-right">
-                    <p class="text-sm text-white/60">{{ now()->format('l') }}</p>
-                    <p class="text-lg font-semibold">{{ now()->format('d F Y') }}</p>
+                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Selamat Datang, {{ auth()->user()->name }}! 👋</h1>
+                <p class="text-gray-500 mt-2 font-medium">Monitoring performa CuanFlow dan kendali sistem terpusat di sini.</p>
+                
+                <div class="flex items-center gap-4 mt-6">
+                    <div class="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">System Online</span>
+                    </div>
+                    <span class="text-gray-300">|</span>
+                    <p class="text-sm text-gray-500 font-medium">
+                        <i class="far fa-clock mr-1"></i> {{ now()->format('H:i') }} WIB
+                    </p>
                 </div>
-                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+            </div>
+            
+            <div class="flex items-center gap-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ now()->format('l') }}</p>
+                    <p class="text-lg font-bold text-gray-900">{{ now()->format('d F Y') }}</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
                     <i class="fas fa-calendar-alt text-xl"></i>
                 </div>
             </div>
         </div>
+        
+        <!-- Decoration -->
+        <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-emerald-50 rounded-full blur-3xl opacity-60"></div>
+        <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-emerald-50 rounded-full blur-3xl opacity-60"></div>
     </div>
     
     <!-- Stats Cards -->

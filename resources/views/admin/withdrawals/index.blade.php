@@ -3,37 +3,33 @@
 @section('title', 'Manajemen Penarikan')
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <span class="mx-2 text-gray-400">/</span>
-    <span class="text-gray-900 font-medium">Penarikan</span>
+<li class="flex items-center gap-2">
+    <i class="fas fa-chevron-right text-[10px] text-gray-300"></i>
+    <span class="text-emerald-600 font-semibold tracking-wide text-sm">Penarikan</span>
 </li>
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-7xl mx-auto space-y-6">
-
-        {{-- HEADER HALAMAN --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm shadow-emerald-100/50">
+                <i class="fas fa-money-bill-transfer text-lg"></i>
+            </div>
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-teal-50 text-teal-600 border border-teal-100">
-                        <i class="fas fa-money-bill-transfer text-sm"></i>
-                    </span>
-                    <span>Manajemen Penarikan</span>
-                </h1>
-                <p class="mt-1 text-sm text-gray-500">
-                    Kelola dan proses permintaan penarikan saldo dari para pemilik outlet.
-                </p>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Manajemen Penarikan</h1>
+                <p class="text-sm text-gray-500 mt-0.5 font-medium">Kelola dan proses permintaan penarikan saldo outlet</p>
             </div>
-            <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
-                <a href="{{ route('admin.withdrawals.tax-settings') }}" 
-                   class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-1 transition-all">
-                    <i class="fas fa-cog text-gray-400"></i>
-                    <span>Pengaturan Pajak</span>
-                </a>
-            </div>
-        </section>
+        </div>
+        <div>
+            <a href="{{ route('admin.withdrawals.tax-settings') }}" 
+               class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 shadow-sm">
+                <i class="fas fa-cog text-xs text-gray-400"></i>
+                <span>Pengaturan Pajak</span>
+            </a>
+        </div>
+    </div>
 
         {{-- RINGKASAN STATISTIK --}}
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -215,5 +211,4 @@
             @endif
         </section>
     </div>
-</main>
 @endsection

@@ -8,6 +8,10 @@ class ResellerApplicationController extends Controller
 {
     public function index()
     {
+        if (!auth()->user()->can('lihat reseller applications')) {
+            abort(403);
+        }
+
         $applications = \App\Models\ResellerApplication::with(['customer', 'outlet'])
             ->latest()
             ->paginate(10);
@@ -42,7 +46,10 @@ class ResellerApplicationController extends Controller
 
     public function update(Request $request, \App\Models\ResellerApplication $reseller_application)
     {
-        // Add permission check if needed
+        if (!auth()->user()->can('kelola reseller applications')) {
+            abort(403);
+        }
+
         $application = $reseller_application; 
         
         $request->validate([

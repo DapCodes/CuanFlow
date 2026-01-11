@@ -15,17 +15,16 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->string('color', 7)->default('#6B7280'); // Hex color code
+            $table->string('color', 7)->default('#6B7280');
             $table->integer('order')->default(0);
             $table->timestamps();
         });
 
-        // Insert default statuses
         DB::table('task_statuses')->insert([
             [
                 'name' => 'Menunggu',
                 'slug' => 'menunggu',
-                'color' => '#EAB308', // Yellow
+                'color' => '#EAB308',
                 'order' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -33,7 +32,7 @@ return new class extends Migration
             [
                 'name' => 'Sedang Berlangsung',
                 'slug' => 'sedang-berlangsung',
-                'color' => '#3B82F6', // Blue
+                'color' => '#3B82F6',
                 'order' => 2,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -41,7 +40,7 @@ return new class extends Migration
             [
                 'name' => 'Selesai',
                 'slug' => 'selesai',
-                'color' => '#10B981', // Green
+                'color' => '#10B981',
                 'order' => 3,
                 'created_at' => now(),
                 'updated_at' => now(),

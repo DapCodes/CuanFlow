@@ -110,11 +110,19 @@ class RolePermissionSeeder extends Seeder
                 'order' => 10,
             ],
             [
-                'name' => 'Supplier',
+                'name' => 'Pemasok',
                 'slug' => 'supplier',
-                'description' => 'Kelola data pemasok',
+                'description' => 'Kelola data pemasok / vendor',
                 'icon' => 'fa-solid fa-truck-field',
                 'color' => '#f59e0b',
+                'order' => 11,
+            ],
+            [
+                'name' => 'Reseller',
+                'slug' => 'reseller',
+                'description' => 'Kelola kemitraan reseller',
+                'icon' => 'fa-solid fa-handshake',
+                'color' => '#f97316',
                 'order' => 11,
             ],
             [
@@ -358,12 +366,17 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'update stok bahan baku', 'category' => 'bahan-baku', 'description' => 'Memperbarui jumlah stok'],
             ['name' => 'lihat riwayat stok bahan baku', 'category' => 'bahan-baku', 'description' => 'Melihat riwayat perubahan stok'],
 
-            // Supplier
-            ['name' => 'lihat supplier', 'category' => 'supplier', 'description' => 'Melihat daftar supplier'],
-            ['name' => 'buat supplier', 'category' => 'supplier', 'description' => 'Menambah supplier baru'],
-            ['name' => 'edit supplier', 'category' => 'supplier', 'description' => 'Mengubah data supplier'],
-            ['name' => 'hapus supplier', 'category' => 'supplier', 'description' => 'Menghapus supplier'],
-            ['name' => 'lihat detail supplier', 'category' => 'supplier', 'description' => 'Melihat detail supplier'],
+            // Pemasok (Supplier / Vendor)
+            ['name' => 'lihat supplier', 'category' => 'supplier', 'description' => 'Melihat daftar pemasok'],
+            ['name' => 'buat supplier', 'category' => 'supplier', 'description' => 'Menambah pemasok baru'],
+            ['name' => 'edit supplier', 'category' => 'supplier', 'description' => 'Mengubah data pemasok'],
+            ['name' => 'hapus supplier', 'category' => 'supplier', 'description' => 'Menghapus pemasok'],
+            ['name' => 'lihat detail supplier', 'category' => 'supplier', 'description' => 'Melihat detail pemasok'],
+
+            // Reseller
+            ['name' => 'lihat reseller applications', 'category' => 'reseller', 'description' => 'Melihat lamaran reseller'],
+            ['name' => 'kelola reseller applications', 'category' => 'reseller', 'description' => 'Menyetujui/menolak lamaran reseller'],
+            ['name' => 'hapus reseller applications', 'category' => 'reseller', 'description' => 'Menghapus data lamaran reseller'],
 
             // Produksi
             ['name' => 'lihat produksi', 'category' => 'produksi', 'description' => 'Melihat daftar produksi'],
@@ -674,6 +687,29 @@ class RolePermissionSeeder extends Seeder
             'edit profil', 'update profil',
             // Task Management
             'tasks.view', 'tasks.create', 'tasks.update', 'tasks.assign',
+        ]);
+
+        // SUPPLIER (Pemasok / Vendor)
+        $supplierRole = Role::create(['name' => 'supplier', 'guard_name' => 'web']);
+        $supplierRole->syncPermissions([
+            'lihat dashboard',
+            'lihat produk',
+            'lihat bahan baku',
+            'lihat supplier',
+            'lihat detail supplier',
+            'edit profil',
+            'update profil',
+        ]);
+
+        // RESELLER
+        $resellerRole = Role::create(['name' => 'reseller', 'guard_name' => 'web']);
+        $resellerRole->syncPermissions([
+            'lihat dashboard',
+            'lihat produk',
+            'lihat detail produk',
+            'edit profil',
+            'update profil',
+            'lihat faq',
         ]);
 
         // PELANGGAN (Customer)

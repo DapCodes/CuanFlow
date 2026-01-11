@@ -218,6 +218,18 @@
                                     'bgGradient' => 'from-amber-500 to-orange-500',
                                     'description' => 'Kelola stok & gudang'
                                 ],
+                                'supplier' => [
+                                    'icon' => 'fa-truck-field',
+                                    'color' => 'orange',
+                                    'bgGradient' => 'from-orange-500 to-amber-600',
+                                    'description' => 'Akses pemasok / vendor'
+                                ],
+                                'reseller' => [
+                                    'icon' => 'fa-handshake',
+                                    'color' => 'emerald',
+                                    'bgGradient' => 'from-emerald-500 to-teal-600',
+                                    'description' => 'Akses anggota reseller'
+                                ],
                             ];
                         @endphp
                         

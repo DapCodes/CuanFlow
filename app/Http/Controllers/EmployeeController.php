@@ -33,25 +33,25 @@ class EmployeeController extends Controller implements HasMiddleware
     {
         $employees = User::with(['roles', 'permissions', 'outlet'])
             ->whereHas('roles', function ($query) {
-                $query->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']);
+                $query->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']);
             })
             ->where('outlet_id', auth()->user()->outlet_id)
             ->latest()
             ->paginate(15);
 
         $stats = [
-            'total' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']))
+            'total' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->count(),
-            'active' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']))
+            'active' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->where('is_active', true)
                 ->count(),
-            'inactive' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']))
+            'inactive' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->where('is_active', false)
                 ->count(),
-            'verified' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris']))
+            'verified' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->whereNotNull('email_verified_at')
                 ->count(),

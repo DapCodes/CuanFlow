@@ -4,26 +4,33 @@
 @section('page-title', 'Data Master - Roles')
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <i class="fas fa-chevron-right mx-2 text-gray-400 text-xs"></i>
-    <span class="text-gray-700">Roles</span>
+<li class="flex items-center gap-2">
+    <i class="fas fa-chevron-right text-[10px] text-gray-300"></i>
+    <span class="text-emerald-600 font-semibold tracking-wide text-sm">Roles</span>
 </li>
 @endsection
 
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900">Kelola Roles</h2>
-            <p class="text-sm text-gray-500 mt-1">Kelola role dan hak akses pengguna sistem</p>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm shadow-emerald-100/50">
+                <i class="fas fa-user-shield text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Kelola Roles</h1>
+                <p class="text-sm text-gray-500 mt-0.5 font-medium">Pengaturan peran dan pembatasan hak akses sistem</p>
+            </div>
         </div>
         @can('buat roles')
-        <a href="{{ route('admin.roles.create') }}" 
-           class="inline-flex items-center gap-2 px-4 py-2.5 bg-cuan-dark text-white font-semibold rounded-lg hover:bg-cuan-green transition-colors">
-            <i class="fas fa-plus text-sm"></i>
-            <span>Tambah Role</span>
-        </a>
+        <div>
+            <a href="{{ route('admin.roles.create') }}" 
+               class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-emerald-600 transition-all duration-200 shadow-sm hover:shadow-emerald-200/50">
+                <i class="fas fa-plus text-xs"></i>
+                <span>Tambah Role Baru</span>
+            </a>
+        </div>
         @endcan
     </div>
     
