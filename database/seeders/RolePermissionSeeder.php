@@ -134,6 +134,14 @@ class RolePermissionSeeder extends Seeder
                 'order' => 13,
             ],
             [
+                'name' => 'Transfer Stok',
+                'slug' => 'stock-transfer',
+                'description' => 'Kelola transfer stok antar outlet',
+                'icon' => 'fa-solid fa-truck-fast',
+                'color' => '#0ea5e9',
+                'order' => 14,
+            ],
+            [
                 'name' => 'Outlet',
                 'slug' => 'outlet',
                 'description' => 'Kelola informasi outlet',
@@ -374,6 +382,14 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'finalisasi stock opname', 'category' => 'stock-opname', 'description' => 'Menyelesaikan stock opname'],
             ['name' => 'hapus stock opname', 'category' => 'stock-opname', 'description' => 'Menghapus stock opname'],
 
+            // Transfer Stok
+            ['name' => 'lihat stock transfer', 'category' => 'stock-transfer', 'description' => 'Melihat daftar transfer stok'],
+            ['name' => 'buat stock transfer', 'category' => 'stock-transfer', 'description' => 'Membuat transfer stok baru'],
+            ['name' => 'proses stock transfer', 'category' => 'stock-transfer', 'description' => 'Memproses kiriman (Pending -> In Transit)'],
+            ['name' => 'terima stock transfer', 'category' => 'stock-transfer', 'description' => 'Menerima kiriman (In Transit -> Received)'],
+            ['name' => 'batalkan stock transfer', 'category' => 'stock-transfer', 'description' => 'Membatalkan transfer'],
+            ['name' => 'lihat detail stock transfer', 'category' => 'stock-transfer', 'description' => 'Melihat detail transfer'],
+
             // Outlet
             ['name' => 'lihat outlet', 'category' => 'outlet', 'description' => 'Melihat informasi outlet'],
             ['name' => 'buat outlet', 'category' => 'outlet', 'description' => 'Mendaftarkan outlet baru'],
@@ -545,6 +561,9 @@ class RolePermissionSeeder extends Seeder
             'batalkan produksi', 'hapus produk kadaluarsa', 'lihat stok produksi', 'lihat detail resep',
             // Stock Opname
             'lihat stock opname', 'buat stock opname', 'edit stock opname', 'finalisasi stock opname',
+            // Transfer Stok
+            'lihat stock transfer', 'buat stock transfer', 'proses stock transfer',
+            'terima stock transfer', 'batalkan stock transfer', 'lihat detail stock transfer',
             // Meja
             'lihat meja', 'buat meja', 'edit meja', 'aktifkan nonaktifkan meja', 'quick toggle meja', 'generate kode meja',
             // Pegawai
@@ -616,6 +635,9 @@ class RolePermissionSeeder extends Seeder
             'lihat supplier', 'buat supplier', 'edit supplier', 'hapus supplier', 'lihat detail supplier',
             // Stock Opname
             'lihat stock opname', 'buat stock opname', 'edit stock opname', 'finalisasi stock opname', 'hapus stock opname',
+            // Transfer Stok
+            'lihat stock transfer', 'buat stock transfer', 'proses stock transfer',
+            'terima stock transfer', 'batalkan stock transfer', 'lihat detail stock transfer',
             // Produksi
             'lihat produksi', 'lihat stok produksi', 'lihat detail resep',
             // Kebijakan
@@ -642,6 +664,8 @@ class RolePermissionSeeder extends Seeder
             'batalkan produksi', 'hapus produk kadaluarsa', 'lihat stok produksi', 'lihat detail resep',
             // Stock Opname
             'lihat stock opname',
+            // Transfer Stok
+            'lihat stock transfer', 'lihat detail stock transfer',
             // Kebijakan
             'lihat kebijakan outlet', 'lihat detail kebijakan outlet',
             // FAQ

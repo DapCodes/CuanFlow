@@ -59,4 +59,14 @@ class StockTransfer extends Model
     {
         $this->update(['status' => 'received', 'received_at' => now(), 'received_by' => $by]);
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function receiver()
+    {
+        return $this->belongsTo(User::class, 'received_by');
+    }
 }

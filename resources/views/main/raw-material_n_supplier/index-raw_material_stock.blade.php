@@ -255,6 +255,13 @@
                                         </span>
                                     </div>
 
+                                    {{-- TOTAL Stock --}}
+                                    <div class="flex items-center justify-between gap-4">
+                                        <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 flex-grow text-center">
+                                            TOTAL: {{ number_format($currentStock, 2) }} {{ $material->unit->abbreviation }}
+                                        </span>
+                                    </div>
+
                                     {{-- Expiring Soon Stock --}}
                                     @if($material->total_expiring_qty > 0)
                                     <div class="flex items-center justify-between gap-4">

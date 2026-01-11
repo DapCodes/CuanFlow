@@ -737,6 +737,21 @@
     </a>
 @endcan
 
+@can('lihat supplier')
+    <a href="{{ route('supplier-applications.index') }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="10"
+       data-title="Lamaran Supplier"
+       data-intro="<strong>Ajukan kemitraan.</strong> Kelola atau ajukan lamaran untuk menjadi supplier resmi di outlet.">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+            <i class="fa-solid fa-handshake text-4xl sm:text-5xl text-white"></i>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Lamaran Supplier
+        </span>
+    </a>
+@endcan
+
 @can('lihat produksi')
     <a href="{{ route('production.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -763,6 +778,21 @@
         </div>
         <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
             Stock Opname
+        </span>
+    </a>
+@endcan
+
+@can('lihat stock transfer')
+    <a href="{{ route('stock-transfers.index') }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="11"
+       data-title="Transfer Stok"
+       data-intro="<strong>Kirim bahan antar outlet.</strong> Transfer bahan baku atau produk ke outlet lain dalam satu manajemen.">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+            <i class="fa-solid fa-truck-fast text-4xl sm:text-5xl text-white"></i>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Transfer Stok
         </span>
     </a>
 @endcan

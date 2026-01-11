@@ -211,8 +211,12 @@ class PointOfSaleController extends Controller
 
         if ($customerId) {
             $customer = Customer::find($customerId);
-            if ($customer && $customer->type === 'reseller' && $product->reseller_price) {
-                $price = $product->reseller_price;
+            if ($customer) {
+                if ($customer->type === 'reseller' && $product->reseller_price) {
+                    $price = $product->reseller_price;
+                } elseif ($customer->type === 'vip' && $product->promo_price) {
+                    $price = $product->promo_price;
+                }
             }
         }
 
@@ -719,6 +723,26 @@ class PointOfSaleController extends Controller
             'success' => true,
             'discounts' => $discounts,
         ]);
+    }
+
+    public function searchCustomers(Request $request)
+    {
+        if (!auth()->user()->can('akses pos')) {
+             return response()->json([], 403);
+        }
+
+        $query = $request->input('q');
+
+        $customers = Customer::where('is_active', true)
+            ->where(function($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('phone', 'like', "%{$query}%")
+                  ->orWhere('code', 'like', "%{$query}%");
+            })
+            ->limit(10)
+            ->get(['id', 'name', 'code', 'phone', 'type', 'total_debt']);
+
+        return response()->json($customers);
     }
 
     /**

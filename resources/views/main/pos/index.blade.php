@@ -1270,7 +1270,7 @@
         <div class="products-panel">
             <div class="products-toolbar">
                 <div class="flex gap-2 justify-between" >
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 w-full max-w-xl">
                         <div class="search-box">
                             <i class="fas fa-search search-icon"></i>
                             <input 
@@ -1279,11 +1279,28 @@
                                 class="search-input" 
                                 placeholder="Cari produk...">
                         </div>
-                        <select id="filterCategory" class="filter-select">
-                            <option value="">Semua Kategori</option>
-                        </select>
+                        
+                         <!-- Customer Search Dropdown -->
+                        <div class="relative w-full max-w-[250px]" id="customerSearchContainer">
+                            <div class="relative">
+                                <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <input 
+                                    type="text" 
+                                    id="searchCustomer" 
+                                    class="search-input !pl-9" 
+                                    placeholder="Cari Pelanggan (Umum)..." 
+                                    autocomplete="off">
+                                <button id="clearCustomerBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <!-- Dropdown Results -->
+                            <div id="customerSearchResults" class="hidden absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-60 overflow-y-auto custom-scrollbar">
+                                <!-- Results populated via JS -->
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="openScanner()" class="h-[38px] w-[38px] flex items-center justify-center rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors border border-purple-200" title="Scan Barcode">
+                    <button onclick="openScanner()" class="h-[38px] w-[38px] flex-shrink-0 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors border border-purple-200" title="Scan Barcode">
                         <i class="fas fa-qrcode"></i>
                     </button>
                 </div>
@@ -5781,4 +5798,215 @@ function closeSaleDetailModal() {
         }
     }
 </script>
+
+    // ==========================================
+    // CUSTOMER SEARCH LOGIC
+    // ==========================================
+    let currentCustomer = null;
+    let customerSearchTimeout = null;
+
+    function initCustomerSearch() {
+        const searchInput = document.getElementById('searchCustomer');
+        const resultsContainer = document.getElementById('customerSearchResults');
+        const searchContainer = document.getElementById('customerSearchContainer');
+        const clearBtn = document.getElementById('clearCustomerBtn');
+
+        // Check if elements exist
+        if (!searchInput || !resultsContainer || !searchContainer || !clearBtn) return;
+
+        // Hide results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchContainer.contains(e.target)) {
+                resultsContainer.classList.add('hidden');
+            }
+        });
+
+        clearBtn.addEventListener('click', clearCustomer);
+
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            
+            if (query.length === 0) {
+                resultsContainer.classList.add('hidden');
+                clearBtn.classList.add('hidden');
+                return;
+            }
+
+            clearBtn.classList.remove('hidden');
+
+            // Debounce
+            clearTimeout(customerSearchTimeout);
+            customerSearchTimeout = setTimeout(() => {
+                fetchCustomers(query);
+            }, 1000); // 1 detik debounce
+        });
+        
+        // Focus handler to reshow results if value exists
+        searchInput.addEventListener('focus', function() {
+            if (this.value.trim().length > 0) {
+                resultsContainer.classList.remove('hidden');
+            }
+        });
+    }
+
+    async function fetchCustomers(query) {
+        const resultsContainer = document.getElementById('customerSearchResults');
+        
+        try {
+            resultsContainer.innerHTML = '<div class="p-3 text-center text-gray-500 text-sm"><i class="fas fa-spinner fa-spin"></i> Mencari...</div>';
+            resultsContainer.classList.remove('hidden');
+
+            const response = await fetch(`{{ route('pos.customer.search') }}?q=${encodeURIComponent(query)}`);
+            const customers = await response.json();
+
+            if (customers.length === 0) {
+                resultsContainer.innerHTML = '<div class="p-3 text-center text-gray-500 text-sm">Tidak ditemukan pelanggan</div>';
+                return;
+            }
+
+            let html = '';
+            customers.forEach(customer => {
+                let badgeClass = 'bg-gray-100 text-gray-800';
+                if(customer.type === 'reseller') badgeClass = 'bg-blue-100 text-blue-800';
+                if(customer.type === 'vip') badgeClass = 'bg-purple-100 text-purple-800';
+
+                html += `
+                    <div class="customer-search-item hover:bg-orange-50 p-3 cursor-pointer border-b border-gray-100 last:border-0" 
+                         onclick='selectCustomer(${JSON.stringify(customer).replace(/'/g, "&#39;")})'>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-semibold text-gray-900">${customer.name}</div>
+                                <div class="text-xs text-gray-500">${customer.phone || '-'} | ${customer.code}</div>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${badgeClass}">
+                                ${customer.type}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsContainer.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+            resultsContainer.innerHTML = '<div class="p-3 text-center text-red-500 text-sm">Gagal memuat data</div>';
+        }
+    }
+
+    async function selectCustomer(customer) {
+        currentCustomer = customer;
+        const searchInput = document.getElementById('searchCustomer');
+        const resultsContainer = document.getElementById('customerSearchResults');
+        const clearBtn = document.getElementById('clearCustomerBtn');
+
+        // Update UI
+        searchInput.value = `${customer.name} (${customer.type.toUpperCase()})`;
+        searchInput.disabled = true;
+        searchInput.classList.add('bg-orange-50', 'text-orange-900', 'font-semibold');
+        resultsContainer.classList.add('hidden');
+        clearBtn.classList.remove('hidden');
+
+        // Send to Backend
+        try {
+            const response = await fetch('{{ route('pos.customer.set') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ customer_id: customer.id })
+            });
+
+            if(response.ok) {
+                showToast('Pelanggan dipilih: ' + customer.name, 'success');
+                // Optional: Recalculate cart prices if they depend on customer type
+                // Would require creating a reloadCart() function or similar
+            }
+        } catch(e) {
+            console.error(e);
+            showToast('Gagal set pelanggan', 'error');
+        }
+    }
+
+    async function clearCustomer() {
+        const searchInput = document.getElementById('searchCustomer');
+        const clearBtn = document.getElementById('clearCustomerBtn');
+        
+        currentCustomer = null;
+        searchInput.value = '';
+        searchInput.disabled = false;
+        searchInput.classList.remove('bg-orange-50', 'text-orange-900', 'font-semibold');
+        clearBtn.classList.add('hidden');
+        
+        // Send Clear to Backend
+        await fetch('{{ route('pos.customer.set') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ customer_id: null })
+        });
+        
+        showToast('Pelanggan di-reset', 'info');
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+        initCustomerSearch();
+    });
+
+    // ==========================================
+    // OVERRIDE: OPEN DEBT MODAL
+    // ==========================================
+    // Overriding the existing or creating a new handler
+    // Make sure this name matches what's called in main script
+    window.openDebtPaymentModal = function(totalAmount, paidAmount) {
+        const modal = document.getElementById('debtPaymentModal');
+        const totalEl = document.getElementById('debtTotalAmount');
+        const paidEl = document.getElementById('debtPaidAmount');
+        const remainingEl = document.getElementById('debtRemainingAmount');
+        
+        const remaining = totalAmount - paidAmount;
+        
+        totalEl.textContent = formatRupiah(totalAmount);
+        paidEl.textContent = formatRupiah(paidAmount);
+        remainingEl.textContent = formatRupiah(remaining);
+        
+        document.getElementById('debtActualPaidAmount').value = paidAmount;
+        
+        // AUTO FILL CUSTOMER IF SELECTED
+        const inputName = document.getElementById('debtCustomerName');
+        const inputPhone = document.getElementById('debtCustomerPhone');
+        const inputEmail = document.getElementById('debtCustomerEmail');
+        const inputId = document.getElementById('debtCustomerId');
+        
+        if (currentCustomer) {
+            inputId.value = currentCustomer.id;
+            inputName.value = currentCustomer.name;
+            inputPhone.value = currentCustomer.phone || '-';
+            inputEmail.value = currentCustomer.email || ''; 
+            
+            // Disable inputs
+            inputName.disabled = true;
+            inputName.classList.add('bg-gray-100');
+            inputPhone.disabled = true;
+            inputPhone.classList.add('bg-gray-100');
+        } else {
+             // Reset form
+            inputId.value = '';
+            inputName.value = '';
+            inputPhone.value = '';
+            inputEmail.value = '';
+            
+            inputName.disabled = false;
+            inputName.classList.remove('bg-gray-100');
+            inputPhone.disabled = false;
+            inputPhone.classList.remove('bg-gray-100');
+        }
+        
+        modal.classList.remove('hidden');
+    }
+
 @endpush

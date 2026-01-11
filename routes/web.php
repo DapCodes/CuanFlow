@@ -213,6 +213,10 @@ Route::prefix('production')->name('production.')->group(function () {
 
     Route::resource('task-labels', TaskLabelController::class);
 
+    // Supplier Applications
+    Route::resource('supplier-applications', App\Http\Controllers\SupplierApplicationController::class)
+        ->only(['index', 'store', 'update']);
+
 
 });
 
@@ -247,6 +251,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/pos/cart/remove', [PointOfSaleController::class, 'removeCartItem'])->name('pos.cart.remove');
     Route::post('/pos/cart/clear', [PointOfSaleController::class, 'clearCart'])->name('pos.cart.clear');
     Route::post('/pos/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('pos.customer.set');
+    Route::get('/pos/customer/search', [PointOfSaleController::class, 'searchCustomers'])->name('pos.customer.search');
 
     Route::post('/pos/products/{product}/toggle-visibility', [PointOfSaleController::class, 'toggleProductVisibility'])
         ->name('pos.products.toggle-visibility');
@@ -408,6 +413,17 @@ Route::middleware(['auth'])->prefix('stock-opname')->name('stock-opname.')->grou
     Route::put('/{stockOpname}', [App\Http\Controllers\StockOpnameController::class, 'update'])->name('update');
     Route::post('/{stockOpname}/finalize', [App\Http\Controllers\StockOpnameController::class, 'finalize'])->name('finalize');
     Route::delete('/{stockOpname}', [App\Http\Controllers\StockOpnameController::class, 'destroy'])->name('destroy');
+});
+
+// Stock Transfer Routes
+Route::middleware(['auth'])->prefix('stock-transfers')->name('stock-transfers.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Main\StockTransferController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\Main\StockTransferController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\Main\StockTransferController::class, 'store'])->name('store');
+    Route::get('/{stockTransfer}', [App\Http\Controllers\Main\StockTransferController::class, 'show'])->name('show');
+    Route::post('/{stockTransfer}/send', [App\Http\Controllers\Main\StockTransferController::class, 'updateStatus'])->name('send');
+    Route::post('/{stockTransfer}/receive', [App\Http\Controllers\Main\StockTransferController::class, 'receive'])->name('receive');
+    Route::delete('/{stockTransfer}', [App\Http\Controllers\Main\StockTransferController::class, 'destroy'])->name('destroy');
 });
 
 Route::middleware(['auth'])->group(function () {
