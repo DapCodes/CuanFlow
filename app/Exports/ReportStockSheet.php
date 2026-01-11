@@ -42,10 +42,11 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
         $ingredients = RawMaterial::where('outlet_id', $outletId)->with(['stocks', 'category', 'unit'])->get();
 
         $data = [
-            ['LAPORAN STOK PRODUK & BAHAN'],
+            ['LAPORAN PERSEDIAAN PRODUK & BAHAN'],
             ['Tanggal Cetak: ' . now()->format('d M Y H:i')],
             [''],
-            ['STOK PRODUK'],
+            ['STOK PRODUK JADI'],
+            [''],
             ['Nama Produk', 'Kategori', 'Stok Saat Ini', 'Satuan', 'Min. Stok', 'Status'],
         ];
 
@@ -65,7 +66,7 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
         $data[] = [''];
         $data[] = [''];
         $data[] = ['STOK BAHAN BAKU'];
-        $headerRow = count($data) + 1;
+        $data[] = [''];
         $data[] = ['Nama Bahan', 'Kategori', 'Stok Saat Ini', 'Satuan', 'Min. Stok', 'Status'];
 
         foreach ($ingredients as $ingredient) {
@@ -87,15 +88,29 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
     public function styles(Worksheet $sheet)
     {
         return [
+            // Header utama - Background kuning
             1 => [
-                'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '2563EB']], 
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => '000000']], 
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FCD34D']], // Kuning
             ],
-            4 => ['font' => ['bold' => true, 'size' => 13, 'color' => ['rgb' => '059669']]],
-            5 => [
-                'font' => ['bold' => true], 
-                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D1FAE5']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            // Tanggal cetak - Background abu muda
+            2 => [
+                'font' => ['size' => 9, 'color' => ['rgb' => '6B7280']], 
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F3F4F6']], // Abu muda
+            ],
+            // Section title - Background abu sedang
+            4 => [
+                'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '000000']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D1D5DB']], // Abu sedang
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER]
+            ],
+            // Header tabel - Background kuning
+            6 => [
+                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']], 
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FDE68A']], // Kuning muda
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
             ],
         ];
     }
@@ -111,43 +126,160 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                 $sheet->mergeCells('A1:F1');
                 $sheet->mergeCells('A2:F2');
                 
-                // Column widths
-                $sheet->getColumnDimension('A')->setWidth(30);
-                $sheet->getColumnDimension('B')->setWidth(20);
-                $sheet->getColumnDimension('C')->setWidth(15);
-                $sheet->getColumnDimension('D')->setWidth(10);
-                $sheet->getColumnDimension('E')->setWidth(15);
-                $sheet->getColumnDimension('F')->setWidth(12);
+                // Row heights
+                $sheet->getRowDimension(1)->setRowHeight(35);
+                $sheet->getRowDimension(2)->setRowHeight(20);
+                $sheet->getRowDimension(3)->setRowHeight(10); // Spacing
+                $sheet->getRowDimension(4)->setRowHeight(25);
+                $sheet->getRowDimension(5)->setRowHeight(10); // Spacing
+                $sheet->getRowDimension(6)->setRowHeight(25);
                 
-                // Find ingredient header row
+                // Column widths
+                $sheet->getColumnDimension('A')->setWidth(32);
+                $sheet->getColumnDimension('B')->setWidth(20);
+                $sheet->getColumnDimension('C')->setWidth(18);
+                $sheet->getColumnDimension('D')->setWidth(12);
+                $sheet->getColumnDimension('E')->setWidth(15);
+                $sheet->getColumnDimension('F')->setWidth(15);
+                
+                // Find ingredient section
                 $ingredientHeaderRow = 0;
+                $ingredientSectionRow = 0;
                 for ($i = 1; $i <= $lastRow; $i++) {
                     if ($sheet->getCell('A'.$i)->getValue() === 'STOK BAHAN BAKU') {
-                        $ingredientHeaderRow = $i + 1;
+                        $ingredientSectionRow = $i;
+                        $ingredientHeaderRow = $i + 2;
                         break;
                     }
                 }
                 
-                // Style ingredient header
-                if ($ingredientHeaderRow > 0) {
-                    $sheet->getStyle('A'.($ingredientHeaderRow-1).':F'.($ingredientHeaderRow-1))->applyFromArray([
-                        'font' => ['bold' => true, 'size' => 13, 'color' => ['rgb' => 'DC2626']],
-                    ]);
-                    $sheet->getStyle('A'.$ingredientHeaderRow.':F'.$ingredientHeaderRow)->applyFromArray([
-                        'font' => ['bold' => true], 
-                        'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FEE2E2']],
-                        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-                    ]);
+                // Border untuk header
+                $sheet->getStyle('A1:F1')->applyFromArray([
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
+                    ]
+                ]);
+                
+                $sheet->getStyle('A2:F2')->applyFromArray([
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]
+                    ]
+                ]);
+                
+                $sheet->getStyle('A4:F4')->applyFromArray([
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
+                    ]
+                ]);
+                
+                // Merge section title
+                $sheet->mergeCells('A4:F4');
+                
+                // Border untuk header tabel produk
+                $sheet->getStyle('A6:F6')->applyFromArray([
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
+                    ]
+                ]);
+                
+                // Data produk
+                $productEndRow = $ingredientSectionRow > 0 ? $ingredientSectionRow - 3 : $lastRow;
+                
+                // Set row heights untuk data produk
+                for ($i = 7; $i <= $productEndRow; $i++) {
+                    $sheet->getRowDimension($i)->setRowHeight(22);
                 }
                 
-                // Conditional formatting for status
-                for ($i = 6; $i <= $lastRow; $i++) {
-                    $statusCell = 'F'.$i;
-                    if ($sheet->getCell($statusCell)->getValue() === 'RENDAH') {
-                        $sheet->getStyle($statusCell)->getFont()->getColor()->setRGB('DC2626');
-                        $sheet->getStyle($statusCell)->getFont()->setBold(true);
-                    } else if ($sheet->getCell($statusCell)->getValue() === 'AMAN') {
-                        $sheet->getStyle($statusCell)->getFont()->getColor()->setRGB('059669');
+                // Border untuk data produk
+                $sheet->getStyle('A7:F'.$productEndRow)->applyFromArray([
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]
+                    ]
+                ]);
+                
+                // Alternating colors untuk produk
+                for ($i = 7; $i <= $productEndRow; $i++) {
+                    $bgColor = ($i % 2 == 0) ? 'FFFFFF' : 'F9FAFB';
+                    $sheet->getStyle('A'.$i.':F'.$i)->getFill()
+                        ->setFillType(Fill::FILL_SOLID)
+                        ->getStartColor()
+                        ->setRGB($bgColor);
+                    
+                    // Alignment
+                    $sheet->getStyle('A'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                    $sheet->getStyle('B'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                    $sheet->getStyle('C'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle('D'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle('E'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle('F'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle('A'.$i.':F'.$i)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+                    
+                    // Conditional formatting untuk status
+                    $status = $sheet->getCell('F'.$i)->getValue();
+                    if ($status === 'RENDAH') {
+                        $sheet->getStyle('F'.$i)->getFont()->getColor()->setRGB('DC2626');
+                        $sheet->getStyle('F'.$i)->getFont()->setBold(true);
+                    }
+                }
+                
+                // Style ingredient section
+                if ($ingredientHeaderRow > 0) {
+                    $sheet->getRowDimension($ingredientSectionRow)->setRowHeight(25);
+                    $sheet->getRowDimension($ingredientSectionRow + 1)->setRowHeight(10);
+                    $sheet->getRowDimension($ingredientHeaderRow)->setRowHeight(25);
+                    
+                    $sheet->mergeCells('A'.$ingredientSectionRow.':F'.$ingredientSectionRow);
+                    
+                    $sheet->getStyle('A'.$ingredientSectionRow.':F'.$ingredientSectionRow)->applyFromArray([
+                        'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '000000']],
+                        'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D1D5DB']],
+                        'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+                        'borders' => [
+                            'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
+                        ]
+                    ]);
+                    
+                    $sheet->getStyle('A'.$ingredientHeaderRow.':F'.$ingredientHeaderRow)->applyFromArray([
+                        'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']], 
+                        'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FDE68A']],
+                        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                        'borders' => [
+                            'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
+                        ]
+                    ]);
+                    
+                    // Border dan alternating untuk data ingredient
+                    $sheet->getStyle('A'.($ingredientHeaderRow+1).':F'.$lastRow)->applyFromArray([
+                        'borders' => [
+                            'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]
+                        ]
+                    ]);
+                    
+                    // Set row heights dan alternating colors untuk ingredients
+                    for ($i = $ingredientHeaderRow + 1; $i <= $lastRow; $i++) {
+                        $sheet->getRowDimension($i)->setRowHeight(22);
+                        
+                        $bgColor = ($i % 2 == 0) ? 'FFFFFF' : 'F9FAFB';
+                        $sheet->getStyle('A'.$i.':F'.$i)->getFill()
+                            ->setFillType(Fill::FILL_SOLID)
+                            ->getStartColor()
+                            ->setRGB($bgColor);
+                        
+                        // Alignment
+                        $sheet->getStyle('A'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                        $sheet->getStyle('B'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                        $sheet->getStyle('C'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        $sheet->getStyle('D'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        $sheet->getStyle('E'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        $sheet->getStyle('F'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                        $sheet->getStyle('A'.$i.':F'.$i)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+                        
+                        // Conditional formatting untuk status
+                        $status = $sheet->getCell('F'.$i)->getValue();
+                        if ($status === 'RENDAH') {
+                            $sheet->getStyle('F'.$i)->getFont()->getColor()->setRGB('DC2626');
+                            $sheet->getStyle('F'.$i)->getFont()->setBold(true);
+                        }
                     }
                 }
             },

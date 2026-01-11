@@ -81,13 +81,22 @@ class ReportController extends Controller
             ->get();
 
         // Summary Calculations
-        $totalRevenue = $sales->sum('grand_total');
+        $totalRevenue = $sales->sum('grand_total'); // Gross: Subtotal - Discount + Tax
         $totalTransactions = $sales->count();
-        $totalExpenses = $expenses->sum('amount');
         
-        // Tax Summary
+        // Pemasukan lain adalah beban dengan nilai minus
+        $extraIncome = abs($expenses->where('amount', '<', 0)->sum('amount'));
+        // Pengeluaran murni adalah beban dengan nilai positif
+        $totalExpensesOnly = $expenses->where('amount', '>', 0)->sum('amount');
+        
+        // Total pengeluaran bersih untuk perhitungan laba (opsional, tapi netProfit lebih akurat dipisah)
+        $totalExpenses = $totalExpensesOnly; // Kita definisikan sebagai pengeluaran riil saja
+        
+        // Tax & Discount Summary
         $totalTax = $sales->sum('tax_amount');
-        $totalDiscount = $sales->sum('discount_amount');
+        $transactionDiscount = $sales->sum('discount_amount'); // Diskon di level invoice
+        
+        // Total Subtotal dari item (setelah diskon item)
         $totalSubtotal = $sales->sum('subtotal');
         
         // Calculate COGS (HPP)
@@ -99,15 +108,13 @@ class ReportController extends Controller
             ->sum(DB::raw('hpp * quantity'));
 
         // Calculate Gross Profit (Laba Kotor)
-        $grossProfit = SaleItem::whereHas('sale', function($q) use ($start, $end, $outletId) {
-                $q->where('outlet_id', $outletId)
-                  ->whereBetween('created_at', [$start, $end])
-                  ->where('status', 'completed');
-            })
-            ->sum('profit');
+        // Penjualan Bersih = totalSubtotal (sudah dptong diskon item) - transactionDiscount
+        // Laba Kotor = Penjualan Bersih - HPP
+        $grossProfit = ($totalSubtotal - $transactionDiscount) - $totalCogs;
 
         // Calculate Net Profit (Laba Bersih)
-        $netProfit = $grossProfit - $totalExpenses;
+        // Laba Bersih = Laba Kotor + Pemasukan Lain - Total Pengeluaran
+        $netProfit = $grossProfit + $extraIncome - $totalExpenses;
 
         // Top Products
         $topProducts = SaleItem::select('product_name', DB::raw('SUM(quantity) as total_qty'), DB::raw('SUM(subtotal) as total_revenue'))
@@ -121,21 +128,24 @@ class ReportController extends Controller
             ->take(10)
             ->get();
 
-        // Sales by Category
-        $salesByCategory = SaleItem::select('products.category_id', DB::raw('SUM(sale_items.subtotal) as total_revenue'), DB::raw('SUM(sale_items.quantity) as total_qty'))
+        // Sales by Category (Optimized)
+        $salesByCategory = SaleItem::select(
+                'categories.name as category_name',
+                DB::raw('SUM(sale_items.subtotal) as total_revenue'),
+                DB::raw('SUM(sale_items.quantity) as total_qty')
+            )
             ->join('products', 'sale_items.product_id', '=', 'products.id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
             ->whereHas('sale', function($q) use ($start, $end, $outletId) {
                 $q->where('outlet_id', $outletId)
                   ->whereBetween('created_at', [$start, $end])
                   ->where('status', 'completed');
             })
-            ->groupBy('products.category_id')
-            ->with('product.category')
+            ->groupBy('categories.id', 'categories.name')
             ->get()
             ->map(function($item) {
-                $category = Category::find($item->category_id);
                 return [
-                    'category_name' => $category ? $category->name : 'Tanpa Kategori',
+                    'category_name' => $item->category_name ?? 'Tanpa Kategori',
                     'total_revenue' => $item->total_revenue,
                     'total_qty' => $item->total_qty,
                 ];
@@ -193,12 +203,12 @@ class ReportController extends Controller
         ];
 
         // Customer Debt (Piutang)
-        $customerDebts = CustomerDebt::with('customer')
+        $customerDebts = CustomerDebt::with(['customer', 'sale'])
             ->where('outlet_id', $outletId)
-            ->where('status', 'unpaid')
+            ->whereBetween('created_at', [$start, $end])
             ->get();
 
-        $totalPiutang = $customerDebts->sum('amount');
+        $totalPiutang = $customerDebts->where('status', '!=', 'paid')->sum('remaining_amount');
 
         // Top Customers
         $topCustomers = Sale::select('customer_id', DB::raw('COUNT(*) as total_transactions'), DB::raw('SUM(grand_total) as total_spent'))
@@ -272,11 +282,13 @@ class ReportController extends Controller
             'totalSubtotal' => $totalSubtotal,
             'totalTransactions' => $totalTransactions,
             'totalExpenses' => $totalExpenses,
+            'extraIncome' => $extraIncome,
             'totalCogs' => $totalCogs,
             'grossProfit' => $grossProfit,
             'netProfit' => $netProfit,
             'totalTax' => $totalTax,
-            'totalDiscount' => $totalDiscount,
+            'totalDiscount' => $transactionDiscount, // Kita tampilkan diskon header di ringkasan keuangan
+            'itemDiscount' => $itemDiscount ?? 0,
             
             // Sales Analysis
             'topProducts' => $topProducts,
