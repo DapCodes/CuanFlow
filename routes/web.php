@@ -213,8 +213,8 @@ Route::prefix('production')->name('production.')->group(function () {
 
     Route::resource('task-labels', TaskLabelController::class);
 
-    // Supplier Applications
-    Route::resource('supplier-applications', App\Http\Controllers\SupplierApplicationController::class)
+    // Reseller Applications
+    Route::resource('reseller-applications', App\Http\Controllers\ResellerApplicationController::class)
         ->only(['index', 'store', 'update']);
 
 

@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SupplierApplication extends Model
+class ResellerApplication extends Model
 {
     protected $fillable = [
-        'user_id',
+        'customer_id',
         'outlet_id',
         'description',
         'document_path',
@@ -16,9 +16,9 @@ class SupplierApplication extends Model
         'processed_at'
     ];
 
-    public function user()
+    public function customer()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\Customer::class);
     }
 
     public function outlet()

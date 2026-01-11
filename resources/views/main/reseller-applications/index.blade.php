@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Lamaran Supplier')
+@section('title', 'Kelola Lamaran Reseller')
 
 @section('breadcrumb')
 <li class="flex items-center">
     <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
     </svg>
-    <span class="text-gray-900 font-medium">Kelola Lamaran Supplier</span>
+    <span class="text-gray-900 font-medium">Kelola Lamaran Reseller</span>
 </li>
 @endsection
 
@@ -30,10 +30,10 @@
                     <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-orange-50 text-orange-500 border border-orange-100">
                         <i class="fas fa-handshake text-sm"></i>
                     </span>
-                    <span>Kelola Lamaran Supplier</span>
+                    <span>Kelola Lamaran Reseller</span>
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    Review dan kelola permohonan supplier yang masuk ke outlet Anda.
+                    Review dan kelola permohonan reseller yang masuk ke outlet Anda.
                 </p>
             </div>
             {{-- Form removed as per request --}}
@@ -56,10 +56,10 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 bg-white">
                         @forelse($applications as $app)
-                        <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="openDetailModal({{ json_encode($app) }}, '{{ $app->user->name ?? 'Unknown' }}', '{{ $app->document_path ? asset('storage/'.$app->document_path) : '' }}')">
+                        <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="openDetailModal({{ json_encode($app) }}, '{{ $app->customer->name ?? 'Unknown' }}', '{{ $app->document_path ? asset('storage/'.$app->document_path) : '' }}')">
                             <td class="px-6 py-3">
-                                <div class="font-semibold text-gray-900">{{ $app->user->name ?? 'Unknown User' }}</div>
-                                <div class="text-xs text-gray-500">{{ $app->user->email ?? '-' }}</div>
+                                <div class="font-semibold text-gray-900">{{ $app->customer->name ?? 'Unknown Customer' }}</div>
+                                <div class="text-xs text-gray-500">{{ $app->customer->email ?? $app->customer->phone ?? '-' }}</div>
                             </td>
                             <td class="px-6 py-3 text-gray-600">
                                 {{ $app->outlet->name ?? 'Unknown' }}
@@ -192,9 +192,9 @@
         // Handle Form Action & Buttons
         const form = document.getElementById('actionForm');
         // Use Blade to get base URL, then append ID.
-        // Note: route('supplier-applications.index') gives .../supplier-applications
-        // We need .../supplier-applications/{id}
-        const baseUrl = "{{ route('supplier-applications.index') }}";
+        // Note: route('reseller-applications.index') gives .../reseller-applications
+        // We need .../reseller-applications/{id}
+        const baseUrl = "{{ route('reseller-applications.index') }}";
         form.action = `${baseUrl}/${appData.id}`;
         
         const actionButtons = document.getElementById('actionButtons');
