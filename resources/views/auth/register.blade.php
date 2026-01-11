@@ -460,7 +460,7 @@
             <div class="loader-dot"></div>
             <div class="loader-dot"></div>
         </div>
-        <p class="loader-text">Loading...</p>
+        <p class="loader-text">Memuat...</p>
     </div>
     
     <!-- Left Section - Simple Background -->
