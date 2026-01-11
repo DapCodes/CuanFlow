@@ -8,9 +8,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class OutletInformationController extends Controller
+class OutletInformationController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat outlet', only: ['index']),
+            new Middleware('permission:buat outlet', only: ['create', 'store']),
+            new Middleware('permission:lihat detail outlet', only: ['show']),
+            new Middleware('permission:edit outlet', only: ['edit', 'update']),
+            new Middleware('permission:hapus outlet', only: ['destroy']),
+            new Middleware('permission:aktifkan nonaktifkan outlet', only: ['toggleStatus']),
+        ];
+    }
+
     public function index()
     {
         $user = Auth::user();

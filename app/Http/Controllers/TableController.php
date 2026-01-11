@@ -6,9 +6,25 @@ use App\Models\Table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class TableController extends Controller
+class TableController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat meja', only: ['index']),
+            new Middleware('permission:buat meja', only: ['create', 'store']),
+            new Middleware('permission:edit meja', only: ['edit', 'update']),
+            new Middleware('permission:hapus meja', only: ['destroy']),
+            new Middleware('permission:aktifkan nonaktifkan meja', only: ['toggleStatus']),
+            new Middleware('permission:quick toggle meja', only: ['quickToggle']),
+            new Middleware('permission:generate kode meja', only: ['generateCode']),
+            new Middleware('permission:pilih meja pos', only: ['getTablesApi']),
+            new Middleware('permission:toggle sistem meja outlet', only: ['toggleTableSystemApi']),
+        ];
+    }
     /**
      * Display a listing of tables.
      */

@@ -136,16 +136,21 @@
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
             <div class="border-b border-gray-200 px-4 md:px-6 py-4">
                 <div class="flex gap-2">
+                    @can('lihat pelanggan')
                     <button type="button" id="tabCustomer" onclick="switchTab('customer')"
                             class="tab-btn active px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2">
                         <i class="fas fa-users"></i>
                         <span>Pelanggan</span>
                     </button>
+                    @endcan
+                    
+                    @can('lihat piutang')
                     <button type="button" id="tabDebt" onclick="switchTab('debt')"
                             class="tab-btn px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 text-gray-600 border border-gray-200">
                         <i class="fas fa-file-invoice-dollar"></i>
                         <span>Tunggakan</span>
                     </button>
+                    @endcan
                 </div>
             </div>
 
@@ -381,7 +386,7 @@
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 <script>
 // State
-let currentTab = 'customer';
+let currentTab = @can('lihat pelanggan') 'customer' @else 'debt' @endcan;
 let currentDebt = null;
 let selectedPaymentMethod = 'cash';
 let customerPage = 1;
@@ -604,11 +609,13 @@ function renderDebtTable(debts, pagination) {
                 ${getDebtStatusBadge(d.status, d.is_overdue)}
             </td>
             <td class="px-4 py-3 text-center">
+                @can('bayar piutang')
                 <button onclick="openPaymentModal(${JSON.stringify(d).replace(/"/g, '&quot;')})"
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-xs font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all shadow-sm">
                     <i class="fas fa-credit-card"></i>
                     Bayar
                 </button>
+                @endcan
             </td>
         </tr>
     `).join('');

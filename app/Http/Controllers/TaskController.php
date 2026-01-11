@@ -13,17 +13,29 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class TaskController extends Controller
+class TaskController extends Controller implements HasMiddleware
 {
     use AuthorizesRequests;
+
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:tasks.view', only: ['index', 'tableView', 'calendarView', 'getCalendarTasks', 'show', 'getActivities']),
+            new Middleware('permission:tasks.create', only: ['store']),
+            new Middleware('permission:tasks.update', only: ['update', 'updateStatus']),
+            new Middleware('permission:tasks.delete', only: ['destroy']),
+            new Middleware('permission:tasks.assign', only: ['assignUsers']),
+        ];
+    }
 
     /**
      * Display kanban board view
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Task::class);
 
         $statuses = TaskStatus::ordered()->with(['tasks' => function ($query) use ($request) {
             $query->with(['assignees', 'labels', 'creator', 'status']);
@@ -65,7 +77,6 @@ class TaskController extends Controller
      */
     public function tableView(Request $request)
     {
-        $this->authorize('viewAny', Task::class);
 
         $query = Task::with(['assignees', 'labels', 'creator', 'status']);
 
@@ -107,7 +118,6 @@ class TaskController extends Controller
      */
     public function calendarView()
     {
-        $this->authorize('viewAny', Task::class);
 
         $statuses = TaskStatus::ordered()->get();
         $labels = TaskLabel::all();
@@ -129,7 +139,6 @@ class TaskController extends Controller
      */
     public function getCalendarTasks(Request $request)
     {
-        $this->authorize('viewAny', Task::class);
 
         $tasks = Task::with(['status', 'assignees'])
             ->whereNotNull('deadline')
@@ -157,7 +166,6 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        $this->authorize('view', $task);
 
         $task->load(['assignees', 'labels', 'creator', 'status', 'activities.user']);
 
@@ -169,7 +177,6 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('create', Task::class);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -238,7 +245,6 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        $this->authorize('update', $task);
 
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
@@ -318,7 +324,6 @@ class TaskController extends Controller
      */
     public function updateStatus(Request $request, Task $task)
     {
-        $this->authorize('update', $task);
 
         $validated = $request->validate([
             'status_id' => 'required|exists:task_statuses,id',
@@ -344,7 +349,6 @@ class TaskController extends Controller
      */
     public function assignUsers(Request $request, Task $task)
     {
-        $this->authorize('update', $task);
 
         $validated = $request->validate([
             'user_ids' => 'required|array',
@@ -382,7 +386,6 @@ class TaskController extends Controller
      */
     public function getActivities(Task $task)
     {
-        $this->authorize('view', $task);
 
         $activities = $task->activities()->with('user')->get();
 
@@ -394,7 +397,6 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        $this->authorize('delete', $task);
 
         $task->delete();
 

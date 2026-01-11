@@ -12,9 +12,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class LandingPageController extends Controller
+class LandingPageController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat landing page', only: ['index']),
+            new Middleware('permission:edit landing page', only: ['edit', 'update']),
+            new Middleware('permission:aktifkan nonaktifkan landing page', only: ['toggleStatus']),
+        ];
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();

@@ -12,9 +12,22 @@ use App\Models\StockOpnameItem;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class StockOpnameController extends Controller
+class StockOpnameController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat stock opname', only: ['index', 'show']),
+            new Middleware('permission:buat stock opname', only: ['create', 'store']),
+            new Middleware('permission:edit stock opname', only: ['update']), // update handles start opname too
+            new Middleware('permission:finalisasi stock opname', only: ['finalize']),
+            new Middleware('permission:hapus stock opname', only: ['destroy']),
+        ];
+    }
+
     public function index(Request $request)
     {
         $outletId = auth()->user()->outlet_id;

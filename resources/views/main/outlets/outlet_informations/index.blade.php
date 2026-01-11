@@ -41,11 +41,13 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+                @can('buat outlet')
                 <a href="{{ route('outlets.create') }}"
                    class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 px-4 py-2.5 text-sm font-semibold text-white hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 shadow-sm">
                     <i class="fas fa-plus-circle text-sm"></i>
                     <span>Tambah Outlet</span>
                 </a>
+                @endcan
             </div>
         </section>
 
@@ -242,16 +244,20 @@
                                 {{-- Aksi --}}
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="inline-flex items-center gap-1.5">
+                                        @can('lihat detail outlet')
                                         <a href="{{ route('outlets.show', $outlet->id) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
                                            title="Detail">
                                             <i class="fas fa-eye text-xs"></i>
                                         </a>
+                                        @endcan
+                                        @can('edit outlet')
                                         <a href="{{ route('outlets.edit', $outlet->id) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-yellow-200 bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
                                            title="Edit">
                                             <i class="fas fa-edit text-xs"></i>
                                         </a>
+                                        @endcan
                                         @if(auth()->user()->outlet_id === $outlet->id)
                                             <button type="button"
                                                     class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
@@ -260,6 +266,7 @@
                                                 <i class="fas fa-trash text-xs"></i>
                                             </button>
                                         @else
+                                            @can('hapus outlet')
                                             <form action="{{ route('outlets.destroy', $outlet->id) }}"
                                                   method="POST"
                                                   class="inline-block"
@@ -272,6 +279,7 @@
                                                     <i class="fas fa-trash text-xs"></i>
                                                 </button>
                                             </form>
+                                            @endcan
                                         @endif
                                     </div>
                                 </td>

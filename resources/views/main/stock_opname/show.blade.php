@@ -79,6 +79,7 @@
 
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
                 @if($stockOpname->status == 'draft')
+                    @can('edit stock opname')
                     <form action="{{ route('stock-opname.update', $stockOpname->id) }}" method="POST">
                         @csrf
                         @method('PUT')
@@ -88,11 +89,14 @@
                             <span>Mulai Proses</span>
                         </button>
                     </form>
+                    @endcan
                 @elseif($stockOpname->status == 'in_progress')
+                    @can('finalisasi stock opname')
                     <button type="button" onclick="document.getElementById('finalizeForm').submit()" class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 shadow-sm transition-all">
                         <i class="fas fa-check-circle text-sm"></i>
                         <span>Selesaikan Opname</span>
                     </button>
+                    @endcan
                 @endif
                 
                 <a href="{{ route('stock-opname.index') }}"
@@ -108,9 +112,11 @@
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                 <h3 class="font-semibold text-gray-900">Daftar Item</h3>
                 @if($stockOpname->status != 'completed')
+                    @can('edit stock opname')
                     <button type="button" onclick="document.getElementById('opnameForm').submit()" class="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
                         <i class="fas fa-save"></i> Simpan Draft
                     </button>
+                    @endcan
                 @else
                     <div class="text-sm">
                         @php

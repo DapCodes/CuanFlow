@@ -6,17 +6,25 @@ use App\Models\TaskLabel;
 use Illuminate\Http\Request;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class TaskLabelController extends Controller
+class TaskLabelController extends Controller implements HasMiddleware
 {
     use AuthorizesRequests;
+
+    public static function middleware(): array
+    {
+        return [
+            'permission:task-labels.manage',
+        ];
+    }
 
     /**
      * Display all labels
      */
     public function index()
     {
-        $this->authorize('manage', TaskLabel::class);
 
         $labels = TaskLabel::withCount('tasks')->get();
 
@@ -28,7 +36,6 @@ class TaskLabelController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('manage', TaskLabel::class);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:task_labels,name',
@@ -53,7 +60,6 @@ class TaskLabelController extends Controller
      */
     public function update(Request $request, TaskLabel $taskLabel)
     {
-        $this->authorize('manage', TaskLabel::class);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:task_labels,name,' . $taskLabel->id,
@@ -78,7 +84,6 @@ class TaskLabelController extends Controller
      */
     public function destroy(Request $request, TaskLabel $taskLabel)
     {
-        $this->authorize('manage', TaskLabel::class);
 
         $taskLabel->delete();
 

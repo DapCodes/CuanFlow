@@ -11,9 +11,24 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class EmployeeController extends Controller
+class EmployeeController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat pegawai', only: ['index']),
+            new Middleware('permission:buat pegawai', only: ['create', 'store']),
+            new Middleware('permission:lihat detail pegawai', only: ['show']),
+            new Middleware('permission:edit pegawai', only: ['edit', 'update']),
+            new Middleware('permission:hapus pegawai', only: ['destroy']),
+            new Middleware('permission:aktifkan nonaktifkan pegawai', only: ['toggleStatus']),
+            new Middleware('permission:kirim ulang verifikasi pegawai', only: ['resendVerification']),
+        ];
+    }
+
     public function index()
     {
         $employees = User::with(['roles', 'permissions', 'outlet'])

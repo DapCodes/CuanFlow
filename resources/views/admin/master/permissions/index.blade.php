@@ -18,11 +18,13 @@
             <h2 class="text-xl font-bold text-gray-900">Kelola Permissions</h2>
             <p class="text-sm text-gray-500 mt-1">Total {{ $totalPermissions }} permission dalam {{ $permissionCategories->count() }} kategori</p>
         </div>
+        @can('kelola permissions')
         <a href="{{ route('admin.permissions.create') }}" 
            class="inline-flex items-center gap-2 px-4 py-2.5 bg-cuan-dark text-white font-semibold rounded-lg hover:bg-cuan-green transition-colors">
             <i class="fas fa-plus text-sm"></i>
             <span>Tambah Permission</span>
         </a>
+        @endcan
     </div>
     
     <!-- Permission Categories -->
@@ -57,6 +59,7 @@
                             <p class="text-xs text-gray-500 truncate">{{ $permission->description }}</p>
                             @endif
                         </div>
+                        @can('kelola permissions')
                         <div class="flex items-center gap-1 ml-2">
                             <a href="{{ route('admin.permissions.edit', $permission) }}" 
                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors">
@@ -71,6 +74,7 @@
                                 </button>
                             </form>
                         </div>
+                        @endcan
                     </div>
                     @endforeach
                 </div>

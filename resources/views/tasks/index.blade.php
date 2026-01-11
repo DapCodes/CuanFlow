@@ -431,6 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Sortable for each column
     const columns = document.querySelectorAll('.kanban-column');
     
+    @can('tasks.update')
     columns.forEach(column => {
         new Sortable(column, {
             group: 'kanban',
@@ -462,6 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    @endcan
 
     // Search functionality
     const searchInput = document.getElementById('searchTask');

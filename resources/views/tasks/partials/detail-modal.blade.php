@@ -43,14 +43,18 @@
 
                     <!-- Sidebar (Meta Info) - Stacks on bottom on mobile, side on desktop -->
                     <div class="w-full lg:w-56 space-y-6 order-1 lg:order-2 shrink-0 border-b lg:border-b-0 lg:border-l border-gray-100 pb-6 lg:pb-0 lg:pl-6">
+                        @can('tasks.assign')
                         <div>
                             <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Assignees</h4>
                             <div id="detail_assignees" class="flex flex-wrap gap-1.5"></div>
                         </div>
+                        @endcan
+                        @can('task-labels.manage')
                         <div>
                             <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Labels</h4>
                             <div id="detail_labels" class="flex flex-wrap gap-1.5"></div>
                         </div>
+                        @endcan
                         <div>
                             <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Deadline</h4>
                             <p id="detail_deadline" class="text-[12px] font-semibold text-gray-700"></p>

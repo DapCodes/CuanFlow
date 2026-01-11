@@ -6,9 +6,22 @@ use App\Models\AiInsight;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class AiInsightController extends Controller
+class AiInsightController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat ai insights', only: ['index', 'daily']),
+            new Middleware('permission:lihat detail ai insight', only: ['show']),
+            new Middleware('permission:tandai ai insight dibaca', only: ['markAsRead']),
+            new Middleware('permission:abaikan ai insight', only: ['dismiss']),
+            new Middleware('permission:tandai semua ai insight dibaca', only: ['markAllAsRead']),
+            new Middleware('permission:lihat kalender ai insight', only: ['calendarSummary']),
+        ];
+    }
     public function index(Request $request)
     {
         $user = auth()->user();

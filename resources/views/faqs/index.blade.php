@@ -157,7 +157,7 @@
 
             <div id="faqList" class="space-y-4">
                 @forelse($faqs as $faq)
-                    @if($faq->is_active)
+                    @if($faq->is_active || auth()->user()->can('aktifkan nonaktifkan faq'))
                         @php
                             $typeColors = [
                                 'general' => ['badge' => 'bg-gray-100 text-gray-700 border-gray-200'],
@@ -203,10 +203,8 @@
                                             @endif
                                         </div>
                                     </div>
-                                    <div class="flex-shrink-0">
-                                        <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                                            <i class="fas fa-chevron-down faq-icon text-gray-500 text-sm"></i>
-                                        </div>
+                                    <div class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100">
+                                        <i class="fas fa-chevron-down faq-icon text-gray-500 text-sm"></i>
                                     </div>
                                 </div>
                             </div>
@@ -222,6 +220,7 @@
                                     <div class="pt-5 border-t border-gray-200">
                                         <p class="text-sm font-medium text-gray-700 mb-3">Apakah jawaban ini membantu?</p>
                                         <div class="flex items-center gap-3">
+                                            @can('tandai faq membantu')
                                             <button onclick="markHelpful({{ $faq->id }}, event)" 
                                                     class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 transition-all font-medium text-sm">
                                                 <i class="fas fa-thumbs-up"></i>
@@ -230,6 +229,8 @@
                                                     {{ $faq->helpful_count }}
                                                 </span>
                                             </button>
+                                            @endcan
+                                            @can('tandai faq tidak membantu')
                                             <button onclick="markNotHelpful({{ $faq->id }}, event)" 
                                                     class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all font-medium text-sm">
                                                 <i class="fas fa-thumbs-down"></i>
@@ -238,6 +239,7 @@
                                                     {{ $faq->not_helpful_count }}
                                                 </span>
                                             </button>
+                                            @endcan
                                         </div>
                                     </div>
                                 </div>

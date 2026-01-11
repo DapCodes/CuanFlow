@@ -78,10 +78,12 @@
                         Keamanan
                     </button>
                     <div class="my-2 border-t border-gray-100 mx-2"></div>
+                    @can('hapus akun')
                     <button @click="activeTab = 'danger'" :class="activeTab === 'danger' ? 'bg-red-50 text-red-600' : 'text-gray-500 hover:bg-red-50 hover:text-red-600'" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm text-left group">
                         <i class="fas fa-exclamation-triangle text-lg opacity-40 group-hover:opacity-100 transition-opacity" :class="activeTab === 'danger' ? 'opacity-100' : ''"></i>
                         Hapus Akun
                     </button>
+                    @endcan
                 </nav>
 
                 {{-- Mobile Horizontal Tabs --}}
@@ -92,9 +94,11 @@
                     <button @click="activeTab = 'security'" :class="activeTab === 'security' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-shield-alt"></i> Keamanan
                     </button>
+                    @can('hapus akun')
                     <button @click="activeTab = 'danger'" :class="activeTab === 'danger' ? 'bg-red-50 text-red-600' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-trash"></i> Hapus
                     </button>
+                    @endcan
                 </nav>
 
                 {{-- Help Card (Desktop Only) --}}
@@ -203,9 +207,11 @@
 
                                 {{-- Action Buttons --}}
                                 <div class="pt-10 flex flex-col sm:flex-row items-center gap-10">
+                                    @can('update profil')
                                     <button type="submit" class="w-full sm:w-auto px-10 py-4 bg-gray-900 text-white rounded-2xl shadow-2xl shadow-gray-200 hover:bg-black transition-all text-xs font-black uppercase tracking-[0.2em] active:scale-95 duration-200">
                                         Simpan Profil Baru
                                     </button>
+                                    @endcan
                                     <span class="hidden sm:block text-[10px] text-gray-300 font-medium">Terakhir diperbarui: {{ $user->updated_at->diffForHumans() }}</span>
                                 </div>
                             </form>
@@ -280,9 +286,11 @@
                                 </div>
 
                                 <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+                                    @can('update profil')
                                     <button type="submit" class="w-full sm:w-auto px-10 py-4 bg-emerald-600 text-white rounded-2xl shadow-2xl shadow-emerald-200 hover:bg-emerald-700 transition-all text-xs font-black uppercase tracking-[0.2em] active:scale-95">
                                         Perbarui Kata Sandi
                                     </button>
+                                    @endcan
                                     
                                     @if (Route::has('password.request'))
                                         <a href="{{ route('password.request') }}" class="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors border-b border-transparent hover:border-gray-900">
@@ -297,6 +305,7 @@
 
                 {{-- Danger Zone Content --}}
                 <section x-show="activeTab === 'danger'" class="animate-fade-in-up" x-cloak>
+                    @can('hapus akun')
                     <div class="bg-white border border-red-100 rounded-3xl shadow-sm overflow-hidden divide-y divide-red-50">
                         <div class="p-6 md:p-8 lg:p-10">
                             <div class="flex items-center gap-4 mb-8">
@@ -326,6 +335,11 @@
                             </button>
                         </div>
                     </div>
+                    @else
+                    <div class="bg-red-50 border border-red-100 rounded-3xl p-8 text-center text-red-800">
+                        Anda tidak memiliki izin untuk menghapus akun.
+                    </div>
+                    @endcan
                 </section>
 
             </div>

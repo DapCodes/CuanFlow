@@ -368,6 +368,22 @@
                                     <span>Cetak Struk</span>
                                 </a>
                                 @endcan
+
+                                @can('preview struk')
+                                <a href="{{ route('receipt.preview', $sale->id) }}" target="_blank"
+                                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold hover:bg-blue-100 transition-all shadow-sm">
+                                    <i class="fas fa-eye"></i>
+                                    <span>Preview Struk</span>
+                                </a>
+                                @endcan
+
+                                @can('lihat struk publik')
+                                <a href="{{ route('receipts.show', $sale->invoice_number) }}" target="_blank"
+                                   class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-all shadow-sm">
+                                    <i class="fas fa-share-alt"></i>
+                                    <span>Lihat Struk Publik</span>
+                                </a>
+                                @endcan
                             @endif
 
                             <a href="{{ url()->previous() }}"

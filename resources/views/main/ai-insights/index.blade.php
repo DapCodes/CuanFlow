@@ -115,20 +115,24 @@
           <button data-tab="dismissed" class="tabBtn px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap">Dismiss</button>
 
           <div class="hidden sm:flex ml-auto">
+            @can('tandai semua ai insight dibaca')
             <button id="btnMarkAllRead"
               class="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 text-white hover:opacity-95 whitespace-nowrap">
               Tandai semua sudah dibaca
             </button>
+            @endcan
           </div>
         </div>
       </div>
 
       {{-- Mark All Read Button for Mobile --}}
       <div class="sm:hidden px-3 py-2 border-b border-gray-200 flex-shrink-0">
+        @can('tandai semua ai insight dibaca')
         <button id="btnMarkAllReadMobile"
           class="w-full px-3 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 text-white hover:opacity-95">
           Tandai semua sudah dibaca
         </button>
+        @endcan
       </div>
 
       {{-- Modal Body --}}
@@ -262,6 +266,12 @@
     markAllRead: `{{ route('ai-insights.mark-all-read') }}`,
   };
 
+  const permissions = {
+      canMarkRead: @can('tandai ai insight dibaca') true @else false @endcan,
+      canDismiss: @can('abaikan ai insight') true @else false @endcan,
+      canMarkAllRead: @can('tandai semua ai insight dibaca') true @else false @endcan
+  };
+
   const modal = document.getElementById('dailyModal');
   const modalDateEl = document.getElementById('modalDate');
   const modalCountsEl = document.getElementById('modalCounts');
@@ -343,10 +353,10 @@
             </div>
           </div>
           <div class="flex flex-row sm:flex-row gap-2 flex-shrink-0">
-            ${(!i.is_dismissed && !i.is_read) ? `
+            ${(!i.is_dismissed && !i.is_read && permissions.canMarkRead) ? `
               <button class="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 hover:bg-purple-100 whitespace-nowrap"
                 onclick="markRead(${i.id})">Tandai dibaca</button>` : ``}
-            ${(!i.is_dismissed) ? `
+            ${(!i.is_dismissed && permissions.canDismiss) ? `
               <button class="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap"
                 onclick="dismissInsight(${i.id})">Dismiss</button>` : ``}
           </div>

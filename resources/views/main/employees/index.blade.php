@@ -297,56 +297,69 @@
 
                                 {{-- Aksi --}}
                                 <td class="px-6 py-3 whitespace-nowrap text-center">
-                                    <div class="inline-flex items-center gap-1.5">
-                                        <a href="{{ route('employees.show', $employee->id) }}"
-                                           class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                                           title="Detail">
-                                            <i class="fas fa-eye text-xs"></i>
-                                        </a>
-                                        <a href="{{ route('employees.edit', $employee->id) }}"
-                                           class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-teal-200 bg-teal-50 text-teal-600 hover:bg-teal-100"
-                                           title="Edit">
-                                            <i class="fas fa-edit text-xs"></i>
-                                        </a>
-                                        <form action="{{ route('employees.toggle-status', $employee->id) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit"
-                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-md border bg-white hover:bg-gray-50
-                                                    {{ $employee->is_active ? 'border-teal-200 text-teal-600' : 'border-gray-200 text-gray-600' }}"
-                                                    title="{{ $employee->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
-                                                <i class="fas fa-{{ $employee->is_active ? 'toggle-on' : 'toggle-off' }} text-xs"></i>
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" class="inline"
-                                              onsubmit="return confirm('Apakah Anda yakin ingin menghapus pegawai ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
-                                                    title="Hapus">
-                                                <i class="fas fa-trash text-xs"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-16 text-center">
-                                    <div class="flex flex-col items-center justify-center text-center">
-                                        <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                                            <i class="fas fa-users text-3xl text-gray-300"></i>
+                                        <div class="inline-flex items-center gap-1.5">
+                                            @can('lihat detail pegawai')
+                                            <a href="{{ route('employees.show', $employee->id) }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                                               title="Detail">
+                                                <i class="fas fa-eye text-xs"></i>
+                                            </a>
+                                            @endcan
+                                            
+                                            @can('edit pegawai')
+                                            <a href="{{ route('employees.edit', $employee->id) }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-teal-200 bg-teal-50 text-teal-600 hover:bg-teal-100"
+                                               title="Edit">
+                                                <i class="fas fa-edit text-xs"></i>
+                                            </a>
+                                            @endcan
+
+                                            @can('aktifkan nonaktifkan pegawai')
+                                            <form action="{{ route('employees.toggle-status', $employee->id) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit"
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-md border bg-white hover:bg-gray-50
+                                                        {{ $employee->is_active ? 'border-teal-200 text-teal-600' : 'border-gray-200 text-gray-600' }}"
+                                                        title="{{ $employee->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                                    <i class="fas fa-{{ $employee->is_active ? 'toggle-on' : 'toggle-off' }} text-xs"></i>
+                                                </button>
+                                            </form>
+                                            @endcan
+
+                                            @can('hapus pegawai')
+                                            <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" class="inline"
+                                                  onsubmit="return confirm('Apakah Anda yakin ingin menghapus pegawai ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
+                                                        title="Hapus">
+                                                    <i class="fas fa-trash text-xs"></i>
+                                                </button>
+                                            </form>
+                                            @endcan
                                         </div>
-                                        <h3 class="text-base font-semibold text-gray-900 mb-1">Belum ada pegawai</h3>
-                                        <p class="text-sm text-gray-500 mb-4 max-w-sm">
-                                            Tambahkan pegawai untuk memulai pengelolaan tim dan hak akses.
-                                        </p>
-                                        <a href="{{ route('employees.create') }}"
-                                           class="inline-flex items-center gap-2 rounded-lg bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600">
-                                            <i class="fas fa-user-plus text-xs"></i>
-                                            Tambah Pegawai
-                                        </a>
-                                    </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-6 py-16 text-center">
+                                        <div class="flex flex-col items-center justify-center text-center">
+                                            <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                                <i class="fas fa-users text-3xl text-gray-300"></i>
+                                            </div>
+                                            <h3 class="text-base font-semibold text-gray-900 mb-1">Belum ada pegawai</h3>
+                                            <p class="text-sm text-gray-500 mb-4 max-w-sm">
+                                                Tambahkan pegawai untuk memulai pengelolaan tim dan hak akses.
+                                            </p>
+                                            @can('buat pegawai')
+                                            <a href="{{ route('employees.create') }}"
+                                               class="inline-flex items-center gap-2 rounded-lg bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600">
+                                                <i class="fas fa-user-plus text-xs"></i>
+                                                Tambah Pegawai
+                                            </a>
+                                            @endcan
+                                        </div>
                                 </td>
                             </tr>
                         @endforelse

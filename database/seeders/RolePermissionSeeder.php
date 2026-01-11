@@ -449,9 +449,10 @@ class RolePermissionSeeder extends Seeder
 
             // FAQ & Bantuan
             ['name' => 'lihat faq', 'category' => 'faq', 'description' => 'Melihat daftar FAQ'],
-            ['name' => 'buat faq', 'category' => 'faq', 'description' => 'Menambah FAQ baru'],
-            ['name' => 'edit faq', 'category' => 'faq', 'description' => 'Mengubah FAQ'],
-            ['name' => 'hapus faq', 'category' => 'faq', 'description' => 'Menghapus FAQ'],
+            ['name' => 'buat faq', 'category' => 'faq', 'description' => 'Menambah FAQ baru (Deprecating for user)'],
+            ['name' => 'edit faq', 'category' => 'faq', 'description' => 'Mengubah FAQ (Deprecating for user)'],
+            ['name' => 'hapus faq', 'category' => 'faq', 'description' => 'Menghapus FAQ (Deprecating for user)'],
+            ['name' => 'kelola faq', 'category' => 'faq', 'description' => 'Manajemen FAQ terpusat (Admin Only)'],
             ['name' => 'lihat detail faq', 'category' => 'faq', 'description' => 'Melihat detail FAQ'],
             ['name' => 'aktifkan nonaktifkan faq', 'category' => 'faq', 'description' => 'Mengubah status FAQ'],
             ['name' => 'tandai faq membantu', 'category' => 'faq', 'description' => 'Menandai FAQ berguna'],

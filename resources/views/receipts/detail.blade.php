@@ -154,6 +154,21 @@
             </div>
         </div>
 
+        @auth
+        <div class="p-4 flex gap-2 justify-center border-t border-gray-100">
+            @can('cetak struk penjualan')
+            <a href="{{ route('receipt.print', $sale->id) }}" target="_blank" class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-bold flex items-center gap-2">
+                <i class="fas fa-print"></i> Cetak
+            </a>
+            @endcan
+            @can('unduh struk penjualan')
+            <a href="{{ route('receipt.download', $sale->id) }}" target="_blank" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-bold flex items-center gap-2">
+                <i class="fas fa-download"></i> Unduh
+            </a>
+            @endcan
+        </div>
+        @endauth
+
         <!-- Footer -->
         <div class="bg-gray-50 p-4 text-center border-t border-gray-200">
             <p class="text-xs text-gray-400">Powered by CuanFlow</p>

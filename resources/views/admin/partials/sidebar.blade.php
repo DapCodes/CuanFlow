@@ -29,7 +29,7 @@
             </li>
             
             <!-- Data Master (Collapsible) -->
-            <li x-data="{ open: {{ request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*') || request()->routeIs('admin.users.*') || request()->routeIs('admin.units.*') || request()->routeIs('admin.expense-categories.*') ? 'true' : 'false' }} }">
+            <li x-data="{ open: {{ request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*') || request()->routeIs('admin.users.*') || request()->routeIs('admin.units.*') || request()->routeIs('admin.expense-categories.*') || request()->routeIs('admin.faqs.*') ? 'true' : 'false' }} }">
                 <button @click="open = !open" 
                         class="w-full sidebar-link flex items-center justify-between px-4 py-3 rounded-lg text-white/90 hover:text-white">
                     <div class="flex items-center gap-3">
@@ -87,6 +87,14 @@
                            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/80 hover:text-white hover:bg-white/10 {{ request()->routeIs('admin.expense-categories.*') ? 'bg-white/10 text-white' : '' }}">
                             <i class="fas fa-tags w-4 text-center text-cuan-yellow"></i>
                             <span>Expense Categories</span>
+                        </a>
+                    </li>
+                    <!-- FAQ -->
+                    <li>
+                        <a href="{{ route('admin.faqs.index') }}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/80 hover:text-white hover:bg-white/10 {{ request()->routeIs('admin.faqs.*') ? 'bg-white/10 text-white' : '' }}">
+                            <i class="fas fa-question-circle w-4 text-center text-cuan-yellow"></i>
+                            <span>FAQ</span>
                         </a>
                     </li>
                 </ul>

@@ -51,17 +51,20 @@
                         <span>Lihat Live</span>
                     </a>
                     
+                    @can('edit landing page')
                     <a href="{{ route('landing-pages.edit', $outlet->id) }}"
                        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1">
                         <i class="fas fa-pen-paintbrush text-sm"></i>
                         <span>Edit Tampilan</span>
                     </a>
+                    @endcan
                 @endif
             </div>
         </section>
 
         {{-- ANALYTICS CHART SECTION --}}
         @if($outlet && $outlet->landingPage)
+        @can('lihat analitik landing page')
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                 <div>
@@ -89,6 +92,7 @@
                 <!-- Additional stats can be added here -->
             </div>
         </section>
+        @endcan
         @endif
 
         {{-- KONTEN UTAMA --}}
@@ -153,6 +157,7 @@
                                 </td>
 
                                 <td class="px-6 py-4 text-center">
+                                    @can('aktifkan nonaktifkan landing page')
                                     <form action="{{ route('landing-pages.toggle-status', $outlet->id) }}" method="POST">
                                         @csrf
                                         <button type="submit" 
@@ -164,6 +169,7 @@
                                             {{ $outlet->landingPage->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         </tbody>
@@ -185,9 +191,11 @@
                         
                         <!-- Overlay Button -->
                         <div class="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            @can('edit landing page')
                             <a href="{{ route('landing-pages.edit', $outlet->id) }}" class="bg-white text-gray-900 px-4 py-2 rounded-full font-bold shadow-lg transform scale-95 group-hover:scale-100 transition-transform">
                                 <i class="fas fa-edit mr-2"></i> Edit Penuh
                             </a>
+                            @endcan
                         </div>
                     </div>
                 </div>

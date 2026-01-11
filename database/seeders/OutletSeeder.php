@@ -93,7 +93,7 @@ class OutletSeeder extends Seeder
         // 4) BAGI OUTLET: 1 user punya 2–3 outlet
         // (Kode outlet harus ada di $outlets array)
         $ownershipMap = [
-            0 => ['BTG-BDG', 'MKK-BDG', 'SBK-BDG'],       // Daffa (3)
+            0 => ['TKY-BDG', 'MKK-BDG', 'SBK-BDG'],       // Daffa (3)
             1 => ['CTK-BGR', 'CRG-DPK'],                // Rio (2)
             2 => ['KPT-BKS', 'STM-KRW', 'STM-PWK'],       // Nabila (3)
             3 => ['BNK-SBG', 'TMM-SKB'],                // Fajar (2)

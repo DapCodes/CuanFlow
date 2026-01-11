@@ -34,6 +34,7 @@
                     Perbarui data meja outlet Anda.
                 </p>
             </div>
+            @can('hapus meja')
             <form action="{{ route('tables.destroy', $table) }}" method="POST" 
                   onsubmit="return confirm('Apakah Anda yakin ingin menghapus meja ini?')">
                 @csrf
@@ -44,6 +45,7 @@
                     <span>Hapus Meja</span>
                 </button>
             </form>
+            @endcan
         </section>
 
         {{-- FORM --}}

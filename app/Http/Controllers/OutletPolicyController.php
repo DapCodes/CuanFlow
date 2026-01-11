@@ -5,9 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\OutletPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class OutletPolicyController extends Controller
+class OutletPolicyController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat kebijakan outlet', only: ['index', 'show']),
+            new Middleware('permission:buat kebijakan outlet', only: ['create', 'store']),
+            new Middleware('permission:edit kebijakan outlet', only: ['edit', 'update']),
+            new Middleware('permission:hapus kebijakan outlet', only: ['destroy']),
+        ];
+    }
     /**
      * Display a listing of the resource.
      */

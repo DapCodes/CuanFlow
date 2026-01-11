@@ -6,10 +6,22 @@ use App\Models\AiChatSession;
 use App\Services\ClaraAiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ClaraAiController extends Controller
+class ClaraAiController extends Controller implements HasMiddleware
 {
     protected $claraAi;
+
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:akses clara ai', only: ['index']),
+            new Middleware('permission:chat dengan clara ai', only: ['chat']),
+            new Middleware('permission:sesi baru clara ai', only: ['newSession']),
+            new Middleware('permission:hapus sesi clara ai', only: ['deleteSession']),
+        ];
+    }
 
     public function __construct(ClaraAiService $claraAi)
     {

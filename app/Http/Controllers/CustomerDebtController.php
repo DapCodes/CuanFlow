@@ -9,11 +9,24 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CustomerDebtController extends Controller
+class CustomerDebtController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat pelanggan', only: ['index', 'getCustomers']),
+            new Middleware('permission:lihat piutang', only: ['getDebts']),
+            new Middleware('permission:lihat detail piutang', only: ['getDebtDetail']),
+            new Middleware('permission:bayar piutang', only: ['payDebt', 'createMidtransToken']),
+        ];
+    }
+
     public function __construct()
     {
+
         Config::$serverKey = config('services.midtrans.server_key');
         Config::$clientKey = config('services.midtrans.client_key');
         Config::$isProduction = config('services.midtrans.is_production', false);

@@ -45,11 +45,13 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+                @can('buat stock opname')
                 <a href="{{ route('stock-opname.create') }}"
                    class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 shadow-sm transition-all">
                     <i class="fas fa-plus text-sm"></i>
                     <span>Mulai Opname Baru</span>
                 </a>
+                @endcan
             </div>
         </section>
 
@@ -192,12 +194,33 @@
                                 </td>
                                 <td class="px-6 py-3 text-center">
                                     <div class="inline-flex items-center gap-1.5">
-                                        <a href="{{ route('stock-opname.show', $opname->id) }}"
-                                           class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors"
-                                           title="{{ $opname->status == 'completed' ? 'Lihat Detail' : 'Lanjutkan Opname' }}">
-                                            <i class="fas {{ $opname->status == 'completed' ? 'fa-eye' : 'fa-edit' }} text-xs"></i>
-                                        </a>
+                                        @php
+                                            $canEdit = auth()->user()->can('edit stock opname');
+                                            $canView = auth()->user()->can('lihat stock opname');
+                                            $isCompleted = $opname->status == 'completed';
+                                        @endphp
+
+                                        @if($isCompleted && $canView)
+                                            <a href="{{ route('stock-opname.show', $opname->id) }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors"
+                                               title="Lihat Detail">
+                                                <i class="fas fa-eye text-xs"></i>
+                                            </a>
+                                        @elseif(!$isCompleted && $canEdit)
+                                            <a href="{{ route('stock-opname.show', $opname->id) }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors"
+                                               title="Lanjutkan Opname">
+                                                <i class="fas fa-edit text-xs"></i>
+                                            </a>
+                                        @elseif(!$isCompleted && $canView)
+                                             <a href="{{ route('stock-opname.show', $opname->id) }}"
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-emerald-600 transition-colors"
+                                               title="Lihat Detail">
+                                                <i class="fas fa-eye text-xs"></i>
+                                            </a>
+                                        @endif
                                         @if($opname->status != 'completed')
+                                        @can('hapus stock opname')
                                         <form action="{{ route('stock-opname.destroy', $opname->id) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Yakin ingin menghapus sesi stock opname ini?')">
                                             @csrf
@@ -208,6 +231,7 @@
                                                 <i class="fas fa-trash text-xs"></i>
                                             </button>
                                         </form>
+                                        @endcan
                                         @endif
                                     </div>
                                 </td>

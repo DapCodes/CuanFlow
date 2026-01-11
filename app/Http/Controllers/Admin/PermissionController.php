@@ -6,9 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\PermissionCategory;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class PermissionController extends Controller
+class PermissionController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat permissions', only: ['index', 'show']),
+            new Middleware('permission:kelola permissions', except: ['index', 'show']),
+        ];
+    }
+
     public function index()
     {
         $permissionCategories = PermissionCategory::with(['permissions' => function ($query) {

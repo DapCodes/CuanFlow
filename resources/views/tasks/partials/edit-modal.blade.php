@@ -40,6 +40,7 @@
                         </div>
                     </div>
 
+                    @can('tasks.assign')
                     <div class="mb-4">
                         <label for="edit_assignees" class="block text-sm font-medium text-gray-700">Assign ke</label>
                         <select name="assignees[]" id="edit_assignees" multiple class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
@@ -48,7 +49,9 @@
                             @endforeach
                         </select>
                     </div>
+                    @endcan
 
+                    @can('task-labels.manage')
                     <div class="mb-4">
                         <label for="edit_labels" class="block text-sm font-medium text-gray-700">Label</label>
                         <select name="labels[]" id="edit_labels" multiple class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
@@ -57,6 +60,7 @@
                             @endforeach
                         </select>
                     </div>
+                    @endcan
 
                     <div class="mb-4">
                         <label for="edit_deadline" class="block text-sm font-medium text-gray-700">Deadline</label>
@@ -73,9 +77,11 @@
                         Batal
                     </button>
                 </div>
+                @can('tasks.delete')
                 <button type="button" onclick="deleteTask()" class="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-100 text-base font-medium text-red-700 hover:bg-red-200 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">
                     Hapus
                 </button>
+                @endcan
             </div>
         </div>
     </div>

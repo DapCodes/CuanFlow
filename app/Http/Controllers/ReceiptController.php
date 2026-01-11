@@ -4,17 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\Sale;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ReceiptController extends Controller
+class ReceiptController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:unduh struk|unduh struk penjualan', only: ['downloadReceipt']),
+            new Middleware('permission:cetak struk|cetak struk penjualan', only: ['printReceipt']),
+            new Middleware('permission:preview struk', only: ['previewReceipt']),
+        ];
+    }
     /**
      * Generate dan download struk PDF
      */
     public function downloadReceipt($saleId)
     {
-        if (!auth()->user()->can('unduh struk penjualan') && !auth()->user()->can('unduh struk')) {
-            abort(403, 'Anda tidak memiliki izin untuk mengunduh struk');
-        }
 
         $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product'])
             ->findOrFail($saleId);
@@ -35,9 +42,6 @@ class ReceiptController extends Controller
      */
     public function printReceipt($saleId)
     {
-        if (!auth()->user()->can('cetak struk penjualan') && !auth()->user()->can('cetak struk')) {
-            abort(403, 'Anda tidak memiliki izin untuk mencetak struk');
-        }
 
         $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product'])
             ->findOrFail($saleId);

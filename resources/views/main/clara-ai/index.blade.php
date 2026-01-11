@@ -71,10 +71,12 @@
 
             <!-- New Chat Button -->
             <div class="p-3 border-b border-gray-200 flex-shrink-0">
+                @can('sesi baru clara ai')
                 <button onclick="createNewChat()"
                     class="w-full px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-lg hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow">
                     <i class="fas fa-plus mr-2"></i>Chat Baru
                 </button>
+                @endcan
             </div>
 
             <!-- Chat History List -->
@@ -90,12 +92,14 @@
                                 </div>
                                 <div class="text-xs text-gray-500 mt-0.5">{{ $s->created_at->diffForHumans() }}</div>
                             </button>
+                            @can('hapus sesi clara ai')
                             <button onclick="confirmDelete(event, {{ $s->id }})" 
                                 class="delete-btn absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-all">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                             </button>
+                            @endcan
                         </div>
                     </div>
                 @endforeach
@@ -165,6 +169,7 @@
                                     analisis data dan insight berharga</p>
 
                                 <div class="space-y-2">
+                                    @can('chat dengan clara ai')
                                     <button onclick="askQuestion('Bagaimana trend penjualan minggu ini?')"
                                         class="w-full px-4 py-3 bg-white border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 rounded-xl text-sm text-left transition-all duration-200 shadow-sm hover:shadow group">
                                         <span class="text-gray-700 group-hover:text-indigo-700">Trend penjualan minggu
@@ -178,6 +183,7 @@
                                         class="w-full px-4 py-3 bg-white border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 rounded-xl text-sm text-left transition-all duration-200 shadow-sm hover:shadow group">
                                         <span class="text-gray-700 group-hover:text-indigo-700">Cek stok menipis</span>
                                     </button>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -192,18 +198,24 @@
                         @csrf
                         <input type="hidden" name="session_id" value="{{ $session->id }}">
                         <div class="flex-1 relative">
+                            @can('chat dengan clara ai')
                             <input type="text" id="messageInput" name="message"
                                 placeholder="Tanyakan sesuatu tentang bisnis Anda..."
                                 class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition-shadow shadow-sm"
                                 maxlength="1000" autocomplete="off">
+                            <button type="submit" id="sendButton"
+                                class="absolute right-2 top-2 bottom-2 px-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-lg font-medium hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm hover:shadow">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                            </button>
+                            @else
+                            <input type="text" disabled
+                                placeholder="Anda tidak memiliki izin untuk chat dengan Clara AI"
+                                class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-sm cursor-not-allowed">
+                            @endcan
                         </div>
-                        <button type="submit" id="sendButton"
-                            class="px-5 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm hover:shadow">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                            </svg>
-                        </button>
                     </form>
                     <p class="text-xs text-gray-400 text-center mt-2">Clara AI dapat membuat kesalahan. Harap
                         verifikasi informasi penting.</p>

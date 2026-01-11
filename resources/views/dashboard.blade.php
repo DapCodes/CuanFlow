@@ -692,6 +692,7 @@
 @endcan
 
     <!-- MANAJEMEN PRODUK & INVENTORI -->
+@can('lihat produk')
     <a href="{{ route('products-hpp.index') }}"
        class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="7"
@@ -704,7 +705,9 @@
             Produk & Resep
         </span>
     </a>
+@endcan
 
+@can('lihat bahan baku')
     <a href="{{ route('raw-materials.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="8"
@@ -717,7 +720,9 @@
             Bahan Baku
         </span>
     </a>
+@endcan
 
+@can('lihat supplier')
     <a href="{{ route('raw-materials.suppliers') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="9"
@@ -730,7 +735,9 @@
             Supplier
         </span>
     </a>
+@endcan
 
+@can('lihat produksi')
     <a href="{{ route('production.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="10"
@@ -743,7 +750,9 @@
             Produksi
         </span>
     </a>
+@endcan
 
+@can('lihat stock opname')
     <a href="{{ route('stock-opname.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="11"
@@ -756,8 +765,10 @@
             Stock Opname
         </span>
     </a>
+@endcan
 
     <!-- PENGATURAN BISNIS -->
+@can('lihat outlet')
     <a href="{{ route('outlets.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="12"
@@ -770,7 +781,9 @@
             Informasi Outlet
         </span>
     </a>
+@endcan
 
+@can('lihat landing page')
     <a href="{{ route('landing-pages.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="12"
@@ -783,7 +796,9 @@
             Landing Page
         </span>
     </a>
+@endcan
 
+@can('lihat testimoni')
     <a href="{{ route('testimonials.index') }}"
         class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
         data-step="13"
@@ -796,7 +811,9 @@
                 Testimoni
             </span>
     </a>
+@endcan
 
+@can('lihat pegawai')
     <a href="{{ route('employees.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="13"
@@ -809,7 +826,9 @@
             Pegawai & Hak Akses
         </span>
     </a>
+@endcan
 
+@can('lihat pelanggan')
     <a href="{{ route('customer-debts.index') }}"
     class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
     data-step="14"
@@ -822,7 +841,9 @@
             Pelanggan & Piutang
         </span>
     </a>
+@endcan
 
+@can('lihat meja')
     <a href="{{ route('tables.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="15"
@@ -835,8 +856,10 @@
             Kelola Meja
         </span>
     </a>
+@endcan
 
     <!-- AI & INSIGHT -->
+@can('lihat ai insights')
     <a href="{{ route('ai-insights.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="15"
@@ -849,7 +872,9 @@
             Insight
         </span>
     </a>
+@endcan
 
+@can('akses clara ai')
     <a href="{{ route('clara-ai.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="16"
@@ -863,8 +888,10 @@
             Clara AI
         </span>
     </a>
+@endcan
 
     <!-- BANTUAN & PENGATURAN -->
+@can('lihat kebijakan outlet')
     <a href="{{ route('outlet-policies.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="17"
@@ -877,7 +904,9 @@
             Kebijakan Outlet
         </span>
     </a>
+@endcan
 
+@can('edit profil')
     <a href="{{ route('profile.edit') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="18"
@@ -890,7 +919,9 @@
             Pengaturan Akun
         </span>
     </a>
+@endcan
 
+@can('lihat faq')
     <a href="{{ route('faqs.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="19"
@@ -903,6 +934,7 @@
             Bantuan & FAQ
         </span>
     </a>
+@endcan
 
 </div>
 

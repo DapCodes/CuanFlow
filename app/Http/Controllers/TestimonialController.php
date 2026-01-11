@@ -5,12 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class TestimonialController extends Controller
+class TestimonialController extends Controller implements HasMiddleware
 {
-    /**
-     * Display a listing of testimonials for the current outlet.
-     */
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat testimoni', only: ['index']),
+            new Middleware('permission:hapus testimoni', only: ['destroy']),
+            new Middleware('permission:aktifkan nonaktifkan testimoni', only: ['toggleStatus']),
+        ];
+    }
+
     public function index()
     {
         $user = auth()->user();

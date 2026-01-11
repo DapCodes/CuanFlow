@@ -46,11 +46,13 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+                @can('buat meja')
                 <a href="{{ route('tables.create') }}"
                    class="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1">
                     <i class="fas fa-plus-circle text-sm"></i>
                     <span>Tambah Meja</span>
                 </a>
+                @endcan
             </div>
         </section>
 
@@ -240,6 +242,7 @@
 
                                 {{-- Quick Actions --}}
                                 <div class="flex gap-2">
+                                    @can('quick toggle meja')
                                     <button type="button" 
                                             onclick="quickToggleTable({{ $table->id }})"
                                             class="flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors
@@ -249,10 +252,14 @@
                                         <i class="fas fa-{{ $table->isOccupied() ? 'check' : 'user-plus' }} mr-1"></i>
                                         {{ $table->isOccupied() ? 'Kosongkan' : 'Isi' }}
                                     </button>
+                                    @endcan
+                                    
+                                    @can('edit meja')
                                     <a href="{{ route('tables.edit', $table) }}"
                                        class="px-2 py-1.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @endcan
                                 </div>
                             </div>
                         @endforeach

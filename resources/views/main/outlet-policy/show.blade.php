@@ -41,9 +41,11 @@
             </div>
             
             <div class="flex items-center gap-3">
+                @can('edit kebijakan outlet')
                 <a href="{{ route('outlet-policies.edit', $outletPolicy->id) }}" class="p-3 bg-white border border-gray-200 text-gray-900 rounded-2xl hover:bg-gray-50 transition-all shadow-sm">
                     <i class="fas fa-edit"></i>
                 </a>
+                @endcan
                 <a href="{{ route('outlet-policies.index') }}" class="px-6 py-3 bg-white border border-gray-200 text-xs font-black uppercase tracking-widest text-gray-500 rounded-2xl hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm flex items-center gap-2">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>

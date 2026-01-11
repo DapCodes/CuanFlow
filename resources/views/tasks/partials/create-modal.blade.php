@@ -51,6 +51,7 @@
                                     </div>
                                 </div>
 
+                                @can('tasks.assign')
                                 <!-- Assignees -->
                                 <div class="mb-4">
                                     <label for="assignees" class="block text-sm font-medium text-gray-700">Assign ke</label>
@@ -60,7 +61,9 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                @endcan
 
+                                @can('task-labels.manage')
                                 <!-- Labels -->
                                 <div class="mb-4">
                                     <label for="labels" class="block text-sm font-medium text-gray-700">Label</label>
@@ -70,6 +73,7 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                @endcan
 
                                 <!-- Deadline -->
                                 <div class="mb-4">

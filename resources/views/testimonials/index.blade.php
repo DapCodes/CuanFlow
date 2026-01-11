@@ -95,6 +95,7 @@
 
                                     <td class="px-6 py-4 text-center">
                                         <div class="flex items-center justify-center gap-2">
+                                            @can('aktifkan nonaktifkan testimoni')
                                             <form action="{{ route('testimonials.toggle-status', $testimonial->id) }}" method="POST">
                                                 @csrf
                                                 <button type="submit" 
@@ -103,7 +104,9 @@
                                                     <i class="fas {{ $testimonial->is_published ? 'fa-eye' : 'fa-eye-slash' }}"></i>
                                                 </button>
                                             </form>
+                                            @endcan
 
+                                            @can('hapus testimoni')
                                             <form action="{{ route('testimonials.destroy', $testimonial->id) }}" method="POST" onsubmit="return confirm('Hapus testimoni ini?')">
                                                 @csrf
                                                 @method('DELETE')
@@ -111,6 +114,7 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>

@@ -68,9 +68,15 @@
                class="px-4 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50">
                 Batal
             </a>
+            @can('kelola permissions')
             <button type="submit" class="px-6 py-2.5 bg-cuan-dark text-white font-semibold rounded-lg hover:bg-cuan-green">
                 <i class="fas fa-save mr-2"></i>Simpan
             </button>
+            @else
+            <button type="button" disabled class="px-6 py-2.5 bg-gray-300 text-white font-semibold rounded-lg cursor-not-allowed">
+                <i class="fas fa-lock mr-2"></i>Tidak Memiliki Izin
+            </button>
+            @endcan
         </div>
     </form>
 </div>

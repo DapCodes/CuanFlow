@@ -27,10 +27,12 @@
                     <input type="text" x-model="searchQuery" placeholder="Cari kebijakan..." 
                         class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all shadow-sm">
                 </div>
+                @can('buat kebijakan outlet')
                 <a href="{{ route('outlet-policies.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-gray-900 text-white rounded-2xl shadow-xl shadow-gray-200 hover:bg-black transition-all text-xs font-black uppercase tracking-[0.2em] active:scale-95">
                     <i class="fas fa-plus mr-2"></i>
                     Buat Baru
                 </a>
+                @endcan
             </div>
         </section>
 
@@ -59,9 +61,12 @@
                                 {{ $policy->category ?? 'Umum' }}
                             </span>
                             <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                @can('edit kebijakan outlet')
                                 <a href="{{ route('outlet-policies.edit', $policy->id) }}" class="p-2 text-gray-400 hover:text-gray-900 transition-colors">
                                     <i class="fas fa-edit text-xs"></i>
                                 </a>
+                                @endcan
+                                @can('hapus kebijakan outlet')
                                 <form action="{{ route('outlet-policies.destroy', $policy->id) }}" method="POST" onsubmit="return confirm('Hapus kebijakan ini?')">
                                     @csrf
                                     @method('DELETE')
@@ -69,6 +74,7 @@
                                         <i class="fas fa-trash text-xs"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </div>
 

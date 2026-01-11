@@ -18,11 +18,13 @@
             <h2 class="text-xl font-bold text-gray-900">Kelola Roles</h2>
             <p class="text-sm text-gray-500 mt-1">Kelola role dan hak akses pengguna sistem</p>
         </div>
+        @can('buat roles')
         <a href="{{ route('admin.roles.create') }}" 
            class="inline-flex items-center gap-2 px-4 py-2.5 bg-cuan-dark text-white font-semibold rounded-lg hover:bg-cuan-green transition-colors">
             <i class="fas fa-plus text-sm"></i>
             <span>Tambah Role</span>
         </a>
+        @endcan
     </div>
     
     <!-- Table -->
@@ -63,12 +65,15 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-center gap-2">
+                                @can('edit roles')
                                 <a href="{{ route('admin.roles.edit', $role) }}" 
                                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                    title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
                                 @if(!in_array($role->name, ['admin', 'owner']))
+                                @can('hapus roles')
                                 <form action="{{ route('admin.roles.destroy', $role) }}" method="POST" 
                                       onsubmit="return confirm('Yakin ingin menghapus role ini?')">
                                     @csrf
@@ -79,6 +84,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                                 @else
                                 <span class="p-2 text-gray-300 cursor-not-allowed" title="Role sistem tidak bisa dihapus">
                                     <i class="fas fa-lock"></i>
