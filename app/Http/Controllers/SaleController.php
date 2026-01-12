@@ -245,6 +245,23 @@ public function daily(Request $request): JsonResponse
     $outletId = auth()->user()->outlet_id;
 
     $selectedDate = Carbon::parse($request->date)->format('Y-m-d');
+    $highlightId = null;
+
+    // Search Logic: If search is provided, find the FIRST matching invoice globally
+    // If found, switch the selectedDate to that invoice's date
+    if ($request->search) {
+        $foundSale = Sale::where('outlet_id', $outletId)
+            ->where('invoice_number', 'like', '%' . $request->search . '%')
+            ->completed()
+            ->latest()
+            ->first();
+
+        if ($foundSale) {
+            $selectedDate = $foundSale->created_at->format('Y-m-d');
+            $highlightId = $foundSale->id;
+        }
+    }
+
     $startOfDay = Carbon::parse($selectedDate)->startOfDay();
     $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
@@ -288,6 +305,7 @@ public function daily(Request $request): JsonResponse
 
     return response()->json([
         'selectedDate' => $selectedDate,
+        'highlightId' => $highlightId,
         'sales' => $sales->map(fn ($s) => [
             'id' => $s->id,
             'invoice_number' => $s->invoice_number,

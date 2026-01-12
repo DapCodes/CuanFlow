@@ -104,81 +104,148 @@
             </div>
         </section>
 
-        {{-- KONTEN UTAMA: TABEL --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50 text-[11px] text-gray-500 uppercase font-bold border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-4">ID / Tanggal</th>
-                            <th class="px-6 py-4">Tujuan Penarikan</th>
-                            <th class="px-6 py-4">Nominal Diterima</th>
-                            <th class="px-6 py-4">Status</th>
-                            <th class="px-6 py-4 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse($withdrawals as $w)
-                        <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="px-6 py-4">
-                                <p class="text-sm font-bold text-gray-900 leading-none">#{{ $w->id }}</p>
-                                <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-tighter">{{ $w->created_at->isoFormat('D MMM Y, HH:mm') }}</p>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <div class="p-1.5 bg-gray-50 border border-gray-100 rounded text-gray-500">
-                                        <i class="fas fa-university text-[10px]"></i>
-                                    </div>
-                                    <div class="text-sm">
-                                        <p class="font-bold text-gray-800 leading-tight">{{ $w->payment_method }}</p>
-                                        <p class="text-[10px] text-gray-500 font-mono tracking-tight">{{ $w->account_number }}</p>
-                                    </div>
-                                </div>
-                                <p class="text-[9px] text-gray-400 truncate mt-1 italic">{{ $w->account_name }}</p>
-                            </td>
-                            <td class="px-6 py-4">
-                                <p class="text-sm font-bold text-teal-600">Rp {{ number_format($w->net_amount, 0, ',', '.') }}</p>
-                                <p class="text-[9px] text-gray-400 mt-0.5">Potong pajak: Rp {{ number_format($w->tax_amount, 0, ',', '.') }}</p>
-                            </td>
-                            <td class="px-6 py-4">
-                                {!! $w->status_badge !!}
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <button onclick="showDetails({{ $w->id }}, '{{ $w->status }}', '{{ addslashes($w->admin_note) }}', '{{ $w->proof_image_url }}')" 
-                                        class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
-                                        title="Lihat Detail">
-                                    <i class="fas fa-info-circle text-base"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-20 text-center">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-dashed border-gray-200">
-                                        <i class="fas fa-history text-2xl text-gray-300"></i>
-                                    </div>
-                                    <h3 class="text-gray-500 font-medium">Belum ada riwayat penarikan</h3>
-                                    <p class="text-xs text-gray-400 mt-1 max-w-xs mx-auto">Saldo hasil penjualan Anda akan tercatat di sini setelah Anda melakukan pengajuan penarikan pertama.</p>
-                                    <a href="{{ route('withdraw.confirm-password') }}" class="mt-6 px-5 py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-teal-600 transition-all shadow-lg hover:shadow-teal-500/20">
-                                        Ajukan Penarikan Pertama
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            @if($withdrawals->hasPages())
-            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
-                {{ $withdrawals->links() }}
+        {{-- CONTENT TABS --}}
+        <div x-data="{ activeTab: 'history' }">
+            @if(isset($confirmations) && $confirmations->count() > 0)
+            <div class="flex gap-4 mb-6 border-b border-gray-200">
+                <button @click="activeTab = 'history'" 
+                        :class="{ 'border-b-2 border-teal-600 text-teal-700 font-bold': activeTab === 'history', 'text-gray-500 hover:text-gray-700': activeTab !== 'history' }"
+                        class="pb-3 px-1 text-sm transition-colors">
+                    Riwayat Saya
+                </button>
+                <button @click="activeTab = 'approvals'" 
+                        :class="{ 'border-b-2 border-teal-600 text-teal-700 font-bold': activeTab === 'approvals', 'text-gray-500 hover:text-gray-700': activeTab !== 'approvals' }"
+                        class="pb-3 px-1 text-sm transition-colors flex items-center gap-2">
+                    Perlu Persetujuan
+                    <span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{{ $confirmations->count() }}</span>
+                </button>
             </div>
             @endif
-        </section>
+
+            {{-- TAB: RIWAYAT --}}
+            <section x-show="activeTab === 'history'" class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" style="display: block;">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 text-[11px] text-gray-500 uppercase font-bold border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4">ID / Tanggal</th>
+                                <th class="px-6 py-4">Tujuan Penarikan</th>
+                                <th class="px-6 py-4">Nominal Diterima</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($withdrawals as $w)
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <p class="text-sm font-bold text-gray-900 leading-none">#{{ $w->id }}</p>
+                                    <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-tighter">{{ $w->created_at->isoFormat('D MMM Y, HH:mm') }}</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="p-1.5 bg-gray-50 border border-gray-100 rounded text-gray-500">
+                                            <i class="fas fa-university text-[10px]"></i>
+                                        </div>
+                                        <div class="text-sm">
+                                            <p class="font-bold text-gray-800 leading-tight">{{ $w->payment_method }}</p>
+                                            <p class="text-[10px] text-gray-500 font-mono tracking-tight">{{ $w->account_number }}</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] text-gray-400 truncate mt-1 italic">{{ $w->account_name }}</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <p class="text-sm font-bold text-teal-600">Rp {{ number_format($w->net_amount, 0, ',', '.') }}</p>
+                                    <p class="text-[9px] text-gray-400 mt-0.5">Potong pajak: Rp {{ number_format($w->tax_amount, 0, ',', '.') }}</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    {!! $w->status_badge !!}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <button onclick="showDetails({{ $w->id }}, '{{ $w->status }}', '{{ addslashes($w->admin_note) }}', '{{ $w->proof_image_url }}')" 
+                                            class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
+                                            title="Lihat Detail">
+                                        <i class="fas fa-info-circle text-base"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-20 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-dashed border-gray-200">
+                                            <i class="fas fa-history text-2xl text-gray-300"></i>
+                                        </div>
+                                        <h3 class="text-gray-500 font-medium">Belum ada riwayat penarikan</h3>
+                                        <p class="text-xs text-gray-400 mt-1 max-w-xs mx-auto">Saldo hasil penjualan Anda akan tercatat di sini setelah Anda melakukan pengajuan penarikan pertama.</p>
+                                        <a href="{{ route('withdraw.confirm-password') }}" class="mt-6 px-5 py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-teal-600 transition-all shadow-lg hover:shadow-teal-500/20">
+                                            Ajukan Penarikan Pertama
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                @if($withdrawals->hasPages())
+                <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                    {{ $withdrawals->links() }}
+                </div>
+                @endif
+            </section>
+
+            {{-- TAB: PERSETUJUAN --}}
+            @if(isset($confirmations) && $confirmations->count() > 0)
+            <section x-show="activeTab === 'approvals'" class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" style="display: none;">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-orange-50 text-[11px] text-orange-800 uppercase font-bold border-b border-orange-100">
+                            <tr>
+                                <th class="px-6 py-4">Tgl Pengajuan</th>
+                                <th class="px-6 py-4">Pengaju</th>
+                                <th class="px-6 py-4">Nominal</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach($confirmations as $c)
+                            <tr class="hover:bg-orange-50/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <p class="text-sm font-bold text-gray-900">{{ $c->created_at->format('d M Y') }}</p>
+                                    <p class="text-[10px] text-gray-400">{{ $c->created_at->format('H:i') }}</p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img src="{{ $c->user->avatar_url }}" class="h-8 w-8 rounded-full">
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-900">{{ $c->user->name }}</p>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">{{ $c->user->role }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <p class="text-sm font-bold text-teal-600">Rp {{ number_format($c->amount, 0, ',', '.') }}</p>
+                                    <p class="text-[10px] text-gray-400">Net: Rp {{ number_format($c->net_amount, 0, ',', '.') }}</p>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <button onclick="showApprovalModal({{ $c->id }}, {{ $c->amount }}, {{ $c->net_amount }}, '{{ $c->user->name }}', '{{ $c->payment_method }}', '{{ $c->account_number }}', '{{ $c->account_name }}')" 
+                                            class="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-xs font-bold rounded-lg hover:bg-orange-700 transition shadow-sm border border-orange-700">
+                                        <i class="fas fa-check-double"></i> Tinjau
+                                    </button>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            @endif
+        </div>
     </div>
 </main>
+
 
 {{-- MODAL DETAIL --}}
 <div id="detailModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
@@ -224,7 +291,74 @@
     </div>
 </div>
 
+{{-- MODAL APPROVAL (OWNER) --}}
+<div id="approvalModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-all duration-300 overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-orange-50/50">
+            <h3 class="font-black text-gray-900 tracking-tight flex items-center gap-2">
+                <i class="fas fa-user-shield text-orange-600"></i>
+                Tinjau Penarikan
+            </h3>
+            <button onclick="hideApprovalModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-white rounded-xl transition-all">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-6">
+            {{-- Info Ringkas --}}
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-3">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">Pengaju</p>
+                        <p class="font-bold text-gray-900" id="appUser"></p>
+                    </div>
+                     <div class="text-right">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">Total Penarikan</p>
+                        <p class="font-bold text-teal-600 text-lg" id="appAmount"></p>
+                    </div>
+                </div>
+                <hr class="border-gray-200 dashed">
+                <div>
+                     <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Tujuan Transfer</p>
+                     <p class="text-sm font-semibold text-gray-800"><span id="appPm"></span> - <span id="appAccNum"></span></p>
+                     <p class="text-xs text-gray-500 italic" id="appAccName"></p>
+                </div>
+            </div>
+
+            {{-- Action Forms --}}
+            <div>
+                <form id="approveForm" method="POST" class="mb-4">
+                    @csrf
+                    <button type="submit" onclick="return confirm('Setujui penarikan ini?')" 
+                            class="w-full bg-orange-600 text-white font-bold py-3 rounded-xl hover:bg-orange-700 transition shadow-lg shadow-orange-200 flex items-center justify-center gap-2">
+                        <i class="fas fa-check-circle"></i> Setujui Penarikan
+                    </button>
+                </form>
+
+                <div class="relative flex py-2 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink-0 mx-4 text-gray-400 text-xs">ATAU</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                <form id="rejectForm" method="POST" class="mt-2">
+                    @csrf
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Alasan Penolakan</label>
+                    <div class="flex gap-2">
+                        <input type="text" name="reason" required placeholder="Contoh: Saldo outlet tidak cukup..." 
+                               class="flex-1 rounded-xl border-gray-300 text-xs focus:ring-red-500 focus:border-red-500">
+                        <button type="submit" onclick="return confirm('Tolak penarikan ini?')" 
+                                class="bg-gray-100 text-red-500 font-bold px-4 rounded-xl hover:bg-red-50 hover:text-red-600 transition border border-gray-200">
+                            Tolak
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    // existing detail modal script
     const modal = document.getElementById('detailModal');
     const modalContent = modal.querySelector('.transform');
     const adminNoteSection = document.getElementById('adminNoteSection');
@@ -235,7 +369,7 @@
 
     function showDetails(id, status, adminNote, proofUrl) {
         modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent scroll
+        document.body.style.overflow = 'hidden'; 
         setTimeout(() => {
             modal.classList.add('opacity-100');
             modalContent.classList.remove('scale-95');
@@ -271,15 +405,53 @@
         modal.classList.remove('opacity-100');
         modalContent.classList.remove('scale-100');
         modalContent.classList.add('scale-95');
-        document.body.style.overflow = ''; // Restore scroll
+        document.body.style.overflow = '';
         setTimeout(() => {
             modal.classList.add('hidden');
         }, 300);
     }
 
-    // Close on backdrop click
     modal.addEventListener('click', (e) => {
         if (e.target === modal) hideDetails();
+    });
+
+    // Approval Modal Logic
+    const appModal = document.getElementById('approvalModal');
+    const appContent = appModal.querySelector('.transform');
+
+    function showApprovalModal(id, amount, net, user, pm, accNum, accName) {
+        // Set Data
+        document.getElementById('appUser').textContent = user;
+        document.getElementById('appAmount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
+        document.getElementById('appPm').textContent = pm;
+        document.getElementById('appAccNum').textContent = accNum;
+        document.getElementById('appAccName').textContent = accName;
+
+        // Set Action URLs
+        document.getElementById('approveForm').action = `/withdraw/${id}/owner-approve`;
+        document.getElementById('rejectForm').action = `/withdraw/${id}/owner-reject`;
+
+        appModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+            appModal.classList.add('opacity-100');
+            appContent.classList.remove('scale-95');
+            appContent.classList.add('scale-100');
+        }, 10);
+    }
+
+    function hideApprovalModal() {
+        appModal.classList.remove('opacity-100');
+        appContent.classList.remove('scale-100');
+        appContent.classList.add('scale-95');
+        document.body.style.overflow = '';
+        setTimeout(() => {
+            appModal.classList.add('hidden');
+        }, 300);
+    }
+
+    appModal.addEventListener('click', (e) => {
+        if (e.target === appModal) hideApprovalModal();
     });
 </script>
 @endsection

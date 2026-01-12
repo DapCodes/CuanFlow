@@ -94,7 +94,7 @@ class WithdrawController extends Controller
         session(['withdraw_verified_at' => now()]);
 
         $user = Auth::user();
-        $outletId = session('outlet_id');
+        $outletId = session('outlet_id') ?? $user->outlet_id;
         
         // Calculate available balance from completed sales
         $availableBalance = $this->calculateAvailableBalance($user->id, $outletId);
@@ -102,8 +102,8 @@ class WithdrawController extends Controller
         // Get tax percentage from settings
         $taxPercent = Setting::getValue('withdraw', 'tax_percent', 0);
         
-        // Get pending withdrawals
-        $pendingWithdrawals = Withdrawal::byUser($user->id)
+        // Get pending withdrawals (Outlet based)
+        $pendingWithdrawals = Withdrawal::where('outlet_id', $outletId)
             ->pending()
             ->sum('amount');
         
@@ -135,11 +135,11 @@ class WithdrawController extends Controller
         ]);
 
         $user = Auth::user();
-        $outletId = session('outlet_id');
+        $outletId = session('outlet_id') ?? $user->outlet_id;
         
         // Calculate available balance
         $availableBalance = $this->calculateAvailableBalance($user->id, $outletId);
-        $pendingWithdrawals = Withdrawal::byUser($user->id)->pending()->sum('amount');
+        $pendingWithdrawals = Withdrawal::where('outlet_id', $outletId)->pending()->sum('amount');
         $actualBalance = $availableBalance - $pendingWithdrawals;
         
         // Validate amount
@@ -170,6 +170,7 @@ class WithdrawController extends Controller
                 'tax_amount' => $taxAmount,
                 'net_amount' => $netAmount,
                 'status' => 'pending',
+                'accepted_by_owner' => $user->hasRole('owner') ? true : false,
             ]);
 
             // Send email to admin
@@ -211,8 +212,23 @@ class WithdrawController extends Controller
         $withdrawals = (clone $query)
             ->latest()
             ->paginate(10);
+
+        // Logic for Owner Approval Tab
+        $confirmations = collect();
+        if ($user->hasRole('owner') || $user->can('setujui penarikan')) {
+            $outletId = session('outlet_id') ?? $user->outlet_id;
+            if ($outletId) {
+                $confirmations = Withdrawal::where('outlet_id', $outletId)
+                    ->where('status', 'pending')
+                    ->where(function ($q) {
+                        $q->whereNull('accepted_by_owner')->orWhere('accepted_by_owner', false);
+                    })
+                    ->latest()
+                    ->get();
+            }
+        }
         
-        return view('withdraw.index', compact('withdrawals', 'stats'));
+        return view('withdraw.index', compact('withdrawals', 'stats', 'confirmations'));
     }
 
     /**
@@ -234,25 +250,32 @@ class WithdrawController extends Controller
     }
 
     /**
-     * Calculate available balance from completed sales
+     * Calculate available balance from completed sales (Outlet based)
      */
     private function calculateAvailableBalance(int $userId, ?int $outletId): float
     {
-        $query = Sale::where('cashier_id', $userId)
-            ->where('status', 'completed')
+        // Start Query for Sales
+        $salesQuery = Sale::where('status', 'completed')
             ->where('payment_status', 'paid');
         
+        // Start Query for Withdrawals (Approved/Paid)
+        $withdrawalsQuery = Withdrawal::whereIn('status', ['approved', 'paid']);
+
         if ($outletId) {
-            $query->where('outlet_id', $outletId);
+            // Outlet Scope (Shared Balance)
+            $salesQuery->where('outlet_id', $outletId);
+            $withdrawalsQuery->where('outlet_id', $outletId);
+        } else {
+            // Fallback: User Scope
+            $salesQuery->where('cashier_id', $userId);
+            $withdrawalsQuery->where('user_id', $userId);
         }
         
         // Total from completed sales
-        $totalSales = $query->sum('grand_total');
+        $totalSales = $salesQuery->sum('grand_total');
         
-        // Minus: already withdrawn (approved + paid)
-        $withdrawnAmount = Withdrawal::where('user_id', $userId)
-            ->whereIn('status', ['approved', 'paid'])
-            ->sum('amount');
+        // Minus: already withdrawn
+        $withdrawnAmount = $withdrawalsQuery->sum('amount');
         
         return max(0, $totalSales - $withdrawnAmount);
     }
@@ -268,5 +291,53 @@ class WithdrawController extends Controller
         if (!empty($adminEmails)) {
             Mail::to($adminEmails)->queue(new WithdrawalRequestMail($withdrawal));
         }
+    }
+
+    /**
+     * Owner approves a withdrawal request from staff
+     */
+    public function ownerApprove(Request $request, Withdrawal $withdrawal)
+    {
+        // Add policy check if needed (e.g., must be owner of the outlet)
+        if (!Auth::user()->hasRole('owner') && !Auth::user()->can('setujui penarikan')) {
+            abort(403);
+        }
+
+        $currentOutletId = session('outlet_id') ?? Auth::user()->outlet_id;
+        if ($withdrawal->outlet_id != $currentOutletId) {
+             return back()->with('error', 'Akses ditolak. Outlet tidak sesuai.');
+        }
+
+        $withdrawal->update(['accepted_by_owner' => true]);
+
+        return back()->with('success', 'Penarikan berhasil disetujui. Menunggu proses admin.');
+    }
+
+    /**
+     * Owner rejects a withdrawal request from staff
+     */
+    public function ownerReject(Request $request, Withdrawal $withdrawal)
+    {
+        if (!Auth::user()->hasRole('owner') && !Auth::user()->can('setujui penarikan')) {
+            abort(403);
+        }
+
+         $currentOutletId = session('outlet_id') ?? Auth::user()->outlet_id;
+         if ($withdrawal->outlet_id != $currentOutletId) {
+             return back()->with('error', 'Akses ditolak. Outlet tidak sesuai.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|max:255',
+        ]);
+
+        $withdrawal->update([
+            'status' => 'rejected',
+            'admin_note' => 'Ditolak oleh Owner: ' . $request->reason,
+            'processed_by' => Auth::id(),
+            'processed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Penarikan berhasil ditolak.');
     }
 }

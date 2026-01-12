@@ -32,11 +32,23 @@
     </div>
 
         {{-- RINGKASAN STATISTIK --}}
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Menunggu</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Perlu Persetujuan</p>
+                        <p class="mt-1 text-2xl font-semibold text-orange-600">{{ number_format($stats['need_approval'] ?? 0) }}</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100">
+                        <i class="fas fa-user-shield text-orange-500 text-lg"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Menunggu (Admin)</p>
                         <p class="mt-1 text-2xl font-semibold text-yellow-600">{{ number_format($stats['pending']) }}</p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center border border-yellow-100">
@@ -101,7 +113,8 @@
                             <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
                             <select name="status" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
                                 <option value="">Semua</option>
-                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
+                                <option value="need_approval" {{ request('status') == 'need_approval' ? 'selected' : '' }}>Perlu Persetujuan</option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu Admin</option>
                                 <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
                                 <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Dibayar</option>
                                 <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
@@ -177,6 +190,9 @@
                                 <p class="text-[9px] text-gray-400 mt-0.5">Potong pajak: Rp {{ number_format($w->tax_amount, 0, ',', '.') }}</p>
                             </td>
                             <td class="px-6 py-4">
+                                @if($w->status == 'pending' && !$w->accepted_by_owner)
+                                    <span class="block px-2.5 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full w-fit mb-1">Owner</span>
+                                @endif
                                 {!! $w->status_badge !!}
                             </td>
                             <td class="px-6 py-4 text-center">

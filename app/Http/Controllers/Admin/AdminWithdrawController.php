@@ -21,7 +21,14 @@ class AdminWithdrawController extends Controller
 
         // Filter by status
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            if ($request->status === 'need_approval') {
+                $query->where('status', 'pending')
+                      ->where(function($q) {
+                          $q->whereNull('accepted_by_owner')->orWhere('accepted_by_owner', false);
+                      });
+            } else {
+                $query->where('status', $request->status);
+            }
         }
 
         // Filter by date range
@@ -48,6 +55,9 @@ class AdminWithdrawController extends Controller
             'approved' => Withdrawal::where('status', 'approved')->count(),
             'paid' => Withdrawal::where('status', 'paid')->count(),
             'total_pending_amount' => Withdrawal::pending()->sum('amount'),
+            'need_approval' => Withdrawal::pending()->where(function($q) {
+                 $q->whereNull('accepted_by_owner')->orWhere('accepted_by_owner', false);
+            })->count(),
         ];
 
         return view('admin.withdrawals.index', compact('withdrawals', 'stats'));
@@ -61,6 +71,42 @@ class AdminWithdrawController extends Controller
         $withdrawal->load(['user', 'outlet', 'processedBy']);
         
         return view('admin.withdrawals.show', compact('withdrawal'));
+    }
+
+    /**
+     * Approve withdrawal by owner
+     */
+    public function approveByOwner(Request $request, Withdrawal $withdrawal)
+    {
+        if ($withdrawal->accepted_by_owner) {
+             return back()->with('error', 'Penarikan sudah disetujui sebelumnya.');
+        }
+
+        $withdrawal->update(['accepted_by_owner' => true]);
+
+        return back()->with('success', 'Penarikan berhasil disetujui oleh Owner.');
+    }
+
+    /**
+     * Reject withdrawal by owner (Cancel it)
+     */
+    public function rejectByOwner(Request $request, Withdrawal $withdrawal)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:255',
+        ]);
+
+        $withdrawal->update([
+            'status' => 'rejected',
+            'admin_note' => 'Ditolak oleh Owner: ' . $request->reason,
+            'processed_by' => auth()->id(),
+            'processed_at' => now(),
+        ]);
+        
+        // Send rejection email/notification if needed
+        // Mail::to($withdrawal->user->email)->queue(new WithdrawalStatusMail($withdrawal, 'rejected'));
+
+        return back()->with('success', 'Penarikan berhasil ditolak oleh Owner.');
     }
 
     /**

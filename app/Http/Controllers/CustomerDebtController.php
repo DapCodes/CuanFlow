@@ -70,9 +70,18 @@ class CustomerDebtController extends Controller implements HasMiddleware
      */
     public function getCustomers(Request $request)
     {
+        $outletId = auth()->user()->outlet_id;
+
         $query = Customer::query()
-            ->withCount('sales')
-            ->withSum('sales', 'grand_total');
+            ->whereHas('sales', function ($q) use ($outletId) {
+                $q->where('outlet_id', $outletId);
+            })
+            ->withCount(['sales' => function ($q) use ($outletId) {
+                $q->where('outlet_id', $outletId);
+            }])
+            ->withSum(['sales' => function ($q) use ($outletId) {
+                $q->where('outlet_id', $outletId);
+            }], 'grand_total');
 
         // Search filter
         if ($request->search) {
@@ -358,6 +367,37 @@ class CustomerDebtController extends Controller implements HasMiddleware
                     ];
                 }),
             ],
+        ]);
+    }
+    /**
+     * Get customer sales history
+     */
+    public function getCustomerHistory(Customer $customer)
+    {
+        $outletId = auth()->user()->outlet_id;
+        
+        $sales = $customer->sales()
+            ->where('outlet_id', $outletId)
+            ->withCount('items')
+            ->orderBy('created_at', 'desc')
+            ->take(50)
+            ->get()
+            ->map(function($sale) {
+                return [
+                    'id' => $sale->id,
+                    'invoice_number' => $sale->invoice_number,
+                    'date' => $sale->created_at->format('d M Y H:i'),
+                    'grand_total' => (float) $sale->grand_total,
+                    'status' => $sale->status,
+                    'payment_method' => $sale->payment_method,
+                    'items_count' => $sale->items_count,
+                ];
+            });
+            
+        return response()->json([
+            'success' => true,
+            'customer' => $customer->only(['id', 'name', 'code', 'phone']),
+            'sales' => $sales
         ]);
     }
 }

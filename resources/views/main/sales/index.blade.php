@@ -171,11 +171,18 @@
                         </p>
                     </div>
                 </div>
-                <button id="btnToday"
-                    class="inline-flex items-center justify-center rounded-lg bg-red-500 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1">
-                    <i class="fas fa-calendar-day mr-1 text-[11px]"></i>
-                    Hari Ini
-                </button>
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                        <input type="text" id="searchInvoice" placeholder="Cari invoice..." 
+                               class="pl-8 pr-4 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 w-48">
+                    </div>
+                    <button id="btnToday"
+                        class="inline-flex items-center justify-center rounded-lg bg-red-500 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1">
+                        <i class="fas fa-calendar-day mr-1 text-[11px]"></i>
+                        Hari Ini
+                    </button>
+                </div>
             </div>
 
             {{-- Grid Kalender + Tabel --}}
@@ -710,7 +717,19 @@
     }
   }
 
+  // Declare calendar variable in wider scope accessed by multiple functions
+  let calendar;
+
   function refreshUI(payload) {
+    // If dates mismatch, update calendar view
+    if (payload.selectedDate !== currentSelectedDate) {
+        currentSelectedDate = payload.selectedDate;
+        if (calendar) {
+            calendar.gotoDate(currentSelectedDate);
+            calendar.select(currentSelectedDate);
+        }
+    }
+
     const dateLabel = new Date(payload.selectedDate + 'T00:00:00');
     const dateText = dateLabel.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
     document.getElementById('selectedDateText').innerText = dateText;
@@ -742,8 +761,12 @@
             </td>`;
         }
         
+        // Check for highlight
+        const isHighlighted = payload.highlightId == s.id;
+        const rowClass = isHighlighted ? 'bg-yellow-100 border-l-4 border-yellow-500' : 'hover:bg-gray-50';
+        
         return `
-        <tr class="hover:bg-gray-50">
+        <tr id="row-${s.id}" class="${rowClass} transition-colors duration-1000">
           <td class="px-4 py-3 text-sm font-medium text-gray-900">${s.invoice_number}</td>
           <td class="px-4 py-3 text-sm text-gray-600">${s.time}</td>
           <td class="px-4 py-3 text-sm text-gray-600">${s.cashier ?? '-'}</td>
@@ -754,6 +777,21 @@
           ${actionColumn}
         </tr>`;
       }).join('');
+      
+      // Scroll to highlighted element if exists
+      if (payload.highlightId) {
+          const row = document.getElementById(`row-${payload.highlightId}`);
+          if (row) {
+              setTimeout(() => {
+                  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  // Remove highlight after 2 seconds
+                  setTimeout(() => {
+                      row.classList.remove('bg-yellow-100', 'border-l-4', 'border-yellow-500');
+                      row.classList.add('hover:bg-gray-50');
+                  }, 3000);
+              }, 100);
+          }
+      }
     }
 
     document.getElementById('cashTotalText').innerText = rupiah(payload.totals.cash);
@@ -768,10 +806,19 @@
     document.getElementById('summaryDiscount').innerText = rupiah(payload.summary.discount);
   }
 
+  let currentSelectedDate = '{{ $selectedDate }}';
+  let searchTimeout = null;
+
   async function loadDaily(dateStr) {
+    // Keep requested date but might change based on response
+    currentSelectedDate = dateStr; 
     setLoading(true);
+    
+    // Get search value
+    const search = document.getElementById('searchInvoice').value;
+    
     try {
-      const res = await fetch(`/sales/daily?date=${dateStr}`, {
+      const res = await fetch(`/sales/daily?date=${dateStr}&search=${search}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       });
       const json = await res.json();
@@ -785,7 +832,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(calendarEl, {
       initialDate: '{{ $selectedDate }}',
       initialView: 'dayGridMonth',
       headerToolbar: { 
@@ -809,6 +856,74 @@
       calendar.today();
       loadDaily(today);
     });
+
+    // Search Handler
+    document.getElementById('searchInvoice').addEventListener('keyup', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadDaily(currentSelectedDate);
+        }, 500);
+    });
+
+    // Handle Refund Form AJAX
+    const refundForm = document.getElementById('refundForm');
+    if(refundForm){
+        refundForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get button to show loading state
+            const btn = this.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+
+            try {
+                const action = this.action;
+                const token = this.querySelector('input[name="_token"]').value;
+
+                const res = await fetch(action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    closeRefundModal();
+                    
+                    // Show success notification
+                    const container = document.querySelector('main .max-w-7xl');
+                    const alertHtml = `
+                        <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm animate-fadeIn">
+                            <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
+                            <p class="text-green-800">${data.message}</p>
+                        </div>
+                    `;
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = alertHtml;
+                    container.insertBefore(tempDiv.firstElementChild, container.firstChild);
+
+                    // Refresh data
+                    loadDaily(currentSelectedDate);
+
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    alert(data.message || 'Gagal melakukan refund');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan saat memproses refund');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        });
+    }
   });
 </script>
 @endpush

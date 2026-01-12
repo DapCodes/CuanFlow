@@ -199,11 +199,12 @@
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Transaksi</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Belanja</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="customerTableBody" class="divide-y divide-gray-100 bg-white">
                             <tr>
-                                <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                                <td colspan="8" class="px-4 py-8 text-center text-gray-500">
                                     <i class="fas fa-spinner fa-spin text-2xl text-gray-300 mb-2"></i>
                                     <p>Memuat data...</p>
                                 </td>
@@ -422,6 +423,53 @@
         </div>
     </div>
 </div>
+
+{{-- HISTORY MODAL --}}
+<div id="historyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="backdrop-filter: blur(2px);">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        {{-- Header --}}
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-history text-teal-500"></i>
+                    Riwayat Transaksi
+                </h3>
+                <p id="historyCustomerName" class="text-sm text-gray-500 mt-1">-</p>
+            </div>
+            <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        {{-- Body --}}
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-medium">Invoice</th>
+                            <th class="px-4 py-3 text-left font-medium">Tanggal</th>
+                            <th class="px-4 py-3 text-center font-medium">Item</th>
+                            <th class="px-4 py-3 text-left font-medium">Metode</th>
+                            <th class="px-4 py-3 text-left font-medium">Total</th>
+                            <th class="px-4 py-3 text-center font-medium">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody" class="divide-y divide-gray-100">
+                        {{-- Data injected here --}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Footer --}}
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end">
+            <button onclick="closeHistoryModal()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -486,7 +534,7 @@ function loadCustomers(page = 1) {
     
     document.getElementById('customerTableBody').innerHTML = `
         <tr>
-            <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+            <td colspan="8" class="px-4 py-8 text-center text-gray-500">
                 <i class="fas fa-spinner fa-spin text-2xl text-gray-300 mb-2"></i>
                 <p>Memuat data...</p>
             </td>
@@ -504,7 +552,7 @@ function loadCustomers(page = 1) {
             console.error('Load customers error:', err);
             document.getElementById('customerTableBody').innerHTML = `
                 <tr>
-                    <td colspan="7" class="px-4 py-8 text-center text-red-500">
+                    <td colspan="8" class="px-4 py-8 text-center text-red-500">
                         <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
                         <p>Gagal memuat data</p>
                     </td>
@@ -520,7 +568,7 @@ function renderCustomerTable(customers, pagination) {
     if (customers.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="px-4 py-12 text-center">
+                <td colspan="8" class="px-4 py-12 text-center">
                     <div class="flex flex-col items-center">
                         <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                             <i class="fas fa-users text-2xl text-gray-300"></i>
@@ -561,6 +609,13 @@ function renderCustomerTable(customers, pagination) {
                     ? '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Aktif</span>'
                     : '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-600 border border-gray-200"><span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>Tidak Aktif</span>'
                 }
+            </td>
+            <td class="px-4 py-3 text-center">
+                <button onclick="openHistoryModal(${c.id})" 
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors text-xs font-semibold border border-teal-100">
+                    <i class="fas fa-history"></i>
+                    Riwayat
+                </button>
             </td>
         </tr>
     `).join('');
@@ -793,11 +848,81 @@ function selectPaymentMethod(method) {
     document.getElementById('transferOptions').classList.toggle('hidden', method !== 'transfer');
 }
 
-function setPaymentAmount(multiplier) {
-    if (!currentDebt) return;
-    const amount = Math.floor(currentDebt.remaining_amount * multiplier);
-    document.getElementById('paymentAmount').value = amount;
+function openHistoryModal(customerId) {
+    const modal = document.getElementById('historyModal');
+    const tbody = document.getElementById('historyTableBody');
+    const nameEl = document.getElementById('historyCustomerName');
+    
+    modal.classList.remove('hidden');
+    nameEl.textContent = 'Memuat data...';
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                <i class="fas fa-spinner fa-spin text-xl mb-2"></i>
+                <p>Mengambil riwayat...</p>
+            </td>
+        </tr>
+    `;
+    
+    fetch(`{{ url('customer-debts') }}/${customerId}/history`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                nameEl.textContent = `${data.customer.name} (${data.customer.code || '-'})`;
+                
+                 if (data.sales.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-4 py-8 text-center text-gray-400">
+                                <p>Belum ada riwayat transaksi di outlet ini</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = data.sales.map(s => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 font-mono text-teal-600 font-semibold cursor-pointer hover:underline" onclick="window.location.href='{{ url('sales') }}/${s.id}'">${s.invoice_number}</td>
+                        <td class="px-4 py-3 text-gray-600">${s.date}</td>
+                        <td class="px-4 py-3 text-center text-gray-600">${s.items_count}</td>
+                        <td class="px-4 py-3 capitalize text-gray-800">${s.payment_method}</td>
+                        <td class="px-4 py-3 font-semibold text-gray-900">${formatRupiah(s.grand_total)}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusBadgeClass(s.status)}">
+                                ${s.status}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+             tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-4 py-8 text-center text-red-500">
+                        <p>Gagal memuat data</p>
+                    </td>
+                </tr>
+            `;
+        });
 }
+
+function closeHistoryModal() {
+    document.getElementById('historyModal').classList.add('hidden');
+}
+
+function getStatusBadgeClass(status) {
+    switch (status) {
+        case 'completed': return 'bg-green-100 text-green-800';
+        case 'pending': return 'bg-yellow-100 text-yellow-800';
+        case 'canceled': return 'bg-gray-100 text-gray-800';
+        case 'refunded': return 'bg-red-100 text-red-800';
+        default: return 'bg-gray-100 text-gray-800';
+    }
+}
+
 
 // Process payment
 function processPayment() {

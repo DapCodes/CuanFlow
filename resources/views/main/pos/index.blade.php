@@ -1281,22 +1281,30 @@
                         </div>
                         
                          <!-- Customer Search Dropdown -->
-                        <div class="relative w-full max-w-[250px]" id="customerSearchContainer">
-                            <div class="relative">
-                                <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input 
-                                    type="text" 
-                                    id="searchCustomer" 
-                                    class="search-input !pl-9" 
-                                    placeholder="Cari Pelanggan (Umum)..." 
-                                    autocomplete="off">
-                                <button id="clearCustomerBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                        <div class="flex items-center gap-2 w-full max-w-[350px]">
+                            <div class="relative flex-1" id="customerSearchContainer">
+                                <div class="relative">
+                                    <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                    <input 
+                                        type="text" 
+                                        id="searchCustomer" 
+                                        class="search-input !pl-9" 
+                                        placeholder="Cari Pelanggan..." 
+                                        autocomplete="off">
+                                    <button id="clearCustomerBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <!-- Dropdown Results -->
+                                <div id="customerSearchResults" class="hidden absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-60 overflow-y-auto custom-scrollbar">
+                                    <!-- Results populated via JS -->
+                                </div>
                             </div>
-                            <!-- Dropdown Results -->
-                            <div id="customerSearchResults" class="hidden absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-60 overflow-y-auto custom-scrollbar">
-                                <!-- Results populated via JS -->
+
+                            <!-- Customer Type Badge -->
+                            <div id="customerTypeBadge" class="hidden items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold shadow-sm transition-all animate-fadeIn whitespace-nowrap border">
+                                <i id="customerTypeIcon" class="fas fa-crown"></i>
+                                <span id="customerTypeText" class="hidden md:inline">VIP</span>
                             </div>
                         </div>
                     </div>
@@ -1684,14 +1692,13 @@
                         </button>
 
                         <!-- Kelola Meja -->
-                        @if(auth()->user()->outlet->has_table_system == true)
-                            @can('pilih meja pos')
-                            <button onclick="openTableManagementModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
-                                <i class="fas fa-chair w-4 text-amber-600"></i>
-                                <span>Kelola Meja</span>
-                            </button>
-                            @endcan
-                        @endif
+                        <!-- Kelola Meja -->
+                        @can('pilih meja pos')
+                        <button id="btnManageTables" onclick="openTableManagementModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100" style="{{ auth()->user()->outlet->has_table_system ? '' : 'display: none;' }}">
+                            <i class="fas fa-chair w-4 text-amber-600"></i>
+                            <span>Kelola Meja</span>
+                        </button>
+                        @endcan
 
                         @can('atur tampilan produk pos')
                         <button onclick="openProductSettingsModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-orange-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
@@ -4322,6 +4329,13 @@ async function toggleTableSystem(enabled) {
         const data = await response.json();
         if (data.success) {
             hasTableSystem = enabled;
+            
+            // Toggle visibility of Manage Tables button
+            const btnManageTables = document.getElementById('btnManageTables');
+            if (btnManageTables) {
+                btnManageTables.style.display = enabled ? '' : 'none';
+            }
+
             showToast('success', enabled ? 'Sistem meja diaktifkan' : 'Sistem meja dinonaktifkan');
         }
     } catch (error) {
@@ -5931,11 +5945,32 @@ function closeSaleDetailModal() {
         const clearBtn = document.getElementById('clearCustomerBtn');
 
         // Update UI
-        searchInput.value = `${customer.name} (${customer.type.toUpperCase()})`;
+        searchInput.value = customer.name;
         searchInput.disabled = true;
         searchInput.classList.add('bg-orange-50', 'text-orange-900', 'font-semibold');
         resultsContainer.classList.add('hidden');
         clearBtn.classList.remove('hidden');
+
+        // Update Badge
+        const badge = document.getElementById('customerTypeBadge');
+        const badgeIcon = document.getElementById('customerTypeIcon');
+        const badgeText = document.getElementById('customerTypeText');
+
+        badge.className = 'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold shadow-sm transition-all animate-fadeIn whitespace-nowrap border';
+
+        if (customer.type === 'vip') {
+            badge.classList.add('bg-purple-50', 'text-purple-700', 'border-purple-200');
+            badgeIcon.className = 'fas fa-crown text-purple-600';
+            badgeText.textContent = 'VIP';
+        } else if (customer.type === 'reseller') {
+            badge.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
+            badgeIcon.className = 'fas fa-store text-blue-600';
+            badgeText.textContent = 'RESELLER';
+        } else {
+            badge.classList.add('bg-gray-50', 'text-gray-700', 'border-gray-200');
+            badgeIcon.className = 'fas fa-user text-gray-500';
+            badgeText.textContent = 'REGULAR';
+        }
 
         // Update product list prices
         updateProductPricesUI();
@@ -5974,6 +6009,10 @@ function closeSaleDetailModal() {
         searchInput.disabled = false;
         searchInput.classList.remove('bg-orange-50', 'text-orange-900', 'font-semibold');
         clearBtn.classList.add('hidden');
+        
+        // Hide Badge
+        document.getElementById('customerTypeBadge').classList.add('hidden');
+        document.getElementById('customerTypeBadge').classList.remove('flex');
         
         // Update product list prices back to normal
         updateProductPricesUI();

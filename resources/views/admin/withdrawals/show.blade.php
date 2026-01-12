@@ -20,7 +20,12 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                 <h3 class="font-bold text-gray-800">Informasi Penarikan</h3>
-                {!! $withdrawal->status_badge !!}
+                <div class="flex items-center gap-2">
+                    @if($withdrawal->status == 'pending' && !$withdrawal->accepted_by_owner)
+                        <span class="px-2.5 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">Menunggu Owner</span>
+                    @endif
+                    {!! $withdrawal->status_badge !!}
+                </div>
             </div>
             
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -98,6 +103,52 @@
     <!-- Right Column: Actions -->
     <div class="space-y-6">
         @if($withdrawal->isPending())
+            
+            {{-- Owner Approval Section --}}
+            @if(!$withdrawal->accepted_by_owner)
+                @if(auth()->user()->hasRole('owner') || auth()->user()->can('setujui penarikan'))
+                <div class="bg-white rounded-xl shadow-sm border border-orange-200 p-6 space-y-4">
+                    <div class="flex items-center gap-2 text-orange-600 mb-2">
+                        <i class="fas fa-user-shield"></i>
+                        <h4 class="font-bold">Persetujuan Owner</h4>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Penarikan ini memerlukan persetujuan dari Owner sebelum dapat diproses oleh Admin.
+                    </p>
+                    
+                    <form action="{{ route('admin.withdrawals.approve-by-owner', $withdrawal) }}" method="POST">
+                        @csrf
+                        <button type="submit" onclick="return confirm('Setujui penarikan ini sebagai Owner?')" 
+                                class="w-full bg-orange-600 text-white font-bold py-2 rounded-lg hover:bg-orange-700 transition mb-3">
+                            <i class="fas fa-check-double mr-2"></i> Setujui (Owner)
+                        </button>
+                    </form>
+
+                    <form action="{{ route('admin.withdrawals.reject-by-owner', $withdrawal) }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Alasan Penolakan</label>
+                            <textarea name="reason" required class="w-full border rounded-lg p-2 text-sm focus:ring-red-500" rows="2" placeholder="Contoh: Saldo tidak mencukupi..."></textarea>
+                        </div>
+                        <button type="submit" onclick="return confirm('Tolak penarikan ini?')"
+                                class="w-full bg-white border border-red-500 text-red-500 font-bold py-2 rounded-lg hover:bg-red-50 transition">
+                            <i class="fas fa-times mr-2"></i> Tolak (Owner)
+                        </button>
+                    </form>
+                </div>
+                @else
+                <div class="bg-orange-50 rounded-xl border border-orange-200 p-6 text-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3 text-orange-600">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-1">Menunggu Owner</h4>
+                    <p class="text-xs text-gray-500">Penarikan ini sedang menunggu persetujuan dari Owner.</p>
+                </div>
+                @endif
+            @endif
+
+            {{-- Admin Approval Section (Only if accepted by owner) --}}
+            @if($withdrawal->accepted_by_owner)
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
             <h4 class="font-bold text-gray-800">Tindakan Persetujuan</h4>
             
@@ -127,6 +178,9 @@
                 </button>
             </form>
         </div>
+            @endif 
+            {{-- End Admin Approval Section --}}
+
         @elseif($withdrawal->isApproved())
         <div class="bg-white rounded-xl shadow-md border-2 border-teal-500 p-6 space-y-4">
             <div class="flex items-center gap-2 text-teal-600 mb-2">

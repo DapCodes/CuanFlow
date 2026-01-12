@@ -39,10 +39,7 @@ class ProductHppController extends Controller
             ->paginate(20);
 
         $categories = Category::where('type', 'product')
-            ->where(function($q) {
-                $q->whereNull('outlet_id')
-                  ->orWhere('outlet_id', Auth::user()->outlet_id);
-            })
+            // ->whereNull('outlet_id')
             ->get();
 
         return view('main.product_n_hpp-calc.index', compact('products', 'categories', 'stats'));
@@ -54,7 +51,9 @@ class ProductHppController extends Controller
             abort(403, 'Akses ditolak');
         }
 
-        $categories = Category::where('type', 'product')->get();
+        $categories = Category::where('type', 'product')
+            // ->whereNull('outlet_id')
+            ->get();
         $units = Unit::all();
         $rawMaterials = RawMaterial::with('unit')
             ->where('outlet_id', Auth::user()->outlet_id)

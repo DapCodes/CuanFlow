@@ -28,6 +28,7 @@ class Withdrawal extends Model
         'admin_note',
         'processed_by',
         'processed_at',
+        'accepted_by_owner',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class Withdrawal extends Model
         'tax_amount' => 'decimal:2',
         'net_amount' => 'decimal:2',
         'processed_at' => 'datetime',
+        'accepted_by_owner' => 'boolean',
     ];
 
     public function getActivitylogOptions(): LogOptions

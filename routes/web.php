@@ -169,6 +169,7 @@ Route::prefix('production')->name('production.')->group(function () {
         Route::get('/{debt}/detail', [App\Http\Controllers\CustomerDebtController::class, 'getDebtDetail'])->name('detail');
         Route::post('/{debt}/pay', [App\Http\Controllers\CustomerDebtController::class, 'payDebt'])->name('pay');
         Route::post('/{debt}/midtrans-token', [App\Http\Controllers\CustomerDebtController::class, 'createMidtransToken'])->name('midtrans-token');
+        Route::get('/{customer}/history', [App\Http\Controllers\CustomerDebtController::class, 'getCustomerHistory'])->name('history');
     });
     
     Route::post('/payment/check-amount', [PaymentController::class, 'checkPaymentAmount'])
@@ -192,6 +193,8 @@ Route::prefix('production')->name('production.')->group(function () {
         Route::get('/create', [WithdrawController::class, 'create'])->name('create');
         Route::post('/store', [WithdrawController::class, 'store'])->name('store');
         Route::get('/history', [WithdrawController::class, 'index'])->name('index');
+        Route::post('/{withdrawal}/owner-approve', [WithdrawController::class, 'ownerApprove'])->name('owner-approve');
+        Route::post('/{withdrawal}/owner-reject', [WithdrawController::class, 'ownerReject'])->name('owner-reject');
     });
 
     // Task & Kanban Board Management

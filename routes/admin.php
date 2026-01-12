@@ -72,6 +72,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/{withdrawal}', [AdminWithdrawController::class, 'show'])->name('show');
         Route::post('/{withdrawal}/approve', [AdminWithdrawController::class, 'approve'])->name('approve');
         Route::post('/{withdrawal}/reject', [AdminWithdrawController::class, 'reject'])->name('reject');
+        Route::post('/{withdrawal}/approve-by-owner', [AdminWithdrawController::class, 'approveByOwner'])->name('approve-by-owner');
+        Route::post('/{withdrawal}/reject-by-owner', [AdminWithdrawController::class, 'rejectByOwner'])->name('reject-by-owner');
         Route::post('/{withdrawal}/paid', [AdminWithdrawController::class, 'markAsPaid'])->name('paid');
     });
 });

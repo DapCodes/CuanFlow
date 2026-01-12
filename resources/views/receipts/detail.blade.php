@@ -136,22 +136,45 @@
             </div>
         </div>
 
-        <!-- Rating Section -->
-        <div class="p-6 bg-gradient-to-b from-white to-orange-50 border-t border-gray-100 text-center">
-            <h3 class="font-semibold text-gray-900 mb-2">Bagaimana pengalaman belanja Anda?</h3>
-            <p class="text-xs text-gray-500 mb-4">Beri rating untuk layanan kami</p>
+        <!-- Testimonial Form -->
+        <div class="p-6 bg-gradient-to-b from-white to-orange-50 border-t border-gray-100">
+            <h3 class="font-semibold text-gray-900 mb-2 text-center">Bagaimana pengalaman belanja Anda?</h3>
+            <p class="text-xs text-gray-500 mb-4 text-center">Beri rating dan ulasan untuk layanan kami</p>
             
-            <div class="star-rating mb-4">
-                <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="Sempurna"><i class="fas fa-star"></i></label>
-                <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="Sangat Baik"><i class="fas fa-star"></i></label>
-                <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="Baik"><i class="fas fa-star"></i></label>
-                <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="Cukup"><i class="fas fa-star"></i></label>
-                <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="Buruk"><i class="fas fa-star"></i></label>
-            </div>
+            <form id="testimonial-form" action="{{ route('testimonials.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="outlet_id" value="{{ $sale->outlet_id }}">
+                <input type="hidden" name="role" value="Pelanggan">
+                
+                <div class="star-rating mb-4 justify-center">
+                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="Sempurna"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="Sangat Baik"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="Baik"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="Cukup"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="Buruk"><i class="fas fa-star"></i></label>
+                </div>
 
-            <div id="rating-feedback" class="hidden">
-                <p class="text-sm text-orange-600 font-medium animate-bounce">Terima kasih atas penilaian Anda!</p>
-            </div>
+                <div class="space-y-3 mb-4">
+                    <div>
+                        <input type="text" name="name" 
+                               class="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all" 
+                               placeholder="Nama Anda" 
+                               value="{{ $sale->customer->name ?? '' }}" 
+                               required>
+                    </div>
+                    <div>
+                        <textarea name="content" rows="3" 
+                                  class="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all resize-none" 
+                                  placeholder="Ceritakan pengalaman Anda..." 
+                                  required></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-orange-200 transition-all duration-200 flex items-center justify-center gap-2">
+                    <span>Kirim Ulasan</span>
+                    <i class="fas fa-paper-plane text-xs"></i>
+                </button>
+            </form>
         </div>
 
         @auth
@@ -176,16 +199,66 @@
     </div>
 
     <script>
-        document.querySelectorAll('input[name="rating"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const feedback = document.getElementById('rating-feedback');
-                feedback.classList.remove('hidden');
-                
-                // Disable inputs after selection (optional, for visual effect)
-                setTimeout(() => {
-                    document.querySelectorAll('input[name="rating"]').forEach(r => r.disabled = true);
-                }, 500);
+        document.getElementById('testimonial-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Basic validation
+            const rating = form.querySelector('input[name="rating"]:checked');
+            if (!rating) {
+                alert('Mohon pilih rating bintang terlebih dahulu.');
+                return;
+            }
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Replace form with success message
+                    const container = form.closest('div');
+                    container.innerHTML = `
+                        <div class="py-8 text-center animate-fade-in">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500 shadow-sm">
+                                <i class="fas fa-check text-3xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Terima Kasih!</h3>
+                            <p class="text-gray-600 text-sm mb-4">${data.message}</p>
+                            <p class="text-xs text-gray-400">Masukan Anda sangat berarti bagi kemajuan kami.</p>
+                        </div>
+                    `;
+                } else {
+                    alert(data.message || 'Terjadi kesalahan. Mohon coba lagi.');
+                    resetButton();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan koneksi.');
+                resetButton();
             });
+
+            function resetButton() {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
         });
     </script>
 </body>
