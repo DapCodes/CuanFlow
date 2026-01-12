@@ -1,2062 +1,2133 @@
-Ref "barang_keluars_id_barang_foreign": "barangs"."id" < "barang_keluars"."id_barang"[delete: cascade
-]
-
-Ref "barang_keluars_ruangan_id_foreign": "ruangans"."id" < "barang_keluars"."ruangan_id"[delete: cascade
-]
-
-Ref "barang_masuks_id_barang_foreign": "barangs"."id" < "barang_masuks"."id_barang"[delete: cascade
-]
-
-Ref "barang_masuks_ruangan_id_foreign": "ruangans"."id" < "barang_masuks"."ruangan_id"[delete: cascade
-]
-
-Ref "barang_ruangans_barang_id_foreign": "barangs"."id" < "barang_ruangans"."barang_id"[delete: cascade
-]
-
-Ref "barang_ruangans_ruangan_id_foreign": "ruangans"."id" < "barang_ruangans"."ruangan_id"[delete: cascade
-]
-
-Ref "peminjamans_id_barang_foreign": "barangs"."id" < "peminjamans"."id_barang"[delete: cascade
-]
-
-Ref "peminjamans_ruangan_id_foreign": "ruangans"."id" < "peminjamans"."ruangan_id"[delete: cascade
-]
-
-Ref "pengembalians_id_barang_foreign": "barangs"."id" < "pengembalians"."id_barang"[delete: cascade
-]
-
-Ref "pengembalians_id_peminjam_foreign": "peminjamans"."id" < "pengembalians"."id_peminjam"[delete: set null
-]
-
-Ref "pengembalians_ruangan_id_foreign": "ruangans"."id" < "pengembalians"."ruangan_id"[delete: cascade
-]
-
-
 Enum "additional_costs_cost_type_enum"{
-    "fixed""per_unit""percentage"
+  "fixed""per_unit""percentage"
 }
 
 Enum "ai_chat_messages_role_enum"{
-    "user""assistant""system"
+  "user""assistant""system"
 }
 
 Enum "ai_insights_type_enum"{
-    "sales_trend""stock_prediction""product_recommendation""anomaly""general"
+  "sales_trend""stock_prediction""product_recommendation""anomaly""general"
 }
 
 Enum "ai_insights_severity_enum"{
-    "info""warning""critical"
+  "info""warning""critical"
 }
 
 Enum "backup_logs_type_enum"{
-    "full""database""files"
+  "full""database""files"
 }
 
 Enum "backup_logs_status_enum"{
-    "completed""failed"
+  "completed""failed"
 }
 
 Enum "cash_registers_status_enum"{
-    "open""closed"
+  "open""closed"
 }
 
 Enum "categories_type_enum"{
-    "raw_material""product"
+  "raw_material""product"
 }
 
 Enum "customers_type_enum"{
-    "regular""reseller""vip"
+  "regular""reseller""vip"
 }
 
 Enum "customer_debts_status_enum"{
-    "unpaid""partial""paid"
+  "unpaid""partial""paid"
 }
 
 Enum "debt_payments_payment_method_enum"{
-    "cash""qris""transfer"
+  "cash""qris""transfer"
 }
 
 Enum "discounts_type_enum"{
-    "percentage""fixed""buy_x_get_y"
+  "percentage""fixed""buy_x_get_y"
 }
 
 Enum "expenses_payment_method_enum"{
-    "cash""transfer""card"
+  "cash""transfer""card"
 }
 
 Enum "expenses_status_enum"{
-    "pending""approved""rejected"
+  "pending""approved""rejected"
 }
 
 Enum "faqs_type_enum"{
-    "general""pos""product""finance""report""account"
+  "general""pos""product""finance""report""account"
 }
 
 Enum "faqs_priority_enum"{
-    "low""medium""high"
+  "low""medium""high"
 }
 
 Enum "offline_sync_queues_status_enum"{
-    "pending""processing""completed""failed"
+  "pending""processing""completed""failed"
 }
 
 Enum "productions_status_enum"{
-    "planned""in_progress""completed""cancelled"
+  "planned""in_progress""completed""cancelled"
 }
 
 Enum "purchases_payment_status_enum"{
-    "unpaid""partial""paid"
+  "unpaid""partial""paid"
 }
 
 Enum "purchases_status_enum"{
-    "draft""ordered""received""partial_received""cancelled"
+  "draft""ordered""received""partial_received""cancelled"
 }
 
 Enum "report_schedules_report_type_enum"{
-    "daily_sales""weekly_sales""monthly_sales""stock_report""profit_report""custom"
+  "daily_sales""weekly_sales""monthly_sales""stock_report""profit_report""custom"
 }
 
 Enum "report_schedules_frequency_enum"{
-    "daily""weekly""monthly"
+  "daily""weekly""monthly"
 }
 
 Enum "report_schedules_format_enum"{
-    "pdf""excel"
+  "pdf""excel"
 }
 
 Enum "sales_payment_method_enum"{
-    "cash""qris""transfer""card""debt""split"
+  "cash""qris""transfer""card""debt""split"
 }
 
 Enum "sales_service_type_enum"{
-    "dine_in""take_away"
+  "dine_in""take_away"
 }
 
 Enum "sales_payment_status_enum"{
-    "pending""paid""partial""cancelled""refunded"
+  "pending""paid""partial""cancelled""refunded"
 }
 
 Enum "sales_status_enum"{
-    "draft""completed""cancelled""refunded"
+  "draft""completed""cancelled""refunded"
 }
 
 Enum "sale_payments_payment_method_enum"{
-    "cash""qris""transfer""card"
+  "cash""qris""transfer""card"
 }
 
 Enum "stock_movements_type_enum"{
-    "in""out""adjustment""transfer""production""sale""waste""return"
+  "in""out""adjustment""transfer""production""sale""waste""return"
 }
 
 Enum "stock_notifications_type_enum"{
-    "low_stock""out_of_stock""expiring_soon""expired"
+  "low_stock""out_of_stock""expiring_soon""expired"
 }
 
 Enum "stock_opnames_type_enum"{
-    "raw_material""product""all"
+  "raw_material""product""all"
 }
 
 Enum "stock_opnames_status_enum"{
-    "draft""in_progress""completed""cancelled"
+  "draft""in_progress""completed""cancelled"
 }
 
 Enum "stock_transfers_status_enum"{
-    "draft""pending""in_transit""received""cancelled"
+  "draft""pending""in_transit""received""cancelled"
 }
 
 Enum "tables_status_enum"{
-    "available""occupied""reserved""maintenance"
+  "available""occupied""reserved""maintenance"
 }
 
 Enum "withdrawals_status_enum"{
-    "pending""approved""rejected""paid""cancelled"
+  "pending""approved""rejected""paid""cancelled"
+}
+
+Enum "tasks_priority_enum"{
+  "low""medium""high"
 }
 
 Table "activity_log"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "log_name" varchar(255) [default: NULL
-    ]
+  ]
   "description" text [not null
-    ]
+  ]
   "subject_type" varchar(255) [default: NULL
-    ]
+  ]
   "event" varchar(255) [default: NULL
-    ]
+  ]
   "subject_id" bigint(20) [default: NULL
-    ]
+  ]
   "causer_type" varchar(255) [default: NULL
-    ]
+  ]
   "causer_id" bigint(20) [default: NULL
-    ]
+  ]
   "properties" longtext [default: NULL
-    ]
+  ]
   "batch_uuid" char(36) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "additional_costs"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "recipe_id" bigint(20) [not null
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "cost_type" additional_costs_cost_type_enum [not null
-    ]
+  ]
   "amount" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "ai_chat_messages"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "ai_chat_session_id" bigint(20) [not null
-    ]
+  ]
   "role" ai_chat_messages_role_enum [not null
-    ]
+  ]
   "content" text [not null
-    ]
+  ]
   "metadata" longtext [default: NULL
-    ]
+  ]
   "tokens_used" int(11) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "ai_chat_sessions"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "user_id" bigint(20) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [default: NULL
-    ]
+  ]
   "title" varchar(255) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "ai_insights"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "type" ai_insights_type_enum [not null
-    ]
+  ]
   "title" varchar(255) [not null
-    ]
+  ]
   "content" text [not null
-    ]
+  ]
   "data" longtext [default: NULL
-    ]
+  ]
   "severity" ai_insights_severity_enum [not null, default: 'info'
-    ]
+  ]
   "is_read" tinyint(1) [not null, default: 0
-    ]
+  ]
   "is_dismissed" tinyint(1) [not null, default: 0
-    ]
+  ]
   "insight_date" datetime [not null
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "backup_logs"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "filename" varchar(255) [not null
-    ]
+  ]
   "disk" varchar(255) [not null, default: 'local'
-    ]
+  ]
   "path" varchar(255) [not null
-    ]
+  ]
   "size" bigint(20) [not null
-    ]
+  ]
   "type" backup_logs_type_enum [not null
-    ]
+  ]
   "status" backup_logs_status_enum [not null
-    ]
+  ]
   "error_message" text [default: NULL
-    ]
+  ]
   "created_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "cache"{
-    "key" varchar(255) [pk, not null
-    ]
+  "key" varchar(255) [pk, not null
+  ]
   "value" mediumtext [not null
-    ]
+  ]
   "expiration" int(11) [not null
-    ]
+  ]
 }
 
 Table "cache_locks"{
-    "key" varchar(255) [pk, not null
-    ]
+  "key" varchar(255) [pk, not null
+  ]
   "owner" varchar(255) [not null
-    ]
+  ]
   "expiration" int(11) [not null
-    ]
+  ]
 }
 
 Table "cash_registers"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "user_id" bigint(20) [not null
-    ]
+  ]
   "opening_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "closing_amount" decimal(15,
-    2) [default: NULL
-    ]
+  2) [default: NULL
+  ]
   "expected_amount" decimal(15,
-    2) [default: NULL
-    ]
+  2) [default: NULL
+  ]
   "difference" decimal(15,
-    2) [default: NULL
-    ]
+  2) [default: NULL
+  ]
   "total_transactions" int(11) [not null, default: 0
-    ]
+  ]
   "total_sales" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_cash" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_qris" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_transfer" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "opened_at" datetime [not null
-    ]
+  ]
   "closed_at" datetime [default: NULL
-    ]
+  ]
   "status" cash_registers_status_enum [not null, default: 'open'
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "categories"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "slug" varchar(255) [not null
-    ]
+  ]
   "type" categories_type_enum [not null
-    ]
+  ]
   "description" text [default: NULL
-    ]
+  ]
   "icon" varchar(255) [default: NULL
-    ]
+  ]
   "sort_order" int(11) [not null, default: 0
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "customers"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "code" varchar(20) [not null
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "phone" varchar(20) [default: NULL
-    ]
+  ]
   "email" varchar(255) [default: NULL
-    ]
+  ]
   "address" text [default: NULL
-    ]
+  ]
   "type" customers_type_enum [not null, default: 'regular'
-    ]
+  ]
   "credit_limit" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_debt" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "points" int(11) [not null, default: 0
-    ]
+  ]
   "birth_date" date [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "customer_debts"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "customer_id" bigint(20) [not null
-    ]
+  ]
   "sale_id" bigint(20) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "amount" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "paid_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "remaining_amount" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "due_date" date [default: NULL
-    ]
+  ]
   "status" customer_debts_status_enum [not null, default: 'unpaid'
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "daily_summaries"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "summary_date" date [not null
-    ]
+  ]
   "total_transactions" int(11) [not null, default: 0
-    ]
+  ]
   "total_sales" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_discount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_tax" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "net_sales" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "cash_sales" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "qris_sales" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "transfer_sales" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "debt_sales" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_hpp" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "gross_profit" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_expenses" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "net_profit" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "products_sold" int(11) [not null, default: 0
-    ]
+  ]
   "top_products" longtext [default: NULL
-    ]
+  ]
   "hourly_sales" longtext [default: NULL
-    ]
+  ]
   "total_customers" int(11) [not null, default: 0
-    ]
+  ]
   "new_customers" int(11) [not null, default: 0
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "debt_payments"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "customer_debt_id" bigint(20) [not null
-    ]
+  ]
   "amount" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "payment_method" debt_payments_payment_method_enum [not null
-    ]
+  ]
   "reference_number" varchar(255) [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "received_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "discounts"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "code" varchar(30) [not null
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "type" discounts_type_enum [not null
-    ]
+  ]
   "value" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "min_purchase" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "max_discount" decimal(15,
-    2) [default: NULL
-    ]
+  2) [default: NULL
+  ]
   "buy_quantity" int(11) [default: NULL
-    ]
+  ]
   "get_quantity" int(11) [default: NULL
-    ]
+  ]
   "product_id" bigint(20) [default: NULL
-    ]
+  ]
   "category_id" bigint(20) [default: NULL
-    ]
+  ]
   "outlet_id" bigint(20) [default: NULL
-    ]
+  ]
   "start_date" datetime [default: NULL
-    ]
+  ]
   "end_date" datetime [default: NULL
-    ]
+  ]
   "usage_limit" int(11) [default: NULL
-    ]
+  ]
   "used_count" int(11) [not null, default: 0
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "is_voucher" tinyint(1) [not null, default: 0
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "expenses"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "expense_number" varchar(50) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "expense_category_id" bigint(20) [not null
-    ]
+  ]
   "amount" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "expense_date" date [not null
-    ]
+  ]
   "description" varchar(255) [not null
-    ]
+  ]
   "receipt_image" varchar(255) [default: NULL
-    ]
+  ]
   "payment_method" expenses_payment_method_enum [not null, default: 'cash'
-    ]
+  ]
   "reference_number" varchar(255) [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_by" bigint(20) [default: NULL
-    ]
+  ]
   "approved_by" bigint(20) [default: NULL
-    ]
+  ]
   "status" expenses_status_enum [not null, default: 'approved'
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "expense_categories"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "code" varchar(20) [not null
-    ]
+  ]
   "description" text [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "failed_jobs"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "uuid" varchar(255) [not null
-    ]
+  ]
   "connection" text [not null
-    ]
+  ]
   "queue" text [not null
-    ]
+  ]
   "payload" longtext [not null
-    ]
+  ]
   "exception" longtext [not null
-    ]
+  ]
   "failed_at" timestamp [not null, default: `current_timestamp()`
-    ]
+  ]
 }
 
 Table "faqs"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "question" varchar(255) [not null
-    ]
+  ]
   "answer" text [not null
-    ]
+  ]
   "type" faqs_type_enum [not null, default: 'general'
-    ]
+  ]
   "priority" faqs_priority_enum [not null, default: 'medium'
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "view_count" int(11) [not null, default: 0
-    ]
+  ]
   "helpful_count" int(11) [not null, default: 0
-    ]
+  ]
   "not_helpful_count" int(11) [not null, default: 0
-    ]
+  ]
   "order" int(11) [not null, default: 0
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "hpp_calculations"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "product_id" bigint(20) [not null
-    ]
+  ]
   "recipe_id" bigint(20) [default: NULL
-    ]
+  ]
   "raw_material_cost" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "additional_cost" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_hpp" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "hpp_per_unit" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "output_quantity" decimal(15,
-    4) [not null, default: 1.0000
-    ]
+  4) [not null, default: 1.0000
+  ]
   "calculation_details" longtext [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "calculated_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "jobs"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "queue" varchar(255) [not null
-    ]
+  ]
   "payload" longtext [not null
-    ]
+  ]
   "attempts" tinyint(3) [not null
-    ]
+  ]
   "reserved_at" int(10) [default: NULL
-    ]
+  ]
   "available_at" int(10) [not null
-    ]
+  ]
   "created_at" int(10) [not null
-    ]
+  ]
 }
 
 Table "job_batches"{
-    "id" varchar(255) [pk, not null
-    ]
+  "id" varchar(255) [pk, not null
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "total_jobs" int(11) [not null
-    ]
+  ]
   "pending_jobs" int(11) [not null
-    ]
+  ]
   "failed_jobs" int(11) [not null
-    ]
+  ]
   "failed_job_ids" longtext [not null
-    ]
+  ]
   "options" mediumtext [default: NULL
-    ]
+  ]
   "cancelled_at" int(11) [default: NULL
-    ]
+  ]
   "created_at" int(11) [not null
-    ]
+  ]
   "finished_at" int(11) [default: NULL
-    ]
+  ]
 }
 
 Table "landing_pages"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "template_id" int(11) [not null, default: 1
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "hero_title" varchar(255) [default: 'Selamat Datang'
-    ]
+  ]
   "hero_subtitle" varchar(255) [default: 'Ke Toko Kami'
-    ]
+  ]
   "hero_image" varchar(255) [default: NULL
-    ]
+  ]
   "about_image" varchar(255) [default: NULL
-    ]
+  ]
   "primary_color" varchar(255) [not null, default: '#4F46E5'
-    ]
+  ]
   "secondary_color" varchar(255) [not null, default: '#1F2937'
-    ]
+  ]
   "font_heading" varchar(255) [not null, default: 'Inter'
-    ]
+  ]
   "font_body" varchar(255) [not null, default: 'Inter'
-    ]
+  ]
   "about_text" text [default: NULL
-    ]
+  ]
   "vision_text" text [default: NULL
-    ]
+  ]
   "mission_text" text [default: NULL
-    ]
+  ]
   "tagline_text" text [default: NULL
-    ]
+  ]
   "services_section" text [default: NULL
-    ]
+  ]
   "testimonials_section" text [default: NULL
-    ]
+  ]
   "selected_testimonial_ids" longtext [default: NULL
-    ]
+  ]
   "gallery_images" text [default: NULL
-    ]
+  ]
   "cta_text" text [default: NULL
-    ]
+  ]
   "cta_button_text" text [default: NULL
-    ]
+  ]
   "selected_product_ids" longtext [default: NULL
-    ]
+  ]
   "social_media" longtext [default: NULL
-    ]
+  ]
   "whatsapp_number" varchar(255) [default: NULL
-    ]
+  ]
   "footer_text" varchar(255) [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "landing_page_visits"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "landing_page_id" bigint(20) [not null
-    ]
+  ]
   "ip_address" varchar(45) [default: NULL
-    ]
+  ]
   "user_agent" varchar(255) [default: NULL
-    ]
+  ]
   "visited_at" timestamp [not null, default: `current_timestamp()`
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "migrations"{
-    "id" int(10) [pk, not null
-    ]
+  "id" int(10) [pk, not null
+  ]
   "migration" varchar(255) [not null
-    ]
+  ]
   "batch" int(11) [not null
-    ]
+  ]
 }
 
 Table "model_has_permissions"{
-    "permission_id" bigint(20) [not null
-    ]
+  "permission_id" bigint(20) [not null
+  ]
   "model_type" varchar(255) [not null
-    ]
+  ]
   "model_id" bigint(20) [not null
-    ]
+  ]
 }
 
 Table "model_has_roles"{
-    "role_id" bigint(20) [not null
-    ]
+  "role_id" bigint(20) [not null
+  ]
   "model_type" varchar(255) [not null
-    ]
+  ]
   "model_id" bigint(20) [not null
-    ]
+  ]
 }
 
 Table "offline_sync_queues"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "user_id" bigint(20) [not null
-    ]
+  ]
   "entity_type" varchar(255) [not null
-    ]
+  ]
   "action" varchar(255) [not null
-    ]
+  ]
   "payload" longtext [not null
-    ]
+  ]
   "local_id" varchar(255) [default: NULL
-    ]
+  ]
   "synced_id" bigint(20) [default: NULL
-    ]
+  ]
   "status" offline_sync_queues_status_enum [not null, default: 'pending'
-    ]
+  ]
   "error_message" text [default: NULL
-    ]
+  ]
   "retry_count" int(11) [not null, default: 0
-    ]
+  ]
   "synced_at" timestamp [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "outlets"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "owner_id" bigint(20) [default: NULL
-    ]
+  ]
   "code" varchar(20) [not null
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "address" text [default: NULL
-    ]
+  ]
   "latitude" decimal(10,
-    8) [default: NULL
-    ]
+  8) [default: NULL
+  ]
   "longitude" decimal(11,
-    8) [default: NULL
-    ]
+  8) [default: NULL
+  ]
   "phone" varchar(20) [default: NULL
-    ]
+  ]
   "email" varchar(255) [default: NULL
-    ]
+  ]
   "logo" varchar(255) [default: NULL
-    ]
+  ]
   "settings" longtext [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "has_table_system" tinyint(1) [not null, default: 0
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "outlet_payment_links"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "payment_method_id" bigint(20) [not null
-    ]
+  ]
   "account_number" varchar(255) [default: NULL
-    ]
+  ]
   "account_name" varchar(255) [default: NULL
-    ]
+  ]
   "qr_image" varchar(255) [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "outlet_policies"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "title" varchar(255) [not null
-    ]
+  ]
   "content" text [not null
-    ]
+  ]
   "category" varchar(255) [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "password_reset_tokens"{
-    "email" varchar(255) [pk, not null
-    ]
+  "email" varchar(255) [pk, not null
+  ]
   "token" varchar(255) [not null
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "payment_methods"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "code" varchar(255) [not null
-    ]
+  ]
   "icon" varchar(255) [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "permissions"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "guard_name" varchar(255) [not null
-    ]
+  ]
   "permission_category_id" bigint(20) [default: NULL
-    ]
+  ]
   "description" varchar(255) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "permission_categories"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "slug" varchar(255) [not null
-    ]
+  ]
   "description" varchar(255) [default: NULL
-    ]
+  ]
   "icon" varchar(255) [default: NULL
-    ]
+  ]
   "color" varchar(255) [default: NULL
-    ]
+  ]
   "order" int(11) [not null, default: 0
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "personal_access_tokens"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "tokenable_type" varchar(255) [not null
-    ]
+  ]
   "tokenable_id" bigint(20) [not null
-    ]
+  ]
   "name" text [not null
-    ]
+  ]
   "token" varchar(64) [not null
-    ]
+  ]
   "abilities" text [default: NULL
-    ]
+  ]
   "last_used_at" timestamp [default: NULL
-    ]
+  ]
   "expires_at" timestamp [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "productions"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "batch_number" varchar(255) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "product_id" bigint(20) [not null
-    ]
+  ]
   "recipe_id" bigint(20) [default: NULL
-    ]
+  ]
   "planned_quantity" decimal(15,
-    4) [not null
-    ]
+  4) [not null
+  ]
   "actual_quantity" decimal(15,
-    4) [default: NULL
-    ]
+  4) [default: NULL
+  ]
   "waste_quantity" decimal(15,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "status" productions_status_enum [not null, default: 'planned'
-    ]
+  ]
   "is_disposed" tinyint(1) [not null, default: 0
-    ]
+  ]
   "started_at" datetime [default: NULL
-    ]
+  ]
   "completed_at" datetime [default: NULL
-    ]
+  ]
   "expired_at" date [default: NULL
-    ]
+  ]
   "total_material_cost" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_additional_cost" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_cost" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_by" bigint(20) [default: NULL
-    ]
+  ]
   "completed_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "production_items"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "production_id" bigint(20) [not null
-    ]
+  ]
   "raw_material_id" bigint(20) [not null
-    ]
+  ]
   "planned_quantity" decimal(15,
-    6) [not null
-    ]
+  6) [not null
+  ]
   "actual_quantity" decimal(15,
-    6) [default: NULL
-    ]
+  6) [default: NULL
+  ]
   "unit_price" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "total_price" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "products"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "code" varchar(30) [not null
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "barcode" varchar(50) [default: NULL
-    ]
+  ]
   "category_id" bigint(20) [default: NULL
-    ]
+  ]
   "unit_id" bigint(20) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "hpp" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "selling_price" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "reseller_price" decimal(15,
-    2) [default: NULL
-    ]
+  2) [default: NULL
+  ]
   "promo_price" decimal(15,
-    2) [default: NULL
-    ]
+  2) [default: NULL
+  ]
   "margin_percent" decimal(8,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "min_stock" decimal(15,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "shelf_life_days" int(11) [default: NULL
-    ]
+  ]
   "image" varchar(255) [default: NULL
-    ]
+  ]
   "description" text [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "is_sellable" tinyint(1) [not null, default: 1
-    ]
+  ]
   "track_stock" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "product_sales_targets"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "product_id" bigint(20) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "monthly_target_revenue" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "hpp_per_unit" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "selling_price" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "daily_sales_target" int(11) [not null
-    ]
+  ]
   "monthly_sales_target" int(11) [not null
-    ]
+  ]
   "daily_revenue_target" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "profit_per_unit" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "monthly_profit_target" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "sales_pattern" longtext [default: NULL
-    ]
+  ]
   "target_start_date" date [not null
-    ]
+  ]
   "target_end_date" date [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_by" bigint(20) [not null
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "product_stocks"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "product_id" bigint(20) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "quantity" decimal(15,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "purchases"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "purchase_number" varchar(50) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "supplier_id" bigint(20) [default: NULL
-    ]
+  ]
   "subtotal" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "discount_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "tax_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "shipping_cost" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "grand_total" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "paid_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "payment_status" purchases_payment_status_enum [not null, default: 'unpaid'
-    ]
+  ]
   "status" purchases_status_enum [not null, default: 'draft'
-    ]
+  ]
   "purchase_date" date [not null
-    ]
+  ]
   "expected_date" date [default: NULL
-    ]
+  ]
   "received_date" date [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "invoice_number" varchar(255) [default: NULL
-    ]
+  ]
   "created_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "purchase_items"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "purchase_id" bigint(20) [not null
-    ]
+  ]
   "raw_material_id" bigint(20) [not null
-    ]
+  ]
   "quantity" decimal(15,
-    4) [not null
-    ]
+  4) [not null
+  ]
   "received_quantity" decimal(15,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "remaining_quantity" decimal(16,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "is_disposed" tinyint(1) [not null, default: 0
-    ]
+  ]
   "unit_price" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "discount_percent" decimal(8,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "discount_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "subtotal" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "expired_at" date [default: NULL
-    ]
+  ]
   "batch_number" varchar(255) [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "raw_materials"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "code" varchar(30) [not null
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "barcode" varchar(50) [default: NULL
-    ]
+  ]
   "category_id" bigint(20) [default: NULL
-    ]
+  ]
   "outlet_id" bigint(20) [default: NULL
-    ]
+  ]
   "unit_id" bigint(20) [not null
-    ]
+  ]
   "supplier_id" bigint(20) [default: NULL
-    ]
+  ]
   "purchase_price" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "min_stock" decimal(15,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "shelf_life_days" int(11) [default: NULL
-    ]
+  ]
   "image" varchar(255) [default: NULL
-    ]
+  ]
   "description" text [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "raw_material_stocks"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "raw_material_id" bigint(20) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "quantity" decimal(15,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "avg_purchase_price" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "recipes"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "product_id" bigint(20) [not null
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "output_quantity" decimal(15,
-    4) [not null, default: 1.0000
-    ]
+  4) [not null, default: 1.0000
+  ]
   "instructions" text [default: NULL
-    ]
+  ]
   "estimated_time_minutes" int(11) [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "is_default" tinyint(1) [not null, default: 0
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "recipe_items"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "recipe_id" bigint(20) [not null
-    ]
+  ]
   "raw_material_id" bigint(20) [not null
-    ]
+  ]
   "quantity" decimal(15,
-    6) [not null
-    ]
+  6) [not null
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "sort_order" int(11) [not null, default: 0
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "report_schedules"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [default: NULL
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "report_type" report_schedules_report_type_enum [not null
-    ]
+  ]
   "frequency" report_schedules_frequency_enum [not null
-    ]
+  ]
   "day_of_week" varchar(255) [default: NULL
-    ]
+  ]
   "day_of_month" int(11) [default: NULL
-    ]
+  ]
   "send_time" time [not null, default: '08: 00: 00'
-    ]
+  ]
   "recipients" longtext [not null
-    ]
+  ]
   "format" report_schedules_format_enum [not null, default: 'pdf'
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "last_sent_at" timestamp [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "roles"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "guard_name" varchar(255) [not null
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "role_has_permissions"{
-    "permission_id" bigint(20) [pk, not null
-    ]
+  "permission_id" bigint(20) [pk, not null
+  ]
   "role_id" bigint(20) [pk, not null
-    ]
+  ]
 }
 
 Table "sales"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "invoice_number" varchar(50) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "customer_id" bigint(20) [default: NULL
-    ]
+  ]
   "cashier_id" bigint(20) [not null
-    ]
+  ]
   "subtotal" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "discount_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "tax_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "tax_percent" decimal(5,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "grand_total" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "paid_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "change_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "payment_method" sales_payment_method_enum [not null, default: 'cash'
-    ]
+  ]
   "service_type" sales_service_type_enum [not null, default: 'take_away'
-    ]
+  ]
   "table_id" bigint(20) [default: NULL
-    ]
+  ]
   "outlet_payment_link_id" bigint(20) [default: NULL
-    ]
+  ]
   "payment_status" sales_payment_status_enum [not null, default: 'pending'
-    ]
+  ]
   "midtrans_order_id" varchar(255) [default: NULL
-    ]
+  ]
   "midtrans_transaction_id" varchar(255) [default: NULL
-    ]
+  ]
   "midtrans_payment_type" varchar(255) [default: NULL
-    ]
+  ]
   "midtrans_response" longtext [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "customer_notes" text [default: NULL
-    ]
+  ]
   "status" sales_status_enum [not null, default: 'draft'
-    ]
+  ]
   "is_synced" tinyint(1) [not null, default: 1
-    ]
+  ]
   "completed_at" datetime [default: NULL
-    ]
+  ]
   "refunded_at" datetime [default: NULL
-    ]
+  ]
   "is_reported" tinyint(1) [not null, default: 0
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "sale_items"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "sale_id" bigint(20) [not null
-    ]
+  ]
   "product_id" bigint(20) [not null
-    ]
+  ]
   "product_name" varchar(255) [not null
-    ]
+  ]
   "quantity" decimal(15,
-    4) [not null
-    ]
+  4) [not null
+  ]
   "unit_price" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "discount_percent" decimal(8,
-    4) [not null, default: 0.0000
-    ]
+  4) [not null, default: 0.0000
+  ]
   "discount_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "subtotal" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "hpp" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "profit" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "sale_payments"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "sale_id" bigint(20) [not null
-    ]
+  ]
   "payment_method" sale_payments_payment_method_enum [not null
-    ]
+  ]
   "amount" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "reference_number" varchar(255) [default: NULL
-    ]
+  ]
   "midtrans_transaction_id" varchar(255) [default: NULL
-    ]
+  ]
   "payment_details" longtext [default: NULL
-    ]
+  ]
   "received_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "sessions"{
-    "id" varchar(255) [pk, not null
-    ]
+  "id" varchar(255) [pk, not null
+  ]
   "user_id" bigint(20) [default: NULL
-    ]
+  ]
   "ip_address" varchar(45) [default: NULL
-    ]
+  ]
   "user_agent" text [default: NULL
-    ]
+  ]
   "payload" longtext [not null
-    ]
+  ]
   "last_activity" int(11) [not null
-    ]
+  ]
 }
 
 Table "settings"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [default: NULL
-    ]
+  ]
   "group" varchar(50) [not null
-    ]
+  ]
   "key" varchar(255) [not null
-    ]
+  ]
   "value" text [default: NULL
-    ]
+  ]
   "type" varchar(20) [not null, default: 'string'
-    ]
+  ]
   "description" text [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "stock_movements"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "stockable_type" varchar(255) [not null
-    ]
+  ]
   "stockable_id" bigint(20) [not null
-    ]
+  ]
   "type" stock_movements_type_enum [not null
-    ]
+  ]
   "quantity" decimal(15,
-    4) [not null
-    ]
+  4) [not null
+  ]
   "quantity_before" decimal(15,
-    4) [not null
-    ]
+  4) [not null
+  ]
   "quantity_after" decimal(15,
-    4) [not null
-    ]
+  4) [not null
+  ]
   "unit_price" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "reference_type" varchar(255) [default: NULL
-    ]
+  ]
   "reference_id" bigint(20) [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "expired_at" date [default: NULL
-    ]
+  ]
   "batch_number" varchar(255) [default: NULL
-    ]
+  ]
   "created_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "stock_notifications"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "stockable_type" varchar(255) [not null
-    ]
+  ]
   "stockable_id" bigint(20) [not null
-    ]
+  ]
   "type" stock_notifications_type_enum [not null
-    ]
+  ]
   "title" varchar(255) [not null
-    ]
+  ]
   "message" text [not null
-    ]
+  ]
   "current_stock" decimal(15,
-    4) [default: NULL
-    ]
+  4) [default: NULL
+  ]
   "min_stock" decimal(15,
-    4) [default: NULL
-    ]
+  4) [default: NULL
+  ]
   "days_until_expiry" int(11) [default: NULL
-    ]
+  ]
   "is_read" tinyint(1) [not null, default: 0
-    ]
+  ]
   "is_sent_email" tinyint(1) [not null, default: 0
-    ]
+  ]
   "is_sent_wa" tinyint(1) [not null, default: 0
-    ]
+  ]
   "read_at" datetime [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "stock_opnames"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "opname_number" varchar(50) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "type" stock_opnames_type_enum [not null
-    ]
+  ]
   "status" stock_opnames_status_enum [not null, default: 'draft'
-    ]
+  ]
   "started_at" datetime [default: NULL
-    ]
+  ]
   "completed_at" datetime [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_by" bigint(20) [default: NULL
-    ]
+  ]
   "approved_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "stock_opname_items"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "stock_opname_id" bigint(20) [not null
-    ]
+  ]
   "stockable_type" varchar(255) [not null
-    ]
+  ]
   "stockable_id" bigint(20) [not null
-    ]
+  ]
   "system_quantity" decimal(15,
-    4) [not null
-    ]
+  4) [not null
+  ]
   "physical_quantity" decimal(15,
-    4) [default: NULL
-    ]
+  4) [default: NULL
+  ]
   "difference" decimal(15,
-    4) [default: NULL
-    ]
+  4) [default: NULL
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "stock_transfers"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "transfer_number" varchar(50) [not null
-    ]
+  ]
   "from_outlet_id" bigint(20) [not null
-    ]
+  ]
   "to_outlet_id" bigint(20) [not null
-    ]
+  ]
   "status" stock_transfers_status_enum [not null, default: 'draft'
-    ]
+  ]
   "sent_at" datetime [default: NULL
-    ]
+  ]
   "received_at" datetime [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_by" bigint(20) [default: NULL
-    ]
+  ]
   "received_by" bigint(20) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "stock_transfer_items"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "stock_transfer_id" bigint(20) [not null
-    ]
+  ]
   "stockable_type" varchar(255) [not null
-    ]
+  ]
   "stockable_id" bigint(20) [not null
-    ]
+  ]
   "quantity" decimal(15,
-    4) [not null
-    ]
+  4) [not null
+  ]
   "received_quantity" decimal(15,
-    4) [default: NULL
-    ]
+  4) [default: NULL
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "suppliers"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "code" varchar(20) [not null
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "contact_person" varchar(255) [default: NULL
-    ]
+  ]
   "phone" varchar(20) [default: NULL
-    ]
+  ]
   "email" varchar(255) [default: NULL
-    ]
+  ]
   "address" text [default: NULL
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "tables"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "table_number" varchar(20) [not null
-    ]
+  ]
   "code" varchar(50) [default: NULL
-    ]
+  ]
   "name" varchar(255) [default: NULL
-    ]
+  ]
   "capacity" int(11) [not null, default: 4
-    ]
+  ]
   "location" varchar(255) [default: NULL
-    ]
+  ]
   "status" tables_status_enum [not null, default: 'available'
-    ]
+  ]
   "notes" text [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
+}
+
+
+Table "tasks"{
+  "id" bigint(20) [pk, not null
+  ]
+  "title" varchar(255) [not null
+  ]
+  "description" text [default: NULL
+  ]
+  "status_id" bigint(20) [not null
+  ]
+  "priority" tasks_priority_enum [not null, default: 'medium'
+  ]
+  "deadline" datetime [default: NULL
+  ]
+  "created_by" bigint(20) [not null
+  ]
+  "created_at" timestamp [default: NULL
+  ]
+  "updated_at" timestamp [default: NULL
+  ]
+  "deleted_at" timestamp [default: NULL
+  ]
+}
+
+Table "task_activities"{
+  "id" bigint(20) [pk, not null
+  ]
+  "task_id" bigint(20) [not null
+  ]
+  "user_id" bigint(20) [default: NULL
+  ]
+  "action" varchar(255) [not null
+  ]
+  "field" varchar(255) [default: NULL
+  ]
+  "old_value" text [default: NULL
+  ]
+  "new_value" text [default: NULL
+  ]
+  "created_at" timestamp [default: NULL
+  ]
+  "updated_at" timestamp [default: NULL
+  ]
+}
+
+Table "task_assignments"{
+  "id" bigint(20) [pk, not null
+  ]
+  "task_id" bigint(20) [not null
+  ]
+  "user_id" bigint(20) [not null
+  ]
+  "created_at" timestamp [default: NULL
+  ]
+  "updated_at" timestamp [default: NULL
+  ]
+}
+
+Table "task_labels"{
+  "id" bigint(20) [pk, not null
+  ]
+  "name" varchar(255) [not null
+  ]
+  "color" varchar(7) [not null, default: '#6B7280'
+  ]
+  "created_at" timestamp [default: NULL
+  ]
+  "updated_at" timestamp [default: NULL
+  ]
+}
+
+Table "task_label_assignments"{
+  "id" bigint(20) [pk, not null
+  ]
+  "task_id" bigint(20) [not null
+  ]
+  "label_id" bigint(20) [not null
+  ]
+  "created_at" timestamp [default: NULL
+  ]
+  "updated_at" timestamp [default: NULL
+  ]
+}
+
+Table "task_statuses"{
+  "id" bigint(20) [pk, not null
+  ]
+  "name" varchar(255) [not null
+  ]
+  "slug" varchar(255) [not null
+  ]
+  "color" varchar(7) [not null, default: '#6B7280'
+  ]
+  "order" int(11) [not null, default: 0
+  ]
+  "created_at" timestamp [default: NULL
+  ]
+  "updated_at" timestamp [default: NULL
+  ]
 }
 
 Table "testimonials"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [not null
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "role" varchar(255) [default: NULL
-    ]
+  ]
   "content" text [not null
-    ]
+  ]
   "rating" int(11) [not null, default: 5
-    ]
+  ]
   "image" varchar(255) [default: NULL
-    ]
+  ]
   "is_published" tinyint(1) [not null, default: 0
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "units"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "abbreviation" varchar(10) [not null
-    ]
+  ]
   "base_unit_id" bigint(20) [default: NULL
-    ]
+  ]
   "conversion_factor" decimal(15,
-    6) [not null, default: 1.000000
-    ]
+  6) [not null, default: 1.000000
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "users"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "outlet_id" bigint(20) [default: NULL
-    ]
+  ]
   "name" varchar(255) [not null
-    ]
+  ]
   "email" varchar(255) [not null
-    ]
+  ]
   "phone" varchar(20) [default: NULL
-    ]
+  ]
   "email_verified_at" timestamp [default: NULL
-    ]
+  ]
   "password" varchar(255) [not null
-    ]
+  ]
   "remember_token" varchar(100) [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
   "avatar" varchar(255) [default: NULL
-    ]
+  ]
   "is_active" tinyint(1) [not null, default: 1
-    ]
+  ]
   "last_login_at" timestamp [default: NULL
-    ]
+  ]
   "deleted_at" timestamp [default: NULL
-    ]
+  ]
   "daily_chat_quota" int(11) [not null, default: 3
-    ]
+  ]
   "last_chat_reset_date" date [default: NULL
-    ]
+  ]
 }
 
 Table "user_withdraw_locks"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "user_id" bigint(20) [not null
-    ]
+  ]
   "attempts" tinyint(3) [not null, default: 0
-    ]
+  ]
   "locked_until" timestamp [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Table "withdrawals"{
-    "id" bigint(20) [pk, not null
-    ]
+  "id" bigint(20) [pk, not null
+  ]
   "user_id" bigint(20) [not null
-    ]
+  ]
   "outlet_id" bigint(20) [default: NULL
-    ]
+  ]
   "payment_method_id" bigint(20) [default: NULL
-    ]
+  ]
   "amount" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "tax_percent" decimal(5,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "tax_amount" decimal(15,
-    2) [not null, default: 0.00
-    ]
+  2) [not null, default: 0.00
+  ]
   "net_amount" decimal(15,
-    2) [not null
-    ]
+  2) [not null
+  ]
   "payment_method" varchar(255) [not null
-    ]
+  ]
   "account_number" varchar(255) [not null
-    ]
+  ]
   "account_name" varchar(255) [not null
-    ]
+  ]
   "status" withdrawals_status_enum [not null, default: 'pending'
-    ]
+  ]
   "proof_image" varchar(255) [default: NULL
-    ]
+  ]
   "admin_note" text [default: NULL
-    ]
+  ]
   "processed_by" bigint(20) [default: NULL
-    ]
+  ]
   "processed_at" timestamp [default: NULL
-    ]
+  ]
   "created_at" timestamp [default: NULL
-    ]
+  ]
   "updated_at" timestamp [default: NULL
-    ]
+  ]
 }
 
 Ref "additional_costs_recipe_id_foreign": "recipes"."id" < "additional_costs"."recipe_id"[delete: cascade
@@ -2355,35 +2426,26 @@ Ref "withdrawals_processed_by_foreign": "users"."id" < "withdrawals"."processed_
 Ref "withdrawals_user_id_foreign": "users"."id" < "withdrawals"."user_id"[delete: cascade
 ]
 
-Ref "barang_keluars_id_barang_foreign": "barangs"."id" < "barang_keluars"."id_barang"[delete: cascade
+
+Ref "tasks_created_by_foreign": "users"."id" < "tasks"."created_by"[delete: cascade
 ]
 
-Ref "barang_keluars_ruangan_id_foreign": "ruangans"."id" < "barang_keluars"."ruangan_id"[delete: cascade
+Ref "tasks_status_id_foreign": "task_statuses"."id" < "tasks"."status_id"
+
+Ref "task_activities_task_id_foreign": "tasks"."id" < "task_activities"."task_id"[delete: cascade
 ]
 
-Ref "barang_masuks_id_barang_foreign": "barangs"."id" < "barang_masuks"."id_barang"[delete: cascade
+Ref "task_activities_user_id_foreign": "users"."id" < "task_activities"."user_id"[delete: set null
 ]
 
-Ref "barang_masuks_ruangan_id_foreign": "ruangans"."id" < "barang_masuks"."ruangan_id"[delete: cascade
+Ref "task_assignments_task_id_foreign": "tasks"."id" < "task_assignments"."task_id"[delete: cascade
 ]
 
-Ref "barang_ruangans_barang_id_foreign": "barangs"."id" < "barang_ruangans"."barang_id"[delete: cascade
+Ref "task_assignments_user_id_foreign": "users"."id" < "task_assignments"."user_id"[delete: cascade
 ]
 
-Ref "barang_ruangans_ruangan_id_foreign": "ruangans"."id" < "barang_ruangans"."ruangan_id"[delete: cascade
+Ref "task_label_assignments_label_id_foreign": "task_labels"."id" < "task_label_assignments"."label_id"[delete: cascade
 ]
 
-Ref "peminjamans_id_barang_foreign": "barangs"."id" < "peminjamans"."id_barang"[delete: cascade
-]
-
-Ref "peminjamans_ruangan_id_foreign": "ruangans"."id" < "peminjamans"."ruangan_id"[delete: cascade
-]
-
-Ref "pengembalians_id_barang_foreign": "barangs"."id" < "pengembalians"."id_barang"[delete: cascade
-]
-
-Ref "pengembalians_id_peminjam_foreign": "peminjamans"."id" < "pengembalians"."id_peminjam"[delete: set null
-]
-
-Ref "pengembalians_ruangan_id_foreign": "ruangans"."id" < "pengembalians"."ruangan_id"[delete: cascade
+Ref "task_label_assignments_task_id_foreign": "tasks"."id" < "task_label_assignments"."task_id"[delete: cascade
 ]

@@ -33,7 +33,7 @@ class SaleController extends Controller
             ->completed()
             ->whereBetween('created_at', [$startOfDay, $endOfDay]);
 
-        if (!auth()->user()->can('lihat semua penjualan')) {
+        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
             $salesQuery->where('cashier_id', auth()->id());
         }
 
@@ -47,7 +47,7 @@ class SaleController extends Controller
             ->where('status', 'refunded')
             ->whereBetween('created_at', [$startOfDay, $endOfDay]);
         
-        if (!auth()->user()->can('lihat semua penjualan')) {
+        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
             $refundQuery->where('cashier_id', auth()->id());
         }
         
@@ -72,13 +72,13 @@ class SaleController extends Controller
 
         // Get all-time summary (if no date selected or for comparison)
         $allTimeRevenueQuery = Sale::where('outlet_id', $outletId)->completed();
-        if (!auth()->user()->can('lihat semua penjualan')) {
+        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
             $allTimeRevenueQuery->where('cashier_id', auth()->id());
         }
         $allTimeRevenue = $allTimeRevenueQuery->sum('grand_total');
 
         $allTimeProfitQuery = Sale::where('outlet_id', $outletId)->completed();
-        if (!auth()->user()->can('lihat semua penjualan')) {
+        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
             $allTimeProfitQuery->where('cashier_id', auth()->id());
         }
         $allTimeProfit = $allTimeProfitQuery->get()->sum(fn ($s) => $s->getTotalProfit());
@@ -252,9 +252,9 @@ public function daily(Request $request): JsonResponse
         ->completed()
         ->whereBetween('created_at', [$startOfDay, $endOfDay]);
 
-    if (!auth()->user()->can('lihat semua penjualan')) {
-        $salesQuery->where('cashier_id', auth()->id());
-    }
+        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
+            $salesQuery->where('cashier_id', auth()->id());
+        }
 
     $sales = $salesQuery->with(['cashier', 'customer', 'debt']) // ✅ Tambahkan 'debt' di sini
         ->orderBy('created_at', 'desc')

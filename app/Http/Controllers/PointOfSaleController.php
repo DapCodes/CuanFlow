@@ -58,7 +58,10 @@ class PointOfSaleController extends Controller
             ->with(['paymentMethod'])
             ->get();
 
-        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories', 'cartSummary', 'activeDiscountPlan', 'outletPaymentLinks'));
+        $selectedCustomerId = Session::get('pos_customer_id');
+        $selectedCustomer = $selectedCustomerId ? Customer::find($selectedCustomerId) : null;
+
+        return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories', 'cartSummary', 'activeDiscountPlan', 'outletPaymentLinks', 'selectedCustomer'));
     }
 
     public function checkCashRegister()
@@ -388,13 +391,41 @@ class PointOfSaleController extends Controller
 
         if ($request->customer_id) {
             Session::put('pos_customer_id', $request->customer_id);
+            $customer = Customer::find($request->customer_id);
         } else {
             Session::forget('pos_customer_id');
+            $customer = null;
+        }
+
+        // RECALCULATE CART PRICES
+        $cart = Session::get('pos_cart', []);
+        if (!empty($cart)) {
+            foreach ($cart as $key => $item) {
+                $product = Product::find($item['product_id']);
+                if ($product) {
+                    $price = $product->selling_price;
+                    if ($customer) {
+                        if ($customer->type === 'reseller' && $product->reseller_price) {
+                            $price = $product->reseller_price;
+                        } elseif ($customer->type === 'vip' && $product->promo_price) {
+                            $price = $product->promo_price;
+                        }
+                    }
+                    $cart[$key]['unit_price'] = $price;
+                    $cart[$key]['subtotal'] = ($price * $item['quantity']) - ($item['discount_amount'] ?? 0);
+                }
+            }
+            Session::put('pos_cart', $cart);
+            // Re-apply discounts if any
+            $this->autoApplyNonVoucherDiscount();
+            $cart = Session::get('pos_cart', []); // Refresh after autoApply
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Customer berhasil diset',
+            'cart' => $cart,
+            'cart_summary' => $this->calculateCartSummary($cart)
         ]);
     }
 
@@ -733,13 +764,11 @@ class PointOfSaleController extends Controller
 
         $query = $request->input('q');
 
-        $customers = Customer::where('is_active', true)
-            ->where(function($q) use ($query) {
+        $customers = Customer::where(function($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                   ->orWhere('phone', 'like', "%{$query}%")
                   ->orWhere('code', 'like', "%{$query}%");
             })
-            ->limit(10)
             ->get(['id', 'name', 'code', 'phone', 'type', 'total_debt']);
 
         return response()->json($customers);

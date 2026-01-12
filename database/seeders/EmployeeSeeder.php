@@ -17,7 +17,7 @@ class EmployeeSeeder extends Seeder
         $employees = [
             [
                 'name' => 'Daffa Ramadhan Kasir 1',
-                'email' => 'daffaramadgan929@gmail.com',
+                'email' => 'daffaramadhan929@gmail.com',
                 'role' => 'kasir',
             ],
             [

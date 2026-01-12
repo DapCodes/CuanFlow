@@ -1319,6 +1319,8 @@
                             data-product-code="{{ $product->code }}"
                             data-product-barcode="{{ $product->barcode }}"
                             data-product-price="{{ $product->selling_price }}"
+                            data-product-reseller-price="{{ $product->reseller_price }}"
+                            data-product-promo-price="{{ $product->promo_price }}"
                             data-product-hpp="{{ $product->hpp }}"
                             data-category="{{ $product->category_id }}"
                             onclick="addProductToCart(this)">
@@ -5798,12 +5800,31 @@ function closeSaleDetailModal() {
         }
     }
 </script>
-
+<script>
     // ==========================================
     // CUSTOMER SEARCH LOGIC
     // ==========================================
-    let currentCustomer = null;
+    let currentCustomer = @json($selectedCustomer);
     let customerSearchTimeout = null;
+
+    function updateProductPricesUI() {
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+            let price = parseFloat(card.dataset.productPrice);
+            if (currentCustomer) {
+                if (currentCustomer.type === 'reseller' && card.dataset.productResellerPrice && card.dataset.productResellerPrice !== '') {
+                    price = parseFloat(card.dataset.productResellerPrice);
+                } else if (currentCustomer.type === 'vip' && card.dataset.productPromoPrice && card.dataset.productPromoPrice !== '') {
+                    price = parseFloat(card.dataset.productPromoPrice);
+                }
+            }
+            
+            const priceEl = card.querySelector('.product-price');
+            if (priceEl) {
+                priceEl.innerText = 'Rp ' + formatNumber(price);
+            }
+        });
+    }
 
     function initCustomerSearch() {
         const searchInput = document.getElementById('searchCustomer');
@@ -5847,6 +5868,15 @@ function closeSaleDetailModal() {
                 resultsContainer.classList.remove('hidden');
             }
         });
+
+        // Initial UI setup if customer already set
+        if (currentCustomer) {
+            searchInput.value = `${currentCustomer.name} (${currentCustomer.type.toUpperCase()})`;
+            searchInput.disabled = true;
+            searchInput.classList.add('bg-orange-50', 'text-orange-900', 'font-semibold');
+            clearBtn.classList.remove('hidden');
+            updateProductPricesUI();
+        }
     }
 
     async function fetchCustomers(query) {
@@ -5907,6 +5937,9 @@ function closeSaleDetailModal() {
         resultsContainer.classList.add('hidden');
         clearBtn.classList.remove('hidden');
 
+        // Update product list prices
+        updateProductPricesUI();
+
         // Send to Backend
         try {
             const response = await fetch('{{ route('pos.customer.set') }}', {
@@ -5918,14 +5951,17 @@ function closeSaleDetailModal() {
                 body: JSON.stringify({ customer_id: customer.id })
             });
 
-            if(response.ok) {
-                showToast('Pelanggan dipilih: ' + customer.name, 'success');
-                // Optional: Recalculate cart prices if they depend on customer type
-                // Would require creating a reloadCart() function or similar
+            const data = await response.json();
+            if(data.success) {
+                showToast('success', 'Pelanggan dipilih: ' + customer.name);
+                // Update cart state with new prices
+                cart = data.cart;
+                cartSummary = data.cart_summary;
+                renderCart();
             }
         } catch(e) {
             console.error(e);
-            showToast('Gagal set pelanggan', 'error');
+            showToast('error', 'Gagal set pelanggan');
         }
     }
 
@@ -5939,17 +5975,30 @@ function closeSaleDetailModal() {
         searchInput.classList.remove('bg-orange-50', 'text-orange-900', 'font-semibold');
         clearBtn.classList.add('hidden');
         
-        // Send Clear to Backend
-        await fetch('{{ route('pos.customer.set') }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ customer_id: null })
-        });
+        // Update product list prices back to normal
+        updateProductPricesUI();
         
-        showToast('Pelanggan di-reset', 'info');
+        // Send Clear to Backend
+        try {
+            const response = await fetch('{{ route('pos.customer.set') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ customer_id: null })
+            });
+            const data = await response.json();
+            if (data.success) {
+                cart = data.cart;
+                cartSummary = data.cart_summary;
+                renderCart();
+                showToast('info', 'Pelanggan di-reset');
+            }
+        } catch(e) {
+            console.error(e);
+            showToast('error', 'Gagal reset pelanggan');
+        }
     }
 
     // Initialize on load
@@ -6008,5 +6057,5 @@ function closeSaleDetailModal() {
         
         modal.classList.remove('hidden');
     }
-
+</script>
 @endpush

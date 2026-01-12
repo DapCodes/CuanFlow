@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             TableSeeder::class,
             PaymentMethodSeeder::class,
             SaleSeeder::class,
+            CustomerDummySeeder::class,
+            ResellerApplicationSeeder::class,
             EmployeeSeeder::class,
         ]);
 

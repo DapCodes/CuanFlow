@@ -610,7 +610,7 @@ class RolePermissionSeeder extends Seeder
             'proses pembayaran digital', 'terapkan diskon pos', 'cetak ulang struk',
             'pilih meja pos', 'pilih pelanggan pos',
             // Penjualan
-            'lihat penjualan', 'lihat detail penjualan', 'lihat penjualan harian',
+            'lihat penjualan', 'lihat semua penjualan', 'lihat detail penjualan', 'lihat penjualan harian',
             'cetak struk penjualan', 'unduh struk penjualan',
             // Diskon
             'lihat diskon',
