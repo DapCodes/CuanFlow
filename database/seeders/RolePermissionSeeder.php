@@ -322,6 +322,10 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'validasi pendapatan', 'category' => 'keuangan', 'description' => 'Memvalidasi data pendapatan'],
             ['name' => 'lihat keuangan harian', 'category' => 'keuangan', 'description' => 'Melihat ringkasan keuangan hari ini'],
             ['name' => 'lihat grafik keuangan', 'category' => 'keuangan', 'description' => 'Melihat grafik pendapatan dan pengeluaran'],
+            ['name' => 'setujui pemasukan', 'category' => 'keuangan', 'description' => 'Menyetujui data pemasukan'],
+            ['name' => 'setujui pengeluaran', 'category' => 'keuangan', 'description' => 'Menyetujui data pengeluaran'],
+
+            ['name' => 'buat penarikan', 'category' => 'keuangan', 'description' => 'Membuat penarikan uang'],
 
             // Metode Pembayaran
             ['name' => 'lihat metode pembayaran', 'category' => 'metode-pembayaran', 'description' => 'Melihat daftar metode pembayaran'],
@@ -555,6 +559,7 @@ class RolePermissionSeeder extends Seeder
             // Keuangan
             'lihat keuangan', 'buat pemasukan', 'edit pemasukan', 'buat pengeluaran', 'edit pengeluaran',
             'validasi pendapatan', 'lihat keuangan harian', 'lihat grafik keuangan',
+            'setujui pemasukan', 'setujui pengeluaran', 'buat penarikan',
             // Statistik
             'lihat statistik', 'ekspor statistik', 'lihat grafik penjualan',
             'lihat grafik produk terlaris', 'lihat grafik kategori', 'lihat grafik per jam',
@@ -611,7 +616,7 @@ class RolePermissionSeeder extends Seeder
             'pilih meja pos', 'pilih pelanggan pos',
             // Penjualan
             'lihat penjualan', 'lihat semua penjualan', 'lihat detail penjualan', 'lihat penjualan harian',
-            'cetak struk penjualan', 'unduh struk penjualan',
+            'cetak struk penjualan', 'unduh struk penjualan', 'buat penarikan',
             // Diskon
             'lihat diskon',
             // Produk
@@ -687,18 +692,6 @@ class RolePermissionSeeder extends Seeder
             'edit profil', 'update profil',
             // Task Management
             'tasks.view', 'tasks.create', 'tasks.update', 'tasks.assign',
-        ]);
-
-        // SUPPLIER (Pemasok / Vendor)
-        $supplierRole = Role::create(['name' => 'supplier', 'guard_name' => 'web']);
-        $supplierRole->syncPermissions([
-            'lihat dashboard',
-            'lihat produk',
-            'lihat bahan baku',
-            'lihat supplier',
-            'lihat detail supplier',
-            'edit profil',
-            'update profil',
         ]);
 
         // RESELLER

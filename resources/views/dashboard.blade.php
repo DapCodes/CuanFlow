@@ -320,6 +320,11 @@
     .menu-card:nth-child(23) { animation-delay: 1.15s; }
     .menu-card:nth-child(24) { animation-delay: 1.2s; }
     .menu-card:nth-child(25) { animation-delay: 1.25s; }
+    .menu-card:nth-child(26) { animation-delay: 1.3s; }
+    .menu-card:nth-child(27) { animation-delay: 1.35s; }
+    .menu-card:nth-child(28) { animation-delay: 1.4s; }
+    .menu-card:nth-child(29) { animation-delay: 1.45s; }
+    .menu-card:nth-child(30) { animation-delay: 1.5s; }
 
 
     .backdrop-blur-effect { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
@@ -616,6 +621,37 @@
     </a>
 @endcan
 
+@can('buat pemasukan')
+    <a href="{{ route('expenses.index', ['type' => 'income']) }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow relative">
+            <i class="fa-solid fa-arrow-trend-up text-3xl sm:text-4xl text-white"></i>
+            <div class="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center border-2 border-emerald-100">
+                <i class="fa-solid fa-plus text-xs text-emerald-500 font-bold"></i>
+            </div>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Pemasukan Lain
+        </span>
+    </a>
+@endcan
+
+@can('buat pengeluaran')
+    <a href="{{ route('expenses.index', ['type' => 'expense']) }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow relative">
+            <i class="fa-solid fa-receipt text-3xl sm:text-4xl text-white"></i>
+            <div class="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center border-2 border-orange-100">
+                <i class="fa-solid fa-minus text-xs text-orange-500 font-bold"></i>
+            </div>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Biaya Ops
+        </span>
+    </a>
+@endcan
+
+@can('buat penarikan')
     <a href="{{ route('withdraw.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="4"
@@ -628,6 +664,7 @@
             Penarikan Saldo
         </span>
     </a>
+@endcan
 
 @can('lihat metode pembayaran')
     <a href="{{ route('outlet-payment-links.index') }}"

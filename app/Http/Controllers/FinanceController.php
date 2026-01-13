@@ -22,7 +22,7 @@ class FinanceController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         $selectedDate = $request->get('date', now()->format('Y-m-d'));
-        $expensePeriod = $request->get('expense_period', 'today');
+        $expensePeriod = $request->get('expense_period', 'month');
         $expenseStartDate = $request->get('expense_start_date');
         $expenseEndDate = $request->get('expense_end_date');
 
@@ -39,7 +39,9 @@ class FinanceController extends Controller
         
         $dailyOtherIncome = abs(Expense::where('outlet_id', $outletId)
             ->whereDate('expense_date', Carbon::parse($selectedDate))
-            ->where('amount', '<', 0)->sum('amount'));
+            ->where('amount', '<', 0)
+            ->where('status', 'approved')
+            ->sum('amount'));
 
         $dailyRevenue = $dailySales + $dailyOtherIncome;
 
@@ -55,7 +57,9 @@ class FinanceController extends Controller
         $weeklyOtherIncome = abs(Expense::where('outlet_id', $outletId)
             ->whereDate('expense_date', '>=', $startOfWeek->toDateString())
             ->whereDate('expense_date', '<=', $endOfWeek->toDateString())
-            ->where('amount', '<', 0)->sum('amount'));
+            ->where('amount', '<', 0)
+            ->where('status', 'approved')
+            ->sum('amount'));
 
         $weeklyRevenue = $weeklySales + $weeklyOtherIncome;
 
@@ -71,7 +75,9 @@ class FinanceController extends Controller
         $monthlyOtherIncome = abs(Expense::where('outlet_id', $outletId)
             ->whereDate('expense_date', '>=', $startOfMonth->toDateString())
             ->whereDate('expense_date', '<=', $endOfMonth->toDateString())
-            ->where('amount', '<', 0)->sum('amount'));
+            ->where('amount', '<', 0)
+            ->where('status', 'approved')
+            ->sum('amount'));
 
         $monthlyRevenue = $monthlySales + $monthlyOtherIncome;
 
@@ -81,6 +87,7 @@ class FinanceController extends Controller
         $dailyExpenses = Expense::where('outlet_id', $outletId)
             ->whereDate('expense_date', Carbon::parse($selectedDate))
             ->where('amount', '>', 0)
+            ->where('status', 'approved')
             ->sum('amount');
 
         // Pengeluaran Minggu Ini (7 hari terakhir)
@@ -88,6 +95,7 @@ class FinanceController extends Controller
             ->whereDate('expense_date', '>=', $startOfWeek->toDateString())
             ->whereDate('expense_date', '<=', $endOfWeek->toDateString())
             ->where('amount', '>', 0)
+            ->where('status', 'approved')
             ->sum('amount');
 
         // Pengeluaran Bulan Ini
@@ -95,6 +103,7 @@ class FinanceController extends Controller
             ->whereDate('expense_date', '>=', $startOfMonth->toDateString())
             ->whereDate('expense_date', '<=', $endOfMonth->toDateString())
             ->where('amount', '>', 0)
+            ->where('status', 'approved')
             ->sum('amount');
 
         // ==================== TOTAL & SALDO (ALL TIME) ====================
@@ -110,11 +119,14 @@ class FinanceController extends Controller
 
         // Total Expenses & Other Incomes (All Time)
         $allTimeExpenseSummary = Expense::where('outlet_id', $outletId)
+            ->where('status', 'approved')
             ->selectRaw("
                 SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as total_spent,
                 SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) as total_other_income,
-                SUM(CASE WHEN amount > 0 AND payment_method IN ('cash', 'qris') THEN amount ELSE 0 END) as cash_qris_spent,
-                SUM(CASE WHEN amount < 0 AND payment_method IN ('cash', 'qris') THEN ABS(amount) ELSE 0 END) as cash_qris_other_income,
+                SUM(CASE WHEN amount > 0 AND payment_method = 'cash' THEN amount ELSE 0 END) as cash_spent,
+                SUM(CASE WHEN amount < 0 AND payment_method = 'cash' THEN ABS(amount) ELSE 0 END) as cash_other_income,
+                SUM(CASE WHEN amount > 0 AND payment_method = 'qris' THEN amount ELSE 0 END) as midtrans_spent,
+                SUM(CASE WHEN amount < 0 AND payment_method = 'qris' THEN ABS(amount) ELSE 0 END) as midtrans_other_income,
                 SUM(CASE WHEN amount > 0 AND payment_method = 'transfer' THEN amount ELSE 0 END) as transfer_spent,
                 SUM(CASE WHEN amount < 0 AND payment_method = 'transfer' THEN ABS(amount) ELSE 0 END) as transfer_other_income
             ")
@@ -128,7 +140,8 @@ class FinanceController extends Controller
 
         // Net Income (Saldo Bersih)
         $totalNetIncome = $totalRevenue - $allTimeExpenses;
-        $cashQrisNetIncome = ($allTimeCashSales + $allTimeQrisSales) + ($allTimeExpenseSummary->cash_qris_other_income ?? 0) - ($allTimeExpenseSummary->cash_qris_spent ?? 0);
+        $cashNetIncome = $allTimeCashSales + ($allTimeExpenseSummary->cash_other_income ?? 0) - ($allTimeExpenseSummary->cash_spent ?? 0);
+        $midtransNetIncome = $allTimeQrisSales + ($allTimeExpenseSummary->midtrans_other_income ?? 0) - ($allTimeExpenseSummary->midtrans_spent ?? 0);
         $transferNetIncome = $allTimeTransferSales + ($allTimeExpenseSummary->transfer_other_income ?? 0) - ($allTimeExpenseSummary->transfer_spent ?? 0);
 
         // ==================== PAYMENT METHODS (Daily) ====================
@@ -149,6 +162,8 @@ class FinanceController extends Controller
         $dailyOtherIncome = abs(Expense::where('outlet_id', $outletId)
             ->whereDate('expense_date', Carbon::parse($selectedDate))
             ->where('amount', '<', 0)
+            ->where('amount', '<', 0)
+            ->where('status', 'approved')
             ->sum('amount'));
 
         $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
@@ -158,7 +173,6 @@ class FinanceController extends Controller
         $allTimeRevenue = $totalRevenue;
         $allTimeProfit = Sale::where('outlet_id', $outletId)
             ->completed()
-            ->where('is_reported', true)
             ->get()
             ->sum(fn ($s) => $s->getTotalProfit());
         $allTimeNetIncome = $totalNetIncome;
@@ -176,6 +190,7 @@ class FinanceController extends Controller
 
         $expenses = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$expenseStart, $expenseEnd])
+            ->where('status', 'approved')
             ->with(['category', 'creator'])
             ->orderBy('expense_date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -185,25 +200,110 @@ class FinanceController extends Controller
 
         // ==================== SALES LIST (untuk tabel) ====================
 
-        $salesList = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->where('is_reported', true)
-            ->with(['customer', 'cashier'])
-            ->orderBy('grand_total', 'desc')
-            ->get();
+        // Month & Year Filter for Sales Table
+        $filterMonth = $request->get('filter_month', now()->month);
+        $filterYear = $request->get('filter_year', now()->year);
+        $filterStartDate = Carbon::createFromDate($filterYear, $filterMonth, 1)->startOfMonth();
+        $filterEndDate = Carbon::createFromDate($filterYear, $filterMonth, 1)->endOfMonth();
+
+    $salesList = Sale::where('outlet_id', $outletId)
+        ->completed()
+        ->whereBetween('created_at', [$filterStartDate, $filterEndDate])
+        ->with(['customer', 'cashier'])
+        ->orderBy('created_at', 'desc')
+        ->paginate(5, ['*'], 'sales_page');
 
         return view('main.finance.index', compact(
             'selectedDate',
             'dailyRevenue', 'weeklyRevenue', 'monthlyRevenue',
             'dailyExpenses', 'weeklyExpenses', 'monthlyExpenses',
-            'totalRevenue', 'totalNetIncome', 'cashQrisNetIncome', 'transferNetIncome',
+            'totalRevenue', 'totalNetIncome', 'cashNetIncome', 'midtransNetIncome', 'transferNetIncome',
             'sales', 'salesList', 'cashTotal', 'qrisTotal', 'transferTotal',
             'dailyProfit', 'dailyNetIncome',
             'allTimeRevenue', 'allTimeProfit', 'allTimeExpenses', 'allTimeNetIncome',
             'cashRegisters', 'expenses', 'expenseCategories',
-            'expensePeriod', 'expenseStartDate', 'expenseEndDate'
+            'expensePeriod', 'expenseStartDate', 'expenseEndDate',
+            'filterMonth', 'filterYear'
         ));
+    }
+
+public function getSalesListAjax(Request $request): JsonResponse
+{
+    $outletId = auth()->user()->outlet_id;
+    $month = $request->get('month', now()->month);
+    $year = $request->get('year', now()->year);
+    $page = $request->get('page', 1);
+    
+    $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+    $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+
+    $sales = Sale::where('outlet_id', $outletId)
+        ->completed()
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->with(['customer', 'cashier'])
+        ->orderBy('created_at', 'desc')
+        ->paginate(5);
+
+    $canViewDetail = auth()->user()->can('lihat detail penjualan');
+    $canPrint = auth()->user()->can('cetak struk penjualan');
+
+    $html = view('main.finance.partials.sales-table-rows', [
+        'sales' => $sales,
+        'canViewDetail' => $canViewDetail,
+        'canPrint' => $canPrint
+    ])->render();
+
+    $paginationHtml = view('main.finance.partials.pagination', [
+        'items' => $sales
+    ])->render();
+
+    return response()->json([
+        'success' => true,
+        'html' => $html,
+        'pagination' => $paginationHtml,
+        'count' => $sales->total(),
+        'currentPage' => $sales->currentPage(),
+        'lastPage' => $sales->lastPage()
+    ]);
+}
+
+    public function getDailySummaryAjax(Request $request): JsonResponse
+    {
+        $outletId = auth()->user()->outlet_id;
+        $date = $request->get('date', now()->format('Y-m-d'));
+        
+        $startOfDay = Carbon::parse($date)->startOfDay();
+        $endOfDay = Carbon::parse($date)->endOfDay();
+
+        $sales = Sale::where('outlet_id', $outletId)
+            ->completed()
+            ->whereBetween('created_at', [$startOfDay, $endOfDay])
+            ->get();
+
+        $dailySales = $sales->sum('grand_total');
+        
+        $dailyOtherIncome = abs(Expense::where('outlet_id', $outletId)
+            ->whereDate('expense_date', Carbon::parse($date))
+            ->where('amount', '<', 0)
+            ->where('status', 'approved')
+            ->sum('amount'));
+
+        $dailyRevenue = $dailySales + $dailyOtherIncome;
+        
+        $dailyExpenses = Expense::where('outlet_id', $outletId)
+            ->whereDate('expense_date', Carbon::parse($date))
+            ->where('amount', '>', 0)
+            ->where('status', 'approved')
+            ->sum('amount');
+
+        $dailyNetIncome = $dailyRevenue - $dailyExpenses;
+
+        return response()->json([
+            'success' => true,
+            'date_formatted' => Carbon::parse($date)->translatedFormat('d F Y'),
+            'daily_revenue' => number_format($dailyRevenue, 0, ',', '.'),
+            'daily_net_income' => number_format($dailyNetIncome, 0, ',', '.'),
+        ]);
     }
 
     public function getCategoriesAjax()
@@ -640,12 +740,14 @@ class FinanceController extends Controller
             'today' => [now()->startOfDay(), now()->endOfDay()],
             'week' => [now()->subDays(6)->startOfDay(), now()->endOfDay()],
             'month' => [now()->startOfMonth(), now()->endOfMonth()],
+            'last_month' => [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()],
             'year' => [now()->startOfYear(), now()->endOfYear()],
+            'all' => [Carbon::parse('2000-01-01'), now()->endOfDay()], // Ambil semua data
             'custom' => [
                 $startDate ? Carbon::parse($startDate)->startOfDay() : now()->startOfMonth(),
                 $endDate ? Carbon::parse($endDate)->endOfDay() : now()->endOfDay(),
             ],
-            default => [now()->startOfDay(), now()->endOfDay()],
+            default => [now()->startOfMonth(), now()->endOfMonth()],
         };
     }
 
@@ -712,4 +814,39 @@ class FinanceController extends Controller
             ],
         ]);
     }
+
+public function getExpensesAjax(Request $request): JsonResponse
+{
+    $outletId = auth()->user()->outlet_id;
+    $period = $request->get('period', 'today');
+    $startDate = $request->get('start_date');
+    $endDate = $request->get('end_date');
+    $page = $request->get('page', 1);
+
+    [$expenseStart, $expenseEnd] = $this->getExpenseDateRange($period, $startDate, $endDate);
+
+    $expenses = Expense::where('outlet_id', $outletId)
+        ->whereBetween('expense_date', [$expenseStart, $expenseEnd])
+        ->where('status', 'approved')
+        ->with(['category', 'creator'])
+        ->orderBy('expense_date', 'desc')
+        ->orderBy('created_at', 'desc')
+        ->paginate(5, ['*'], 'expense_page');
+
+    $html = view('main.finance.partials.expenses-table-rows', compact('expenses'))->render();
+    
+    $paginationHtml = view('main.finance.partials.pagination', [
+        'items' => $expenses
+    ])->render();
+
+    return response()->json([
+        'success' => true,
+        'html' => $html,
+        'pagination' => $paginationHtml,
+        'count' => $expenses->total(),
+        'currentPage' => $expenses->currentPage(),
+        'lastPage' => $expenses->lastPage()
+    ]);
+}
+
 }

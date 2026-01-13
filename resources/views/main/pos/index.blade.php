@@ -1686,10 +1686,12 @@
                         </button>
 
                         <!-- Operasional (Kas) -->
+                        @can('buat pemasukan' && 'buat pengeluaran')
                         <button onclick="openFinanceModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-emerald-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-file-invoice-dollar w-4 text-emerald-600"></i>
                             <span>Operasional (Kas)</span>
                         </button>
+                        @endcan
 
                         <!-- Kelola Meja -->
                         <!-- Kelola Meja -->

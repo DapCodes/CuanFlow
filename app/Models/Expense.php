@@ -14,7 +14,7 @@ class Expense extends Model
     protected $fillable = [
         'expense_number', 'outlet_id', 'expense_category_id', 'amount',
         'expense_date', 'description', 'receipt_image', 'payment_method',
-        'reference_number', 'notes', 'created_by', 'approved_by', 'status',
+        'reference_number', 'notes', 'created_by', 'approved_by', 'status', 'type',
     ];
 
     protected $casts = ['amount' => 'decimal:2', 'expense_date' => 'date'];
@@ -22,7 +22,10 @@ class Expense extends Model
     protected static function boot()
     {
         parent::boot();
-        static::creating(fn ($m) => $m->expense_number = $m->expense_number ?: 'EXP-'.date('Ymd').'-'.str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT));
+        static::creating(function ($m) {
+            $prefix = $m->type === 'income' ? 'INC-' : 'EXP-';
+            $m->expense_number = $m->expense_number ?: $prefix . date('Ymd') . '-' . str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+        });
     }
 
     public function outlet(): BelongsTo

@@ -38,14 +38,14 @@
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 @can('buat pengeluaran')
-                <a href="{{ route('finance.expense.create') }}"
+                <a href="{{ route('expenses.index', ['type' => 'expense']) }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-sm font-semibold hover:bg-red-100 transition-all">
                     <i class="fas fa-arrow-down text-xs"></i>
                     <span>Catat Pengeluaran</span>
                 </a>
                 @endcan
                 @can('buat pemasukan')
-                <a href="{{ route('finance.income.create') }}"
+                <a href="{{ route('expenses.index', ['type' => 'income']) }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-all">
                     <i class="fas fa-arrow-up text-xs"></i>
                     <span>Catat Pemasukan</span>
@@ -90,26 +90,26 @@
                             </div>
                         </div>
 
-                        {{-- SLIDE 2: TUNAI & QRIS --}}
+                        {{-- SLIDE 2: TUNAI --}}
                         <div class="w-1/3 p-8 flex flex-col justify-between bg-gradient-to-br from-emerald-600 to-emerald-700 text-white relative h-full">
                             <div class="absolute top-0 right-0 opacity-10 p-4">
-                                <i class="fas fa-qrcode text-9xl"></i>
+                                <i class="fas fa-money-bill-wave text-9xl"></i>
                             </div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-6">
-                                    <span class="px-3 py-1 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">Tunai & QRIS</span>
+                                    <span class="px-3 py-1 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">Tunai (Cash)</span>
                                     <i class="fas fa-cash-register text-2xl opacity-50"></i>
                                 </div>
-                                <h4 class="text-sm font-medium opacity-80 mb-2 uppercase tracking-wide">Saldo Likuid</h4>
+                                <h4 class="text-sm font-medium opacity-80 mb-2 uppercase tracking-wide">Saldo Tunai</h4>
                                 <div class="text-4xl md:text-5xl font-bold tracking-tight">
-                                    <span class="text-2xl font-normal opacity-70 mr-1">Rp</span>{{ number_format($cashQrisNetIncome, 0, ',', '.') }}
+                                    <span class="text-2xl font-normal opacity-70 mr-1">Rp</span>{{ number_format($cashNetIncome, 0, ',', '.') }}
                                 </div>
                                 <p class="mt-4 text-sm opacity-80 leading-relaxed">
-                                    Total saldo dari pembayaran langsung (Tunai & QRIS) yang siap digunakan untuk operasional harian.
+                                    Total uang fisik yang tersedia di laci kasir setelah dikurangi biaya operasional tunai.
                                 </p>
                             </div>
                             <div class="relative z-10 mt-8 pt-6 border-t border-white/20 flex items-center justify-between">
-                                <span class="text-xs opacity-60 italic">Real-time liquid</span>
+                                <span class="text-xs opacity-60 italic">Physical cash on hand</span>
                                 <div class="flex gap-1">
                                      <span class="w-2 h-2 rounded-full bg-white opacity-50"></span>
                                      <span class="w-2 h-2 rounded-full bg-white"></span>
@@ -118,26 +118,26 @@
                             </div>
                         </div>
 
-                        {{-- SLIDE 3: TRANSFER --}}
-                        <div class="w-1/3 p-8 flex flex-col justify-between bg-gradient-to-br from-indigo-600 to-indigo-700 text-white relative h-full">
+                        {{-- SLIDE 3: MIDTRANS --}}
+                        <div class="w-1/3 p-8 flex flex-col justify-between bg-gradient-to-br from-purple-600 to-purple-700 text-white relative h-full">
                             <div class="absolute top-0 right-0 opacity-10 p-4">
-                                <i class="fas fa-university text-9xl"></i>
+                                <i class="fas fa-file-invoice-dollar text-9xl"></i>
                             </div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-6">
-                                    <span class="px-3 py-1 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">Transfer Bank</span>
-                                    <i class="fas fa-exchange-alt text-2xl opacity-50"></i>
+                                    <span class="px-3 py-1 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">Midtrans / Digital</span>
+                                    <i class="fas fa-credit-card text-2xl opacity-50"></i>
                                 </div>
-                                <h4 class="text-sm font-medium opacity-80 mb-2 uppercase tracking-wide">Saldo Rekening</h4>
+                                <h4 class="text-sm font-medium opacity-80 mb-2 uppercase tracking-wide">Saldo Midtrans</h4>
                                 <div class="text-4xl md:text-5xl font-bold tracking-tight">
-                                    <span class="text-2xl font-normal opacity-70 mr-1">Rp</span>{{ number_format($transferNetIncome, 0, ',', '.') }}
+                                    <span class="text-2xl font-normal opacity-70 mr-1">Rp</span>{{ number_format($midtransNetIncome, 0, ',', '.') }}
                                 </div>
                                 <p class="mt-4 text-sm opacity-80 leading-relaxed">
-                                    Saldo yang masuk melalui metode transfer bank. Biasanya memerlukan pengecekan mutasi berkala.
+                                    Akumulasi pendapatan yang diproses melalui gateway Midtrans. Saldo ini mencakup seluruh transaksi nontunai (QRIS & E-Wallet).
                                 </p>
                             </div>
                             <div class="relative z-10 mt-8 pt-6 border-t border-white/20 flex items-center justify-between">
-                                <span class="text-xs opacity-60 italic">Bank statement balance</span>
+                                <span class="text-xs opacity-60 italic">Midtrans payment settlement</span>
                                 <div class="flex gap-1">
                                      <span class="w-2 h-2 rounded-full bg-white opacity-50"></span>
                                      <span class="w-2 h-2 rounded-full bg-white opacity-50"></span>
@@ -223,18 +223,22 @@
                             </div>
                             <div>
                                 <h5 class="text-sm font-bold text-gray-900">Performa Hari Ini</h5>
-                                <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('d F Y') }}</p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input type="date" id="dailyDateFilter" value="{{ $selectedDate }}" 
+                                           class="text-[10px] border-none bg-gray-100 rounded px-2 py-1 focus:ring-0 cursor-pointer text-gray-600 font-semibold">
+                                    <span id="dailyDateFormatted" class="text-xs text-gray-500 hidden sm:inline">{{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('d F Y') }}</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-8 pr-4">
+                        <div class="flex items-center gap-8 pr-4" id="dailySummaryContainer">
                             <div>
                                 <p class="text-[10px] text-gray-400 uppercase font-bold text-right">Revenue</p>
-                                <p class="text-xl font-black text-emerald-600">Rp {{ number_format($dailyRevenue, 0, ',', '.') }}</p>
+                                <p class="text-xl font-black text-emerald-600" id="dailyRevenueVal">Rp {{ number_format($dailyRevenue, 0, ',', '.') }}</p>
                             </div>
                             <div class="w-px h-10 bg-gray-100"></div>
                             <div>
                                 <p class="text-[10px] text-gray-400 uppercase font-bold text-right">Profit Bersih</p>
-                                <p class="text-xl font-black text-blue-600">Rp {{ number_format($dailyNetIncome, 0, ',', '.') }}</p>
+                                <p class="text-xl font-black text-blue-600" id="dailyNetIncomeVal">Rp {{ number_format($dailyNetIncome, 0, ',', '.') }}</p>
                             </div>
                         </div>
                     </div>
@@ -247,180 +251,99 @@
             
             {{-- Penjualan Terakhir (Kiri - 2 Kolom) --}}
             <div class="xl:col-span-2 space-y-6">
-                {{-- Transaksi Terbaru --}}
-                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                    <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center text-xs">
-                                <i class="fas fa-history"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-sm font-bold text-gray-900">Histori Penjualan</h3>
-                                <p class="text-[11px] text-gray-500">Menampilkan transaksi bulan ini</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                             <select id="yearFilter" class="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50">
-                                @for($y = date('Y'); $y >= date('Y') - 2; $y--)
-                                    <option value="{{ $y }}" {{ $y == date('Y') ? 'selected' : '' }}>{{ $y }}</option>
-                                @endfor
-                            </select>
-                            <select id="monthFilter" class="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50">
-                                @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $month)
-                                    <option value="{{ $i + 1 }}" {{ ($i + 1) == date('n') ? 'selected' : '' }}>{{ $month }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-gray-50 border-b border-gray-100">
-                                <tr>
-                                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">No. Invoice</th>
-                                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kasir / Pelanggan</th>
-                                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Metode</th>
-                                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Total Tagihan</th>
-                                    @if(auth()->user()->can('lihat detail penjualan') || auth()->user()->can('cetak struk penjualan'))
-                                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-50">
-                                @forelse($salesList->take(8) as $sale)
-                                <tr class="hover:bg-gray-50 transition-colors group">
-                                    <td class="px-5 py-4 whitespace-nowrap">
-                                        <div class="text-xs font-mono font-bold text-gray-700">{{ $sale->invoice_number }}</div>
-                                        <div class="text-[10px] text-gray-400 mt-1">{{ $sale->created_at->format('d M, H:i') }}</div>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <div class="text-xs font-semibold text-gray-900">{{ $sale->cashier->name }}</div>
-                                        <div class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
-                                            <i class="far fa-user opacity-60"></i> {{ $sale->customer->name ?? 'Guest' }}
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                                            @if($sale->payment_method == 'cash') bg-emerald-50 text-emerald-600 border border-emerald-100
-                                            @elseif($sale->payment_method == 'qris') bg-blue-50 text-blue-600 border border-blue-100
-                                            @else bg-purple-50 text-purple-600 border border-purple-100 @endif">
-                                            {{ $sale->payment_method }}
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-4 text-right">
-                                        <div class="text-xs font-black text-gray-900">Rp {{ number_format($sale->grand_total, 0, ',', '.') }}</div>
-                                    </td>
-                                    <td class="px-5 py-4 text-center">
-                                        <div class="flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            @can('lihat detail penjualan')
-                                            <a href="{{ route('sales.show', $sale->id) }}" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-100 rounded-lg shadow-sm transition-all" title="Detail">
-                                                <i class="fas fa-eye text-[10px]"></i>
-                                            </a>
-                                            @endcan
-                                            @can('cetak struk penjualan')
-                                            <a href="{{ route('receipt.preview', $sale->id) }}" class="p-1.5 bg-white border border-gray-200 text-gray-400 hover:text-emerald-500 hover:border-emerald-100 rounded-lg shadow-sm transition-all" title="Cetak Struk">
-                                                <i class="fas fa-print text-[10px]"></i>
-                                            </a>
-                                            @endcan
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="px-5 py-12 text-center text-gray-400 italic">Belum ada data transaksi tercatat.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+{{-- Transaksi Terbaru --}}
+<div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center text-xs">
+                <i class="fas fa-history"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-gray-900">Riwayat Penjualan</h3>
+                <p class="text-[11px] text-gray-500">Transaksi yang tercatat bulan ini</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <select id="yearFilter" class="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 font-semibold">
+                @for($y = date('Y'); $y >= date('Y') - 2; $y--)
+                    <option value="{{ $y }}" {{ $y == $filterYear ? 'selected' : '' }}>{{ $y }}</option>
+                @endfor
+            </select>
+            <select id="monthFilter" class="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 font-semibold">
+                @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $month)
+                    <option value="{{ $i + 1 }}" {{ ($i + 1) == $filterMonth ? 'selected' : '' }}>{{ $month }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-gray-50 border-b border-gray-100">
+                <tr>
+                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">No. Invoice</th>
+                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kasir / Pelanggan</th>
+                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Metode Bayar</th>
+                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Total Tagihan</th>
+                    @if(auth()->user()->can('lihat detail penjualan') || auth()->user()->can('cetak struk penjualan'))
+                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</th>
+                    @endif
+                </tr>
+            </thead>
+            <tbody id="salesTableBody">
+                @include('main.finance.partials.sales-table-rows', [
+                    'sales' => $salesList,
+                    'canViewDetail' => auth()->user()->can('lihat detail penjualan'),
+                    'canPrint' => auth()->user()->can('cetak struk penjualan')
+                ])
+            </tbody>
+        </table>
+    </div>
+    <div id="salesPagination">
+        @include('main.finance.partials.pagination', ['items' => $salesList])
+    </div>
+</div>
 
-                {{-- Pengeluaran Terakhir --}}
-                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                    <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center text-xs">
-                                <i class="fas fa-receipt"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-sm font-bold text-gray-900">Data Pengeluaran & Pemasukan (Non Sales)</h3>
-                                <p class="text-[11px] text-gray-500">Menampilkan histori pengeluaran terakhir</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-gray-50 border-b border-gray-100">
-                                <tr>
-                                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Keperluan / Kategori</th>
-                                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Metode</th>
-                                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Biaya</th>
-                                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-50">
-                                @forelse($expenses->take(10) as $expense)
-                                <tr class="hover:bg-gray-50 transition-colors group">
-                                    <td class="px-5 py-4">
-                                        <div class="text-xs font-semibold text-gray-900">{{ Str::limit($expense->description, 40) }}</div>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            @if($expense->amount < 0)
-                                                <span class="text-[9px] font-bold text-emerald-600 uppercase bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">Pemasukan</span>
-                                            @else
-                                                <span class="text-[9px] font-bold text-gray-400 uppercase bg-gray-100 px-1.5 py-0.5 rounded">{{ $expense->category->name ?? 'Lainnya' }}</span>
-                                            @endif
-                                            <span class="text-[10px] text-gray-400">{{ \Carbon\Carbon::parse($expense->expense_date)->format('d M Y') }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <span class="text-[10px] font-medium text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded-full">
-                                            {{ ucfirst($expense->payment_method) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-4 text-right">
-                                        @if($expense->amount < 0)
-                                            <div class="text-xs font-black text-emerald-600">+ Rp {{ number_format(abs($expense->amount), 0, ',', '.') }}</div>
-                                        @else
-                                            <div class="text-xs font-black text-red-600">- Rp {{ number_format($expense->amount, 0, ',', '.') }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="px-5 py-4 text-center">
-                                         <div class="flex items-center justify-center gap-2">
-                                            {{-- Edit --}}
-                                            @php
-                                                $editPermission = $expense->amount < 0 ? 'edit pemasukan' : 'edit pengeluaran';
-                                                $editRoute = $expense->amount < 0 ? route('finance.income.edit', $expense->id) : route('finance.expense.edit', $expense->id);
-                                            @endphp
-                                            @can($editPermission)
-                                            <a href="{{ $editRoute }}" class="p-1.5 text-gray-400 hover:text-emerald-500 transition-colors">
-                                               <i class="fas fa-edit text-[10px]"></i>
-                                            </a>
-                                            @endcan
-                                            
-                                            {{-- Delete --}}
-                                            @php
-                                                $deletePermission = $expense->amount < 0 ? 'hapus pemasukan' : 'hapus pengeluaran';
-                                            @endphp
-                                            @can($deletePermission)
-                                            <form action="{{ route('finance.destroy', $expense->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
-                                                   <i class="fas fa-trash text-[10px]"></i>
-                                                </button>
-                                            </form>
-                                            @endcan
-                                         </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="4" class="px-5 py-12 text-center text-gray-400 italic">Belum ada pengeluaran hari ini.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+{{-- Pengeluaran Terakhir --}}
+<div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center text-xs">
+                <i class="fas fa-receipt"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-gray-900">Pengeluaran & Pemasukan</h3>
+                <p class="text-[11px] text-gray-500">Data keuangan selain transaksi penjualan</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <select id="expensePeriodFilter" class="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 font-semibold">
+                <option value="today">Hari Ini</option>
+                <option value="week">Minggu Ini</option>
+                <option value="month" selected>Bulan Ini</option>
+                <option value="year">Tahun Ini</option>
+                <option value="all">Semua Waktu</option>
+            </select>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-gray-50 border-b border-gray-100">
+                <tr>
+                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Keterangan / Kategori</th>
+                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Metode Bayar</th>
+                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Nominal</th>
+                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="expensesTableBody">
+                @include('main.finance.partials.expenses-table-rows', ['expenses' => $expenses])
+            </tbody>
+        </table>
+    </div>
+    <div id="expensesPagination">
+        @include('main.finance.partials.pagination', ['items' => $expenses])
+    </div>
+</div>
             </div>
 
             {{-- Charts (Kanan - 1 Kolom) --}}
@@ -631,6 +554,108 @@
         // Listeners for filter changes
         document.getElementById('revenueChartPeriod').addEventListener('change', (e) => loadRevenueChart(e.target.value));
         document.getElementById('expenseChartPeriod').addEventListener('change', (e) => loadExpenseChart(e.target.value));
+
+        let currentSalesPage = 1;
+        let currentExpensePage = 1;
+
+        // Sales List Filter
+    function loadSalesList(page = 1) {
+        const month = document.getElementById('monthFilter').value;
+        const year = document.getElementById('yearFilter').value;
+        const tbody = document.getElementById('salesTableBody');
+        const pagination = document.getElementById('salesPagination');
+        
+        tbody.classList.add('opacity-50');
+        currentSalesPage = page;
+        
+        fetch(`{{ route('finance.sales-list-ajax') }}?month=${month}&year=${year}&page=${page}`)
+            .then(res => res.json())
+            .then(data => {
+                tbody.innerHTML = data.html;
+                pagination.innerHTML = data.pagination;
+                tbody.classList.remove('opacity-50');
+            })
+            .catch(err => {
+                console.error(err);
+                tbody.classList.remove('opacity-50');
+            });
+    }
+
+     function loadExpensesList(page = 1) {
+        const period = document.getElementById('expensePeriodFilter').value;
+        const tbody = document.getElementById('expensesTableBody');
+        const pagination = document.getElementById('expensesPagination');
+        
+        tbody.classList.add('opacity-50');
+        currentExpensePage = page;
+        
+        fetch(`{{ route('finance.expenses-list-ajax') }}?period=${period}&page=${page}`)
+            .then(res => res.json())
+            .then(data => {
+                tbody.innerHTML = data.html;
+                pagination.innerHTML = data.pagination;
+                tbody.classList.remove('opacity-50');
+            })
+            .catch(err => {
+                console.error(err);
+                tbody.classList.remove('opacity-50');
+            });
+    }
+
+        window.loadPage = function(page) {
+        // Deteksi mana yang aktif berdasarkan event target
+        const activeTable = event.target.closest('#salesPagination') ? 'sales' : 'expenses';
+        
+        if (activeTable === 'sales') {
+            loadSalesList(page);
+        } else {
+            loadExpensesList(page);
+        }
+    };
+
+            document.getElementById('monthFilter').addEventListener('change', () => loadSalesList(1));
+    document.getElementById('yearFilter').addEventListener('change', () => loadSalesList(1));
+    document.getElementById('expensePeriodFilter').addEventListener('change', () => loadExpensesList(1));
+
+        // Daily Summary Filter
+        document.getElementById('dailyDateFilter').addEventListener('change', function(e) {
+            const date = e.target.value;
+            const container = document.getElementById('dailySummaryContainer');
+            
+            container.classList.add('opacity-50');
+            
+            fetch(`{{ route('finance.daily-summary-ajax') }}?date=${date}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('dailyDateFormatted').textContent = data.date_formatted;
+                    document.getElementById('dailyRevenueVal').textContent = 'Rp ' + data.daily_revenue;
+                    document.getElementById('dailyNetIncomeVal').textContent = 'Rp ' + data.daily_net_income;
+                    container.classList.remove('opacity-50');
+                })
+                .catch(err => {
+                    console.error(err);
+                    container.classList.remove('opacity-50');
+                });
+        });
+
+        // Expense List Filter
+        document.getElementById('expensePeriodFilter').addEventListener('change', function(e) {
+            const period = e.target.value;
+            const tbody = document.getElementById('expensesTableBody');
+            
+            tbody.classList.add('opacity-50');
+            
+            fetch(`{{ route('finance.expenses-list-ajax') }}?period=${period}`)
+                .then(res => res.json())
+                .then(data => {
+                    tbody.innerHTML = data.html;
+                    tbody.classList.remove('opacity-50');
+                })
+                .catch(err => {
+                    console.error(err);
+                    tbody.classList.remove('opacity-50');
+                });
+        });
 
         // Initial Load
         loadRevenueChart('month');

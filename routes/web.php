@@ -361,10 +361,28 @@ Route::middleware(['auth'])->prefix('finance')->name('finance.')->group(function
 
     Route::post('/validate-revenue', [FinanceController::class, 'validateRevenue'])->name('validate-revenue');
     Route::get('/daily', [FinanceController::class, 'daily'])->name('daily');
+    
+    // AJAX Routes Baru
+    Route::get('/sales-list-ajax', [FinanceController::class, 'getSalesListAjax'])->name('sales-list-ajax');
+    Route::get('/daily-summary-ajax', [FinanceController::class, 'getDailySummaryAjax'])->name('daily-summary-ajax');
+    Route::get('/expenses-list-ajax', [FinanceController::class, 'getExpensesAjax'])->name('expenses-list-ajax');
 
     // Chart API Routes (BARU)
     Route::get('/revenue-chart', [FinanceController::class, 'getRevenueChart'])->name('revenue-chart');
     Route::get('/expense-chart', [FinanceController::class, 'getExpenseChart'])->name('expense-chart');
+});
+
+// Expenses & Income Management (New)
+Route::middleware(['auth'])->prefix('expenses')->name('expenses.')->group(function () {
+    Route::get('/', [App\Http\Controllers\ExpenseController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\ExpenseController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\ExpenseController::class, 'store'])->name('store');
+    Route::get('/{expense}', [App\Http\Controllers\ExpenseController::class, 'show'])->name('show');
+    Route::get('/{expense}/edit', [App\Http\Controllers\ExpenseController::class, 'edit'])->name('edit');
+    Route::put('/{expense}', [App\Http\Controllers\ExpenseController::class, 'update'])->name('update');
+    Route::delete('/{expense}', [App\Http\Controllers\ExpenseController::class, 'destroy'])->name('destroy');
+    Route::post('/{expense}/approve', [App\Http\Controllers\ExpenseController::class, 'approve'])->name('approve');
+    Route::post('/{expense}/reject', [App\Http\Controllers\ExpenseController::class, 'reject'])->name('reject');
 });
 
 // Report Routes
