@@ -3161,40 +3161,48 @@ function closeFreeItemModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-function clearDiscount() {
+function clearDiscount(confirm = true) {
     if (!activeDiscountPlan) return;
     
-    Swal.fire({
-        title: 'Hapus Diskon?',
-        text: "Diskon yang diterapkan akan dihapus",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#f97316',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ya, Hapus',
-        cancelButtonText: 'Batal',
-        backdrop: 'rgba(0, 0, 0, 0.5)'
-    }).then((result) => {
-        if (result.isConfirmed) {
+    const performClear = () => {
+        fetch('/pos/discounts/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                activeDiscountPlan = null;
+                cartSummary = data.cart_summary;
+                renderCart();
+                showToast('success', 'Diskon dihapus');
+            }
+        })
+        .catch(() => showToast('error', 'Gagal menghapus diskon'));
+    };
 
-    fetch('/pos/discounts/clear', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            activeDiscountPlan = null;
-            cartSummary = data.cart_summary;
-            renderCart();
-            showToast('success', 'Diskon dihapus');
-        }
-    })
-        }
-    });
+    if (confirm) {
+        Swal.fire({
+            title: 'Hapus Diskon?',
+            text: "Diskon yang diterapkan akan dihapus",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f97316',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            backdrop: 'rgba(0, 0, 0, 0.5)'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                performClear();
+            }
+        });
+    } else {
+        performClear();
+    }
 }
 
 function initDiscountUI() {
@@ -3892,18 +3900,19 @@ function renderCart() {
             const totalFreeQty = freeItems.reduce((sum, item) => sum + (item.free_qty || 0), 0);
             
             discountInfo.innerHTML = `
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3 mb-3">
+                <div onclick="showFreeItemSelectionModal(activeDiscountPlan)" class="cursor-pointer bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3 mb-3 hover:bg-green-100 transition-all group">
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
                             <div class="text-xs text-green-600 font-semibold mb-1">
                                 <i class="fas fa-gift mr-1"></i>Promo BOGO Aktif
                             </div>
                             <div class="text-sm font-bold text-green-900">${activeDiscountPlan.discount_name || 'Buy X Get Y'}</div>
-                            <div class="text-xs text-green-700 mt-1">
-                                ${totalFreeQty > 0 ? `#Dapat ${totalFreeQty} item gratis` : 'Pilih item gratis Anda'}
+                            <div class="text-xs text-green-700 mt-1 flex items-center">
+                                <span>${totalFreeQty > 0 ? `<i class="fas fa-check-circle mr-1"></i>Sudah pilih ${totalFreeQty} item` : 'Klik di sini untuk pilih item gratis'}</span>
+                                <i class="fas fa-chevron-right ml-2 text-[10px] opacity-40 group-hover:opacity-100 transition-opacity"></i>
                             </div>
                         </div>
-                        <button onclick="clearDiscount()" class="text-red-500 hover:text-red-700 px-2">
+                        <button onclick="event.stopPropagation(); clearDiscount()" class="text-red-400 hover:text-red-600 px-2 transition-colors" title="Hapus Diskon">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -4351,6 +4360,36 @@ function initiatePaymentFlow() {
     if (Object.keys(cart).length === 0) {
         showToast('warning', 'Keranjang masih kosong');
         return;
+    }
+
+    // CHECK BOGO: Jika ada diskon BOGO tapi belum pilih item gratis
+    if (activeDiscountPlan && activeDiscountPlan.discount_type === 'buy_x_get_y') {
+        const freeItems = activeDiscountPlan.affected_items || [];
+        const totalFreeQty = freeItems.reduce((sum, item) => sum + (item.free_qty || 0), 0);
+        
+        if (totalFreeQty === 0) {
+            Swal.fire({
+                title: 'Item Gratis Belum Dipilih',
+                text: "Anda memiliki promo Buy X Get Y yang aktif. Ingin pilih item gratis sekarang?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Pilih Sekarang',
+                cancelButtonText: 'Tidak, Hapus Promo',
+                confirmButtonColor: '#f97316',
+                cancelButtonColor: '#ef4444',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showFreeItemSelectionModal(activeDiscountPlan);
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    clearDiscount(false);
+                    // Lanjut bayar SETELAH diskon dihapus? 
+                    // Sebaiknya biarkan user klik bayar lagi agar summary terupdate dengan benar
+                    showToast('info', 'Promo dikosongkan.');
+                }
+            });
+            return;
+        }
     }
     
     if (hasTableSystem) {

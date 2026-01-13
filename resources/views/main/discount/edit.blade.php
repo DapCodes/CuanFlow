@@ -478,25 +478,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const selectedType = checked.value;
 
+        // Hide all dynamic fields and disable their inputs
         percentageFixedFields.style.display = 'none';
+        toggleFields(percentageFixedFields, false);
+        
         buyXGetYFields.style.display = 'none';
+        toggleFields(buyXGetYFields, false);
 
+        // Show relevant fields, update labels, and enable their inputs
         if (selectedType === 'percentage') {
             percentageFixedFields.style.display = 'block';
+            toggleFields(percentageFixedFields, true);
             valueLabel.textContent = 'Persentase Diskon';
             valueUnit.textContent = '%';
             valueInput.placeholder = '0 - 100';
             valueInput.max = '100';
         } else if (selectedType === 'fixed') {
             percentageFixedFields.style.display = 'block';
+            toggleFields(percentageFixedFields, true);
             valueLabel.textContent = 'Nominal Diskon';
             valueUnit.textContent = 'Rp';
             valueInput.placeholder = '0';
             valueInput.removeAttribute('max');
         } else if (selectedType === 'buy_x_get_y') {
             buyXGetYFields.style.display = 'block';
+            toggleFields(buyXGetYFields, true);
             updatePromoPreview();
         }
+    }
+
+    function toggleFields(container, isEnabled) {
+        const fields = container.querySelectorAll('input, select, textarea');
+        fields.forEach(field => {
+            field.disabled = !isEnabled;
+        });
     }
 
     // Generate code

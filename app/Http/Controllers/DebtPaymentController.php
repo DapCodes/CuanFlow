@@ -208,8 +208,14 @@ class DebtPaymentController extends Controller
             $this->reduceStock($cart, $discountPlan);
 
             // Increment discount usage
-            if ($discountPlan && isset($discountPlan['discount_id'])) {
-                $this->incrementDiscountUsage($discountPlan['discount_id']);
+            if ($discountPlan) {
+                if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
+                    foreach ($discountPlan['applied_discounts'] as $dId) {
+                        $this->incrementDiscountUsage($dId);
+                    }
+                } elseif (isset($discountPlan['discount_id'])) {
+                    $this->incrementDiscountUsage($discountPlan['discount_id']);
+                }
             }
 
             // Clear session

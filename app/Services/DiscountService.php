@@ -57,46 +57,118 @@ class DiscountService
      */
     public function calculateDiscountPlan(array $cartItems, Collection $candidates, float $subtotal): array
     {
-        $bestPlan = null;
-        $maxBenefit = -1;
+        if ($candidates->isEmpty()) {
+            return [
+                'discount_id' => null,
+                'discount_name' => null,
+                'discount_type' => null,
+                'total_discount' => 0,
+                'affected_items' => [],
+                'requires_free_item_selection' => false,
+                'free_item_candidates' => [],
+                'free_item_quota' => 0,
+                'applied_discounts' => [],
+            ];
+        }
 
-        foreach ($candidates as $discount) {
-            $plan = $this->simulateDiscount($discount, $cartItems, $subtotal);
+        // 1. Filter candidates by type
+        $simpleCandidates = $candidates->filter(fn($d) => in_array($d->type, ['percentage', 'fixed']));
+        $bogoCandidates = $candidates->filter(fn($d) => $d->type === 'buy_x_get_y');
 
-            // Calculate benefit based on discount type
-            if ($plan['discount_type'] === 'buy_x_get_y') {
-                // For BOGO: benefit = number of free items * average item price
-                // This ensures BOGO competes fairly with monetary discounts
-                $freeQty = $plan['free_item_quota'] ?? 0;
-                if ($freeQty > 0 && ! empty($plan['free_item_candidates'])) {
-                    // Calculate average price of free item candidates
-                    $avgPrice = collect($plan['free_item_candidates'])
-                        ->avg('unit_price');
-                    $benefit = $freeQty * $avgPrice;
-                } else {
-                    $benefit = 0;
+        // 2. Determine best simple discount per item (Accumulative across items, best-fit per item)
+        $itemWinners = [];
+        $appliedSimpleDiscounts = [];
+
+        foreach ($cartItems as $item) {
+            $bestItemDiscount = 0;
+            $bestDiscountModel = null;
+            
+            foreach ($simpleCandidates as $discount) {
+                // Check if item is eligible for this discount
+                if (!$this->isItemEligible($discount, $item)) continue;
+                
+                // Basic validation for this discount
+                if ($subtotal < $discount->min_purchase) continue;
+
+                // Simulate for this single item
+                $simPlan = $this->simulateSimpleDiscount($discount, [$item], $item['unit_price'] * $item['quantity'], ['total_discount' => 0, 'affected_items' => []]);
+                
+                if ($simPlan['total_discount'] > $bestItemDiscount) {
+                    $bestItemDiscount = $simPlan['total_discount'];
+                    $bestDiscountModel = $discount;
                 }
-            } else {
-                // For percentage/fixed: benefit = actual discount amount
-                $benefit = $plan['total_discount'];
             }
-
-            if ($benefit > $maxBenefit) {
-                $maxBenefit = $benefit;
-                $bestPlan = $plan;
+            
+            if ($bestItemDiscount > 0) {
+                $itemWinners[$item['product_id']] = [
+                    'discount_id' => $bestDiscountModel->id,
+                    'discount_amount' => $bestItemDiscount
+                ];
+                $appliedSimpleDiscounts[$bestDiscountModel->id] = $bestDiscountModel;
             }
         }
 
-        return $bestPlan ?? [
-            'discount_id' => null,
-            'discount_name' => null,
-            'discount_type' => null,
-            'total_discount' => 0,
-            'affected_items' => [],
-            'requires_free_item_selection' => false,
-            'free_item_candidates' => [],
-            'free_item_quota' => 0,
+        // 3. Find the best BOGO plan separately
+        // Current POS UI only supports one primary BOGO modal/info
+        $bestBogoPlan = null;
+        $maxBogoBenefit = -1;
+
+        foreach ($bogoCandidates as $discount) {
+             $plan = $this->simulateBuyXGetY($discount, $cartItems, [
+                 'discount_id' => $discount->id,
+                 'discount_name' => $discount->name,
+                 'discount_type' => $discount->type,
+                 'total_discount' => 0,
+                 'affected_items' => [],
+                 'requires_free_item_selection' => false,
+                 'free_item_candidates' => [],
+                 'free_item_quota' => 0,
+             ]);
+             
+             // Benefit calculation (avg per item)
+             $freeQty = $plan['free_item_quota'] ?? 0;
+             if ($freeQty > 0 && ! empty($plan['free_item_candidates'])) {
+                 $avgPrice = collect($plan['free_item_candidates'])->avg('unit_price');
+                 $benefit = $freeQty * $avgPrice;
+             } else {
+                 $benefit = 0;
+             }
+             
+             if ($benefit > $maxBogoBenefit) {
+                 $maxBogoBenefit = $benefit;
+                 $bestBogoPlan = $plan;
+             }
+        }
+
+        // 4. Combine Results
+        $totalDiscountAmount = collect($itemWinners)->sum('discount_amount');
+        $mergedAffectedItems = collect($itemWinners)->map(fn($w, $pid) => [
+            'product_id' => (int)$pid,
+            'discount_amount' => (float)$w['discount_amount']
+        ])->values()->toArray();
+
+        $appliedDiscountIds = array_keys($appliedSimpleDiscounts);
+        
+        $plan = [
+            'discount_id' => $bestBogoPlan ? $bestBogoPlan['discount_id'] : (count($appliedDiscountIds) > 0 ? $appliedDiscountIds[0] : null),
+            'discount_name' => count($appliedDiscountIds) > 1 ? 'Multi-Promo' : (count($appliedDiscountIds) == 1 ? $appliedSimpleDiscounts[$appliedDiscountIds[0]]->name : ($bestBogoPlan ? $bestBogoPlan['discount_name'] : null)),
+            'discount_type' => $bestBogoPlan ? 'buy_x_get_y' : (count($appliedDiscountIds) > 1 ? 'mixed' : (count($appliedDiscountIds) == 1 ? $appliedSimpleDiscounts[$appliedDiscountIds[0]]->type : null)),
+            'total_discount' => $totalDiscountAmount,
+            'affected_items' => $mergedAffectedItems,
+            'applied_discounts' => $appliedDiscountIds,
+            'requires_free_item_selection' => $bestBogoPlan ? true : false,
+            'free_item_candidates' => $bestBogoPlan ? $bestBogoPlan['free_item_candidates'] : [],
+            'free_item_quota' => $bestBogoPlan ? $bestBogoPlan['free_item_quota'] : 0,
         ];
+
+        if ($bestBogoPlan) {
+            $plan['applied_discounts'][] = $bestBogoPlan['discount_id'];
+            // If BOGO affected items are needed by JS for something other than free items, 
+            // the current logic might conflict with simple discounts.
+            // But usually BOGO affected_items are only set AFTER assignFreeItems.
+        }
+
+        return $plan;
     }
 
     /**
@@ -312,5 +384,23 @@ class DiscountService
         }
 
         return $errors;
+    }
+    /**
+     * Helper to check if item is eligible for a specific discount
+     */
+    private function isItemEligible(Discount $discount, array $item): bool
+    {
+        if ($discount->product_id) {
+            return $item['product_id'] == $discount->product_id;
+        }
+
+        if ($discount->category_id) {
+            // Need to fetch category from DB or have it in item. 
+            // In POS cart often only product_id is saved.
+            $product = Product::find($item['product_id']);
+            return $product && $product->category_id == $discount->category_id;
+        }
+
+        return true; // General discount
     }
 }

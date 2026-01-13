@@ -198,8 +198,14 @@ class PaymentController extends Controller
             // PERBAIKAN: Pass discount plan to reduce stock
             $this->reduceStock($cart, $discountPlan);
 
-            if ($discountPlan && isset($discountPlan['discount_id'])) {
-                $this->incrementDiscountUsage($discountPlan['discount_id']);
+            if ($discountPlan) {
+                if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
+                    foreach ($discountPlan['applied_discounts'] as $dId) {
+                        $this->incrementDiscountUsage($dId);
+                    }
+                } elseif (isset($discountPlan['discount_id'])) {
+                    $this->incrementDiscountUsage($discountPlan['discount_id']);
+                }
             }
 
             Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
@@ -303,8 +309,14 @@ class PaymentController extends Controller
             // PERBAIKAN: Pass discount plan
             $this->reduceStock($cart, $discountPlan);
 
-            if ($discountPlan && isset($discountPlan['discount_id'])) {
-                $this->incrementDiscountUsage($discountPlan['discount_id']);
+            if ($discountPlan) {
+                if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
+                    foreach ($discountPlan['applied_discounts'] as $dId) {
+                        $this->incrementDiscountUsage($dId);
+                    }
+                } elseif (isset($discountPlan['discount_id'])) {
+                    $this->incrementDiscountUsage($discountPlan['discount_id']);
+                }
             }
 
             Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
@@ -676,7 +688,11 @@ class PaymentController extends Controller
         if ($sale->notes) {
             try {
                 $notes = json_decode($sale->notes, true);
-                if (isset($notes['discount_id'])) {
+                if (isset($notes['discount_plan']['applied_discounts']) && is_array($notes['discount_plan']['applied_discounts'])) {
+                    foreach ($notes['discount_plan']['applied_discounts'] as $dId) {
+                        $this->incrementDiscountUsage($dId);
+                    }
+                } elseif (isset($notes['discount_id'])) {
                     $this->incrementDiscountUsage($notes['discount_id']);
                 }
             } catch (\Exception $e) {

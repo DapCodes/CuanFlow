@@ -65,34 +65,34 @@ class DiscountController extends Controller
             'usage_limit' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
             'is_voucher' => 'boolean',
+            'product_id' => 'nullable|exists:products,id',
+            'category_id' => 'nullable|exists:categories,id',
+            'buy_quantity' => 'nullable|integer|min:1',
+            'get_quantity' => 'nullable|integer|min:1',
         ];
 
-        // Validasi khusus untuk buy_x_get_y
+        // Validasi tambahan untuk buy_x_get_y
         if ($request->type === 'buy_x_get_y') {
+            $rules['product_id'] = 'required|exists:products,id';
             $rules['buy_quantity'] = 'required|integer|min:1';
             $rules['get_quantity'] = 'required|integer|min:1';
-            $rules['product_id'] = 'required|exists:products,id';
-        }
-
-        // Validasi untuk product atau category
-        if ($request->has('product_id') && $request->product_id) {
-            $rules['product_id'] = 'exists:products,id';
-        }
-        if ($request->has('category_id') && $request->category_id) {
-            $rules['category_id'] = 'exists:categories,id';
         }
 
         $validated = $request->validate($rules);
 
-        // Set default values
-        $validated['min_purchase'] = $validated['min_purchase'] ?? 0;
-        $validated['used_count'] = 0;
+        // Set default values & cleanup based on type
         $validated['outlet_id'] = auth()->user()->outlet_id;
+        $validated['used_count'] = 0;
+        $validated['min_purchase'] = $validated['min_purchase'] ?? 0;
         $validated['is_active'] = $request->has('is_active');
         $validated['is_voucher'] = $request->has('is_voucher');
 
         if ($validated['type'] === 'buy_x_get_y') {
-            $validated['value'] = 0; // atau nilai lain kalau mau
+            $validated['value'] = 0;
+            $validated['category_id'] = null; // BOGO tidak pakai kategori
+        } else {
+            $validated['buy_quantity'] = null;
+            $validated['get_quantity'] = null;
         }
 
         Discount::create($validated);
@@ -138,7 +138,7 @@ class DiscountController extends Controller
             'code' => 'required|string|max:30|unique:discounts,code,'.$discount->id,
             'name' => 'required|string|max:255',
             'type' => 'required|in:percentage,fixed,buy_x_get_y',
-            'value' => 'required|numeric|min:0',
+            'value' => 'nullable|required_unless:type,buy_x_get_y|numeric|min:0',
             'min_purchase' => 'nullable|numeric|min:0',
             'max_discount' => 'nullable|numeric|min:0',
             'start_date' => 'nullable|date',
@@ -146,19 +146,16 @@ class DiscountController extends Controller
             'usage_limit' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
             'is_voucher' => 'boolean',
+            'product_id' => 'nullable|exists:products,id',
+            'category_id' => 'nullable|exists:categories,id',
+            'buy_quantity' => 'nullable|integer|min:1',
+            'get_quantity' => 'nullable|integer|min:1',
         ];
 
         if ($request->type === 'buy_x_get_y') {
+            $rules['product_id'] = 'required|exists:products,id';
             $rules['buy_quantity'] = 'required|integer|min:1';
             $rules['get_quantity'] = 'required|integer|min:1';
-            $rules['product_id'] = 'required|exists:products,id';
-        }
-
-        if ($request->has('product_id') && $request->product_id) {
-            $rules['product_id'] = 'exists:products,id';
-        }
-        if ($request->has('category_id') && $request->category_id) {
-            $rules['category_id'] = 'exists:categories,id';
         }
 
         $validated = $request->validate($rules);
@@ -166,6 +163,14 @@ class DiscountController extends Controller
         $validated['min_purchase'] = $validated['min_purchase'] ?? 0;
         $validated['is_active'] = $request->has('is_active');
         $validated['is_voucher'] = $request->has('is_voucher');
+
+        if ($validated['type'] === 'buy_x_get_y') {
+            $validated['value'] = 0;
+            $validated['category_id'] = null;
+        } else {
+            $validated['buy_quantity'] = null;
+            $validated['get_quantity'] = null;
+        }
 
         $discount->update($validated);
 
