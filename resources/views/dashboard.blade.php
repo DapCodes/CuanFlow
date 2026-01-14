@@ -541,6 +541,40 @@
 @section('content')
 <main class="flex-grow flex items-center justify-center py-8 px-4">
     <div class="w-full max-w-6xl">
+
+    {{-- Search Bar Component --}}
+    <div class="max-w-3xl mx-auto mb-8 px-4 relative z-40">
+        <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class="fa-solid fa-magnifying-glass text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-300"></i>
+            </div>
+            <input 
+                type="text" 
+                id="globalSearchInput"
+                class="block w-full pl-11 pr-12 py-4 border-gray-200 rounded-2xl leading-5 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-sm transition-all duration-300 transform focus:scale-[1.01]"
+                placeholder="Cari menu, fitur, atau buat data baru (contoh: 'resep', 'keuangan')..."
+                autocomplete="off"
+            >
+            <div id="searchLoader" class="absolute inset-y-0 right-0 pr-4 flex items-center opacity-0 transition-opacity duration-200">
+                 <i class="fa-solid fa-circle-notch fa-spin text-indigo-500"></i>
+            </div>
+            
+            {{-- Kbd shortcut hint --}}
+            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none" id="searchShortcutHint">
+                <span class="text-xs text-gray-400 border border-gray-200 rounded px-1.5 py-0.5 bg-gray-50">/</span>
+            </div>
+
+            {{-- Results Dropdown --}}
+            <div 
+                id="searchResults" 
+                class="absolute left-0 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden hidden transition-all duration-200 origin-top z-50 text-left"
+                style="max-height: 400px; overflow-y: auto;"
+            >
+                {{-- Injected by JS --}}
+            </div>
+        </div>
+    </div>
+
 <div class="flex justify-center p-4">
 <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-6 max-w-8xl w-full">
 
@@ -1642,3 +1676,212 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('globalSearchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchLoader = document.getElementById('searchLoader');
+    const shortcutHint = document.getElementById('searchShortcutHint');
+    let debounceTimer;
+
+    // Data Source
+    const searchItems = [
+        @can('akses pos')
+        { label: 'Point of Sale (Kasir)', keywords: ['pos', 'kasir', 'transaksi', 'jual'], url: "{{ route('pos.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat penjualan')
+        { label: 'Riwayat Penjualan', keywords: ['penjualan', 'sales', 'history', 'riwayat', 'laporan'], url: "{{ route('sales.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat diskon')
+        { label: 'Daftar Diskon', keywords: ['diskon', 'promo', 'potongan'], url: "{{ route('discounts.index') }}", type: 'Menu' },
+        { label: 'Buat Diskon Baru', keywords: ['buat', 'tambah', 'diskon', 'promo'], url: "{{ route('discounts.create') }}", type: 'Action' },
+        @endcan
+        @can('lihat keuangan')
+        { label: 'Keuangan', keywords: ['keuangan', 'finance', 'laporan', 'uang'], url: "{{ route('finance.index') }}", type: 'Menu' },
+        @endcan
+        @can('buat pemasukan')
+        { label: 'Catat Pemasukan', keywords: ['pemasukan', 'income', 'tambah', 'uang masuk'], url: "{{ route('expenses.index', ['type' => 'income']) }}", type: 'Action' },
+        @endcan
+        @can('buat pengeluaran')
+        { label: 'Catat Pengeluaran', keywords: ['pengeluaran', 'expense', 'biaya', 'operasional', 'beli'], url: "{{ route('expenses.index', ['type' => 'expense']) }}", type: 'Action' },
+        @endcan
+        @can('buat penarikan')
+        { label: 'Penarikan Saldo', keywords: ['tarik', 'saldo', 'withdraw', 'pencairan'], url: "{{ route('withdraw.index') }}", type: 'Menu' },
+        { label: 'Ajukan Penarikan', keywords: ['buat', 'ajukan', 'tarik', 'saldo'], url: "{{ route('withdraw.create') }}", type: 'Action' },
+        @endcan
+        @can('lihat metode pembayaran')
+        { label: 'Metode Pembayaran', keywords: ['payment', 'metode', 'bayar', 'qris', 'bank'], url: "{{ route('outlet-payment-links.index') }}", type: 'Menu' },
+        @endcan
+        @can('tasks.view')
+        { label: 'Manajemen Tugas (Kanban)', keywords: ['tugas', 'task', 'kanban', 'kerja', 'project'], url: "{{ route('tasks.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat statistik')
+        { label: 'Dashboard & Statistik', keywords: ['statistik', 'chart', 'grafik', 'analisis', 'dashboard'], url: "{{ route('statistics.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat laporan')
+        { label: 'Laporan Keseluruhan', keywords: ['laporan', 'report', 'keuangan', 'pdf', 'excel'], url: "{{ route('reports.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat produk')
+        { label: 'Daftar Produk & Resep', keywords: ['produk', 'menu', 'makanan', 'minuman', 'resep', 'barang'], url: "{{ route('products-hpp.index') }}", type: 'Menu' },
+        { label: 'Tambah Produk Baru', keywords: ['tambah', 'buat', 'produk', 'menu', 'resep'], url: "{{ route('products-hpp.create') }}", type: 'Action' },
+        @endcan
+        @can('lihat bahan baku')
+        { label: 'Stok Bahan Baku', keywords: ['bahan', 'baku', 'raw', 'material', 'stok', 'inventory'], url: "{{ route('raw-materials.index') }}", type: 'Menu' },
+        { label: 'Tambah Bahan Baku', keywords: ['tambah', 'bahan', 'baku'], url: "{{ route('raw-materials.create') }}", type: 'Action' },
+        @endcan
+        @can('lihat supplier')
+        { label: 'Daftar Pemasok (Supplier)', keywords: ['supplier', 'pemasok', 'vendor'], url: "{{ route('raw-materials.suppliers') }}", type: 'Menu' },
+        { label: 'Tambah Supplier', keywords: ['tambah', 'supplier', 'pemasok'], url: "{{ route('raw-materials.suppliers.create') }}", type: 'Action' },
+        @endcan
+        @can('lihat reseller applications')
+        { label: 'Lamaran Reseller', keywords: ['reseller', 'mitra', 'lamaran', 'aplikasi'], url: "{{ route('reseller-applications.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat produksi')
+        { label: 'Daftar Produksi', keywords: ['produksi', 'production', 'olah', 'masak'], url: "{{ route('production.index') }}", type: 'Menu' },
+        { label: 'Buat Produksi Baru', keywords: ['buat', 'tambah', 'produksi'], url: "{{ route('production.create') }}", type: 'Action' },
+        @endcan
+        @can('lihat stock opname')
+        { label: 'Stock Opname', keywords: ['stock', 'opname', 'so', 'cek', 'stok'], url: "{{ route('stock-opname.index') }}", type: 'Menu' },
+        { label: 'Buat Stock Opname', keywords: ['buat', 'stock', 'opname'], url: "{{ route('stock-opname.create') }}", type: 'Action' },
+        @endcan
+        @can('lihat stock transfer')
+        { label: 'Transfer Stok', keywords: ['transfer', 'kirim', 'stok', 'mutasi'], url: "{{ route('stock-transfers.index') }}", type: 'Menu' },
+        { label: 'Buat Transfer Stok', keywords: ['buat', 'transfer', 'kirim'], url: "{{ route('stock-transfers.create') }}", type: 'Action' },
+        @endcan
+        @can('lihat outlet')
+        { label: 'Informasi Outlet', keywords: ['outlet', 'toko', 'cabang', 'informasi', 'profil'], url: "{{ route('outlets.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat landing page')
+        { label: 'Landing Page', keywords: ['landing', 'page', 'web', 'promosi', 'online'], url: "{{ route('landing-pages.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat testimoni')
+        { label: 'Testimoni', keywords: ['testimoni', 'review', 'ulasan'], url: "{{ route('testimonials.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat pegawai')
+        { label: 'Pegawai & Hak Akses', keywords: ['pegawai', 'employee', 'karyawan', 'staff', 'hrd', 'akses'], url: "{{ route('employees.index') }}", type: 'Menu' },
+        { label: 'Tambah Pegawai', keywords: ['tambah', 'buat', 'pegawai', 'karyawan'], url: "{{ route('employees.create') }}", type: 'Action' },
+        @endcan
+        @can('lihat pelanggan')
+        { label: 'Pelanggan & Piutang', keywords: ['pelanggan', 'customer', 'piutang', 'hutang', 'debt'], url: "{{ route('customer-debts.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat meja')
+        { label: 'Manajemen Meja', keywords: ['meja', 'table', 'nomor'], url: "{{ route('tables.index') }}", type: 'Menu' },
+        @endcan
+        @can('lihat ai insights')
+        { label: 'AI Insights', keywords: ['ai', 'insight', 'saran', 'analisis', 'cerdas'], url: "{{ route('ai-insights.index') }}", type: 'Menu' },
+        @endcan
+        @can('akses clara ai')
+        { label: 'Clara AI Chat', keywords: ['clara', 'ai', 'chat', 'tanya', 'asisten', 'bot'], url: "{{ route('clara-ai.index') }}", type: 'Action' },
+        @endcan
+        @can('lihat kebijakan outlet')
+        { label: 'Kebijakan Outlet', keywords: ['kebijakan', 'policy', 'aturan', 'sop'], url: "{{ route('outlet-policies.index') }}", type: 'Menu' },
+        @endcan
+        @can('edit profil')
+        { label: 'Pengaturan Akun', keywords: ['akun', 'profil', 'profile', 'password', 'sandi', 'setting'], url: "{{ route('profile.edit') }}", type: 'Menu' },
+        @endcan
+        @can('lihat faq')
+        { label: 'Bantuan & FAQ', keywords: ['bantuan', 'faq', 'help', 'tanya'], url: "{{ route('faqs.index') }}", type: 'Menu' },
+        @endcan
+    ];
+
+    // Focus shortcut
+    document.addEventListener('keydown', function(e) {
+        if (e.key === '/' && document.activeElement !== searchInput) {
+            e.preventDefault();
+            searchInput.focus();
+        }
+    });
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        
+        // Toggle loader
+        searchLoader.classList.remove('opacity-0');
+        shortcutHint.classList.add('hidden');
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            performSearch(query);
+            searchLoader.classList.add('opacity-0');
+            if(!query) shortcutHint.classList.remove('hidden');
+        }, 500);
+    });
+    
+    // Hide on click outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.classList.add('hidden');
+        }
+    });
+    
+    searchInput.addEventListener('focus', function() {
+        if (this.value.trim().length > 0) {
+            searchResults.classList.remove('hidden');
+        }
+    });
+
+    function performSearch(query) {
+        if (!query) {
+            searchResults.innerHTML = '';
+            searchResults.classList.add('hidden');
+            return;
+        }
+
+        // Filter
+        const results = searchItems.filter(item => {
+            return item.keywords.some(k => k.toLowerCase().includes(query)) || 
+                   item.label.toLowerCase().includes(query);
+        });
+
+        renderResults(results, query);
+    }
+
+    function renderResults(results, query) {
+        searchResults.innerHTML = '';
+        
+        if (results.length === 0) {
+            searchResults.innerHTML = `
+                <div class="p-4 text-center text-gray-500 text-sm">
+                    <i class="fa-solid fa-magnifying-glass mb-2 text-gray-300 text-2xl block"></i>
+                    Tidak ada hasil untuk "${query}"
+                </div>
+            `;
+            searchResults.classList.remove('hidden');
+            return;
+        }
+
+        const ul = document.createElement('ul');
+        ul.className = 'divide-y divide-gray-50';
+
+        results.forEach(item => {
+            const li = document.createElement('li');
+            
+            const icon = item.type === 'Action' 
+                ? '<i class="fa-solid fa-plus-circle text-emerald-500 mr-3"></i>' 
+                : '<i class="fa-solid fa-arrow-right text-gray-400 mr-3 group-hover:text-indigo-500 transition-colors"></i>';
+            
+            const badge = item.type === 'Action'
+                ? '<span class="ml-auto text-[10px] font-bold tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase border border-emerald-100">Buat Baru</span>'
+                : '<span class="ml-auto text-[10px] font-bold tracking-wider text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full uppercase border border-gray-200">Menu</span>';
+
+            const regex = new RegExp(`(${query})`, 'gi');
+            const highlightedLabel = item.label.replace(regex, '<span class="text-indigo-600 bg-indigo-50 font-bold">$1</span>');
+
+            li.innerHTML = `
+                <a href="${item.url}" class="flex items-center p-4 hover:bg-gray-50 transition-colors duration-150 group">
+                    ${icon}
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-indigo-600">${highlightedLabel}</span>
+                    ${badge}
+                </a>
+            `;
+            ul.appendChild(li);
+        });
+
+        searchResults.appendChild(ul);
+        searchResults.classList.remove('hidden');
+    }
+});
+</script>
+@endpush

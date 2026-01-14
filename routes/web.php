@@ -336,6 +336,7 @@ Route::middleware(['auth'])->prefix('pos/discounts')->name('pos.discounts.')->gr
     Route::post('/apply', [App\Http\Controllers\PosDiscountController::class, 'apply'])->name('apply');
     Route::post('/assign-free-items', [App\Http\Controllers\PosDiscountController::class, 'assignFreeItems'])->name('assign-free-items');
     Route::post('/clear', [App\Http\Controllers\PosDiscountController::class, 'clear'])->name('clear');
+    Route::post('/remove', [App\Http\Controllers\PosDiscountController::class, 'remove'])->name('remove');
     Route::get('/available', [App\Http\Controllers\PosDiscountController::class, 'available'])->name('available');
 });
 

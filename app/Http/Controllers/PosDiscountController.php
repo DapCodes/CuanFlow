@@ -147,14 +147,26 @@ class PosDiscountController extends Controller
         }
 
         try {
-            $finalPlan = $this->discountService->applyFreeItems(
-                $discount,
+            // Re-calculate the whole plan using calculateDiscountPlan to preserve simple discounts
+            $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
+            
+            $blacklist = Session::get('pos_discount_blacklist', []);
+            $candidates = $this->discountService->findCandidates(
                 array_values($cart),
+                null,
+                Session::get('pos_customer_id')
+            )->filter(fn($d) => !in_array($d->id, $blacklist));
+
+            $finalPlan = $this->discountService->calculateDiscountPlan(
+                array_values($cart),
+                $candidates,
+                $subtotal,
                 $freeItemSelection
             );
 
             // Update discount plan in session
             Session::put('pos_discount_plan', $finalPlan);
+            Session::put('pos_bogo_selection', $freeItemSelection); // Save selection for recalculations
 
             return response()->json([
                 'success' => true,
@@ -178,14 +190,56 @@ class PosDiscountController extends Controller
     public function clear()
     {
         Session::forget('pos_discount_plan');
+        Session::forget('pos_discount_blacklist'); // Clear blacklist too
 
         $cart = Session::get('pos_cart', []);
         $summary = $this->calculateCartSummary($cart);
 
         return response()->json([
             'success' => true,
-            'message' => 'Diskon dihapus',
+            'message' => 'Semua diskon dihapus',
             'cart_summary' => $summary,
+        ]);
+    }
+
+    /**
+     * Remove specific discount
+     * POST /pos/discounts/remove
+     */
+    public function remove(Request $request)
+    {
+        $id = $request->id;
+        $blacklist = Session::get('pos_discount_blacklist', []);
+        $blacklist[] = $id;
+        Session::put('pos_discount_blacklist', array_unique($blacklist));
+
+        // Re-calculate plan
+        $cart = Session::get('pos_cart', []);
+        $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
+        
+        $candidates = $this->discountService->findCandidates(
+            array_values($cart),
+            null,
+            Session::get('pos_customer_id')
+        )->filter(fn($d) => !in_array($d->id, $blacklist));
+
+        $plan = $this->discountService->calculateDiscountPlan(
+            array_values($cart),
+            $candidates,
+            $subtotal
+        );
+
+        if (!$plan['discount_id']) {
+            Session::forget('pos_discount_plan');
+        } else {
+            Session::put('pos_discount_plan', $plan);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Diskon dihapus',
+            'discount_plan' => Session::get('pos_discount_plan'),
+            'cart_summary' => $this->calculateSummaryWithDiscount($cart, $plan),
         ]);
     }
 

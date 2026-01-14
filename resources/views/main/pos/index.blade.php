@@ -456,6 +456,105 @@
         transform: translateY(-1px);
     }
 
+    /* ===================== DISCOUNT LIST ===================== */
+    .discount-container {
+        margin-bottom: 0.75rem;
+    }
+
+    .discount-summary-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(to right, #fef2f2, #fff1f2);
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .discount-summary-btn:hover {
+        background: linear-gradient(to right, #fee2e2, #ffe4e6);
+        border-color: #fda4af;
+    }
+
+    .discount-list {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        background-color: #fff;
+        border-radius: 0 0 12px 12px;
+        border: 1px solid #fecaca;
+        border-top: none;
+        margin-top: -6px;
+        padding-top: 6px;
+    }
+
+    .discount-list.open {
+        max-height: 500px; /* arbitrary large value */
+        transition: max-height 0.3s ease-in;
+    }
+
+    .discount-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.6rem 1rem;
+        border-bottom: 1px dashed #fee2e2;
+    }
+
+    .discount-item:last-child {
+        border-bottom: none;
+    }
+
+    .discount-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .discount-item-name {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #991b1b;
+        display: block;
+        truncate: true;
+    }
+
+    .discount-item-detail {
+        font-size: 0.65rem;
+        color: #b91c1c;
+        display: block;
+    }
+
+    .discount-item-remove {
+        padding: 0.35rem;
+        color: #f87171;
+        transition: color 0.2s;
+        cursor: pointer;
+    }
+
+    .discount-item-remove:hover {
+        color: #dc2626;
+    }
+
+    .rotate-180 {
+        transform: rotate(180deg);
+    }
+
+    @media (max-width: 640px) {
+        .pos-main {
+            grid-template-columns: 1fr;
+            padding: 0.5rem;
+            gap: 0.5rem;
+        }
+
+        .order-panel {
+            height: auto;
+            max-height: 80vh;
+        }
+    }
+
     /* ===================== EMPTY STATE ===================== */
     .empty-state {
         display: flex;
@@ -1685,15 +1784,13 @@
                             <span>Kalkulator</span>
                         </button>
 
-                        <!-- Operasional (Kas) -->
-                        @can('buat pemasukan' && 'buat pengeluaran')
+                        @if(auth()->user()->can('buat pemasukan') && auth()->user()->can('buat pengeluaran'))
                         <button onclick="openFinanceModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-emerald-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
                             <i class="fas fa-file-invoice-dollar w-4 text-emerald-600"></i>
                             <span>Operasional (Kas)</span>
                         </button>
-                        @endcan
+                        @endif
 
-                        <!-- Kelola Meja -->
                         <!-- Kelola Meja -->
                         @can('pilih meja pos')
                         <button id="btnManageTables" onclick="openTableManagementModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100" style="{{ auth()->user()->outlet->has_table_system ? '' : 'display: none;' }}">
@@ -3161,6 +3258,41 @@ function closeFreeItemModal() {
     if (modal) modal.classList.add('hidden');
 }
 
+// ==================== DISCOUNT HUB ====================
+function toggleDiscountList() {
+    const list = document.getElementById('discountList');
+    const icon = document.getElementById('discountToggleIcon');
+    if (list) {
+        list.classList.toggle('open');
+        if (icon) {
+            icon.classList.toggle('rotate-180');
+        }
+    }
+}
+
+function removeAppliedDiscount(id) {
+    fetch('{{ route("pos.discounts.remove") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ id: id })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            activeDiscountPlan = data.discount_plan;
+            cartSummary = data.cart_summary;
+            renderCart();
+            showToast('success', 'Diskon dihapus');
+        } else {
+            showToast('error', data.message || 'Gagal menghapus diskon');
+        }
+    })
+    .catch(() => showToast('error', 'Terjadi kesalahan saat menghapus diskon'));
+}
+
 function clearDiscount(confirm = true) {
     if (!activeDiscountPlan) return;
     
@@ -3720,7 +3852,16 @@ function formatNumber(num){
 }
 
 function formatDateTime(s){
-    const d = new Date(s);
+    if (!s) return '-';
+    let d = new Date(s);
+    if (isNaN(d.getTime())) {
+        // Try fixing SQL timestamp format for Safari: "YYYY-MM-DD HH:MM:SS" -> "YYYY-MM-DDTHH:MM:SS"
+        if (typeof s === 'string') {
+            d = new Date(s.replace(' ', 'T'));
+        }
+    }
+    if (isNaN(d.getTime())) return '-';
+    
     const day=String(d.getDate()).padStart(2,'0');
     const month=String(d.getMonth()+1).padStart(2,'0');
     const year=d.getFullYear();
@@ -3890,61 +4031,90 @@ function renderCart() {
         preview.innerHTML = html;
     }
 
-    // ====== INFO DISKON DI AREA KERANJANG ======
-    if (activeDiscountPlan) {
+    // ====== INFO DISKON DI AREA KERANJANG - RESPONSIVE LIST ======
+    if (activeDiscountPlan && activeDiscountPlan.applied_discounts && activeDiscountPlan.applied_discounts.length > 0) {
         const discountInfo = document.createElement('div');
         discountInfo.id = 'discountInfo';
+        discountInfo.className = 'discount-container';
         
-        if (activeDiscountPlan.discount_type === 'buy_x_get_y') {
-            const freeItems = activeDiscountPlan.affected_items || [];
-            const totalFreeQty = freeItems.reduce((sum, item) => sum + (item.free_qty || 0), 0);
+        const discounts = activeDiscountPlan.applied_discounts;
+        const totalSaved = activeDiscountPlan.total_discount || cartSummary.total_discount || 0;
+        
+        let listHtml = '';
+        discounts.forEach(d => {
+            const isBogo = d.type === 'buy_x_get_y';
+            const detailText = isBogo ? `Beli ${d.quota} item gratis` : `Hemat Rp ${formatNumber(d.amount)}`;
+            const iconClass = isBogo ? 'fa-gift' : 'fa-tag';
+            const onclickAction = isBogo ? `onclick="showFreeItemSelectionModal(activeDiscountPlan)"` : '';
             
-            discountInfo.innerHTML = `
-                <div onclick="showFreeItemSelectionModal(activeDiscountPlan)" class="cursor-pointer bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3 mb-3 hover:bg-green-100 transition-all group">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <div class="text-xs text-green-600 font-semibold mb-1">
-                                <i class="fas fa-gift mr-1"></i>Promo BOGO Aktif
-                            </div>
-                            <div class="text-sm font-bold text-green-900">${activeDiscountPlan.discount_name || 'Buy X Get Y'}</div>
-                            <div class="text-xs text-green-700 mt-1 flex items-center">
-                                <span>${totalFreeQty > 0 ? `<i class="fas fa-check-circle mr-1"></i>Sudah pilih ${totalFreeQty} item` : 'Klik di sini untuk pilih item gratis'}</span>
-                                <i class="fas fa-chevron-right ml-2 text-[10px] opacity-40 group-hover:opacity-100 transition-opacity"></i>
-                            </div>
-                        </div>
-                        <button onclick="event.stopPropagation(); clearDiscount()" class="text-red-400 hover:text-red-600 px-2 transition-colors" title="Hapus Diskon">
-                            <i class="fas fa-times"></i>
-                        </button>
+            listHtml += `
+            <div class="discount-item">
+                <div class="discount-item-info ${isBogo ? 'cursor-pointer' : ''}" ${onclickAction}>
+                    <span class="discount-item-name"><i class="fas ${iconClass} mr-1"></i> ${d.name}</span>
+                    <span class="discount-item-detail">${detailText}</span>
+                </div>
+                <div class="discount-item-remove" onclick="removeAppliedDiscount(${d.id})" title="Hapus Diskon">
+                    <i class="fas fa-trash-alt text-xs"></i>
+                </div>
+            </div>`;
+        });
+
+        discountInfo.innerHTML = `
+            <div class="discount-summary-btn" onclick="toggleDiscountList()">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                        <i class="fas fa-percentage text-xs"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-[10px] font-bold text-red-500 uppercase tracking-wider">Diskon Terpakai</div>
+                        <div class="text-xs font-black text-gray-900">${discounts.length} Promo Aktif</div>
                     </div>
                 </div>
-            `;
-        } else if ((activeDiscountPlan.total_discount || cartSummary.total_discount || 0) > 0) {
-            const saved = activeDiscountPlan.total_discount || cartSummary.total_discount || 0;
-            
-            discountInfo.innerHTML = `
-                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-3 mb-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <div class="text-xs text-purple-600 font-semibold mb-1">
-                                <i class="fas fa-tag mr-1"></i>Diskon Aktif
-                            </div>
-                            <div class="text-sm font-bold text-purple-900">${activeDiscountPlan.discount_name || 'Diskon' }</div>
-                            <div class="text-xs text-purple-700 mt-1">
-                                Hemat Rp ${formatNumber(saved)}
-                            </div>
-                        </div>
-                        <button onclick="clearDiscount()" class="text-red-500 hover:text-red-700 px-2">
-                            <i class="fas fa-times"></i>
-                        </button>
+                <div class="flex items-center gap-2">
+                    <div class="text-right mr-1">
+                        <div class="text-[10px] text-gray-400">Total Hemat</div>
+                        <div class="text-xs font-black text-emerald-600">Rp ${formatNumber(totalSaved)}</div>
                     </div>
+                    <i id="discountToggleIcon" class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform"></i>
                 </div>
-            `;
-        }
+            </div>
+            <div id="discountList" class="discount-list">
+                ${listHtml}
+                <div class="p-2 border-t border-dashed border-red-100">
+                    <button onclick="clearDiscount()" class="w-full py-1.5 text-[10px] font-bold text-red-400 hover:text-red-600 transition-colors uppercase tracking-widest">
+                        Hapus Semua Diskon
+                    </button>
+                </div>
+            </div>
+        `;
+
         if (preview.firstChild) {
             preview.prepend(discountInfo);
         } else {
             preview.appendChild(discountInfo);
         }
+    } else if (activeDiscountPlan && activeDiscountPlan.discount_name) {
+        // Fallback untuk data diskon lama (singel)
+        const discountInfo = document.createElement('div');
+        discountInfo.id = 'discountInfo';
+        const saved = activeDiscountPlan.total_discount || cartSummary.total_discount || 0;
+        
+        discountInfo.innerHTML = `
+            <div class="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-xl p-3 mb-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-[10px] font-bold text-red-500 uppercase mb-0.5">Diskon Aktif</div>
+                        <div class="text-sm font-black text-gray-900">${activeDiscountPlan.discount_name}</div>
+                        <div class="text-xs font-bold text-emerald-600 mt-1">Hemat Rp ${formatNumber(saved)}</div>
+                    </div>
+                    <button onclick="clearDiscount()" class="w-8 h-8 rounded-full hover:bg-red-100 text-red-400 transition-colors flex items-center justify-center">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        if (preview.firstChild) preview.prepend(discountInfo);
+        else preview.appendChild(discountInfo);
     }
 
     // ====== RINGKASAN DI FOOTER ======
@@ -6099,9 +6269,9 @@ function closeSaleDetailModal() {
         
         const remaining = totalAmount - paidAmount;
         
-        totalEl.textContent = formatRupiah(totalAmount);
-        paidEl.textContent = formatRupiah(paidAmount);
-        remainingEl.textContent = formatRupiah(remaining);
+        totalEl.textContent = 'Rp ' + formatNumber(totalAmount);
+        paidEl.textContent = 'Rp ' + formatNumber(paidAmount);
+        remainingEl.textContent = 'Rp ' + formatNumber(remaining);
         
         document.getElementById('debtActualPaidAmount').value = paidAmount;
         

@@ -55,7 +55,7 @@ class DiscountService
     /**
      * Calculate discount plan for cart
      */
-    public function calculateDiscountPlan(array $cartItems, Collection $candidates, float $subtotal): array
+    public function calculateDiscountPlan(array $cartItems, Collection $candidates, float $subtotal, array $freeItemSelection = []): array
     {
         if ($candidates->isEmpty()) {
             return [
@@ -147,25 +147,49 @@ class DiscountService
             'discount_amount' => (float)$w['discount_amount']
         ])->values()->toArray();
 
-        $appliedDiscountIds = array_keys($appliedSimpleDiscounts);
+        // Detailed info for active simple discounts
+        $appliedDiscountsData = collect($appliedSimpleDiscounts)->map(fn($d) => [
+            'id' => $d->id,
+            'name' => $d->name,
+            'type' => $d->type,
+            'value' => (float)$d->value,
+            'amount' => (float)collect($itemWinners)->where('discount_id', $d->id)->sum('discount_amount')
+        ])->values();
         
         $plan = [
-            'discount_id' => $bestBogoPlan ? $bestBogoPlan['discount_id'] : (count($appliedDiscountIds) > 0 ? $appliedDiscountIds[0] : null),
-            'discount_name' => count($appliedDiscountIds) > 1 ? 'Multi-Promo' : (count($appliedDiscountIds) == 1 ? $appliedSimpleDiscounts[$appliedDiscountIds[0]]->name : ($bestBogoPlan ? $bestBogoPlan['discount_name'] : null)),
-            'discount_type' => $bestBogoPlan ? 'buy_x_get_y' : (count($appliedDiscountIds) > 1 ? 'mixed' : (count($appliedDiscountIds) == 1 ? $appliedSimpleDiscounts[$appliedDiscountIds[0]]->type : null)),
+            'discount_id' => $bestBogoPlan ? $bestBogoPlan['discount_id'] : ($appliedDiscountsData->isNotEmpty() ? $appliedDiscountsData->first()['id'] : null),
+            'discount_name' => count($appliedDiscountsData) > 1 ? 'Multi-Promo' : ($appliedDiscountsData->isNotEmpty() ? $appliedDiscountsData->first()['name'] : ($bestBogoPlan ? $bestBogoPlan['discount_name'] : null)),
+            'discount_type' => $bestBogoPlan ? 'buy_x_get_y' : (count($appliedDiscountsData) > 1 ? 'mixed' : ($appliedDiscountsData->isNotEmpty() ? $appliedDiscountsData->first()['type'] : null)),
             'total_discount' => $totalDiscountAmount,
             'affected_items' => $mergedAffectedItems,
-            'applied_discounts' => $appliedDiscountIds,
+            'applied_discounts' => $appliedDiscountsData->toArray(),
             'requires_free_item_selection' => $bestBogoPlan ? true : false,
             'free_item_candidates' => $bestBogoPlan ? $bestBogoPlan['free_item_candidates'] : [],
             'free_item_quota' => $bestBogoPlan ? $bestBogoPlan['free_item_quota'] : 0,
         ];
 
         if ($bestBogoPlan) {
-            $plan['applied_discounts'][] = $bestBogoPlan['discount_id'];
-            // If BOGO affected items are needed by JS for something other than free items, 
-            // the current logic might conflict with simple discounts.
-            // But usually BOGO affected_items are only set AFTER assignFreeItems.
+            // If we have manual selection, use it to populate affected_items
+            if (!empty($freeItemSelection)) {
+                try {
+                    $bogoDiscount = Discount::find($bestBogoPlan['discount_id']);
+                    if ($bogoDiscount) {
+                        $appliedBogo = $this->applyFreeItems($bogoDiscount, $cartItems, $freeItemSelection);
+                        $bestBogoPlan['affected_items'] = $appliedBogo['affected_items'];
+                    }
+                } catch (\Exception $e) {
+                    // Selection might be invalid now (e.g. cart items changed), ignore it
+                }
+            }
+
+            $plan['applied_discounts'][] = [
+                'id' => $bestBogoPlan['discount_id'],
+                'name' => $bestBogoPlan['discount_name'],
+                'type' => 'buy_x_get_y',
+                'amount' => 0,
+                'quota' => $bestBogoPlan['free_item_quota'],
+                'free_items' => $bestBogoPlan['affected_items'] ?? [] 
+            ];
         }
 
         return $plan;

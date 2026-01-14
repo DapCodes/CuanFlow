@@ -200,8 +200,12 @@ class PaymentController extends Controller
 
             if ($discountPlan) {
                 if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
-                    foreach ($discountPlan['applied_discounts'] as $dId) {
-                        $this->incrementDiscountUsage($dId);
+                    foreach ($discountPlan['applied_discounts'] as $discountItem) {
+                        // Handle if item is array (from JSON) or just ID
+                        $dId = is_array($discountItem) ? ($discountItem['id'] ?? null) : $discountItem;
+                        if ($dId) {
+                            $this->incrementDiscountUsage($dId);
+                        }
                     }
                 } elseif (isset($discountPlan['discount_id'])) {
                     $this->incrementDiscountUsage($discountPlan['discount_id']);
@@ -311,8 +315,11 @@ class PaymentController extends Controller
 
             if ($discountPlan) {
                 if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
-                    foreach ($discountPlan['applied_discounts'] as $dId) {
-                        $this->incrementDiscountUsage($dId);
+                    foreach ($discountPlan['applied_discounts'] as $discountItem) {
+                        $dId = is_array($discountItem) ? ($discountItem['id'] ?? null) : $discountItem;
+                        if ($dId) {
+                            $this->incrementDiscountUsage($dId);
+                        }
                     }
                 } elseif (isset($discountPlan['discount_id'])) {
                     $this->incrementDiscountUsage($discountPlan['discount_id']);
@@ -689,8 +696,11 @@ class PaymentController extends Controller
             try {
                 $notes = json_decode($sale->notes, true);
                 if (isset($notes['discount_plan']['applied_discounts']) && is_array($notes['discount_plan']['applied_discounts'])) {
-                    foreach ($notes['discount_plan']['applied_discounts'] as $dId) {
-                        $this->incrementDiscountUsage($dId);
+                    foreach ($notes['discount_plan']['applied_discounts'] as $discountItem) {
+                        $dId = is_array($discountItem) ? ($discountItem['id'] ?? null) : $discountItem;
+                        if ($dId) {
+                            $this->incrementDiscountUsage($dId);
+                        }
                     }
                 } elseif (isset($notes['discount_id'])) {
                     $this->incrementDiscountUsage($notes['discount_id']);

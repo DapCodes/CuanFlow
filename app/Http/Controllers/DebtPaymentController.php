@@ -210,8 +210,11 @@ class DebtPaymentController extends Controller
             // Increment discount usage
             if ($discountPlan) {
                 if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
-                    foreach ($discountPlan['applied_discounts'] as $dId) {
-                        $this->incrementDiscountUsage($dId);
+                    foreach ($discountPlan['applied_discounts'] as $discountItem) {
+                        $dId = is_array($discountItem) ? ($discountItem['id'] ?? null) : $discountItem;
+                        if ($dId) {
+                            $this->incrementDiscountUsage($dId);
+                        }
                     }
                 } elseif (isset($discountPlan['discount_id'])) {
                     $this->incrementDiscountUsage($discountPlan['discount_id']);
