@@ -37,12 +37,32 @@ class SaleSeeder extends Seeder
                 $saleDate = now()->subDays($daysAgo)->subHours(rand(0, 23))->subMinutes(rand(0, 59));
                 
                 // Randomly pick 1-3 products for this sale
-                $itemsToSell = $products->random(rand(1, 3));
+                $itemsToSellSelection = $products->random(min(rand(1, 3), $products->count()));
+                $validItems = [];
+
+                foreach ($itemsToSellSelection as $product) {
+                    $stock = ProductStock::where('product_id', $product->id)
+                        ->where('outlet_id', $targetOutletId)
+                        ->first();
+                    
+                    if ($stock && $stock->quantity > 0) {
+                        $qty = min(rand(1, 5), $stock->quantity);
+                        $validItems[] = [
+                            'product' => $product,
+                            'qty' => $qty,
+                            'stock' => $stock
+                        ];
+                    }
+                }
+
+                if (empty($validItems)) {
+                    continue; // Skip this sale if no products have stock
+                }
                 
                 $subtotal = 0;
                 $totalHpp = 0;
                 
-                // 1. Create Sale Record (Incomplete initially)
+                // 1. Create Sale Record
                 $sale = Sale::create([
                     'outlet_id' => $targetOutletId,
                     'cashier_id' => $adminId,
@@ -57,8 +77,11 @@ class SaleSeeder extends Seeder
                     'updated_at' => $saleDate,
                 ]);
 
-                foreach ($itemsToSell as $product) {
-                    $qty = rand(1, 5);
+                foreach ($validItems as $item) {
+                    $product = $item['product'];
+                    $qty = $item['qty'];
+                    $stock = $item['stock'];
+
                     $itemSubtotal = $product->selling_price * $qty;
                     $subtotal += $itemSubtotal;
                     $totalHpp += ($product->hpp ?: 0) * $qty;
@@ -77,30 +100,24 @@ class SaleSeeder extends Seeder
                     ]);
 
                     // 3. Update Product Stock & Movement
-                    $stock = ProductStock::where('product_id', $product->id)
-                        ->where('outlet_id', $targetOutletId)
-                        ->first();
-                    
-                    if ($stock) {
-                        $qtyBefore = $stock->quantity;
-                        $stock->decrement('quantity', $qty);
+                    $qtyBefore = $stock->quantity;
+                    $stock->decrement('quantity', $qty);
 
-                        StockMovement::create([
-                            'outlet_id' => $targetOutletId,
-                            'stockable_type' => Product::class,
-                            'stockable_id' => $product->id,
-                            'type' => 'out',
-                            'quantity' => $qty,
-                            'quantity_before' => $qtyBefore,
-                            'quantity_after' => $qtyBefore - $qty,
-                            'unit_price' => $product->selling_price,
-                            'reference_type' => Sale::class,
-                            'reference_id' => $sale->id,
-                            'notes' => 'Sale INV ' . $sale->invoice_number,
-                            'created_by' => $adminId,
-                            'created_at' => $saleDate,
-                        ]);
-                    }
+                    StockMovement::create([
+                        'outlet_id' => $targetOutletId,
+                        'stockable_type' => Product::class,
+                        'stockable_id' => $product->id,
+                        'type' => 'out',
+                        'quantity' => $qty,
+                        'quantity_before' => $qtyBefore,
+                        'quantity_after' => $qtyBefore - $qty,
+                        'unit_price' => $product->selling_price,
+                        'reference_type' => Sale::class,
+                        'reference_id' => $sale->id,
+                        'notes' => 'Sale INV ' . $sale->invoice_number,
+                        'created_by' => $adminId,
+                        'created_at' => $saleDate,
+                    ]);
                 }
 
                 // 4. Update Sale Totals
@@ -108,7 +125,7 @@ class SaleSeeder extends Seeder
                     'subtotal' => $subtotal,
                     'grand_total' => $subtotal,
                     'paid_amount' => $subtotal + (rand(0, 100) > 80 ? 5000 : 0), // Sometimes pay more
-                    'change_amount' => 0, // Will be recalc by boot if needed or manual
+                    'change_amount' => 0,
                 ]);
                 $sale->calculateTotals();
                 $sale->save();

@@ -218,7 +218,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('products-hpp.store') }}" method="POST" enctype="multipart/form-data" id="productForm">
+            <form action="{{ route('products-hpp.store') }}" method="POST" enctype="multipart/form-data" id="productForm" novalidate>
                 @csrf
 
                 {{-- STEP 1: INFO DASAR --}}
@@ -2125,6 +2125,10 @@ function loadHistoricalData() {
     document.getElementById('historicalDataLoading').classList.remove('hidden');
     document.getElementById('historicalDataContent').classList.add('hidden');
     document.getElementById('noHistoricalData').classList.add('hidden');
+
+    // SKIP FETCHING for new product (create page)
+    showNoHistoricalData();
+    return;
 
     fetch('/products-hpp/sales-analytics?product_id=new')
         .then(response => {

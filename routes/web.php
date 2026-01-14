@@ -62,25 +62,26 @@ Route::middleware('auth')->group(function () {
         Route::get('/generate-code', [App\Http\Controllers\ProductHppController::class, 'generateCode'])->name('generate-code');
         Route::get('/generate-barcode', [App\Http\Controllers\ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
         Route::get('/ajax/raw-material-price', [App\Http\Controllers\ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
-        Route::get('/{product}/barcode-preview', [App\Http\Controllers\ProductHppController::class, 'barcodePreview'])->name('barcode-preview');
-        Route::get('/{product}/barcode-download', [App\Http\Controllers\ProductHppController::class, 'barcodeDownload'])->name('barcode-download');
+        
+        Route::get('/sales-analytics', [App\Http\Controllers\ProductHppController::class, 'getSalesAnalytics'])
+            ->name('sales-analytics');
+            
+        Route::post('/generate-recipe-ai', [App\Http\Controllers\ProductHppController::class, 'generateRecipeAI'])
+            ->name('generate-recipe-ai');
 
         Route::get('/', [App\Http\Controllers\ProductHppController::class, 'index'])->name('index');
         Route::get('/create', [App\Http\Controllers\ProductHppController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\ProductHppController::class, 'store'])->name('store');
+        
+        Route::get('/{product}/barcode-preview', [App\Http\Controllers\ProductHppController::class, 'barcodePreview'])->name('barcode-preview');
+        Route::get('/{product}/barcode-download', [App\Http\Controllers\ProductHppController::class, 'barcodeDownload'])->name('barcode-download');
+        Route::post('/{product}/toggle-status', [App\Http\Controllers\ProductHppController::class, 'toggleStatus'])
+            ->name('toggle-status');
+
         Route::get('/{product}', [App\Http\Controllers\ProductHppController::class, 'show'])->name('show');
         Route::get('/{product}/edit', [App\Http\Controllers\ProductHppController::class, 'edit'])->name('edit');
         Route::put('/{product}', [App\Http\Controllers\ProductHppController::class, 'update'])->name('update');
         Route::delete('/{product}', [App\Http\Controllers\ProductHppController::class, 'destroy'])->name('destroy');
-
-        Route::get('/sales-analytics', [App\Http\Controllers\ProductHppController::class, 'getSalesAnalytics'])
-            ->name('sales-analytics');
-
-        Route::post('/{product}/toggle-status', [App\Http\Controllers\ProductHppController::class, 'toggleStatus'])
-            ->name('toggle-status');
-
-        Route::post('/generate-recipe-ai', [App\Http\Controllers\ProductHppController::class, 'generateRecipeAI'])
-            ->name('generate-recipe-ai');
     });
 
     Route::prefix('raw-materials')->name('raw-materials.')->group(function () {
@@ -148,7 +149,6 @@ Route::prefix('production')->name('production.')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('sales/daily', [SaleController::class, 'daily'])->name('sales.daily');
     Route::post('sales/{sale}/refund', [SaleController::class, 'refund'])->name('sales.refund');

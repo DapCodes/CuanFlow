@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PermissionCategoryController;
 use App\Http\Controllers\Admin\TaskStatusController;
 use App\Http\Controllers\Admin\TaskLabelController;
 use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\AdminManagementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,6 +52,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('testimonials', TestimonialController::class)->names('admin.testimonials');
     Route::post('testimonials/{testimonial}/toggle-status', [TestimonialController::class, 'toggleStatus'])->name('admin.testimonials.toggle-status');
     Route::resource('users', UserController::class)->names('admin.users');
+    Route::resource('admins', AdminManagementController::class)->names('admin.admins');
     Route::resource('units', UnitController::class)->names('admin.units');
     Route::resource('expense-categories', ExpenseCategoryController::class)->names('admin.expense-categories');
     Route::resource('faqs', FaqController::class)->names('admin.faqs');

@@ -66,6 +66,7 @@
                             ['route' => 'admin.permissions.index', 'icon' => 'fa-key', 'label' => 'Permissions', 'pattern' => 'admin.permissions.*'],
                             ['route' => 'admin.permission-categories.index', 'icon' => 'fa-layer-group', 'label' => 'Kat. Permission', 'pattern' => 'admin.permission-categories.*'],
                             ['route' => 'admin.users.index', 'icon' => 'fa-users', 'label' => 'Users', 'pattern' => 'admin.users.*'],
+                            ['route' => 'admin.admins.index', 'icon' => 'fa-user-cog', 'label' => 'Admins', 'pattern' => 'admin.admins.*'],
                             ['type' => 'divider', 'label' => 'Bisnis'],
                             ['route' => 'admin.categories.index', 'icon' => 'fa-folder-open', 'label' => 'Kategori', 'pattern' => 'admin.categories.*'],
                             ['route' => 'admin.units.index', 'icon' => 'fa-ruler', 'label' => 'Units', 'pattern' => 'admin.units.*'],

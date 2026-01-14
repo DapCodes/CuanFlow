@@ -543,7 +543,7 @@
     <div class="w-full max-w-6xl">
 
     {{-- Search Bar Component --}}
-    <div class="max-w-3xl mx-auto mb-8 px-4 relative z-40">
+    <div class="max-w-3xl mx-auto mb-8 px-4 relative z-30">
         <div class="relative group">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <i class="fa-solid fa-magnifying-glass text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-300"></i>

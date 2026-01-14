@@ -4,15 +4,19 @@
 
 @section('breadcrumb')
 <li class="flex items-center">
-    <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-gray-500">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-    </a>
-    <svg class="w-4 h-4 text-gray-300 mx-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
-    <a href="{{ route('expenses.index', ['type' => $type]) }}" class="text-gray-400 hover:text-gray-500">{{ $type == 'income' ? 'Pemasukan' : 'Pengeluaran' }}</a>
-    <svg class="w-4 h-4 text-gray-300 mx-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+    </svg>
+    <a href="{{ route('expenses.index', ['type' => $type]) }}" class="text-gray-500 hover:text-gray-700">{{ $type == 'income' ? 'Pemasukan' : 'Pengeluaran' }}</a>
+</li>
+<li class="flex items-center">
+    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+    </svg>
     <span class="text-gray-900 font-medium">Tambah Baru</span>
 </li>
 @endsection
+
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
@@ -62,7 +66,7 @@
                                         <span class="text-gray-500 sm:text-sm font-semibold">Rp</span>
                                     </div>
                                     <input type="number" name="amount" id="amount" required min="0" step="0.01" value="{{ old('amount') }}" 
-                                        class="pl-10 block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 text-lg font-medium" placeholder="0">
+                                        class="w-full pl-12 pr-4 py-4 bg-gray-50 border-gray-200 rounded-xl text-2xl font-black text-slate-700 focus:ring-2 focus:ring-slate-500 focus:border-red-500 placeholder-gray-300 transition-all" placeholder="0">
                                 </div>
                                 @error('amount') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                             </div>
@@ -71,7 +75,7 @@
                             <div class="space-y-1">
                                 <label for="expense_date" class="block text-sm font-medium text-gray-700">Tanggal Transaksi <span class="text-red-500">*</span></label>
                                 <input type="date" name="expense_date" id="expense_date" required value="{{ old('expense_date', date('Y-m-d')) }}" 
-                                    class="block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 cursor-pointer">
+                                    class="w-full px-4 py-2.5 bg-gray-50 border-gray-200 rounded-lg text-sm">
                                 @error('expense_date') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                             </div>
                         </div>
@@ -81,7 +85,7 @@
                             <div class="space-y-1">
                                 <label for="expense_category_id" class="block text-sm font-medium text-gray-700">Kategori <span class="text-red-500">*</span></label>
                                 <select name="expense_category_id" id="expense_category_id" required 
-                                    class="block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                    class="w-full px-4 py-2.5 bg-gray-50 border-gray-200 rounded-lg text-sm">
                                     <option value="">-- Pilih Kategori --</option>
                                     @foreach($categories as $cat)
                                         <option value="{{ $cat->id }}" {{ old('expense_category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
@@ -94,7 +98,7 @@
                             <div class="space-y-1">
                                 <label for="payment_method" class="block text-sm font-medium text-gray-700">Metode Pembayaran <span class="text-red-500">*</span></label>
                                 <select name="payment_method" id="payment_method" required 
-                                    class="block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                    class="w-full px-4 py-2.5 bg-gray-50 border-gray-200 rounded-lg text-sm">
                                     <option value="cash" {{ old('payment_method') == 'cash' ? 'selected' : '' }}>Tunai (Cash)</option>
                                     <option value="transfer" {{ old('payment_method') == 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
                                     <option value="card" {{ old('payment_method') == 'card' ? 'selected' : '' }}>Kartu Debit/Kredit</option>
@@ -106,8 +110,8 @@
                         <!-- Deskripsi -->
                         <div class="space-y-1">
                             <label for="description" class="block text-sm font-medium text-gray-700">Deskripsi / Keperluan <span class="text-red-500">*</span></label>
-                            <input type="text" name="description" id="description" required value="{{ old('description') }}" maxlength="255"
-                                class="block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Pembayaran listrik bulan ini...">
+                            <textarea name="description" id="description" required value="{{ old('description') }}" maxlength="255"
+                                class="w-full px-4 py-2.5 bg-gray-50 border-gray-200 rounded-lg text-sm" placeholder="Contoh: Pembayaran listrik bulan ini..."></textarea>
                             @error('description') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -123,12 +127,12 @@
                             <div class="space-y-1">
                                 <label for="reference_number" class="block text-sm font-medium text-gray-700">Nomor Referensi</label>
                                 <input type="text" name="reference_number" id="reference_number" value="{{ old('reference_number') }}" 
-                                    class="block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: INV/2023/X">
+                                    class="w-full px-4 py-2.5 bg-gray-50 border-gray-200 rounded-lg text-sm" placeholder="Contoh: INV/2023/X">
                             </div>
                             
                             <div class="space-y-1">
                                 <label for="notes" class="block text-sm font-medium text-gray-700">Catatan Lainnya</label>
-                                <textarea name="notes" id="notes" rows="1" class="block w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Catatan tambahan...">{{ old('notes') }}</textarea>
+                                <textarea name="notes" id="notes" rows="1" class="w-full px-4 py-2.5 bg-gray-50 border-gray-200 rounded-lg text-sm" placeholder="Catatan tambahan...">{{ old('notes') }}</textarea>
                             </div>
                         </div>
 

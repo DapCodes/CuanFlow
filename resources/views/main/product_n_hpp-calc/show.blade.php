@@ -322,7 +322,7 @@
                                 <div class="flex items-start">
                                     <i class="fas fa-trophy text-2xl text-green-600 mr-3"></i>
                                     <div>
-                                        <p class="font-bold text-green-800">🎉 Target Penjualan Tercapai</p>
+                                        <p class="font-bold text-green-800">Target Penjualan Tercapai</p>
                                         <p class="text-sm text-green-700 mt-1">
                                             Luar biasa! Target penjualan produk ini untuk bulan ini sudah terlampaui.
                                         </p>
@@ -332,7 +332,7 @@
                                 <div class="flex items-start">
                                     <i class="fas fa-check-circle text-2xl text-green-600 mr-3"></i>
                                     <div>
-                                        <p class="font-bold text-green-800">✓ Masih Sesuai Jalur</p>
+                                        <p class="font-bold text-green-800">Masih Sesuai Jalur</p>
                                         <p class="text-sm text-green-700 mt-1">
                                             Performa penjualan sejauh ini sesuai dengan progress yang diharapkan.
                                             Pertahankan ritme penjualannya.
@@ -343,7 +343,7 @@
                                 <div class="flex items-start">
                                     <i class="fas fa-exclamation-triangle text-2xl text-yellow-600 mr-3"></i>
                                     <div>
-                                        <p class="font-bold text-yellow-800">⚠ Di Bawah Target</p>
+                                        <p class="font-bold text-yellow-800">Di Bawah Target</p>
                                         <p class="text-sm text-yellow-700 mt-1">
                                             Penjualan masih di bawah progress harian yang diharapkan.
                                             Selisih sekitar {{ number_format(max($expectedProgress - $quantityAchievement, 0), 1, ',', '.') }}%.

@@ -13,8 +13,8 @@
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-[#f9fafb]" x-data="{ 
-    activeTab: '{{ session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() ? 'security' : ($errors->userDeletion->isNotEmpty() ? 'danger' : 'profile') }}' 
-}">
+    activeTab: '{{ session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() ? 'security' : 'profile' }}' 
+} shadow-sm md:shadow-none">
     <div class="max-w-6xl mx-auto space-y-8">
         
         {{-- Page Header --}}
@@ -78,12 +78,7 @@
                         Keamanan
                     </button>
                     <div class="my-2 border-t border-gray-100 mx-2"></div>
-                    @can('hapus akun')
-                    <button @click="activeTab = 'danger'" :class="activeTab === 'danger' ? 'bg-red-50 text-red-600' : 'text-gray-500 hover:bg-red-50 hover:text-red-600'" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm text-left group">
-                        <i class="fas fa-exclamation-triangle text-lg opacity-40 group-hover:opacity-100 transition-opacity" :class="activeTab === 'danger' ? 'opacity-100' : ''"></i>
-                        Hapus Akun
-                    </button>
-                    @endcan
+
                 </nav>
 
                 {{-- Mobile Horizontal Tabs --}}
@@ -94,11 +89,7 @@
                     <button @click="activeTab = 'security'" :class="activeTab === 'security' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-shield-alt"></i> Keamanan
                     </button>
-                    @can('hapus akun')
-                    <button @click="activeTab = 'danger'" :class="activeTab === 'danger' ? 'bg-red-50 text-red-600' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
-                        <i class="fas fa-trash"></i> Hapus
-                    </button>
-                    @endcan
+
                 </nav>
 
                 {{-- Help Card (Desktop Only) --}}
@@ -303,85 +294,12 @@
                     </div>
                 </section>
 
-                {{-- Danger Zone Content --}}
-                <section x-show="activeTab === 'danger'" class="animate-fade-in-up" x-cloak>
-                    @can('hapus akun')
-                    <div class="bg-white border border-red-100 rounded-3xl shadow-sm overflow-hidden divide-y divide-red-50">
-                        <div class="p-6 md:p-8 lg:p-10">
-                            <div class="flex items-center gap-4 mb-8">
-                                <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl shadow-sm border border-red-100/50">
-                                    <i class="fas fa-skull"></i>
-                                </div>
-                                <div>
-                                    <h2 class="text-xl font-black text-gray-900">Penghapusan Akun</h2>
-                                    <p class="text-xs text-gray-500 font-medium mt-0.5 italic">Hanya dilakukan jika Anda benar-benar yakin.</p>
-                                </div>
-                            </div>
-
-                            <div class="bg-red-50 rounded-2xl p-6 border border-red-100/50 mb-10 flex gap-5">
-                                <div class="hidden sm:flex flex-shrink-0 w-12 h-12 bg-white rounded-2xl items-center justify-center text-red-500 shadow-sm">
-                                    <i class="fas fa-info-circle text-lg"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-red-900 mb-1">Semua data akan hilang selamanya</h4>
-                                    <p class="text-xs text-red-700 leading-relaxed font-medium">
-                                        Menghapus akun akan memusnahkan seluruh riwayat transaksi, data outlet, laporan keuangan, dan akses login selamanya. Tindakan ini tidak dapat dibatalkan melalui bantuan admin sekalipun.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <button type="button" onclick="confirmAccountDeletion()" class="no-loader w-full sm:w-auto px-10 py-4 bg-red-600 text-white rounded-2xl shadow-2xl shadow-red-200 hover:bg-black transition-all text-xs font-black uppercase tracking-[0.2em] active:scale-95">
-                                Hapus Akun Saya Permanen
-                            </button>
-                        </div>
-                    </div>
-                    @else
-                    <div class="bg-red-50 border border-red-100 rounded-3xl p-8 text-center text-red-800">
-                        Anda tidak memiliki izin untuk menghapus akun.
-                    </div>
-                    @endcan
-                </section>
 
             </div>
         </div>
     </div>
 </main>
 
-{{-- Account Deletion Modal Overlay --}}
-<div id="deletion-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6" x-cloak>
-    <div class="absolute inset-0 bg-gray-900/80 backdrop-blur-md" onclick="closeDeletionModal()"></div>
-    
-    <div class="bg-white rounded-[2rem] overflow-hidden shadow-2xl transform transition-all w-full max-w-lg relative p-8 md:p-12 border border-white/20 animate-scale-in">
-        <form action="{{ route('profile.destroy') }}" method="POST" class="space-y-8">
-            @csrf
-            @method('DELETE')
-            
-            <div class="flex flex-col items-center text-center">
-                <div class="w-20 h-20 bg-red-50 text-red-600 rounded-[2rem] flex items-center justify-center text-3xl mb-6 shadow-xl border border-red-100">
-                    <i class="fas fa-user-xmark"></i>
-                </div>
-                <h3 class="text-2xl font-black text-gray-900 mb-3 tracking-tight">Konfirmasi Akhir</h3>
-                <p class="text-sm text-gray-500 font-medium leading-relaxed px-4">
-                    Tindakan ini permanen. Silakan masukkan kata sandi keamanan Anda untuk melanjutkan penghapusan akun <span class="text-gray-900 font-bold tracking-tight">{{ $user->email }}</span>.
-                </p>
-            </div>
-            
-            <div class="space-y-3">
-                <label class="text-[11px] font-black uppercase text-gray-400 tracking-widest pl-1">Masukkkan Kata Sandi</label>
-                <input type="password" name="password" id="delete_password" required placeholder="• • • • • • • • •"
-                    class="w-full px-6 py-4 bg-[#f9fafb] border-gray-200 rounded-2xl text-center text-lg focus:ring-4 focus:ring-red-500/10 focus:border-red-600 transition-all font-bold tracking-widest @error('password', 'userDeletion') border-red-500 @enderror">
-                @error('password', 'userDeletion')
-                    <p class="text-[11px] text-red-500 font-bold mt-1.5 text-center italic">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <button type="button" onclick="closeDeletionModal()" class="py-4 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors">Batal</button>
-                <button type="submit" class="py-4 bg-red-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-red-200 hover:bg-black transition-all active:scale-95">Ya, Hapus Akun</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 @push('scripts')
 <script>
@@ -411,23 +329,7 @@
         }
     }
 
-    function confirmAccountDeletion() {
-        const modal = document.getElementById('deletion-modal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
 
-    function closeDeletionModal() {
-        const modal = document.getElementById('deletion-modal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-
-    @if ($errors->userDeletion->isNotEmpty())
-        document.addEventListener('DOMContentLoaded', function() {
-            confirmAccountDeletion();
-        });
-    @endif
 </script>
 
 <style>
