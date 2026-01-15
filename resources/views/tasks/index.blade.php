@@ -487,6 +487,18 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function updateTaskStatus(taskId, statusId) {
+    // Show loading state
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Memperbarui...',
+            text: 'Sedang memproses perubahan status',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+
     fetch(`/tasks/${taskId}/update-status`, {
         method: 'POST',
         headers: {
