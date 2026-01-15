@@ -18,7 +18,7 @@
                     <i class="fas fa-chevron-left text-[10px]"></i>
                 </button>
             @else
-                <button onclick="loadPage({{ $items->currentPage() - 1 }})" 
+                <button onclick="loadPage({{ $items->currentPage() - 1 }}, '{{ $type ?? '' }}')" 
                         class="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all">
                     <i class="fas fa-chevron-left text-[10px]"></i>
                 </button>
@@ -31,7 +31,7 @@
                         {{ $page }}
                     </button>
                 @elseif($page == 1 || $page == $items->lastPage() || abs($page - $items->currentPage()) <= 1)
-                    <button onclick="loadPage({{ $page }})" 
+                    <button onclick="loadPage({{ $page }}, '{{ $type ?? '' }}')" 
                             class="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all">
                         {{ $page }}
                     </button>
@@ -42,7 +42,7 @@
 
             {{-- Next Button --}}
             @if($items->hasMorePages())
-                <button onclick="loadPage({{ $items->currentPage() + 1 }})" 
+                <button onclick="loadPage({{ $items->currentPage() + 1 }}, '{{ $type ?? '' }}')" 
                         class="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all">
                     <i class="fas fa-chevron-right text-[10px]"></i>
                 </button>

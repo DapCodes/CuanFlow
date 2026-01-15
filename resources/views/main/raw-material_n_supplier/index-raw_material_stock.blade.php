@@ -336,6 +336,21 @@
                                          <i class="fas fa-chart-line"></i>
                                      </a>
                                     @endcan
+                                    @can('hapus bahan baku')
+                                    <button type="button" 
+                                            onclick="confirmDelete('{{ $material->id }}', '{{ $material->name }}')"
+                                            class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <form id="delete-form-{{ $material->id }}" 
+                                          action="{{ route('raw-materials.destroy', $material) }}" 
+                                          method="POST" 
+                                          class="hidden">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -370,4 +385,27 @@
 
     </div>
 </main>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmDelete(id, name) {
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Hapus bahan baku \"" + name + "\"? Data yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444', // red-500
+            cancelButtonColor: '#6b7280', // gray-500
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form-' + id).submit();
+            }
+        })
+    }
+</script>
+@endpush
 @endsection

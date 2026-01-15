@@ -242,7 +242,7 @@ public function getSalesListAjax(Request $request): JsonResponse
         ->whereBetween('created_at', [$startDate, $endDate])
         ->with(['customer', 'cashier'])
         ->orderBy('created_at', 'desc')
-        ->paginate(5);
+        ->paginate(5, ['*'], 'page', $page);
 
     $canViewDetail = auth()->user()->can('lihat detail penjualan');
     $canPrint = auth()->user()->can('cetak struk penjualan');
@@ -254,7 +254,8 @@ public function getSalesListAjax(Request $request): JsonResponse
     ])->render();
 
     $paginationHtml = view('main.finance.partials.pagination', [
-        'items' => $sales
+        'items' => $sales,
+        'type' => 'sales'
     ])->render();
 
     return response()->json([
@@ -831,12 +832,13 @@ public function getExpensesAjax(Request $request): JsonResponse
         ->with(['category', 'creator'])
         ->orderBy('expense_date', 'desc')
         ->orderBy('created_at', 'desc')
-        ->paginate(5, ['*'], 'expense_page');
+        ->paginate(5, ['*'], 'page', $page);
 
     $html = view('main.finance.partials.expenses-table-rows', compact('expenses'))->render();
     
     $paginationHtml = view('main.finance.partials.pagination', [
-        'items' => $expenses
+        'items' => $expenses,
+        'type' => 'expenses'
     ])->render();
 
     return response()->json([

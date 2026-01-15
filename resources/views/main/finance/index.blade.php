@@ -299,7 +299,7 @@
         </table>
     </div>
     <div id="salesPagination">
-        @include('main.finance.partials.pagination', ['items' => $salesList])
+        @include('main.finance.partials.pagination', ['items' => $salesList, 'type' => 'sales'])
     </div>
 </div>
 
@@ -341,7 +341,7 @@
         </table>
     </div>
     <div id="expensesPagination">
-        @include('main.finance.partials.pagination', ['items' => $expenses])
+        @include('main.finance.partials.pagination', ['items' => $expenses, 'type' => 'expenses'])
     </div>
 </div>
             </div>
@@ -602,16 +602,21 @@
             });
     }
 
-        window.loadPage = function(page) {
-        // Deteksi mana yang aktif berdasarkan event target
-        const activeTable = event.target.closest('#salesPagination') ? 'sales' : 'expenses';
-        
-        if (activeTable === 'sales') {
-            loadSalesList(page);
-        } else {
-            loadExpensesList(page);
-        }
-    };
+        window.loadPage = function(page, type) {
+            if (type === 'sales') {
+                loadSalesList(page);
+            } else if (type === 'expenses') {
+                loadExpensesList(page);
+            } else {
+                // Fallback (jaga-jaga)
+                const activeTable = event && event.target && event.target.closest('#salesPagination') ? 'sales' : 'expenses';
+                if (activeTable === 'sales') {
+                    loadSalesList(page);
+                } else {
+                    loadExpensesList(page);
+                }
+            }
+        };
 
             document.getElementById('monthFilter').addEventListener('change', () => loadSalesList(1));
     document.getElementById('yearFilter').addEventListener('change', () => loadSalesList(1));

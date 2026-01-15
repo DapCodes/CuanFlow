@@ -46,7 +46,7 @@ class ClaraAiService
             $httpResponse = Http::withHeaders([
                 'Authorization' => 'Bearer '.$this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(60)->post($this->baseUrl.'/chat/completions', [
+            ])->timeout(180)->post($this->baseUrl.'/chat/completions', [
                 'model' => 'deepseek/deepseek-r1-0528:free',
                 'messages' => $messages,
                 'max_tokens' => 2000,
@@ -391,6 +391,7 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
             ],
             'severity' => $severity,
             'insight_date' => now(),
+            'is_read' => true,
         ]);
 
         \Log::info('AI Insight generated', [

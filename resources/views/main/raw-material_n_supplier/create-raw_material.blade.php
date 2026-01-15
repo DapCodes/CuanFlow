@@ -73,7 +73,7 @@
                          <div>
                             <label for="code" class="block text-sm font-medium text-gray-700 mb-1.5">Kode Bahan <span class="text-red-500">*</span></label>
                             <input type="text" name="code" id="code" value="{{ old('code') }}" required
-                                class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('code') border-red-500 @enderror">
                             @error('code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
@@ -82,7 +82,7 @@
                             <label for="barcode" class="block text-sm font-medium text-gray-700 mb-1.5">Barcode</label>
                             <div class="flex gap-2">
                                 <input type="text" name="barcode" id="barcode" value="{{ old('barcode') }}"
-                                    class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('code') border-red-500 @enderror">
                                 <button type="button" id="startScan"
                                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
                                         title="Scan Barcode">
@@ -96,7 +96,7 @@
                         <div class="md:col-span-2">
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">Nama Bahan Baku <span class="text-red-500">*</span></label>
                             <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                                class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('code') border-red-500 @enderror">
                             @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
@@ -150,11 +150,11 @@
                         <div>
                             <label for="purchase_price" class="block text-sm font-medium text-gray-700 mb-1.5">Harga Beli <span class="text-red-500">*</span></label>
                             <div class="relative rounded-lg shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">Rp</span>
-                                </div>
+                                <!-- <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"> -->
+                                    <!-- <span class="text-gray-500 sm:text-sm">Rp</span> -->
+                                <!-- </div> -->
                                 <input type="number" name="purchase_price" id="purchase_price" value="{{ old('purchase_price', 0) }}" required step="0.01"
-                                    class="w-full rounded-lg border-gray-300 pl-10 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('code') border-red-500 @enderror">
                             </div>
                             @error('purchase_price') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -173,7 +173,7 @@
                         <div>
                             <label for="min_stock" class="block text-sm font-medium text-gray-700 mb-1.5">Minimum Stok <span class="text-red-500">*</span></label>
                             <input type="number" name="min_stock" id="min_stock" value="{{ old('min_stock', 0) }}" required step="0.01"
-                                class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('code') border-red-500 @enderror">
                             @error('min_stock') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
@@ -181,7 +181,7 @@
                         <div>
                             <label for="shelf_life_days" class="block text-sm font-medium text-gray-700 mb-1.5">Masa Simpan (Hari)</label>
                             <input type="number" name="shelf_life_days" id="shelf_life_days" value="{{ old('shelf_life_days') }}" placeholder="Contoh: 30"
-                                class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm py-2.5">
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('code') border-red-500 @enderror">
                             @error('shelf_life_days') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -227,7 +227,7 @@
                         <div>
                             <label for="description" class="block text-sm font-medium text-gray-700 mb-1.5">Deskripsi</label>
                             <textarea name="description" id="description" rows="4"
-                                class="w-full rounded-lg border-gray-300 focus:border-red-500 focus:ring-red-500 text-sm shadow-sm">{{ old('description') }}</textarea>
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
                             @error('description') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
                      </div>

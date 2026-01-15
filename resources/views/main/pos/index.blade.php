@@ -1271,6 +1271,18 @@
 @endpush 
 
 @section('content')
+<!-- POS Init Loader -->
+<div id="pos-init-loader" class="fixed inset-0 bg-white z-[99999] flex flex-col items-center justify-center transition-opacity duration-300">
+    <svg class="w-16 h-16 animate-spin text-cuan-dark" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+    </svg>
+    <div class="flex gap-1.5 mt-4">
+        <div class="w-1.5 h-1.5 bg-cuan-dark rounded-full animate-bounce"></div>
+        <div class="w-1.5 h-1.5 bg-cuan-dark rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+        <div class="w-1.5 h-1.5 bg-cuan-dark rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+    </div>
+    <p class="mt-3 text-cuan-dark font-semibold text-sm animate-pulse">Menyiapkan Kasir...</p>
+</div>
 <!-- Toast Container -->
 
 
@@ -2809,22 +2821,45 @@ let debtPaymentData = {
     remainingAmount: 0
 };
 
-document.addEventListener('DOMContentLoaded', function() {
-    loadCalcHistory();
-    checkCashRegister();
-    renderCart();
-    setUIState('browse');
-    loadProductSettings();
-    if (productSettings.hideOutOfStock || productSettings.sortBy !== 'default' || productSettings.hiddenProducts.length > 0) {
-        applyProductSettings();
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Run all initialization tasks
+        loadCalcHistory();
+        loadProductSettings();
+        
+        // Wait for all async tasks
+        await Promise.all([
+            checkCashRegister(),
+            loadAvailableDiscounts()
+        ]);
+        
+        // Final UI renders
+        renderCart();
+        setUIState('browse');
+        
+        if (productSettings.hideOutOfStock || productSettings.sortBy !== 'default' || productSettings.hiddenProducts.length > 0) {
+            applyProductSettings();
+        }
+        
+        renderCategoryTabs();
+        renderCategoryDropdown();
+        initCategoryHandlers();
+        initClickOutsideHandler();
+        initDiscountUI();
+        initCustomerSearch(); // Moved from later in the file
+        
+    } catch (error) {
+        console.error('POS Initialization error:', error);
+    } finally {
+        // Hide initialization loader
+        const loader = document.getElementById('pos-init-loader');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, 300);
+        }
     }
-    
-    renderCategoryTabs();
-    renderCategoryDropdown();
-    initCategoryHandlers();
-    initClickOutsideHandler();
-    loadAvailableDiscounts();
-    initDiscountUI();
 });
 
 // ==================== CATEGORY FUNCTIONS ====================
@@ -2994,7 +3029,7 @@ function clearFilters() {
 
 // ==================== DISCOUNT FUNCTIONS ====================
 function loadAvailableDiscounts() {
-    fetch("{{ route('pos.discounts.available') }}")
+    return fetch("{{ route('pos.discounts.available') }}")
         .then(async (r) => {
             if (!r.ok) {
                 throw new Error('HTTP ' + r.status);
@@ -3639,7 +3674,7 @@ function calcClearHistory() {
 
 // ==================== CASH REGISTER FUNCTIONS ====================
 function checkCashRegister() {
-    fetch('{{ route("cash-register.check") }}')
+    return fetch('{{ route("cash-register.check") }}')
         .then(r => r.json())
         .then(data => {
             if (data.is_open) {
@@ -6251,10 +6286,7 @@ function closeSaleDetailModal() {
         }
     }
 
-    // Initialize on load
-    document.addEventListener('DOMContentLoaded', () => {
-        initCustomerSearch();
-    });
+    // Initialize on load is now handled in the main initialization block above.
 
     // ==========================================
     // OVERRIDE: OPEN DEBT MODAL
