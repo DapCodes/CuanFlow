@@ -1124,7 +1124,7 @@
             <div id="insightsCarousel" class="overflow-hidden">
                 <div id="carouselTrack" class="flex transition-transform duration-300 ease-in-out">
                     @foreach($unreadInsights as $index => $insight)
-                    <div class="carousel-slide w-full flex-shrink-0 px-2">
+                    <div class="carousel-slide w-full flex-shrink-0 px-2" data-insight-id="{{ $insight->id }}">
                         <div class="insight-card">
                             <!-- Header Card -->
                             <div class="flex items-start justify-between mb-4">
@@ -1592,6 +1592,40 @@ window.markAsRead = function(insightId) {
     });
 };
 
+// helper: remove insight slide/dot from carousel UI without calling server
+window.removeInsightFromCarousel = function(insightId) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots   = document.querySelectorAll('.carousel-dot');
+
+    // Find slide index by data-id attribute (if present), fallback to currentSlide
+    let index = -1;
+    slides.forEach((s, i) => {
+        if (s.dataset && s.dataset.insightId && String(s.dataset.insightId) === String(insightId)) {
+            index = i;
+        }
+    });
+    if (index === -1) index = currentSlide;
+
+    if (slides[index]) {
+        slides[index].remove();
+        if (dots[index]) dots[index].remove();
+    }
+
+    const remainingSlides = document.querySelectorAll('.carousel-slide');
+    totalSlides = remainingSlides.length;
+
+    if (totalSlides === 0) {
+        closeInsightsModal();
+        showNotification('Insight berhasil di-dismiss', 'success');
+    } else {
+        if (currentSlide >= totalSlides) {
+            currentSlide = totalSlides - 1;
+        }
+        updateCarousel();
+        showNotification('Insight berhasil di-dismiss', 'success');
+    }
+};
+
 // DISMISS
 window.dismissInsight = function(insightId) {
     if (!confirm('Yakin ingin dismiss insight ini?')) return;
@@ -1614,8 +1648,8 @@ window.dismissInsight = function(insightId) {
             throw new Error(data.message || `HTTP ${response.status}`);
         }
         if (data.success) {
-            // Setelah dismiss di server, treat sama seperti read di UI
-            window.markAsRead(insightId);
+            // Setelah dismiss di server, update UI langsung tanpa memanggil markAsRead
+            window.removeInsightFromCarousel(insightId);
         } else {
             showNotification(data.message || 'Gagal dismiss insight', 'error');
         }

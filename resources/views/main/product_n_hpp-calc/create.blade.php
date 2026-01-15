@@ -274,6 +274,12 @@
                                 <input type="text" name="barcode" id="productBarcode" value="{{ old('barcode') }}"
                                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                        placeholder="Opsional">
+                                <button type="button" id="startScan"
+                                        class="w-full sm:w-auto px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center font-semibold"
+                                        title="Scan Barcode">
+                                    <i class="fas fa-qrcode mr-2 sm:mr-0"></i>
+                                    <span class="sm:hidden">Scan</span>
+                                </button>
                                 @can('generate barcode produk')
                                 <button type="button" id="generateBarcode"
                                         class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-semibold">
@@ -921,11 +927,25 @@
             </form>
         </section>
     </div>
+
+    {{-- Modal Scanner --}}
+    <div id="scannerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 hidden">
+        <div class="bg-white rounded-lg p-5 w-full max-w-md mx-4 relative">
+            <button type="button" id="closeScanner" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 z-10">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h3 class="text-lg font-bold mb-4 text-center">Scan Barcode</h3>
+            <div id="reader" class="w-full bg-gray-100 rounded-lg overflow-hidden"></div>
+            <p class="text-xs text-gray-500 mt-3 text-center">Arahkan kamera ke barcode produk</p>
+        </div>
+    </div>
 </main>
 
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{{-- HTML5-QRCode Library --}}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div id="draftModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -2412,6 +2432,83 @@ function renderProjectionChart(dailyTarget) {
     });
 }
 
+</script>
+
+<script>
+    // Barcode Scanner Logic
+    let html5QrcodeScanner = null;
+
+    function openScanner() {
+        document.getElementById('scannerModal').classList.remove('hidden');
+        
+        // Initialize scanner if not already
+        if (!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5Qrcode("reader");
+        }
+        
+        const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
+        
+        // Prefer back camera
+        html5QrcodeScanner.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+        .catch(err => {
+            console.error("Error starting scanner", err);
+            // alert('Gagal membuka kamera: ' + err); 
+            // Better to log or show subtle error. Alert might be jarring if it just fails silently sometimes.
+            // But since user complained, maybe they want to know.
+            alert('Gagal membuka kamera: ' + err.message);
+            closeScanner();
+        });
+    }
+
+    function closeScanner() {
+        document.getElementById('scannerModal').classList.add('hidden');
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.stop().then(() => {
+                console.log("Scanner stopped");
+            }).catch(err => {
+                console.error("Failed to stop scanner", err);
+            });
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+        
+        const barcodeInput = document.getElementById('productBarcode');
+        if (barcodeInput) {
+            barcodeInput.value = decodedText;
+            barcodeInput.dispatchEvent(new Event('input'));
+            barcodeInput.dispatchEvent(new Event('change'));
+        }
+        
+        closeScanner();
+    }
+
+    function onScanFailure(error) {
+        // console.warn(`Code scan error = ${error}`);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const startScanBtn = document.getElementById('startScan');
+        const closeScannerBtn = document.getElementById('closeScanner');
+        const scannerModal = document.getElementById('scannerModal');
+
+        if (startScanBtn) {
+            startScanBtn.addEventListener('click', openScanner);
+        }
+
+        if (closeScannerBtn) {
+            closeScannerBtn.addEventListener('click', closeScanner);
+        }
+
+        if (scannerModal) {
+            scannerModal.addEventListener('click', function(e) {
+                if (e.target === scannerModal) {
+                    closeScanner();
+                }
+            });
+        }
+    });
 </script>
 @endpush
 
