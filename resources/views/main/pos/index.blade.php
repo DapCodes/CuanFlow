@@ -3137,43 +3137,122 @@ function applyDiscount(discountCode = null) {
 
 // ====== FREE ITEM (BOGO) MODAL ======
 function showFreeItemSelectionModal(discountPlan) {
-    const modal = document.getElementById('freeItemModal') || createFreeItemModal();
+    if (!discountPlan) {
+        console.warn('showFreeItemSelectionModal: discountPlan is null');
+        return;
+    }
     
-    activeDiscountPlan = discountPlan;
+    // Pastikan ini adalah diskon BOGO
+    if (discountPlan.discount_type !== 'buy_x_get_y') {
+        console.warn('showFreeItemSelectionModal: not a BOGO discount');
+        return;
+    }
     
-    document.getElementById('freeItemQuota').textContent = discountPlan.free_item_quota;
-    document.getElementById('freeItemsRemaining').textContent = discountPlan.free_item_quota;
+    // Pastikan ada kuota dan kandidat
+    const quota = discountPlan.free_item_quota || 0;
+    const candidates = discountPlan.free_item_candidates || [];
     
-    const candidatesList = document.getElementById('freeItemCandidates');
-    candidatesList.innerHTML = '';
+    if (quota <= 0) {
+        showToast('warning', 'Tidak ada kuota item gratis yang tersedia');
+        return;
+    }
     
-    discountPlan.free_item_candidates.forEach(candidate => {
-        const item = document.createElement('div');
-        item.className = 'free-item-candidate';
-        item.innerHTML = `
-            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-indigo-50 transition-colors">
-                <div class="flex-1">
-                    <div class="font-semibold text-gray-900">${candidate.product_name}</div>
-                    <div class="text-sm text-gray-600">Rp ${formatNumber(candidate.unit_price)}</div>
-                    <div class="text-xs text-gray-500">Maks. gratis: ${candidate.max_free_qty}</div>
-                </div>
-                <div class="qty-controls">
-                    <button class="qty-btn" onclick="adjustFreeQty(${candidate.product_id}, -1)">−</button>
-                    <input type="number" 
-                           min="0" 
-                           max="${candidate.max_free_qty}"
-                           value="0"
-                           class="qty-input"
-                           id="freeQty_${candidate.product_id}"
-                           onchange="updateFreeItemsRemaining()">
-                    <button class="qty-btn" onclick="adjustFreeQty(${candidate.product_id}, 1)">+</button>
-                </div>
-            </div>
-        `;
-        candidatesList.appendChild(item);
-    });
+    if (candidates.length === 0) {
+        showToast('warning', 'Tidak ada item yang memenuhi syarat untuk hadiah gratis');
+        return;
+    }
     
-    modal.classList.remove('hidden');
+    try {
+        const modal = document.getElementById('freeItemModal') || createFreeItemModal();
+        activeDiscountPlan = discountPlan;
+        
+        const quotaElement = document.getElementById('freeItemQuota');
+        const remainingElement = document.getElementById('freeItemsRemaining');
+        
+        if (quotaElement) quotaElement.textContent = quota;
+        if (remainingElement) remainingElement.textContent = quota;
+        
+        const candidatesList = document.getElementById('freeItemCandidates');
+        if (candidatesList) {
+            candidatesList.innerHTML = '';
+            
+            candidates.forEach(candidate => {
+                // Validasi data kandidat
+                if (!candidate.product_id || !candidate.product_name) {
+                    console.warn('Invalid candidate data:', candidate);
+                    return;
+                }
+                
+                const stockLimit = (typeof candidate.available_stock !== 'undefined') ? candidate.available_stock : 999999;
+                
+                // Max quantity for this item is limited by: 
+                // 1. How many parent items bought (max_free_qty)
+                // 2. Global quota (though this is dynamic, we clamp it here too for safety)
+                // 3. Available stock
+                const maxFreeQty = Math.min(candidate.max_free_qty || 0, quota, stockLimit);
+                
+                const isOutOfStock = stockLimit <= 0;
+                
+                const item = document.createElement('div');
+                item.className = 'free-item-candidate';
+                item.innerHTML = `
+                    <div class="flex items-center justify-between p-3 border ${isOutOfStock ? 'border-red-200 bg-red-50' : 'border-gray-200 hover:bg-orange-50'} rounded-xl transition-all duration-200">
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-900">${escapeHtml(candidate.product_name)}</div>
+                            <div class="text-sm text-gray-600">Rp ${formatNumber(candidate.unit_price || 0)}</div>
+                            <div class="flex gap-2 mt-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                    Maks. per item: ${candidate.max_free_qty || 0}
+                                </span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${isOutOfStock ? 'bg-red-200 text-red-800' : 'bg-green-100 text-green-800'}">
+                                    Stok tersedia: ${stockLimit}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white p-1 rounded-lg border border-gray-200 shadow-sm">
+                            <button type="button" 
+                                    class="w-8 h-8 flex items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}" 
+                                    ${isOutOfStock ? 'disabled' : ''}
+                                    onclick="adjustFreeQty(${candidate.product_id}, -1)">
+                                <i class="fas fa-minus text-xs"></i>
+                            </button>
+                            <input type="number" 
+                                   min="0" 
+                                   max="${maxFreeQty}"
+                                   value="0"
+                                   readonly
+                                   class="w-10 text-center bg-transparent font-bold text-gray-900 border-none focus:ring-0 p-0"
+                                   id="freeQty_${candidate.product_id}"
+                                   data-available-stock="${stockLimit}">
+                            <button type="button" 
+                                    class="w-8 h-8 flex items-center justify-center rounded-md bg-orange-500 text-white hover:bg-orange-600 transition-colors shadow-sm ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}" 
+                                    ${isOutOfStock ? 'disabled' : ''}
+                                    onclick="adjustFreeQty(${candidate.product_id}, 1)">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                candidatesList.appendChild(item);
+            });
+        }
+        
+        modal.classList.remove('hidden');
+        
+        // Fokus ke modal untuk aksesibilitas
+        modal.focus();
+        
+    } catch (error) {
+        console.error('Error showing free item modal:', error);
+        showToast('error', 'Gagal membuka modal pemilihan item gratis');
+    }
+}
+
+// Helper function untuk escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function createFreeItemModal() {
@@ -3219,11 +3298,41 @@ function createFreeItemModal() {
 }
 
 function adjustFreeQty(productId, delta) {
+    if (!activeDiscountPlan) return;
     const input = document.getElementById(`freeQty_${productId}`);
     if (!input) return;
-    const max = parseInt(input.max);
-    let newVal = parseInt(input.value || '0') + delta;
+    
+    const quota = activeDiscountPlan.free_item_quota || 0;
+    const max = parseInt(input.max) || 0;
+    
+    // Hitung total yang sudah digunakan (tidak termasuk item saat ini)
+    let currentUsed = 0;
+    document.querySelectorAll('[id^="freeQty_"]').forEach(inp => {
+        if (inp.id !== `freeQty_${productId}`) {
+            currentUsed += parseInt(inp.value || '0') || 0;
+        }
+    });
+
+    let currentVal = parseInt(input.value || '0') || 0;
+    let newVal = currentVal + delta;
+    
+    // PERBAIKAN: Validasi ketat untuk batas kuota global
+    if (delta > 0) {
+        const totalAfterChange = currentUsed + newVal;
+        if (totalAfterChange > quota) {
+            const maxAllowed = quota - currentUsed;
+            if (maxAllowed <= 0) {
+                showToast('warning', `Kuota gratis sudah habis (${quota} item)`);
+                return;
+            }
+            newVal = maxAllowed;
+            showToast('info', `Dibatasi ke ${maxAllowed} item (sisa kuota)`);
+        }
+    }
+    
+    // Batasi berdasarkan max per item dan minimum 0
     newVal = Math.max(0, Math.min(max, newVal));
+    
     input.value = newVal;
     updateFreeItemsRemaining();
 }
@@ -3246,13 +3355,41 @@ function updateFreeItemsRemaining() {
 }
 
 function confirmFreeItems() {
+    if (!activeDiscountPlan) {
+        showToast('error', 'Tidak ada diskon BOGO aktif');
+        return;
+    }
+
     const freeItems = [];
+    const eligibleProductIds = (activeDiscountPlan.free_item_candidates || []).map(c => c.product_id);
+    
     document.querySelectorAll('[id^="freeQty_"]').forEach(input => {
         const qty = parseInt(input.value || '0') || 0;
         if (qty > 0) {
-            const productId = input.id.replace('freeQty_', '');
+            const productId = parseInt(input.id.replace('freeQty_', ''));
+            
+            // PERBAIKAN: Validasi keamanan - pastikan item eligible
+            if (!eligibleProductIds.includes(productId)) {
+                showToast('error', 'Item tidak memenuhi syarat untuk hadiah gratis');
+                return;
+            }
+            
+            // PERBAIKAN: Validasi max per item
+            const maxQty = parseInt(input.max) || 0;
+            if (qty > maxQty) {
+                showToast('error', `Jumlah melebihi batas maksimal (${maxQty})`);
+                return;
+            }
+
+            // Validasi Stok (double check frontend)
+            const availableStock = parseInt(input.dataset.availableStock);
+            if (!isNaN(availableStock) && qty > availableStock) {
+                showToast('error', `Stok tidak mencukupi. Tersedia: ${availableStock}`);
+                return;
+            }
+            
             freeItems.push({
-                product_id: parseInt(productId),
+                product_id: productId,
                 quantity: qty
             });
         }
@@ -3261,6 +3398,21 @@ function confirmFreeItems() {
     if (freeItems.length === 0) {
         showToast('warning', 'Pilih minimal 1 item gratis');
         return;
+    }
+
+    const totalSelected = freeItems.reduce((acc, item) => acc + item.quantity, 0);
+    const quota = activeDiscountPlan.free_item_quota || 0;
+    
+    if (totalSelected > quota) {
+        showToast('error', `Jumlah item (${totalSelected}) melebihi kuota gratis (${quota})!`);
+        return;
+    }
+
+    // Tampilkan loading
+    const confirmBtn = document.querySelector('#freeItemModal button[onclick="confirmFreeItems()"]');
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
     }
 
     fetch('/pos/discounts/assign-free-items', {
@@ -3282,10 +3434,20 @@ function confirmFreeItems() {
             
             showToast('success', 'Item gratis berhasil diterapkan!');
         } else {
-            showToast('error', data.message);
+            showToast('error', data.message || 'Gagal memproses item gratis');
         }
     })
-    .catch(() => showToast('error', 'Gagal memproses item gratis'));
+    .catch((err) => {
+        console.error('Error confirming free items:', err);
+        showToast('error', 'Gagal memproses item gratis');
+    })
+    .finally(() => {
+        // Reset button state
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Konfirmasi';
+        }
+    });
 }
 
 function closeFreeItemModal() {

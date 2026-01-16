@@ -76,15 +76,16 @@ class Discount extends Model
         return min($disc, $subtotal);
     }
 
-    public function incrementUsage(): void
+    public function incrementUsage(int $amount = 1): void
     {
-        $this->increment('used_count');
+        $this->increment('used_count', $amount);
     }
 
-    public function decrementUsage(): void
+    public function decrementUsage(int $amount = 1): void
     {
         if ($this->used_count > 0) {
-            $this->decrement('used_count');
+            $decrement = min($this->used_count, $amount);
+            $this->decrement('used_count', $decrement);
         }
     }
 

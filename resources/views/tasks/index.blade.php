@@ -398,14 +398,12 @@
                             @endforeach
                             
                             {{-- Empty State --}}
-                            @if($status->tasks->isEmpty())
-                            <div class="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
+                            <div class="empty-state-placeholder border-2 border-dashed border-gray-200 rounded-lg p-8 text-center {{ $status->tasks->isNotEmpty() ? 'hidden' : '' }}">
                                 <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-2">
                                     <i class="fas fa-inbox text-xl text-gray-300"></i>
                                 </div>
                                 <p class="text-xs font-medium text-gray-400">Belum ada tugas</p>
                             </div>
-                            @endif
                         </div>
                     </div>
                     @endforeach
@@ -459,6 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (evt.from !== evt.to) {
                     updateTaskStatus(taskId, newStatusId);
+                    updateCounters(); // Immediate UI update
                 }
             }
         });
@@ -555,10 +554,35 @@ function updateTaskStatus(taskId, statusId) {
 function updateCounters() {
     // Update counter badges for each column
     document.querySelectorAll('.kanban-column').forEach(column => {
-        const count = column.querySelectorAll('.kanban-card').length;
+        // Count only visible cards (important when filtering)
+        // If sorting, all cards are present. If filtering, some are hidden.
+        // For empty state logic "Belum ada tugas" (no tasks exist), we usually check ALL cards,
+        // but if filtering hides all, user might want to see "No results".
+        // However, generic "Belum ada tugas" implies empty column.
+        // Let's check all cards for now to match 'physical' column state.
+        
+        const count = column.querySelectorAll('.kanban-card:not(.hidden)').length;
+        // Search functionality hides using style="display: none", not class .hidden
+        // Let's check style display too if needed. 
+        // But the search script uses style.display = 'none'.
+        // So checking :not([style*="display: none"]) might be tricky.
+        
+        // Let's stick to total count physically in the column for now as per requirement.
+        const totalCards = column.querySelectorAll('.kanban-card').length;
+        
         const badge = column.closest('.kanban-column-wrapper').querySelector('.bg-gray-100');
         if (badge) {
-            badge.textContent = count;
+            badge.textContent = totalCards;
+        }
+
+        // Toggle Empty State
+        const emptyState = column.querySelector('.empty-state-placeholder');
+        if (emptyState) {
+            if (totalCards === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
         }
     });
 }

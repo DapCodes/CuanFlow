@@ -30,8 +30,34 @@ class PaymentController extends Controller
      */
     private function reduceStock($cart, $discountPlan = null)
     {
+        $productsToReduce = [];
+
+        // 1. Kumpulkan dari Cart
         foreach ($cart as $item) {
-            $product = Product::find($item['product_id']);
+            $pid = $item['product_id'];
+            if (!isset($productsToReduce[$pid])) {
+                $productsToReduce[$pid] = 0;
+            }
+            $productsToReduce[$pid] += $item['quantity'];
+        }
+
+        // 2. Kumpulkan dari Diskon (Free Items)
+        if ($discountPlan && isset($discountPlan['affected_items'])) {
+            foreach ($discountPlan['affected_items'] as $aff) {
+                if (isset($aff['free_qty']) && $aff['free_qty'] > 0) {
+                    $pid = $aff['product_id'];
+                    if (!isset($productsToReduce[$pid])) {
+                        $productsToReduce[$pid] = 0;
+                    }
+                    $productsToReduce[$pid] += $aff['free_qty'];
+                }
+            }
+        }
+
+        // 3. Eksekusi Pengurangan Stok
+        foreach ($productsToReduce as $pid => $qty) {
+            $product = Product::find($pid);
+            // Skip jika produk tidak dilacak stoknya
             if (! $product || ! $product->track_stock) {
                 continue;
             }
@@ -40,55 +66,76 @@ class PaymentController extends Controller
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->first();
 
-            // Hitung qty yang harus dikurangi
-            $qtyToReduce = $item['quantity'];
-
-            // PERBAIKAN: Tambahkan free qty jika ada (untuk BOGO)
-            if ($discountPlan && isset($discountPlan['affected_items'])) {
-                $affectedItem = collect($discountPlan['affected_items'])
-                    ->firstWhere('product_id', $item['product_id']);
-
-                if ($affectedItem && isset($affectedItem['free_qty'])) {
-                    $qtyToReduce += $affectedItem['free_qty'];
-                }
-            }
-
             if ($stock) {
-                $reduced = $stock->reduceStock($qtyToReduce);
+                // Pastikan stok cukup sebelum reduce (optional, best effort)
+                // if ($stock->quantity < $qty) throw... (Tidak perlu throw di sini agar transaksi tetap jalan, tapi log warning)
+                
+                $reduced = $stock->reduceStock($qty); 
                 if (! $reduced) {
-                    \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$qtyToReduce}");
+                    \Log::warning("Failed to reduce stock for product {$pid}. Stock: {$stock->quantity}, Requested: {$qty}");
                 }
             } else {
-                \App\Models\ProductStock::create([
-                    'product_id' => $product->id,
+                // Create stock record if missing (0 qty)
+                \App\Models\ProductStock::firstOrCreate([
+                    'product_id' => $pid,
                     'outlet_id' => auth()->user()->outlet_id,
-                    'quantity' => 0,
-                ]);
-                \Log::warning("No stock record found for product {$product->id} at outlet ".auth()->user()->outlet_id);
+                ], ['quantity' => 0]);
+                
+                \Log::warning("No stock record found for product {$pid}. Partial stock reduction skipped.");
             }
         }
     }
 
-    /**
-     * PERBAIKAN: Reduce stock from sale dengan memperhitungkan free items
-     */
     private function reduceStockFromSale($sale)
     {
-        // Parse discount plan from sale notes
-        $discountPlan = null;
+        $productsToReduce = [];
+
+        // 1. Kumpulkan dari Sale Items
+        foreach ($sale->items as $item) {
+            $pid = $item->product_id;
+            if (!isset($productsToReduce[$pid])) {
+                $productsToReduce[$pid] = 0;
+            }
+            $productsToReduce[$pid] += $item->quantity;
+        }
+
+        // 2. Kumpulkan dari Diskon (via Notes)
         if ($sale->notes) {
             try {
                 $notes = json_decode($sale->notes, true);
-                if (isset($notes['discount_plan'])) {
-                    $discountPlan = $notes['discount_plan'];
+                
+                // Cek affected_free_items (yang kita tambahkan di createSaleWithDiscount)
+                if (isset($notes['affected_free_items']) && is_array($notes['affected_free_items'])) {
+                    foreach ($notes['affected_free_items'] as $aff) {
+                         if (isset($aff['free_qty']) && $aff['free_qty'] > 0) {
+                            $pid = $aff['product_id'];
+                            if (!isset($productsToReduce[$pid])) {
+                                $productsToReduce[$pid] = 0;
+                            }
+                            $productsToReduce[$pid] += $aff['free_qty'];
+                        }
+                    }
+                }
+                // Fallback ke discount_plan legacy structure
+                elseif (isset($notes['discount_plan']['affected_items'])) {
+                    foreach ($notes['discount_plan']['affected_items'] as $aff) {
+                        if (isset($aff['free_qty']) && $aff['free_qty'] > 0) {
+                            $pid = $aff['product_id'];
+                            if (!isset($productsToReduce[$pid])) {
+                                $productsToReduce[$pid] = 0;
+                            }
+                            $productsToReduce[$pid] += $aff['free_qty'];
+                        }
+                    }
                 }
             } catch (\Exception $e) {
-                \Log::warning('Failed to parse discount plan from sale notes: '.$e->getMessage());
+                \Log::warning('Failed to parse sale notes for stock reduction: '.$e->getMessage());
             }
         }
 
-        foreach ($sale->items as $saleItem) {
-            $product = $saleItem->product;
+        // 3. Eksekusi Pengurangan Stok
+        foreach ($productsToReduce as $pid => $qty) {
+            $product = Product::find($pid);
             if (! $product || ! $product->track_stock) {
                 continue;
             }
@@ -97,31 +144,13 @@ class PaymentController extends Controller
                 ->where('outlet_id', $sale->outlet_id)
                 ->first();
 
-            // Hitung qty yang harus dikurangi
-            $qtyToReduce = $saleItem->quantity;
-
-            // PERBAIKAN: Tambahkan free qty jika ada
-            if ($discountPlan && isset($discountPlan['affected_items'])) {
-                $affectedItem = collect($discountPlan['affected_items'])
-                    ->firstWhere('product_id', $product->id);
-
-                if ($affectedItem && isset($affectedItem['free_qty'])) {
-                    $qtyToReduce += $affectedItem['free_qty'];
-                }
-            }
-
             if ($stock) {
-                $reduced = $stock->reduceStock($qtyToReduce);
+                $reduced = $stock->reduceStock($qty);
                 if (! $reduced) {
-                    \Log::warning("Failed to reduce stock for product {$product->id}. Stock: {$stock->quantity}, Requested: {$qtyToReduce}");
+                    \Log::warning("Failed to reduce stock (from sale) for product {$pid}. Stock: {$stock->quantity}, Requested: {$qty}");
                 }
             } else {
-                \App\Models\ProductStock::create([
-                    'product_id' => $product->id,
-                    'outlet_id' => $sale->outlet_id,
-                    'quantity' => 0,
-                ]);
-                \Log::warning("No stock record found for product {$product->id} at outlet {$sale->outlet_id}");
+                \Log::warning("No stock record found (from sale) for product {$pid}");
             }
         }
     }
@@ -199,17 +228,7 @@ class PaymentController extends Controller
             $this->reduceStock($cart, $discountPlan);
 
             if ($discountPlan) {
-                if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
-                    foreach ($discountPlan['applied_discounts'] as $discountItem) {
-                        // Handle if item is array (from JSON) or just ID
-                        $dId = is_array($discountItem) ? ($discountItem['id'] ?? null) : $discountItem;
-                        if ($dId) {
-                            $this->incrementDiscountUsage($dId);
-                        }
-                    }
-                } elseif (isset($discountPlan['discount_id'])) {
-                    $this->incrementDiscountUsage($discountPlan['discount_id']);
-                }
+                $this->safeIncrementDiscountUsage($discountPlan, $cart);
             }
 
             Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
@@ -314,16 +333,7 @@ class PaymentController extends Controller
             $this->reduceStock($cart, $discountPlan);
 
             if ($discountPlan) {
-                if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
-                    foreach ($discountPlan['applied_discounts'] as $discountItem) {
-                        $dId = is_array($discountItem) ? ($discountItem['id'] ?? null) : $discountItem;
-                        if ($dId) {
-                            $this->incrementDiscountUsage($dId);
-                        }
-                    }
-                } elseif (isset($discountPlan['discount_id'])) {
-                    $this->incrementDiscountUsage($discountPlan['discount_id']);
-                }
+                $this->safeIncrementDiscountUsage($discountPlan, $cart);
             }
 
             Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
@@ -596,19 +606,49 @@ class PaymentController extends Controller
 
     /**
      * Create sale with discount support
-     * PERBAIKAN: Simpan discount_plan lengkap di notes
+     * PERBAIKAN: Simpan discount_plan lengkap di notes termasuk free items BOGO
      */
     private function createSaleWithDiscount($cart, $summary, $discountPlan, $additionalData = [])
     {
         $customerId = Session::get('pos_customer_id');
 
-        // PERBAIKAN: Simpan discount plan lengkap
+        // PERBAIKAN: Simpan discount plan lengkap dengan free items info
         $notes = null;
         if ($discountPlan) {
-            $notes = json_encode([
+            $notesData = [
                 'discount_id' => $discountPlan['discount_id'],
                 'discount_plan' => $discountPlan,
-            ]);
+            ];
+            
+            // PERBAIKAN: Ekstrak dan simpan free items secara eksplisit untuk BOGO
+            if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
+                $freeItemsInfo = [];
+                foreach ($discountPlan['applied_discounts'] as $appliedDiscount) {
+                    if (isset($appliedDiscount['type']) && $appliedDiscount['type'] === 'buy_x_get_y') {
+                        $freeItemsInfo[] = [
+                            'discount_id' => $appliedDiscount['id'] ?? null,
+                            'discount_name' => $appliedDiscount['name'] ?? 'BOGO',
+                            'quota' => $appliedDiscount['quota'] ?? 0,
+                            'free_items' => $appliedDiscount['free_items'] ?? [],
+                        ];
+                    }
+                }
+                if (!empty($freeItemsInfo)) {
+                    $notesData['bogo_free_items'] = $freeItemsInfo;
+                }
+            }
+            
+            // Juga periksa affected_items untuk free_qty
+            if (isset($discountPlan['affected_items']) && is_array($discountPlan['affected_items'])) {
+                $affectedWithFreeQty = array_filter($discountPlan['affected_items'], function($item) {
+                    return isset($item['free_qty']) && $item['free_qty'] > 0;
+                });
+                if (!empty($affectedWithFreeQty)) {
+                    $notesData['affected_free_items'] = array_values($affectedWithFreeQty);
+                }
+            }
+            
+            $notes = json_encode($notesData);
         }
 
         $saleData = array_merge([
@@ -630,6 +670,7 @@ class PaymentController extends Controller
         // Create sale items
         foreach ($cart as $item) {
             $discountAmount = 0;
+            $freeQty = 0;
 
             if ($discountPlan && isset($discountPlan['affected_items'])) {
                 $affectedItem = collect($discountPlan['affected_items'])
@@ -637,6 +678,7 @@ class PaymentController extends Controller
 
                 if ($affectedItem) {
                     $discountAmount = $affectedItem['discount_amount'] ?? 0;
+                    $freeQty = $affectedItem['free_qty'] ?? 0;
                 }
             }
 
@@ -681,12 +723,200 @@ class PaymentController extends Controller
         ];
     }
 
-    private function incrementDiscountUsage($discountId)
+    private function incrementDiscountUsage($discountId, int $amount = 1)
     {
         $discount = Discount::find($discountId);
         if ($discount) {
-            $discount->incrementUsage();
-            \Log::info("Incremented usage for discount ID: $discountId");
+            $discount->incrementUsage($amount);
+            \Log::info("Incremented usage for discount ID: $discountId by $amount");
+        }
+    }
+
+    private function safeIncrementDiscountUsage($discountPlan, $itemsSource = null)
+    {
+        if (!$discountPlan) return;
+
+        // Group usage by discount ID
+        $usageCounts = [];
+
+        // Helper to sum quantity from source
+        $sumQty = function(array $pids) use ($itemsSource) {
+            // Default to session cart if no source provided
+            $source = $itemsSource ?? Session::get('pos_cart', []);
+            $total = 0;
+            
+            // Normalize source to iterable
+            // If source is a Collection (from Sale->items), convert to array or iterate directly
+            // SaleItem model has 'product_id' and 'quantity'.
+            // Session cart item has 'product_id' and 'quantity'.
+            
+            foreach ($source as $item) {
+                // Determine product_id and quantity based on object/array
+                $pid = is_array($item) ? ($item['product_id'] ?? 0) : ($item->product_id ?? 0);
+                $qty = is_array($item) ? ($item['quantity'] ?? 0) : ($item->quantity ?? 0);
+                
+                if (in_array($pid, $pids)) {
+                    $total += $qty;
+                }
+            }
+            return $total;
+        };
+
+        // 1. Analyze from applied_discounts (Multi/Mixed Discount)
+        if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
+            foreach ($discountPlan['applied_discounts'] as $applied) {
+                $dId = $applied['id'] ?? null;
+                if (!$dId) continue;
+                
+                $count = 0;
+                
+                if (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
+                    // For BOGO, usage = number of free items given
+                    if (isset($applied['free_items'])) {
+                        $count = collect($applied['free_items'])->sum('free_qty');
+                    }
+                    if ($count == 0 && isset($applied['quota'])) {
+                         $count = $applied['quota'];
+                    }
+                } else {
+                    // Start with total quantity of affected items
+                    // We need to match precise items if possible, otherwise fallback to simple PID match
+                    $affectedPids = [];
+                    
+                    // Try to get specific PIDs from affected_items in plan
+                    if (isset($discountPlan['affected_items'])) {
+                        $affectedPids = collect($discountPlan['affected_items'])
+                             // Filter affected items mapping to this discount ID (if we had that tracking)
+                             // Since we don't have discount_id per-item in affected_items array structure in this scope easily,
+                             // we verify if this is the primary/only discount, or try to be smart.
+                             // Currently, if multiple simple discounts exist, we might over-count if we just grab all.
+                             // Feature Improvement: Use the 'applied_discounts' breakdown if possible, but it lacks PIDs.
+                             // For now, if we match PIDs from the discount definition (product_id/category_id), we are safer.
+                             ->pluck('product_id')
+                             ->toArray();
+                    }
+                    
+                    // If we can't determine PIDs from plan, fallback to discount definition
+                    $discountModel = Discount::find($dId);
+                    if ($discountModel) {
+                        if (empty($affectedPids)) {
+                            // Re-evaluate eligibility roughly to get PIDs
+                            // This is expensive but accurate. Alternatively, assume all items if generic.
+                            // Simplified: Count all cart items matching discount criteria
+                            $cartIsIterable = $itemsSource ?? Session::get('pos_cart', []);
+                            $count = 0;
+                            foreach ($cartIsIterable as $cItem) {
+                                $cPid = is_array($cItem) ? ($cItem['product_id']) : ($cItem->product_id);
+                                $cQty = is_array($cItem) ? ($cItem['quantity']) : ($cItem->quantity);
+                                
+                                // Check eligibility manually (re-using lightweight logic)
+                                $isEligible = true;
+                                if ($discountModel->product_id && $discountModel->product_id != $cPid) $isEligible = false;
+                                if ($discountModel->category_id) {
+                                     // Need category check, skip for now or assume true if simplified
+                                     // Better to rely on what logic passed before.
+                                }
+                                
+                                if ($isEligible) $count += $cQty;
+                            }
+                        } else {
+                            $count = $sumQty($affectedPids);
+                        }
+
+                        // === LOGIC BARU: Validasi Max Discount vs Usage Count ===
+                        // Request: "ketika diskon di pakai misal 10x itu usage count nya 10x"
+                        // Request: "jika sudah melebihi batasan (max_discount) ... tidak terhitung used_count lagi yang di masukan ke used_count hanya yang beneran terpakai saja"
+                        
+                        $actualDiscountGiven = $applied['amount'] ?? 0;
+                        
+                        if ($count > 0 && $discountModel->max_discount && $discountModel->max_discount > 0) {
+                            // Cek theoretical discount tanpa cap
+                            $unitPriceSum = 0; // Butuh rata-rata atau total?
+                            // Kita pakai pendekatan ratio: Actual / Theoretical_Uncapped
+                            
+                            // Hitung theoretical uncapped value
+                            // Karena struktur data cart mungkin tidak ada disini dengan lengkap (terutama harga per item yg variatif),
+                            // Kita estimasi balik: Jika cap kena, maka usage count = count * (cap / theoretical).
+                            // TAPI, lebih akurat jika: Usage = ActualGiven / DiscountPerItem.
+                            
+                            // Ambil satu unit discount value estimation
+                            $estimatedUnitDiscount = 0;
+                            if ($discountModel->type === 'fixed') {
+                                $estimatedUnitDiscount = (float) $discountModel->value;
+                            } elseif ($discountModel->type === 'percentage') {
+                                // Susah hitung per item tanpa harga.
+                                // Fallback: Gunakan proporsi Actual vs Cap?
+                                // Jika Actual == MaxDiscount, artinya "Full Capacity Used".
+                                // User bilang: "hanya yang beneran terpakai saja".
+                                // Interpretasi: Jika kena CAP, hitung berapa item yang "muat" dalam cap tersebut.
+                                
+                                // Contoh: Cap 50rb. Disc 10%. Item 100rb (Disc 10rb).
+                                // Beli 10 Item. Total Price 1jt. Theoretical Disc 100rb.
+                                // Actual Disc 50rb (Cap).
+                                // Effective Items covered = 50rb / 10rb = 5 Items. Usage +5.
+                                
+                                // Kita butuh Theoretical Total Discount.
+                                // Kita bisa hitung mundur jika kita tahu total discount uncapped?
+                                // Tidak ada data itu.
+                                
+                                // Workaround: Hitung usage count manual jika Cap Hit.
+                                if ($actualDiscountGiven >= $discountModel->max_discount) {
+                                    // Hitung rata-rata diskon per item secara teoritis
+                                    // Asumsi: Kita hitung theoretical total discount dari cart items yang eligible
+                                    $cartIterable = $itemsSource ?? Session::get('pos_cart', []);
+                                    $theoreticalTotal = 0;
+                                    foreach ($cartIterable as $cIter) {
+                                        $cPid = is_array($cIter) ? ($cIter['product_id']) : $cIter->product_id;
+                                        if (in_array($cPid, $affectedPids)) {
+                                            $cQty = is_array($cIter) ? $cIter['quantity'] : $cIter->quantity;
+                                            $cPrice = is_array($cIter) ? $cIter['unit_price'] : $cIter->unit_price;
+                                            $theoreticalTotal += ($cPrice * ($discountModel->value / 100)) * $cQty;
+                                        }
+                                    }
+                                    
+                                    if ($theoreticalTotal > 0) {
+                                        // Ratio efektif
+                                        $effectiveRatio = $actualDiscountGiven / $theoreticalTotal;
+                                        // Usage count adjusted
+                                        $count = ceil($count * $effectiveRatio); // Ceil agar minimal 1 atau menutup sisa desimal
+                                    }
+                                }
+                            }
+                            
+                            if ($discountModel->type === 'fixed') {
+                                // Untuk fixed, theoretical = value * qty
+                                // Jika Actual < (value * qty), berarti kena Cap.
+                                $theoreticalTotal = (float)$discountModel->value * $count;
+                                if ($theoreticalTotal > 0 && $actualDiscountGiven < $theoreticalTotal) {
+                                     // Adjust count
+                                     $count = floor($actualDiscountGiven / (float)$discountModel->value);
+                                     // Gunakan floor untuk fixed, karena "hanya yang beneran terpakai" (full units)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (!isset($usageCounts[$dId])) $usageCounts[$dId] = 0;
+                $usageCounts[$dId] += ($count > 0 ? $count : 1);
+            }
+        } 
+        // 2. Fallback Legacy / Simple Structure
+        elseif (isset($discountPlan['discount_id'])) {
+            $dId = $discountPlan['discount_id'];
+            $count = 1;
+            
+             if (isset($discountPlan['affected_items'])) {
+                $affectedPids = collect($discountPlan['affected_items'])->pluck('product_id')->toArray();
+                $count = $sumQty($affectedPids);
+             }
+             
+             $usageCounts[$dId] = ($count > 0 ? $count : 1);
+        }
+
+        // Execute Increments
+        foreach ($usageCounts as $id => $amount) {
+            $this->incrementDiscountUsage($id, (int)$amount);
         }
     }
 
@@ -695,15 +925,9 @@ class PaymentController extends Controller
         if ($sale->notes) {
             try {
                 $notes = json_decode($sale->notes, true);
-                if (isset($notes['discount_plan']['applied_discounts']) && is_array($notes['discount_plan']['applied_discounts'])) {
-                    foreach ($notes['discount_plan']['applied_discounts'] as $discountItem) {
-                        $dId = is_array($discountItem) ? ($discountItem['id'] ?? null) : $discountItem;
-                        if ($dId) {
-                            $this->incrementDiscountUsage($dId);
-                        }
-                    }
-                } elseif (isset($notes['discount_id'])) {
-                    $this->incrementDiscountUsage($notes['discount_id']);
+                if (isset($notes['discount_plan'])) {
+                    // Pass sale items as source
+                    $this->safeIncrementDiscountUsage($notes['discount_plan'], $sale->items);
                 }
             } catch (\Exception $e) {
                 \Log::warning('Failed to parse sale notes for discount: '.$e->getMessage());

@@ -823,11 +823,14 @@ class PointOfSaleController extends Controller
         )->filter(fn($d) => !in_array($d->id, $blacklist));
 
         // 2. Calculate best multi-discount plan
+        // PERBAIKAN: Ambil pilihan BOGO yang sudah disimpan di session agar tidak reset
+        $currentBogoSelection = Session::get('pos_bogo_selection', []);
+        
         $plan = $this->discountService->calculateDiscountPlan(
             array_values($cart),
             $candidates,
             $subtotal,
-            $bogoSelection
+            $currentBogoSelection // Pass selection to preserve it
         );
 
         // 3. Update session and cart

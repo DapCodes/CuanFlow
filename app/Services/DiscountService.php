@@ -102,13 +102,60 @@ class DiscountService
             if ($bestItemDiscount > 0) {
                 $itemWinners[$item['product_id']] = [
                     'discount_id' => $bestDiscountModel->id,
-                    'discount_amount' => $bestItemDiscount
+                    'discount_amount' => $bestItemDiscount,
+                    'unit_price' => $item['unit_price'],
+                    'item_quantity' => $item['quantity']
                 ];
                 $appliedSimpleDiscounts[$bestDiscountModel->id] = $bestDiscountModel;
             }
         }
 
-        // 3. Find the best BOGO plan separately
+        // 3. Combine Results & Apply global caps per discount
+        $discountTotals = [];
+        foreach ($itemWinners as $pid => $winner) {
+            $did = $winner['discount_id'];
+            $discountTotals[$did] = ($discountTotals[$did] ?? 0) + $winner['discount_amount'];
+        }
+
+        // Apply caps and adjust individual item discounts if needed
+        foreach ($discountTotals as $did => $total) {
+            if ($total <= 0) continue;
+
+            $discountModel = $appliedSimpleDiscounts[$did];
+            $cap = null;
+            
+            // Tentukan batas maksimal (cap) yang sebenarnya
+            // Prioritas 1: max_discount dari database (jika diisi)
+            if ($discountModel->max_discount && $discountModel->max_discount > 0) {
+                $cap = (float)$discountModel->max_discount;
+            }
+            
+            // Prioritas 2: Jika tipe Fixed, total diskon tidak boleh melebihi nilai nominal fixed itu sendiri
+            // (Kecuali jika logic bisnisnya adalah fixed discount per item, tapi biasanya fixed discount = total potongan keranjang)
+            // Asumsi: Fixed discount 10.000 berarti total potongan 10.000, bukan 10.000 per item.
+            // Jika logicnya per item, hapus blok ini. Namun berdasarkan request user "total diskon... tidak pernah melebihi", maka ini global.
+            if ($discountModel->type === 'fixed') {
+                $fixedValue = (float)$discountModel->value;
+                // Jika cap belum diset (tidak ada max_discount), gunakan nilai fixed
+                // Jika cap sudah diset, gunakan yang lebih kecil (misal nilai 15rb, max 10rb -> pake 10rb)
+                $cap = $cap ? min($cap, $fixedValue) : $fixedValue;
+            }
+
+            // Terapkan cap jika total melebihi
+            if ($cap !== null && $total > $cap) {
+                $factor = $cap / $total;
+                
+                // Adjust items for this discount proportionally
+                foreach ($itemWinners as $pid => &$winner) {
+                    if ($winner['discount_id'] == $did) {
+                        $winner['discount_amount'] = round($winner['discount_amount'] * $factor, 2);
+                    }
+                }
+                $discountTotals[$did] = $cap;
+            }
+        }
+
+        // 4. Find the best BOGO plan separately
         // Current POS UI only supports one primary BOGO modal/info
         $bestBogoPlan = null;
         $maxBogoBenefit = -1;
@@ -169,16 +216,21 @@ class DiscountService
         ];
 
         if ($bestBogoPlan) {
-            // If we have manual selection, use it to populate affected_items
+            // Apply Manual Selection if exists
             if (!empty($freeItemSelection)) {
                 try {
                     $bogoDiscount = Discount::find($bestBogoPlan['discount_id']);
                     if ($bogoDiscount) {
                         $appliedBogo = $this->applyFreeItems($bogoDiscount, $cartItems, $freeItemSelection);
-                        $bestBogoPlan['affected_items'] = $appliedBogo['affected_items'];
+                        // PERBAIKAN: applyFreeItems mengembalikan array item langsung
+                        $bestBogoPlan['affected_items'] = $appliedBogo;
+                        
+                        // PERBAIKAN: Merge ke main affected_items agar frontend bisa validasi
+                        $plan['affected_items'] = array_merge($plan['affected_items'], $appliedBogo);
                     }
                 } catch (\Exception $e) {
-                    // Selection might be invalid now (e.g. cart items changed), ignore it
+                    \Log::error('BOGO Apply Error: ' . $e->getMessage());
+                    // Skip invalid selection, user might need to re-select
                 }
             }
 
@@ -190,6 +242,11 @@ class DiscountService
                 'quota' => $bestBogoPlan['free_item_quota'],
                 'free_items' => $bestBogoPlan['affected_items'] ?? [] 
             ];
+            
+            // Perbaikan Frontend Flag: Jika sudah ada selection yang valid, set requires_free_item_selection = false
+            if (!empty($bestBogoPlan['affected_items'])) {
+                $plan['requires_free_item_selection'] = false;
+            }
         }
 
         return $plan;
@@ -227,7 +284,7 @@ class DiscountService
                 break;
         }
 
-        // Apply max_discount cap
+        // Apply max_discount cap (Global Check per discount)
         if ($discount->max_discount && $plan['total_discount'] > $discount->max_discount) {
             $plan['total_discount'] = $discount->max_discount;
         }
@@ -240,21 +297,39 @@ class DiscountService
 
     /**
      * Simulate percentage or fixed discount
+     * PERBAIKAN: Pembatasan ketat untuk max_discount dan nilai fixed
      */
     private function simulateSimpleDiscount(Discount $discount, array $cartItems, float $subtotal, array $plan): array
     {
         $eligibleItems = $this->getEligibleItems($discount, $cartItems);
         $eligibleSubtotal = collect($eligibleItems)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
+        $totalEligibleQty = collect($eligibleItems)->sum('quantity');
 
         if ($eligibleSubtotal == 0) {
             return $plan;
         }
 
-        $discountAmount = match ($discount->type) {
-            'percentage' => $eligibleSubtotal * ($discount->value / 100),
-            'fixed' => $discount->value,
-            default => 0
-        };
+        // Calculate base discount amount
+        $discountAmount = 0;
+        if ($discount->type === 'percentage') {
+            $discountAmount = $eligibleSubtotal * ($discount->value / 100);
+        } elseif ($discount->type === 'fixed') {
+            // PERBAIKAN: Fixed discount dihitung per item (accumulative)
+            // Misal: Diskon 5rb, beli 10 item -> Total awalan 50rb
+            // Nanti akan dicap oleh max_discount
+            $discountAmount = (float)$discount->value * $totalEligibleQty;
+        }
+
+        // PERBAIKAN: Enforce max_discount jika ada
+        if ($discount->max_discount && $discount->max_discount > 0) {
+            $discountAmount = min($discountAmount, (float)$discount->max_discount);
+        }
+
+        // PERBAIKAN: Pastikan diskon tidak melebihi subtotal item yang eligible
+        $discountAmount = min($discountAmount, (float)$eligibleSubtotal);
+
+        // Round to 2 decimal places
+        $discountAmount = round($discountAmount, 2);
 
         $plan['total_discount'] = $discountAmount;
         $plan['affected_items'] = collect($eligibleItems)->map(function ($item) use ($discountAmount, $eligibleSubtotal) {
@@ -290,13 +365,23 @@ class DiscountService
         }
 
         $plan['requires_free_item_selection'] = true;
+        // Hanya set quota yang valid
         $plan['free_item_quota'] = $freeQty;
+        
         $plan['free_item_candidates'] = collect($eligibleItems)->map(function ($item) {
+            $stock = \App\Models\ProductStock::where('product_id', $item['product_id'])
+                ->where('outlet_id', auth()->user()->outlet_id)
+                ->first();
+            
+            $availableStock = $stock ? $stock->quantity : 0;
+            $remainingStock = max(0, $availableStock - $item['quantity']);
+
             return [
                 'product_id' => $item['product_id'],
                 'product_name' => $item['product_name'],
                 'unit_price' => $item['unit_price'],
                 'max_free_qty' => $item['quantity'],
+                'available_stock' => $remainingStock, // Info stok real-time untuk validasi frontend
             ];
         })->values()->toArray();
 
@@ -317,49 +402,49 @@ class DiscountService
         $totalEligibleQty = collect($eligibleItems)->sum('quantity');
         $allowedFreeQty = floor($totalEligibleQty / $discount->buy_quantity) * $discount->get_quantity;
 
+        // Validasi kuota BOGO (Rules Promo)
         $selectedFreeQty = array_sum($freeItemSelection);
-
         if ($selectedFreeQty > $allowedFreeQty) {
-            throw new \InvalidArgumentException("Selected free quantity ($selectedFreeQty) exceeds allowed quota ($allowedFreeQty)");
+             throw new \InvalidArgumentException("Jumlah item gratis yang dipilih ($selectedFreeQty) melebihi kuota ($allowedFreeQty)");
+        }
+        
+        $result = [];
+        
+        // Loop selection untuk validasi stock fisik & construct result
+        foreach ($freeItemSelection as $productId => $qty) {
+            if ($qty > 0) {
+                 // 1. Cek Stock Fisik
+                 $itemInCart = collect($cartItems)->firstWhere('product_id', $productId);
+                 $qtyInCart = $itemInCart ? $itemInCart['quantity'] : 0;
+                 $totalNeeded = $qtyInCart + $qty;
+     
+                 $stock = \App\Models\ProductStock::where('product_id', $productId)
+                     ->where('outlet_id', auth()->user()->outlet_id)
+                     ->first();
+                 
+                 $availableStock = $stock ? $stock->quantity : 0;
+     
+                 if ($availableStock < $totalNeeded) {
+                     $productName = $itemInCart['product_name'] ?? 'Produk';
+                     throw new \InvalidArgumentException("Stok $productName tidak cukup. Butuh: $totalNeeded (Beli+Gratis), Tersedia: $availableStock");
+                 }
+                 
+                 // 2. Build Item Data
+                 $product = \App\Models\Product::find($productId);
+                 if ($product) {
+                     $result[] = [
+                        'product_id' => $productId,
+                        'product_name' => $product->name,
+                        'unit_price' => (float)$product->price,
+                        'free_qty' => $qty,
+                        'subtotal_discount' => (float)$product->price * $qty,
+                        'discount_amount' => (float)$product->price * $qty, // Alias for compatibility
+                     ];
+                 }
+            }
         }
 
-        // PERBAIKAN: Total discount tetap 0, tapi simpan info free items
-        $affectedItems = [];
-
-        foreach ($freeItemSelection as $productId => $freeQty) {
-            if ($freeQty <= 0) {
-                continue;
-            }
-
-            $item = collect($cartItems)->firstWhere('product_id', $productId);
-            if (! $item) {
-                continue;
-            }
-
-            // Validate item is eligible
-            if (! collect($eligibleItems)->contains('product_id', $productId)) {
-                throw new \InvalidArgumentException("Product $productId is not eligible for free items");
-            }
-
-            // Validate quantity
-            if ($freeQty > $item['quantity']) {
-                throw new \InvalidArgumentException("Free quantity for product $productId exceeds purchased quantity");
-            }
-
-            $affectedItems[] = [
-                'product_id' => $productId,
-                'discount_amount' => 0, // BOGO tidak mengurangi harga
-                'free_qty' => $freeQty,
-            ];
-        }
-
-        return [
-            'discount_id' => $discount->id,
-            'discount_name' => $discount->name,
-            'discount_type' => $discount->type,
-            'total_discount' => 0, // BOGO tidak mengurangi total bayar
-            'affected_items' => $affectedItems,
-        ];
+        return $result;
     }
 
     /**

@@ -414,12 +414,65 @@ public function showJson(Sale $sale)
             if ($sale->notes) {
                 try {
                     $notes = json_decode($sale->notes, true);
-                    if (isset($notes['discount_id'])) {
-                        $discount = \App\Models\Discount::find($notes['discount_id']);
+                    
+                    // Logic to calculate amount to decrement (similar to safeIncrement in PaymentController)
+                    $usageCounts = [];
+                    
+                    if (isset($notes['discount_plan'])) {
+                        $plan = $notes['discount_plan'];
+                        
+                        // 1. Analyze Multi/Appled Discounts
+                        if (isset($plan['applied_discounts']) && is_array($plan['applied_discounts'])) {
+                            foreach ($plan['applied_discounts'] as $applied) {
+                                $dId = $applied['id'] ?? null;
+                                if (!$dId) continue;
+                                
+                                $count = 0;
+                                if (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
+                                    if (isset($applied['free_items'])) {
+                                        $count = collect($applied['free_items'])->sum('free_qty');
+                                    }
+                                    if ($count == 0 && isset($applied['quota'])) {
+                                         $count = $applied['quota'];
+                                    }
+                                } else {
+                                    // Count affected items from Sale Items
+                                    if (count($plan['applied_discounts']) === 1 && isset($plan['affected_items'])) {
+                                        $affectedPids = collect($plan['affected_items'])->pluck('product_id')->toArray();
+                                        $count = $sale->items->whereIn('product_id', $affectedPids)->sum('quantity');
+                                    } else {
+                                        $count = 1; // Fallback
+                                    }
+                                }
+                                
+                                if (!isset($usageCounts[$dId])) $usageCounts[$dId] = 0;
+                                $usageCounts[$dId] += ($count > 0 ? $count : 1);
+                            }
+                        }
+                        // 2. Fallback Simple
+                        elseif (isset($plan['discount_id'])) {
+                             $dId = $plan['discount_id'];
+                             $count = 1;
+                             if (isset($plan['affected_items'])) {
+                                $affectedPids = collect($plan['affected_items'])->pluck('product_id')->toArray();
+                                $count = $sale->items->whereIn('product_id', $affectedPids)->sum('quantity');
+                             }
+                             $usageCounts[$dId] = ($count > 0 ? $count : 1);
+                        }
+                    } 
+                    // 3. Fallback Legacy
+                    elseif (isset($notes['discount_id'])) {
+                        $usageCounts[$notes['discount_id']] = 1;
+                    }
+                    
+                    // Execute Decrements
+                    foreach ($usageCounts as $dId => $amount) {
+                        $discount = \App\Models\Discount::find($dId);
                         if ($discount) {
-                            $discount->decrementUsage();
+                            $discount->decrementUsage((int)$amount);
                         }
                     }
+
                 } catch (\Exception $e) {
                     \Log::warning('Failed to restore discount usage for sale '.$sale->id.': '.$e->getMessage());
                 }
