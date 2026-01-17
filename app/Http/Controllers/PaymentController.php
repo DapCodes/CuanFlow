@@ -946,12 +946,16 @@ class PaymentController extends Controller
         // 2. Fallback Legacy / Simple Structure
         elseif (isset($discountPlan['discount_id'])) {
             $dId = $discountPlan['discount_id'];
-            $count = 1;
             
-             if (isset($discountPlan['affected_items'])) {
-                $affectedPids = collect($discountPlan['affected_items'])->pluck('product_id')->toArray();
-                $count = $sumQty($affectedPids);
-             }
+            if (isset($discountPlan['usage_count']) && (float)$discountPlan['usage_count'] > 0) {
+                $count = (float)$discountPlan['usage_count'];
+            } else {
+                $count = 1;
+                if (isset($discountPlan['affected_items'])) {
+                   $affectedPids = collect($discountPlan['affected_items'])->pluck('product_id')->toArray();
+                   $count = $sumQty($affectedPids);
+                }
+            }
              
              $usageCounts[$dId] = ($count > 0 ? $count : 1);
         }

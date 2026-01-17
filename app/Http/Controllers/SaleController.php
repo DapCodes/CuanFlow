@@ -428,7 +428,10 @@ public function showJson(Sale $sale)
                                 if (!$dId) continue;
                                 
                                 $count = 0;
-                                if (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
+                                if (isset($applied['usage_count']) && (float)$applied['usage_count'] > 0) {
+                                    $count = (float)$applied['usage_count'];
+                                } 
+                                else if (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
                                     if (isset($applied['free_items'])) {
                                         $count = collect($applied['free_items'])->sum('free_qty');
                                     }
@@ -449,13 +452,19 @@ public function showJson(Sale $sale)
                                 $usageCounts[$dId] += ($count > 0 ? $count : 1);
                             }
                         }
-                        // 2. Fallback Simple
+                         // 2. Fallback Simple
                         elseif (isset($plan['discount_id'])) {
                              $dId = $plan['discount_id'];
-                             $count = 1;
-                             if (isset($plan['affected_items'])) {
-                                $affectedPids = collect($plan['affected_items'])->pluck('product_id')->toArray();
-                                $count = $sale->items->whereIn('product_id', $affectedPids)->sum('quantity');
+                             
+                             // PRIORITAS: Hubungkan dengan usage_count jika ada di level plan
+                             if (isset($plan['usage_count']) && (float)$plan['usage_count'] > 0) {
+                                 $count = (float)$plan['usage_count'];
+                             } else {
+                                $count = 1;
+                                if (isset($plan['affected_items'])) {
+                                   $affectedPids = collect($plan['affected_items'])->pluck('product_id')->toArray();
+                                   $count = $sale->items->whereIn('product_id', $affectedPids)->sum('quantity');
+                                }
                              }
                              $usageCounts[$dId] = ($count > 0 ? $count : 1);
                         }

@@ -348,15 +348,20 @@ class DiscountService
             $usedUsage = $qtyToDiscount;
         }
         
-        $plan['used_usage'] = $usedUsage;
-
         // VALIDASI 2: Max Discount Cap
         // Jika total diskon untuk produk/item ini melebihi max_discount, maka batasi ke max_discount
         if ($discount->max_discount && $discount->max_discount > 0) {
             if ($discountAmount > $discount->max_discount) {
-                $discountAmount = (float)$discount->max_discount;
+                // Adjust usedUsage proportionally to the cap
+                $actualCap = (float)$discount->max_discount;
+                if ($discountAmount > 0) {
+                    $usedUsage = $usedUsage * ($actualCap / $discountAmount);
+                }
+                $discountAmount = $actualCap;
             }
         }
+
+        $plan['used_usage'] = $usedUsage;
 
         // VALIDASI 3: Diskon tidak boleh melebihi subtotal item (Harga tidak bisa minus)
         $discountAmount = min($discountAmount, (float)$eligibleSubtotal);
