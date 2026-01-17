@@ -42,69 +42,95 @@ class ClaraAiService
                 'user_message' => $userMessage,
             ]);
 
-            // PAKAI NAMA LAIN: $httpResponse
-            $httpResponse = Http::withHeaders([
-                'Authorization' => 'Bearer '.$this->apiKey,
-                'Content-Type' => 'application/json',
-            ])->timeout(180)->post($this->baseUrl.'/chat/completions', [
-                'model' => 'deepseek/deepseek-r1-0528:free',
-                'messages' => $messages,
-                'max_tokens' => 2000,
-            ]);
-
-            \Log::info('Clara AI Response Status', [
-                'status' => $httpResponse->status(),
-                'body' => $httpResponse->body(),
-            ]);
-
-            if ($httpResponse->successful()) {
-                $data = $httpResponse->json();
-
-                // Kalau OpenRouter mengembalikan error dalam body (HTTP 200 tapi isinya error)
-                if (isset($data['error'])) {
-                    \Log::error('Clara AI provider error', ['data' => $data]);
-
-                    return [
-                        'success' => false,
-                        'message' => 'Maaf, terjadi kesalahan di penyedia model AI: '.$data['error']['message'],
-                    ];
-                }
-
-                if (! isset($data['choices'][0]['message']['content'])) {
-                    \Log::error('Invalid response structure', ['data' => $data]);
-
-                    return [
-                        'success' => false,
-                        'message' => 'Format response tidak valid.',
-                    ];
-                }
-
-                $aiResponse = $data['choices'][0]['message']['content'];
-
-                // Bersihkan markdown dll
-                $cleanResponse = $this->cleanAiResponse($aiResponse);
-
-                // Kalau kosong total, anggap model gagal jawab
-                if (trim($cleanResponse) === '') {
-                    \Log::warning('Empty AI response', ['raw' => $aiResponse]);
-
-                    return [
-                        'success' => false,
-                        'message' => 'Maaf, Clara AI tidak bisa menjawab pertanyaan ini saat ini. Coba ulangi atau ubah pertanyaannya.',
-                    ];
-                }
-
-                // Baru simpan kalau ada isinya
-                $session->addMessage('assistant', $cleanResponse);
-
-                // Generate insight jika diperlukan
-                $this->generateInsightIfNeeded($session->outlet_id, $userMessage, $cleanResponse, $contextData);
-
+            if (!$this->apiKey) {
                 return [
-                    'success' => true,
-                    'message' => $cleanResponse,
+                    'success' => false,
+                    'message' => 'API Key Clara AI belum dikonfigurasi. Silakan hubungi administrator.',
                 ];
             }
+
+            $attempts = 0;
+            $maxAttempts = 2;
+            $currentModel = 'arcee-ai/trinity-mini:free';
+            $httpResponse = null;
+
+            while ($attempts < $maxAttempts) {
+                $attempts++;
+                
+                $httpResponse = Http::withHeaders([
+                    'Authorization' => 'Bearer '.$this->apiKey,
+                    'Content-Type' => 'application/json',
+                    'HTTP-Referer' => config('app.url'),
+                    'X-Title' => 'CuanFlow POS',
+                ])->timeout(120)->post($this->baseUrl.'/chat/completions', [
+                    'model' => $currentModel,
+                    'messages' => $messages,
+                    'max_tokens' => 2000,
+                ]);
+
+                \Log::info("Clara AI Attempt $attempts status", [
+                    'model' => $currentModel,
+                    'status' => $httpResponse->status(),
+                ]);
+
+                if ($httpResponse->successful()) {
+                    $data = $httpResponse->json();
+
+                    // Jika ada error dari provider (sering terjadi di model free)
+                    if (isset($data['error'])) {
+                        \Log::warning('Clara AI provider error on model '.$currentModel, ['error' => $data['error']]);
+                        
+                        if ($attempts < $maxAttempts) {
+                            $currentModel = 'google/gemini-2.0-flash-exp:free'; // Fallback ke Gemini yang lebih stabil
+                            continue;
+                        }
+                        
+                        return [
+                            'success' => false,
+                            'message' => 'Maaf, Clara AI sedang sangat sibuk. Silakan coba lagi sebentar lagi.',
+                        ];
+                    }
+
+                    if (! isset($data['choices'][0]['message']['content'])) {
+                        \Log::error('Invalid response structure', ['data' => $data]);
+                        return [
+                            'success' => false,
+                            'message' => 'Format response tidak valid.',
+                        ];
+                    }
+
+                    $aiResponse = $data['choices'][0]['message']['content'];
+                    $cleanResponse = $this->cleanAiResponse($aiResponse);
+
+                    if (trim($cleanResponse) === '') {
+                        \Log::warning('Empty AI response', ['raw' => $aiResponse]);
+                        return [
+                            'success' => false,
+                            'message' => 'Maaf, Clara AI tidak bisa menjawab saat ini. Coba ubah pertanyaannya.',
+                        ];
+                    }
+
+                    $session->addMessage('assistant', $cleanResponse);
+                    $this->generateInsightIfNeeded($session->outlet_id, $userMessage, $cleanResponse, $contextData);
+
+                    return [
+                        'success' => true,
+                        'message' => $cleanResponse,
+                    ];
+                }
+
+                // Jika status code bukan 2xx (e.g. 429 atau 5xx)
+                if ($attempts < $maxAttempts) {
+                    $currentModel = 'google/gemini-2.0-flash-exp:free';
+                    sleep(1); // Jeda sebelum retry
+                    continue;
+                }
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Maaf, terjadi kesalahan saat menghubungi Clara AI. Status: '.$httpResponse->status(),
+            ];
 
             \Log::error('Clara AI request failed', [
                 'status' => $httpResponse->status(),
@@ -133,6 +159,9 @@ class ClaraAiService
      */
     private function cleanAiResponse(string $response): string
     {
+        // 0. Hapus pemikiran (thoughts) dari DeepSeek R1 jika ada
+        $response = preg_replace('/<think>.*?<\/think>/s', '', $response);
+
         // 1. Trim whitespace di awal dan akhir
         $response = trim($response);
 

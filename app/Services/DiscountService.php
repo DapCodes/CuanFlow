@@ -87,10 +87,12 @@ class DiscountService
                 // Check if item is eligible for this discount
                 if (!$this->isItemEligible($discount, $item)) continue;
                 
-                // Basic validation for this discount
+                // VALIDASI 1: Min Purchase vs Grand Total (Subtotal Cart)
+                // Pastikan grand total (subtotal belanja) memenuhi syarat min_purchase discount
                 if ($subtotal < $discount->min_purchase) continue;
 
                 // Simulate for this single item
+                // simulateSimpleDiscount akan mengembalikan kalkulasi diskon untuk item ini
                 $simPlan = $this->simulateSimpleDiscount($discount, [$item], $item['unit_price'] * $item['quantity'], ['total_discount' => 0, 'affected_items' => []]);
                 
                 if ($simPlan['total_discount'] > $bestItemDiscount) {
@@ -314,18 +316,20 @@ class DiscountService
         if ($discount->type === 'percentage') {
             $discountAmount = $eligibleSubtotal * ($discount->value / 100);
         } elseif ($discount->type === 'fixed') {
-            // PERBAIKAN: Fixed discount dihitung per item (accumulative)
-            // Misal: Diskon 5rb, beli 10 item -> Total awalan 50rb
-            // Nanti akan dicap oleh max_discount
+            // Logic Fixed: Value adalah potongan per item, TAPI tidak boleh melebihi max_discount (jika ada) saat ditotal
+            // Dan tidak boleh melebihi harga item itu sendiri
             $discountAmount = (float)$discount->value * $totalEligibleQty;
         }
 
-        // PERBAIKAN: Enforce max_discount jika ada
+        // VALIDASI 2: Max Discount Cap
+        // Jika total diskon untuk produk/item ini melebihi max_discount, maka batasi ke max_discount
         if ($discount->max_discount && $discount->max_discount > 0) {
-            $discountAmount = min($discountAmount, (float)$discount->max_discount);
+            if ($discountAmount > $discount->max_discount) {
+                $discountAmount = (float)$discount->max_discount;
+            }
         }
 
-        // PERBAIKAN: Pastikan diskon tidak melebihi subtotal item yang eligible
+        // VALIDASI 3: Diskon tidak boleh melebihi subtotal item (Harga tidak bisa minus)
         $discountAmount = min($discountAmount, (float)$eligibleSubtotal);
 
         // Round to 2 decimal places

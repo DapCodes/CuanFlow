@@ -46,6 +46,14 @@
         min-height: 0;
     }
 
+    .pos-main.layout-swapped {
+        grid-template-columns: 360px minmax(0, 1fr) !important;
+    }
+
+    .pos-main.layout-swapped .order-panel {
+        order: -1;
+    }
+
     /* ===================== PANELS ===================== */
     .products-panel,
     .order-panel {
@@ -1876,18 +1884,46 @@
 
 <!-- Modal: Scanner -->
 <div id="scannerModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-[60] flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
-        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="font-bold text-gray-900">Scan Barcode</h3>
-            <button onclick="closeScanner()" class="text-gray-400 hover:text-gray-600">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden">
+        <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50">
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                    <i class="fas fa-barcode"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 hidden sm:block">Scan Barcode</h3>
+            </div>
+            
+            <div class="relative flex-1 max-w-md w-full">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                <input type="text" id="manualBarcodeInput" 
+                       class="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all font-mono" 
+                       placeholder="Cari nama atau scan kode..." autofocus
+                       autocomplete="off">
+                <div id="barcodeRecommendations" class="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-[70] hidden max-h-64 overflow-y-auto overflow-x-hidden"></div>
+            </div>
+
+            <button onclick="closeScanner()" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="p-0 relative bg-black">
-            <div id="reader" class="w-full"></div>
+
+        <div class="p-0 relative bg-black flex justify-center items-center" style="min-height: 300px;">
+            <div id="reader" class="w-full max-w-md"></div>
+            <!-- Overlay visual for scanning area -->
+            <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div class="w-64 h-64 border-2 border-orange-500 border-dashed rounded-2xl opacity-30"></div>
+                <div class="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-black bg-opacity-50 text-white text-[10px] rounded-full">
+                    Arahkan kamera ke barcode produk
+                </div>
+            </div>
         </div>
-        <div class="p-4 bg-gray-50 text-center text-xs text-gray-500">
-            Arahkan kamera ke barcode produk
+        
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-500">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Kamera Aktif
+            </div>
+            <span>Mendukung Scan Manual & Bluetooth Scanner</span>
         </div>
     </div>
 </div>
@@ -2061,6 +2097,22 @@
                            {{ auth()->user()->outlet && auth()->user()->outlet->has_table_system ? 'checked' : '' }}
                            onchange="toggleTableSystem(this.checked)">
                     <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                </label>
+            </div>
+
+            <!-- Toggle: Posisi Panel -->
+            <div class="flex items-center justify-between p-4 bg-orange-50 rounded-xl border border-orange-200">
+                <div class="flex-1">
+                    <div class="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                        <i class="fas fa-columns text-orange-600"></i>
+                        Tukar Posisi Panel
+                    </div>
+                    <div class="text-sm text-gray-600">Pindahkan ringkasan pesanan ke sisi kiri</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="layoutPositionToggle" class="sr-only peer" 
+                           onchange="togglePanelPosition(this.checked)">
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
                 </label>
             </div>
 
@@ -6156,10 +6208,124 @@ function closeSaleDetailModal() {
             showToast('error', 'Gagal membuka kamera: ' + err);
             closeScanner();
         });
+        const manualInput = document.getElementById('manualBarcodeInput');
+        if (manualInput) {
+            manualInput.value = '';
+            manualInput.focus();
+            
+            let debounceTimer;
+            
+            // 1. Handle Scanner "Enter" / Manual Submit
+            manualInput.onkeydown = function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(debounceTimer);
+                    
+                    const code = this.value.trim();
+                    if (code.length > 0) {
+                        handleManualBarcode(code);
+                    }
+                }
+            };
+
+            // 2. Handle Manual Typing (Debounce & Recommendations)
+            manualInput.oninput = function() {
+                clearTimeout(debounceTimer);
+                const code = this.value.trim();
+                
+                if (code.length > 0) {
+                    showBarcodeRecommendations(code);
+                    
+                    // 1 second debounce for automatic submit
+                    debounceTimer = setTimeout(() => {
+                        // Check if there is exactly one recommendation or a perfect match
+                        const recommendations = document.querySelectorAll('.barcode-recommendation');
+                        if (recommendations.length === 1) {
+                            recommendations[0].click();
+                        } else {
+                            // Try exact match even if multiple recommendations start with the same prefix
+                            handleManualBarcode(code);
+                        }
+                    }, 1000);
+                } else {
+                    document.getElementById('barcodeRecommendations').classList.add('hidden');
+                }
+            };
+        }
     }
+
+    function handleManualBarcode(code) {
+        // Reuse the logic from barcode_script partial
+        if (typeof handleBarcodeScan === 'function') {
+            const found = handleBarcodeScan(code);
+            if (found) {
+                // Feedback visual/audio could go here
+                showToast('success', 'Produk ditemukan: ' + code);
+                document.getElementById('manualBarcodeInput').value = ''; // Clear for next scan
+                document.getElementById('barcodeRecommendations').classList.add('hidden');
+                playBeep();
+            } else {
+                // "Jika tidak ada maka tidak terjadi apa apa" - User request (maybe silent log?)
+                console.log('Barcode not found: ' + code);
+            }
+        }
+    }
+
+    function showBarcodeRecommendations(code) {
+        const recommendationsDiv = document.getElementById('barcodeRecommendations');
+        const productCards = document.querySelectorAll('.product-card');
+        let html = '';
+        let foundCount = 0;
+
+        productCards.forEach(card => {
+            const barcode = card.getAttribute('data-product-barcode') || '';
+            const productName = card.getAttribute('data-product-name') || '';
+            
+            if (barcode.toLowerCase().includes(code.toLowerCase()) || productName.toLowerCase().includes(code.toLowerCase())) {
+                foundCount++;
+                html += `
+                    <div class="barcode-recommendation p-3 hover:bg-orange-50 cursor-pointer border-b border-gray-100 flex justify-between items-center transition-colors" 
+                         onclick="selectRecommendedBarcode('${barcode}')">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-semibold text-gray-900">${productName}</span>
+                            <span class="text-xs text-gray-500 font-mono">${barcode}</span>
+                        </div>
+                        <i class="fas fa-plus text-orange-500 text-xs"></i>
+                    </div>
+                `;
+            }
+        });
+
+        if (foundCount > 0) {
+            recommendationsDiv.innerHTML = html;
+            recommendationsDiv.classList.remove('hidden');
+        } else {
+            recommendationsDiv.classList.add('hidden');
+        }
+    }
+
+    window.selectRecommendedBarcode = function(barcode) {
+        const input = document.getElementById('manualBarcodeInput');
+        input.value = barcode;
+        handleManualBarcode(barcode);
+    };
 
     function closeScanner() {
         document.getElementById('scannerModal').classList.add('hidden');
+        
+        // Cleanup Input
+        const input = document.getElementById('manualBarcodeInput');
+        if(input) {
+            input.value = '';
+            input.oninput = null; // Remove listener
+        }
+
+        const recommendationsDiv = document.getElementById('barcodeRecommendations');
+        if (recommendationsDiv) {
+            recommendationsDiv.classList.add('hidden');
+            recommendationsDiv.innerHTML = '';
+        }
+
         if (html5QrcodeScanner) {
             html5QrcodeScanner.stop().then(() => {
                 console.log("Scanner stopped");
@@ -6499,7 +6665,32 @@ function closeSaleDetailModal() {
             inputPhone.classList.remove('bg-gray-100');
         }
         
-        modal.classList.remove('hidden');
     }
+
+    function togglePanelPosition(checked) {
+        const main = document.querySelector('.pos-main');
+        if (checked) {
+            main.classList.add('layout-swapped');
+            localStorage.setItem('pos_layout_swapped', 'true');
+        } else {
+            main.classList.remove('layout-swapped');
+            localStorage.setItem('pos_layout_swapped', 'false');
+        }
+    }
+
+    // Init Panel Position on Load
+    document.addEventListener('DOMContentLoaded', () => {
+        const isSwapped = localStorage.getItem('pos_layout_swapped') === 'true';
+        if (isSwapped) {
+            const main = document.querySelector('.pos-main');
+            if (main) main.classList.add('layout-swapped');
+            
+            // Wait for modal to be ready (though simple checkbox selection works directly if ID exists)
+            // But since modal is in DOM, we can just select it.
+            const toggle = document.getElementById('layoutPositionToggle');
+            if (toggle) toggle.checked = true;
+        }
+    });
 </script>
+@include('main.pos.partials.barcode_script')
 @endpush

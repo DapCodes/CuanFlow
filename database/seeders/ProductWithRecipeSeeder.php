@@ -788,7 +788,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'start_date' => now(),
                 'end_date' => now()->addMonth(),
                 'is_active' => true,
-                'is_voucher' => true,
+                'is_voucher' => false,
             ],
             [
                 'code' => 'DISC-BROWNIES-5K',
@@ -801,7 +801,7 @@ class ProductWithRecipeSeeder extends Seeder
                 'start_date' => now(),
                 'end_date' => now()->addMonth(),
                 'is_active' => true,
-                'is_voucher' => true,
+                'is_voucher' => false,
             ],
         ];
 
