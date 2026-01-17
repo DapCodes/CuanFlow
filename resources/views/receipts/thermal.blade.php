@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <title>Struk - {{ $sale->invoice_number }}</title>
     <style>
+        @page {
+            margin: 0;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -268,11 +271,60 @@
                 <span>Rp {{ number_format($sale->subtotal, 0, ',', '.') }}</span>
             </div>
             
-            @if($sale->discount_amount > 0)
-            <div class="summary-row discount">
-                <span>Diskon:</span>
-                <span>- Rp {{ number_format($sale->discount_amount, 0, ',', '.') }}</span>
-            </div>
+            @php
+                $notes = json_decode($sale->notes, true);
+                $typeInfo = $notes['customer_type_info'] ?? null;
+            @endphp
+
+            @if($typeInfo)
+                <div style="margin: 3px 0; border-top: 1px dotted #000; border-bottom: 1px dotted #000; padding: 2px 0;">
+                    <div class="summary-row" style="font-weight: bold;">
+                        <span>{{ strtoupper($typeInfo['label']) }}:</span>
+                        <span>-Rp{{ number_format($typeInfo['total_savings'] ?? 0, 0, '', '.') }}</span>
+                    </div>
+                </div>
+            @endif
+            
+            @php
+                $plan = $notes['discount_plan'] ?? null;
+                $appliedDiscounts = $plan['applied_discounts'] ?? [];
+            @endphp
+            
+            @if(!empty($appliedDiscounts) && is_array($appliedDiscounts))
+                @foreach($appliedDiscounts as $applied)
+                    <div class="summary-row discount">
+                        <span>{{ $applied['name'] ?? 'Diskon' }}:</span>
+                        <span>- Rp {{ number_format((float)($applied['amount'] ?? 0), 0, ',', '.') }}</span>
+                    </div>
+                @endforeach
+            @elseif($sale->discount_amount > 0)
+                <div class="summary-row discount">
+                    <span>Diskon:</span>
+                    <span>- Rp {{ number_format($sale->discount_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+
+            {{-- Free Items --}}
+            @php
+                $freeItems = [];
+                if (!empty($appliedDiscounts)) {
+                    foreach ($appliedDiscounts as $ad) {
+                        if (($ad['type'] ?? '') === 'buy_x_get_y' && !empty($ad['free_items'])) {
+                            $freeItems = array_merge($freeItems, $ad['free_items']);
+                        }
+                    }
+                }
+            @endphp
+            @if(!empty($freeItems))
+                <div style="margin-top: 4px; padding-top: 4px; border-top: 1px dotted #000; font-size: 8px;">
+                    <div style="font-weight: bold; margin-bottom: 2px;">HADIAH:</div>
+                    @foreach($freeItems as $fi)
+                        <div class="summary-row">
+                            <span>{{ $fi['product_name'] ?? 'Item' }}</span>
+                            <span>x{{ $fi['free_qty'] ?? 1 }}</span>
+                        </div>
+                    @endforeach
+                </div>
             @endif
             
             @if($sale->tax_amount > 0)

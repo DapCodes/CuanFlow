@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -613,7 +614,7 @@ class PaymentController extends Controller
         $customerId = Session::get('pos_customer_id');
 
         // PERBAIKAN: Simpan discount plan lengkap dengan free items info
-        $notes = null;
+        $notesData = [];
         if ($discountPlan) {
             $notesData = [
                 'discount_id' => $discountPlan['discount_id'],
@@ -647,9 +648,45 @@ class PaymentController extends Controller
                     $notesData['affected_free_items'] = array_values($affectedWithFreeQty);
                 }
             }
-            
-            $notes = json_encode($notesData);
         }
+
+        // TAMBAHAN: Deteksi Potongan Harga Reseller/VIP
+        if ($customerId) {
+            $customer = Customer::find($customerId);
+            if ($customer && in_array($customer->type, ['reseller', 'vip'])) {
+                $typeAdjustments = [];
+                foreach ($cart as $item) {
+                    $pId = is_array($item) ? $item['product_id'] : $item->product_id;
+                    $unitPrice = is_array($item) ? $item['unit_price'] : $item->unit_price;
+                    $qty = is_array($item) ? $item['quantity'] : $item->quantity;
+                    
+                    $product = Product::find($pId);
+                    if ($product && (float)$product->selling_price > (float)$unitPrice) {
+                        $diff = (float)$product->selling_price - (float)$unitPrice;
+                        $typeAdjustments[] = [
+                            'product_id' => $pId,
+                            'product_name' => $product->name,
+                            'original_price' => (float)$product->selling_price,
+                            'applied_price' => (float)$unitPrice,
+                            'diff' => $diff,
+                            'total_diff' => $diff * $qty,
+                            'qty' => $qty
+                        ];
+                    }
+                }
+                
+                if (!empty($typeAdjustments)) {
+                    $notesData['customer_type_info'] = [
+                        'type' => $customer->type,
+                        'label' => $customer->type === 'reseller' ? 'Reseller Pricing' : 'VIP Pricing',
+                        'adjustments' => $typeAdjustments,
+                        'total_savings' => collect($typeAdjustments)->sum('total_diff')
+                    ];
+                }
+            }
+        }
+
+        $notes = !empty($notesData) ? json_encode($notesData) : null;
 
         $saleData = array_merge([
             'outlet_id' => auth()->user()->outlet_id,
@@ -770,7 +807,12 @@ class PaymentController extends Controller
                 
                 $count = 0;
                 
-                if (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
+                // PRIORITAS 1: Gunakan usage_count yang sudah dihitung oleh DiscountService
+                if (isset($applied['usage_count']) && (float)$applied['usage_count'] > 0) {
+                    $count = (float)$applied['usage_count'];
+                } 
+                // PRIORITAS 2: Hitung manual jika data tidak ada
+                else if (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
                     // For BOGO, usage = number of free items given
                     if (isset($applied['free_items'])) {
                         $count = collect($applied['free_items'])->sum('free_qty');

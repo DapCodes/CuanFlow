@@ -103,11 +103,65 @@
                     <span>Subtotal</span>
                     <span>Rp {{ number_format($sale->subtotal, 0, ',', '.') }}</span>
                 </div>
-                @if($sale->discount_amount > 0)
-                <div class="flex justify-between text-sm text-green-600">
-                    <span>Diskon</span>
-                    <span>- Rp {{ number_format($sale->discount_amount, 0, ',', '.') }}</span>
-                </div>
+                
+                @php
+                    $notes = json_decode($sale->notes, true);
+                    $typeInfo = $notes['customer_type_info'] ?? null;
+                @endphp
+
+                @if($typeInfo)
+                    <div class="mt-2 p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+                        <div class="flex justify-between text-[11px] font-bold text-indigo-700 uppercase">
+                            <span>PROMO {{ $typeInfo['label'] }}</span>
+                            <span>- Rp {{ number_format($typeInfo['total_savings'] ?? 0, 0, ',', '.') }}</span>
+                        </div>
+                        <p class="text-[9px] text-indigo-500 mt-1 italic leading-tight">
+                            * Produk sudah menggunakan harga khusus untuk kategori {{ $typeInfo['type'] }}.
+                        </p>
+                    </div>
+                @endif
+
+                @php
+                    $notes = json_decode($sale->notes, true);
+                    $plan = $notes['discount_plan'] ?? null;
+                    $appliedDiscounts = $plan['applied_discounts'] ?? [];
+                @endphp
+                
+                @if(!empty($appliedDiscounts) && is_array($appliedDiscounts))
+                    @foreach($appliedDiscounts as $applied)
+                        <div class="flex justify-between text-sm text-green-600">
+                            <span>{{ $applied['name'] ?? 'Diskon' }}</span>
+                            <span>- Rp {{ number_format((float)($applied['amount'] ?? 0), 0, ',', '.') }}</span>
+                        </div>
+                    @endforeach
+                @elseif($sale->discount_amount > 0)
+                    <div class="flex justify-between text-sm text-green-600">
+                        <span>Diskon</span>
+                        <span>- Rp {{ number_format($sale->discount_amount, 0, ',', '.') }}</span>
+                    </div>
+                @endif
+
+                {{-- Gifts --}}
+                @php
+                    $freeItems = [];
+                    if (!empty($appliedDiscounts)) {
+                        foreach ($appliedDiscounts as $ad) {
+                            if (($ad['type'] ?? '') === 'buy_x_get_y' && !empty($ad['free_items'])) {
+                                $freeItems = array_merge($freeItems, $ad['free_items']);
+                            }
+                        }
+                    }
+                @endphp
+                @if(!empty($freeItems))
+                    <div class="mt-2 pt-2 border-t border-gray-100">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 text-center">Hadiah Gratis</p>
+                        @foreach($freeItems as $fi)
+                            <div class="flex justify-between text-xs text-emerald-600 italic">
+                                <span>{{ $fi['product_name'] ?? 'Item' }}</span>
+                                <span class="font-bold">x{{ $fi['free_qty'] ?? 1 }}</span>
+                            </div>
+                        @endforeach
+                    </div>
                 @endif
                 @if($sale->tax_amount > 0)
                 <div class="flex justify-between text-sm text-gray-600">

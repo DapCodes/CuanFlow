@@ -166,64 +166,143 @@
                         $affected = $plan['affected_items'] ?? [];
                     @endphp
 
-                    @if($plan)
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 truncate">
-                                        {{ $planName ?: 'Diskon' }}
-                                    </p>
-                                    <p class="text-xs text-gray-500 mt-0.5">
-                                        Tipe: {{ $planType ? strtoupper($planType) : '-' }}
-                                    </p>
-                                </div>
+                    @php
+                        $typeInfo = is_array($decoded) ? ($decoded['customer_type_info'] ?? null) : null;
+                    @endphp
 
-                                <div class="text-right">
-                                    <p class="text-xs text-gray-500">Total diskon</p>
-                                    <p class="text-sm font-bold text-orange-600 whitespace-nowrap">
-                                        Rp {{ number_format((float)($planTotal ?? 0), 0, ',', '.') }}
-                                    </p>
-                                </div>
+                    @if($typeInfo)
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mb-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="px-2 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-bold uppercase">
+                                    {{ $typeInfo['label'] }}
+                                </span>
+                                <span class="text-xs font-bold text-indigo-700">
+                                    Hemat: Rp {{ number_format($typeInfo['total_savings'] ?? 0, 0, ',', '.') }}
+                                </span>
                             </div>
+                            
+                            <div class="space-y-1.5">
+                                @foreach($typeInfo['adjustments'] ?? [] as $adj)
+                                    <div class="text-[11px] flex justify-between items-center text-indigo-900">
+                                        <div class="truncate mr-4">
+                                            <span class="font-bold">{{ $adj['qty'] }}x</span> {{ $adj['product_name'] }}
+                                        </div>
+                                        <div class="text-right whitespace-nowrap">
+                                            <span class="text-gray-400 line-through">Rp {{ number_format($adj['original_price'], 0, ',', '.') }}</span>
+                                            <i class="fas fa-arrow-right mx-1 text-[8px] opacity-30"></i>
+                                            <span class="font-bold">Rp {{ number_format($adj['applied_price'], 0, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
 
+                    @if($plan)
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-3">
+                            {{-- Applied Discounts List --}}
+                            @php
+                                $appliedDiscounts = $plan['applied_discounts'] ?? [];
+                            @endphp
+
+                            @if(!empty($appliedDiscounts) && is_array($appliedDiscounts))
+                                <div class="space-y-3">
+                                    @foreach($appliedDiscounts as $applied)
+                                        <div class="flex items-start justify-between gap-3 pb-2 border-b border-gray-100 last:border-0 last:pb-0">
+                                            <div class="min-w-0">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 uppercase">
+                                                        {{ strtoupper($applied['type'] ?? 'DISCOUNT') }}
+                                                    </span>
+                                                    <p class="text-sm font-bold text-gray-900 truncate">
+                                                        {{ $applied['name'] ?? 'Diskon' }}
+                                                    </p>
+                                                </div>
+                                                @if(isset($applied['value']) && $applied['value'] > 0)
+                                                    <p class="text-[10px] text-gray-500 mt-0.5">
+                                                        Nilai: {{ $applied['type'] === 'percentage' ? $applied['value'].'%' : 'Rp '.number_format($applied['value'], 0, ',', '.') }}
+                                                    </p>
+                                                @endif
+                                            </div>
+
+                                            <div class="text-right">
+                                                <p class="text-sm font-black text-orange-600">
+                                                    - Rp {{ number_format((float)($applied['amount'] ?? 0), 0, ',', '.') }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                {{-- Fallback for old single-discount structure --}}
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-semibold text-gray-900 truncate">
+                                            {{ $planName ?: 'Diskon' }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 mt-0.5">
+                                            Tipe: {{ $planType ? strtoupper($planType) : '-' }}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm font-bold text-orange-600 whitespace-nowrap">
+                                            Rp {{ number_format((float)($planTotal ?? 0), 0, ',', '.') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Affected Items Details --}}
                             @if(is_array($affected) && count($affected) > 0)
-                                <div class="pt-2 border-t border-gray-200">
-                                    <p class="text-xs font-semibold text-gray-700 mb-2">Item yang kena diskon</p>
-
-                                    <div class="space-y-1">
+                                <div class="pt-2 mt-2 border-t border-gray-200">
+                                    <button type="button" onclick="this.nextElementSibling.classList.toggle('hidden')" class="w-full flex items-center justify-between text-[11px] font-bold text-gray-500 uppercase tracking-wider hover:text-indigo-600 transition-colors">
+                                        <span>Rincian per produk</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="mt-2 space-y-1 hidden">
                                         @foreach($affected as $ai)
                                             @php
                                                 $productId = $ai['product_id'] ?? null;
                                                 $discAmt  = (float)($ai['discount_amount'] ?? 0);
-
-                                                // Cari nama produk dari items transaksi (kalau ketemu)
                                                 $productName = null;
                                                 if ($productId) {
                                                     $found = $sale->items->firstWhere('product_id', $productId);
                                                     $productName = $found->product_name ?? null;
                                                 }
                                             @endphp
-
-                                            <div class="flex items-center justify-between gap-3 text-sm">
-                                                <div class="min-w-0">
-                                                    <p class="text-gray-900 font-medium truncate">
-                                                        {{ $productName ?: ('Produk ID: ' . ($productId ?? '-')) }}
-                                                    </p>
-                                                </div>
-                                                <div class="font-semibold text-orange-600 whitespace-nowrap">
-                                                    - Rp {{ number_format($discAmt, 0, ',', '.') }}
-                                                </div>
+                                            <div class="flex items-center justify-between gap-3 text-xs py-0.5">
+                                                <span class="text-gray-600 truncate mr-2">{{ $productName ?: 'Produk ID: '.$productId }}</span>
+                                                <span class="font-semibold text-orange-600 whitespace-nowrap">- Rp {{ number_format($discAmt, 0, ',', '.') }}</span>
                                             </div>
                                         @endforeach
                                     </div>
                                 </div>
                             @endif
 
+                            {{-- Free Items (BOGO) Details --}}
                             @if(($plan['requires_free_item_selection'] ?? false) || (($plan['free_item_quota'] ?? 0) > 0))
-                                <div class="pt-2 border-t border-gray-200 text-xs text-gray-600">
-                                    Bonus item: {{ (int)($plan['free_item_quota'] ?? 0) }} item
-                                    @if(!empty($plan['free_item_candidates']) && is_array($plan['free_item_candidates']))
-                                        (tersedia: {{ count($plan['free_item_candidates']) }} kandidat)
+                                <div class="pt-2 border-t border-gray-200">
+                                    <div class="flex items-center justify-between bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg">
+                                        <span class="text-xs font-bold uppercase">Hadiah Gratis</span>
+                                        <span class="text-xs font-black">{{ (int)($plan['free_item_quota'] ?? 0) }} Item</span>
+                                    </div>
+                                    @php
+                                        $freeItems = [];
+                                        foreach ($appliedDiscounts as $ad) {
+                                            if (($ad['type'] ?? '') === 'buy_x_get_y' && !empty($ad['free_items'])) {
+                                                $freeItems = array_merge($freeItems, $ad['free_items']);
+                                            }
+                                        }
+                                    @endphp
+                                    @if(!empty($freeItems))
+                                        <div class="mt-2 space-y-1">
+                                            @foreach($freeItems as $fi)
+                                                <div class="flex items-center justify-between text-[11px] text-emerald-600 px-1">
+                                                    <span>{{ $fi['product_name'] ?? 'Item' }}</span>
+                                                    <span class="font-bold">x{{ $fi['free_qty'] ?? 1 }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     @endif
                                 </div>
                             @endif
@@ -362,7 +441,7 @@
                                 @endcan
 
                                 @can('cetak struk penjualan')
-                                <a href="{{ route('sales.print', $sale->id) }}" target="_blank"
+                                <a href="{{ route('receipt.print', $sale->id) }}" target="_blank"
                                    class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md">
                                     <i class="fas fa-print"></i>
                                     <span>Cetak Struk</span>

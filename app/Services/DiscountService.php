@@ -75,29 +75,42 @@ class DiscountService
         $simpleCandidates = $candidates->filter(fn($d) => in_array($d->type, ['percentage', 'fixed']));
         $bogoCandidates = $candidates->filter(fn($d) => $d->type === 'buy_x_get_y');
 
-        // 2. Determine best simple discount per item (Accumulative across items, best-fit per item)
+        // Initialize remaining usage tracker for candidates
+        $remainingUsageMap = [];
+        foreach ($simpleCandidates as $discount) {
+            if ($discount->usage_limit !== null) {
+                $remainingUsageMap[$discount->id] = max(0, $discount->usage_limit - $discount->used_count);
+            } else {
+                $remainingUsageMap[$discount->id] = 999999; 
+            }
+        }
+
+        // 2. Determine best simple discount per item
         $itemWinners = [];
         $appliedSimpleDiscounts = [];
 
         foreach ($cartItems as $item) {
             $bestItemDiscount = 0;
             $bestDiscountModel = null;
+            $bestUsedUsage = 0;
             
             foreach ($simpleCandidates as $discount) {
-                // Check if item is eligible for this discount
+                if ($remainingUsageMap[$discount->id] <= 0) continue;
                 if (!$this->isItemEligible($discount, $item)) continue;
-                
-                // VALIDASI 1: Min Purchase vs Grand Total (Subtotal Cart)
-                // Pastikan grand total (subtotal belanja) memenuhi syarat min_purchase discount
                 if ($subtotal < $discount->min_purchase) continue;
 
-                // Simulate for this single item
-                // simulateSimpleDiscount akan mengembalikan kalkulasi diskon untuk item ini
-                $simPlan = $this->simulateSimpleDiscount($discount, [$item], $item['unit_price'] * $item['quantity'], ['total_discount' => 0, 'affected_items' => []]);
+                $simPlan = $this->simulateSimpleDiscount(
+                    $discount, 
+                    [$item], 
+                    $item['unit_price'] * $item['quantity'], 
+                    ['total_discount' => 0, 'affected_items' => []],
+                    $remainingUsageMap[$discount->id]
+                );
                 
                 if ($simPlan['total_discount'] > $bestItemDiscount) {
                     $bestItemDiscount = $simPlan['total_discount'];
                     $bestDiscountModel = $discount;
+                    $bestUsedUsage = $simPlan['used_usage'] ?? 0;
                 }
             }
             
@@ -106,63 +119,49 @@ class DiscountService
                     'discount_id' => $bestDiscountModel->id,
                     'discount_amount' => $bestItemDiscount,
                     'unit_price' => $item['unit_price'],
-                    'item_quantity' => $item['quantity']
+                    'item_quantity' => $item['quantity'],
+                    'used_usage' => $bestUsedUsage
                 ];
                 $appliedSimpleDiscounts[$bestDiscountModel->id] = $bestDiscountModel;
+                $remainingUsageMap[$bestDiscountModel->id] -= $bestUsedUsage;
             }
         }
 
-        // 3. Combine Results & Apply global caps per discount
+        // 3. Apply global caps per discount
         $discountTotals = [];
         foreach ($itemWinners as $pid => $winner) {
             $did = $winner['discount_id'];
             $discountTotals[$did] = ($discountTotals[$did] ?? 0) + $winner['discount_amount'];
         }
 
-        // Apply caps and adjust individual item discounts if needed
         foreach ($discountTotals as $did => $total) {
             if ($total <= 0) continue;
-
             $discountModel = $appliedSimpleDiscounts[$did];
             $cap = null;
-            
-            // Tentukan batas maksimal (cap) yang sebenarnya
-            // Prioritas 1: max_discount dari database (jika diisi)
             if ($discountModel->max_discount && $discountModel->max_discount > 0) {
                 $cap = (float)$discountModel->max_discount;
             }
-            
-            // Prioritas 2: Jika tipe Fixed, total diskon tidak boleh melebihi nilai nominal fixed itu sendiri
-            // (Kecuali jika logic bisnisnya adalah fixed discount per item, tapi biasanya fixed discount = total potongan keranjang)
-            // Asumsi: Fixed discount 10.000 berarti total potongan 10.000, bukan 10.000 per item.
-            // Jika logicnya per item, hapus blok ini. Namun berdasarkan request user "total diskon... tidak pernah melebihi", maka ini global.
-            if ($discountModel->type === 'fixed') {
-                $fixedValue = (float)$discountModel->value;
-                // Jika cap belum diset (tidak ada max_discount), gunakan nilai fixed
-                // Jika cap sudah diset, gunakan yang lebih kecil (misal nilai 15rb, max 10rb -> pake 10rb)
-                $cap = $cap ? min($cap, $fixedValue) : $fixedValue;
-            }
 
-            // Terapkan cap jika total melebihi
             if ($cap !== null && $total > $cap) {
                 $factor = $cap / $total;
-                
-                // Adjust items for this discount proportionally
                 foreach ($itemWinners as $pid => &$winner) {
                     if ($winner['discount_id'] == $did) {
                         $winner['discount_amount'] = round($winner['discount_amount'] * $factor, 2);
+                        if (isset($winner['used_usage'])) {
+                            $winner['used_usage'] = $winner['used_usage'] * $factor;
+                        }
                     }
                 }
                 $discountTotals[$did] = $cap;
             }
         }
 
-        // 4. Find the best BOGO plan separately
-        // Current POS UI only supports one primary BOGO modal/info
+        // 4. Find the best BOGO plan
         $bestBogoPlan = null;
         $maxBogoBenefit = -1;
 
         foreach ($bogoCandidates as $discount) {
+             $remainingUsage = $discount->usage_limit ? ($discount->usage_limit - $discount->used_count) : 999999;
              $plan = $this->simulateBuyXGetY($discount, $cartItems, [
                  'discount_id' => $discount->id,
                  'discount_name' => $discount->name,
@@ -172,9 +171,8 @@ class DiscountService
                  'requires_free_item_selection' => false,
                  'free_item_candidates' => [],
                  'free_item_quota' => 0,
-             ]);
+             ], $remainingUsage);
              
-             // Benefit calculation (avg per item)
              $freeQty = $plan['free_item_quota'] ?? 0;
              if ($freeQty > 0 && ! empty($plan['free_item_candidates'])) {
                  $avgPrice = collect($plan['free_item_candidates'])->avg('unit_price');
@@ -186,23 +184,24 @@ class DiscountService
              if ($benefit > $maxBogoBenefit) {
                  $maxBogoBenefit = $benefit;
                  $bestBogoPlan = $plan;
+                 $bestBogoPlan['usage_count'] = $freeQty;
              }
         }
 
-        // 4. Combine Results
+        // 5. Build Final Plan Data
         $totalDiscountAmount = collect($itemWinners)->sum('discount_amount');
         $mergedAffectedItems = collect($itemWinners)->map(fn($w, $pid) => [
             'product_id' => (int)$pid,
             'discount_amount' => (float)$w['discount_amount']
         ])->values()->toArray();
 
-        // Detailed info for active simple discounts
         $appliedDiscountsData = collect($appliedSimpleDiscounts)->map(fn($d) => [
             'id' => $d->id,
             'name' => $d->name,
             'type' => $d->type,
             'value' => (float)$d->value,
-            'amount' => (float)collect($itemWinners)->where('discount_id', $d->id)->sum('discount_amount')
+            'amount' => (float)collect($itemWinners)->where('discount_id', $d->id)->sum('discount_amount'),
+            'usage_count' => ceil((float)collect($itemWinners)->where('discount_id', $d->id)->sum('used_usage'))
         ])->values();
         
         $plan = [
@@ -218,21 +217,16 @@ class DiscountService
         ];
 
         if ($bestBogoPlan) {
-            // Apply Manual Selection if exists
             if (!empty($freeItemSelection)) {
                 try {
                     $bogoDiscount = Discount::find($bestBogoPlan['discount_id']);
                     if ($bogoDiscount) {
                         $appliedBogo = $this->applyFreeItems($bogoDiscount, $cartItems, $freeItemSelection);
-                        // PERBAIKAN: applyFreeItems mengembalikan array item langsung
                         $bestBogoPlan['affected_items'] = $appliedBogo;
-                        
-                        // PERBAIKAN: Merge ke main affected_items agar frontend bisa validasi
                         $plan['affected_items'] = array_merge($plan['affected_items'], $appliedBogo);
                     }
                 } catch (\Exception $e) {
                     \Log::error('BOGO Apply Error: ' . $e->getMessage());
-                    // Skip invalid selection, user might need to re-select
                 }
             }
 
@@ -242,10 +236,10 @@ class DiscountService
                 'type' => 'buy_x_get_y',
                 'amount' => 0,
                 'quota' => $bestBogoPlan['free_item_quota'],
+                'usage_count' => $bestBogoPlan['usage_count'] ?? $bestBogoPlan['free_item_quota'],
                 'free_items' => $bestBogoPlan['affected_items'] ?? [] 
             ];
             
-            // Perbaikan Frontend Flag: Jika sudah ada selection yang valid, set requires_free_item_selection = false
             if (!empty($bestBogoPlan['affected_items'])) {
                 $plan['requires_free_item_selection'] = false;
             }
@@ -278,7 +272,7 @@ class DiscountService
         switch ($discount->type) {
             case 'percentage':
             case 'fixed':
-                $plan = $this->simulateSimpleDiscount($discount, $cartItems, $subtotal, $plan);
+                $plan = $this->simulateSimpleDiscount($discount, $cartItems, $subtotal, $plan, $discount->usage_limit ? ($discount->usage_limit - $discount->used_count) : null);
                 break;
 
             case 'buy_x_get_y':
@@ -301,7 +295,7 @@ class DiscountService
      * Simulate percentage or fixed discount
      * PERBAIKAN: Pembatasan ketat untuk max_discount dan nilai fixed
      */
-    private function simulateSimpleDiscount(Discount $discount, array $cartItems, float $subtotal, array $plan): array
+    private function simulateSimpleDiscount(Discount $discount, array $cartItems, float $subtotal, array $plan, ?int $remainingUsage = null): array
     {
         $eligibleItems = $this->getEligibleItems($discount, $cartItems);
         $eligibleSubtotal = collect($eligibleItems)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
@@ -313,13 +307,48 @@ class DiscountService
 
         // Calculate base discount amount
         $discountAmount = 0;
+        $usedUsage = 0;
+
         if ($discount->type === 'percentage') {
-            $discountAmount = $eligibleSubtotal * ($discount->value / 100);
+            $qtyToDiscount = $totalEligibleQty;
+            
+            // Respect remaining usage limit if provided
+            if ($remainingUsage !== null) {
+                $qtyToDiscount = min($totalEligibleQty, max(0, $remainingUsage));
+            }
+            
+            if ($qtyToDiscount < $totalEligibleQty) {
+                // Calculate subtotal for only the most expensive $qtyToDiscount units
+                $sortedItems = collect($eligibleItems)->sortByDesc('unit_price');
+                $discountableSubtotal = 0;
+                $remainingToCover = $qtyToDiscount;
+                
+                foreach ($sortedItems as $item) {
+                    $take = min((float)$item['quantity'], (float)$remainingToCover);
+                    $discountableSubtotal += ((float)$item['unit_price'] * $take);
+                    $remainingToCover -= $take;
+                    if ($remainingToCover <= 0) break;
+                }
+                $discountAmount = $discountableSubtotal * ($discount->value / 100);
+            } else {
+                $discountAmount = $eligibleSubtotal * ($discount->value / 100);
+            }
+            
+            $usedUsage = $qtyToDiscount; 
         } elseif ($discount->type === 'fixed') {
-            // Logic Fixed: Value adalah potongan per item, TAPI tidak boleh melebihi max_discount (jika ada) saat ditotal
-            // Dan tidak boleh melebihi harga item itu sendiri
-            $discountAmount = (float)$discount->value * $totalEligibleQty;
+            // Logic Fixed: Value adalah potongan per item
+            $qtyToDiscount = $totalEligibleQty;
+            
+            // Respect remaining usage limit if provided
+            if ($remainingUsage !== null) {
+                $qtyToDiscount = min($totalEligibleQty, max(0, $remainingUsage));
+            }
+            
+            $discountAmount = (float)$discount->value * $qtyToDiscount;
+            $usedUsage = $qtyToDiscount;
         }
+        
+        $plan['used_usage'] = $usedUsage;
 
         // VALIDASI 2: Max Discount Cap
         // Jika total diskon untuk produk/item ini melebihi max_discount, maka batasi ke max_discount
@@ -353,7 +382,7 @@ class DiscountService
      * Simulate Buy X Get Y discount
      * PERBAIKAN: Total discount = 0 karena user bayar full price, tapi dapat free items
      */
-    private function simulateBuyXGetY(Discount $discount, array $cartItems, array $plan): array
+    private function simulateBuyXGetY(Discount $discount, array $cartItems, array $plan, int $remainingUsage = 999999): array
     {
         $eligibleItems = $this->getEligibleItems($discount, $cartItems);
 
@@ -363,6 +392,9 @@ class DiscountService
 
         $totalEligibleQty = collect($eligibleItems)->sum('quantity');
         $freeQty = floor($totalEligibleQty / $discount->buy_quantity) * $discount->get_quantity;
+
+        // Respect remaining usage limit
+        $freeQty = min($freeQty, max(0, $remainingUsage));
 
         if ($freeQty <= 0) {
             return $plan;
@@ -406,10 +438,14 @@ class DiscountService
         $totalEligibleQty = collect($eligibleItems)->sum('quantity');
         $allowedFreeQty = floor($totalEligibleQty / $discount->buy_quantity) * $discount->get_quantity;
 
+        // Respect remaining usage limit
+        $remainingUsage = $discount->usage_limit ? ($discount->usage_limit - $discount->used_count) : 999999;
+        $allowedFreeQty = min($allowedFreeQty, max(0, $remainingUsage));
+
         // Validasi kuota BOGO (Rules Promo)
         $selectedFreeQty = array_sum($freeItemSelection);
         if ($selectedFreeQty > $allowedFreeQty) {
-             throw new \InvalidArgumentException("Jumlah item gratis yang dipilih ($selectedFreeQty) melebihi kuota ($allowedFreeQty)");
+             throw new \InvalidArgumentException("Jumlah item gratis yang dipilih ($selectedFreeQty) melebihi kuota tersedia ($allowedFreeQty)");
         }
         
         $result = [];
