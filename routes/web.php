@@ -398,12 +398,23 @@ Route::middleware(['auth'])->prefix('reports')->name('reports.')->group(function
 Route::middleware(['auth'])->prefix('statistics')->name('statistics.')->group(function () {
     Route::get('/', [App\Http\Controllers\StatisticsController::class, 'index'])->name('index');
     Route::get('/export', [App\Http\Controllers\StatisticsController::class, 'export'])->name('export');
+    Route::get('/summary', [App\Http\Controllers\StatisticsController::class, 'getSummaryDataAjax'])->name('summary');
     Route::get('/sales-chart', [App\Http\Controllers\StatisticsController::class, 'getSalesChart'])->name('sales-chart');
+    Route::get('/transaction-chart', [App\Http\Controllers\StatisticsController::class, 'getTransactionChart'])->name('transaction-chart');
     Route::get('/payment-method-chart', [App\Http\Controllers\StatisticsController::class, 'getPaymentMethodChart'])->name('payment-method-chart');
     Route::get('/top-products-chart', [App\Http\Controllers\StatisticsController::class, 'getTopProductsChart'])->name('top-products-chart');
     Route::get('/category-chart', [App\Http\Controllers\StatisticsController::class, 'getCategoryChart'])->name('category-chart');
     Route::get('/hourly-chart', [App\Http\Controllers\StatisticsController::class, 'getHourlyChart'])->name('hourly-chart');
+    Route::get('/weekly-chart', [App\Http\Controllers\StatisticsController::class, 'getWeeklyChart'])->name('weekly-chart');
     Route::get('/expense-chart', [App\Http\Controllers\StatisticsController::class, 'getExpenseChart'])->name('expense-chart');
+    Route::get('/profit-chart', [App\Http\Controllers\StatisticsController::class, 'getProfitChart'])->name('profit-chart');
+    Route::get('/expense-category-chart', [App\Http\Controllers\StatisticsController::class, 'getExpenseCategoryChart'])->name('expense-category-chart');
+    Route::get('/cashier-performance-chart', [App\Http\Controllers\StatisticsController::class, 'getCashierPerformanceChart'])->name('cashier-performance-chart');
+    Route::get('/top-customers-chart', [App\Http\Controllers\StatisticsController::class, 'getTopCustomersChart'])->name('top-customers-chart');
+    Route::get('/stock-status-chart', [App\Http\Controllers\StatisticsController::class, 'getStockStatusChart'])->name('stock-status-chart');
+    Route::get('/stock-movement-chart', [App\Http\Controllers\StatisticsController::class, 'getStockMovementChart'])->name('stock-movement-chart');
+    Route::get('/discount-usage-chart', [App\Http\Controllers\StatisticsController::class, 'getDiscountUsageChart'])->name('discount-usage-chart');
+    Route::get('/purchase-chart', [App\Http\Controllers\StatisticsController::class, 'getPurchaseChart'])->name('purchase-chart');
 });
 
 // FAQ Routes
