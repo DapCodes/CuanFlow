@@ -23,11 +23,16 @@ use App\Http\Controllers\OutletPolicyController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\WithdrawController;
+use App\Http\Controllers\FlowLandingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+// Public Flow Landing Page Routes
+Route::get('/flow', [FlowLandingController::class, 'index'])->name('flow.index');
+Route::get('/flow/{slug}', [FlowLandingController::class, 'show'])->name('flow.show');
 
 // Email Verification untuk WEB
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)

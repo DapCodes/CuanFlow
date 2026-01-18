@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             ResellerApplicationSeeder::class,
             EmployeeSeeder::class,
             // DiscountSeeder::class,
+            AdminLandingPageSeeder::class,
         ]);
 
         // Buat Akun Admin

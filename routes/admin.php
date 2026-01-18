@@ -17,6 +17,8 @@ use App\Http\Controllers\Admin\TaskStatusController;
 use App\Http\Controllers\Admin\TaskLabelController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\AdminManagementController;
+use App\Http\Controllers\Admin\AdminLandingPageController;
+use App\Http\Controllers\Admin\AdminLandingSectionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -78,4 +80,31 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('/{withdrawal}/reject-by-owner', [AdminWithdrawController::class, 'rejectByOwner'])->name('reject-by-owner');
         Route::post('/{withdrawal}/paid', [AdminWithdrawController::class, 'markAsPaid'])->name('paid');
     });
+
+    // Admin Landing Pages Management
+    Route::prefix('landing-pages')->name('admin.landing-pages.')->group(function () {
+        Route::get('/', [AdminLandingPageController::class, 'index'])->name('index');
+        Route::get('/create', [AdminLandingPageController::class, 'create'])->name('create');
+        Route::post('/', [AdminLandingPageController::class, 'store'])->name('store');
+        Route::get('/{landingPage}', [AdminLandingPageController::class, 'show'])->name('show');
+        Route::get('/{landingPage}/edit', [AdminLandingPageController::class, 'edit'])->name('edit');
+        Route::put('/{landingPage}', [AdminLandingPageController::class, 'update'])->name('update');
+        Route::delete('/{landingPage}', [AdminLandingPageController::class, 'destroy'])->name('destroy');
+        Route::post('/{landingPage}/toggle-status', [AdminLandingPageController::class, 'toggleStatus'])->name('toggle-status');
+        Route::get('/{landingPage}/preview', [AdminLandingPageController::class, 'preview'])->name('preview');
+        
+        // Section Management
+        Route::get('/{landingPage}/sections', [AdminLandingSectionController::class, 'index'])->name('sections.index');
+        Route::get('/{landingPage}/sections/{section}/edit', [AdminLandingSectionController::class, 'edit'])->name('sections.edit');
+        Route::put('/{landingPage}/sections/{section}', [AdminLandingSectionController::class, 'update'])->name('sections.update');
+        Route::post('/{landingPage}/sections/{section}/toggle', [AdminLandingSectionController::class, 'toggleStatus'])->name('sections.toggle');
+        Route::post('/{landingPage}/sections/reorder', [AdminLandingSectionController::class, 'reorder'])->name('sections.reorder');
+        
+        // Section Items
+        Route::post('/{landingPage}/sections/{section}/items', [AdminLandingSectionController::class, 'storeItem'])->name('sections.items.store');
+        Route::put('/{landingPage}/sections/{section}/items/{item}', [AdminLandingSectionController::class, 'updateItem'])->name('sections.items.update');
+        Route::delete('/{landingPage}/sections/{section}/items/{item}', [AdminLandingSectionController::class, 'destroyItem'])->name('sections.items.destroy');
+        Route::post('/{landingPage}/sections/{section}/items/reorder', [AdminLandingSectionController::class, 'reorderItems'])->name('sections.items.reorder');
+    });
 });
+

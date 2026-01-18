@@ -12,9 +12,9 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4 bg-[#f9fafb]" x-data="{ 
+<main class="flex-grow py-8 px-4 bg-[#f9fafb] shadow-sm md:shadow-none" x-data="{ 
     activeTab: '{{ session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() ? 'security' : 'profile' }}' 
-} shadow-sm md:shadow-none">
+}">
     <div class="max-w-6xl mx-auto space-y-8">
         
         {{-- Page Header --}}
