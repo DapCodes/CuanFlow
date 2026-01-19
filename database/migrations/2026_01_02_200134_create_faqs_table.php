@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('faqs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('outlet_id')->constrained()->onDelete('cascade');
             $table->string('question');
             $table->text('answer');
             $table->enum('type', ['general', 'pos', 'product', 'finance', 'report', 'account'])->default('general');
@@ -22,7 +21,7 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->timestamps();
 
-            $table->index(['outlet_id', 'type', 'is_active']);
+            $table->index(['type', 'is_active']);
         });
     }
 

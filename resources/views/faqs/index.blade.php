@@ -220,22 +220,31 @@
                                     <div class="pt-5 border-t border-gray-200">
                                         <p class="text-sm font-medium text-gray-700 mb-3">Apakah jawaban ini membantu?</p>
                                         <div class="flex items-center gap-3">
+                                            @php
+                                                $userVote = $faq->currentUserVote;
+                                                $isHelpful = $userVote && $userVote->is_helpful;
+                                                $isNotHelpful = $userVote && !$userVote->is_helpful;
+                                            @endphp
+                                            
                                             @can('tandai faq membantu')
-                                            <button onclick="markHelpful({{ $faq->id }}, event)" 
-                                                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 transition-all font-medium text-sm">
+                                            <button onclick="markHelpful({{ $faq->id }}, event, this)" 
+                                                    id="btn-helpful-{{ $faq->id }}"
+                                                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-sm {{ $isHelpful ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300' }}">
                                                 <i class="fas fa-thumbs-up"></i>
                                                 <span>Ya, Membantu</span>
-                                                <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-xs font-bold" id="helpful-{{ $faq->id }}">
+                                                <span class="px-2 py-0.5 rounded-md {{ $isHelpful ? 'bg-emerald-200 text-emerald-800' : 'bg-emerald-100 text-emerald-700' }} text-xs font-bold" id="helpful-{{ $faq->id }}">
                                                     {{ $faq->helpful_count }}
                                                 </span>
                                             </button>
                                             @endcan
+
                                             @can('tandai faq tidak membantu')
-                                            <button onclick="markNotHelpful({{ $faq->id }}, event)" 
-                                                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all font-medium text-sm">
+                                            <button onclick="markNotHelpful({{ $faq->id }}, event, this)" 
+                                                    id="btn-not-helpful-{{ $faq->id }}"
+                                                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-sm {{ $isNotHelpful ? 'bg-gray-100 border-gray-400 text-gray-800' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300' }}">
                                                 <i class="fas fa-thumbs-down"></i>
                                                 <span>Tidak</span>
-                                                <span class="px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-bold" id="not-helpful-{{ $faq->id }}">
+                                                <span class="px-2 py-0.5 rounded-md {{ $isNotHelpful ? 'bg-gray-300 text-gray-800' : 'bg-gray-100 text-gray-700' }} text-xs font-bold" id="not-helpful-{{ $faq->id }}">
                                                     {{ $faq->not_helpful_count }}
                                                 </span>
                                             </button>
@@ -404,7 +413,7 @@ function toggleFaq(element) {
     }
 }
 
-function markHelpful(faqId, event) {
+function markHelpful(faqId, event, btn) {
     event.stopPropagation();
     
     fetch(`/faqs/${faqId}/helpful`, {
@@ -417,16 +426,13 @@ function markHelpful(faqId, event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            const el = document.getElementById(`helpful-${faqId}`);
-            el.textContent = data.helpful_count;
-            el.classList.add('animate-bounce');
-            setTimeout(() => el.classList.remove('animate-bounce'), 500);
+            updateVoteUI(faqId, data);
         }
     })
     .catch(error => console.error('Error:', error));
 }
 
-function markNotHelpful(faqId, event) {
+function markNotHelpful(faqId, event, btn) {
     event.stopPropagation();
     
     fetch(`/faqs/${faqId}/not-helpful`, {
@@ -439,13 +445,64 @@ function markNotHelpful(faqId, event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            const el = document.getElementById(`not-helpful-${faqId}`);
-            el.textContent = data.not_helpful_count;
-            el.classList.add('animate-bounce');
-            setTimeout(() => el.classList.remove('animate-bounce'), 500);
+            updateVoteUI(faqId, data);
         }
     })
     .catch(error => console.error('Error:', error));
+}
+
+function updateVoteUI(faqId, data) {
+    // Update counts
+    const helpfulCountEl = document.getElementById(`helpful-${faqId}`);
+    const notHelpfulCountEl = document.getElementById(`not-helpful-${faqId}`);
+    
+    if (helpfulCountEl) helpfulCountEl.textContent = data.helpful_count;
+    if (notHelpfulCountEl) notHelpfulCountEl.textContent = data.not_helpful_count;
+
+    // Reset Buttons Class
+    const helpfulBtn = document.getElementById(`btn-helpful-${faqId}`);
+    const notHelpfulBtn = document.getElementById(`btn-not-helpful-${faqId}`);
+
+    // Base Classes
+    const baseHelpful = "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-sm border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300";
+    const activeHelpful = "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-sm bg-emerald-50 border-emerald-400 text-emerald-800";
+    
+    const baseNotHelpful = "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-sm border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300";
+    const activeNotHelpful = "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-sm bg-gray-100 border-gray-400 text-gray-800";
+
+    // Count Badge Classes
+    const baseHelpfulBadge = "px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-xs font-bold";
+    const activeHelpfulBadge = "px-2 py-0.5 rounded-md bg-emerald-200 text-emerald-800 text-xs font-bold";
+
+    const baseNotHelpfulBadge = "px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-bold";
+    const activeNotHelpfulBadge = "px-2 py-0.5 rounded-md bg-gray-300 text-gray-800 text-xs font-bold";
+
+    // Logic
+    if (data.status === 'removed') {
+        helpfulBtn.className = baseHelpful;
+        notHelpfulBtn.className = baseNotHelpful;
+        helpfulCountEl.className = baseHelpfulBadge;
+        notHelpfulCountEl.className = baseNotHelpfulBadge;
+    } else if (data.type === 'helpful') {
+        helpfulBtn.className = activeHelpful;
+        notHelpfulBtn.className = baseNotHelpful;
+        helpfulCountEl.className = activeHelpfulBadge;
+        notHelpfulCountEl.className = baseNotHelpfulBadge;
+    } else if (data.type === 'not_helpful') {
+        helpfulBtn.className = baseHelpful;
+        notHelpfulBtn.className = activeNotHelpful;
+        helpfulCountEl.className = baseHelpfulBadge;
+        notHelpfulCountEl.className = activeNotHelpfulBadge;
+    }
+
+    // Animation
+    if (data.type === 'helpful') {
+        helpfulCountEl.classList.add('animate-bounce');
+        setTimeout(() => helpfulCountEl.classList.remove('animate-bounce'), 500);
+    } else if (data.type === 'not_helpful') {
+        notHelpfulCountEl.classList.add('animate-bounce');
+        setTimeout(() => notHelpfulCountEl.classList.remove('animate-bounce'), 500);
+    }
 }
 </script>
 @endpush

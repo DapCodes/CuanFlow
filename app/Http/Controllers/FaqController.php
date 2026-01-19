@@ -21,12 +21,6 @@ class FaqController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $outlet = Auth::user()->outlet;
-
-        if (!$outlet) {
-            return redirect()->route('outlets.register.index');
-        }
-
         $query = Faq::where('is_active', true);
 
         // Filter by type
@@ -48,7 +42,9 @@ class FaqController extends Controller implements HasMiddleware
             });
         }
 
-        $faqs = $query->ordered()->paginate(15);
+        $faqs = $query->ordered()
+            ->with(['currentUserVote'])  // Eager load current user's vote
+            ->paginate(15);
 
         return view('faqs.index', compact('faqs'));
     }
@@ -65,19 +61,78 @@ class FaqController extends Controller implements HasMiddleware
 
     public function markHelpful(Faq $faq)
     {
-        $faq->markHelpful();
+        $user = Auth::user();
+        $vote = $faq->votes()->where('user_id', $user->id)->first();
+
+        if ($vote) {
+            if ($vote->is_helpful) {
+                // Determine if we should toggle off or keep it. 
+                // User requirement: "1 user hanya bisa memilih 1 di setiap FAQ"
+                // Usually clicking again might unvote, or do nothing.
+                // Let's implement: if already helpful, unvote (remove vote).
+                $vote->delete();
+                $faq->decrement('helpful_count');
+                $status = 'removed';
+            } else {
+                // Switching from not helpful to helpful
+                $vote->update(['is_helpful' => true]);
+                $faq->decrement('not_helpful_count');
+                $faq->increment('helpful_count');
+                $status = 'switched';
+            }
+        } else {
+            // Create new helpful vote
+            $faq->votes()->create([
+                'user_id' => $user->id,
+                'is_helpful' => true,
+            ]);
+            $faq->increment('helpful_count');
+            $status = 'added';
+        }
+
         return response()->json([
             'success' => true,
             'helpful_count' => $faq->helpful_count,
+            'not_helpful_count' => $faq->not_helpful_count,
+            'status' => $status,
+            'type' => 'helpful'
         ]);
     }
 
     public function markNotHelpful(Faq $faq)
     {
-        $faq->markNotHelpful();
+        $user = Auth::user();
+        $vote = $faq->votes()->where('user_id', $user->id)->first();
+
+        if ($vote) {
+            if (!$vote->is_helpful) {
+                // Already not helpful, unvote (remove vote)
+                $vote->delete();
+                $faq->decrement('not_helpful_count');
+                $status = 'removed';
+            } else {
+                // Switching from helpful to not helpful
+                $vote->update(['is_helpful' => false]);
+                $faq->decrement('helpful_count');
+                $faq->increment('not_helpful_count');
+                $status = 'switched';
+            }
+        } else {
+            // Create new not helpful vote
+            $faq->votes()->create([
+                'user_id' => $user->id,
+                'is_helpful' => false,
+            ]);
+            $faq->increment('not_helpful_count');
+            $status = 'added';
+        }
+
         return response()->json([
             'success' => true,
+            'helpful_count' => $faq->helpful_count,
             'not_helpful_count' => $faq->not_helpful_count,
+            'status' => $status,
+            'type' => 'not_helpful'
         ]);
     }
 }

@@ -52,10 +52,7 @@
         <div class="space-y-6">
             <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                 <div class="p-6 space-y-4">
-                    <div>
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Outlet</p>
-                        <p class="text-sm font-semibold text-gray-900">{{ $faq->outlet->name ?? '-' }}</p>
-                    </div>
+
                     <div>
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Kategori</p>
                         <span class="px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-full border border-blue-100">

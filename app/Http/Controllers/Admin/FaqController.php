@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Faq;
-use App\Models\Outlet;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -20,7 +19,7 @@ class FaqController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $query = Faq::with('outlet');
+        $query = Faq::query();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -34,26 +33,19 @@ class FaqController extends Controller implements HasMiddleware
             $query->byType($request->type);
         }
 
-        if ($request->filled('outlet_id')) {
-            $query->where('outlet_id', $request->outlet_id);
-        }
-
         $faqs = $query->latest()->paginate(15);
-        $outlets = Outlet::orderBy('name')->get();
 
-        return view('admin.master.faqs.index', compact('faqs', 'outlets'));
+        return view('admin.master.faqs.index', compact('faqs'));
     }
 
     public function create()
     {
-        $outlets = Outlet::orderBy('name')->get();
-        return view('admin.master.faqs.create', compact('outlets'));
+        return view('admin.master.faqs.create');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'outlet_id' => 'required|exists:outlets,id',
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
             'type' => 'required|in:general,pos,product,finance,report,account',
@@ -71,20 +63,17 @@ class FaqController extends Controller implements HasMiddleware
 
     public function show(Faq $faq)
     {
-        $faq->load('outlet');
         return view('admin.master.faqs.show', compact('faq'));
     }
 
     public function edit(Faq $faq)
     {
-        $outlets = Outlet::orderBy('name')->get();
-        return view('admin.master.faqs.edit', compact('faq', 'outlets'));
+        return view('admin.master.faqs.edit', compact('faq'));
     }
 
     public function update(Request $request, Faq $faq)
     {
         $validated = $request->validate([
-            'outlet_id' => 'required|exists:outlets,id',
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
             'type' => 'required|in:general,pos,product,finance,report,account',

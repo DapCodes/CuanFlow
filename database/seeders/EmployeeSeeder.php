@@ -15,11 +15,11 @@ class EmployeeSeeder extends Seeder
     public function run(): void
     {
         $employees = [
-            [
-                'name' => 'Daffa Ramadhan Kasir 1',
-                'email' => 'daffaramadhan929@gmail.com',
-                'role' => 'kasir',
-            ],
+            // [
+            //     'name' => 'Daffa Ramadhan Kasir 1',
+            //     'email' => 'daffaramadhan929@gmail.com',
+            //     'role' => 'kasir',
+            // ],
             [
                 'name' => 'Atsyle Kasir 2',
                 'email' => 'atsyyle@gmail.com',

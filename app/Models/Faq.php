@@ -10,7 +10,6 @@ class Faq extends Model
     use HasFactory;
 
     protected $fillable = [
-        'outlet_id',
         'question',
         'answer',
         'type',
@@ -30,9 +29,14 @@ class Faq extends Model
         'order' => 'integer',
     ];
 
-    public function outlet()
+    public function votes()
     {
-        return $this->belongsTo(Outlet::class);
+        return $this->hasMany(FaqVote::class);
+    }
+
+    public function currentUserVote()
+    {
+        return $this->hasOne(FaqVote::class)->where('user_id', auth()->id());
     }
 
     public function scopeActive($query)
@@ -56,16 +60,6 @@ class Faq extends Model
     public function incrementViewCount()
     {
         $this->increment('view_count');
-    }
-
-    public function markHelpful()
-    {
-        $this->increment('helpful_count');
-    }
-
-    public function markNotHelpful()
-    {
-        $this->increment('not_helpful_count');
     }
 
     public static function getTypes()

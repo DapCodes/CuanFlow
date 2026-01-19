@@ -40,15 +40,7 @@
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pertanyaan..." 
                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cuan-green focus:border-cuan-green">
             </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Outlet</label>
-                <select name="outlet_id" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cuan-green focus:border-cuan-green">
-                    <option value="">Semua Outlet</option>
-                    @foreach($outlets as $outlet)
-                        <option value="{{ $outlet->id }}" {{ request('outlet_id') == $outlet->id ? 'selected' : '' }}>{{ $outlet->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+
             <div>
                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Kategori</label>
                 <select name="type" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cuan-green focus:border-cuan-green">
@@ -73,7 +65,7 @@
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pertanyaan</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Outlet</th>
+
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Kategori</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
@@ -88,9 +80,7 @@
                                 <p class="text-xs text-gray-500 mt-1 truncate">{{ Str::limit($faq->answer, 60) }}</p>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="text-sm font-medium text-gray-700">{{ $faq->outlet->name ?? '-' }}</span>
-                        </td>
+
                         <td class="px-6 py-4 text-center">
                             <span class="px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-full border border-blue-100">
                                 {{ $faq->getTypeLabel() }}
