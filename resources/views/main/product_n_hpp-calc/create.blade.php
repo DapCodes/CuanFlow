@@ -1438,6 +1438,7 @@ document.getElementById('generateRecipeAI').addEventListener('click', async func
             body: JSON.stringify({
                 product_name: productName,
                 output_quantity: parseFloat(outputQty),
+                category_name: $('.select2-category').find(':selected').text().trim(),
             }),
         });
 

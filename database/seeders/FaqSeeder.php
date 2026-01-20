@@ -281,15 +281,15 @@ class FaqSeeder extends Seeder
 
         foreach ($faqs as $faqData) {
             Faq::create([
-                'outlet_id' => $outlet->id,
+                // 'outlet_id' => $outlet->id,
                 'question' => $faqData['question'],
                 'answer' => $faqData['answer'],
                 'type' => $faqData['type'],
                 'priority' => $faqData['priority'],
                 'is_active' => true,
-                'view_count' => rand(0, 50),
-                'helpful_count' => rand(0, 30),
-                'not_helpful_count' => rand(0, 5),
+                'view_count' => 0,
+                'helpful_count' => 0,
+                'not_helpful_count' => 0,
                 'order' => $faqData['order'],
             ]);
         }

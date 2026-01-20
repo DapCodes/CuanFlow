@@ -696,6 +696,7 @@ class ProductHppController extends Controller
         $validated = $request->validate([
             'product_name' => 'required|string|max:255',
             'output_quantity' => 'required|numeric|min:0.01',
+            'category_name' => 'nullable|string|max:100',
         ]);
 
         try {
@@ -727,6 +728,7 @@ class ProductHppController extends Controller
 
             $userMessage = json_encode([
                 'menu_name' => $validated['product_name'],
+                'category_name' => $validated['category_name'] ?? 'General',
                 'output' => (float) $validated['output_quantity'],
                 'raw_materials' => $rawMaterials,
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
