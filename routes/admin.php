@@ -106,5 +106,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{landingPage}/sections/{section}/items/{item}', [AdminLandingSectionController::class, 'destroyItem'])->name('sections.items.destroy');
         Route::post('/{landingPage}/sections/{section}/items/reorder', [AdminLandingSectionController::class, 'reorderItems'])->name('sections.items.reorder');
     });
+
+    // Terms & Conditions Management
+    Route::get('/terms', [App\Http\Controllers\Admin\TermAndConditionController::class, 'edit'])->name('admin.terms.edit');
+    Route::put('/terms', [App\Http\Controllers\Admin\TermAndConditionController::class, 'update'])->name('admin.terms.update');
 });
 

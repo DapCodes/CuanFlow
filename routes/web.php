@@ -34,6 +34,9 @@ Route::get('/', function () {
 Route::get('/flow', [FlowLandingController::class, 'index'])->name('flow.index');
 Route::get('/flow/{slug}', [FlowLandingController::class, 'show'])->name('flow.show');
 
+// Public Legal Routes
+Route::get('/terms', [App\Http\Controllers\LegalController::class, 'terms'])->name('legal.terms');
+
 // Email Verification untuk WEB
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['signed'])

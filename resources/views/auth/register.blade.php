@@ -672,7 +672,7 @@
                             class="w-4 h-4 text-cuan-dark border-gray-300 rounded focus:ring-cuan-dark mt-1 flex-shrink-0 @error('terms') border-red-500 @enderror"
                         />
                         <label for="terms" class="ml-2 text-sm text-gray-600">
-                            Saya menyetujui <a href="#" class="text-gray-900 font-semibold underline hover:text-cuan-green transition-colors">Syarat & Ketentuan</a>
+                            Saya menyetujui <a href="{{ route('legal.terms') }}" target="_blank" class="text-gray-900 font-semibold underline hover:text-cuan-green transition-colors">Syarat & Ketentuan</a>
                         </label>
                     </div>
                     @error('terms')
