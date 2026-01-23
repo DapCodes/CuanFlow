@@ -1374,10 +1374,53 @@
                 <span>Download Struk (PDF)</span>
             </button>
             @endcan
+            
+            <button onclick="handlePrintInvoice()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span>Cetak Surat Invoice</span>
+            </button>
             <button onclick="closePaymentSuccessModal()" class="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-all">
                 Selesai
             </button>
         </div>
+    </div>
+</div>
+
+<!-- Modal: Invoice Details (Popup if no customer) -->
+<div id="invoiceDetailsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Data Invoice</h3>
+            <button onclick="closeInvoiceDetailsModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Silakan lengkapi data pelanggan untuk tampilan di invoice.</p>
+        
+        <form id="invoiceDetailsForm" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Nama Pelanggan</label>
+                <input type="text" name="customer_name" id="inv_customer_name" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="Contoh: John Doe">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Nomor Telepon</label>
+                <input type="text" name="customer_phone" id="inv_customer_phone" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="Contoh: 08123456789">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Alamat</label>
+                <textarea name="customer_address" id="inv_customer_address" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="Contoh: Jl. Merdeka No. 123"></textarea>
+            </div>
+            <div id="inv_due_date_container">
+                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Jatuh Tempo (Opsional)</label>
+                <input type="date" name="due_date" id="inv_due_date" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+            </div>
+            
+            <button type="button" onclick="submitInvoiceDetails()" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md mt-2">
+                Cetak Invoice
+            </button>
+        </form>
     </div>
 </div>
 
@@ -2346,6 +2389,15 @@
                         </div>
                         <div class="font-bold text-gray-900" id="detailPaymentMethod">-</div>
                     </div>
+                </div>
+                
+                <!-- Structured Notes (New) -->
+                <div id="detailNotesContainer" class="hidden">
+                    <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                        <i class="fas fa-percentage text-orange-600"></i>
+                        Catatan & Promo
+                    </h4>
+                    <div id="detailStructuredNotes" class="space-y-3"></div>
                 </div>
 
                 <!-- Daftar Item -->
@@ -5609,6 +5661,114 @@ function printReceipt(){
     window.open('/receipt/print/'+currentSaleId, '_blank');
 }
 
+/**
+ * Handle Invoice Printing Logic
+ */
+function handlePrintInvoice() {
+    if (!currentSaleId) {
+        showToast('error', 'Sale ID tidak ditemukan');
+        return;
+    }
+
+    // Show loading state
+    Swal.fire({
+        title: 'Memuat data...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // Fetch sale data to get customer info even after session clear
+    fetch('/api/sale/' + currentSaleId)
+        .then(r => r.json())
+        .then(data => {
+            Swal.close();
+            
+            // Reset form first
+            document.getElementById('invoiceDetailsForm').reset();
+            
+            // Check if customer exists in sale record
+            if (data.customer_id && data.customer) {
+                document.getElementById('inv_customer_name').value = data.customer.name || '';
+                document.getElementById('inv_customer_phone').value = data.customer.phone || '';
+                document.getElementById('inv_customer_address').value = data.customer.address || '';
+            } else if (data.customer_name) {
+                // Handle case where custom name was saved but not linked to customer ID (if any)
+                document.getElementById('inv_customer_name').value = data.customer_name;
+            }
+            
+            // Handle due date if it's a debt sale
+            if (data.payment_method === 'debt' && data.debt) {
+                document.getElementById('inv_due_date').value = data.debt.due_date ? data.debt.due_date.substring(0, 10) : '';
+            }
+
+            openInvoiceDetailsModal();
+        })
+        .catch(err => {
+            Swal.close();
+            console.error('Fetch sale error:', err);
+            showToast('error', 'Gagal memuat detail transaksi');
+            openInvoiceDetailsModal(); // Still open modal so user can fill manually
+        });
+}
+
+function openInvoiceDetailsModal() {
+    document.getElementById('invoiceDetailsModal').classList.remove('hidden');
+}
+
+function closeInvoiceDetailsModal() {
+    document.getElementById('invoiceDetailsModal').classList.add('hidden');
+    document.getElementById('invoiceDetailsForm').reset();
+}
+
+function submitInvoiceDetails() {
+    if (!currentSaleId) return;
+
+    const name = document.getElementById('inv_customer_name').value;
+    const phone = document.getElementById('inv_customer_phone').value;
+    const address = document.getElementById('inv_customer_address').value;
+    const dueDate = document.getElementById('inv_due_date').value;
+
+    if (!name) {
+        showToast('warning', 'Nama pelanggan wajib diisi');
+        return;
+    }
+
+    // Create a hidden form to submit via POST to open in new tab
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/receipt/invoice/' + currentSaleId + '/print';
+    form.target = '_blank';
+
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = '_token';
+    csrf.value = '{{ csrf_token() }}';
+    form.appendChild(csrf);
+
+    const inputs = [
+        { name: 'customer_name', value: name },
+        { name: 'customer_phone', value: phone },
+        { name: 'customer_address', value: address },
+        { name: 'due_date', value: dueDate }
+    ];
+
+    inputs.forEach(input => {
+        const el = document.createElement('input');
+        el.type = 'hidden';
+        el.name = input.name;
+        el.value = input.value;
+        form.appendChild(el);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+    
+    closeInvoiceDetailsModal();
+}
+
 function downloadReceipt(){
     if(!currentSaleId){
         showToast('error','Sale ID tidak ditemukan');
@@ -6160,6 +6320,131 @@ function showSaleDetail(saleId) {
                 document.getElementById('detailRemainingDebt').textContent = 'Rp ' + formatNumber(data.debt.remaining_amount || 0);
             } else {
                 document.getElementById('detailDebtInfo').classList.add('hidden');
+            }
+
+            // ✅ Handle Structured Notes (Promo info)
+            const notesContainer = document.getElementById('detailNotesContainer');
+            const notesContent = document.getElementById('detailStructuredNotes');
+            notesContent.innerHTML = '';
+            notesContainer.classList.add('hidden');
+
+            if (data.notes) {
+                try {
+                    const notes = JSON.parse(data.notes);
+                    let html = '';
+
+                    // 1. Customer Type Info
+                    if (notes.customer_type_info) {
+                        const typeInfo = notes.customer_type_info;
+                        html += `
+                            <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="px-2 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-bold uppercase">
+                                        ${typeInfo.label}
+                                    </span>
+                                    <span class="text-xs font-bold text-indigo-700">
+                                        Hemat: Rp ${formatNumber(typeInfo.total_savings || 0)}
+                                    </span>
+                                </div>
+                                <div class="space-y-1.5">
+                                    ${(typeInfo.adjustments || []).map(adj => `
+                                        <div class="text-[11px] flex justify-between items-center text-indigo-900">
+                                            <div class="truncate mr-4">
+                                                <span class="font-bold">${adj.qty}x</span> ${adj.product_name}
+                                            </div>
+                                            <div class="text-right whitespace-nowrap">
+                                                <span class="text-gray-400 line-through">Rp ${formatNumber(adj.original_price)}</span>
+                                                <i class="fas fa-arrow-right mx-1 text-[8px] opacity-30"></i>
+                                                <span class="font-bold">Rp ${formatNumber(adj.applied_price)}</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>`;
+                    }
+
+                    // 2. Discount Plan
+                    if (notes.discount_plan) {
+                        const plan = notes.discount_plan;
+                        const appliedDiscounts = plan.applied_discounts || [];
+                        
+                        let planHtml = `<div class="bg-gray-50 border border-gray-200 rounded-xl p-3 space-y-3">`;
+                        
+                        if (appliedDiscounts.length > 0) {
+                            planHtml += `<div class="space-y-2">
+                                ${appliedDiscounts.map(applied => `
+                                    <div class="flex items-start justify-between gap-3 pb-2 border-b border-gray-100 last:border-0 last:pb-0">
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 uppercase">
+                                                    ${(applied.type || 'DISCOUNT').toUpperCase()}
+                                                </span>
+                                                <p class="text-sm font-bold text-gray-900 truncate">${applied.name || 'Diskon'}</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-black text-orange-600">- Rp ${formatNumber(applied.amount || 0)}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>`;
+                        }
+
+                        // Free Items (BOGO)
+                        if (plan.free_item_quota > 0) {
+                            let freeItems = [];
+                            appliedDiscounts.forEach(ad => {
+                                if (ad.type === 'buy_x_get_y' && ad.free_items) {
+                                    freeItems = [...freeItems, ...ad.free_items];
+                                }
+                            });
+
+                            if (freeItems.length > 0) {
+                                planHtml += `
+                                    <div class="pt-2 border-t border-gray-200">
+                                        <div class="flex items-center justify-between bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg mb-2">
+                                            <span class="text-xs font-bold uppercase">Hadiah Gratis</span>
+                                            <span class="text-xs font-black">${plan.free_item_quota} Item</span>
+                                        </div>
+                                        <div class="space-y-1">
+                                            ${freeItems.map(fi => `
+                                                <div class="flex items-center justify-between text-[11px] text-emerald-600 px-1">
+                                                    <span>${fi.product_name || 'Item'}</span>
+                                                    <span class="font-bold">x${fi.free_qty || 1}</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>`;
+                            }
+                        }
+
+                        planHtml += `</div>`;
+                        html += planHtml;
+                    }
+
+                    if (html) {
+                        notesContent.innerHTML = html;
+                        notesContainer.classList.remove('hidden');
+                    } else if (data.notes.trim()) {
+                        // Fallback plain text
+                        notesContent.innerHTML = `<p class="text-sm text-gray-600">${data.notes}</p>`;
+                        notesContainer.classList.remove('hidden');
+                    }
+                } catch (e) {
+                    // Plain text fallback
+                    notesContent.innerHTML = `<p class="text-sm text-gray-600">${data.notes}</p>`;
+                    notesContainer.classList.remove('hidden');
+                }
+            }
+
+            // Customer notes separate
+            if (data.customer_notes) {
+                notesContent.innerHTML += `
+                    <div class="mt-3 pt-3 border-t border-gray-100">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Catatan Pelanggan</p>
+                        <p class="text-sm text-gray-600 italic">"${data.customer_notes}"</p>
+                    </div>`;
+                notesContainer.classList.remove('hidden');
             }
 
             // Render Action Buttons

@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\RawMaterialAndSupplierController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\SaleController;
@@ -263,6 +264,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('print/{id}', [ReceiptController::class, 'printReceipt'])->name('print');
         Route::get('download/{id}', [ReceiptController::class, 'downloadReceipt'])->name('download');
         Route::get('preview/{id}', [ReceiptController::class, 'previewReceipt'])->name('preview');
+        Route::match(['get', 'post'], 'invoice/{sale}/print', [InvoiceController::class, 'generate'])->name('invoice.print');
     });
     // Legacy receipt routes (keeping for compatibility)
     Route::get('/receipt/print/{id}', [ReceiptController::class, 'print'])->name('receipt.print');

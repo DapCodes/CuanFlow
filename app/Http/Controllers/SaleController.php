@@ -355,6 +355,12 @@ public function showJson(Sale $sale)
         'created_at' => $sale->created_at->format('d/m/Y H:i'), // ✅ Format lebih friendly
         'cashier_name' => $sale->cashier->name ?? '-',
         'customer_name' => $sale->customer->name ?? 'Umum', // ✅ Ubah dari 'Guest'
+        'customer_id' => $sale->customer_id,
+        'customer' => $sale->customer ? [
+            'name' => $sale->customer->name,
+            'phone' => $sale->customer->phone,
+            'address' => $sale->customer->address,
+        ] : null,
         'subtotal' => (int) $sale->subtotal,
         'tax' => (int) $sale->tax_amount, // ✅ Perbaiki dari 'tax' ke 'tax_amount'
         'total_discount' => (int) $sale->discount_amount, // ✅ Perbaiki dari 'total_discount'
