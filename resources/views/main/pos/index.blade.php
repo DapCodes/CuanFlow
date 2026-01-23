@@ -4568,6 +4568,12 @@ function processCashPayment() {
             
             renderCart();
             setUIState('browse');
+            
+            // RESET INPUTS
+            const cashInput = document.getElementById('cashPaidAmount');
+            if (cashInput) cashInput.value = '';
+            clearCustomer();
+
             openPaymentSuccessModal({
                 sale_id: data.sale.id,
                 invoice_number: data.sale.invoice_number,
@@ -5283,6 +5289,7 @@ function submitDebtPayment() {
             renderCart();
             closeDebtPaymentModal();
             setUIState('browse');
+            clearCustomer();
             
             // Show success modal
             Swal.fire({
@@ -5456,6 +5463,7 @@ function processTransferPayment() {
             
             renderCart(); 
             setUIState('browse');
+            clearCustomer();
             openPaymentSuccessModal({
                 sale_id: data.sale.id,
                 invoice_number: data.sale.invoice_number,
@@ -5514,6 +5522,7 @@ function openMidtransPayment() {
                         
                         renderCart(); 
                         setUIState('browse');
+                        clearCustomer();
                         openPaymentSuccessModal({
                             sale_id: saleData.id,
                             invoice_number: saleData.invoice_number,

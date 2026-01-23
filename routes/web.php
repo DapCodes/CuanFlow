@@ -124,7 +124,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ---------------------------------------------------------------------
     // Product & Inventory Management
     // ---------------------------------------------------------------------
-    
+
     // Product HPP / Menu
     Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
         Route::get('/generate-code', [ProductHppController::class, 'generateCode'])->name('generate-code');
@@ -136,7 +136,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{product}/barcode-download', [ProductHppController::class, 'barcodeDownload'])->name('barcode-download');
         Route::post('/{product}/toggle-status', [ProductHppController::class, 'toggleStatus'])->name('toggle-status');
     });
-    Route::resource('products-hpp', ProductHppController::class);
+    Route::resource('products-hpp', ProductHppController::class)->parameters(['products-hpp' => 'product']);
 
     // Raw Materials
     Route::prefix('raw-materials')->name('raw-materials.')->group(function () {
