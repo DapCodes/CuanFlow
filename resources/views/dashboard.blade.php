@@ -583,8 +583,8 @@
 <a href="{{ route('pos.index') }}"
    class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300 relative"
    data-step="1"
-   data-title="Point of Sale"
-   data-intro="<strong>Catat penjualan di kasir.</strong> Gunakan menu ini untuk memasukkan setiap transaksi dengan cepat dan rapi, sehingga antrian tidak menumpuk.">
+   data-title="Kasir Pintar (POS)"
+   data-intro="<strong>Catat penjualan dengan cepat.</strong> Ini adalah jantung bisnis Anda. Masukkan pesanan, pilih metode pembayaran, dan cetak nota dalam hitungan detik.">
 
     <div class="menu-icon relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-500 to-red-400 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
         @if(isset($isPosOpen) && $isPosOpen)
@@ -614,8 +614,8 @@
     <a href="{{ route('sales.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="2"
-       data-title="Penjualan"
-       data-intro="<strong>Kelola semua penjualan.</strong> Lihat riwayat penjualan untuk mengetahui produk mana yang paling laku dan perkembangan usaha Anda.">
+       data-title="Riwayat Penjualan"
+       data-intro="<strong>Pantau semua transaksi.</strong> Lihat daftar nota yang keluar, cek histori pesanan pelanggan, atau batalkan transaksi jika terjadi kesalahan.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-cart-shopping text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -629,8 +629,8 @@
     <a href="{{ route('discounts.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="3"
-       data-title="Diskon"
-       data-intro="<strong>Atur promo dan diskon.</strong> Buat potongan harga dengan cara sederhana agar pelanggan tertarik dan penjualan meningkat.">
+       data-title="Promo & Diskon"
+       data-intro="<strong>Menangkan hati pelanggan.</strong> Buat berbagai promo menarik seperti diskon persentase atau 'Beli 1 Gratis 1' untuk meningkatkan omzet Anda.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-red-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-tags text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -644,8 +644,8 @@
     <a href="{{ route('finance.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
        data-step="4"
-       data-title="Keuangan"
-       data-intro="<strong>Catat uang masuk dan keluar.</strong> Menu ini membantu Anda melihat kondisi keuangan usaha sehingga lebih mudah mengontrol arus kas.">
+       data-title="Arus Kas (Keuangan)"
+       data-intro="<strong>Kesehatan finansial outlet.</strong> Pantau seluruh uang masuk dan keluar. Pastikan saldo kas Anda selalu cocok dengan kondisi di lapangan.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-wallet text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -657,7 +657,10 @@
 
 @can('buat pemasukan')
     <a href="{{ route('expenses.index', ['type' => 'income']) }}"
-       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300">
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="5"
+       data-title="Pemasukan Lain"
+       data-intro="<strong>Catat uang masuk tambahan.</strong> Masukkan pendapatan di luar hasil jualan kasir agar laporan keuangan Anda tetap akurat dan jujur.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow relative">
             <i class="fa-solid fa-arrow-trend-up text-3xl sm:text-4xl text-white"></i>
             <div class="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center border-2 border-emerald-100">
@@ -672,7 +675,10 @@
 
 @can('buat pengeluaran')
     <a href="{{ route('expenses.index', ['type' => 'expense']) }}"
-       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300">
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="6"
+       data-title="Biaya Operasional"
+       data-intro="<strong>Catat pengeluaran Anda.</strong> Masukkan biaya listrik, sewa, gaji, hingga belanja kecil lainnya untuk mengetahui sisa untung bersih Anda.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow relative">
             <i class="fa-solid fa-receipt text-3xl sm:text-4xl text-white"></i>
             <div class="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center border-2 border-orange-100">
@@ -688,9 +694,9 @@
 @can('buat penarikan')
     <a href="{{ route('withdraw.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="4"
-       data-title="Penarikan Saldo"
-       data-intro="<strong>Tarik saldo keuntungan Anda.</strong> Ajukan penarikan saldo hasil penjualan Anda ke rekening bank atau QRIS.">
+       data-step="7"
+       data-title="Tarik Saldo"
+       data-intro="<strong>Ambil dana Anda.</strong> Ajukan penarikan saldo hasil pembayaran nontunai ke rekening bank atau dompet digital pribadi Anda.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-hand-holding-dollar text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -703,9 +709,9 @@
 @can('lihat metode pembayaran')
     <a href="{{ route('outlet-payment-links.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="4"
+       data-step="8"
        data-title="Metode Pembayaran"
-       data-intro="<strong>Atur metode pembayaran.</strong> Menu ini membantu Anda mengatur metode pembayaran yang tersedia.">
+       data-intro="<strong>Atur opsi pembayaran.</strong> Hubungkan dompet digital atau rekening bank Anda agar pelanggan bisa membayar dengan QRIS atau transfer.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-qrcode text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -718,9 +724,9 @@
 @can('tasks.view')
     <a href="{{ route('tasks.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="5"
+       data-step="9"
        data-title="Manajemen Tugas"
-       data-intro="<strong>Kelola tugas tim.</strong> Atur pekerjaan, pantau progress, dan kolaborasi dengan tim menggunakan Kanban board.">
+       data-intro="<strong>Kerja tim makin kompak.</strong> Berikan tugas ke pegawai, pantau progresnya, dan pastikan tidak ada pekerjaan yang terlewat.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-list-check text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -734,9 +740,9 @@
 @can('lihat statistik')
     <a href="{{ route('statistics.index') }}"
        class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="5"
-       data-title="Dashboard & Statistik"
-       data-intro="<strong>Lihat ringkasan usaha Anda.</strong> Tampilkan grafik dan angka penting seperti penjualan dan keuntungan dalam tampilan yang mudah dipahami.">
+       data-step="10"
+       data-title="Dashboard Statistik"
+       data-intro="<strong>Lihat ringkasan usaha.</strong> Tampilkan grafik pertumbuhan omzet dan keuntungan dalam tampilan visual yang mudah dibaca siapa saja.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-chart-line text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -750,9 +756,9 @@
 @can('lihat laporan')
     <a href="{{ route('reports.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="6"
-       data-title="Laporan Keseluruhan"
-       data-intro="<strong>Kumpulan laporan usaha.</strong> Akses dan unduh laporan harian, mingguan, dan bulanan untuk dicek atau dibagikan ke partner.">
+       data-step="11"
+       data-title="Laporan Lengkap"
+       data-intro="<strong>Dokumen evaluasi bisnis.</strong> Unduh laporan detail harian hingga bulanan untuk dibenahi atau dibagikan ke partner bisnis Anda.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-file-invoice text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -766,9 +772,9 @@
 @can('lihat produk')
     <a href="{{ route('products-hpp.index') }}"
        class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="7"
-       data-title="Produk & Resep"
-       data-intro="<strong>Atur daftar menu dan resep.</strong> Hitung otomatis harga pokok penjualan (HPP) sehingga Anda bisa menentukan harga jual yang pas.">
+       data-step="12"
+       data-title="Menu & Resep"
+       data-intro="<strong>Atur menu jualan Anda.</strong> Masukkan resep rahasia Anda di sini, sistem akan menghitung biaya produksi (HPP) secara otomatis.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-utensils text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -781,9 +787,9 @@
 @can('lihat bahan baku')
     <a href="{{ route('raw-materials.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="8"
-       data-title="Bahan Baku"
-       data-intro="<strong>Data stok bahan baku.</strong> Cek dan perbarui stok agar dapur tidak kehabisan bahan saat produksi.">
+       data-step="13"
+       data-title="Stok Bahan Baku"
+       data-intro="<strong>Jangan sampai kehabisan.</strong> Pantau stok mentah di gudang. Sistem akan memberi tanda jika ada bahan yang perlu segera dibeli.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-boxes-stacked text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -796,9 +802,9 @@
 @can('lihat supplier')
     <a href="{{ route('raw-materials.suppliers') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="9"
-       data-title="Pemasok"
-       data-intro="<strong>Daftar pemasok bahan.</strong> Simpan nama, kontak, dan catatan pemasok agar mudah dihubungi saat membutuhkan barang.">
+       data-step="14"
+       data-title="Daftar Pemasok"
+       data-intro="<strong>Hubungi supplier dengan mudah.</strong> Simpan kontak pemasok langganan agar Anda tidak repot mencari nomor saat stok habis.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-truck-field text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -811,9 +817,9 @@
 @can('lihat reseller applications')
     <a href="{{ route('reseller-applications.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="10"
+       data-step="15"
        data-title="Lamaran Reseller"
-       data-intro="<strong>Manajemen mitra reseller.</strong> Review dan kelola permohonan kemitraan reseller yang masuk.">
+       data-intro="<strong>Perluas jaringan Anda.</strong> Kelola dan seleksi calon mitra reseller yang ingin ikut memasarkan produk Anda di sini.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-handshake text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -826,9 +832,9 @@
 @can('lihat produksi')
     <a href="{{ route('production.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="10"
-       data-title="Produksi"
-       data-intro="<strong>Catat proses produksi.</strong> Pantau pemakaian bahan sampai menjadi produk jadi, supaya produksi lebih teratur dan terkontrol.">
+       data-step="16"
+       data-title="Proses Produksi"
+       data-intro="<strong>Pantau pembuatan barang.</strong> Catat kapan bahan baku diolah menjadi produk siap jual agar hitungan stok tetap sinkron.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-flask text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -841,9 +847,9 @@
 @can('lihat stock opname')
     <a href="{{ route('stock-opname.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="11"
-       data-title="Stock Opname"
-       data-intro="<strong>Cek ulang stok barang.</strong> Cocokkan stok di sistem dengan stok di gudang untuk mengurangi selisih dan kerugian.">
+       data-step="17"
+       data-title="Cek Stok (Opname)"
+       data-intro="<strong>Audit fisik barang.</strong> Cocokkan jumlah stok asli di rak dengan data di sistem untuk mencegah kerugian atau kehilangan.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-green-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-boxes-packing text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -856,9 +862,9 @@
 @can('lihat stock transfer')
     <a href="{{ route('stock-transfers.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="11"
-       data-title="Transfer Stok"
-       data-intro="<strong>Kirim bahan antar outlet.</strong> Transfer bahan baku atau produk ke outlet lain dalam satu manajemen.">
+       data-step="18"
+       data-title="Mutasi Stok"
+       data-intro="<strong>Pindah barang antar outlet.</strong> Catat pengiriman bahan atau produk ke cabang lain agar stok pusat dan cabang tetap terpantau.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-truck-fast text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -872,9 +878,9 @@
 @can('lihat outlet')
     <a href="{{ route('outlets.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="12"
-       data-title="Informasi Outlet"
-       data-intro="<strong>Data toko/outlet Anda.</strong> Simpan alamat, jam buka, dan informasi penting lain agar data usaha selalu rapi.">
+       data-step="19"
+       data-title="Identitas Outlet"
+       data-intro="<strong>Data utama toko Anda.</strong> Lengkapi nama, alamat, dan logo toko Anda agar muncul di nota belanja dan dipercaya pelanggan.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-store text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -887,9 +893,9 @@
 @can('lihat landing page')
     <a href="{{ route('landing-pages.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="12"
-       data-title="Landing Page"
-       data-intro="<strong>Bangun kehadiran digital Anda.</strong> Buat halaman promosi menarik untuk outlet Anda dengan mudah dan cepat.">
+       data-step="20"
+       data-title="Website (Landing Page)"
+       data-intro="<strong>Go Digital dengan CuanFlow.</strong> Buat halaman website katalog sederhana untuk toko Anda agar menarik lebih banyak pelanggan online.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-lg group-hover:shadow-purple-200 transition-all duration-300">
         <i class="fa-solid fa-rocket text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -902,9 +908,9 @@
 @can('lihat testimoni')
     <a href="{{ route('testimonials.index') }}"
         class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-        data-step="13"
-        data-title="Testimoni Pelanggan"
-        data-intro="<strong>Tingkatkan kepercayaan pelanggan.</strong> Kelola ulasan positif dari pelanggan Anda untuk ditampilkan di halaman promosi.">
+        data-step="21"
+        data-title="Ulasan Pelanggan"
+        data-intro="<strong>Kumpulkan kata positif.</strong> Simpan dan tampilkan ulasan terbaik dari pelanggan Anda di website untuk menambah kepercayaan pembeli baru.">
             <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-lg group-hover:shadow-blue-200 transition-all duration-300">
                 <i class="fa-solid fa-quote-left text-4xl sm:text-5xl text-white"></i>
             </div>
@@ -917,9 +923,9 @@
 @can('lihat pegawai')
     <a href="{{ route('employees.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="13"
-       data-title="Pegawai & Hak Akses"
-       data-intro="<strong>Atur data karyawan.</strong> Tambah pegawai dan tentukan menu apa saja yang boleh mereka akses di sistem.">
+       data-step="22"
+       data-title="Tim & Hak Akses"
+       data-intro="<strong>Kelola karyawan Anda.</strong> Daftarkan tim Anda dan tentukan tugas mereka di aplikasi agar operasional lebih tertib dan terkontrol.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-users text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -932,9 +938,9 @@
 @can('lihat pelanggan')
     <a href="{{ route('customer-debts.index') }}"
     class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-    data-step="14"
+    data-step="23"
     data-title="Pelanggan & Piutang"
-    data-intro="<strong>Kelola hubungan pelanggan.</strong> Pantau data pelanggan setia dan kelola catatan piutang atau tagihan yang belum terbayar secara terpusat.">
+    data-intro="<strong>Hubungan pelanggan.</strong> Simpan database pelanggan setia dan pantau catatan piutang (bon) agar tidak ada yang terlewat ditagih.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-address-book text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -947,9 +953,9 @@
 @can('lihat meja')
     <a href="{{ route('tables.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="15"
-       data-title="Kelola Meja"
-       data-intro="<strong>Atur sistem meja outlet Anda.</strong> Kelola penomoran meja untuk kafe atau restoran, pantau status terisi atau tersedia secara real-time.">
+       data-step="24"
+       data-title="Sistem Antrian Meja"
+       data-intro="<strong>Atur operasional cafe/resto.</strong> Kelola nomor meja dan pantau mana yang sedang terisi atau kosong secara real-time dari kasir.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-chair text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -963,9 +969,9 @@
 @can('lihat ai insights')
     <a href="{{ route('ai-insights.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="15"
-       data-title="Insight"
-       data-intro="<strong>Saran dari data usaha.</strong> Lihat ringkasan dan saran sederhana berdasarkan data penjualan untuk membantu Anda mengambil keputusan.">
+       data-step="25"
+       data-title="Lampu Hijau Bisnis"
+       data-intro="<strong>Saran cerdas dari data.</strong> Lihat produk yang paling laku dan dapatkan saran kapan harus menambah stok berdasarkan analisa otomatis kami.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-violet-400 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-lightbulb text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -978,9 +984,9 @@
 @can('akses clara ai')
     <a href="{{ route('clara-ai.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="16"
-       data-title="Clara AI"
-       data-intro="<strong>Asisten pintar untuk usaha Anda.</strong> Tanyakan apa saja tentang penjualan, biaya, atau laporan, dan dapatkan jawaban dalam bahasa yang mudah dipahami.">
+       data-step="26"
+       data-title="Asisten Clara AI"
+       data-intro="<strong>Asisten pribadi Anda.</strong> Tanya Clara apa saja tentang jualan Anda hari ini atau cari ide promo baru melalui obrolan santai.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <!-- <i class="fa-solid fa-robot text-4xl sm:text-5xl text-white"></i> -->
             <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-2" alt="">
@@ -995,9 +1001,9 @@
 @can('lihat kebijakan outlet')
     <a href="{{ route('outlet-policies.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="17"
-       data-title="Kebijakan Outlet"
-       data-intro="<strong>Catatan aturan usaha.</strong> Simpan SOP dan kebijakan sederhana agar semua pegawai bekerja dengan cara yang sama.">
+       data-step="27"
+       data-title="SOP & Kebijakan"
+       data-intro="<strong>Aturan kerja tim.</strong> Simpan panduan kerja atau peraturan outlet di sini agar semua pegawai memiliki pemahaman yang sama.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-clipboard-list text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -1010,9 +1016,9 @@
 @can('edit profil')
     <a href="{{ route('profile.edit') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="18"
-       data-title="Pengaturan Akun"
-       data-intro="<strong>Atur profil akun Anda.</strong> Ubah nama, kata sandi, dan kontak untuk menjaga keamanan dan kerapihan data.">
+       data-step="28"
+       data-title="Kelola Akun"
+       data-intro="<strong>Keamanan profil.</strong> Ubah data diri, ganti kata sandi, atau perbarui kontak Anda untuk menjaga keamanan akses sistem.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-500 to-gray-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-user-gear text-4xl sm:text-5xl text-white"></i>
         </div>
@@ -1025,9 +1031,9 @@
 @can('lihat faq')
     <a href="{{ route('faqs.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
-       data-step="19"
-       data-title="Bantuan & FAQ"
-       data-intro="<strong>Panduan penggunaan aplikasi.</strong> Baca langkah-langkah sederhana dan jawaban pertanyaan umum saat Anda membutuhkan bantuan.">
+       data-step="29"
+       data-title="Pusat Bantuan"
+       data-intro="<strong>Panduan Lengkap.</strong> Temukan jawaban dari pertanyaan yang sering diajukan atau pelajari cara menggunakan fitur CuanFlow di sini.">
         <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
             <i class="fa-solid fa-circle-question text-4xl sm:text-5xl text-white"></i>
         </div>
