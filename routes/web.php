@@ -383,6 +383,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/export-excel', [ReportController::class, 'exportExcel'])->name('export-excel');
     });
 
+    // Invoices summary
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices/expense/{expense}/print', [InvoiceController::class, 'generateExpense'])->name('invoices.expense.print');
+
     Route::prefix('statistics')->name('statistics.')->group(function () {
         Route::get('/', [StatisticsController::class, 'index'])->name('index');
         Route::get('/export', [StatisticsController::class, 'export'])->name('export');

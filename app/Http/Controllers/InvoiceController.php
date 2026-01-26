@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
+use App\Models\Expense;
+use App\Models\CustomerDebt;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -15,11 +17,49 @@ class InvoiceController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('permission:cetak struk|cetak struk penjualan', only: ['generate']),
+            new Middleware('permission:lihat invoice', only: ['index']),
         ];
     }
 
     /**
-     * Generate professional invoice PDF
+     * Display a listing of invoices (Sales, Income, Expense, Piutang)
+     */
+    public function index()
+    {
+        $outletId = auth()->user()->outlet_id;
+
+        $recentSales = Sale::where('outlet_id', $outletId)
+            ->latest()
+            ->paginate(5, ['*'], 'sales_page');
+
+        $recentIncomes = Expense::where('outlet_id', $outletId)
+            ->where('type', 'income')
+            ->where('status', 'approved')
+            ->latest()
+            ->paginate(5, ['*'], 'income_page');
+
+        $recentExpenses = Expense::where('outlet_id', $outletId)
+            ->where('type', 'expense')
+            ->where('status', 'approved')
+            ->latest()
+            ->paginate(5, ['*'], 'expense_page');
+
+        $recentDebts = CustomerDebt::with(['customer', 'sale'])
+            ->where('outlet_id', $outletId)
+            ->whereIn('status', ['pending', 'partial'])
+            ->latest()
+            ->paginate(5, ['*'], 'debt_page');
+
+        return view('main.invoice.index', compact(
+            'recentSales',
+            'recentIncomes',
+            'recentExpenses',
+            'recentDebts'
+        ));
+    }
+
+    /**
+     * Generate professional invoice PDF for Sales
      */
     public function generate(Request $request, $saleId)
     {
@@ -31,7 +71,7 @@ class InvoiceController extends Controller implements HasMiddleware
             abort(403, 'Unauthorized');
         }
 
-        // Override customer info if provided in request (for sales without registered customer)
+        // Override customer info if provided in request
         if ($request->has('customer_name')) {
             $sale->temp_customer_name = $request->customer_name;
             $sale->temp_customer_address = $request->customer_address;
@@ -47,10 +87,35 @@ class InvoiceController extends Controller implements HasMiddleware
         }
         $sale->invoice_due_date = $dueDate;
 
-        $pdf = Pdf::loadView('main.pos.invoice_pdf', compact('sale'))
-            ->setPaper('a4', 'portrait');
+        $pdf = Pdf::loadView('main.pos.invoice_pdf', [
+            'data' => $sale,
+            'type' => 'sale'
+        ])->setPaper('a4', 'portrait');
 
         $filename = 'Invoice-' . $sale->invoice_number . '.pdf';
+        
+        return $pdf->stream($filename);
+    }
+
+    /**
+     * Generate professional invoice PDF for Expense/Income
+     */
+    public function generateExpense($id)
+    {
+        $expense = Expense::with(['outlet', 'creator', 'approvedBy', 'category'])
+            ->findOrFail($id);
+
+        // Security check
+        if ($expense->outlet_id !== auth()->user()->outlet_id && !auth()->user()->isOwner()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $pdf = Pdf::loadView('main.pos.invoice_pdf', [
+            'data' => $expense,
+            'type' => 'expense'
+        ])->setPaper('a4', 'portrait');
+
+        $filename = ($expense->type === 'income' ? 'Income-' : 'Expense-') . $expense->expense_number . '.pdf';
         
         return $pdf->stream($filename);
     }

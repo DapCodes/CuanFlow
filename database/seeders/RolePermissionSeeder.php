@@ -344,6 +344,7 @@ class RolePermissionSeeder extends Seeder
 
             // Laporan
             ['name' => 'lihat laporan', 'category' => 'laporan', 'description' => 'Melihat halaman laporan'],
+            ['name' => 'lihat invoice', 'category' => 'laporan', 'description' => 'Melihat daftar ringkasan invoice'],
             ['name' => 'ekspor laporan pdf', 'category' => 'laporan', 'description' => 'Mengekspor laporan ke PDF'],
             ['name' => 'ekspor laporan excel', 'category' => 'laporan', 'description' => 'Mengekspor laporan ke Excel'],
 
@@ -564,7 +565,7 @@ class RolePermissionSeeder extends Seeder
             'lihat statistik', 'ekspor statistik', 'lihat grafik penjualan',
             'lihat grafik produk terlaris', 'lihat grafik kategori', 'lihat grafik per jam',
             // Laporan
-            'lihat laporan', 'ekspor laporan pdf', 'ekspor laporan excel',
+            'lihat laporan', 'lihat invoice', 'ekspor laporan pdf', 'ekspor laporan excel',
             // Produk
             'lihat produk', 'buat produk', 'edit produk', 'lihat detail produk',
             'aktifkan nonaktifkan produk', 'generate kode produk', 'generate barcode produk',

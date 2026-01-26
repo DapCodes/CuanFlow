@@ -706,6 +706,21 @@
     </a>
 @endcan
 
+@can('lihat invoice')
+    <a href="{{ route('invoices.index') }}"
+       class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
+       data-step="14"
+       data-title="Ringkasan Invoice"
+       data-intro="<strong>Pantau tagihan & transaksi.</strong> Lihat ringkasan terbaru dari penjualan, pemasukan, pengeluaran, dan piutang dalam satu tampilan cepat.">
+        <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-400 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+            <i class="fa-solid fa-file-lines text-4xl sm:text-5xl text-white"></i>
+        </div>
+        <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+            Daftar Invoice
+        </span>
+    </a>
+@endcan
+
 @can('lihat metode pembayaran')
     <a href="{{ route('outlet-payment-links.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
