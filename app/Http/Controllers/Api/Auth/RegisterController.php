@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -37,6 +38,15 @@ class RegisterController extends Controller
             // ✅ role otomatis pelanggan
             Role::firstOrCreate(['name' => 'pelanggan']);
             $user->assignRole('pelanggan');
+
+            // ✅ otomatis buat data customer tipe regular
+            Customer::create([
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'type' => 'regular',
+                'is_active' => true,
+            ]);
 
             DB::commit();
 

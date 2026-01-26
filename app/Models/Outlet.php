@@ -114,6 +114,11 @@ class Outlet extends Model
         return $this->hasOne(LandingPage::class);
     }
 
+    public function testimonials(): HasMany
+    {
+        return $this->hasMany(Testimonial::class);
+    }
+
     public function scopeActive($q)
     {
         return $q->where('is_active', true);

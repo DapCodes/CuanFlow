@@ -107,8 +107,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getAvatarUrlAttribute(): string
     {
-        if ($this->avatar && \Storage::disk('public')->exists($this->avatar)) {
-            return \Storage::url($this->avatar);
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
         }
 
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=31694E&background=F0E491';

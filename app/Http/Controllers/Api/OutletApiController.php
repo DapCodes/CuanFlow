@@ -25,7 +25,7 @@ class OutletApiController extends Controller
         $perPage = (int) $request->query('per_page', 50);
         $perPage = max(1, min($perPage, 200));
 
-        $query = Outlet::query();
+        $query = Outlet::query()->withAvg('testimonials', 'rating');
 
         if ($activeOnly) {
             $query->active();
@@ -60,6 +60,17 @@ class OutletApiController extends Controller
      */
     public function show(Outlet $outlet)
     {
+        // Load related data
+        $outlet->load([
+            'landingPage',
+            'testimonials' => function ($q) {
+                $q->where('is_published', true)->latest();
+            },
+            'products' => function ($q) {
+                $q->active()->with(['category', 'unit'])->latest();
+            }
+        ])->loadAvg('testimonials', 'rating');
+
         // Kalau kamu mau hanya tampilkan yang aktif:
         // if (! $outlet->is_active) abort(404);
 

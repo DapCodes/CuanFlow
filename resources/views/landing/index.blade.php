@@ -176,26 +176,115 @@
                     </table>
                 </div>
 
-                {{-- Preview Section (Mini) --}}
+                {{-- Preview Section (Enhanced Mini Templates) --}}
                 <div class="p-6 bg-gray-50 border-t border-gray-200">
-                    <h3 class="text-sm font-semibold text-gray-900 mb-4">Preview Konten Saat Ini</h3>
-                    <div class="aspect-w-16 aspect-h-9 w-full max-w-2xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative group">
-                        <!-- Hero Preview -->
-                        <div class="h-48 bg-cover bg-center flex items-center justify-center text-center px-4 relative"
-                             style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{{ $outlet->landingPage->hero_image ? Storage::url($outlet->landingPage->hero_image) : "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?ixlib=rb-1.2.1" }}')">
-                            <div class="text-white z-10">
-                                <h2 class="text-2xl font-bold mb-1">{{ $outlet->landingPage->hero_title ?? 'Judul Hero' }}</h2>
-                                <p class="text-sm opacity-90">{{ $outlet->landingPage->hero_subtitle ?? 'Sub Judul' }}</p>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-gray-900">Preview Layout Saat Ini</h3>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-200">
+                            Template {{ $outlet->landingPage->template_id ?? 1 }}
+                        </span>
+                    </div>
+
+                    <div class="aspect-w-16 aspect-h-9 w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative group">
+                        @php
+                            $lp = $outlet->landingPage;
+                            $heroImg = $lp->hero_image ? Storage::url($lp->hero_image) : "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?ixlib=rb-1.2.1";
+                            $templateId = $lp->template_id ?? 1;
+                        @endphp
+
+                        <div class="h-64 relative overflow-hidden bg-gray-100">
+                            @switch($templateId)
+                                @case(1)
+                                    {{-- Template 1 Preview: Modern Overlay --}}
+                                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url('{{ $heroImg }}')"></div>
+                                    <div class="relative h-full flex flex-col items-center justify-center text-center px-6">
+                                        @if($lp->tagline_text)
+                                            <span class="text-[8px] font-bold text-white/80 uppercase tracking-[0.2em] mb-2">{{ $lp->tagline_text }}</span>
+                                        @endif
+                                        <h2 class="text-xl font-extrabold text-white leading-tight mb-2">{{ $lp->hero_title ?? 'Your Title' }}</h2>
+                                        <p class="text-[10px] text-white/90 max-w-xs mb-4 line-clamp-2">{{ $lp->hero_subtitle ?? 'Your Subtitle' }}</p>
+                                        <div class="px-4 py-1.5 bg-white text-gray-900 rounded-full text-[9px] font-bold">{{ $lp->cta_button_text ?? 'Shop Now' }}</div>
+                                    </div>
+                                    @break
+
+                                @case(2)
+                                    {{-- Template 2 Preview: Minimalist Split --}}
+                                    <div class="flex h-full">
+                                        <div class="w-1/2 bg-white flex flex-col justify-center p-6 space-y-2">
+                                            @if($lp->tagline_text)
+                                                <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{{ $lp->tagline_text }}</span>
+                                            @endif
+                                            <h2 class="text-lg font-black text-gray-900 tracking-tighter leading-tight">{{ $lp->hero_title ?? 'Your Title' }}</h2>
+                                            <p class="text-[9px] text-gray-500 line-clamp-2">{{ $lp->hero_subtitle ?? 'Your Subtitle' }}</p>
+                                            <div class="pt-2">
+                                                <div class="inline-block px-4 py-1.5 bg-black text-white text-[8px] font-bold uppercase tracking-widest">{{ $lp->cta_button_text ?? 'Shop Now' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="w-1/2 bg-cover bg-center" style="background-image: url('{{ $heroImg }}')"></div>
+                                    </div>
+                                    @break
+
+                                @case(3)
+                                    {{-- Template 3 Preview: Dark Mode Bold --}}
+                                    <div class="absolute inset-0 bg-gray-900">
+                                        <div class="absolute inset-0 opacity-40 bg-cover bg-center" style="background-image: url('{{ $heroImg }}')"></div>
+                                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"></div>
+                                    </div>
+                                    <div class="relative h-full flex items-center p-8">
+                                        <div class="max-w-[70%] border-l-4 border-blue-500 pl-4">
+                                            @if($lp->tagline_text)
+                                                <span class="inline-block px-2 py-0.5 border border-blue-500 text-blue-500 text-[7px] font-bold uppercase mb-2 rounded-full">{{ $lp->tagline_text }}</span>
+                                            @endif
+                                            <h2 class="text-2xl font-black text-white leading-none tracking-tighter mb-2">{{ $lp->hero_title ?? 'Your Title' }}</h2>
+                                            <p class="text-[9px] text-gray-400 mb-4 line-clamp-2 italic">{{ $lp->hero_subtitle ?? 'Your Subtitle' }}</p>
+                                            <div class="inline-block px-5 py-2 bg-blue-600 text-white text-[9px] font-bold uppercase tracking-widest">{{ $lp->cta_button_text ?? 'Explore' }}</div>
+                                        </div>
+                                    </div>
+                                    @break
+
+                                @case(4)
+                                    {{-- Template 4 Preview: Playful Creative --}}
+                                    <div class="bg-[#FFF8F0] h-full relative overflow-hidden p-6 flex items-center">
+                                        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-xl animate-pulse"></div>
+                                        <div class="absolute bottom-0 left-0 w-40 h-40 bg-yellow-500/10 rounded-full blur-xl"></div>
+                                        <div class="grid grid-cols-2 gap-4 items-center relative z-10 w-full">
+                                            <div>
+                                                <span class="inline-block bg-white shadow-sm border border-gray-100 rounded-full px-2 py-0.5 text-[7px] font-bold text-blue-600 mb-2">👋 {{ $lp->tagline_text ?? 'Hello!' }}</span>
+                                                <h2 class="text-xl font-black text-gray-900 leading-tight mb-2 tracking-tight">{{ $lp->hero_title ?? 'Your Title' }}</h2>
+                                                <div class="inline-block bg-gray-900 text-white px-4 py-1.5 rounded-full text-[8px] font-bold">{{ $lp->cta_button_text ?? 'Start' }}</div>
+                                            </div>
+                                            <div class="bg-white p-2 rounded-[2rem] shadow-xl rotate-3">
+                                                <img src="{{ $heroImg }}" class="rounded-[1.5rem] w-full aspect-square object-cover">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @break
+
+                                @case(5)
+                                    {{-- Template 5 Preview: Elegant Luxury --}}
+                                    <div class="bg-stone-50 h-full flex flex-col items-center justify-center p-6 text-center font-serif">
+                                        @if($lp->tagline_text)
+                                            <span class="text-[7px] font-sans font-bold uppercase tracking-[0.3em] text-stone-400 mb-2">{{ $lp->tagline_text }}</span>
+                                        @endif
+                                        <h2 class="text-xl font-light italic text-stone-900 mb-3 leading-tight">{{ $lp->hero_title ?? 'Your Title' }}</h2>
+                                        <div class="w-full aspect-[21/9] overflow-hidden mb-3 border border-stone-200">
+                                            <img src="{{ $heroImg }}" class="w-full h-full object-cover grayscale">
+                                        </div>
+                                        <div class="border-b border-stone-800 pb-0.5">
+                                            <span class="text-[9px] font-sans font-bold uppercase tracking-widest text-stone-800">{{ $lp->cta_button_text ?? 'Discover' }}</span>
+                                        </div>
+                                    </div>
+                                    @break
+                            @endswitch
+
+                            <!-- Overlay Button -->
+                            <div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                                @can('edit landing page')
+                                <a href="{{ route('landing-pages.edit', $outlet->id) }}" class="bg-white/90 backdrop-blur text-gray-900 px-5 py-2 rounded-full text-xs font-bold shadow-2xl transform scale-90 group-hover:scale-100 transition-all hover:bg-white">
+                                    <i class="fas fa-magic mr-2 text-blue-600"></i> Kustomisasi Penuh
+                                </a>
+                                @endcan
                             </div>
-                        </div>
-                        
-                        <!-- Overlay Button -->
-                        <div class="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            @can('edit landing page')
-                            <a href="{{ route('landing-pages.edit', $outlet->id) }}" class="bg-white text-gray-900 px-4 py-2 rounded-full font-bold shadow-lg transform scale-95 group-hover:scale-100 transition-transform">
-                                <i class="fas fa-edit mr-2"></i> Edit Penuh
-                            </a>
-                            @endcan
                         </div>
                     </div>
                 </div>

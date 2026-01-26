@@ -18,6 +18,8 @@ Route::prefix('v1')->group(function () {
         ->name('api.verification.verify');
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [LogoutController::class, 'logout']);
+        Route::get('/profile', [\App\Http\Controllers\Api\ProfileController::class, 'show']);
+        Route::post('/profile', [\App\Http\Controllers\Api\ProfileController::class, 'update']);
         Route::post('/email/verification-notification', [ResendVerificationController::class, 'send'])
             ->middleware('throttle:6,1')
             ->name('api.verification.send');
@@ -26,7 +28,5 @@ Route::prefix('v1')->group(function () {
     Route::get('/outlets/{outlet}', [OutletApiController::class, 'show']);
 });
 
-// FIXED: Keep only ONE Midtrans webhook endpoint in api.php
-// Exclude this from CSRF protection in VerifyCsrfToken middleware
 Route::post('/payment/midtrans/notification', [PaymentController::class, 'handleMidtransNotification'])
     ->name('payment.midtrans.notification');

@@ -22,10 +22,21 @@ class OutletResource extends JsonResource
             // DB: longitude -> API: longitude
             'longitude' => $this->longitude !== null ? (float) $this->longitude : null,
 
+            'rating' => $this->testimonials_avg_rating !== null ? round((float) $this->testimonials_avg_rating, 1) : 0,
+            
+            'landing_page_url' => route('landing-pages.show', [
+                'id' => $this->id,
+                'slug' => str($this->name)->slug(),
+            ]),
+
             'settings' => $this->settings,
             'is_active' => (bool) $this->is_active,
             'created_at' => optional($this->created_at)->toISOString(),
             'updated_at' => optional($this->updated_at)->toISOString(),
+
+            'landing_page' => new LandingPageResource($this->whenLoaded('landingPage')),
+            'testimonials' => TestimonialResource::collection($this->whenLoaded('testimonials')),
+            'products' => ProductResource::collection($this->whenLoaded('products')),
         ];
     }
 }
