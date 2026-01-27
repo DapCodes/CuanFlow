@@ -63,11 +63,6 @@ Route::post('/testimonials', [TestimonialController::class, 'store'])->name('tes
 Route::get('/terms', [LegalController::class, 'terms'])->name('legal.terms');
 Route::get('/receipts/{invoice}', [ReceiptController::class, 'show'])->name('receipts.show');
 
-// Email Verification (Signed only, but technically public access with valid signature)
-Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
-    ->middleware(['signed'])
-    ->name('verification.verify');
-
 require __DIR__.'/auth.php';
 
 // =========================================================================

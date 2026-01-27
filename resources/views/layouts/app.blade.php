@@ -148,7 +148,7 @@
 <body class="antialiased bg-gray-50">
     
     <!-- Optimized Global Page Loader -->
-    <div id="global-page-loader" class="global-page-loader">
+    <div id="global-page-loader" class="global-page-loader active">
         <svg class="global-loader-asterisk" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#31694E" stroke-width="8" stroke-linecap="round"/>
         </svg>
@@ -543,10 +543,19 @@
                 }
             });
             
-            // Handle back/forward navigation
-            window.addEventListener('pageshow', function(e) {
-                loader.classList.remove('active');
+            // Handle back/forward navigation and initial load
+            window.addEventListener('load', function() {
+                setTimeout(() => {
+                    loader.classList.remove('active');
+                }, 300); // Small delay for smooth transition
                 isNavigating = false;
+            });
+
+            window.addEventListener('pageshow', function(e) {
+                if (e.persisted) {
+                    loader.classList.remove('active');
+                    isNavigating = false;
+                }
             });
             
             // Prevent loader from staying visible if navigation is cancelled

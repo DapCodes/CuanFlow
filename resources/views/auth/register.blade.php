@@ -14,98 +14,77 @@
             font-family: 'Satoshi', sans-serif;
         }
         
-        /* Custom Loader */
-        .loader-overlay {
+        /* Global Page Loader from app.blade.php */
+        .global-page-loader {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #31694E;
+            background: #ffffff;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
+            z-index: 99999;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            will-change: opacity, visibility;
         }
         
-        .loader-overlay.active {
+        .global-page-loader.active {
             opacity: 1;
             visibility: visible;
         }
         
-        /* Spinning Asterisk Loader */
-        .loader-asterisk {
-            width: 80px;
-            height: 80px;
-            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        .global-loader-asterisk {
+            width: 60px;
+            height: 60px;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            will-change: transform;
         }
         
         @keyframes spin {
-            0% {
-                transform: rotate(0deg) scale(1);
-            }
-            50% {
-                transform: rotate(180deg) scale(1.2);
-            }
-            100% {
-                transform: rotate(360deg) scale(1);
-            }
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.15); }
+            100% { transform: rotate(360deg) scale(1); }
         }
         
-        /* Pulsing dots */
-        .loader-dots {
+        .global-loader-dots {
             display: flex;
-            gap: 8px;
-            margin-top: 20px;
+            gap: 6px;
+            margin-top: 16px;
         }
         
-        .loader-dot {
-            width: 8px;
-            height: 8px;
-            background: #F0E491;
+        .global-loader-dot {
+            width: 6px;
+            height: 6px;
+            background: #31694E;
             border-radius: 50%;
-            animation: pulse 1.4s ease-in-out infinite;
+            animation: pulse 1.2s ease-in-out infinite;
+            will-change: transform, opacity;
         }
         
-        .loader-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        
-        .loader-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
+        .global-loader-dot:nth-child(2) { animation-delay: 0.15s; }
+        .global-loader-dot:nth-child(3) { animation-delay: 0.3s; }
         
         @keyframes pulse {
-            0%, 100% {
-                transform: scale(0.8);
-                opacity: 0.5;
-            }
-            50% {
-                transform: scale(1.2);
-                opacity: 1;
-            }
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
         }
         
-        /* Loading text */
-        .loader-text {
-            color: #F0E491;
-            font-size: 18px;
+        .global-loader-text {
+            color: #31694E;
+            font-size: 16px;
             font-weight: 600;
-            margin-top: 16px;
-            animation: fadeInOut 2s ease-in-out infinite;
+            margin-top: 12px;
+            animation: fadeInOut 1.5s ease-in-out infinite;
         }
         
         @keyframes fadeInOut {
-            0%, 100% {
-                opacity: 0.5;
-            }
-            50% {
-                opacity: 1;
-            }
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
         
         /* Page Load Animations */
@@ -450,17 +429,17 @@
 </head>
 <body class="h-screen flex overflow-hidden bg-white">
     
-    <!-- Custom Loader -->
-    <div id="page-loader" class="loader-overlay">
-        <svg class="loader-asterisk" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#F0E491" stroke-width="8" stroke-linecap="round"/>
+    <!-- Global Page Loader -->
+    <div id="global-page-loader" class="global-page-loader active">
+        <svg class="global-loader-asterisk" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#31694E" stroke-width="8" stroke-linecap="round"/>
         </svg>
-        <div class="loader-dots">
-            <div class="loader-dot"></div>
-            <div class="loader-dot"></div>
-            <div class="loader-dot"></div>
+        <div class="global-loader-dots">
+            <div class="global-loader-dot"></div>
+            <div class="global-loader-dot"></div>
+            <div class="global-loader-dot"></div>
         </div>
-        <p class="loader-text">Memuat...</p>
+        <p class="global-loader-text">Loading...</p>
     </div>
     
     <!-- Left Section - Simple Background -->
@@ -1003,21 +982,28 @@
         @endif
 
         
-        // Page Exit Animation
+        // Page Loader Logic
+        const loader = document.getElementById('global-page-loader');
+        let isNavigating = false;
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loader.classList.remove('active');
+            }, 300);
+        });
+
         function exitPage(url) {
-            // Show loader first
-            const loader = document.getElementById('page-loader');
+            if (isNavigating) return;
+            isNavigating = true;
             loader.classList.add('active');
             
-            // Start page exit animation after a brief moment
             setTimeout(() => {
                 document.body.classList.add('page-exit');
             }, 300);
             
-            // Navigate after loader duration (1 second total)
             setTimeout(() => {
                 window.location.href = url;
-            }, 1000);
+            }, 800);
         }
         
         // Handle navigation with animation
@@ -1029,21 +1015,17 @@
         
         // Handle form submission with animation
         document.getElementById('registerForm').addEventListener('submit', (e) => {
-            e.preventDefault();
+            if (isNavigating) {
+                e.preventDefault();
+                return;
+            }
             
-            // Show loader
-            const loader = document.getElementById('page-loader');
+            isNavigating = true;
             loader.classList.add('active');
             
-            // Start page exit animation
             setTimeout(() => {
                 document.body.classList.add('page-exit');
             }, 300);
-            
-            // Submit form after loader (1 second total)
-            setTimeout(() => {
-                e.target.submit();
-            }, 1000);
         });
     </script>
 </body>
