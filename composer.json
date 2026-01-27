@@ -16,6 +16,7 @@
         "maatwebsite/excel": "^3.1",
         "midtrans/midtrans-php": "^2.6",
         "picqer/php-barcode-generator": "^3.2",
+        "predis/predis": "^3.3",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-backup": "^9.3",

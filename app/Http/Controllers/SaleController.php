@@ -9,6 +9,7 @@ use App\Models\Sale;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
@@ -29,65 +30,76 @@ class SaleController extends Controller
         $startOfDay = Carbon::parse($selectedDate)->startOfDay();
         $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
-        $salesQuery = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        // Cache key based on outlet, user, and filters
+        $cacheKey = "dashboard_{$selectedDate}_".auth()->id();
 
-        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
-            $salesQuery->where('cashier_id', auth()->id());
-        }
+        $cachedData = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startOfDay, $endOfDay) {
+            $salesQuery = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
 
-        $sales = $salesQuery->with(['customer', 'cashier'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
+                $salesQuery->where('cashier_id', auth()->id());
+            }
 
-        $totalTransactions = $sales->count();
+            $sales = $salesQuery->with(['customer', 'cashier'])
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        $refundQuery = Sale::where('outlet_id', $outletId)
-            ->where('status', 'refunded')
-            ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+            $totalTransactions = $sales->count();
 
-        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
-            $refundQuery->where('cashier_id', auth()->id());
-        }
+            $refundQuery = Sale::where('outlet_id', $outletId)
+                ->where('status', 'refunded')
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
 
-        $totalRefunds = $refundQuery->sum('grand_total');
+            if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
+                $refundQuery->where('cashier_id', auth()->id());
+            }
 
-        // Calculate payment method totals
-        $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
-        $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
-        $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
-        $totalRevenue = $sales->sum('grand_total');
+            $totalRefunds = $refundQuery->sum('grand_total');
 
-        // Get daily summary
-        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+            $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
+            $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
+            $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
+            $totalRevenue = $sales->sum('grand_total');
+            $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
 
-        $dailyExpenses = Expense::where('outlet_id', $outletId)
-            ->whereBetween('expense_date', [$startOfDay, $endOfDay])
-            ->where('amount', '>', 0)
-            ->sum('amount');
+            $dailyExpenses = Expense::where('outlet_id', $outletId)
+                ->whereBetween('expense_date', [$startOfDay, $endOfDay])
+                ->where('amount', '>', 0)
+                ->sum('amount');
 
-        $dailyNetIncome = $totalRevenue - $dailyExpenses;
-        $dailyTotalDiscount = $sales->sum('discount_amount');
+            $dailyNetIncome = $totalRevenue - $dailyExpenses;
+            $dailyTotalDiscount = $sales->sum('discount_amount');
 
-        // Get all-time summary (if no date selected or for comparison)
-        $allTimeRevenueQuery = Sale::where('outlet_id', $outletId)->completed();
-        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
-            $allTimeRevenueQuery->where('cashier_id', auth()->id());
-        }
-        $allTimeRevenue = $allTimeRevenueQuery->sum('grand_total');
+            $allTimeRevenueQuery = Sale::where('outlet_id', $outletId)->completed();
+            if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
+                $allTimeRevenueQuery->where('cashier_id', auth()->id());
+            }
+            $allTimeRevenue = $allTimeRevenueQuery->sum('grand_total');
 
-        $allTimeProfitQuery = Sale::where('outlet_id', $outletId)->completed();
-        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
-            $allTimeProfitQuery->where('cashier_id', auth()->id());
-        }
-        $allTimeProfit = $allTimeProfitQuery->get()->sum(fn ($s) => $s->getTotalProfit());
+            $allTimeProfitQuery = Sale::where('outlet_id', $outletId)->completed();
+            if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
+                $allTimeProfitQuery->where('cashier_id', auth()->id());
+            }
+            $allTimeProfit = $allTimeProfitQuery->get()->sum(fn ($s) => $s->getTotalProfit());
 
-        $allTimeExpenses = Expense::where('outlet_id', $outletId)
-            ->where('amount', '>', 0)
-            ->sum('amount');
+            $allTimeExpenses = Expense::where('outlet_id', $outletId)
+                ->where('amount', '>', 0)
+                ->sum('amount');
 
-        $allTimeNetIncome = $allTimeRevenue - $allTimeExpenses;
+            $allTimeNetIncome = $allTimeRevenue - $allTimeExpenses;
+
+            return compact(
+                'sales', 'totalTransactions', 'totalRefunds', 'cashTotal', 'qrisTotal',
+                'transferTotal', 'totalRevenue', 'dailyProfit', 'dailyExpenses',
+                'dailyNetIncome', 'dailyTotalDiscount', 'allTimeRevenue',
+                'allTimeProfit', 'allTimeExpenses', 'allTimeNetIncome'
+            );
+        });
+
+        // Extract cached data
+        extract($cachedData);
 
         // Get cash registers
         $cashRegisters = CashRegister::where('outlet_id', $outletId)
@@ -265,80 +277,82 @@ class SaleController extends Controller
         $startOfDay = Carbon::parse($selectedDate)->startOfDay();
         $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
-        $salesQuery = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        $cacheKey = "daily_{$selectedDate}_".auth()->id().'_'.($request->search ?? '');
 
-        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
-            $salesQuery->where('cashier_id', auth()->id());
-        }
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $selectedDate, $highlightId, $startOfDay, $endOfDay) {
+            $salesQuery = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startOfDay, $endOfDay]);
 
-        $sales = $salesQuery->with(['cashier', 'customer', 'debt']) // ✅ Tambahkan 'debt' di sini
-            ->orderBy('created_at', 'desc')
-            ->get();
+            if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
+                $salesQuery->where('cashier_id', auth()->id());
+            }
 
-        $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
-        $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
-        $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
+            $sales = $salesQuery->with(['cashier', 'customer', 'debt'])
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        // ✅ Hitung total debt dan yang sudah terbayar
-        $debtSales = $sales->where('payment_method', 'debt');
-        $debtTotal = $debtSales->sum('grand_total');
-        $debtPaid = $debtSales->sum('paid_amount');
+            $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
+            $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
+            $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
 
-        $totalRevenue = $sales->sum('grand_total');
+            $debtSales = $sales->where('payment_method', 'debt');
+            $debtTotal = $debtSales->sum('grand_total');
+            $debtPaid = $debtSales->sum('paid_amount');
 
-        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
-        $dailyExpenses = Expense::where('outlet_id', $outletId)
-            ->whereBetween('expense_date', [$startOfDay, $endOfDay])
-            ->where('amount', '>', 0)
-            ->sum('amount');
+            $totalRevenue = $sales->sum('grand_total');
+            $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+            $dailyExpenses = Expense::where('outlet_id', $outletId)
+                ->whereBetween('expense_date', [$startOfDay, $endOfDay])
+                ->where('amount', '>', 0)
+                ->sum('amount');
 
-        $dailyNetIncome = $totalRevenue - $dailyExpenses;
-        $dailyTotalDiscount = $sales->sum('discount_amount');
+            $dailyNetIncome = $totalRevenue - $dailyExpenses;
+            $dailyTotalDiscount = $sales->sum('discount_amount');
 
-        // Get total refunds for the selected date
-        $totalRefunds = Sale::where('outlet_id', $outletId)
-            ->where('status', 'refunded')
-            ->whereBetween('created_at', [$startOfDay, $endOfDay])
-            ->sum('grand_total');
+            $totalRefunds = Sale::where('outlet_id', $outletId)
+                ->where('status', 'refunded')
+                ->whereBetween('created_at', [$startOfDay, $endOfDay])
+                ->sum('grand_total');
 
-        return response()->json([
-            'selectedDate' => $selectedDate,
-            'highlightId' => $highlightId,
-            'sales' => $sales->map(fn ($s) => [
-                'id' => $s->id,
-                'invoice_number' => $s->invoice_number,
-                'time' => $s->created_at->format('H:i'),
-                'customer_name' => $s->customer?->name, // ✅ Tambahkan customer_name
-                'cashier' => $s->cashier?->name,
-                'payment_method' => $s->payment_method,
-                'grand_total' => (int) $s->grand_total,
-                'status' => $s->status,
-                'total_discount' => (int) $s->discount_amount,
-                // ✅ Tambahkan info debt jika ada
-                'paid_amount' => $s->payment_method === 'debt' ? (int) $s->paid_amount : null,
-                'remaining_amount' => $s->payment_method === 'debt' && $s->debt
-                    ? (int) $s->debt->remaining_amount
-                    : null,
-            ]),
-            'totals' => [
-                'cash' => (int) $cashTotal,
-                'qris' => (int) $qrisTotal,
-                'transfer' => (int) $transferTotal,
-                'debt' => (int) $debtTotal, // ✅ Tambahkan total debt
-                'debt_paid' => (int) $debtPaid, // ✅ Tambahkan debt terbayar
-                'revenue' => (int) $totalRevenue,
-            ],
-            'summary' => [
-                'revenue' => (int) $totalRevenue,
-                'transactions' => $sales->count(),
-                'profit' => (int) $dailyProfit,
-                'expenses' => (int) $dailyExpenses,
-                'discount' => (int) $dailyTotalDiscount,
-                'refunds' => (int) $totalRefunds,
-            ],
-        ]);
+            return [
+                'selectedDate' => $selectedDate,
+                'highlightId' => $highlightId,
+                'sales' => $sales->map(fn ($s) => [
+                    'id' => $s->id,
+                    'invoice_number' => $s->invoice_number,
+                    'time' => $s->created_at->format('H:i'),
+                    'customer_name' => $s->customer?->name,
+                    'cashier' => $s->cashier?->name,
+                    'payment_method' => $s->payment_method,
+                    'grand_total' => (int) $s->grand_total,
+                    'status' => $s->status,
+                    'total_discount' => (int) $s->discount_amount,
+                    'paid_amount' => $s->payment_method === 'debt' ? (int) $s->paid_amount : null,
+                    'remaining_amount' => $s->payment_method === 'debt' && $s->debt
+                        ? (int) $s->debt->remaining_amount
+                        : null,
+                ]),
+                'totals' => [
+                    'cash' => (int) $cashTotal,
+                    'qris' => (int) $qrisTotal,
+                    'transfer' => (int) $transferTotal,
+                    'debt' => (int) $debtTotal,
+                    'debt_paid' => (int) $debtPaid,
+                    'revenue' => (int) $totalRevenue,
+                ],
+                'summary' => [
+                    'revenue' => (int) $totalRevenue,
+                    'transactions' => $sales->count(),
+                    'profit' => (int) $dailyProfit,
+                    'expenses' => (int) $dailyExpenses,
+                    'discount' => (int) $dailyTotalDiscount,
+                    'refunds' => (int) $totalRefunds,
+                ],
+            ];
+        });
+
+        return response()->json($data);
     }
 
     public function showJson(Sale $sale)

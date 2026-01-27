@@ -9,6 +9,7 @@ use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Midtrans\Config;
@@ -233,7 +234,7 @@ class PaymentController extends Controller
             }
 
             Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
-
+            Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
             DB::commit();
 
             return response()->json([
@@ -338,7 +339,7 @@ class PaymentController extends Controller
             }
 
             Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
-
+            Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
             DB::commit();
 
             return response()->json([
@@ -525,6 +526,9 @@ class PaymentController extends Controller
                         $this->incrementDiscountUsageFromSaleNotes($sale);
                     }
                 }
+
+                // Invalidate Sales Cache
+                Cache::tags(['sales', 'outlet_'.$sale->outlet_id])->flush();
             }
 
             DB::commit();

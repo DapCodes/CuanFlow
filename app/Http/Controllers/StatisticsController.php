@@ -13,6 +13,7 @@ use App\Models\StockMovement;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StatisticsController extends Controller
@@ -39,19 +40,28 @@ class StatisticsController extends Controller
             [$start, $end] = $this->getDateRange($period);
         }
 
-        // Summary Cards Data
-        $summaryData = $this->getSummaryData($outletId, $start, $end);
+        // Cache key for non-ajax dashboard part
+        $cacheKey = "stats_dashboard_{$outletId}_".auth()->id()."_{$period}_".($startDate ?? 'none').'_'.($endDate ?? 'none');
 
-        // Produk stok rendah
-        $lowStockProducts = $this->getLowStockProducts($outletId);
+        $data = Cache::tags(['sales', 'expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $start, $end) {
+            // Summary Cards Data
+            $summaryData = $this->getSummaryData($outletId, $start, $end);
 
-        // Sales terbaru
-        $recentSales = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->with('cashier')
-            ->orderByDesc('created_at')
-            ->limit(5)
-            ->get();
+            // Produk stok rendah
+            $lowStockProducts = $this->getLowStockProducts($outletId);
+
+            // Sales terbaru
+            $recentSales = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->with('cashier')
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get();
+
+            return compact('summaryData', 'lowStockProducts', 'recentSales');
+        });
+
+        extract($data);
 
         return view('main.statistics.index', compact(
             'summaryData',
@@ -75,7 +85,11 @@ class StatisticsController extends Controller
 
         [$start, $end] = $this->getDateRange($period, $startDate, $endDate);
 
-        $summary = $this->getSummaryData($outletId, $start, $end);
+        $cacheKey = "stats_summary_ajax_{$outletId}_".auth()->id()."_{$period}_".($startDate ?? 'none').'_'.($endDate ?? 'none');
+
+        $summary = Cache::tags(['sales', 'expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $start, $end) {
+            return $this->getSummaryData($outletId, $start, $end);
+        });
 
         return response()->json($summary);
     }
@@ -251,43 +265,49 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $sales = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('DATE(created_at) as date, SUM(grand_total) as total, COUNT(*) as count')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get()
-            ->keyBy('date');
+        $cacheKey = "chart_sales_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        // Generate semua tanggal dalam range
-        $labels = [];
-        $revenueData = [];
-        $countData = [];
-        $currentDate = $startDate->copy();
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $sales = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('DATE(created_at) as date, SUM(grand_total) as total, COUNT(*) as count')
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get()
+                ->keyBy('date');
 
-        while ($currentDate <= $endDate) {
-            $dateStr = $currentDate->format('Y-m-d');
-            $labels[] = $currentDate->format('d M');
-            $revenueData[] = isset($sales[$dateStr]) ? (int) $sales[$dateStr]->total : 0;
-            $countData[] = isset($sales[$dateStr]) ? (int) $sales[$dateStr]->count : 0;
-            $currentDate->addDay();
-        }
+            // Generate semua tanggal dalam range
+            $labels = [];
+            $revenueData = [];
+            $countData = [];
+            $currentDate = $startDate->copy();
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Pendapatan',
-                    'data' => $revenueData,
-                    'borderColor' => '#10b981',
-                    'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
-                    'fill' => true,
-                    'tension' => 0.4,
+            while ($currentDate <= $endDate) {
+                $dateStr = $currentDate->format('Y-m-d');
+                $labels[] = $currentDate->format('d M');
+                $revenueData[] = isset($sales[$dateStr]) ? (int) $sales[$dateStr]->total : 0;
+                $countData[] = isset($sales[$dateStr]) ? (int) $sales[$dateStr]->count : 0;
+                $currentDate->addDay();
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Pendapatan',
+                        'data' => $revenueData,
+                        'borderColor' => '#10b981',
+                        'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
+                        'fill' => true,
+                        'tension' => 0.4,
+                    ],
                 ],
-            ],
-            'countData' => $countData,
-        ]);
+                'countData' => $countData,
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -302,42 +322,48 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $sales = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('DATE(created_at) as date, COUNT(*) as count, AVG(grand_total) as avg_value')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get()
-            ->keyBy('date');
+        $cacheKey = "chart_transactions_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $labels = [];
-        $countData = [];
-        $avgData = [];
-        $currentDate = $startDate->copy();
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $sales = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('DATE(created_at) as date, COUNT(*) as count, AVG(grand_total) as avg_value')
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get()
+                ->keyBy('date');
 
-        while ($currentDate <= $endDate) {
-            $dateStr = $currentDate->format('Y-m-d');
-            $labels[] = $currentDate->format('d M');
-            $countData[] = isset($sales[$dateStr]) ? (int) $sales[$dateStr]->count : 0;
-            $avgData[] = isset($sales[$dateStr]) ? (int) $sales[$dateStr]->avg_value : 0;
-            $currentDate->addDay();
-        }
+            $labels = [];
+            $countData = [];
+            $avgData = [];
+            $currentDate = $startDate->copy();
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Jumlah Transaksi',
-                    'data' => $countData,
-                    'borderColor' => '#3b82f6',
-                    'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
-                    'fill' => true,
-                    'tension' => 0.4,
+            while ($currentDate <= $endDate) {
+                $dateStr = $currentDate->format('Y-m-d');
+                $labels[] = $currentDate->format('d M');
+                $countData[] = isset($sales[$dateStr]) ? (int) $sales[$dateStr]->count : 0;
+                $avgData[] = isset($sales[$dateStr]) ? (int) $sales[$dateStr]->avg_value : 0;
+                $currentDate->addDay();
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Jumlah Transaksi',
+                        'data' => $countData,
+                        'borderColor' => '#3b82f6',
+                        'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
+                        'fill' => true,
+                        'tension' => 0.4,
+                    ],
                 ],
-            ],
-            'avgData' => $avgData,
-        ]);
+                'avgData' => $avgData,
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -352,48 +378,54 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $payments = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('payment_method, SUM(grand_total) as total, COUNT(*) as count')
-            ->groupBy('payment_method')
-            ->get();
+        $cacheKey = "chart_payment_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $labels = [];
-        $data = [];
-        $colors = [
-            'cash' => '#3b82f6',
-            'qris' => '#10b981',
-            'transfer' => '#8b5cf6',
-            'card' => '#f59e0b',
-            'debt' => '#ef4444',
-        ];
-        $backgroundColors = [];
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $payments = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('payment_method, SUM(grand_total) as total, COUNT(*) as count')
+                ->groupBy('payment_method')
+                ->get();
 
-        foreach ($payments as $payment) {
-            $label = match ($payment->payment_method) {
-                'cash' => 'Tunai',
-                'qris' => 'QRIS',
-                'transfer' => 'Transfer',
-                'card' => 'Kartu',
-                'debt' => 'Hutang',
-                default => ucfirst($payment->payment_method),
-            };
-            $labels[] = $label;
-            $data[] = (int) $payment->total;
-            $backgroundColors[] = $colors[$payment->payment_method] ?? '#6b7280';
-        }
+            $labels = [];
+            $data = [];
+            $colors = [
+                'cash' => '#3b82f6',
+                'qris' => '#10b981',
+                'transfer' => '#8b5cf6',
+                'card' => '#f59e0b',
+                'debt' => '#ef4444',
+            ];
+            $backgroundColors = [];
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'data' => $data,
-                    'backgroundColor' => $backgroundColors,
-                    'borderWidth' => 0,
+            foreach ($payments as $payment) {
+                $label = match ($payment->payment_method) {
+                    'cash' => 'Tunai',
+                    'qris' => 'QRIS',
+                    'transfer' => 'Transfer',
+                    'card' => 'Kartu',
+                    'debt' => 'Hutang',
+                    default => ucfirst($payment->payment_method),
+                };
+                $labels[] = $label;
+                $data[] = (int) $payment->total;
+                $backgroundColors[] = $colors[$payment->payment_method] ?? '#6b7280';
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'data' => $data,
+                        'backgroundColor' => $backgroundColors,
+                        'borderWidth' => 0,
+                    ],
                 ],
-            ],
-        ]);
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -408,29 +440,35 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $topProducts = SaleItem::whereHas('sale', function ($q) use ($outletId, $startDate, $endDate) {
-            $q->where('outlet_id', $outletId)
-                ->completed()
-                ->whereBetween('created_at', [$startDate, $endDate]);
-        })
-            ->selectRaw('product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
-            ->groupBy('product_name')
-            ->orderByDesc('total_qty')
-            ->limit(10)
-            ->get();
+        $cacheKey = "chart_top_products_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        return response()->json([
-            'labels' => $topProducts->pluck('product_name')->toArray(),
-            'datasets' => [
-                [
-                    'label' => 'Qty Terjual',
-                    'data' => $topProducts->pluck('total_qty')->map(fn ($v) => (int) $v)->toArray(),
-                    'backgroundColor' => '#10b981',
-                    'borderRadius' => 6,
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $topProducts = SaleItem::whereHas('sale', function ($q) use ($outletId, $startDate, $endDate) {
+                $q->where('outlet_id', $outletId)
+                    ->completed()
+                    ->whereBetween('created_at', [$startDate, $endDate]);
+            })
+                ->selectRaw('product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
+                ->groupBy('product_name')
+                ->orderByDesc('total_qty')
+                ->limit(10)
+                ->get();
+
+            return [
+                'labels' => $topProducts->pluck('product_name')->toArray(),
+                'datasets' => [
+                    [
+                        'label' => 'Qty Terjual',
+                        'data' => $topProducts->pluck('total_qty')->map(fn ($v) => (int) $v)->toArray(),
+                        'backgroundColor' => '#10b981',
+                        'borderRadius' => 6,
+                    ],
                 ],
-            ],
-            'revenue' => $topProducts->pluck('total_revenue')->map(fn ($v) => (int) $v)->toArray(),
-        ]);
+                'revenue' => $topProducts->pluck('total_revenue')->map(fn ($v) => (int) $v)->toArray(),
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -445,30 +483,36 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $categories = SaleItem::whereHas('sale', function ($q) use ($outletId, $startDate, $endDate) {
-            $q->where('outlet_id', $outletId)
-                ->completed()
-                ->whereBetween('created_at', [$startDate, $endDate]);
-        })
-            ->join('products', 'sale_items.product_id', '=', 'products.id')
-            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
-            ->selectRaw('COALESCE(categories.name, "Tanpa Kategori") as category_name, SUM(sale_items.subtotal) as total')
-            ->groupBy('category_name')
-            ->orderByDesc('total')
-            ->get();
+        $cacheKey = "chart_category_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $categories = SaleItem::whereHas('sale', function ($q) use ($outletId, $startDate, $endDate) {
+                $q->where('outlet_id', $outletId)
+                    ->completed()
+                    ->whereBetween('created_at', [$startDate, $endDate]);
+            })
+                ->join('products', 'sale_items.product_id', '=', 'products.id')
+                ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+                ->selectRaw('COALESCE(categories.name, "Tanpa Kategori") as category_name, SUM(sale_items.subtotal) as total')
+                ->groupBy('category_name')
+                ->orderByDesc('total')
+                ->get();
 
-        return response()->json([
-            'labels' => $categories->pluck('category_name')->toArray(),
-            'datasets' => [
-                [
-                    'data' => $categories->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
-                    'backgroundColor' => array_slice($colors, 0, count($categories)),
-                    'borderWidth' => 0,
+            $colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
+
+            return [
+                'labels' => $categories->pluck('category_name')->toArray(),
+                'datasets' => [
+                    [
+                        'data' => $categories->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
+                        'backgroundColor' => array_slice($colors, 0, count($categories)),
+                        'borderWidth' => 0,
+                    ],
                 ],
-            ],
-        ]);
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -483,37 +527,43 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $hourlyData = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('HOUR(created_at) as hour, COUNT(*) as count, SUM(grand_total) as total')
-            ->groupBy('hour')
-            ->orderBy('hour')
-            ->get()
-            ->keyBy('hour');
+        $cacheKey = "chart_hourly_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $labels = [];
-        $countData = [];
-        $revenueData = [];
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $hourlyData = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('HOUR(created_at) as hour, COUNT(*) as count, SUM(grand_total) as total')
+                ->groupBy('hour')
+                ->orderBy('hour')
+                ->get()
+                ->keyBy('hour');
 
-        for ($h = 6; $h <= 22; $h++) {
-            $labels[] = sprintf('%02d:00', $h);
-            $countData[] = isset($hourlyData[$h]) ? (int) $hourlyData[$h]->count : 0;
-            $revenueData[] = isset($hourlyData[$h]) ? (int) $hourlyData[$h]->total : 0;
-        }
+            $labels = [];
+            $countData = [];
+            $revenueData = [];
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Jumlah Transaksi',
-                    'data' => $countData,
-                    'backgroundColor' => '#3b82f6',
-                    'borderRadius' => 6,
+            for ($h = 6; $h <= 22; $h++) {
+                $labels[] = sprintf('%02d:00', $h);
+                $countData[] = isset($hourlyData[$h]) ? (int) $hourlyData[$h]->count : 0;
+                $revenueData[] = isset($hourlyData[$h]) ? (int) $hourlyData[$h]->total : 0;
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Jumlah Transaksi',
+                        'data' => $countData,
+                        'backgroundColor' => '#3b82f6',
+                        'borderRadius' => 6,
+                    ],
                 ],
-            ],
-            'revenue' => $revenueData,
-        ]);
+                'revenue' => $revenueData,
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -528,38 +578,44 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $weeklyData = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('DAYOFWEEK(created_at) as day, COUNT(*) as count, SUM(grand_total) as total')
-            ->groupBy('day')
-            ->orderBy('day')
-            ->get()
-            ->keyBy('day');
+        $cacheKey = "chart_weekly_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $dayNames = ['', 'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        $labels = [];
-        $countData = [];
-        $revenueData = [];
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $weeklyData = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('DAYOFWEEK(created_at) as day, COUNT(*) as count, SUM(grand_total) as total')
+                ->groupBy('day')
+                ->orderBy('day')
+                ->get()
+                ->keyBy('day');
 
-        for ($d = 1; $d <= 7; $d++) {
-            $labels[] = $dayNames[$d];
-            $countData[] = isset($weeklyData[$d]) ? (int) $weeklyData[$d]->count : 0;
-            $revenueData[] = isset($weeklyData[$d]) ? (int) $weeklyData[$d]->total : 0;
-        }
+            $dayNames = ['', 'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            $labels = [];
+            $countData = [];
+            $revenueData = [];
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Pendapatan',
-                    'data' => $revenueData,
-                    'backgroundColor' => '#8b5cf6',
-                    'borderRadius' => 6,
+            for ($d = 1; $d <= 7; $d++) {
+                $labels[] = $dayNames[$d];
+                $countData[] = isset($weeklyData[$d]) ? (int) $weeklyData[$d]->count : 0;
+                $revenueData[] = isset($weeklyData[$d]) ? (int) $weeklyData[$d]->total : 0;
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Pendapatan',
+                        'data' => $revenueData,
+                        'backgroundColor' => '#8b5cf6',
+                        'borderRadius' => 6,
+                    ],
                 ],
-            ],
-            'countData' => $countData,
-        ]);
+                'countData' => $countData,
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -574,64 +630,70 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        // Revenue per hari
-        $revenues = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('DATE(created_at) as date, SUM(grand_total) as total')
-            ->groupBy('date')
-            ->get()
-            ->keyBy('date');
+        $cacheKey = "chart_expense_v_revenue_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        // Expenses per hari
-        $expenses = Expense::where('outlet_id', $outletId)
-            ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-            ->where('amount', '>', 0)
-            ->selectRaw('expense_date as date, SUM(amount) as total')
-            ->groupBy('date')
-            ->get()
-            ->keyBy('date');
+        $data = Cache::tags(['sales', 'expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            // Revenue per hari
+            $revenues = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('DATE(created_at) as date, SUM(grand_total) as total')
+                ->groupBy('date')
+                ->get()
+                ->keyBy('date');
 
-        $labels = [];
-        $revenueData = [];
-        $expenseData = [];
-        $profitData = [];
-        $currentDate = $startDate->copy();
+            // Expenses per hari
+            $expenses = Expense::where('outlet_id', $outletId)
+                ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                ->where('amount', '>', 0)
+                ->selectRaw('expense_date as date, SUM(amount) as total')
+                ->groupBy('date')
+                ->get()
+                ->keyBy('date');
 
-        while ($currentDate <= $endDate) {
-            $dateStr = $currentDate->format('Y-m-d');
-            $labels[] = $currentDate->format('d M');
+            $labels = [];
+            $revenueData = [];
+            $expenseData = [];
+            $profitData = [];
+            $currentDate = $startDate->copy();
 
-            $rev = isset($revenues[$dateStr]) ? (int) $revenues[$dateStr]->total : 0;
-            $exp = isset($expenses[$dateStr]) ? (int) $expenses[$dateStr]->total : 0;
+            while ($currentDate <= $endDate) {
+                $dateStr = $currentDate->format('Y-m-d');
+                $labels[] = $currentDate->format('d M');
 
-            $revenueData[] = $rev;
-            $expenseData[] = $exp;
-            $profitData[] = $rev - $exp;
+                $rev = isset($revenues[$dateStr]) ? (int) $revenues[$dateStr]->total : 0;
+                $exp = isset($expenses[$dateStr]) ? (int) $expenses[$dateStr]->total : 0;
 
-            $currentDate->addDay();
-        }
+                $revenueData[] = $rev;
+                $expenseData[] = $exp;
+                $profitData[] = $rev - $exp;
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Pendapatan',
-                    'data' => $revenueData,
-                    'borderColor' => '#10b981',
-                    'backgroundColor' => 'transparent',
-                    'tension' => 0.4,
+                $currentDate->addDay();
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Pendapatan',
+                        'data' => $revenueData,
+                        'borderColor' => '#10b981',
+                        'backgroundColor' => 'transparent',
+                        'tension' => 0.4,
+                    ],
+                    [
+                        'label' => 'Pengeluaran',
+                        'data' => $expenseData,
+                        'borderColor' => '#ef4444',
+                        'backgroundColor' => 'transparent',
+                        'tension' => 0.4,
+                    ],
                 ],
-                [
-                    'label' => 'Pengeluaran',
-                    'data' => $expenseData,
-                    'borderColor' => '#ef4444',
-                    'backgroundColor' => 'transparent',
-                    'tension' => 0.4,
-                ],
-            ],
-            'profit' => $profitData,
-        ]);
+                'profit' => $profitData,
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -646,59 +708,65 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        // Revenue per hari
-        $revenues = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('DATE(created_at) as date, SUM(grand_total) as total')
-            ->groupBy('date')
-            ->get()
-            ->keyBy('date');
+        $cacheKey = "chart_profit_trend_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        // Expenses per hari
-        $expenses = Expense::where('outlet_id', $outletId)
-            ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-            ->where('amount', '>', 0)
-            ->selectRaw('expense_date as date, SUM(amount) as total')
-            ->groupBy('date')
-            ->get()
-            ->keyBy('date');
+        $data = Cache::tags(['sales', 'expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            // Revenue per hari
+            $revenues = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('DATE(created_at) as date, SUM(grand_total) as total')
+                ->groupBy('date')
+                ->get()
+                ->keyBy('date');
 
-        $labels = [];
-        $profitData = [];
-        $cumulativeData = [];
-        $cumulative = 0;
-        $currentDate = $startDate->copy();
+            // Expenses per hari
+            $expenses = Expense::where('outlet_id', $outletId)
+                ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                ->where('amount', '>', 0)
+                ->selectRaw('expense_date as date, SUM(amount) as total')
+                ->groupBy('date')
+                ->get()
+                ->keyBy('date');
 
-        while ($currentDate <= $endDate) {
-            $dateStr = $currentDate->format('Y-m-d');
-            $labels[] = $currentDate->format('d M');
+            $labels = [];
+            $profitData = [];
+            $cumulativeData = [];
+            $cumulative = 0;
+            $currentDate = $startDate->copy();
 
-            $rev = isset($revenues[$dateStr]) ? (int) $revenues[$dateStr]->total : 0;
-            $exp = isset($expenses[$dateStr]) ? (int) $expenses[$dateStr]->total : 0;
-            $profit = $rev - $exp;
+            while ($currentDate <= $endDate) {
+                $dateStr = $currentDate->format('Y-m-d');
+                $labels[] = $currentDate->format('d M');
 
-            $profitData[] = $profit;
-            $cumulative += $profit;
-            $cumulativeData[] = $cumulative;
+                $rev = isset($revenues[$dateStr]) ? (int) $revenues[$dateStr]->total : 0;
+                $exp = isset($expenses[$dateStr]) ? (int) $expenses[$dateStr]->total : 0;
+                $profit = $rev - $exp;
 
-            $currentDate->addDay();
-        }
+                $profitData[] = $profit;
+                $cumulative += $profit;
+                $cumulativeData[] = $cumulative;
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Profit Harian',
-                    'data' => $profitData,
-                    'borderColor' => '#10b981',
-                    'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
-                    'fill' => true,
-                    'tension' => 0.4,
+                $currentDate->addDay();
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Profit Harian',
+                        'data' => $profitData,
+                        'borderColor' => '#10b981',
+                        'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
+                        'fill' => true,
+                        'tension' => 0.4,
+                    ],
                 ],
-            ],
-            'cumulativeData' => $cumulativeData,
-        ]);
+                'cumulativeData' => $cumulativeData,
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -713,26 +781,32 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $expenses = Expense::with('category')
-            ->where('outlet_id', $outletId)
-            ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-            ->where('amount', '>', 0)
-            ->get()
-            ->groupBy(fn ($expense) => $expense->category->name ?? 'Lain-lain')
-            ->map(fn ($items) => $items->sum('amount'));
+        $cacheKey = "chart_expense_category_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $colors = ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6'];
+        $data = Cache::tags(['expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $expenses = Expense::with('category')
+                ->where('outlet_id', $outletId)
+                ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                ->where('amount', '>', 0)
+                ->get()
+                ->groupBy(fn ($expense) => $expense->category->name ?? 'Lain-lain')
+                ->map(fn ($items) => $items->sum('amount'));
 
-        return response()->json([
-            'labels' => $expenses->keys()->toArray(),
-            'datasets' => [
-                [
-                    'data' => $expenses->values()->toArray(),
-                    'backgroundColor' => array_slice($colors, 0, count($expenses)),
-                    'borderWidth' => 0,
+            $colors = ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6'];
+
+            return [
+                'labels' => $expenses->keys()->toArray(),
+                'datasets' => [
+                    [
+                        'data' => $expenses->values()->toArray(),
+                        'backgroundColor' => array_slice($colors, 0, count($expenses)),
+                        'borderWidth' => 0,
+                    ],
                 ],
-            ],
-        ]);
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -747,38 +821,44 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $cashierPerformance = Sale::with('cashier')
-            ->where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('cashier_id, SUM(grand_total) as total_revenue, COUNT(*) as total_transactions')
-            ->groupBy('cashier_id')
-            ->orderByDesc('total_revenue')
-            ->limit(10)
-            ->get();
+        $cacheKey = "chart_cashier_perf_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $labels = [];
-        $revenueData = [];
-        $transactionData = [];
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $cashierPerformance = Sale::with('cashier')
+                ->where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('cashier_id, SUM(grand_total) as total_revenue, COUNT(*) as total_transactions')
+                ->groupBy('cashier_id')
+                ->orderByDesc('total_revenue')
+                ->limit(10)
+                ->get();
 
-        foreach ($cashierPerformance as $perf) {
-            $labels[] = $perf->cashier->name ?? 'Unknown';
-            $revenueData[] = (int) $perf->total_revenue;
-            $transactionData[] = (int) $perf->total_transactions;
-        }
+            $labels = [];
+            $revenueData = [];
+            $transactionData = [];
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Pendapatan',
-                    'data' => $revenueData,
-                    'backgroundColor' => '#3b82f6',
-                    'borderRadius' => 6,
+            foreach ($cashierPerformance as $perf) {
+                $labels[] = $perf->cashier->name ?? 'Unknown';
+                $revenueData[] = (int) $perf->total_revenue;
+                $transactionData[] = (int) $perf->total_transactions;
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Pendapatan',
+                        'data' => $revenueData,
+                        'backgroundColor' => '#3b82f6',
+                        'borderRadius' => 6,
+                    ],
                 ],
-            ],
-            'transactionData' => $transactionData,
-        ]);
+                'transactionData' => $transactionData,
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -793,39 +873,45 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $topCustomers = Sale::with('customer')
-            ->where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->whereNotNull('customer_id')
-            ->selectRaw('customer_id, SUM(grand_total) as total_spent, COUNT(*) as total_transactions')
-            ->groupBy('customer_id')
-            ->orderByDesc('total_spent')
-            ->limit(10)
-            ->get();
+        $cacheKey = "chart_top_customers_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $labels = [];
-        $spentData = [];
-        $transactionData = [];
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $topCustomers = Sale::with('customer')
+                ->where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->whereNotNull('customer_id')
+                ->selectRaw('customer_id, SUM(grand_total) as total_spent, COUNT(*) as total_transactions')
+                ->groupBy('customer_id')
+                ->orderByDesc('total_spent')
+                ->limit(10)
+                ->get();
 
-        foreach ($topCustomers as $customer) {
-            $labels[] = $customer->customer->name ?? 'Unknown';
-            $spentData[] = (int) $customer->total_spent;
-            $transactionData[] = (int) $customer->total_transactions;
-        }
+            $labels = [];
+            $spentData = [];
+            $transactionData = [];
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Total Pembelian',
-                    'data' => $spentData,
-                    'backgroundColor' => '#f59e0b',
-                    'borderRadius' => 6,
+            foreach ($topCustomers as $customer) {
+                $labels[] = $customer->customer->name ?? 'Unknown';
+                $spentData[] = (int) $customer->total_spent;
+                $transactionData[] = (int) $customer->total_transactions;
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Total Pembelian',
+                        'data' => $spentData,
+                        'backgroundColor' => '#f59e0b',
+                        'borderRadius' => 6,
+                    ],
                 ],
-            ],
-            'transactionData' => $transactionData,
-        ]);
+                'transactionData' => $transactionData,
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -838,40 +924,45 @@ class StatisticsController extends Controller
         }
 
         $outletId = auth()->user()->outlet_id;
+        $cacheKey = "chart_stock_status_{$outletId}";
 
-        $products = Product::where('outlet_id', $outletId)
-            ->where('is_active', true)
-            ->where('track_stock', true)
-            ->with(['stocks' => fn ($q) => $q->where('outlet_id', $outletId)])
-            ->get();
+        $data = Cache::tags(['products', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId) {
+            $products = Product::where('outlet_id', $outletId)
+                ->where('is_active', true)
+                ->where('track_stock', true)
+                ->with(['stocks' => fn ($q) => $q->where('outlet_id', $outletId)])
+                ->get();
 
-        $lowStock = 0;
-        $normalStock = 0;
-        $outOfStock = 0;
+            $lowStock = 0;
+            $normalStock = 0;
+            $outOfStock = 0;
 
-        foreach ($products as $product) {
-            $stock = $product->stocks->first();
-            $qty = $stock ? $stock->quantity : 0;
+            foreach ($products as $product) {
+                $stock = $product->stocks->first();
+                $qty = $stock ? $stock->quantity : 0;
 
-            if ($qty <= 0) {
-                $outOfStock++;
-            } elseif ($qty <= $product->min_stock) {
-                $lowStock++;
-            } else {
-                $normalStock++;
+                if ($qty <= 0) {
+                    $outOfStock++;
+                } elseif ($qty <= $product->min_stock) {
+                    $lowStock++;
+                } else {
+                    $normalStock++;
+                }
             }
-        }
 
-        return response()->json([
-            'labels' => ['Aman', 'Stok Rendah', 'Habis'],
-            'datasets' => [
-                [
-                    'data' => [$normalStock, $lowStock, $outOfStock],
-                    'backgroundColor' => ['#10b981', '#f59e0b', '#ef4444'],
-                    'borderWidth' => 0,
+            return [
+                'labels' => ['Aman', 'Stok Rendah', 'Habis'],
+                'datasets' => [
+                    [
+                        'data' => [$normalStock, $lowStock, $outOfStock],
+                        'backgroundColor' => ['#10b981', '#f59e0b', '#ef4444'],
+                        'borderWidth' => 0,
+                    ],
                 ],
-            ],
-        ]);
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -886,54 +977,60 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $movements = StockMovement::where('outlet_id', $outletId)
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->selectRaw('DATE(created_at) as date, type, SUM(ABS(quantity)) as total_qty')
-            ->groupBy('date', 'type')
-            ->orderBy('date')
-            ->get();
+        $cacheKey = "chart_stock_movement_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $labels = [];
-        $inData = [];
-        $outData = [];
-        $currentDate = $startDate->copy();
-        $movementsByDate = $movements->groupBy('date');
+        $data = Cache::tags(['products', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $movements = StockMovement::where('outlet_id', $outletId)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('DATE(created_at) as date, type, SUM(ABS(quantity)) as total_qty')
+                ->groupBy('date', 'type')
+                ->orderBy('date')
+                ->get();
 
-        while ($currentDate <= $endDate) {
-            $dateStr = $currentDate->format('Y-m-d');
-            $labels[] = $currentDate->format('d M');
+            $labels = [];
+            $inData = [];
+            $outData = [];
+            $currentDate = $startDate->copy();
+            $movementsByDate = $movements->groupBy('date');
 
-            $dayMovements = $movementsByDate->get($dateStr, collect());
-            $inQty = $dayMovements->whereIn('type', ['in', 'production', 'return'])->sum('total_qty');
-            $outQty = $dayMovements->whereIn('type', ['out', 'sale', 'adjustment'])->sum('total_qty');
+            while ($currentDate <= $endDate) {
+                $dateStr = $currentDate->format('Y-m-d');
+                $labels[] = $currentDate->format('d M');
 
-            $inData[] = (int) $inQty;
-            $outData[] = (int) $outQty;
+                $dayMovements = $movementsByDate->get($dateStr, collect());
+                $inQty = $dayMovements->whereIn('type', ['in', 'production', 'return'])->sum('total_qty');
+                $outQty = $dayMovements->whereIn('type', ['out', 'sale', 'adjustment'])->sum('total_qty');
 
-            $currentDate->addDay();
-        }
+                $inData[] = (int) $inQty;
+                $outData[] = (int) $outQty;
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Stok Masuk',
-                    'data' => $inData,
-                    'borderColor' => '#10b981',
-                    'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
-                    'fill' => true,
-                    'tension' => 0.4,
+                $currentDate->addDay();
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Stok Masuk',
+                        'data' => $inData,
+                        'borderColor' => '#10b981',
+                        'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
+                        'fill' => true,
+                        'tension' => 0.4,
+                    ],
+                    [
+                        'label' => 'Stok Keluar',
+                        'data' => $outData,
+                        'borderColor' => '#ef4444',
+                        'backgroundColor' => 'rgba(239, 68, 68, 0.1)',
+                        'fill' => true,
+                        'tension' => 0.4,
+                    ],
                 ],
-                [
-                    'label' => 'Stok Keluar',
-                    'data' => $outData,
-                    'borderColor' => '#ef4444',
-                    'backgroundColor' => 'rgba(239, 68, 68, 0.1)',
-                    'fill' => true,
-                    'tension' => 0.4,
-                ],
-            ],
-        ]);
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -948,40 +1045,46 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $discounts = Sale::where('outlet_id', $outletId)
-            ->completed()
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('discount_amount', '>', 0)
-            ->selectRaw('DATE(created_at) as date, SUM(discount_amount) as total_discount, COUNT(*) as count')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get()
-            ->keyBy('date');
+        $cacheKey = "chart_discount_usage_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $labels = [];
-        $discountData = [];
-        $currentDate = $startDate->copy();
+        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $discounts = Sale::where('outlet_id', $outletId)
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->where('discount_amount', '>', 0)
+                ->selectRaw('DATE(created_at) as date, SUM(discount_amount) as total_discount, COUNT(*) as count')
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get()
+                ->keyBy('date');
 
-        while ($currentDate <= $endDate) {
-            $dateStr = $currentDate->format('Y-m-d');
-            $labels[] = $currentDate->format('d M');
-            $discountData[] = isset($discounts[$dateStr]) ? (int) $discounts[$dateStr]->total_discount : 0;
-            $currentDate->addDay();
-        }
+            $labels = [];
+            $discountData = [];
+            $currentDate = $startDate->copy();
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Total Diskon',
-                    'data' => $discountData,
-                    'borderColor' => '#f59e0b',
-                    'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
-                    'fill' => true,
-                    'tension' => 0.4,
+            while ($currentDate <= $endDate) {
+                $dateStr = $currentDate->format('Y-m-d');
+                $labels[] = $currentDate->format('d M');
+                $discountData[] = isset($discounts[$dateStr]) ? (int) $discounts[$dateStr]->total_discount : 0;
+                $currentDate->addDay();
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Total Diskon',
+                        'data' => $discountData,
+                        'borderColor' => '#f59e0b',
+                        'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
+                        'fill' => true,
+                        'tension' => 0.4,
+                    ],
                 ],
-            ],
-        ]);
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -996,38 +1099,44 @@ class StatisticsController extends Controller
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
 
-        $purchases = Purchase::where('outlet_id', $outletId)
-            ->whereBetween('purchase_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-            ->selectRaw('purchase_date as date, SUM(grand_total) as total, COUNT(*) as count')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get()
-            ->keyBy('date');
+        $cacheKey = "chart_purchase_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
 
-        $labels = [];
-        $purchaseData = [];
-        $currentDate = $startDate->copy();
+        $data = Cache::tags(['purchases', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+            $purchases = Purchase::where('outlet_id', $outletId)
+                ->whereBetween('purchase_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                ->selectRaw('purchase_date as date, SUM(grand_total) as total, COUNT(*) as count')
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get()
+                ->keyBy('date');
 
-        while ($currentDate <= $endDate) {
-            $dateStr = $currentDate->format('Y-m-d');
-            $labels[] = $currentDate->format('d M');
-            $purchaseData[] = isset($purchases[$dateStr]) ? (int) $purchases[$dateStr]->total : 0;
-            $currentDate->addDay();
-        }
+            $labels = [];
+            $purchaseData = [];
+            $currentDate = $startDate->copy();
 
-        return response()->json([
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Pembelian',
-                    'data' => $purchaseData,
-                    'borderColor' => '#8b5cf6',
-                    'backgroundColor' => 'rgba(139, 92, 246, 0.1)',
-                    'fill' => true,
-                    'tension' => 0.4,
+            while ($currentDate <= $endDate) {
+                $dateStr = $currentDate->format('Y-m-d');
+                $labels[] = $currentDate->format('d M');
+                $purchaseData[] = isset($purchases[$dateStr]) ? (int) $purchases[$dateStr]->total : 0;
+                $currentDate->addDay();
+            }
+
+            return [
+                'labels' => $labels,
+                'datasets' => [
+                    [
+                        'label' => 'Pembelian',
+                        'data' => $purchaseData,
+                        'borderColor' => '#8b5cf6',
+                        'backgroundColor' => 'rgba(139, 92, 246, 0.1)',
+                        'fill' => true,
+                        'tension' => 0.4,
+                    ],
                 ],
-            ],
-        ]);
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**

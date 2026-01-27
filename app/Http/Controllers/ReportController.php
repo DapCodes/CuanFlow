@@ -17,6 +17,7 @@ use App\Models\StockMovement;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -37,7 +38,11 @@ class ReportController extends Controller
         $start = $dates['start'];
         $end = $dates['end'];
 
-        $data = $this->getReportData($start, $end, $outletId);
+        $cacheKey = "report_data_{$outletId}_".auth()->id()."_{$period}_".($startDate ?? 'none').'_'.($endDate ?? 'none');
+
+        $data = Cache::tags(['sales', 'expenses', 'purchases', 'products', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($start, $end, $outletId) {
+            return $this->getReportData($start, $end, $outletId);
+        });
 
         return view('main.reports.index', array_merge($data, [
             'period' => $period,
@@ -61,7 +66,11 @@ class ReportController extends Controller
         $start = $dates['start'];
         $end = $dates['end'];
 
-        $data = $this->getReportData($start, $end, $outletId);
+        $cacheKey = "report_ajax_{$outletId}_".auth()->id()."_{$period}_".($startDate ?? 'none').'_'.($endDate ?? 'none');
+
+        $data = Cache::tags(['sales', 'expenses', 'purchases', 'products', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($start, $end, $outletId) {
+            return $this->getReportData($start, $end, $outletId);
+        });
 
         return response()->json($data);
     }

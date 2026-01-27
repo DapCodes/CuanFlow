@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends Controller
@@ -94,6 +95,8 @@ class ExpenseController extends Controller
             'approved_by' => $isOwner ? auth()->id() : null,
         ]);
 
+        Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
+
         $message = ucfirst($type).' berhasil ditambahkan';
         if (! $isOwner) {
             $message .= ' dan menunggu persetujuan.';
@@ -170,6 +173,8 @@ class ExpenseController extends Controller
             'receipt_image' => $validated['receipt_image'] ?? $expense->receipt_image,
         ]);
 
+        Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
+
         return redirect()->route('expenses.index', ['type' => $expense->type])->with('success', 'Data berhasil diperbarui');
     }
 
@@ -190,6 +195,8 @@ class ExpenseController extends Controller
 
         $expense->delete();
 
+        Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
+
         return redirect()->route('expenses.index', ['type' => $expense->type])->with('success', 'Data berhasil dihapus');
     }
 
@@ -205,6 +212,8 @@ class ExpenseController extends Controller
             'approved_by' => auth()->id(),
         ]);
 
+        Cache::tags(['sales', 'outlet_'.$expense->outlet_id])->flush();
+
         return back()->with('success', 'Transaksi berhasil disetujui');
     }
 
@@ -219,6 +228,8 @@ class ExpenseController extends Controller
             'status' => 'rejected',
             'approved_by' => auth()->id(), // Record who rejected it
         ]);
+
+        Cache::tags(['sales', 'outlet_'.$expense->outlet_id])->flush();
 
         return back()->with('success', 'Transaksi ditolak');
     }
