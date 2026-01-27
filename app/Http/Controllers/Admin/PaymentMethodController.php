@@ -5,25 +5,25 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PaymentMethodController extends Controller
 {
     public function index(Request $request)
     {
         $query = PaymentMethod::withCount('outletPaymentLinks');
-        
+
         // Search
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('code', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('code', 'like', '%'.$request->search.'%');
             });
         }
-        
+
         $paymentMethods = $query->orderBy('name')->paginate(15);
-        
+
         return view('admin.master.payment-methods.index', compact('paymentMethods'));
     }
 
@@ -60,6 +60,7 @@ class PaymentMethodController extends Controller
     public function show(PaymentMethod $paymentMethod)
     {
         $paymentMethod->load(['outletPaymentLinks.outlet']);
+
         return view('admin.master.payment-methods.show', compact('paymentMethod'));
     }
 
@@ -72,7 +73,7 @@ class PaymentMethodController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:50', 'unique:payment_methods,code,' . $paymentMethod->id],
+            'code' => ['required', 'string', 'max:50', 'unique:payment_methods,code,'.$paymentMethod->id],
             'icon' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp', 'max:2048'],
             'is_active' => ['boolean'],
         ]);
@@ -118,7 +119,7 @@ class PaymentMethodController extends Controller
 
     public function toggleStatus(PaymentMethod $paymentMethod)
     {
-        $paymentMethod->update(['is_active' => !$paymentMethod->is_active]);
+        $paymentMethod->update(['is_active' => ! $paymentMethod->is_active]);
 
         return redirect()->route('admin.payment-methods.index')
             ->with('success', 'Status metode pembayaran berhasil diubah.');

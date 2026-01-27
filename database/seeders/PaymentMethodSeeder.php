@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\PaymentMethod;
+use Illuminate\Database\Seeder;
 
 class PaymentMethodSeeder extends Seeder
 {
@@ -26,7 +26,7 @@ class PaymentMethodSeeder extends Seeder
 
         foreach ($methods as $method) {
             PaymentMethod::firstOrCreate(
-                ['code' => $method['code']], 
+                ['code' => $method['code']],
                 array_merge($method, ['is_active' => true])
             );
         }

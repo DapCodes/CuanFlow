@@ -27,7 +27,7 @@ return new class extends Migration
         Schema::table('permissions', function (Blueprint $table) {
             $table->unsignedBigInteger('permission_category_id')->nullable()->after('guard_name');
             $table->string('description')->nullable()->after('permission_category_id');
-            
+
             $table->foreign('permission_category_id')
                 ->references('id')
                 ->on('permission_categories')

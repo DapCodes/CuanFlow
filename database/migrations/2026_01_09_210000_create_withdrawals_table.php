@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignId('processed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'status']);
             $table->index(['outlet_id', 'created_at']);
             $table->index('status');

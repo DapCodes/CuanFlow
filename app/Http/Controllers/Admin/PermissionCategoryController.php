@@ -14,7 +14,7 @@ class PermissionCategoryController extends Controller
         $categories = PermissionCategory::withCount('permissions')
             ->orderBy('name')
             ->paginate(15);
-            
+
         return view('admin.master.permission-categories.index', compact('categories'));
     }
 
@@ -48,7 +48,7 @@ class PermissionCategoryController extends Controller
     public function update(Request $request, PermissionCategory $permissionCategory)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:permission_categories,name,' . $permissionCategory->id],
+            'name' => ['required', 'string', 'max:255', 'unique:permission_categories,name,'.$permissionCategory->id],
             'description' => ['nullable', 'string'],
         ]);
 

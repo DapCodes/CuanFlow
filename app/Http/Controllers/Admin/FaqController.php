@@ -25,7 +25,7 @@ class FaqController extends Controller implements HasMiddleware
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('question', 'like', "%{$search}%")
-                  ->orWhere('answer', 'like', "%{$search}%");
+                    ->orWhere('answer', 'like', "%{$search}%");
             });
         }
 
@@ -92,13 +92,15 @@ class FaqController extends Controller implements HasMiddleware
     public function destroy(Faq $faq)
     {
         $faq->delete();
+
         return redirect()->route('admin.faqs.index')->with('success', 'FAQ berhasil dihapus.');
     }
 
     public function toggleStatus(Faq $faq)
     {
-        $faq->update(['is_active' => !$faq->is_active]);
+        $faq->update(['is_active' => ! $faq->is_active]);
         $status = $faq->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
         return redirect()->route('admin.faqs.index')->with('success', "FAQ berhasil {$status}.");
     }
 }

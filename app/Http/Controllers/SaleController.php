@@ -15,7 +15,7 @@ class SaleController extends Controller
 {
     public function index(Request $request)
     {
-        if (!auth()->user()->can('lihat penjualan')) {
+        if (! auth()->user()->can('lihat penjualan')) {
             abort(403, 'Anda tidak memiliki izin untuk melihat daftar penjualan');
         }
 
@@ -33,7 +33,7 @@ class SaleController extends Controller
             ->completed()
             ->whereBetween('created_at', [$startOfDay, $endOfDay]);
 
-        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
+        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
             $salesQuery->where('cashier_id', auth()->id());
         }
 
@@ -42,15 +42,15 @@ class SaleController extends Controller
             ->get();
 
         $totalTransactions = $sales->count();
-        
+
         $refundQuery = Sale::where('outlet_id', $outletId)
             ->where('status', 'refunded')
             ->whereBetween('created_at', [$startOfDay, $endOfDay]);
-        
-        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
+
+        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
             $refundQuery->where('cashier_id', auth()->id());
         }
-        
+
         $totalRefunds = $refundQuery->sum('grand_total');
 
         // Calculate payment method totals
@@ -72,13 +72,13 @@ class SaleController extends Controller
 
         // Get all-time summary (if no date selected or for comparison)
         $allTimeRevenueQuery = Sale::where('outlet_id', $outletId)->completed();
-        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
+        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
             $allTimeRevenueQuery->where('cashier_id', auth()->id());
         }
         $allTimeRevenue = $allTimeRevenueQuery->sum('grand_total');
 
         $allTimeProfitQuery = Sale::where('outlet_id', $outletId)->completed();
-        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
+        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
             $allTimeProfitQuery->where('cashier_id', auth()->id());
         }
         $allTimeProfit = $allTimeProfitQuery->get()->sum(fn ($s) => $s->getTotalProfit());
@@ -235,162 +235,162 @@ class SaleController extends Controller
         return $prefix.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 
-public function daily(Request $request): JsonResponse
-{
-    if (!auth()->user()->can('lihat penjualan harian')) {
-        return response()->json(['success' => false, 'message' => 'Anda tidak memiliki izin untuk melihat ringkasan harian'], 403);
-    }
-
-    $request->validate(['date' => 'required|date']);
-    $outletId = auth()->user()->outlet_id;
-
-    $selectedDate = Carbon::parse($request->date)->format('Y-m-d');
-    $highlightId = null;
-
-    // Search Logic: If search is provided, find the FIRST matching invoice globally
-    // If found, switch the selectedDate to that invoice's date
-    if ($request->search) {
-        $foundSale = Sale::where('outlet_id', $outletId)
-            ->where('invoice_number', 'like', '%' . $request->search . '%')
-            ->completed()
-            ->latest()
-            ->first();
-
-        if ($foundSale) {
-            $selectedDate = $foundSale->created_at->format('Y-m-d');
-            $highlightId = $foundSale->id;
+    public function daily(Request $request): JsonResponse
+    {
+        if (! auth()->user()->can('lihat penjualan harian')) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak memiliki izin untuk melihat ringkasan harian'], 403);
         }
-    }
 
-    $startOfDay = Carbon::parse($selectedDate)->startOfDay();
-    $endOfDay = Carbon::parse($selectedDate)->endOfDay();
+        $request->validate(['date' => 'required|date']);
+        $outletId = auth()->user()->outlet_id;
 
-    $salesQuery = Sale::where('outlet_id', $outletId)
-        ->completed()
-        ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+        $selectedDate = Carbon::parse($request->date)->format('Y-m-d');
+        $highlightId = null;
 
-        if (!auth()->user()->can('lihat semua penjualan') && !auth()->user()->hasRole('kasir')) {
+        // Search Logic: If search is provided, find the FIRST matching invoice globally
+        // If found, switch the selectedDate to that invoice's date
+        if ($request->search) {
+            $foundSale = Sale::where('outlet_id', $outletId)
+                ->where('invoice_number', 'like', '%'.$request->search.'%')
+                ->completed()
+                ->latest()
+                ->first();
+
+            if ($foundSale) {
+                $selectedDate = $foundSale->created_at->format('Y-m-d');
+                $highlightId = $foundSale->id;
+            }
+        }
+
+        $startOfDay = Carbon::parse($selectedDate)->startOfDay();
+        $endOfDay = Carbon::parse($selectedDate)->endOfDay();
+
+        $salesQuery = Sale::where('outlet_id', $outletId)
+            ->completed()
+            ->whereBetween('created_at', [$startOfDay, $endOfDay]);
+
+        if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
             $salesQuery->where('cashier_id', auth()->id());
         }
 
-    $sales = $salesQuery->with(['cashier', 'customer', 'debt']) // ✅ Tambahkan 'debt' di sini
-        ->orderBy('created_at', 'desc')
-        ->get();
+        $sales = $salesQuery->with(['cashier', 'customer', 'debt']) // ✅ Tambahkan 'debt' di sini
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
-    $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
-    $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
-    
-    // ✅ Hitung total debt dan yang sudah terbayar
-    $debtSales = $sales->where('payment_method', 'debt');
-    $debtTotal = $debtSales->sum('grand_total');
-    $debtPaid = $debtSales->sum('paid_amount');
-    
-    $totalRevenue = $sales->sum('grand_total');
+        $cashTotal = $sales->where('payment_method', 'cash')->sum('grand_total');
+        $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
+        $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
 
-    $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
-    $dailyExpenses = Expense::where('outlet_id', $outletId)
-        ->whereBetween('expense_date', [$startOfDay, $endOfDay])
-        ->where('amount', '>', 0)
-        ->sum('amount');
+        // ✅ Hitung total debt dan yang sudah terbayar
+        $debtSales = $sales->where('payment_method', 'debt');
+        $debtTotal = $debtSales->sum('grand_total');
+        $debtPaid = $debtSales->sum('paid_amount');
 
-    $dailyNetIncome = $totalRevenue - $dailyExpenses;
-    $dailyTotalDiscount = $sales->sum('discount_amount');
+        $totalRevenue = $sales->sum('grand_total');
 
-    // Get total refunds for the selected date
-    $totalRefunds = Sale::where('outlet_id', $outletId)
-        ->where('status', 'refunded')
-        ->whereBetween('created_at', [$startOfDay, $endOfDay])
-        ->sum('grand_total');
+        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+        $dailyExpenses = Expense::where('outlet_id', $outletId)
+            ->whereBetween('expense_date', [$startOfDay, $endOfDay])
+            ->where('amount', '>', 0)
+            ->sum('amount');
 
-    return response()->json([
-        'selectedDate' => $selectedDate,
-        'highlightId' => $highlightId,
-        'sales' => $sales->map(fn ($s) => [
-            'id' => $s->id,
-            'invoice_number' => $s->invoice_number,
-            'time' => $s->created_at->format('H:i'),
-            'customer_name' => $s->customer?->name, // ✅ Tambahkan customer_name
-            'cashier' => $s->cashier?->name,
-            'payment_method' => $s->payment_method,
-            'grand_total' => (int) $s->grand_total,
-            'status' => $s->status,
-            'total_discount' => (int) $s->discount_amount,
-            // ✅ Tambahkan info debt jika ada
-            'paid_amount' => $s->payment_method === 'debt' ? (int) $s->paid_amount : null,
-            'remaining_amount' => $s->payment_method === 'debt' && $s->debt 
-                ? (int) $s->debt->remaining_amount 
-                : null,
-        ]),
-        'totals' => [
-            'cash' => (int) $cashTotal,
-            'qris' => (int) $qrisTotal,
-            'transfer' => (int) $transferTotal,
-            'debt' => (int) $debtTotal, // ✅ Tambahkan total debt
-            'debt_paid' => (int) $debtPaid, // ✅ Tambahkan debt terbayar
-            'revenue' => (int) $totalRevenue,
-        ],
-        'summary' => [
-            'revenue' => (int) $totalRevenue,
-            'transactions' => $sales->count(),
-            'profit' => (int) $dailyProfit,
-            'expenses' => (int) $dailyExpenses,
-            'discount' => (int) $dailyTotalDiscount,
-            'refunds' => (int) $totalRefunds,
-        ],
-    ]);
-}
+        $dailyNetIncome = $totalRevenue - $dailyExpenses;
+        $dailyTotalDiscount = $sales->sum('discount_amount');
 
-public function showJson(Sale $sale)
-{
-    if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
-        abort(403, 'Akses ditolak');
+        // Get total refunds for the selected date
+        $totalRefunds = Sale::where('outlet_id', $outletId)
+            ->where('status', 'refunded')
+            ->whereBetween('created_at', [$startOfDay, $endOfDay])
+            ->sum('grand_total');
+
+        return response()->json([
+            'selectedDate' => $selectedDate,
+            'highlightId' => $highlightId,
+            'sales' => $sales->map(fn ($s) => [
+                'id' => $s->id,
+                'invoice_number' => $s->invoice_number,
+                'time' => $s->created_at->format('H:i'),
+                'customer_name' => $s->customer?->name, // ✅ Tambahkan customer_name
+                'cashier' => $s->cashier?->name,
+                'payment_method' => $s->payment_method,
+                'grand_total' => (int) $s->grand_total,
+                'status' => $s->status,
+                'total_discount' => (int) $s->discount_amount,
+                // ✅ Tambahkan info debt jika ada
+                'paid_amount' => $s->payment_method === 'debt' ? (int) $s->paid_amount : null,
+                'remaining_amount' => $s->payment_method === 'debt' && $s->debt
+                    ? (int) $s->debt->remaining_amount
+                    : null,
+            ]),
+            'totals' => [
+                'cash' => (int) $cashTotal,
+                'qris' => (int) $qrisTotal,
+                'transfer' => (int) $transferTotal,
+                'debt' => (int) $debtTotal, // ✅ Tambahkan total debt
+                'debt_paid' => (int) $debtPaid, // ✅ Tambahkan debt terbayar
+                'revenue' => (int) $totalRevenue,
+            ],
+            'summary' => [
+                'revenue' => (int) $totalRevenue,
+                'transactions' => $sales->count(),
+                'profit' => (int) $dailyProfit,
+                'expenses' => (int) $dailyExpenses,
+                'discount' => (int) $dailyTotalDiscount,
+                'refunds' => (int) $totalRefunds,
+            ],
+        ]);
     }
 
-    $sale->load(['items.product', 'customer', 'cashier', 'payments', 'debt']); // ✅ Tambahkan 'debt'
+    public function showJson(Sale $sale)
+    {
+        if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
+            abort(403, 'Akses ditolak');
+        }
 
-    return response()->json([
-        'id' => $sale->id,
-        'invoice_number' => $sale->invoice_number,
-        'created_at' => $sale->created_at->format('d/m/Y H:i'), // ✅ Format lebih friendly
-        'cashier_name' => $sale->cashier->name ?? '-',
-        'customer_name' => $sale->customer->name ?? 'Umum', // ✅ Ubah dari 'Guest'
-        'customer_id' => $sale->customer_id,
-        'customer' => $sale->customer ? [
-            'name' => $sale->customer->name,
-            'phone' => $sale->customer->phone,
-            'address' => $sale->customer->address,
-        ] : null,
-        'subtotal' => (int) $sale->subtotal,
-        'tax' => (int) $sale->tax_amount, // ✅ Perbaiki dari 'tax' ke 'tax_amount'
-        'total_discount' => (int) $sale->discount_amount, // ✅ Perbaiki dari 'total_discount'
-        'grand_total' => (int) $sale->grand_total,
-        'payment_method' => $sale->payment_method,
-        'paid_amount' => (int) $sale->paid_amount,
-        'change_amount' => (int) $sale->change_amount,
-        'items' => $sale->items->map(function ($item) {
-            return [
-                'product_name' => $item->product_name, // ✅ Gunakan product_name langsung dari sale_items
-                'quantity' => $item->quantity,
-                'price' => (int) $item->price,
-                'discount_amount' => (int) ($item->discount_amount ?? 0), // ✅ Tambahkan discount per item
-                'subtotal' => (int) $item->subtotal,
-            ];
-        })->values(),
-        // ✅ Tambahkan info debt jika ada
-        'debt' => $sale->debt ? [
-            'amount' => (int) $sale->debt->amount,
-            'paid_amount' => (int) $sale->debt->paid_amount,
-            'remaining_amount' => (int) $sale->debt->remaining_amount,
-            'due_date' => $sale->debt->due_date?->format('d/m/Y'),
-            'status' => $sale->debt->status,
-        ] : null,
-    ]);
-}
+        $sale->load(['items.product', 'customer', 'cashier', 'payments', 'debt']); // ✅ Tambahkan 'debt'
+
+        return response()->json([
+            'id' => $sale->id,
+            'invoice_number' => $sale->invoice_number,
+            'created_at' => $sale->created_at->format('d/m/Y H:i'), // ✅ Format lebih friendly
+            'cashier_name' => $sale->cashier->name ?? '-',
+            'customer_name' => $sale->customer->name ?? 'Umum', // ✅ Ubah dari 'Guest'
+            'customer_id' => $sale->customer_id,
+            'customer' => $sale->customer ? [
+                'name' => $sale->customer->name,
+                'phone' => $sale->customer->phone,
+                'address' => $sale->customer->address,
+            ] : null,
+            'subtotal' => (int) $sale->subtotal,
+            'tax' => (int) $sale->tax_amount, // ✅ Perbaiki dari 'tax' ke 'tax_amount'
+            'total_discount' => (int) $sale->discount_amount, // ✅ Perbaiki dari 'total_discount'
+            'grand_total' => (int) $sale->grand_total,
+            'payment_method' => $sale->payment_method,
+            'paid_amount' => (int) $sale->paid_amount,
+            'change_amount' => (int) $sale->change_amount,
+            'items' => $sale->items->map(function ($item) {
+                return [
+                    'product_name' => $item->product_name, // ✅ Gunakan product_name langsung dari sale_items
+                    'quantity' => $item->quantity,
+                    'price' => (int) $item->price,
+                    'discount_amount' => (int) ($item->discount_amount ?? 0), // ✅ Tambahkan discount per item
+                    'subtotal' => (int) $item->subtotal,
+                ];
+            })->values(),
+            // ✅ Tambahkan info debt jika ada
+            'debt' => $sale->debt ? [
+                'amount' => (int) $sale->debt->amount,
+                'paid_amount' => (int) $sale->debt->paid_amount,
+                'remaining_amount' => (int) $sale->debt->remaining_amount,
+                'due_date' => $sale->debt->due_date?->format('d/m/Y'),
+                'status' => $sale->debt->status,
+            ] : null,
+        ]);
+    }
 
     public function refund(Sale $sale)
     {
-        if (!auth()->user()->can('refund penjualan')) {
+        if (! auth()->user()->can('refund penjualan')) {
             return response()->json(['success' => false, 'message' => 'Anda tidak memiliki izin untuk melakukan refund'], 403);
         }
 
@@ -420,29 +420,30 @@ public function showJson(Sale $sale)
             if ($sale->notes) {
                 try {
                     $notes = json_decode($sale->notes, true);
-                    
+
                     // Logic to calculate amount to decrement (similar to safeIncrement in PaymentController)
                     $usageCounts = [];
-                    
+
                     if (isset($notes['discount_plan'])) {
                         $plan = $notes['discount_plan'];
-                        
+
                         // 1. Analyze Multi/Appled Discounts
                         if (isset($plan['applied_discounts']) && is_array($plan['applied_discounts'])) {
                             foreach ($plan['applied_discounts'] as $applied) {
                                 $dId = $applied['id'] ?? null;
-                                if (!$dId) continue;
-                                
+                                if (! $dId) {
+                                    continue;
+                                }
+
                                 $count = 0;
-                                if (isset($applied['usage_count']) && (float)$applied['usage_count'] > 0) {
-                                    $count = (float)$applied['usage_count'];
-                                } 
-                                else if (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
+                                if (isset($applied['usage_count']) && (float) $applied['usage_count'] > 0) {
+                                    $count = (float) $applied['usage_count'];
+                                } elseif (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
                                     if (isset($applied['free_items'])) {
                                         $count = collect($applied['free_items'])->sum('free_qty');
                                     }
                                     if ($count == 0 && isset($applied['quota'])) {
-                                         $count = $applied['quota'];
+                                        $count = $applied['quota'];
                                     }
                                 } else {
                                     // Count affected items from Sale Items
@@ -453,38 +454,40 @@ public function showJson(Sale $sale)
                                         $count = 1; // Fallback
                                     }
                                 }
-                                
-                                if (!isset($usageCounts[$dId])) $usageCounts[$dId] = 0;
+
+                                if (! isset($usageCounts[$dId])) {
+                                    $usageCounts[$dId] = 0;
+                                }
                                 $usageCounts[$dId] += ($count > 0 ? $count : 1);
                             }
                         }
-                         // 2. Fallback Simple
+                        // 2. Fallback Simple
                         elseif (isset($plan['discount_id'])) {
-                             $dId = $plan['discount_id'];
-                             
-                             // PRIORITAS: Hubungkan dengan usage_count jika ada di level plan
-                             if (isset($plan['usage_count']) && (float)$plan['usage_count'] > 0) {
-                                 $count = (float)$plan['usage_count'];
-                             } else {
+                            $dId = $plan['discount_id'];
+
+                            // PRIORITAS: Hubungkan dengan usage_count jika ada di level plan
+                            if (isset($plan['usage_count']) && (float) $plan['usage_count'] > 0) {
+                                $count = (float) $plan['usage_count'];
+                            } else {
                                 $count = 1;
                                 if (isset($plan['affected_items'])) {
-                                   $affectedPids = collect($plan['affected_items'])->pluck('product_id')->toArray();
-                                   $count = $sale->items->whereIn('product_id', $affectedPids)->sum('quantity');
+                                    $affectedPids = collect($plan['affected_items'])->pluck('product_id')->toArray();
+                                    $count = $sale->items->whereIn('product_id', $affectedPids)->sum('quantity');
                                 }
-                             }
-                             $usageCounts[$dId] = ($count > 0 ? $count : 1);
+                            }
+                            $usageCounts[$dId] = ($count > 0 ? $count : 1);
                         }
-                    } 
+                    }
                     // 3. Fallback Legacy
                     elseif (isset($notes['discount_id'])) {
                         $usageCounts[$notes['discount_id']] = 1;
                     }
-                    
+
                     // Execute Decrements
                     foreach ($usageCounts as $dId => $amount) {
                         $discount = \App\Models\Discount::find($dId);
                         if ($discount) {
-                            $discount->decrementUsage((int)$amount);
+                            $discount->decrementUsage((int) $amount);
                         }
                     }
 
@@ -508,7 +511,7 @@ public function showJson(Sale $sale)
 
     public function show(Sale $sale)
     {
-        if (!auth()->user()->can('lihat detail penjualan')) {
+        if (! auth()->user()->can('lihat detail penjualan')) {
             abort(403, 'Anda tidak memiliki izin untuk melihat detail penjualan');
         }
 
@@ -527,7 +530,7 @@ public function showJson(Sale $sale)
      */
     public function printReceipt(Sale $sale)
     {
-        if (!auth()->user()->can('cetak struk penjualan') && !auth()->user()->can('cetak ulang struk')) {
+        if (! auth()->user()->can('cetak struk penjualan') && ! auth()->user()->can('cetak ulang struk')) {
             abort(403, 'Anda tidak memiliki izin untuk mencetak struk penjualan');
         }
 
@@ -540,5 +543,4 @@ public function showJson(Sale $sale)
 
         return view('sales.receipt', compact('sale'));
     }
-
 }

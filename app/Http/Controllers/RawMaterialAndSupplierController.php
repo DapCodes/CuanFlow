@@ -3,19 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
 use App\Models\RawMaterial;
 use App\Models\StockMovement;
 use App\Models\Supplier;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use App\Models\Expense;
-use App\Models\ExpenseCategory;
-use App\Models\Purchase;
-use App\Models\PurchaseItem;
-use Illuminate\Support\Facades\DB;
 
 class RawMaterialAndSupplierController extends Controller
 {
@@ -24,7 +24,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function indexRawMaterial(Request $request)
     {
-        if (!auth()->user()->can('lihat bahan baku')) {
+        if (! auth()->user()->can('lihat bahan baku')) {
             abort(403);
         }
         $query = RawMaterial::where('outlet_id', Auth::user()->outlet_id)
@@ -72,7 +72,7 @@ class RawMaterialAndSupplierController extends Controller
                 });
             } elseif ($request->stock_status === 'expired') {
                 $query->whereHas('purchaseItems', function ($q) use ($outletId) {
-                    $q->whereHas('purchase', fn($p) => $p->where('outlet_id', $outletId))
+                    $q->whereHas('purchase', fn ($p) => $p->where('outlet_id', $outletId))
                         ->where('remaining_quantity', '>', 0)
                         ->where('is_disposed', false)
                         ->whereNotNull('expired_at')
@@ -80,7 +80,7 @@ class RawMaterialAndSupplierController extends Controller
                 });
             } elseif ($request->stock_status === 'expiring') {
                 $query->whereHas('purchaseItems', function ($q) use ($outletId) {
-                    $q->whereHas('purchase', fn($p) => $p->where('outlet_id', $outletId))
+                    $q->whereHas('purchase', fn ($p) => $p->where('outlet_id', $outletId))
                         ->where('remaining_quantity', '>', 0)
                         ->where('is_disposed', false)
                         ->whereNotNull('expired_at')
@@ -109,8 +109,9 @@ class RawMaterialAndSupplierController extends Controller
             $material->total_valid_qty = 0;
 
             foreach ($batches as $batch) {
-                if (!$batch->expired_at) {
+                if (! $batch->expired_at) {
                     $material->total_valid_qty += $batch->remaining_quantity;
+
                     continue;
                 }
 
@@ -123,6 +124,7 @@ class RawMaterialAndSupplierController extends Controller
                     $material->total_valid_qty += $batch->remaining_quantity;
                 }
             }
+
             return $material;
         });
 
@@ -142,7 +144,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function createRawMaterial()
     {
-        if (!auth()->user()->can('buat bahan baku')) {
+        if (! auth()->user()->can('buat bahan baku')) {
             abort(403);
         }
         $categories = Category::orderBy('name')->get();
@@ -161,7 +163,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function storeRawMaterial(Request $request)
     {
-        if (!auth()->user()->can('buat bahan baku')) {
+        if (! auth()->user()->can('buat bahan baku')) {
             abort(403);
         }
         $validated = $request->validate([
@@ -207,7 +209,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function showRawMaterial(RawMaterial $rawMaterial)
     {
-        if (!auth()->user()->can('lihat detail bahan baku')) {
+        if (! auth()->user()->can('lihat detail bahan baku')) {
             abort(403);
         }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
@@ -226,7 +228,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function editRawMaterial(RawMaterial $rawMaterial)
     {
-        if (!auth()->user()->can('edit bahan baku')) {
+        if (! auth()->user()->can('edit bahan baku')) {
             abort(403);
         }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
@@ -250,7 +252,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function updateRawMaterial(Request $request, RawMaterial $rawMaterial)
     {
-        if (!auth()->user()->can('edit bahan baku')) {
+        if (! auth()->user()->can('edit bahan baku')) {
             abort(403);
         }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
@@ -304,7 +306,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function destroyRawMaterial(RawMaterial $rawMaterial)
     {
-        if (!auth()->user()->can('hapus bahan baku')) {
+        if (! auth()->user()->can('hapus bahan baku')) {
             abort(403);
         }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
@@ -327,7 +329,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function manageStock(RawMaterial $rawMaterial)
     {
-        if (!auth()->user()->can('kelola stok bahan baku')) {
+        if (! auth()->user()->can('kelola stok bahan baku')) {
             abort(403);
         }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
@@ -340,13 +342,13 @@ class RawMaterialAndSupplierController extends Controller
 
         $stock = $rawMaterial->stocks->first();
         $currentStock = $stock ? $stock->quantity : 0;
-        
+
         $expenseCategories = ExpenseCategory::all();
 
         // Calculate basic status for overview
         $now = now();
         $warningDays = 7;
-        
+
         $batches = PurchaseItem::where('raw_material_id', $rawMaterial->id)
             ->whereHas('purchase', function ($q) {
                 $q->where('outlet_id', Auth::user()->outlet_id);
@@ -360,8 +362,9 @@ class RawMaterialAndSupplierController extends Controller
         $validQty = 0;
 
         foreach ($batches as $batch) {
-            if (!$batch->expired_at) {
+            if (! $batch->expired_at) {
                 $validQty += $batch->remaining_quantity;
+
                 continue;
             }
 
@@ -390,7 +393,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function stockShow(RawMaterial $rawMaterial)
     {
-        if (!auth()->user()->can('lihat detail bahan baku')) {
+        if (! auth()->user()->can('lihat detail bahan baku')) {
             abort(403);
         }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
@@ -406,7 +409,7 @@ class RawMaterialAndSupplierController extends Controller
 
         $now = now();
         $warningDays = 7;
-        
+
         $batches = PurchaseItem::where('raw_material_id', $rawMaterial->id)
             ->whereHas('purchase', function ($q) {
                 $q->where('outlet_id', Auth::user()->outlet_id);
@@ -421,14 +424,15 @@ class RawMaterialAndSupplierController extends Controller
         $validStocks = [];
 
         foreach ($batches as $batch) {
-            if (!$batch->expired_at) {
+            if (! $batch->expired_at) {
                 $validStocks[] = [
                     'id' => $batch->id,
                     'batch_number' => $batch->batch_number ?? '-',
                     'quantity' => $batch->remaining_quantity,
                     'expired_at' => null,
-                    'days_until_expiry' => 999
+                    'days_until_expiry' => 999,
                 ];
+
                 continue;
             }
 
@@ -438,7 +442,7 @@ class RawMaterialAndSupplierController extends Controller
                 'batch_number' => $batch->batch_number ?? '-',
                 'quantity' => $batch->remaining_quantity,
                 'expired_at' => $batch->expired_at,
-                'days_until_expiry' => $daysUntilExpiry
+                'days_until_expiry' => $daysUntilExpiry,
             ];
 
             if ($daysUntilExpiry < 0) {
@@ -474,7 +478,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function updateStock(Request $request, RawMaterial $rawMaterial)
     {
-        if (!auth()->user()->can('update stok bahan baku')) {
+        if (! auth()->user()->can('update stok bahan baku')) {
             return response()->json(['message' => 'Akses ditolak'], 403);
         }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
@@ -514,9 +518,9 @@ class RawMaterialAndSupplierController extends Controller
                 $quantityAfter = $quantityBefore + $validated['quantity'];
                 $movementType = 'in';
                 $message = 'Stok berhasil ditambahkan dan tercatat sebagai pembelian!';
-                
+
                 // --- 1. Create Purchase ---
-                $purchaseNumber = 'PUR-' . date('Ymd') . '-' . strtoupper(Str::random(5));
+                $purchaseNumber = 'PUR-'.date('Ymd').'-'.strtoupper(Str::random(5));
                 $unitPrice = $request->filled('unit_price') ? $request->unit_price : $rawMaterial->purchase_price;
                 $totalAmount = $validated['quantity'] * $unitPrice;
 
@@ -549,15 +553,15 @@ class RawMaterialAndSupplierController extends Controller
                 ]);
 
                 // --- 3. Create Expense ---
-                $expenseNumber = 'EXP-' . date('Ymd') . '-' . strtoupper(Str::random(5));
-                
+                $expenseNumber = 'EXP-'.date('Ymd').'-'.strtoupper(Str::random(5));
+
                 Expense::create([
                     'expense_number' => $expenseNumber,
                     'outlet_id' => $outletId,
                     'expense_category_id' => $validated['expense_category_id'],
                     'amount' => $totalAmount,
                     'expense_date' => now(),
-                    'description' => 'Pembelian Stok: ' . $rawMaterial->name,
+                    'description' => 'Pembelian Stok: '.$rawMaterial->name,
                     'payment_method' => $validated['payment_method'],
                     'reference_number' => $purchaseNumber,
                     'notes' => $validated['notes'],
@@ -569,7 +573,7 @@ class RawMaterialAndSupplierController extends Controller
                 if ($quantityBefore < $validated['quantity']) {
                     // We can't return redirect inside transaction easily without throwing exception
                     // So we handle validation before transaction or throw exception
-                     throw new \Exception('Jumlah pengurangan melebihi stok tersedia!');
+                    throw new \Exception('Jumlah pengurangan melebihi stok tersedia!');
                 }
                 $quantityAfter = $quantityBefore - $validated['quantity'];
                 $movementType = 'out';
@@ -605,7 +609,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function removeExpired(Request $request, RawMaterial $rawMaterial)
     {
-        if (!auth()->user()->can('update stok bahan baku')) {
+        if (! auth()->user()->can('update stok bahan baku')) {
             abort(403);
         }
         $validated = $request->validate([
@@ -613,7 +617,7 @@ class RawMaterialAndSupplierController extends Controller
             'batch_ids.*' => 'required|exists:purchase_items,id',
         ]);
 
-        return DB::transaction(function () use ($request, $rawMaterial, $validated) {
+        return DB::transaction(function () use ($rawMaterial, $validated) {
             $totalRemoved = 0;
             $items = PurchaseItem::whereIn('id', $validated['batch_ids'])
                 ->where('raw_material_id', $rawMaterial->id)
@@ -626,7 +630,9 @@ class RawMaterialAndSupplierController extends Controller
 
             foreach ($items as $item) {
                 $qtyToRemove = $item->remaining_quantity;
-                if ($qtyToRemove <= 0) continue;
+                if ($qtyToRemove <= 0) {
+                    continue;
+                }
 
                 if ($stock) {
                     $qtyBefore = $stock->quantity;
@@ -643,7 +649,7 @@ class RawMaterialAndSupplierController extends Controller
                         'unit_price' => $item->unit_price,
                         'reference_type' => 'manual_adjustment',
                         'reference_id' => $item->purchase_id,
-                        'notes' => 'Penghapusan stok kadaluarsa (Batch ' . ($item->batch_number ?? '-') . ')',
+                        'notes' => 'Penghapusan stok kadaluarsa (Batch '.($item->batch_number ?? '-').')',
                         'created_by' => Auth::id(),
                     ]);
                 }
@@ -656,7 +662,7 @@ class RawMaterialAndSupplierController extends Controller
                 $totalRemoved += $qtyToRemove;
             }
 
-            return back()->with('success', "Berhasil menghapus " . number_format($totalRemoved, 2) . " unit stok kadaluarsa.");
+            return back()->with('success', 'Berhasil menghapus '.number_format($totalRemoved, 2).' unit stok kadaluarsa.');
         });
     }
 
@@ -665,7 +671,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function stockHistory(RawMaterial $rawMaterial)
     {
-        if (!auth()->user()->can('lihat riwayat stok bahan baku')) {
+        if (! auth()->user()->can('lihat riwayat stok bahan baku')) {
             abort(403);
         }
         if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
@@ -689,7 +695,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function indexSupplier(Request $request)
     {
-        if (!auth()->user()->can('lihat supplier')) {
+        if (! auth()->user()->can('lihat supplier')) {
             abort(403);
         }
         $query = Supplier::withCount('rawMaterials');
@@ -720,7 +726,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function createSupplier()
     {
-        if (!auth()->user()->can('buat supplier')) {
+        if (! auth()->user()->can('buat supplier')) {
             abort(403);
         }
         // Generate unique supplier code
@@ -736,7 +742,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function storeSupplier(Request $request)
     {
-        if (!auth()->user()->can('buat supplier')) {
+        if (! auth()->user()->can('buat supplier')) {
             abort(403);
         }
         $validated = $request->validate([
@@ -763,7 +769,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function showSupplier(Supplier $supplier)
     {
-        if (!auth()->user()->can('lihat detail supplier')) {
+        if (! auth()->user()->can('lihat detail supplier')) {
             abort(403);
         }
         $supplier->loadCount('rawMaterials');
@@ -782,9 +788,10 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function editSupplier(Supplier $supplier)
     {
-        if (!auth()->user()->can('edit supplier')) {
+        if (! auth()->user()->can('edit supplier')) {
             abort(403);
         }
+
         return view('main.raw-material_n_supplier.edit-supplier', compact('supplier'));
     }
 
@@ -793,7 +800,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function updateSupplier(Request $request, Supplier $supplier)
     {
-        if (!auth()->user()->can('edit supplier')) {
+        if (! auth()->user()->can('edit supplier')) {
             abort(403);
         }
         $validated = $request->validate([
@@ -820,7 +827,7 @@ class RawMaterialAndSupplierController extends Controller
      */
     public function destroySupplier(Supplier $supplier)
     {
-        if (!auth()->user()->can('hapus supplier')) {
+        if (! auth()->user()->can('hapus supplier')) {
             abort(403);
         }
         // Check if supplier has raw materials

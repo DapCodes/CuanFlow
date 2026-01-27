@@ -13,7 +13,7 @@ class ResellerApplication extends Model
         'document_path',
         'status',
         'processed_by',
-        'processed_at'
+        'processed_at',
     ];
 
     public function customer()
@@ -25,7 +25,7 @@ class ResellerApplication extends Model
     {
         return $this->belongsTo(Outlet::class);
     }
-    
+
     public function processor()
     {
         return $this->belongsTo(User::class, 'processed_by');

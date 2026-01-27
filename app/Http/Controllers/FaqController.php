@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Faq;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Auth;
 
 class FaqController extends Controller implements HasMiddleware
 {
@@ -38,7 +38,7 @@ class FaqController extends Controller implements HasMiddleware
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('question', 'like', "%{$search}%")
-                  ->orWhere('answer', 'like', "%{$search}%");
+                    ->orWhere('answer', 'like', "%{$search}%");
             });
         }
 
@@ -51,11 +51,12 @@ class FaqController extends Controller implements HasMiddleware
 
     public function show(Faq $faq)
     {
-        if (!$faq->is_active) {
+        if (! $faq->is_active) {
             abort(404);
         }
 
         $faq->incrementViewCount();
+
         return view('faqs.show', compact('faq'));
     }
 
@@ -66,7 +67,7 @@ class FaqController extends Controller implements HasMiddleware
 
         if ($vote) {
             if ($vote->is_helpful) {
-                // Determine if we should toggle off or keep it. 
+                // Determine if we should toggle off or keep it.
                 // User requirement: "1 user hanya bisa memilih 1 di setiap FAQ"
                 // Usually clicking again might unvote, or do nothing.
                 // Let's implement: if already helpful, unvote (remove vote).
@@ -95,7 +96,7 @@ class FaqController extends Controller implements HasMiddleware
             'helpful_count' => $faq->helpful_count,
             'not_helpful_count' => $faq->not_helpful_count,
             'status' => $status,
-            'type' => 'helpful'
+            'type' => 'helpful',
         ]);
     }
 
@@ -105,7 +106,7 @@ class FaqController extends Controller implements HasMiddleware
         $vote = $faq->votes()->where('user_id', $user->id)->first();
 
         if ($vote) {
-            if (!$vote->is_helpful) {
+            if (! $vote->is_helpful) {
                 // Already not helpful, unvote (remove vote)
                 $vote->delete();
                 $faq->decrement('not_helpful_count');
@@ -132,7 +133,7 @@ class FaqController extends Controller implements HasMiddleware
             'helpful_count' => $faq->helpful_count,
             'not_helpful_count' => $faq->not_helpful_count,
             'status' => $status,
-            'type' => 'not_helpful'
+            'type' => 'not_helpful',
         ]);
     }
 }

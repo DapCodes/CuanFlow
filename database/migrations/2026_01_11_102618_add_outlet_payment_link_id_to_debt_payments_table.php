@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('debt_payments', function (Blueprint $table) {
             $table->foreignId('outlet_payment_link_id')
-                  ->nullable()
-                  ->after('payment_method')
-                  ->constrained('outlet_payment_links')
-                  ->nullOnDelete();
+                ->nullable()
+                ->after('payment_method')
+                ->constrained('outlet_payment_links')
+                ->nullOnDelete();
         });
     }
 

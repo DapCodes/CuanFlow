@@ -49,6 +49,7 @@ class Faq extends Model
         if ($type) {
             return $query->where('type', $type);
         }
+
         return $query;
     }
 

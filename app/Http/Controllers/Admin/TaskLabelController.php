@@ -13,7 +13,7 @@ class TaskLabelController extends Controller
         $labels = TaskLabel::withCount('tasks')
             ->orderBy('name')
             ->paginate(15);
-            
+
         return view('admin.master.task-labels.index', compact('labels'));
     }
 

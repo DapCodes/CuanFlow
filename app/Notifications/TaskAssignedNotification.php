@@ -3,17 +3,12 @@
 namespace App\Notifications;
 
 use App\Models\Task;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class TaskAssignedNotification extends Notification
 {
-
-    public function __construct(public Task $task)
-    {
-    }
+    public function __construct(public Task $task) {}
 
     public function via(object $notifiable): array
     {
@@ -26,17 +21,17 @@ class TaskAssignedNotification extends Notification
         $deadline = $this->task->deadline ? $this->task->deadline->format('d M Y, H:i') : 'Tidak ada deadline';
 
         $mailMessage = (new MailMessage)
-            ->subject('Penugasan Baru: ' . $this->task->title)
-            ->greeting('Halo ' . $notifiable->name . ',')
-            ->line('Anda telah ditugaskan untuk mengerjakan tugas baru oleh **' . $creatorName . '**.')
+            ->subject('Penugasan Baru: '.$this->task->title)
+            ->greeting('Halo '.$notifiable->name.',')
+            ->line('Anda telah ditugaskan untuk mengerjakan tugas baru oleh **'.$creatorName.'**.')
             ->line('Detail Tugas:')
-            ->line('• Judul: **' . $this->task->title . '**')
-            ->line('• Prioritas: ' . $this->task->priority_label)
-            ->line('• Deadline: ' . $deadline)
-            ->line('• Status: ' . $this->task->status->name);
+            ->line('• Judul: **'.$this->task->title.'**')
+            ->line('• Prioritas: '.$this->task->priority_label)
+            ->line('• Deadline: '.$deadline)
+            ->line('• Status: '.$this->task->status->name);
 
         if ($this->task->description) {
-            $mailMessage->line('Deskripsi: ' . \Illuminate\Support\Str::limit($this->task->description, 100));
+            $mailMessage->line('Deskripsi: '.\Illuminate\Support\Str::limit($this->task->description, 100));
         }
 
         return $mailMessage

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
-use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -36,7 +36,7 @@ class PaymentController extends Controller
         // 1. Kumpulkan dari Cart
         foreach ($cart as $item) {
             $pid = $item['product_id'];
-            if (!isset($productsToReduce[$pid])) {
+            if (! isset($productsToReduce[$pid])) {
                 $productsToReduce[$pid] = 0;
             }
             $productsToReduce[$pid] += $item['quantity'];
@@ -47,7 +47,7 @@ class PaymentController extends Controller
             foreach ($discountPlan['affected_items'] as $aff) {
                 if (isset($aff['free_qty']) && $aff['free_qty'] > 0) {
                     $pid = $aff['product_id'];
-                    if (!isset($productsToReduce[$pid])) {
+                    if (! isset($productsToReduce[$pid])) {
                         $productsToReduce[$pid] = 0;
                     }
                     $productsToReduce[$pid] += $aff['free_qty'];
@@ -70,8 +70,8 @@ class PaymentController extends Controller
             if ($stock) {
                 // Pastikan stok cukup sebelum reduce (optional, best effort)
                 // if ($stock->quantity < $qty) throw... (Tidak perlu throw di sini agar transaksi tetap jalan, tapi log warning)
-                
-                $reduced = $stock->reduceStock($qty); 
+
+                $reduced = $stock->reduceStock($qty);
                 if (! $reduced) {
                     \Log::warning("Failed to reduce stock for product {$pid}. Stock: {$stock->quantity}, Requested: {$qty}");
                 }
@@ -81,7 +81,7 @@ class PaymentController extends Controller
                     'product_id' => $pid,
                     'outlet_id' => auth()->user()->outlet_id,
                 ], ['quantity' => 0]);
-                
+
                 \Log::warning("No stock record found for product {$pid}. Partial stock reduction skipped.");
             }
         }
@@ -94,7 +94,7 @@ class PaymentController extends Controller
         // 1. Kumpulkan dari Sale Items
         foreach ($sale->items as $item) {
             $pid = $item->product_id;
-            if (!isset($productsToReduce[$pid])) {
+            if (! isset($productsToReduce[$pid])) {
                 $productsToReduce[$pid] = 0;
             }
             $productsToReduce[$pid] += $item->quantity;
@@ -104,13 +104,13 @@ class PaymentController extends Controller
         if ($sale->notes) {
             try {
                 $notes = json_decode($sale->notes, true);
-                
+
                 // Cek affected_free_items (yang kita tambahkan di createSaleWithDiscount)
                 if (isset($notes['affected_free_items']) && is_array($notes['affected_free_items'])) {
                     foreach ($notes['affected_free_items'] as $aff) {
-                         if (isset($aff['free_qty']) && $aff['free_qty'] > 0) {
+                        if (isset($aff['free_qty']) && $aff['free_qty'] > 0) {
                             $pid = $aff['product_id'];
-                            if (!isset($productsToReduce[$pid])) {
+                            if (! isset($productsToReduce[$pid])) {
                                 $productsToReduce[$pid] = 0;
                             }
                             $productsToReduce[$pid] += $aff['free_qty'];
@@ -122,7 +122,7 @@ class PaymentController extends Controller
                     foreach ($notes['discount_plan']['affected_items'] as $aff) {
                         if (isset($aff['free_qty']) && $aff['free_qty'] > 0) {
                             $pid = $aff['product_id'];
-                            if (!isset($productsToReduce[$pid])) {
+                            if (! isset($productsToReduce[$pid])) {
                                 $productsToReduce[$pid] = 0;
                             }
                             $productsToReduce[$pid] += $aff['free_qty'];
@@ -161,7 +161,7 @@ class PaymentController extends Controller
      */
     public function processCashPayment(Request $request)
     {
-        if (!auth()->user()->can('proses pembayaran tunai')) {
+        if (! auth()->user()->can('proses pembayaran tunai')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki izin untuk memproses pembayaran tunai',
@@ -271,7 +271,7 @@ class PaymentController extends Controller
      */
     public function processTransferPayment(Request $request)
     {
-        if (!auth()->user()->can('proses pembayaran transfer')) {
+        if (! auth()->user()->can('proses pembayaran transfer')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki izin untuk memproses pembayaran transfer',
@@ -372,7 +372,7 @@ class PaymentController extends Controller
 
     public function createMidtransToken(Request $request)
     {
-        if (!auth()->user()->can('proses pembayaran digital')) {
+        if (! auth()->user()->can('proses pembayaran digital')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki izin untuk memproses pembayaran digital',
@@ -405,7 +405,7 @@ class PaymentController extends Controller
             ]);
 
             // FIX: Use SALE prefix to distinguish from DEBT payments
-            $orderId = 'SALE-' . $sale->id . '-' . time();
+            $orderId = 'SALE-'.$sale->id.'-'.time();
 
             $itemDetails = [];
             foreach ($cart as $item) {
@@ -428,7 +428,7 @@ class PaymentController extends Controller
 
             // FIX: Use proper base URL
             $appUrl = config('app.url');
-            
+
             $params = [
                 'transaction_details' => [
                     'order_id' => $orderId,
@@ -443,7 +443,7 @@ class PaymentController extends Controller
                 // FIX: Only enable QRIS options
                 'enabled_payments' => ['gopay', 'shopeepay', 'other_qris'],
                 'callbacks' => [
-                    'finish' => $appUrl . '/payment/midtrans/finish',
+                    'finish' => $appUrl.'/payment/midtrans/finish',
                 ],
             ];
 
@@ -461,7 +461,8 @@ class PaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Midtrans Token Error: ' . $e->getMessage());
+            \Log::error('Midtrans Token Error: '.$e->getMessage());
+
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -485,7 +486,8 @@ class PaymentController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Notification Error: ' . $e->getMessage());
+            \Log::error('Notification Error: '.$e->getMessage());
+
             return response()->json(['message' => 'Invalid notification'], 400);
         }
     }
@@ -493,7 +495,7 @@ class PaymentController extends Controller
     private function handleSaleNotification($notification)
     {
         $sale = Sale::where('midtrans_order_id', $notification->order_id)->first();
-        if (!$sale) {
+        if (! $sale) {
             return response()->json(['message' => 'Sale not found'], 404);
         }
 
@@ -526,11 +528,13 @@ class PaymentController extends Controller
             }
 
             DB::commit();
+
             return response()->json(['success' => true], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Sale Notification Error: ' . $e->getMessage());
+            \Log::error('Sale Notification Error: '.$e->getMessage());
+
             return response()->json(['message' => 'Failed'], 500);
         }
     }
@@ -539,9 +543,9 @@ class PaymentController extends Controller
     {
         $parts = explode('-', $notification->order_id);
         $debtId = $parts[1] ?? null;
-        
+
         $debt = \App\Models\CustomerDebt::find($debtId);
-        if (!$debt) {
+        if (! $debt) {
             return response()->json(['message' => 'Debt not found'], 404);
         }
 
@@ -561,7 +565,7 @@ class PaymentController extends Controller
                     'amount' => $amount,
                     'payment_method' => 'qris',
                     'reference_number' => $notification->transaction_id,
-                    'notes' => 'Midtrans - ' . $notification->payment_type,
+                    'notes' => 'Midtrans - '.$notification->payment_type,
                     'received_by' => null,
                 ]);
 
@@ -579,11 +583,13 @@ class PaymentController extends Controller
                 $debt->customer->decrement('total_debt', $amount);
 
                 DB::commit();
+
                 return response()->json(['success' => true], 200);
 
             } catch (\Exception $e) {
                 DB::rollBack();
-                \Log::error('Debt Notification Error: ' . $e->getMessage());
+                \Log::error('Debt Notification Error: '.$e->getMessage());
+
                 return response()->json(['message' => 'Failed'], 500);
             }
         }
@@ -594,13 +600,14 @@ class PaymentController extends Controller
     public function midtransFinish(Request $request)
     {
         $orderId = $request->order_id;
-        
+
         if (str_starts_with($orderId, 'DEBT-')) {
             return redirect()->route('customer-debts.index')
                 ->with('success', 'Pembayaran utang berhasil diproses');
         }
-        
+
         Session::forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
+
         return redirect()->route('pos.index')
             ->with('success', 'Pembayaran berhasil diproses');
     }
@@ -620,7 +627,7 @@ class PaymentController extends Controller
                 'discount_id' => $discountPlan['discount_id'],
                 'discount_plan' => $discountPlan,
             ];
-            
+
             // PERBAIKAN: Ekstrak dan simpan free items secara eksplisit untuk BOGO
             if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
                 $freeItemsInfo = [];
@@ -634,17 +641,17 @@ class PaymentController extends Controller
                         ];
                     }
                 }
-                if (!empty($freeItemsInfo)) {
+                if (! empty($freeItemsInfo)) {
                     $notesData['bogo_free_items'] = $freeItemsInfo;
                 }
             }
-            
+
             // Juga periksa affected_items untuk free_qty
             if (isset($discountPlan['affected_items']) && is_array($discountPlan['affected_items'])) {
-                $affectedWithFreeQty = array_filter($discountPlan['affected_items'], function($item) {
+                $affectedWithFreeQty = array_filter($discountPlan['affected_items'], function ($item) {
                     return isset($item['free_qty']) && $item['free_qty'] > 0;
                 });
-                if (!empty($affectedWithFreeQty)) {
+                if (! empty($affectedWithFreeQty)) {
                     $notesData['affected_free_items'] = array_values($affectedWithFreeQty);
                 }
             }
@@ -659,34 +666,34 @@ class PaymentController extends Controller
                     $pId = is_array($item) ? $item['product_id'] : $item->product_id;
                     $unitPrice = is_array($item) ? $item['unit_price'] : $item->unit_price;
                     $qty = is_array($item) ? $item['quantity'] : $item->quantity;
-                    
+
                     $product = Product::find($pId);
-                    if ($product && (float)$product->selling_price > (float)$unitPrice) {
-                        $diff = (float)$product->selling_price - (float)$unitPrice;
+                    if ($product && (float) $product->selling_price > (float) $unitPrice) {
+                        $diff = (float) $product->selling_price - (float) $unitPrice;
                         $typeAdjustments[] = [
                             'product_id' => $pId,
                             'product_name' => $product->name,
-                            'original_price' => (float)$product->selling_price,
-                            'applied_price' => (float)$unitPrice,
+                            'original_price' => (float) $product->selling_price,
+                            'applied_price' => (float) $unitPrice,
                             'diff' => $diff,
                             'total_diff' => $diff * $qty,
-                            'qty' => $qty
+                            'qty' => $qty,
                         ];
                     }
                 }
-                
-                if (!empty($typeAdjustments)) {
+
+                if (! empty($typeAdjustments)) {
                     $notesData['customer_type_info'] = [
                         'type' => $customer->type,
                         'label' => $customer->type === 'reseller' ? 'Reseller Pricing' : 'VIP Pricing',
                         'adjustments' => $typeAdjustments,
-                        'total_savings' => collect($typeAdjustments)->sum('total_diff')
+                        'total_savings' => collect($typeAdjustments)->sum('total_diff'),
                     ];
                 }
             }
         }
 
-        $notes = !empty($notesData) ? json_encode($notesData) : null;
+        $notes = ! empty($notesData) ? json_encode($notesData) : null;
 
         $saleData = array_merge([
             'outlet_id' => auth()->user()->outlet_id,
@@ -771,31 +778,34 @@ class PaymentController extends Controller
 
     private function safeIncrementDiscountUsage($discountPlan, $itemsSource = null)
     {
-        if (!$discountPlan) return;
+        if (! $discountPlan) {
+            return;
+        }
 
         // Group usage by discount ID
         $usageCounts = [];
 
         // Helper to sum quantity from source
-        $sumQty = function(array $pids) use ($itemsSource) {
+        $sumQty = function (array $pids) use ($itemsSource) {
             // Default to session cart if no source provided
             $source = $itemsSource ?? Session::get('pos_cart', []);
             $total = 0;
-            
+
             // Normalize source to iterable
             // If source is a Collection (from Sale->items), convert to array or iterate directly
             // SaleItem model has 'product_id' and 'quantity'.
             // Session cart item has 'product_id' and 'quantity'.
-            
+
             foreach ($source as $item) {
                 // Determine product_id and quantity based on object/array
                 $pid = is_array($item) ? ($item['product_id'] ?? 0) : ($item->product_id ?? 0);
                 $qty = is_array($item) ? ($item['quantity'] ?? 0) : ($item->quantity ?? 0);
-                
+
                 if (in_array($pid, $pids)) {
                     $total += $qty;
                 }
             }
+
             return $total;
         };
 
@@ -803,28 +813,30 @@ class PaymentController extends Controller
         if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
             foreach ($discountPlan['applied_discounts'] as $applied) {
                 $dId = $applied['id'] ?? null;
-                if (!$dId) continue;
-                
+                if (! $dId) {
+                    continue;
+                }
+
                 $count = 0;
-                
+
                 // PRIORITAS 1: Gunakan usage_count yang sudah dihitung oleh DiscountService
-                if (isset($applied['usage_count']) && (float)$applied['usage_count'] > 0) {
-                    $count = (float)$applied['usage_count'];
-                } 
+                if (isset($applied['usage_count']) && (float) $applied['usage_count'] > 0) {
+                    $count = (float) $applied['usage_count'];
+                }
                 // PRIORITAS 2: Hitung manual jika data tidak ada
-                else if (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
+                elseif (isset($applied['type']) && $applied['type'] === 'buy_x_get_y') {
                     // For BOGO, usage = number of free items given
                     if (isset($applied['free_items'])) {
                         $count = collect($applied['free_items'])->sum('free_qty');
                     }
                     if ($count == 0 && isset($applied['quota'])) {
-                         $count = $applied['quota'];
+                        $count = $applied['quota'];
                     }
                 } else {
                     // Start with total quantity of affected items
                     // We need to match precise items if possible, otherwise fallback to simple PID match
                     $affectedPids = [];
-                    
+
                     // Try to get specific PIDs from affected_items in plan
                     if (isset($discountPlan['affected_items'])) {
                         $affectedPids = collect($discountPlan['affected_items'])
@@ -834,10 +846,10 @@ class PaymentController extends Controller
                              // Currently, if multiple simple discounts exist, we might over-count if we just grab all.
                              // Feature Improvement: Use the 'applied_discounts' breakdown if possible, but it lacks PIDs.
                              // For now, if we match PIDs from the discount definition (product_id/category_id), we are safer.
-                             ->pluck('product_id')
-                             ->toArray();
+                            ->pluck('product_id')
+                            ->toArray();
                     }
-                    
+
                     // If we can't determine PIDs from plan, fallback to discount definition
                     $discountModel = Discount::find($dId);
                     if ($discountModel) {
@@ -850,16 +862,20 @@ class PaymentController extends Controller
                             foreach ($cartIsIterable as $cItem) {
                                 $cPid = is_array($cItem) ? ($cItem['product_id']) : ($cItem->product_id);
                                 $cQty = is_array($cItem) ? ($cItem['quantity']) : ($cItem->quantity);
-                                
+
                                 // Check eligibility manually (re-using lightweight logic)
                                 $isEligible = true;
-                                if ($discountModel->product_id && $discountModel->product_id != $cPid) $isEligible = false;
-                                if ($discountModel->category_id) {
-                                     // Need category check, skip for now or assume true if simplified
-                                     // Better to rely on what logic passed before.
+                                if ($discountModel->product_id && $discountModel->product_id != $cPid) {
+                                    $isEligible = false;
                                 }
-                                
-                                if ($isEligible) $count += $cQty;
+                                if ($discountModel->category_id) {
+                                    // Need category check, skip for now or assume true if simplified
+                                    // Better to rely on what logic passed before.
+                                }
+
+                                if ($isEligible) {
+                                    $count += $cQty;
+                                }
                             }
                         } else {
                             $count = $sumQty($affectedPids);
@@ -868,19 +884,19 @@ class PaymentController extends Controller
                         // === LOGIC BARU: Validasi Max Discount vs Usage Count ===
                         // Request: "ketika diskon di pakai misal 10x itu usage count nya 10x"
                         // Request: "jika sudah melebihi batasan (max_discount) ... tidak terhitung used_count lagi yang di masukan ke used_count hanya yang beneran terpakai saja"
-                        
+
                         $actualDiscountGiven = $applied['amount'] ?? 0;
-                        
+
                         if ($count > 0 && $discountModel->max_discount && $discountModel->max_discount > 0) {
                             // Cek theoretical discount tanpa cap
                             $unitPriceSum = 0; // Butuh rata-rata atau total?
                             // Kita pakai pendekatan ratio: Actual / Theoretical_Uncapped
-                            
+
                             // Hitung theoretical uncapped value
                             // Karena struktur data cart mungkin tidak ada disini dengan lengkap (terutama harga per item yg variatif),
                             // Kita estimasi balik: Jika cap kena, maka usage count = count * (cap / theoretical).
                             // TAPI, lebih akurat jika: Usage = ActualGiven / DiscountPerItem.
-                            
+
                             // Ambil satu unit discount value estimation
                             $estimatedUnitDiscount = 0;
                             if ($discountModel->type === 'fixed') {
@@ -891,16 +907,16 @@ class PaymentController extends Controller
                                 // Jika Actual == MaxDiscount, artinya "Full Capacity Used".
                                 // User bilang: "hanya yang beneran terpakai saja".
                                 // Interpretasi: Jika kena CAP, hitung berapa item yang "muat" dalam cap tersebut.
-                                
+
                                 // Contoh: Cap 50rb. Disc 10%. Item 100rb (Disc 10rb).
                                 // Beli 10 Item. Total Price 1jt. Theoretical Disc 100rb.
                                 // Actual Disc 50rb (Cap).
                                 // Effective Items covered = 50rb / 10rb = 5 Items. Usage +5.
-                                
+
                                 // Kita butuh Theoretical Total Discount.
                                 // Kita bisa hitung mundur jika kita tahu total discount uncapped?
                                 // Tidak ada data itu.
-                                
+
                                 // Workaround: Hitung usage count manual jika Cap Hit.
                                 if ($actualDiscountGiven >= $discountModel->max_discount) {
                                     // Hitung rata-rata diskon per item secara teoritis
@@ -915,7 +931,7 @@ class PaymentController extends Controller
                                             $theoreticalTotal += ($cPrice * ($discountModel->value / 100)) * $cQty;
                                         }
                                     }
-                                    
+
                                     if ($theoreticalTotal > 0) {
                                         // Ratio efektif
                                         $effectiveRatio = $actualDiscountGiven / $theoreticalTotal;
@@ -924,45 +940,47 @@ class PaymentController extends Controller
                                     }
                                 }
                             }
-                            
+
                             if ($discountModel->type === 'fixed') {
                                 // Untuk fixed, theoretical = value * qty
                                 // Jika Actual < (value * qty), berarti kena Cap.
-                                $theoreticalTotal = (float)$discountModel->value * $count;
+                                $theoreticalTotal = (float) $discountModel->value * $count;
                                 if ($theoreticalTotal > 0 && $actualDiscountGiven < $theoreticalTotal) {
-                                     // Adjust count
-                                     $count = floor($actualDiscountGiven / (float)$discountModel->value);
-                                     // Gunakan floor untuk fixed, karena "hanya yang beneran terpakai" (full units)
+                                    // Adjust count
+                                    $count = floor($actualDiscountGiven / (float) $discountModel->value);
+                                    // Gunakan floor untuk fixed, karena "hanya yang beneran terpakai" (full units)
                                 }
                             }
                         }
                     }
                 }
-                
-                if (!isset($usageCounts[$dId])) $usageCounts[$dId] = 0;
+
+                if (! isset($usageCounts[$dId])) {
+                    $usageCounts[$dId] = 0;
+                }
                 $usageCounts[$dId] += ($count > 0 ? $count : 1);
             }
-        } 
+        }
         // 2. Fallback Legacy / Simple Structure
         elseif (isset($discountPlan['discount_id'])) {
             $dId = $discountPlan['discount_id'];
-            
-            if (isset($discountPlan['usage_count']) && (float)$discountPlan['usage_count'] > 0) {
-                $count = (float)$discountPlan['usage_count'];
+
+            if (isset($discountPlan['usage_count']) && (float) $discountPlan['usage_count'] > 0) {
+                $count = (float) $discountPlan['usage_count'];
             } else {
                 $count = 1;
                 if (isset($discountPlan['affected_items'])) {
-                   $affectedPids = collect($discountPlan['affected_items'])->pluck('product_id')->toArray();
-                   $count = $sumQty($affectedPids);
+                    $affectedPids = collect($discountPlan['affected_items'])->pluck('product_id')->toArray();
+                    $count = $sumQty($affectedPids);
                 }
             }
-             
-             $usageCounts[$dId] = ($count > 0 ? $count : 1);
+
+            $usageCounts[$dId] = ($count > 0 ? $count : 1);
         }
 
         // Execute Increments
         foreach ($usageCounts as $id => $amount) {
-            $this->incrementDiscountUsage($id, (int)$amount);
+            $this->incrementDiscountUsage($id, (int) $amount);
         }
     }
 
@@ -997,12 +1015,11 @@ class PaymentController extends Controller
         );
     }
 
-
     public function checkPaymentAmount(Request $request)
     {
         $cart = Session::get('pos_cart', []);
         $discountPlan = Session::get('pos_discount_plan');
-        
+
         if (empty($cart)) {
             return response()->json(['success' => false, 'message' => 'Keranjang kosong'], 400);
         }

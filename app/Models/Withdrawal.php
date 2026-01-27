@@ -110,6 +110,7 @@ class Withdrawal extends Model
         if ($this->proof_image && \Storage::disk('public')->exists($this->proof_image)) {
             return \Storage::url($this->proof_image);
         }
+
         return null;
     }
 

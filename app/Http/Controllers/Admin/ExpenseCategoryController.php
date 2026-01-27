@@ -13,7 +13,7 @@ class ExpenseCategoryController extends Controller
         $categories = ExpenseCategory::withCount('expenses')
             ->latest()
             ->paginate(15);
-            
+
         return view('admin.master.expense-categories.index', compact('categories'));
     }
 
@@ -45,6 +45,7 @@ class ExpenseCategoryController extends Controller
     public function show(ExpenseCategory $expenseCategory)
     {
         $expenseCategory->load('expenses');
+
         return view('admin.master.expense-categories.show', compact('expenseCategory'));
     }
 

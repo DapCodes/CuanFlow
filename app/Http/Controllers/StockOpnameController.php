@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\RawMaterial;
@@ -9,11 +10,10 @@ use App\Models\RawMaterialStock;
 use App\Models\StockMovement;
 use App\Models\StockOpname;
 use App\Models\StockOpnameItem;
-use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\DB;
 
 class StockOpnameController extends Controller implements HasMiddleware
 {
@@ -56,16 +56,16 @@ class StockOpnameController extends Controller implements HasMiddleware
     public function create()
     {
         $outletId = auth()->user()->outlet_id;
-        
+
         $products = Product::where('outlet_id', $outletId)
             ->where('is_active', true)
             ->where('track_stock', true)
             ->get();
-            
+
         $rawMaterials = RawMaterial::where('outlet_id', $outletId)
             ->where('is_active', true)
             ->get();
-            
+
         $categories = Category::where('is_active', true)->get();
 
         return view('main.stock_opname.create', compact('products', 'rawMaterials', 'categories'));
@@ -94,16 +94,16 @@ class StockOpnameController extends Controller implements HasMiddleware
             // Filter items based on selection
             // items is an array of strings like "product_123" or "raw_material_456"
             // We need to parse this.
-            
+
             $selectedItems = $request->items;
-            
+
             foreach ($selectedItems as $itemStr) {
                 // Determine type and ID
                 // Format expected: "product_{id}" or "raw_material_{id}"
                 $parts = explode('_', $itemStr);
                 $id = array_pop($parts);
                 $typeKey = implode('_', $parts);
-                
+
                 $modelClass = null;
                 if ($typeKey === 'product') {
                     $modelClass = Product::class;
@@ -114,9 +114,9 @@ class StockOpnameController extends Controller implements HasMiddleware
                     $itemModel = RawMaterial::find($id);
                     $currentQty = $itemModel ? $itemModel->getStockQuantity($outletId) : 0;
                 }
-                
+
                 if ($modelClass && $itemModel) {
-                     StockOpnameItem::create([
+                    StockOpnameItem::create([
                         'stock_opname_id' => $stockOpname->id,
                         'stockable_type' => $modelClass,
                         'stockable_id' => $id,
@@ -133,7 +133,8 @@ class StockOpnameController extends Controller implements HasMiddleware
                 ->with('success', 'Sesi Stock Opname berhasil dibuat. Silakan mulai input data.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal membuat sesi stock opname: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal membuat sesi stock opname: '.$e->getMessage());
         }
     }
 
@@ -173,7 +174,7 @@ class StockOpnameController extends Controller implements HasMiddleware
                     $item = StockOpnameItem::where('stock_opname_id', $stockOpname->id)
                         ->where('id', $itemData['id'])
                         ->first();
-                    
+
                     if ($item) {
                         $item->update([
                             'physical_quantity' => $itemData['physical_quantity'],
@@ -193,7 +194,8 @@ class StockOpnameController extends Controller implements HasMiddleware
             return back()->with('success', 'Data stock opname berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menyimpan data: '.$e->getMessage());
         }
     }
 
@@ -206,12 +208,12 @@ class StockOpnameController extends Controller implements HasMiddleware
         if ($stockOpname->status === 'completed') {
             return back()->with('error', 'Stock Opname sudah selesai.');
         }
-        
+
         $uncounted = $stockOpname->items()->whereNull('physical_quantity')->count();
-        if ($uncounted > 0 && !$request->has('force_complete')) {
-             return back()->with('error', "Masih ada $uncounted item yang belum dihitung. Harap isi semua item atau konfirmasi penyelesaian (skip item).");
+        if ($uncounted > 0 && ! $request->has('force_complete')) {
+            return back()->with('error', "Masih ada $uncounted item yang belum dihitung. Harap isi semua item atau konfirmasi penyelesaian (skip item).");
         }
-        
+
         DB::beginTransaction();
         try {
             $items = $stockOpname->items()->whereNotNull('physical_quantity')->get();
@@ -228,7 +230,7 @@ class StockOpnameController extends Controller implements HasMiddleware
                         'quantity' => abs($item->difference),
                         'quantity_before' => $item->system_quantity,
                         'quantity_after' => $item->physical_quantity,
-                        'unit_price' => 0, 
+                        'unit_price' => 0,
                         'reference_type' => StockOpname::class,
                         'reference_id' => $stockOpname->id,
                         'notes' => "Stock Opname Adjustment ({$stockOpname->opname_number})",
@@ -237,20 +239,20 @@ class StockOpnameController extends Controller implements HasMiddleware
 
                     // Update Actual Product Stock
                     if ($item->stockable_type === Product::class) {
-                         $stock = ProductStock::firstOrNew([
-                             'outlet_id' => $stockOpname->outlet_id,
-                             'product_id' => $item->stockable_id
-                         ]);
-                         $stock->quantity = $item->physical_quantity;
-                         $stock->save();
+                        $stock = ProductStock::firstOrNew([
+                            'outlet_id' => $stockOpname->outlet_id,
+                            'product_id' => $item->stockable_id,
+                        ]);
+                        $stock->quantity = $item->physical_quantity;
+                        $stock->save();
                     } elseif ($item->stockable_type === RawMaterial::class) {
                         // Assuming RawMaterialStock follows similar pattern
                         $stock = RawMaterialStock::firstOrNew([
-                             'outlet_id' => $stockOpname->outlet_id,
-                             'raw_material_id' => $item->stockable_id
-                         ]);
-                         $stock->quantity = $item->physical_quantity;
-                         $stock->save();
+                            'outlet_id' => $stockOpname->outlet_id,
+                            'raw_material_id' => $item->stockable_id,
+                        ]);
+                        $stock->quantity = $item->physical_quantity;
+                        $stock->save();
                     }
                 }
             }
@@ -263,22 +265,23 @@ class StockOpnameController extends Controller implements HasMiddleware
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyelesaikan stock opname: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menyelesaikan stock opname: '.$e->getMessage());
         }
     }
-    
+
     public function destroy(StockOpname $stockOpname)
     {
         if ($stockOpname->outlet_id !== auth()->user()->outlet_id) {
             abort(403);
         }
-        
+
         if ($stockOpname->status === 'completed') {
             return back()->with('error', 'Tidak dapat menghapus Stock Opname yang sudah selesai.');
         }
-        
+
         $stockOpname->forceDelete();
-        
+
         return back()->with('success', 'Sesi Stock Opname dihapus.');
     }
 }

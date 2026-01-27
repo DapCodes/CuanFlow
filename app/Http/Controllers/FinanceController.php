@@ -16,7 +16,7 @@ class FinanceController extends Controller
 {
     public function index(Request $request)
     {
-        if (!auth()->user()->can('lihat keuangan')) {
+        if (! auth()->user()->can('lihat keuangan')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk melihat halaman keuangan.');
         }
 
@@ -36,7 +36,7 @@ class FinanceController extends Controller
             ->completed()
             ->whereBetween('created_at', [$startOfDay, $endOfDay])
             ->sum('grand_total');
-        
+
         $dailyOtherIncome = abs(Expense::where('outlet_id', $outletId)
             ->whereDate('expense_date', Carbon::parse($selectedDate))
             ->where('amount', '<', 0)
@@ -206,12 +206,12 @@ class FinanceController extends Controller
         $filterStartDate = Carbon::createFromDate($filterYear, $filterMonth, 1)->startOfMonth();
         $filterEndDate = Carbon::createFromDate($filterYear, $filterMonth, 1)->endOfMonth();
 
-    $salesList = Sale::where('outlet_id', $outletId)
-        ->completed()
-        ->whereBetween('created_at', [$filterStartDate, $filterEndDate])
-        ->with(['customer', 'cashier'])
-        ->orderBy('created_at', 'desc')
-        ->paginate(5, ['*'], 'sales_page');
+        $salesList = Sale::where('outlet_id', $outletId)
+            ->completed()
+            ->whereBetween('created_at', [$filterStartDate, $filterEndDate])
+            ->with(['customer', 'cashier'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(5, ['*'], 'sales_page');
 
         return view('main.finance.index', compact(
             'selectedDate',
@@ -227,52 +227,52 @@ class FinanceController extends Controller
         ));
     }
 
-public function getSalesListAjax(Request $request): JsonResponse
-{
-    $outletId = auth()->user()->outlet_id;
-    $month = $request->get('month', now()->month);
-    $year = $request->get('year', now()->year);
-    $page = $request->get('page', 1);
-    
-    $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-    $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+    public function getSalesListAjax(Request $request): JsonResponse
+    {
+        $outletId = auth()->user()->outlet_id;
+        $month = $request->get('month', now()->month);
+        $year = $request->get('year', now()->year);
+        $page = $request->get('page', 1);
 
-    $sales = Sale::where('outlet_id', $outletId)
-        ->completed()
-        ->whereBetween('created_at', [$startDate, $endDate])
-        ->with(['customer', 'cashier'])
-        ->orderBy('created_at', 'desc')
-        ->paginate(5, ['*'], 'page', $page);
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
 
-    $canViewDetail = auth()->user()->can('lihat detail penjualan');
-    $canPrint = auth()->user()->can('cetak struk penjualan');
+        $sales = Sale::where('outlet_id', $outletId)
+            ->completed()
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with(['customer', 'cashier'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(5, ['*'], 'page', $page);
 
-    $html = view('main.finance.partials.sales-table-rows', [
-        'sales' => $sales,
-        'canViewDetail' => $canViewDetail,
-        'canPrint' => $canPrint
-    ])->render();
+        $canViewDetail = auth()->user()->can('lihat detail penjualan');
+        $canPrint = auth()->user()->can('cetak struk penjualan');
 
-    $paginationHtml = view('main.finance.partials.pagination', [
-        'items' => $sales,
-        'type' => 'sales'
-    ])->render();
+        $html = view('main.finance.partials.sales-table-rows', [
+            'sales' => $sales,
+            'canViewDetail' => $canViewDetail,
+            'canPrint' => $canPrint,
+        ])->render();
 
-    return response()->json([
-        'success' => true,
-        'html' => $html,
-        'pagination' => $paginationHtml,
-        'count' => $sales->total(),
-        'currentPage' => $sales->currentPage(),
-        'lastPage' => $sales->lastPage()
-    ]);
-}
+        $paginationHtml = view('main.finance.partials.pagination', [
+            'items' => $sales,
+            'type' => 'sales',
+        ])->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'pagination' => $paginationHtml,
+            'count' => $sales->total(),
+            'currentPage' => $sales->currentPage(),
+            'lastPage' => $sales->lastPage(),
+        ]);
+    }
 
     public function getDailySummaryAjax(Request $request): JsonResponse
     {
         $outletId = auth()->user()->outlet_id;
         $date = $request->get('date', now()->format('Y-m-d'));
-        
+
         $startOfDay = Carbon::parse($date)->startOfDay();
         $endOfDay = Carbon::parse($date)->endOfDay();
 
@@ -282,7 +282,7 @@ public function getSalesListAjax(Request $request): JsonResponse
             ->get();
 
         $dailySales = $sales->sum('grand_total');
-        
+
         $dailyOtherIncome = abs(Expense::where('outlet_id', $outletId)
             ->whereDate('expense_date', Carbon::parse($date))
             ->where('amount', '<', 0)
@@ -290,7 +290,7 @@ public function getSalesListAjax(Request $request): JsonResponse
             ->sum('amount'));
 
         $dailyRevenue = $dailySales + $dailyOtherIncome;
-        
+
         $dailyExpenses = Expense::where('outlet_id', $outletId)
             ->whereDate('expense_date', Carbon::parse($date))
             ->where('amount', '>', 0)
@@ -309,17 +309,18 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function getCategoriesAjax()
     {
-        if (!auth()->user()->can('buat pemasukan') && !auth()->user()->can('buat pengeluaran')) {
+        if (! auth()->user()->can('buat pemasukan') && ! auth()->user()->can('buat pengeluaran')) {
             return response()->json(['message' => 'Akses ditolak'], 403);
         }
 
         $categories = ExpenseCategory::where('is_active', true)->get();
+
         return response()->json($categories);
     }
 
     public function storeIncomeAjax(Request $request)
     {
-        if (!auth()->user()->can('buat pemasukan')) {
+        if (! auth()->user()->can('buat pemasukan')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -353,19 +354,19 @@ public function getSalesListAjax(Request $request): JsonResponse
             return response()->json([
                 'success' => true,
                 'message' => 'Pemasukan berhasil dicatat',
-                'data' => $expense
+                'data' => $expense,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 422);
         }
     }
 
     public function storeExpenseAjax(Request $request)
     {
-        if (!auth()->user()->can('buat pengeluaran')) {
+        if (! auth()->user()->can('buat pengeluaran')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -404,19 +405,19 @@ public function getSalesListAjax(Request $request): JsonResponse
             return response()->json([
                 'success' => true,
                 'message' => 'Pengeluaran berhasil dicatat',
-                'data' => $expense
+                'data' => $expense,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 422);
         }
     }
 
     public function getRevenueChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat grafik keuangan')) {
+        if (! auth()->user()->can('lihat grafik keuangan')) {
             return response()->json(['message' => 'Akses ditolak'], 403);
         }
 
@@ -462,7 +463,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function getExpenseChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat grafik keuangan')) {
+        if (! auth()->user()->can('lihat grafik keuangan')) {
             return response()->json(['message' => 'Akses ditolak'], 403);
         }
 
@@ -516,7 +517,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function createIncome(Request $request)
     {
-        if (!auth()->user()->can('buat pemasukan')) {
+        if (! auth()->user()->can('buat pemasukan')) {
             abort(403);
         }
 
@@ -527,7 +528,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function storeIncome(Request $request)
     {
-        if (!auth()->user()->can('buat pemasukan')) {
+        if (! auth()->user()->can('buat pemasukan')) {
             abort(403);
         }
 
@@ -562,7 +563,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function editIncome(Expense $expense)
     {
-        if (!auth()->user()->can('edit pemasukan')) {
+        if (! auth()->user()->can('edit pemasukan')) {
             abort(403);
         }
 
@@ -581,7 +582,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function updateIncome(Request $request, Expense $expense)
     {
-        if (!auth()->user()->can('edit pemasukan')) {
+        if (! auth()->user()->can('edit pemasukan')) {
             abort(403);
         }
 
@@ -612,7 +613,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function createExpense()
     {
-        if (!auth()->user()->can('buat pengeluaran')) {
+        if (! auth()->user()->can('buat pengeluaran')) {
             abort(403);
         }
 
@@ -623,7 +624,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function storeExpense(Request $request)
     {
-        if (!auth()->user()->can('buat pengeluaran')) {
+        if (! auth()->user()->can('buat pengeluaran')) {
             abort(403);
         }
 
@@ -662,7 +663,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function editExpense(Expense $expense)
     {
-        if (!auth()->user()->can('edit pengeluaran')) {
+        if (! auth()->user()->can('edit pengeluaran')) {
             abort(403);
         }
 
@@ -682,7 +683,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function updateExpense(Request $request, Expense $expense)
     {
-        if (!auth()->user()->can('edit pengeluaran')) {
+        if (! auth()->user()->can('edit pengeluaran')) {
             abort(403);
         }
 
@@ -722,7 +723,7 @@ public function getSalesListAjax(Request $request): JsonResponse
     public function destroy(Expense $expense)
     {
         $permission = $expense->amount < 0 ? 'hapus pemasukan' : 'hapus pengeluaran';
-        if (!auth()->user()->can($permission)) {
+        if (! auth()->user()->can($permission)) {
             abort(403);
         }
 
@@ -762,7 +763,7 @@ public function getSalesListAjax(Request $request): JsonResponse
 
     public function daily(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat keuangan harian')) {
+        if (! auth()->user()->can('lihat keuangan harian')) {
             return response()->json(['message' => 'Akses ditolak'], 403);
         }
 
@@ -816,39 +817,38 @@ public function getSalesListAjax(Request $request): JsonResponse
         ]);
     }
 
-public function getExpensesAjax(Request $request): JsonResponse
-{
-    $outletId = auth()->user()->outlet_id;
-    $period = $request->get('period', 'today');
-    $startDate = $request->get('start_date');
-    $endDate = $request->get('end_date');
-    $page = $request->get('page', 1);
+    public function getExpensesAjax(Request $request): JsonResponse
+    {
+        $outletId = auth()->user()->outlet_id;
+        $period = $request->get('period', 'today');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $page = $request->get('page', 1);
 
-    [$expenseStart, $expenseEnd] = $this->getExpenseDateRange($period, $startDate, $endDate);
+        [$expenseStart, $expenseEnd] = $this->getExpenseDateRange($period, $startDate, $endDate);
 
-    $expenses = Expense::where('outlet_id', $outletId)
-        ->whereBetween('expense_date', [$expenseStart, $expenseEnd])
-        ->where('status', 'approved')
-        ->with(['category', 'creator'])
-        ->orderBy('expense_date', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->paginate(5, ['*'], 'page', $page);
+        $expenses = Expense::where('outlet_id', $outletId)
+            ->whereBetween('expense_date', [$expenseStart, $expenseEnd])
+            ->where('status', 'approved')
+            ->with(['category', 'creator'])
+            ->orderBy('expense_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(5, ['*'], 'page', $page);
 
-    $html = view('main.finance.partials.expenses-table-rows', compact('expenses'))->render();
-    
-    $paginationHtml = view('main.finance.partials.pagination', [
-        'items' => $expenses,
-        'type' => 'expenses'
-    ])->render();
+        $html = view('main.finance.partials.expenses-table-rows', compact('expenses'))->render();
 
-    return response()->json([
-        'success' => true,
-        'html' => $html,
-        'pagination' => $paginationHtml,
-        'count' => $expenses->total(),
-        'currentPage' => $expenses->currentPage(),
-        'lastPage' => $expenses->lastPage()
-    ]);
-}
+        $paginationHtml = view('main.finance.partials.pagination', [
+            'items' => $expenses,
+            'type' => 'expenses',
+        ])->render();
 
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'pagination' => $paginationHtml,
+            'count' => $expenses->total(),
+            'currentPage' => $expenses->currentPage(),
+            'lastPage' => $expenses->lastPage(),
+        ]);
+    }
 }

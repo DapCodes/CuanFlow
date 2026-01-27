@@ -21,8 +21,8 @@ class TableSeeder extends Seeder
             $tables[] = [
                 'outlet_id' => $outletId,
                 'table_number' => $num,
-                'code' => 'TBL-IN-' . $num,
-                'name' => 'Meja Indoor ' . $num,
+                'code' => 'TBL-IN-'.$num,
+                'name' => 'Meja Indoor '.$num,
                 'capacity' => ($i <= 10) ? 4 : 2, // 10 meja kapasitas 4, 5 meja kapasitas 2
                 'location' => 'Lantai 1 - Area Utama',
                 'status' => 'available',
@@ -38,8 +38,8 @@ class TableSeeder extends Seeder
             $tables[] = [
                 'outlet_id' => $outletId,
                 'table_number' => $num,
-                'code' => 'TBL-OUT-' . $num,
-                'name' => 'Meja Outdoor ' . $num,
+                'code' => 'TBL-OUT-'.$num,
+                'name' => 'Meja Outdoor '.$num,
                 'capacity' => ($i <= 20) ? 2 : 4,
                 'location' => 'Teras Depan',
                 'status' => 'available',
@@ -55,8 +55,8 @@ class TableSeeder extends Seeder
             $tables[] = [
                 'outlet_id' => $outletId,
                 'table_number' => $num,
-                'code' => 'TBL-VIP-' . $num,
-                'name' => 'Meja VIP ' . $num,
+                'code' => 'TBL-VIP-'.$num,
+                'name' => 'Meja VIP '.$num,
                 'capacity' => ($i <= 30) ? 6 : 8, // Kapasitas lebih besar untuk VIP
                 'location' => 'Lantai 2 - VIP Room',
                 'status' => 'available',

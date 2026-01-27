@@ -12,6 +12,7 @@ class TestimonialController extends Controller
     public function index()
     {
         $testimonials = Testimonial::with('outlet')->latest()->paginate(15);
+
         return view('admin.master.testimonials.index', compact('testimonials'));
     }
 
@@ -87,7 +88,8 @@ class TestimonialController extends Controller
 
     public function toggleStatus(Testimonial $testimonial)
     {
-        $testimonial->update(['is_published' => !$testimonial->is_published]);
+        $testimonial->update(['is_published' => ! $testimonial->is_published]);
+
         return back()->with('success', 'Status testimonial berhasil diubah.');
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ResellerApplicationSeeder extends Seeder
@@ -20,7 +19,7 @@ class ResellerApplicationSeeder extends Seeder
         // validasi: customer dengan type reseller harus punya aplikasi approved
         for ($i = 0; $i < 5; $i++) {
             $customer = \App\Models\Customer::create([
-                'code' => 'CUST-' . strtoupper(\Illuminate\Support\Str::random(8)),
+                'code' => 'CUST-'.strtoupper(\Illuminate\Support\Str::random(8)),
                 'name' => $faker->name,
                 'phone' => $faker->unique()->phoneNumber,
                 'email' => $faker->unique()->email,
@@ -31,12 +30,12 @@ class ResellerApplicationSeeder extends Seeder
                 'points' => $faker->numberBetween(0, 5000),
                 'is_active' => true,
             ]);
-            
+
             \App\Models\ResellerApplication::create([
                 'customer_id' => $customer->id,
                 'outlet_id' => $outletId,
                 'description' => $faker->paragraph,
-                'document_path' => null, 
+                'document_path' => null,
                 'status' => 'approved',
                 'processed_by' => 1, // Admin/Owner ID
                 'processed_at' => now(),
@@ -48,7 +47,7 @@ class ResellerApplicationSeeder extends Seeder
         // validasi: customer type regular yg sedang apply (pending/rejected)
         for ($i = 0; $i < 10; $i++) {
             $customer = \App\Models\Customer::create([
-                'code' => 'CUST-' . strtoupper(\Illuminate\Support\Str::random(8)),
+                'code' => 'CUST-'.strtoupper(\Illuminate\Support\Str::random(8)),
                 'name' => $faker->name,
                 'phone' => $faker->unique()->phoneNumber,
                 'email' => $faker->unique()->email,
@@ -61,7 +60,7 @@ class ResellerApplicationSeeder extends Seeder
             ]);
 
             $status = $faker->randomElement(['pending', 'rejected']);
-            
+
             \App\Models\ResellerApplication::create([
                 'customer_id' => $customer->id,
                 'outlet_id' => $outletId,

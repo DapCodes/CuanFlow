@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller implements HasMiddleware
 {
@@ -24,12 +24,14 @@ class RoleController extends Controller implements HasMiddleware
     public function index()
     {
         $roles = Role::withCount('permissions')->latest()->paginate(15);
+
         return view('admin.master.roles.index', compact('roles'));
     }
 
     public function create()
     {
         $permissions = Permission::orderBy('name')->get();
+
         return view('admin.master.roles.create', compact('permissions'));
     }
 
@@ -46,7 +48,7 @@ class RoleController extends Controller implements HasMiddleware
             'guard_name' => 'web',
         ]);
 
-        if (!empty($validated['permissions'])) {
+        if (! empty($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);
         }
 
@@ -57,6 +59,7 @@ class RoleController extends Controller implements HasMiddleware
     public function show(Role $role)
     {
         $role->load('permissions');
+
         return view('admin.master.roles.show', compact('role'));
     }
 
@@ -64,14 +67,14 @@ class RoleController extends Controller implements HasMiddleware
     {
         $permissions = Permission::orderBy('name')->get();
         $rolePermissions = $role->permissions->pluck('name')->toArray();
-        
+
         return view('admin.master.roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
     public function update(Request $request, Role $role)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:roles,name,' . $role->id],
+            'name' => ['required', 'string', 'max:255', 'unique:roles,name,'.$role->id],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['exists:permissions,name'],
         ]);

@@ -20,7 +20,7 @@ class ProductHppController extends Controller
 {
     public function index()
     {
-        if (!auth()->user()->can('lihat produk')) {
+        if (! auth()->user()->can('lihat produk')) {
             abort(403, 'Akses ditolak');
         }
 
@@ -47,7 +47,7 @@ class ProductHppController extends Controller
 
     public function create()
     {
-        if (!auth()->user()->can('buat produk')) {
+        if (! auth()->user()->can('buat produk')) {
             abort(403, 'Akses ditolak');
         }
 
@@ -65,7 +65,7 @@ class ProductHppController extends Controller
 
     public function store(Request $request)
     {
-        if (!auth()->user()->can('buat produk')) {
+        if (! auth()->user()->can('buat produk')) {
             abort(403, 'Akses ditolak');
         }
 
@@ -184,7 +184,7 @@ class ProductHppController extends Controller
                 'margin_percent' => round($marginPercent, 2),
             ]);
 
-            if ($request->boolean('enable_sales_target') && !empty($validated['monthly_target_revenue']) && $validated['monthly_target_revenue'] > 0) {
+            if ($request->boolean('enable_sales_target') && ! empty($validated['monthly_target_revenue']) && $validated['monthly_target_revenue'] > 0) {
                 $monthlyTargetRevenue = (float) $validated['monthly_target_revenue'];
                 $sellingPrice = (float) $validated['selling_price'];
 
@@ -196,7 +196,7 @@ class ProductHppController extends Controller
                     $monthlyProfitTarget = $monthlySalesTarget * $profitPerUnit;
 
                     $salesPattern = null;
-                    if (!empty($validated['sales_pattern'])) {
+                    if (! empty($validated['sales_pattern'])) {
                         $decoded = json_decode($validated['sales_pattern'], true);
                         if (json_last_error() === JSON_ERROR_NONE) {
                             $salesPattern = $decoded;
@@ -230,13 +230,14 @@ class ProductHppController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     public function show(Product $product)
     {
-        if (!auth()->user()->can('lihat detail produk')) {
+        if (! auth()->user()->can('lihat detail produk')) {
             abort(403, 'Akses ditolak');
         }
 
@@ -251,7 +252,7 @@ class ProductHppController extends Controller
 
     public function edit(Product $product)
     {
-        if (!auth()->user()->can('edit produk')) {
+        if (! auth()->user()->can('edit produk')) {
             abort(403, 'Akses ditolak');
         }
 
@@ -278,7 +279,7 @@ class ProductHppController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        if (!auth()->user()->can('edit produk')) {
+        if (! auth()->user()->can('edit produk')) {
             abort(403, 'Akses ditolak');
         }
 
@@ -409,13 +410,14 @@ class ProductHppController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     public function toggleStatus(Request $request, Product $product)
     {
-        if (!auth()->user()->can('aktifkan nonaktifkan produk')) {
+        if (! auth()->user()->can('aktifkan nonaktifkan produk')) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Akses ditolak'], 403)
                 : abort(403, 'Akses ditolak');
@@ -427,7 +429,7 @@ class ProductHppController extends Controller
                 : abort(404);
         }
 
-        $product->is_active = !$product->is_active;
+        $product->is_active = ! $product->is_active;
         $product->save();
 
         if ($request->wantsJson()) {
@@ -443,7 +445,7 @@ class ProductHppController extends Controller
 
     public function destroy(Product $product)
     {
-        if (!auth()->user()->can('hapus produk')) {
+        if (! auth()->user()->can('hapus produk')) {
             abort(403, 'Akses ditolak');
         }
 
@@ -469,7 +471,7 @@ class ProductHppController extends Controller
     {
         $rawMaterial = RawMaterial::find($request->raw_material_id);
 
-        if (!$rawMaterial || $rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+        if (! $rawMaterial || $rawMaterial->outlet_id !== Auth::user()->outlet_id) {
             return response()->json(['error' => 'Bahan baku tidak ditemukan'], 404);
         }
 
@@ -481,7 +483,7 @@ class ProductHppController extends Controller
 
     public function generateCode()
     {
-        if (!auth()->user()->can('generate kode produk')) {
+        if (! auth()->user()->can('generate kode produk')) {
             return response()->json(['message' => 'Akses ditolak'], 403);
         }
 
@@ -506,7 +508,7 @@ class ProductHppController extends Controller
 
     public function generateBarcode()
     {
-        if (!auth()->user()->can('generate barcode produk')) {
+        if (! auth()->user()->can('generate barcode produk')) {
             return response()->json(['message' => 'Akses ditolak'], 403);
         }
 
@@ -530,7 +532,7 @@ class ProductHppController extends Controller
 
     public function barcodePreview(Product $product)
     {
-        if (!auth()->user()->can('generate barcode produk')) {
+        if (! auth()->user()->can('generate barcode produk')) {
             abort(403, 'Akses ditolak');
         }
 
@@ -538,17 +540,17 @@ class ProductHppController extends Controller
             abort(404);
         }
 
-        if (!$product->barcode) {
+        if (! $product->barcode) {
             // Return empty 1x1 pixel or standard error image
             return response('')->header('Content-Type', 'image/png');
         }
 
-        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
-        
+        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG;
+
         // Determine type: EAN-13 if 13 digits, otherwise Code 128
         $type = $generator::TYPE_CODE_128;
         if (strlen($product->barcode) === 13 && ctype_digit($product->barcode)) {
-             $type = $generator::TYPE_EAN_13;
+            $type = $generator::TYPE_EAN_13;
         }
 
         // Width factor 2, Height 50
@@ -559,7 +561,7 @@ class ProductHppController extends Controller
 
     public function barcodeDownload(Product $product)
     {
-        if (!auth()->user()->can('unduh barcode produk')) {
+        if (! auth()->user()->can('unduh barcode produk')) {
             abort(403, 'Akses ditolak');
         }
 
@@ -567,20 +569,20 @@ class ProductHppController extends Controller
             abort(404);
         }
 
-        if (!$product->barcode) {
+        if (! $product->barcode) {
             return back()->with('error', 'Produk tidak memiliki barcode.');
         }
 
-        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
-        
+        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG;
+
         $type = $generator::TYPE_CODE_128;
         if (strlen($product->barcode) === 13 && ctype_digit($product->barcode)) {
-             $type = $generator::TYPE_EAN_13;
+            $type = $generator::TYPE_EAN_13;
         }
 
         $barcodeData = $generator->getBarcode($product->barcode, $type, 3, 50);
-        
-        $filename = 'barcode-'.$product->barcode . '.png';
+
+        $filename = 'barcode-'.$product->barcode.'.png';
 
         return response()->streamDownload(function () use ($barcodeData) {
             echo $barcodeData;
@@ -589,14 +591,14 @@ class ProductHppController extends Controller
 
     public function getSalesAnalytics(Request $request)
     {
-        if (!auth()->user()->can('lihat analitik produk')) {
+        if (! auth()->user()->can('lihat analitik produk')) {
             return response()->json(['message' => 'Akses ditolak'], 403);
         }
 
         $productId = $request->product_id;
         $outletId = auth()->user()->outlet_id;
 
-        if ($productId === 'new' || !$productId) {
+        if ($productId === 'new' || ! $productId) {
             return response()->json([
                 'daily_pattern' => [
                     'Monday' => 0, 'Tuesday' => 0, 'Wednesday' => 0,
@@ -611,7 +613,7 @@ class ProductHppController extends Controller
         }
 
         $product = Product::find($productId);
-        if (!$product || $product->outlet_id !== $outletId) {
+        if (! $product || $product->outlet_id !== $outletId) {
             return response()->json(['error' => 'Product not found'], 404);
         }
 
@@ -689,7 +691,7 @@ class ProductHppController extends Controller
      */
     public function generateRecipeAI(Request $request)
     {
-        if (!auth()->user()->can('generate resep ai')) {
+        if (! auth()->user()->can('generate resep ai')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -720,7 +722,7 @@ class ProductHppController extends Controller
             }
 
             $systemPromptPath = resource_path('ai-prompts/recipe-generator.txt');
-            if (!file_exists($systemPromptPath)) {
+            if (! file_exists($systemPromptPath)) {
                 throw new \Exception('System prompt file not found: '.$systemPromptPath);
             }
 
@@ -778,20 +780,20 @@ class ProductHppController extends Controller
             ]);
 
             $data = $response->json();
-            
+
             \Log::info('Response decoded to array', [
                 'is_array' => is_array($data),
                 'keys' => is_array($data) ? array_keys($data) : 'not_array',
             ]);
-            
+
             // Log the ENTIRE response for debugging
             \Log::debug('Full API Response Structure', [
-                'full_response' => json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+                'full_response' => json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
             ]);
-            
+
             $aiContent = $this->extractAIContent($data);
 
-            if (!$aiContent) {
+            if (! $aiContent) {
                 \Log::error('AI Response Empty After Extraction', [
                     'response_status' => $response->status(),
                     'response_body_full' => $response->body(), // Log full body for debugging
@@ -804,17 +806,17 @@ class ProductHppController extends Controller
                 'content_length' => strlen($aiContent),
                 'has_backslash' => (strpos($aiContent, '\\') !== false),
             ]);
-            
+
             // Log FULL content to separate entry for debugging
             \Log::debug('Full AI Response Content', [
-                'full_content' => $aiContent
+                'full_content' => $aiContent,
             ]);
 
             $recipe = $this->parseAIResponse($aiContent);
 
-            if (!$this->isValidRecipe($recipe)) {
+            if (! $this->isValidRecipe($recipe)) {
                 $reason = $this->extractErrorReason($aiContent, $recipe);
-                
+
                 \Log::warning('AI returned invalid recipe', [
                     'product_name' => $validated['product_name'],
                     'reason' => $reason,
@@ -828,12 +830,12 @@ class ProductHppController extends Controller
 
             // Validasi setiap ingredient
             foreach ($recipe['ingredients'] as $index => $ingredient) {
-                if (!isset($ingredient['raw_material_id']) || !isset($ingredient['quantity'])) {
+                if (! isset($ingredient['raw_material_id']) || ! isset($ingredient['quantity'])) {
                     throw new \Exception("Ingredient tidak valid pada index {$index}");
                 }
 
                 $rmExists = $rawMaterials->where('id', $ingredient['raw_material_id'])->first();
-                if (!$rmExists) {
+                if (! $rmExists) {
                     throw new \Exception("Bahan baku ID {$ingredient['raw_material_id']} tidak ditemukan");
                 }
             }
@@ -874,16 +876,16 @@ class ProductHppController extends Controller
         // Check for error in response
         if (isset($data['error'])) {
             \Log::error('API returned error', ['error' => $data['error']]);
-            throw new \Exception('API Error: ' . ($data['error']['message'] ?? json_encode($data['error'])));
+            throw new \Exception('API Error: '.($data['error']['message'] ?? json_encode($data['error'])));
         }
 
         // OpenAI-like format: choices[0].message.content
         if (isset($data['choices'][0]['message']['content'])) {
             $content = $data['choices'][0]['message']['content'];
-            
+
             // Check finish_reason to understand truncation
             $finishReason = $data['choices'][0]['finish_reason'] ?? 'unknown';
-            
+
             \Log::info('Found content in choices[0].message.content', [
                 'content_type' => gettype($content),
                 'is_string' => is_string($content),
@@ -891,15 +893,15 @@ class ProductHppController extends Controller
                 'finish_reason' => $finishReason,
                 'usage' => $data['usage'] ?? 'no usage data',
             ]);
-            
+
             if ($finishReason === 'length') {
                 \Log::warning('Response was truncated due to max_tokens limit!');
             }
-            
+
             if (is_string($content)) {
                 // DeepSeek-R1 returns content wrapped in <think> and </think> tags
                 // We need to extract the actual JSON from these tags
-                
+
                 // Try to extract content between <think> tags first
                 if (preg_match('/<think>(.*?)<\/think>/s', $content, $matches)) {
                     \Log::info('Found content in <think> tags');
@@ -907,19 +909,20 @@ class ProductHppController extends Controller
                     $afterThink = preg_replace('/<think>.*?<\/think>/s', '', $content);
                     $content = trim($afterThink);
                 }
-                
+
                 // Log FULL content for debugging truncation issues
                 \Log::info('Full AI content extracted', [
-                    'full_content' => $content
+                    'full_content' => $content,
                 ]);
-                
+
                 return $content;
             }
-            
+
             if (is_array($content)) {
                 if (isset($content['value'])) {
                     return is_string($content['value']) ? $content['value'] : json_encode($content['value']);
                 }
+
                 return json_encode($content);
             }
         }
@@ -927,24 +930,28 @@ class ProductHppController extends Controller
         // Alternative: choices[0].text
         if (isset($data['choices'][0]['text'])) {
             \Log::info('Found content in choices[0].text');
+
             return $data['choices'][0]['text'];
         }
 
         // Alternative: choices[0].delta.content (streaming format)
         if (isset($data['choices'][0]['delta']['content'])) {
             \Log::info('Found content in choices[0].delta.content');
+
             return $data['choices'][0]['delta']['content'];
         }
 
         // Alternative: output format
         if (isset($data['output'][0]['content'][0]['text'])) {
             \Log::info('Found content in output[0].content[0].text');
+
             return $data['output'][0]['content'][0]['text'];
         }
 
         // Check if response is the content itself
         if (is_string($data)) {
             \Log::info('Response is direct string');
+
             return $data;
         }
 
@@ -972,28 +979,28 @@ class ProductHppController extends Controller
 
         // Strategy 1: Remove <think> reasoning tags (DeepSeek-R1 specific)
         $cleaned = trim($content);
-        
+
         // Remove <think>...</think> tags which contain reasoning
         if (strpos($cleaned, '<think>') !== false) {
             \Log::info('Removing <think> reasoning tags');
             $cleaned = preg_replace('/<think>.*?<\/think>/s', '', $cleaned);
             $cleaned = trim($cleaned);
         }
-        
+
         // Remove markdown code blocks
         $cleaned = preg_replace('/```json\s*/i', '', $cleaned);
         $cleaned = preg_replace('/\s*```/i', '', $cleaned);
-        
+
         // Remove BOM
         $cleaned = preg_replace('/^\xEF\xBB\xBF/', '', $cleaned);
-        
+
         // CRITICAL FIX: Remove ALL control characters including newlines in strings
         // This is more aggressive but necessary for JSON parsing
         $cleaned = preg_replace('/[\x00-\x1F\x7F]/u', '', $cleaned);
-        
+
         // Fix problematic backslashes
         $cleaned = $this->cleanInvalidBackslashes($cleaned);
-        
+
         \Log::info('After cleaning', [
             'cleaned_length' => strlen($cleaned),
             'backslash_count' => substr_count($cleaned, '\\'),
@@ -1005,6 +1012,7 @@ class ProductHppController extends Controller
         $recipe = json_decode($cleaned, true);
         if (json_last_error() === JSON_ERROR_NONE && $this->isValidRecipe($recipe)) {
             \Log::info('Parse successful with Strategy 1');
+
             return $recipe;
         }
 
@@ -1019,33 +1027,35 @@ class ProductHppController extends Controller
             $extracted = $matches[0];
             $extracted = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $extracted);
             $extracted = $this->cleanInvalidBackslashes($extracted);
-            
+
             $recipe = json_decode($extracted, true);
             if (json_last_error() === JSON_ERROR_NONE && $this->isValidRecipe($recipe)) {
                 \Log::info('Parse successful with Strategy 2');
+
                 return $recipe;
             }
-            
+
             \Log::warning('Strategy 2 failed', ['error' => json_last_error_msg()]);
         }
 
         // Strategy 3: Extract ingredients directly
         if (preg_match('/"ingredients"\s*:\s*\[(.*?)\]/s', $content, $matches)) {
-            $ingredientsJson = '[' . $matches[1] . ']';
+            $ingredientsJson = '['.$matches[1].']';
             $ingredientsJson = $this->cleanInvalidBackslashes($ingredientsJson);
-            
+
             $ingredients = json_decode($ingredientsJson, true);
-            
-            if (json_last_error() === JSON_ERROR_NONE && is_array($ingredients) && !empty($ingredients)) {
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($ingredients) && ! empty($ingredients)) {
                 \Log::info('Parse successful with Strategy 3 (partial)');
+
                 return [
                     'menu_name' => 'Generated Recipe',
                     'ingredients' => $ingredients,
                     'assumptions' => 'Parsed from partial response',
-                    'missing_ingredients' => []
+                    'missing_ingredients' => [],
                 ];
             }
-            
+
             \Log::warning('Strategy 3 failed', ['error' => json_last_error_msg()]);
         }
 
@@ -1054,6 +1064,7 @@ class ProductHppController extends Controller
         $recipe = json_decode($stripped, true);
         if (json_last_error() === JSON_ERROR_NONE && $this->isValidRecipe($recipe)) {
             \Log::info('Parse successful with Strategy 4');
+
             return $recipe;
         }
 
@@ -1075,11 +1086,11 @@ class ProductHppController extends Controller
     {
         $result = '';
         $length = strlen($text);
-        
+
         for ($i = 0; $i < $length; $i++) {
             if ($text[$i] === '\\' && $i + 1 < $length) {
                 $nextChar = $text[$i + 1];
-                
+
                 // Valid JSON escape sequences: \" \\ \/ \b \f \n \r \t \uXXXX
                 if (in_array($nextChar, ['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'])) {
                     $result .= $text[$i]; // Keep the backslash
@@ -1091,7 +1102,7 @@ class ProductHppController extends Controller
                 $result .= $text[$i];
             }
         }
-        
+
         return $result;
     }
 
@@ -1100,11 +1111,11 @@ class ProductHppController extends Controller
      */
     private function isValidRecipe($data): bool
     {
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return false;
         }
 
-        if (!isset($data['ingredients']) || !is_array($data['ingredients'])) {
+        if (! isset($data['ingredients']) || ! is_array($data['ingredients'])) {
             return false;
         }
 
@@ -1113,7 +1124,7 @@ class ProductHppController extends Controller
         }
 
         foreach ($data['ingredients'] as $ingredient) {
-            if (!isset($ingredient['raw_material_id']) || !isset($ingredient['quantity'])) {
+            if (! isset($ingredient['raw_material_id']) || ! isset($ingredient['quantity'])) {
                 return false;
             }
         }

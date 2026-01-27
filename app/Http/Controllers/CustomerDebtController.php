@@ -6,11 +6,11 @@ use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\DebtPayment;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\DB;
 use Midtrans\Config;
 use Midtrans\Snap;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
 class CustomerDebtController extends Controller implements HasMiddleware
 {
@@ -186,7 +186,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
     public function payDebt(Request $request, CustomerDebt $debt)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:1|max:' . $debt->remaining_amount,
+            'amount' => 'required|numeric|min:1|max:'.$debt->remaining_amount,
             'payment_method' => 'required|in:cash,transfer,qris',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
@@ -246,11 +246,11 @@ class CustomerDebtController extends Controller implements HasMiddleware
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Debt Payment Error: ' . $e->getMessage());
+            \Log::error('Debt Payment Error: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memproses pembayaran: ' . $e->getMessage(),
+                'message' => 'Gagal memproses pembayaran: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -261,7 +261,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
     public function createMidtransToken(Request $request, CustomerDebt $debt)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:1|max:' . $debt->remaining_amount,
+            'amount' => 'required|numeric|min:1|max:'.$debt->remaining_amount,
         ]);
 
         if ($debt->status === 'paid') {
@@ -273,14 +273,14 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
         try {
             $amount = (int) $request->amount;
-            $orderId = 'DEBT-' . $debt->id . '-' . time() . '-' . strtoupper(substr(md5(uniqid()), 0, 6));
+            $orderId = 'DEBT-'.$debt->id.'-'.time().'-'.strtoupper(substr(md5(uniqid()), 0, 6));
 
             $itemDetails = [
                 [
-                    'id' => 'DEBT-' . $debt->id,
+                    'id' => 'DEBT-'.$debt->id,
                     'price' => $amount,
                     'quantity' => 1,
-                    'name' => 'Pembayaran Utang - ' . ($debt->sale->invoice_number ?? 'Invoice'),
+                    'name' => 'Pembayaran Utang - '.($debt->sale->invoice_number ?? 'Invoice'),
                 ],
             ];
 
@@ -320,11 +320,11 @@ class CustomerDebtController extends Controller implements HasMiddleware
                 'order_id' => $orderId,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Midtrans Token Error for Debt: ' . $e->getMessage());
+            \Log::error('Midtrans Token Error for Debt: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat token pembayaran: ' . $e->getMessage(),
+                'message' => 'Gagal membuat token pembayaran: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -369,20 +369,21 @@ class CustomerDebtController extends Controller implements HasMiddleware
             ],
         ]);
     }
+
     /**
      * Get customer sales history
      */
     public function getCustomerHistory(Customer $customer)
     {
         $outletId = auth()->user()->outlet_id;
-        
+
         $sales = $customer->sales()
             ->where('outlet_id', $outletId)
             ->withCount('items')
             ->orderBy('created_at', 'desc')
             ->take(50)
             ->get()
-            ->map(function($sale) {
+            ->map(function ($sale) {
                 return [
                     'id' => $sale->id,
                     'invoice_number' => $sale->invoice_number,
@@ -393,11 +394,11 @@ class CustomerDebtController extends Controller implements HasMiddleware
                     'items_count' => $sale->items_count,
                 ];
             });
-            
+
         return response()->json([
             'success' => true,
             'customer' => $customer->only(['id', 'name', 'code', 'phone']),
-            'sales' => $sales
+            'sales' => $sales,
         ]);
     }
 }

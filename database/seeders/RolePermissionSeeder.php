@@ -4,9 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\PermissionCategory;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\DB;
 
 class RolePermissionSeeder extends Seeder
 {

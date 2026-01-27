@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Table;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class TableController extends Controller implements HasMiddleware
 {
@@ -25,13 +25,14 @@ class TableController extends Controller implements HasMiddleware
             new Middleware('permission:toggle sistem meja outlet', only: ['toggleTableSystemApi']),
         ];
     }
+
     /**
      * Display a listing of tables.
      */
     public function index(Request $request)
     {
         $outlet = Auth::user()->outlet;
-        
+
         // Check if outlet has table system enabled
         // if (!$outlet->has_table_system) {
         //     return redirect()->route('dashboard')
@@ -55,8 +56,8 @@ class TableController extends Controller implements HasMiddleware
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('table_number', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
             });
         }
 
@@ -87,7 +88,7 @@ class TableController extends Controller implements HasMiddleware
     public function create()
     {
         $outlet = Auth::user()->outlet;
-        
+
         // if (!$outlet->has_table_system) {
         //     return redirect()->route('dashboard')
         //         ->with('error', 'Fitur sistem meja belum diaktifkan untuk outlet ini.');
@@ -132,7 +133,7 @@ class TableController extends Controller implements HasMiddleware
 
         // Auto generate code if not provided
         if (empty($validated['code'])) {
-            $validated['code'] = 'TBL-' . strtoupper($validated['table_number']) . '-' . now()->format('ymd');
+            $validated['code'] = 'TBL-'.strtoupper($validated['table_number']).'-'.now()->format('ymd');
         }
 
         Table::create($validated);
@@ -279,9 +280,9 @@ class TableController extends Controller implements HasMiddleware
         $outlet = Auth::user()->outlet;
         $date = now()->format('ymd');
         $random = strtoupper(substr(uniqid(), -4));
-        
+
         do {
-            $code = 'TBL-' . $date . '-' . $random;
+            $code = 'TBL-'.$date.'-'.$random;
             $exists = Table::byOutlet($outlet->id)->where('code', $code)->exists();
         } while ($exists);
 
@@ -293,7 +294,7 @@ class TableController extends Controller implements HasMiddleware
      */
     public function getTablesApi()
     {
-        if (!auth()->user()->can('pilih meja pos')) {
+        if (! auth()->user()->can('pilih meja pos')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki izin untuk memilih meja',
@@ -308,7 +309,7 @@ class TableController extends Controller implements HasMiddleware
 
         return response()->json([
             'success' => true,
-            'tables' => $tables
+            'tables' => $tables,
         ]);
     }
 
@@ -319,12 +320,12 @@ class TableController extends Controller implements HasMiddleware
     {
         $outlet = auth()->user()->outlet;
         $enabled = $request->boolean('enabled');
-        
+
         $outlet->update(['has_table_system' => $enabled]);
 
         return response()->json([
             'success' => true,
-            'enabled' => $enabled
+            'enabled' => $enabled,
         ]);
     }
 }

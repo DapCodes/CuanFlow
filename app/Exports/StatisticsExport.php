@@ -3,13 +3,11 @@
 namespace App\Exports;
 
 use App\Models\Expense;
-use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithCharts;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
@@ -31,9 +29,13 @@ class StatisticsExport implements WithMultipleSheets
     use Exportable;
 
     protected int $outletId;
+
     protected string $period;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
+
     protected string $outletName;
 
     public function __construct(int $outletId, string $period, string $outletName)
@@ -70,12 +72,16 @@ class StatisticsExport implements WithMultipleSheets
 }
 
 // ========== SUMMARY SHEET (No Chart) ==========
-class SummarySheet implements FromArray, WithTitle, WithStyles, WithEvents
+class SummarySheet implements FromArray, WithEvents, WithStyles, WithTitle
 {
     protected int $outletId;
+
     protected string $period;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
+
     protected string $outletName;
 
     public function __construct(int $outletId, string $period, Carbon $startDate, Carbon $endDate, string $outletName)
@@ -95,11 +101,11 @@ class SummarySheet implements FromArray, WithTitle, WithStyles, WithEvents
     public function array(): array
     {
         $periodLabel = match ($this->period) {
-            'today' => 'Hari Ini (' . now()->format('d M Y') . ')',
+            'today' => 'Hari Ini ('.now()->format('d M Y').')',
             '7' => '7 Hari Terakhir',
             '30' => '30 Hari Terakhir',
-            'month' => 'Bulan Ini (' . now()->format('F Y') . ')',
-            'year' => 'Tahun Ini (' . now()->format('Y') . ')',
+            'month' => 'Bulan Ini ('.now()->format('F Y').')',
+            'year' => 'Tahun Ini ('.now()->format('Y').')',
             default => '30 Hari Terakhir',
         };
 
@@ -121,8 +127,8 @@ class SummarySheet implements FromArray, WithTitle, WithStyles, WithEvents
 
         $totalProductsSold = SaleItem::whereHas('sale', function ($q) {
             $q->where('outlet_id', $this->outletId)
-              ->completed()
-              ->whereBetween('created_at', [$this->startDate, $this->endDate]);
+                ->completed()
+                ->whereBetween('created_at', [$this->startDate, $this->endDate]);
         })->sum('quantity');
 
         $totalRefunds = Sale::where('outlet_id', $this->outletId)
@@ -137,26 +143,26 @@ class SummarySheet implements FromArray, WithTitle, WithStyles, WithEvents
         return [
             [''],
             ['LAPORAN DASHBOARD & STATISTIK'],
-            ['Periode: ' . $periodLabel],
+            ['Periode: '.$periodLabel],
             [$this->outletName],
-            ['Tanggal Cetak: ' . now()->format('d M Y H:i')],
+            ['Tanggal Cetak: '.now()->format('d M Y H:i')],
             [''],
             [''],
             ['RINGKASAN KEUANGAN'],
             [''],
             ['Metrik', 'Nilai'],
-            ['Total Pendapatan', 'Rp ' . number_format($totalRevenue, 0, ',', '.')],
+            ['Total Pendapatan', 'Rp '.number_format($totalRevenue, 0, ',', '.')],
             ['Total Transaksi', number_format($totalTransactions)],
             ['Produk Terjual', number_format($totalProductsSold)],
-            ['Laba Kotor', 'Rp ' . number_format($grossProfit, 0, ',', '.')],
-            ['Total Pengeluaran', 'Rp ' . number_format($totalExpenses, 0, ',', '.')],
-            ['Laba Bersih', 'Rp ' . number_format($netProfit, 0, ',', '.')],
-            ['Total Refund', 'Rp ' . number_format($totalRefunds, 0, ',', '.')],
+            ['Laba Kotor', 'Rp '.number_format($grossProfit, 0, ',', '.')],
+            ['Total Pengeluaran', 'Rp '.number_format($totalExpenses, 0, ',', '.')],
+            ['Laba Bersih', 'Rp '.number_format($netProfit, 0, ',', '.')],
+            ['Total Refund', 'Rp '.number_format($totalRefunds, 0, ',', '.')],
             [''],
             ['RATA-RATA HARIAN'],
             [''],
             ['Metrik', 'Nilai'],
-            ['Pendapatan per Hari', 'Rp ' . number_format($avgRevenuePerDay, 0, ',', '.')],
+            ['Pendapatan per Hari', 'Rp '.number_format($avgRevenuePerDay, 0, ',', '.')],
             ['Transaksi per Hari', $avgTransactionsPerDay],
         ];
     }
@@ -196,7 +202,7 @@ class SummarySheet implements FromArray, WithTitle, WithStyles, WithEvents
                     'alignment' => [
                         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
                         'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-                    ]
+                    ],
                 ]);
 
                 // Add auto-filter on header row for first table
@@ -207,13 +213,13 @@ class SummarySheet implements FromArray, WithTitle, WithStyles, WithEvents
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => 'D1D5DB']
+                            'color' => ['rgb' => 'D1D5DB'],
                         ],
                         'outline' => [
                             'borderStyle' => Border::BORDER_MEDIUM,
-                            'color' => ['rgb' => '9CA3AF']
-                        ]
-                    ]
+                            'color' => ['rgb' => '9CA3AF'],
+                        ],
+                    ],
                 ]);
 
                 // Add auto-filter on header row for second table
@@ -224,30 +230,30 @@ class SummarySheet implements FromArray, WithTitle, WithStyles, WithEvents
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => 'D1D5DB']
+                            'color' => ['rgb' => 'D1D5DB'],
                         ],
                         'outline' => [
                             'borderStyle' => Border::BORDER_MEDIUM,
-                            'color' => ['rgb' => '9CA3AF']
-                        ]
-                    ]
+                            'color' => ['rgb' => '9CA3AF'],
+                        ],
+                    ],
                 ]);
 
                 // Add alternating row colors for better readability
                 for ($i = 11; $i <= 17; $i++) {
                     if ($i % 2 == 1) {
-                        $sheet->getStyle('A' . $i . ':B' . $i)->applyFromArray([
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F9FAFB']]
+                        $sheet->getStyle('A'.$i.':B'.$i)->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F9FAFB']],
                         ]);
                     }
                 }
 
                 // Align values to right for better number readability
                 $sheet->getStyle('B11:B17')->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT]
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
                 ]);
                 $sheet->getStyle('B22:B23')->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT]
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
                 ]);
             },
         ];
@@ -255,11 +261,14 @@ class SummarySheet implements FromArray, WithTitle, WithStyles, WithEvents
 }
 
 // ========== SALES TREND SHEET WITH LINE CHART ==========
-class SalesTrendSheet implements FromArray, WithTitle, WithStyles, WithEvents, WithCharts
+class SalesTrendSheet implements FromArray, WithCharts, WithEvents, WithStyles, WithTitle
 {
     protected int $outletId;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
+
     protected int $dataRowCount = 0;
 
     public function __construct(int $outletId, Carbon $startDate, Carbon $endDate)
@@ -285,12 +294,12 @@ class SalesTrendSheet implements FromArray, WithTitle, WithStyles, WithEvents, W
             ->get()
             ->keyBy('date');
 
-        $periodLabel = $this->startDate->format('d M Y') . ' - ' . $this->endDate->format('d M Y');
+        $periodLabel = $this->startDate->format('d M Y').' - '.$this->endDate->format('d M Y');
 
         $data = [
             [''],
             ['TREN PENJUALAN HARIAN'],
-            ['Periode: ' . $periodLabel],
+            ['Periode: '.$periodLabel],
             [''],
             ['Tanggal', 'Pendapatan (Rp)', 'Jumlah Transaksi'],
         ];
@@ -307,7 +316,7 @@ class SalesTrendSheet implements FromArray, WithTitle, WithStyles, WithEvents, W
             $data[] = [
                 $currentDate->format('d M Y'),
                 $revenue,
-                $count
+                $count,
             ];
 
             $totalRevenue += $revenue;
@@ -329,7 +338,7 @@ class SalesTrendSheet implements FromArray, WithTitle, WithStyles, WithEvents, W
         // Labels (dates)
         $labels = [new DataSeriesValues(
             DataSeriesValues::DATASERIES_TYPE_STRING,
-            "'Tren Penjualan'!\$A\$6:\$A\$" . $lastDataRow,
+            "'Tren Penjualan'!\$A\$6:\$A\$".$lastDataRow,
             null,
             $this->dataRowCount
         )];
@@ -337,7 +346,7 @@ class SalesTrendSheet implements FromArray, WithTitle, WithStyles, WithEvents, W
         // Revenue data series
         $values = [new DataSeriesValues(
             DataSeriesValues::DATASERIES_TYPE_NUMBER,
-            "'Tren Penjualan'!\$B\$6:\$B\$" . $lastDataRow,
+            "'Tren Penjualan'!\$B\$6:\$B\$".$lastDataRow,
             null,
             $this->dataRowCount
         )];
@@ -389,42 +398,42 @@ class SalesTrendSheet implements FromArray, WithTitle, WithStyles, WithEvents, W
                 $sheet->getStyle('A2:C3')->applyFromArray([
                     'alignment' => [
                         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                    ]
+                    ],
                 ]);
 
                 // Add auto-filter on header
                 $sheet->setAutoFilter('A5:C5');
 
                 // Total row styling
-                $sheet->getStyle('A' . $lastRow . ':C' . $lastRow)->applyFromArray([
+                $sheet->getStyle('A'.$lastRow.':C'.$lastRow)->applyFromArray([
                     'font' => ['bold' => true],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FEF3C7']]
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FEF3C7']],
                 ]);
 
                 // Add borders to entire table
-                $sheet->getStyle('A5:C' . $lastRow)->applyFromArray([
+                $sheet->getStyle('A5:C'.$lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => 'D1D5DB']
+                            'color' => ['rgb' => 'D1D5DB'],
                         ],
                         'outline' => [
                             'borderStyle' => Border::BORDER_MEDIUM,
-                            'color' => ['rgb' => '9CA3AF']
-                        ]
-                    ]
+                            'color' => ['rgb' => '9CA3AF'],
+                        ],
+                    ],
                 ]);
 
                 // Right align numbers
-                $sheet->getStyle('B6:C' . $lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT]
+                $sheet->getStyle('B6:C'.$lastRow)->applyFromArray([
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Alternating row colors
                 for ($i = 6; $i < $lastRow - 1; $i++) {
                     if ($i % 2 == 0) {
-                        $sheet->getStyle('A' . $i . ':C' . $i)->applyFromArray([
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F0FDF4']]
+                        $sheet->getStyle('A'.$i.':C'.$i)->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F0FDF4']],
                         ]);
                     }
                 }
@@ -434,11 +443,14 @@ class SalesTrendSheet implements FromArray, WithTitle, WithStyles, WithEvents, W
 }
 
 // ========== TOP PRODUCTS SHEET WITH BAR CHART ==========
-class TopProductsSheet implements FromArray, WithTitle, WithStyles, WithEvents, WithCharts
+class TopProductsSheet implements FromArray, WithCharts, WithEvents, WithStyles, WithTitle
 {
     protected int $outletId;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
+
     protected int $productCount = 0;
 
     public function __construct(int $outletId, Carbon $startDate, Carbon $endDate)
@@ -457,8 +469,8 @@ class TopProductsSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
     {
         $topProducts = SaleItem::whereHas('sale', function ($q) {
             $q->where('outlet_id', $this->outletId)
-              ->completed()
-              ->whereBetween('created_at', [$this->startDate, $this->endDate]);
+                ->completed()
+                ->whereBetween('created_at', [$this->startDate, $this->endDate]);
         })
             ->selectRaw('product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
             ->groupBy('product_name')
@@ -466,12 +478,12 @@ class TopProductsSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
             ->limit(10)
             ->get();
 
-        $periodLabel = $this->startDate->format('d M Y') . ' - ' . $this->endDate->format('d M Y');
+        $periodLabel = $this->startDate->format('d M Y').' - '.$this->endDate->format('d M Y');
 
         $data = [
             [''],
             ['TOP 10 PRODUK TERLARIS'],
-            ['Periode: ' . $periodLabel],
+            ['Periode: '.$periodLabel],
             [''],
             ['No', 'Nama Produk', 'Qty Terjual', 'Revenue (Rp)'],
         ];
@@ -482,7 +494,7 @@ class TopProductsSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
                 $no++,
                 $product->product_name,
                 (int) $product->total_qty,
-                (int) $product->total_revenue
+                (int) $product->total_revenue,
             ];
             $this->productCount++;
         }
@@ -492,20 +504,22 @@ class TopProductsSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
 
     public function charts()
     {
-        if ($this->productCount === 0) return null;
+        if ($this->productCount === 0) {
+            return null;
+        }
 
         $lastDataRow = 5 + $this->productCount;
 
         $labels = [new DataSeriesValues(
             DataSeriesValues::DATASERIES_TYPE_STRING,
-            "'Produk Terlaris'!\$B\$6:\$B\$" . $lastDataRow,
+            "'Produk Terlaris'!\$B\$6:\$B\$".$lastDataRow,
             null,
             $this->productCount
         )];
 
         $values = [new DataSeriesValues(
             DataSeriesValues::DATASERIES_TYPE_NUMBER,
-            "'Produk Terlaris'!\$C\$6:\$C\$" . $lastDataRow,
+            "'Produk Terlaris'!\$C\$6:\$C\$".$lastDataRow,
             null,
             $this->productCount
         )];
@@ -559,48 +573,48 @@ class TopProductsSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
                 $sheet->getStyle('A2:D3')->applyFromArray([
                     'alignment' => [
                         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                    ]
+                    ],
                 ]);
 
                 // Add auto-filter on header
                 $sheet->setAutoFilter('A5:D5');
 
                 // Add borders to table
-                $sheet->getStyle('A5:D' . $lastRow)->applyFromArray([
+                $sheet->getStyle('A5:D'.$lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => 'D1D5DB']
+                            'color' => ['rgb' => 'D1D5DB'],
                         ],
                         'outline' => [
                             'borderStyle' => Border::BORDER_MEDIUM,
-                            'color' => ['rgb' => '9CA3AF']
-                        ]
-                    ]
+                            'color' => ['rgb' => '9CA3AF'],
+                        ],
+                    ],
                 ]);
 
                 // Center No column
-                $sheet->getStyle('A5:A' . $lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
+                $sheet->getStyle('A5:A'.$lastRow)->applyFromArray([
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
                 ]);
 
                 // Right align numbers
-                $sheet->getStyle('C6:D' . $lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT]
+                $sheet->getStyle('C6:D'.$lastRow)->applyFromArray([
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Highlight top 3 products
                 for ($i = 6; $i <= min(8, $lastRow); $i++) {
-                    $sheet->getStyle('A' . $i . ':D' . $i)->applyFromArray([
-                        'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'ECFDF5']]
+                    $sheet->getStyle('A'.$i.':D'.$i)->applyFromArray([
+                        'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'ECFDF5']],
                     ]);
                 }
 
                 // Alternating row colors for remaining rows
                 for ($i = 9; $i <= $lastRow; $i++) {
                     if ($i % 2 == 1) {
-                        $sheet->getStyle('A' . $i . ':D' . $i)->applyFromArray([
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FFFBEB']]
+                        $sheet->getStyle('A'.$i.':D'.$i)->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FFFBEB']],
                         ]);
                     }
                 }
@@ -610,11 +624,14 @@ class TopProductsSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
 }
 
 // ========== PAYMENT METHOD SHEET WITH PIE CHART ==========
-class PaymentMethodSheet implements FromArray, WithTitle, WithStyles, WithEvents, WithCharts
+class PaymentMethodSheet implements FromArray, WithCharts, WithEvents, WithStyles, WithTitle
 {
     protected int $outletId;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
+
     protected int $methodCount = 0;
 
     public function __construct(int $outletId, Carbon $startDate, Carbon $endDate)
@@ -638,12 +655,12 @@ class PaymentMethodSheet implements FromArray, WithTitle, WithStyles, WithEvents
             ->groupBy('payment_method')
             ->get();
 
-        $periodLabel = $this->startDate->format('d M Y') . ' - ' . $this->endDate->format('d M Y');
+        $periodLabel = $this->startDate->format('d M Y').' - '.$this->endDate->format('d M Y');
 
         $data = [
             [''],
             ['DISTRIBUSI METODE PEMBAYARAN'],
-            ['Periode: ' . $periodLabel],
+            ['Periode: '.$periodLabel],
             [''],
             ['Metode', 'Jumlah Transaksi', 'Total Nilai (Rp)'],
         ];
@@ -661,7 +678,7 @@ class PaymentMethodSheet implements FromArray, WithTitle, WithStyles, WithEvents
             $data[] = [
                 $label,
                 (int) $payment->count,
-                (int) $payment->total
+                (int) $payment->total,
             ];
             $this->methodCount++;
         }
@@ -671,20 +688,22 @@ class PaymentMethodSheet implements FromArray, WithTitle, WithStyles, WithEvents
 
     public function charts()
     {
-        if ($this->methodCount === 0) return null;
+        if ($this->methodCount === 0) {
+            return null;
+        }
 
         $lastDataRow = 5 + $this->methodCount;
 
         $labels = [new DataSeriesValues(
             DataSeriesValues::DATASERIES_TYPE_STRING,
-            "'Metode Pembayaran'!\$A\$6:\$A\$" . $lastDataRow,
+            "'Metode Pembayaran'!\$A\$6:\$A\$".$lastDataRow,
             null,
             $this->methodCount
         )];
 
         $values = [new DataSeriesValues(
             DataSeriesValues::DATASERIES_TYPE_NUMBER,
-            "'Metode Pembayaran'!\$C\$6:\$C\$" . $lastDataRow,
+            "'Metode Pembayaran'!\$C\$6:\$C\$".$lastDataRow,
             null,
             $this->methodCount
         )];
@@ -736,36 +755,36 @@ class PaymentMethodSheet implements FromArray, WithTitle, WithStyles, WithEvents
                 $sheet->getStyle('A2:C3')->applyFromArray([
                     'alignment' => [
                         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                    ]
+                    ],
                 ]);
 
                 // Add auto-filter on header
                 $sheet->setAutoFilter('A5:C5');
 
                 // Add borders to table
-                $sheet->getStyle('A5:C' . $lastRow)->applyFromArray([
+                $sheet->getStyle('A5:C'.$lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => 'D1D5DB']
+                            'color' => ['rgb' => 'D1D5DB'],
                         ],
                         'outline' => [
                             'borderStyle' => Border::BORDER_MEDIUM,
-                            'color' => ['rgb' => '9CA3AF']
-                        ]
-                    ]
+                            'color' => ['rgb' => '9CA3AF'],
+                        ],
+                    ],
                 ]);
 
                 // Right align numbers
-                $sheet->getStyle('B6:C' . $lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT]
+                $sheet->getStyle('B6:C'.$lastRow)->applyFromArray([
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Alternating row colors
                 for ($i = 6; $i <= $lastRow; $i++) {
                     if ($i % 2 == 0) {
-                        $sheet->getStyle('A' . $i . ':C' . $i)->applyFromArray([
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'EFF6FF']]
+                        $sheet->getStyle('A'.$i.':C'.$i)->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'EFF6FF']],
                         ]);
                     }
                 }
@@ -775,10 +794,12 @@ class PaymentMethodSheet implements FromArray, WithTitle, WithStyles, WithEvents
 }
 
 // ========== HOURLY SALES SHEET WITH BAR CHART ==========
-class HourlySalesSheet implements FromArray, WithTitle, WithStyles, WithEvents, WithCharts
+class HourlySalesSheet implements FromArray, WithCharts, WithEvents, WithStyles, WithTitle
 {
     protected int $outletId;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
 
     public function __construct(int $outletId, Carbon $startDate, Carbon $endDate)
@@ -804,12 +825,12 @@ class HourlySalesSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
             ->get()
             ->keyBy('hour');
 
-        $periodLabel = $this->startDate->format('d M Y') . ' - ' . $this->endDate->format('d M Y');
+        $periodLabel = $this->startDate->format('d M Y').' - '.$this->endDate->format('d M Y');
 
         $data = [
             [''],
             ['ANALISIS PENJUALAN PER JAM (PEAK HOURS)'],
-            ['Periode: ' . $periodLabel],
+            ['Periode: '.$periodLabel],
             [''],
             ['Jam', 'Jumlah Transaksi', 'Total Pendapatan (Rp)'],
         ];
@@ -829,12 +850,12 @@ class HourlySalesSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
             $data[] = [
                 sprintf('%02d:00 - %02d:00', $h, $h + 1),
                 $count,
-                $total
+                $total,
             ];
         }
 
         $data[] = [''];
-        $data[] = ['Jam Tersibuk:', sprintf('%02d:00 - %02d:00', $peakHour, $peakHour + 1), $maxCount . ' transaksi'];
+        $data[] = ['Jam Tersibuk:', sprintf('%02d:00 - %02d:00', $peakHour, $peakHour + 1), $maxCount.' transaksi'];
 
         return $data;
     }
@@ -904,16 +925,16 @@ class HourlySalesSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
                 $sheet->getStyle('A2:C3')->applyFromArray([
                     'alignment' => [
                         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                    ]
+                    ],
                 ]);
 
                 // Add auto-filter on header
                 $sheet->setAutoFilter('A5:C5');
 
                 // Peak hour row styling
-                $sheet->getStyle('A' . $lastRow . ':C' . $lastRow)->applyFromArray([
+                $sheet->getStyle('A'.$lastRow.':C'.$lastRow)->applyFromArray([
                     'font' => ['bold' => true, 'color' => ['rgb' => '0891B2']],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'ECFEFF']]
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'ECFEFF']],
                 ]);
 
                 // Add borders to data table (row 5 to 22 = header + 17 hours)
@@ -921,25 +942,25 @@ class HourlySalesSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => 'D1D5DB']
+                            'color' => ['rgb' => 'D1D5DB'],
                         ],
                         'outline' => [
                             'borderStyle' => Border::BORDER_MEDIUM,
-                            'color' => ['rgb' => '9CA3AF']
-                        ]
-                    ]
+                            'color' => ['rgb' => '9CA3AF'],
+                        ],
+                    ],
                 ]);
 
                 // Right align numbers
                 $sheet->getStyle('B6:C22')->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT]
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Alternating row colors
                 for ($i = 6; $i <= 22; $i++) {
                     if ($i % 2 == 0) {
-                        $sheet->getStyle('A' . $i . ':C' . $i)->applyFromArray([
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'ECFEFF']]
+                        $sheet->getStyle('A'.$i.':C'.$i)->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'ECFEFF']],
                         ]);
                     }
                 }
@@ -949,10 +970,12 @@ class HourlySalesSheet implements FromArray, WithTitle, WithStyles, WithEvents, 
 }
 
 // ========== TRANSACTIONS SHEET (No Chart) ==========
-class TransactionsSheet implements FromArray, WithTitle, WithStyles, WithEvents
+class TransactionsSheet implements FromArray, WithEvents, WithStyles, WithTitle
 {
     protected int $outletId;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
 
     public function __construct(int $outletId, Carbon $startDate, Carbon $endDate)
@@ -975,12 +998,12 @@ class TransactionsSheet implements FromArray, WithTitle, WithStyles, WithEvents
             ->orderByDesc('created_at')
             ->get();
 
-        $periodLabel = $this->startDate->format('d M Y') . ' - ' . $this->endDate->format('d M Y');
+        $periodLabel = $this->startDate->format('d M Y').' - '.$this->endDate->format('d M Y');
 
         $data = [
             [''],
             ['DAFTAR SELURUH TRANSAKSI'],
-            ['Periode: ' . $periodLabel],
+            ['Periode: '.$periodLabel],
             [''],
             ['No', 'Invoice', 'Tanggal', 'Waktu', 'Kasir', 'Metode', 'Subtotal', 'Diskon', 'Total', 'Status'],
         ];
@@ -1013,7 +1036,7 @@ class TransactionsSheet implements FromArray, WithTitle, WithStyles, WithEvents
                 (int) $sale->subtotal,
                 (int) $sale->discount_amount,
                 (int) $sale->grand_total,
-                $statusLabel
+                $statusLabel,
             ];
         }
 
@@ -1054,47 +1077,47 @@ class TransactionsSheet implements FromArray, WithTitle, WithStyles, WithEvents
                 $sheet->getStyle('A2:J3')->applyFromArray([
                     'alignment' => [
                         'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                    ]
+                    ],
                 ]);
 
                 // Add auto-filter on header
                 $sheet->setAutoFilter('A5:J5');
 
                 // Add borders to entire table
-                $sheet->getStyle('A5:J' . $lastRow)->applyFromArray([
+                $sheet->getStyle('A5:J'.$lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => 'D1D5DB']
+                            'color' => ['rgb' => 'D1D5DB'],
                         ],
                         'outline' => [
                             'borderStyle' => Border::BORDER_MEDIUM,
-                            'color' => ['rgb' => '9CA3AF']
-                        ]
-                    ]
+                            'color' => ['rgb' => '9CA3AF'],
+                        ],
+                    ],
                 ]);
 
                 // Center align specific columns
-                $sheet->getStyle('A5:A' . $lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
+                $sheet->getStyle('A5:A'.$lastRow)->applyFromArray([
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
                 ]);
-                $sheet->getStyle('D5:D' . $lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
+                $sheet->getStyle('D5:D'.$lastRow)->applyFromArray([
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
                 ]);
-                $sheet->getStyle('J5:J' . $lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
+                $sheet->getStyle('J5:J'.$lastRow)->applyFromArray([
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
                 ]);
 
                 // Right align number columns
-                $sheet->getStyle('G6:I' . $lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT]
+                $sheet->getStyle('G6:I'.$lastRow)->applyFromArray([
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Alternating row colors for better readability
                 for ($i = 6; $i <= $lastRow; $i++) {
                     if ($i % 2 == 0) {
-                        $sheet->getStyle('A' . $i . ':J' . $i)->applyFromArray([
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FDF2F8']]
+                        $sheet->getStyle('A'.$i.':J'.$i)->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FDF2F8']],
                         ]);
                     }
                 }

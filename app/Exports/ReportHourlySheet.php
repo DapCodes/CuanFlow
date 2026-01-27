@@ -2,34 +2,23 @@
 
 namespace App\Exports;
 
-use App\Models\Expense;
 use App\Models\Sale;
-use App\Models\SaleItem;
-use App\Models\Product;
-use App\Models\RawMaterial;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\WithDrawings;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
-use PhpOffice\PhpSpreadsheet\Chart\Chart;
-use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
-use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
-use PhpOffice\PhpSpreadsheet\Chart\Legend;
-use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
-use PhpOffice\PhpSpreadsheet\Chart\Title as ChartTitle;
-use Illuminate\Support\Facades\DB;
 
-class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
+class ReportHourlySheet implements FromArray, WithEvents, WithStyles, WithTitle
 {
     protected Carbon $startDate;
+
     protected Carbon $endDate;
 
     public function __construct(Carbon $startDate, Carbon $endDate)
@@ -48,10 +37,10 @@ class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
         $outletId = auth()->user()->outlet_id;
 
         $hourly = Sale::select(
-                DB::raw('HOUR(created_at) as hour'),
-                DB::raw('SUM(grand_total) as revenue'),
-                DB::raw('COUNT(*) as transactions')
-            )
+            DB::raw('HOUR(created_at) as hour'),
+            DB::raw('SUM(grand_total) as revenue'),
+            DB::raw('COUNT(*) as transactions')
+        )
             ->where('outlet_id', $outletId)
             ->whereBetween('created_at', [$this->startDate, $this->endDate])
             ->where('status', 'completed')
@@ -61,8 +50,8 @@ class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
 
         $data = [
             ['ANALISIS PENJUALAN PER JAM'],
-            ['Periode: ' . $this->startDate->format('d M Y') . ' - ' . $this->endDate->format('d M Y')],
-            ['Tanggal Cetak: ' . now()->format('d M Y H:i')],
+            ['Periode: '.$this->startDate->format('d M Y').' - '.$this->endDate->format('d M Y')],
+            ['Tanggal Cetak: '.now()->format('d M Y H:i')],
             [''],
             ['OPERASIONAL HARIAN'],
             [''],
@@ -92,19 +81,19 @@ class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
         return [
             // Header utama - Background kuning
             1 => [
-                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => '000000']], 
+                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => '000000']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FCD34D']], // Kuning
             ],
             // Sub header periode - Background abu muda
             2 => [
-                'font' => ['italic' => true, 'size' => 11, 'color' => ['rgb' => '374151']], 
+                'font' => ['italic' => true, 'size' => 11, 'color' => ['rgb' => '374151']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F3F4F6']], // Abu muda
             ],
             // Tanggal cetak - Background abu muda
             3 => [
-                'font' => ['size' => 9, 'color' => ['rgb' => '6B7280']], 
+                'font' => ['size' => 9, 'color' => ['rgb' => '6B7280']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F3F4F6']], // Abu muda
             ],
@@ -112,13 +101,13 @@ class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
             5 => [
                 'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '000000']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D1D5DB']], // Abu sedang
-                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER]
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
             ],
             // Header tabel - Background kuning
             7 => [
-                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']], 
+                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FDE68A']], // Kuning muda
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
             ],
         ];
     }
@@ -126,16 +115,16 @@ class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                
+
                 // Merge cells
                 $sheet->mergeCells('A1:C1');
                 $sheet->mergeCells('A2:C2');
                 $sheet->mergeCells('A3:C3');
                 $sheet->mergeCells('A5:C5');
-                
+
                 // Row heights - lebih tinggi agar tidak sempit
                 $sheet->getRowDimension(1)->setRowHeight(35);
                 $sheet->getRowDimension(2)->setRowHeight(22);
@@ -144,53 +133,53 @@ class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
                 $sheet->getRowDimension(5)->setRowHeight(25);
                 $sheet->getRowDimension(6)->setRowHeight(10); // Spacing
                 $sheet->getRowDimension(7)->setRowHeight(25);
-                
+
                 // Set height untuk semua data rows
                 for ($i = 8; $i <= $lastRow; $i++) {
                     $sheet->getRowDimension($i)->setRowHeight(22);
                 }
-                
+
                 // Column widths
                 $sheet->getColumnDimension('A')->setWidth(25);
                 $sheet->getColumnDimension('B')->setWidth(22);
                 $sheet->getColumnDimension('C')->setWidth(28);
-                
+
                 // Number formatting
                 $sheet->getStyle('B8:B'.$lastRow)->getNumberFormat()->setFormatCode('#,##0');
                 $sheet->getStyle('C8:C'.$lastRow)->getNumberFormat()->setFormatCode('#,##0');
-                
+
                 // Border untuk header
                 $sheet->getStyle('A1:C1')->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']],
+                    ],
                 ]);
-                
+
                 $sheet->getStyle('A2:C3')->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']],
+                    ],
                 ]);
-                
+
                 $sheet->getStyle('A5:C5')->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']],
+                    ],
                 ]);
-                
+
                 // Border untuk tabel data - lebih tegas
                 $sheet->getStyle('A7:C7')->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']],
+                    ],
                 ]);
-                
+
                 $sheet->getStyle('A8:C'.$lastRow)->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']],
+                    ],
                 ]);
-                
+
                 // Alternating row colors (abu-putih) untuk data
                 for ($i = 8; $i <= $lastRow; $i++) {
                     if ($i % 2 == 0) {
@@ -206,20 +195,20 @@ class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
                             ->getStartColor()
                             ->setRGB('F9FAFB');
                     }
-                    
+
                     // Center alignment untuk kolom B (transaksi)
                     $sheet->getStyle('B'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    
+
                     // Right alignment untuk kolom C (pendapatan)
                     $sheet->getStyle('C'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-                    
+
                     // Vertical center untuk semua
                     $sheet->getStyle('A'.$i.':C'.$i)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
                 }
-                
+
                 // Center alignment untuk kolom A (jam)
                 $sheet->getStyle('A8:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                
+
                 // Find peak hour
                 $maxRevenue = 0;
                 $peakRow = 0;
@@ -230,7 +219,7 @@ class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
                         $peakRow = $i;
                     }
                 }
-                
+
                 // Highlight peak hour dengan kuning terang
                 if ($peakRow > 0) {
                     $sheet->getStyle('A'.$peakRow.':C'.$peakRow)->getFill()
@@ -238,12 +227,12 @@ class ReportHourlySheet implements FromArray, WithTitle, WithStyles, WithEvents
                         ->getStartColor()
                         ->setRGB('FEF08A'); // Kuning highlight
                     $sheet->getStyle('A'.$peakRow.':C'.$peakRow)->getFont()->setBold(true);
-                    
+
                     // Border lebih tegas untuk peak hour
                     $sheet->getStyle('A'.$peakRow.':C'.$peakRow)->applyFromArray([
                         'borders' => [
-                            'outline' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => 'EAB308']]
-                        ]
+                            'outline' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => 'EAB308']],
+                        ],
                     ]);
                 }
             },

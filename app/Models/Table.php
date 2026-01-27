@@ -30,8 +30,11 @@ class Table extends Model
 
     // Status constants
     const STATUS_AVAILABLE = 'available';
+
     const STATUS_OCCUPIED = 'occupied';
+
     const STATUS_RESERVED = 'reserved';
+
     const STATUS_MAINTENANCE = 'maintenance';
 
     public static function getStatusOptions(): array
@@ -94,7 +97,7 @@ class Table extends Model
 
     public function getDisplayName(): string
     {
-        return $this->name ?: 'Meja ' . $this->table_number;
+        return $this->name ?: 'Meja '.$this->table_number;
     }
 
     public function getStatusLabel(): string
@@ -111,18 +114,21 @@ class Table extends Model
     public function markAsOccupied(): bool
     {
         $this->status = self::STATUS_OCCUPIED;
+
         return $this->save();
     }
 
     public function markAsAvailable(): bool
     {
         $this->status = self::STATUS_AVAILABLE;
+
         return $this->save();
     }
 
     public function markAsReserved(): bool
     {
         $this->status = self::STATUS_RESERVED;
+
         return $this->save();
     }
 }

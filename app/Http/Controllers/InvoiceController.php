@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Sale;
-use App\Models\Expense;
 use App\Models\CustomerDebt;
+use App\Models\Expense;
+use App\Models\Sale;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-use Carbon\Carbon;
 
 class InvoiceController extends Controller implements HasMiddleware
 {
@@ -67,7 +67,7 @@ class InvoiceController extends Controller implements HasMiddleware
             ->findOrFail($saleId);
 
         // Security check
-        if ($sale->outlet_id !== auth()->user()->outlet_id && !auth()->user()->isOwner()) {
+        if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
             abort(403, 'Unauthorized');
         }
 
@@ -89,11 +89,11 @@ class InvoiceController extends Controller implements HasMiddleware
 
         $pdf = Pdf::loadView('main.pos.invoice_pdf', [
             'data' => $sale,
-            'type' => 'sale'
+            'type' => 'sale',
         ])->setPaper('a4', 'portrait');
 
-        $filename = 'Invoice-' . $sale->invoice_number . '.pdf';
-        
+        $filename = 'Invoice-'.$sale->invoice_number.'.pdf';
+
         return $pdf->stream($filename);
     }
 
@@ -106,17 +106,17 @@ class InvoiceController extends Controller implements HasMiddleware
             ->findOrFail($id);
 
         // Security check
-        if ($expense->outlet_id !== auth()->user()->outlet_id && !auth()->user()->isOwner()) {
+        if ($expense->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
             abort(403, 'Unauthorized');
         }
 
         $pdf = Pdf::loadView('main.pos.invoice_pdf', [
             'data' => $expense,
-            'type' => 'expense'
+            'type' => 'expense',
         ])->setPaper('a4', 'portrait');
 
-        $filename = ($expense->type === 'income' ? 'Income-' : 'Expense-') . $expense->expense_number . '.pdf';
-        
+        $filename = ($expense->type === 'income' ? 'Income-' : 'Expense-').$expense->expense_number.'.pdf';
+
         return $pdf->stream($filename);
     }
 }

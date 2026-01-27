@@ -18,14 +18,14 @@ class CustomerDebt extends Model
         'remaining_amount',
         'due_date',
         'status',
-        'notes'
+        'notes',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'remaining_amount' => 'decimal:2',
-        'due_date' => 'date'
+        'due_date' => 'date',
     ];
 
     public function customer()
@@ -65,7 +65,7 @@ class CustomerDebt extends Model
                 'payment_method' => $paymentMethod,
                 'reference_number' => $referenceNumber,
                 'notes' => $notes,
-                'received_by' => auth()->id()
+                'received_by' => auth()->id(),
             ]);
 
             // Update debt amounts
@@ -91,7 +91,7 @@ class CustomerDebt extends Model
      */
     public function isOverdue()
     {
-        if (!$this->due_date || $this->status === 'paid') {
+        if (! $this->due_date || $this->status === 'paid') {
             return false;
         }
 
@@ -103,7 +103,7 @@ class CustomerDebt extends Model
      */
     public function getDaysOverdueAttribute()
     {
-        if (!$this->isOverdue()) {
+        if (! $this->isOverdue()) {
             return 0;
         }
 

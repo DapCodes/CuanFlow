@@ -58,56 +58,57 @@ class Customer extends Model
 
     // Add these methods to your Customer model (App\Models\Customer.php)
 
-/**
- * Check if customer is active
- */
-public function scopeActive($query)
-{
-    return $query->where('is_active', true);
-}
-
-/**
- * Get customer debts
- */
-public function debts()
-{
-    return $this->hasMany(CustomerDebt::class);
-}
-
-/**
- * Get unpaid debts
- */
-public function unpaidDebts()
-{
-    return $this->hasMany(CustomerDebt::class)
-        ->whereIn('status', ['unpaid', 'partial'])
-        ->orderBy('due_date', 'asc');
-}
-
-/**
- * Check if customer has exceeded credit limit
- */
-public function hasExceededCreditLimit($additionalAmount = 0)
-{
-    if ($this->credit_limit <= 0) {
-        return false; // No limit set
+    /**
+     * Check if customer is active
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
-    
-    $totalDebt = $this->total_debt + $additionalAmount;
-    return $totalDebt > $this->credit_limit;
-}
 
-/**
- * Get remaining credit
- */
-public function getRemainingCreditAttribute()
-{
-    if ($this->credit_limit <= 0) {
-        return null; // No limit
+    /**
+     * Get customer debts
+     */
+    public function debts()
+    {
+        return $this->hasMany(CustomerDebt::class);
     }
-    
-    return max(0, $this->credit_limit - $this->total_debt);
-}
+
+    /**
+     * Get unpaid debts
+     */
+    public function unpaidDebts()
+    {
+        return $this->hasMany(CustomerDebt::class)
+            ->whereIn('status', ['unpaid', 'partial'])
+            ->orderBy('due_date', 'asc');
+    }
+
+    /**
+     * Check if customer has exceeded credit limit
+     */
+    public function hasExceededCreditLimit($additionalAmount = 0)
+    {
+        if ($this->credit_limit <= 0) {
+            return false; // No limit set
+        }
+
+        $totalDebt = $this->total_debt + $additionalAmount;
+
+        return $totalDebt > $this->credit_limit;
+    }
+
+    /**
+     * Get remaining credit
+     */
+    public function getRemainingCreditAttribute()
+    {
+        if ($this->credit_limit <= 0) {
+            return null; // No limit
+        }
+
+        return max(0, $this->credit_limit - $this->total_debt);
+    }
 
     public function scopeReseller($q)
     {

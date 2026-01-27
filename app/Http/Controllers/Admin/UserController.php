@@ -17,7 +17,7 @@ class UserController extends Controller
         $users = User::with('roles')
             ->latest()
             ->paginate(15);
-            
+
         return view('admin.master.users.index', compact('users'));
     }
 
@@ -25,7 +25,7 @@ class UserController extends Controller
     {
         $roles = Role::orderBy('name')->get();
         $permissions = Permission::orderBy('name')->get();
-        
+
         return view('admin.master.users.create', compact('roles', 'permissions'));
     }
 
@@ -50,11 +50,11 @@ class UserController extends Controller
             'email_verified_at' => now(), // Auto verify for admin-created users
         ]);
 
-        if (!empty($validated['roles'])) {
+        if (! empty($validated['roles'])) {
             $user->syncRoles($validated['roles']);
         }
 
-        if (!empty($validated['permissions'])) {
+        if (! empty($validated['permissions'])) {
             $user->syncPermissions($validated['permissions']);
         }
 
@@ -65,6 +65,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load(['roles', 'permissions', 'outlet']);
+
         return view('admin.master.users.show', compact('user'));
     }
 
@@ -74,7 +75,7 @@ class UserController extends Controller
         $permissions = Permission::orderBy('name')->get();
         $userRoles = $user->roles->pluck('name')->toArray();
         $userPermissions = $user->getDirectPermissions()->pluck('name')->toArray();
-        
+
         return view('admin.master.users.edit', compact('user', 'roles', 'permissions', 'userRoles', 'userPermissions'));
     }
 
@@ -82,7 +83,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'is_active' => ['boolean'],
             'roles' => ['nullable', 'array'],

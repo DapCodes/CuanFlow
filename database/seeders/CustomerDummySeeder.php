@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CustomerDummySeeder extends Seeder
@@ -13,12 +12,12 @@ class CustomerDummySeeder extends Seeder
     public function run(): void
     {
         $faker = \Faker\Factory::create('id_ID');
-        
+
         for ($i = 0; $i < 100; $i++) {
             $type = $faker->randomElement(['regular', 'reseller', 'vip']);
-            
+
             \App\Models\Customer::create([
-                'code' => 'CUST-' . strtoupper(\Illuminate\Support\Str::random(8)),
+                'code' => 'CUST-'.strtoupper(\Illuminate\Support\Str::random(8)),
                 'name' => $faker->name,
                 'phone' => $faker->unique()->phoneNumber,
                 'email' => $faker->unique()->email,

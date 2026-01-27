@@ -19,7 +19,7 @@ return new class extends Migration
 
             // Prevent duplicate assignments
             $table->unique(['task_id', 'user_id']);
-            
+
             // Indexes
             $table->index('task_id');
             $table->index('user_id');

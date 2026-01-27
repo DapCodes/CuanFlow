@@ -6,13 +6,13 @@ use App\Models\PermissionCategory;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
 class EmployeeController extends Controller implements HasMiddleware
 {
@@ -40,18 +40,18 @@ class EmployeeController extends Controller implements HasMiddleware
             ->paginate(15);
 
         $stats = [
-            'total' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
+            'total' => User::whereHas('roles', fn ($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->count(),
-            'active' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
+            'active' => User::whereHas('roles', fn ($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->where('is_active', true)
                 ->count(),
-            'inactive' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
+            'inactive' => User::whereHas('roles', fn ($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->where('is_active', false)
                 ->count(),
-            'verified' => User::whereHas('roles', fn($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
+            'verified' => User::whereHas('roles', fn ($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->whereNotNull('email_verified_at')
                 ->count(),
@@ -64,12 +64,12 @@ class EmployeeController extends Controller implements HasMiddleware
     {
         // Ambil roles yang diizinkan
         $roles = Role::whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris'])->get();
-        
+
         // Ambil permissions dengan kategori, diurutkan berdasarkan kategori
         $permissionCategories = PermissionCategory::with(['permissions' => function ($query) {
             $query->orderBy('name');
         }])->ordered()->get();
-        
+
         // Ambil data permission untuk setiap role (untuk auto-check saat role dipilih)
         $rolePermissions = [];
         foreach ($roles as $role) {
@@ -110,8 +110,8 @@ class EmployeeController extends Controller implements HasMiddleware
         ]);
 
         $employee->syncRoles($validated['roles']);
-        
-        if (!empty($validated['permissions'])) {
+
+        if (! empty($validated['permissions'])) {
             $employee->syncPermissions($validated['permissions']);
         }
 
@@ -119,43 +119,43 @@ class EmployeeController extends Controller implements HasMiddleware
         event(new Registered($employee));
 
         return redirect()->route('employees.index')
-            ->with('success', 'Pegawai berhasil ditambahkan. Email verifikasi telah dikirim ke ' . $employee->email);
+            ->with('success', 'Pegawai berhasil ditambahkan. Email verifikasi telah dikirim ke '.$employee->email);
     }
 
     public function show(User $employee)
     {
-        if (!$this->canAccessEmployee($employee)) {
+        if (! $this->canAccessEmployee($employee)) {
             abort(403);
         }
 
         $employee->load(['roles', 'permissions', 'outlet']);
-        
+
         return view('main.employees.show', compact('employee'));
     }
 
     public function edit(User $employee)
     {
-        if (!$this->canAccessEmployee($employee)) {
+        if (! $this->canAccessEmployee($employee)) {
             abort(403);
         }
 
         // Ambil roles yang diizinkan
         $roles = Role::whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris'])->get();
-        
+
         // Ambil permissions dengan kategori, diurutkan berdasarkan kategori
         $permissionCategories = PermissionCategory::with(['permissions' => function ($query) {
             $query->orderBy('name');
         }])->ordered()->get();
-        
+
         // Ambil data permission untuk setiap role (untuk auto-check saat role dipilih)
         $rolePermissions = [];
         foreach ($roles as $role) {
             $rolePermissions[$role->name] = $role->permissions->pluck('name')->toArray();
         }
-        
+
         // Ambil permission yang dimiliki employee (direct permissions, bukan dari role)
         $employeeDirectPermissions = $employee->getDirectPermissions()->pluck('name')->toArray();
-        
+
         // Ambil role yang dimiliki employee
         $employeeRoles = $employee->roles->pluck('name')->toArray();
 
@@ -164,7 +164,7 @@ class EmployeeController extends Controller implements HasMiddleware
 
     public function update(Request $request, User $employee)
     {
-        if (!$this->canAccessEmployee($employee)) {
+        if (! $this->canAccessEmployee($employee)) {
             abort(403);
         }
 
@@ -173,7 +173,7 @@ class EmployeeController extends Controller implements HasMiddleware
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $employee->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$employee->id],
             'phone' => ['nullable', 'string', 'max:20'],
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'avatar' => ['nullable', 'image', 'max:2048'],
@@ -211,8 +211,8 @@ class EmployeeController extends Controller implements HasMiddleware
 
         $employee->update($data);
         $employee->syncRoles($validated['roles']);
-        
-        if (!empty($validated['permissions'])) {
+
+        if (! empty($validated['permissions'])) {
             $employee->syncPermissions($validated['permissions']);
         } else {
             $employee->syncPermissions([]);
@@ -221,6 +221,7 @@ class EmployeeController extends Controller implements HasMiddleware
         // Trigger email verification jika email berubah
         if ($emailChanged) {
             event(new Registered($employee));
+
             return redirect()->route('employees.index')
                 ->with('success', 'Data pegawai berhasil diperbarui. Email verifikasi telah dikirim ke alamat email baru.');
         }
@@ -231,7 +232,7 @@ class EmployeeController extends Controller implements HasMiddleware
 
     public function destroy(User $employee)
     {
-        if (!$this->canAccessEmployee($employee)) {
+        if (! $this->canAccessEmployee($employee)) {
             abort(403);
         }
 
@@ -247,23 +248,23 @@ class EmployeeController extends Controller implements HasMiddleware
 
     public function toggleStatus(User $employee)
     {
-        if (!$this->canAccessEmployee($employee)) {
+        if (! $this->canAccessEmployee($employee)) {
             abort(403);
         }
 
         $employee->update([
-            'is_active' => !$employee->is_active,
+            'is_active' => ! $employee->is_active,
         ]);
 
         $status = $employee->is_active ? 'diaktifkan' : 'dinonaktifkan';
-        
+
         return redirect()->route('employees.index')
             ->with('success', "Pegawai berhasil {$status}.");
     }
 
     public function resendVerification(User $employee)
     {
-        if (!$this->canAccessEmployee($employee)) {
+        if (! $this->canAccessEmployee($employee)) {
             abort(403);
         }
 
@@ -277,12 +278,12 @@ class EmployeeController extends Controller implements HasMiddleware
         event(new Registered($employee));
 
         return redirect()->back()
-            ->with('success', 'Email verifikasi berhasil dikirim ulang ke ' . $employee->email);
+            ->with('success', 'Email verifikasi berhasil dikirim ulang ke '.$employee->email);
     }
 
     private function canAccessEmployee(User $employee): bool
     {
         return $employee->outlet_id === auth()->user()->outlet_id
-            && !$employee->hasRole('owner');
+            && ! $employee->hasRole('owner');
     }
 }

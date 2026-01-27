@@ -13,7 +13,7 @@ class AdminAuthController extends Controller
         if (Auth::check() && Auth::user()->hasRole('admin')) {
             return redirect()->route('admin.dashboard');
         }
-        
+
         return view('admin.auth.login');
     }
 
@@ -26,17 +26,18 @@ class AdminAuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $user = Auth::user();
-            
+
             // Check if user has admin role
-            if (!$user->hasRole('admin')) {
+            if (! $user->hasRole('admin')) {
                 Auth::logout();
+
                 return back()->withErrors([
                     'email' => 'Akun ini tidak memiliki akses admin.',
                 ])->onlyInput('email');
             }
 
             $request->session()->regenerate();
-            
+
             return redirect()->intended(route('admin.dashboard'));
         }
 

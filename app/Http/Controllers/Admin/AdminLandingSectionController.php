@@ -7,9 +7,9 @@ use App\Models\AdminLandingPage;
 use App\Models\AdminLandingSection;
 use App\Models\AdminLandingSectionItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Storage;
 
 class AdminLandingSectionController extends Controller implements HasMiddleware
 {
@@ -83,7 +83,7 @@ class AdminLandingSectionController extends Controller implements HasMiddleware
      */
     public function toggleStatus(AdminLandingPage $landingPage, AdminLandingSection $section)
     {
-        $section->is_active = !$section->is_active;
+        $section->is_active = ! $section->is_active;
         $section->save();
 
         $status = $section->is_active ? 'diaktifkan' : 'dinonaktifkan';

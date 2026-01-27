@@ -35,7 +35,7 @@ class AdminLandingCta extends Model
      */
     public function hasSecondaryButton(): bool
     {
-        return !empty($this->secondary_button_text) && !empty($this->secondary_button_link);
+        return ! empty($this->secondary_button_text) && ! empty($this->secondary_button_link);
     }
 
     /**
@@ -43,7 +43,7 @@ class AdminLandingCta extends Model
      */
     public function getBackgroundImageUrlAttribute(): ?string
     {
-        if (!$this->background_image) {
+        if (! $this->background_image) {
             return null;
         }
 

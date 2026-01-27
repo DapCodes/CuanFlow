@@ -42,11 +42,12 @@ class ExpenseController extends Controller
         $type = $request->query('type', 'expense');
         $permission = $type === 'income' ? 'buat pemasukan' : 'buat pengeluaran';
 
-        if (!auth()->user()->can($permission)) {
+        if (! auth()->user()->can($permission)) {
             abort(403);
         }
 
         $categories = ExpenseCategory::where('is_active', true)->get();
+
         return view('main.expenses.create', compact('categories', 'type'));
     }
 
@@ -55,7 +56,7 @@ class ExpenseController extends Controller
         $type = $request->input('type', 'expense');
         $permission = $type === 'income' ? 'buat pemasukan' : 'buat pengeluaran';
 
-        if (!auth()->user()->can($permission)) {
+        if (! auth()->user()->can($permission)) {
             abort(403);
         }
 
@@ -93,8 +94,8 @@ class ExpenseController extends Controller
             'approved_by' => $isOwner ? auth()->id() : null,
         ]);
 
-        $message = ucfirst($type) . ' berhasil ditambahkan';
-        if (!$isOwner) {
+        $message = ucfirst($type).' berhasil ditambahkan';
+        if (! $isOwner) {
             $message .= ' dan menunggu persetujuan.';
         } else {
             $message .= '.';
@@ -108,13 +109,14 @@ class ExpenseController extends Controller
         if ($expense->outlet_id !== auth()->user()->outlet_id) {
             abort(403);
         }
+
         return view('main.expenses.show', compact('expense'));
     }
 
     public function edit(Expense $expense)
     {
         $permission = $expense->type === 'income' ? 'edit pemasukan' : 'edit pengeluaran';
-        if (!auth()->user()->can($permission)) {
+        if (! auth()->user()->can($permission)) {
             abort(403);
         }
 
@@ -123,13 +125,14 @@ class ExpenseController extends Controller
         }
 
         $categories = ExpenseCategory::where('is_active', true)->get();
+
         return view('main.expenses.edit', compact('expense', 'categories'));
     }
 
     public function update(Request $request, Expense $expense)
     {
         $permission = $expense->type === 'income' ? 'edit pemasukan' : 'edit pengeluaran';
-        if (!auth()->user()->can($permission)) {
+        if (! auth()->user()->can($permission)) {
             abort(403);
         }
 
@@ -173,7 +176,7 @@ class ExpenseController extends Controller
     public function destroy(Expense $expense)
     {
         $permission = $expense->type === 'income' ? 'hapus pemasukan' : 'hapus pengeluaran';
-        if (!auth()->user()->can($permission)) {
+        if (! auth()->user()->can($permission)) {
             abort(403);
         }
 
@@ -193,7 +196,7 @@ class ExpenseController extends Controller
     public function approve(Expense $expense)
     {
         $permission = $expense->type === 'income' ? 'setujui pemasukan' : 'setujui pengeluaran';
-        if (!auth()->user()->can($permission)) {
+        if (! auth()->user()->can($permission)) {
             abort(403, 'Anda tidak memiliki izin untuk menyetujui transaksi ini.');
         }
 
@@ -208,7 +211,7 @@ class ExpenseController extends Controller
     public function reject(Expense $expense)
     {
         $permission = $expense->type === 'income' ? 'setujui pemasukan' : 'setujui pengeluaran';
-        if (!auth()->user()->can($permission)) {
+        if (! auth()->user()->can($permission)) {
             abort(403, 'Anda tidak memiliki izin untuk menolak transaksi ini.');
         }
 

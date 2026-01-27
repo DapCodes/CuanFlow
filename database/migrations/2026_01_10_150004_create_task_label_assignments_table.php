@@ -19,7 +19,7 @@ return new class extends Migration
 
             // Prevent duplicate label assignments
             $table->unique(['task_id', 'label_id']);
-            
+
             // Indexes
             $table->index('task_id');
             $table->index('label_id');

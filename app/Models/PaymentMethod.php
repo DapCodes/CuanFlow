@@ -14,7 +14,7 @@ class PaymentMethod extends Model
         'name',
         'code',
         'icon',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [

@@ -42,7 +42,7 @@ class ClaraAiService
                 'user_message' => $userMessage,
             ]);
 
-            if (!$this->apiKey) {
+            if (! $this->apiKey) {
                 return [
                     'success' => false,
                     'message' => 'API Key Clara AI belum dikonfigurasi. Silakan hubungi administrator.',
@@ -56,7 +56,7 @@ class ClaraAiService
 
             while ($attempts < $maxAttempts) {
                 $attempts++;
-                
+
                 $httpResponse = Http::withHeaders([
                     'Authorization' => 'Bearer '.$this->apiKey,
                     'Content-Type' => 'application/json',
@@ -79,12 +79,13 @@ class ClaraAiService
                     // Jika ada error dari provider (sering terjadi di model free)
                     if (isset($data['error'])) {
                         \Log::warning('Clara AI provider error on model '.$currentModel, ['error' => $data['error']]);
-                        
+
                         if ($attempts < $maxAttempts) {
                             $currentModel = 'google/gemini-2.0-flash-exp:free'; // Fallback ke Gemini yang lebih stabil
+
                             continue;
                         }
-                        
+
                         return [
                             'success' => false,
                             'message' => 'Maaf, Clara AI sedang sangat sibuk. Silakan coba lagi sebentar lagi.',
@@ -93,6 +94,7 @@ class ClaraAiService
 
                     if (! isset($data['choices'][0]['message']['content'])) {
                         \Log::error('Invalid response structure', ['data' => $data]);
+
                         return [
                             'success' => false,
                             'message' => 'Format response tidak valid.',
@@ -104,6 +106,7 @@ class ClaraAiService
 
                     if (trim($cleanResponse) === '') {
                         \Log::warning('Empty AI response', ['raw' => $aiResponse]);
+
                         return [
                             'success' => false,
                             'message' => 'Maaf, Clara AI tidak bisa menjawab saat ini. Coba ubah pertanyaannya.',
@@ -123,6 +126,7 @@ class ClaraAiService
                 if ($attempts < $maxAttempts) {
                     $currentModel = 'google/gemini-2.0-flash-exp:free';
                     sleep(1); // Jeda sebelum retry
+
                     continue;
                 }
             }

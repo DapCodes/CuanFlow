@@ -114,7 +114,7 @@ class Task extends Model
     protected function logChanges(): void
     {
         $changes = $this->getChanges();
-        
+
         foreach ($changes as $field => $newValue) {
             if (in_array($field, ['updated_at'])) {
                 continue;
@@ -211,7 +211,7 @@ class Task extends Model
      */
     public function getIsOverdueAttribute(): bool
     {
-        if (!$this->deadline || $this->status->slug === 'selesai') {
+        if (! $this->deadline || $this->status->slug === 'selesai') {
             return false;
         }
 

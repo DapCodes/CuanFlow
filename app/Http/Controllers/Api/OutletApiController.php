@@ -68,7 +68,7 @@ class OutletApiController extends Controller
             },
             'products' => function ($q) {
                 $q->active()->with(['category', 'unit'])->latest();
-            }
+            },
         ])->loadAvg('testimonials', 'rating');
 
         // Kalau kamu mau hanya tampilkan yang aktif:

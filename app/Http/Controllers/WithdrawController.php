@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\WithdrawalRequestMail;
 use App\Models\Sale;
 use App\Models\Setting;
 use App\Models\UserWithdrawLock;
 use App\Models\Withdrawal;
-use App\Mail\WithdrawalRequestMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 
 class WithdrawController extends Controller
 {
@@ -26,11 +25,11 @@ class WithdrawController extends Controller
 
         $user = Auth::user();
         $lock = UserWithdrawLock::getForUser($user->id);
-        
+
         $isLocked = $lock->isLocked();
         $remainingSeconds = $lock->getRemainingLockSeconds();
         $attempts = $lock->attempts;
-        
+
         return view('withdraw.confirm-password', compact('isLocked', 'remainingSeconds', 'attempts'));
     }
 
@@ -49,22 +48,22 @@ class WithdrawController extends Controller
         // Check if locked
         if ($lock->isLocked()) {
             return back()->withErrors([
-                'password' => 'Akun terkunci. Silakan coba lagi dalam ' . ceil($lock->getRemainingLockSeconds() / 60) . ' menit.',
+                'password' => 'Akun terkunci. Silakan coba lagi dalam '.ceil($lock->getRemainingLockSeconds() / 60).' menit.',
             ]);
         }
 
         // Verify password
-        if (!Hash::check($request->password, $user->password)) {
+        if (! Hash::check($request->password, $user->password)) {
             $lock->incrementAttempts();
-            
+
             $remainingAttempts = UserWithdrawLock::MAX_ATTEMPTS - $lock->attempts;
-            
+
             if ($lock->isLocked()) {
                 return back()->withErrors([
                     'password' => 'Terlalu banyak percobaan gagal. Akun terkunci selama 5 menit.',
                 ]);
             }
-            
+
             return back()->withErrors([
                 'password' => "Password salah. Sisa percobaan: {$remainingAttempts}",
             ]);
@@ -72,10 +71,10 @@ class WithdrawController extends Controller
 
         // Reset attempts on success
         $lock->resetAttempts();
-        
+
         // Store verification in session (valid for 10 minutes)
         session(['withdraw_verified' => true, 'withdraw_verified_at' => now()]);
-        
+
         return redirect()->route('withdraw.create')->with('success', 'Verifikasi berhasil!');
     }
 
@@ -85,7 +84,7 @@ class WithdrawController extends Controller
     public function create()
     {
         // Cek apakah sudah verifikasi
-        if (!$this->isVerified()) {
+        if (! $this->isVerified()) {
             return redirect()->route('withdraw.confirm-password')
                 ->with('error', 'Silakan verifikasi password terlebih dahulu.');
         }
@@ -95,24 +94,24 @@ class WithdrawController extends Controller
 
         $user = Auth::user();
         $outletId = session('outlet_id') ?? $user->outlet_id;
-        
+
         // Calculate available balance from completed sales
         $availableBalance = $this->calculateAvailableBalance($user->id, $outletId);
-        
+
         // Get tax percentage from settings
         $taxPercent = Setting::getValue('withdraw', 'tax_percent', 0);
-        
+
         // Get pending withdrawals (Outlet based)
         $pendingWithdrawals = Withdrawal::where('outlet_id', $outletId)
             ->pending()
             ->sum('amount');
-        
+
         // Actual available balance
         $actualBalance = $availableBalance - $pendingWithdrawals;
 
         // Get active payment methods
         $paymentMethods = \App\Models\PaymentMethod::active()->get();
-        
+
         return view('withdraw.create', compact('availableBalance', 'taxPercent', 'pendingWithdrawals', 'actualBalance', 'paymentMethods'));
     }
 
@@ -122,7 +121,7 @@ class WithdrawController extends Controller
     public function store(Request $request)
     {
         // Check if verified
-        if (!$this->isVerified()) {
+        if (! $this->isVerified()) {
             return redirect()->route('withdraw.confirm-password')
                 ->with('error', 'Sesi verifikasi telah berakhir.');
         }
@@ -136,12 +135,12 @@ class WithdrawController extends Controller
 
         $user = Auth::user();
         $outletId = session('outlet_id') ?? $user->outlet_id;
-        
+
         // Calculate available balance
         $availableBalance = $this->calculateAvailableBalance($user->id, $outletId);
         $pendingWithdrawals = Withdrawal::where('outlet_id', $outletId)->pending()->sum('amount');
         $actualBalance = $availableBalance - $pendingWithdrawals;
-        
+
         // Validate amount
         if ($request->amount > $actualBalance) {
             return back()->withErrors(['amount' => 'Jumlah penarikan melebihi saldo tersedia.'])->withInput();
@@ -186,7 +185,8 @@ class WithdrawController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal mengajukan penarikan: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Gagal mengajukan penarikan: '.$e->getMessage())->withInput();
         }
     }
 
@@ -199,7 +199,7 @@ class WithdrawController extends Controller
         session()->forget(['withdraw_verified', 'withdraw_verified_at']);
 
         $user = Auth::user();
-        
+
         $query = Withdrawal::byUser($user->id);
 
         $stats = [
@@ -227,7 +227,7 @@ class WithdrawController extends Controller
                     ->get();
             }
         }
-        
+
         return view('withdraw.index', compact('withdrawals', 'stats', 'confirmations'));
     }
 
@@ -236,15 +236,15 @@ class WithdrawController extends Controller
      */
     private function isVerified(): bool
     {
-        if (!session('withdraw_verified')) {
+        if (! session('withdraw_verified')) {
             return false;
         }
-        
+
         $verifiedAt = session('withdraw_verified_at');
-        if (!$verifiedAt) {
+        if (! $verifiedAt) {
             return false;
         }
-        
+
         // Verifikasi hanya berlaku selama 5 menit untuk aktivitas di halaman tersebut
         return now()->diffInMinutes($verifiedAt) < 5;
     }
@@ -257,7 +257,7 @@ class WithdrawController extends Controller
         // Start Query for Sales
         $salesQuery = Sale::where('status', 'completed')
             ->where('payment_status', 'paid');
-        
+
         // Start Query for Withdrawals (Approved/Paid)
         $withdrawalsQuery = Withdrawal::whereIn('status', ['approved', 'paid']);
 
@@ -270,13 +270,13 @@ class WithdrawController extends Controller
             $salesQuery->where('cashier_id', $userId);
             $withdrawalsQuery->where('user_id', $userId);
         }
-        
+
         // Total from completed sales
         $totalSales = $salesQuery->sum('grand_total');
-        
+
         // Minus: already withdrawn
         $withdrawnAmount = $withdrawalsQuery->sum('amount');
-        
+
         return max(0, $totalSales - $withdrawnAmount);
     }
 
@@ -287,8 +287,8 @@ class WithdrawController extends Controller
     {
         // Get admin emails
         $adminEmails = \App\Models\User::role('admin')->pluck('email')->toArray();
-        
-        if (!empty($adminEmails)) {
+
+        if (! empty($adminEmails)) {
             Mail::to($adminEmails)->queue(new WithdrawalRequestMail($withdrawal));
         }
     }
@@ -299,13 +299,13 @@ class WithdrawController extends Controller
     public function ownerApprove(Request $request, Withdrawal $withdrawal)
     {
         // Add policy check if needed (e.g., must be owner of the outlet)
-        if (!Auth::user()->hasRole('owner') && !Auth::user()->can('setujui penarikan')) {
+        if (! Auth::user()->hasRole('owner') && ! Auth::user()->can('setujui penarikan')) {
             abort(403);
         }
 
         $currentOutletId = session('outlet_id') ?? Auth::user()->outlet_id;
         if ($withdrawal->outlet_id != $currentOutletId) {
-             return back()->with('error', 'Akses ditolak. Outlet tidak sesuai.');
+            return back()->with('error', 'Akses ditolak. Outlet tidak sesuai.');
         }
 
         $withdrawal->update(['accepted_by_owner' => true]);
@@ -318,13 +318,13 @@ class WithdrawController extends Controller
      */
     public function ownerReject(Request $request, Withdrawal $withdrawal)
     {
-        if (!Auth::user()->hasRole('owner') && !Auth::user()->can('setujui penarikan')) {
+        if (! Auth::user()->hasRole('owner') && ! Auth::user()->can('setujui penarikan')) {
             abort(403);
         }
 
-         $currentOutletId = session('outlet_id') ?? Auth::user()->outlet_id;
-         if ($withdrawal->outlet_id != $currentOutletId) {
-             return back()->with('error', 'Akses ditolak. Outlet tidak sesuai.');
+        $currentOutletId = session('outlet_id') ?? Auth::user()->outlet_id;
+        if ($withdrawal->outlet_id != $currentOutletId) {
+            return back()->with('error', 'Akses ditolak. Outlet tidak sesuai.');
         }
 
         $request->validate([
@@ -333,7 +333,7 @@ class WithdrawController extends Controller
 
         $withdrawal->update([
             'status' => 'rejected',
-            'admin_note' => 'Ditolak oleh Owner: ' . $request->reason,
+            'admin_note' => 'Ditolak oleh Owner: '.$request->reason,
             'processed_by' => Auth::id(),
             'processed_at' => now(),
         ]);

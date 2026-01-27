@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use Spatie\Permission\Models\Role;
 
 class AdminManagementController extends Controller
 {
@@ -16,7 +15,7 @@ class AdminManagementController extends Controller
         $admins = User::role('admin')
             ->latest()
             ->paginate(15);
-            
+
         return view('admin.master.admins.index', compact('admins'));
     }
 
@@ -50,21 +49,22 @@ class AdminManagementController extends Controller
 
     public function edit(User $admin)
     {
-        if (!$admin->hasRole('admin')) {
+        if (! $admin->hasRole('admin')) {
             abort(404);
         }
+
         return view('admin.master.admins.edit', compact('admin'));
     }
 
     public function update(Request $request, User $admin)
     {
-        if (!$admin->hasRole('admin')) {
+        if (! $admin->hasRole('admin')) {
             abort(404);
         }
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $admin->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$admin->id],
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'is_active' => ['boolean'],
         ]);
@@ -87,7 +87,7 @@ class AdminManagementController extends Controller
 
     public function destroy(User $admin)
     {
-        if (!$admin->hasRole('admin')) {
+        if (! $admin->hasRole('admin')) {
             abort(404);
         }
 

@@ -12,7 +12,7 @@ class DiscountController extends Controller
 {
     public function index()
     {
-        if (!auth()->user()->can('lihat diskon')) {
+        if (! auth()->user()->can('lihat diskon')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk melihat daftar diskon.');
         }
 
@@ -33,7 +33,7 @@ class DiscountController extends Controller
 
     public function create()
     {
-        if (!auth()->user()->can('buat diskon')) {
+        if (! auth()->user()->can('buat diskon')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk membuat diskon baru.');
         }
 
@@ -49,7 +49,7 @@ class DiscountController extends Controller
 
     public function store(Request $request)
     {
-        if (!auth()->user()->can('buat diskon')) {
+        if (! auth()->user()->can('buat diskon')) {
             abort(403);
         }
 
@@ -103,7 +103,7 @@ class DiscountController extends Controller
 
     public function show(Discount $discount)
     {
-        if (!auth()->user()->can('lihat diskon')) {
+        if (! auth()->user()->can('lihat diskon')) {
             abort(403);
         }
 
@@ -114,7 +114,7 @@ class DiscountController extends Controller
 
     public function edit(Discount $discount)
     {
-        if (!auth()->user()->can('edit diskon')) {
+        if (! auth()->user()->can('edit diskon')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengubah data diskon.');
         }
 
@@ -130,7 +130,7 @@ class DiscountController extends Controller
 
     public function update(Request $request, Discount $discount)
     {
-        if (!auth()->user()->can('edit diskon')) {
+        if (! auth()->user()->can('edit diskon')) {
             abort(403);
         }
 
@@ -180,7 +180,7 @@ class DiscountController extends Controller
 
     public function destroy(Discount $discount)
     {
-        if (!auth()->user()->can('hapus diskon')) {
+        if (! auth()->user()->can('hapus diskon')) {
             abort(403);
         }
 
@@ -192,7 +192,7 @@ class DiscountController extends Controller
 
     public function toggleStatus(Discount $discount)
     {
-        if (!auth()->user()->can('aktifkan nonaktifkan diskon')) {
+        if (! auth()->user()->can('aktifkan nonaktifkan diskon')) {
             abort(403);
         }
 
@@ -208,7 +208,7 @@ class DiscountController extends Controller
 
     public function generateCode()
     {
-        if (!auth()->user()->can('generate kode diskon')) {
+        if (! auth()->user()->can('generate kode diskon')) {
             return response()->json(['message' => 'Akses ditolak'], 403);
         }
 

@@ -12,9 +12,10 @@ class FaqSeeder extends Seeder
     {
         // Ambil outlet pertama atau buat dummy
         $outlet = Outlet::first();
-        
-        if (!$outlet) {
+
+        if (! $outlet) {
             $this->command->warn('Tidak ada outlet. Seeder FAQ dibatalkan.');
+
             return;
         }
 
@@ -294,6 +295,6 @@ class FaqSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('✅ FAQ Seeder berhasil! Total: ' . count($faqs) . ' FAQs');
+        $this->command->info('✅ FAQ Seeder berhasil! Total: '.count($faqs).' FAQs');
     }
 }

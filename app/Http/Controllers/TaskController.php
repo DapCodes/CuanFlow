@@ -3,18 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
-use App\Models\TaskStatus;
 use App\Models\TaskLabel;
+use App\Models\TaskStatus;
 use App\Models\User;
-use App\Notifications\TaskCreatedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskStatusChangedNotification;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller implements HasMiddleware
 {
@@ -39,16 +37,16 @@ class TaskController extends Controller implements HasMiddleware
 
         $statuses = TaskStatus::ordered()->with(['tasks' => function ($query) use ($request) {
             $query->with(['assignees', 'labels', 'creator', 'status']);
-            
+
             // Apply filters
             if ($request->filled('assignee')) {
                 $query->assignedTo($request->assignee);
             }
-            
+
             if ($request->filled('label')) {
                 $query->withLabel($request->label);
             }
-            
+
             if ($request->filled('priority')) {
                 $query->byPriority($request->priority);
             }
@@ -57,16 +55,16 @@ class TaskController extends Controller implements HasMiddleware
         }])->get();
 
         $labels = TaskLabel::all();
-        
+
         // Get assignable users (only specific roles)
         $assignableUsers = User::role(['kasir', 'supervisor', 'inventaris', 'produksi'])->get();
 
         // Calculate statistics
         $stats = [
             'total' => Task::count(),
-            'pending' => Task::whereHas('status', fn($q) => $q->where('slug', 'menunggu'))->count(),
-            'in_progress' => Task::whereHas('status', fn($q) => $q->where('slug', 'sedang-berlangsung'))->count(),
-            'completed' => Task::whereHas('status', fn($q) => $q->where('slug', 'selesai'))->count(),
+            'pending' => Task::whereHas('status', fn ($q) => $q->where('slug', 'menunggu'))->count(),
+            'in_progress' => Task::whereHas('status', fn ($q) => $q->where('slug', 'sedang-berlangsung'))->count(),
+            'completed' => Task::whereHas('status', fn ($q) => $q->where('slug', 'selesai'))->count(),
         ];
 
         return view('tasks.index', compact('statuses', 'labels', 'assignableUsers', 'stats'));
@@ -84,11 +82,11 @@ class TaskController extends Controller implements HasMiddleware
         if ($request->filled('assignee')) {
             $query->assignedTo($request->assignee);
         }
-        
+
         if ($request->filled('label')) {
             $query->withLabel($request->label);
         }
-        
+
         if ($request->filled('priority')) {
             $query->byPriority($request->priority);
         }
@@ -105,9 +103,9 @@ class TaskController extends Controller implements HasMiddleware
         // Calculate statistics
         $stats = [
             'total' => Task::count(),
-            'pending' => Task::whereHas('status', fn($q) => $q->where('slug', 'menunggu'))->count(),
-            'in_progress' => Task::whereHas('status', fn($q) => $q->where('slug', 'sedang-berlangsung'))->count(),
-            'completed' => Task::whereHas('status', fn($q) => $q->where('slug', 'selesai'))->count(),
+            'pending' => Task::whereHas('status', fn ($q) => $q->where('slug', 'menunggu'))->count(),
+            'in_progress' => Task::whereHas('status', fn ($q) => $q->where('slug', 'sedang-berlangsung'))->count(),
+            'completed' => Task::whereHas('status', fn ($q) => $q->where('slug', 'selesai'))->count(),
         ];
 
         return view('tasks.table', compact('tasks', 'statuses', 'labels', 'assignableUsers', 'stats'));
@@ -126,9 +124,9 @@ class TaskController extends Controller implements HasMiddleware
         // Calculate statistics
         $stats = [
             'total' => Task::count(),
-            'pending' => Task::whereHas('status', fn($q) => $q->where('slug', 'menunggu'))->count(),
-            'in_progress' => Task::whereHas('status', fn($q) => $q->where('slug', 'sedang-berlangsung'))->count(),
-            'completed' => Task::whereHas('status', fn($q) => $q->where('slug', 'selesai'))->count(),
+            'pending' => Task::whereHas('status', fn ($q) => $q->where('slug', 'menunggu'))->count(),
+            'in_progress' => Task::whereHas('status', fn ($q) => $q->where('slug', 'sedang-berlangsung'))->count(),
+            'completed' => Task::whereHas('status', fn ($q) => $q->where('slug', 'selesai'))->count(),
         ];
 
         return view('tasks.calendar', compact('statuses', 'labels', 'assignableUsers', 'stats'));
@@ -154,7 +152,7 @@ class TaskController extends Controller implements HasMiddleware
                     'extendedProps' => [
                         'status' => $task->status->name,
                         'priority' => $task->priority,
-                    ]
+                    ],
                 ];
             });
 
@@ -202,9 +200,9 @@ class TaskController extends Controller implements HasMiddleware
             ]);
 
             // Attach assignees
-            if (!empty($validated['assignees'])) {
+            if (! empty($validated['assignees'])) {
                 $task->assignees()->attach($validated['assignees']);
-                
+
                 // Log assignment activities
                 foreach ($validated['assignees'] as $userId) {
                     $user = User::find($userId);
@@ -219,7 +217,7 @@ class TaskController extends Controller implements HasMiddleware
             }
 
             // Attach labels
-            if (!empty($validated['labels'])) {
+            if (! empty($validated['labels'])) {
                 $task->labels()->attach($validated['labels']);
             }
 
@@ -233,9 +231,10 @@ class TaskController extends Controller implements HasMiddleware
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat task: ' . $e->getMessage(),
+                'message' => 'Gagal membuat task: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -312,9 +311,10 @@ class TaskController extends Controller implements HasMiddleware
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengupdate task: ' . $e->getMessage(),
+                'message' => 'Gagal mengupdate task: '.$e->getMessage(),
             ], 500);
         }
     }

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Storage;
 
 class TestimonialController extends Controller implements HasMiddleware
 {
@@ -25,7 +25,7 @@ class TestimonialController extends Controller implements HasMiddleware
         $testimonials = Testimonial::where('outlet_id', $user->outlet_id)
             ->latest()
             ->paginate(10);
-            
+
         return view('testimonials.index', compact('testimonials'));
     }
 
@@ -46,15 +46,15 @@ class TestimonialController extends Controller implements HasMiddleware
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('testimonials', 'public');
         }
-        
+
         // By default, testimonials are not published immediately for moderation
         $validated['is_published'] = false;
-        
+
         Testimonial::create($validated);
 
         return response()->json([
-            'success' => true, 
-            'message' => 'Terima kasih! Testimoni Anda telah dikirim.'
+            'success' => true,
+            'message' => 'Terima kasih! Testimoni Anda telah dikirim.',
         ]);
     }
 
@@ -68,7 +68,7 @@ class TestimonialController extends Controller implements HasMiddleware
             abort(403);
         }
 
-        $testimonial->is_published = !$testimonial->is_published;
+        $testimonial->is_published = ! $testimonial->is_published;
         $testimonial->save();
 
         return redirect()->back()->with('success', 'Status testimoni berhasil diperbarui.');

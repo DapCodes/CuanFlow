@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\AdminLandingPage;
-use App\Models\AdminLandingSection;
-use App\Models\AdminLandingSectionItem;
 use App\Models\AdminLandingCta;
+use App\Models\AdminLandingPage;
 use Illuminate\Database\Seeder;
 
 class AdminLandingPageSeeder extends Seeder
@@ -88,7 +86,7 @@ class AdminLandingPageSeeder extends Seeder
             'footer' => [
                 'title' => '',
                 'subtitle' => '',
-                'description' => '© ' . date('Y') . ' Flow. All rights reserved.',
+                'description' => '© '.date('Y').' Flow. All rights reserved.',
                 'is_active' => true,
                 'order' => 9,
             ],

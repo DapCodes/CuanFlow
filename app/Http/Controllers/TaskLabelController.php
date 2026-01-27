@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\TaskLabel;
-use Illuminate\Http\Request;
-
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
 class TaskLabelController extends Controller implements HasMiddleware
 {
@@ -62,7 +60,7 @@ class TaskLabelController extends Controller implements HasMiddleware
     {
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:task_labels,name,' . $taskLabel->id,
+            'name' => 'required|string|max:255|unique:task_labels,name,'.$taskLabel->id,
             'color' => 'required|string|size:7|regex:/^#[a-fA-F0-9]{6}$/',
         ]);
 

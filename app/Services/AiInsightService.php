@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AiInsight;
 use App\Models\CashRegister;
-use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use Carbon\Carbon;
@@ -42,7 +41,7 @@ class AiInsightService
         $insight = AiInsight::create([
             'outlet_id' => $outletId,
             'type' => 'sales_trend',
-            'title' => 'Ringkasan Penjualan ' . $startDate->format('d M Y'),
+            'title' => 'Ringkasan Penjualan '.$startDate->format('d M Y'),
             'content' => $content,
             'data' => $analysisData,
             'severity' => $this->determineSeverity($analysisData),
@@ -96,13 +95,13 @@ class AiInsightService
                 'total_discount' => $totalDiscount,
                 'average_transaction' => $averageTransaction,
             ],
-            'top_products' => $topProducts->map(fn($item) => [
+            'top_products' => $topProducts->map(fn ($item) => [
                 'name' => $item->product->name ?? 'Unknown',
                 'quantity' => (float) $item->total_qty, // Cast to float to remove trailing zeros
                 'unit' => $item->product->unit->name ?? 'unit',
                 'revenue' => $item->total_revenue,
             ])->toArray(),
-            'low_products' => $lowProducts->map(fn($item) => [
+            'low_products' => $lowProducts->map(fn ($item) => [
                 'name' => $item->product->name ?? 'Unknown',
                 'quantity' => (float) $item->total_qty, // Cast to float to remove trailing zeros
                 'unit' => $item->product->unit->name ?? 'unit',
@@ -203,7 +202,7 @@ class AiInsightService
             $topProduct = $topProducts->first();
             $qty = (float) $topProduct->total_qty;
             $unit = $topProduct->product->unit->name ?? 'unit';
-            
+
             $recommendations[] = [
                 'type' => 'stock',
                 'priority' => 'high',
@@ -267,27 +266,27 @@ class AiInsightService
         $content = [];
 
         // Summary
-        $content[] = "Ringkasan Penjualan Hari Ini";
-        $content[] = "Total Penjualan: Rp " . number_format($data['summary']['total_sales'], 0, ',', '.');
-        $content[] = "Jumlah Transaksi: " . $data['summary']['total_transactions'] . " transaksi";
-        $content[] = "Rata-rata per Transaksi: Rp " . number_format($data['summary']['average_transaction'], 0, ',', '.');
+        $content[] = 'Ringkasan Penjualan Hari Ini';
+        $content[] = 'Total Penjualan: Rp '.number_format($data['summary']['total_sales'], 0, ',', '.');
+        $content[] = 'Jumlah Transaksi: '.$data['summary']['total_transactions'].' transaksi';
+        $content[] = 'Rata-rata per Transaksi: Rp '.number_format($data['summary']['average_transaction'], 0, ',', '.');
 
         if ($data['summary']['total_discount'] > 0) {
-            $content[] = "Total Diskon: Rp " . number_format($data['summary']['total_discount'], 0, ',', '.');
+            $content[] = 'Total Diskon: Rp '.number_format($data['summary']['total_discount'], 0, ',', '.');
         }
 
         // Top products
-        if (!empty($data['top_products'])) {
+        if (! empty($data['top_products'])) {
             $content[] = "\nProduk Terlaris";
             foreach (array_slice($data['top_products'], 0, 3) as $index => $product) {
                 $qty = (float) $product['quantity'];
                 $unit = $product['unit'] ?? 'unit';
-                $content[] = ($index + 1) . ". {$product['name']} - {$qty} {$unit} (Rp " . number_format($product['revenue'], 0, ',', '.') . ")";
+                $content[] = ($index + 1).". {$product['name']} - {$qty} {$unit} (Rp ".number_format($product['revenue'], 0, ',', '.').')';
             }
         }
 
         // Low selling products
-        if (!empty($data['low_products'])) {
+        if (! empty($data['low_products'])) {
             $content[] = "\nProduk Perlu Perhatian";
             foreach (array_slice($data['low_products'], 0, 2) as $index => $product) {
                 $qty = (float) $product['quantity'];
@@ -307,17 +306,17 @@ class AiInsightService
         if ($data['previous_day_comparison']['available']) {
             $comp = $data['previous_day_comparison'];
             $status = $comp['sales_percentage'] >= 0 ? 'naik' : 'turun';
-            
+
             $content[] = "\nPerbandingan dengan Kemarin";
-            $content[] = "Penjualan {$status} " . abs($comp['sales_percentage']) . "% (Rp " . number_format(abs($comp['sales_difference']), 0, ',', '.') . ")";
-            $content[] = "Transaksi {$status} " . abs($comp['transaction_percentage']) . "% (" . abs($comp['transaction_difference']) . " transaksi)";
+            $content[] = "Penjualan {$status} ".abs($comp['sales_percentage']).'% (Rp '.number_format(abs($comp['sales_difference']), 0, ',', '.').')';
+            $content[] = "Transaksi {$status} ".abs($comp['transaction_percentage']).'% ('.abs($comp['transaction_difference']).' transaksi)';
         }
 
         // Recommendations
-        if (!empty($data['recommendations'])) {
+        if (! empty($data['recommendations'])) {
             $content[] = "\nRekomendasi untuk Besok";
             foreach (array_slice($data['recommendations'], 0, 3) as $index => $rec) {
-                $content[] = ($index + 1) . ". {$rec['message']}";
+                $content[] = ($index + 1).". {$rec['message']}";
             }
         }
 
@@ -335,7 +334,7 @@ class AiInsightService
         }
 
         // Warning jika ada produk yang tidak laku
-        if (!empty($data['low_products']) && count($data['low_products']) > 3) {
+        if (! empty($data['low_products']) && count($data['low_products']) > 3) {
             return 'warning';
         }
 

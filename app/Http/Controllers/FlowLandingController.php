@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminLandingPage;
-use Illuminate\Http\Request;
 
 class FlowLandingController extends Controller
 {
@@ -17,12 +16,12 @@ class FlowLandingController extends Controller
             ->where('is_active', true)
             ->first();
 
-        if (!$landingPage) {
+        if (! $landingPage) {
             $landingPage = AdminLandingPage::where('is_active', true)
                 ->first();
         }
 
-        if (!$landingPage) {
+        if (! $landingPage) {
             abort(404, 'Landing page tidak ditemukan.');
         }
 

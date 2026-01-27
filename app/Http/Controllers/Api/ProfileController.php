@@ -31,11 +31,11 @@ class ProfileController extends Controller
 
         $data = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['nullable', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'phone' => ['nullable', 'string', 'max:20'],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
-            
+
             // Customer fields
             'address' => ['nullable', 'string'],
             'birth_date' => ['nullable', 'date', 'before:today'],
@@ -47,10 +47,18 @@ class ProfileController extends Controller
             $oldEmail = $user->email;
 
             // Update User
-            if ($request->has('name')) $user->name = $data['name'];
-            if ($request->has('email')) $user->email = $data['email'];
-            if ($request->has('phone')) $user->phone = $data['phone'];
-            if ($request->filled('password')) $user->password = Hash::make($data['password']);
+            if ($request->has('name')) {
+                $user->name = $data['name'];
+            }
+            if ($request->has('email')) {
+                $user->email = $data['email'];
+            }
+            if ($request->has('phone')) {
+                $user->phone = $data['phone'];
+            }
+            if ($request->filled('password')) {
+                $user->password = Hash::make($data['password']);
+            }
 
             if ($request->hasFile('avatar')) {
                 if ($user->avatar) {
@@ -63,14 +71,24 @@ class ProfileController extends Controller
 
             // Update Customer (if exists)
             if ($customer) {
-                if ($request->has('name')) $customer->name = $data['name'];
-                if ($request->has('email')) $customer->email = $data['email'];
-                if ($request->has('phone')) $customer->phone = $data['phone'];
-                if ($request->has('address')) $customer->address = $data['address'];
-                if ($request->has('birth_date')) $customer->birth_date = $data['birth_date'];
-                
+                if ($request->has('name')) {
+                    $customer->name = $data['name'];
+                }
+                if ($request->has('email')) {
+                    $customer->email = $data['email'];
+                }
+                if ($request->has('phone')) {
+                    $customer->phone = $data['phone'];
+                }
+                if ($request->has('address')) {
+                    $customer->address = $data['address'];
+                }
+                if ($request->has('birth_date')) {
+                    $customer->birth_date = $data['birth_date'];
+                }
+
                 $customer->save();
-            } else if ($request->has('address') || $request->has('birth_date')) {
+            } elseif ($request->has('address') || $request->has('birth_date')) {
                 // Create customer if it doesn't exist but fields are provided
                 Customer::create([
                     'name' => $user->name,
@@ -91,6 +109,7 @@ class ProfileController extends Controller
 
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\DB::rollBack();
+
             return response()->json([
                 'message' => 'Gagal memperbarui profil.',
                 'error' => $e->getMessage(),

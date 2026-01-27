@@ -18,7 +18,7 @@ class OutletPaymentLink extends Model
         'account_name',
         'qr_image',
         'notes',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [

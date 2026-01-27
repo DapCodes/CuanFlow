@@ -3,33 +3,21 @@
 namespace App\Exports;
 
 use App\Models\Expense;
-use App\Models\Sale;
-use App\Models\SaleItem;
-use App\Models\Product;
-use App\Models\RawMaterial;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\WithDrawings;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
-use PhpOffice\PhpSpreadsheet\Chart\Chart;
-use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
-use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
-use PhpOffice\PhpSpreadsheet\Chart\Legend;
-use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
-use PhpOffice\PhpSpreadsheet\Chart\Title as ChartTitle;
-use Illuminate\Support\Facades\DB;
 
-class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvents
+class ReportExpensesSheet implements FromArray, WithEvents, WithStyles, WithTitle
 {
     protected Carbon $startDate;
+
     protected Carbon $endDate;
 
     public function __construct(Carbon $startDate, Carbon $endDate)
@@ -55,13 +43,13 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
 
         $allExpenses = $query->get();
 
-        $expenses = $allExpenses->filter(fn($e) => $e->amount > 0);
-        $income = $allExpenses->filter(fn($e) => $e->amount < 0);
+        $expenses = $allExpenses->filter(fn ($e) => $e->amount > 0);
+        $income = $allExpenses->filter(fn ($e) => $e->amount < 0);
 
         $data = [
             ['RINCIAN TRANSAKSI KAS (PENGELUARAN & PEMASUKAN LAIN)'],
-            ['Periode: ' . $this->startDate->format('d M Y') . ' - ' . $this->endDate->format('d M Y')],
-            ['Tanggal Cetak: ' . now()->format('d M Y H:i')],
+            ['Periode: '.$this->startDate->format('d M Y').' - '.$this->endDate->format('d M Y')],
+            ['Tanggal Cetak: '.now()->format('d M Y H:i')],
             [''],
             ['DAFTAR PENGELUARAN OPERASIONAL'],
             [''],
@@ -73,11 +61,11 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
                 $expense->expense_date ? $expense->expense_date->format('d/m/Y') : '-',
                 $expense->category->name ?? '-',
                 $expense->description,
-                (float)$expense->amount
+                (float) $expense->amount,
             ];
         }
 
-        $data[] = ['', '', 'TOTAL PENGELUARAN', (float)$expenses->sum('amount')];
+        $data[] = ['', '', 'TOTAL PENGELUARAN', (float) $expenses->sum('amount')];
         $data[] = [''];
         $data[] = [''];
         $data[] = ['DAFTAR PEMASUKAN LAIN'];
@@ -89,10 +77,10 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
                 $inc->expense_date ? $inc->expense_date->format('d/m/Y') : '-',
                 $inc->category->name ?? '-',
                 $inc->description,
-                abs((float)$inc->amount)
+                abs((float) $inc->amount),
             ];
         }
-        $data[] = ['', '', 'TOTAL PEMASUKAN', abs((float)$income->sum('amount'))];
+        $data[] = ['', '', 'TOTAL PEMASUKAN', abs((float) $income->sum('amount'))];
 
         return $data;
     }
@@ -102,19 +90,19 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
         return [
             // Header utama - Background kuning
             1 => [
-                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => '000000']], 
+                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => '000000']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FCD34D']], // Kuning
             ],
             // Sub header periode - Background abu muda
             2 => [
-                'font' => ['italic' => true, 'size' => 11, 'color' => ['rgb' => '374151']], 
+                'font' => ['italic' => true, 'size' => 11, 'color' => ['rgb' => '374151']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F3F4F6']], // Abu muda
             ],
             // Tanggal cetak - Background abu muda
             3 => [
-                'font' => ['size' => 9, 'color' => ['rgb' => '6B7280']], 
+                'font' => ['size' => 9, 'color' => ['rgb' => '6B7280']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F3F4F6']], // Abu muda
             ],
@@ -122,13 +110,13 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
             5 => [
                 'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '000000']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D1D5DB']], // Abu sedang
-                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER]
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
             ],
             // Header tabel - Background kuning
             7 => [
-                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']], 
+                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FDE68A']], // Kuning muda
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
             ],
         ];
     }
@@ -136,16 +124,16 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                
+
                 // Merge cells
                 $sheet->mergeCells('A1:D1');
                 $sheet->mergeCells('A2:D2');
                 $sheet->mergeCells('A3:D3');
                 $sheet->mergeCells('A5:D5');
-                
+
                 // Row heights
                 $sheet->getRowDimension(1)->setRowHeight(35);
                 $sheet->getRowDimension(2)->setRowHeight(22);
@@ -154,7 +142,7 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
                 $sheet->getRowDimension(5)->setRowHeight(25);
                 $sheet->getRowDimension(6)->setRowHeight(10);
                 $sheet->getRowDimension(7)->setRowHeight(25);
-                
+
                 // Find Income Header
                 $incomeSectionRow = 0;
                 $incomeHeaderRow = 0;
@@ -174,7 +162,7 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
                     $bgColor = ($i % 2 == 0) ? 'FFFFFF' : 'F9FAFB';
                     $sheet->getStyle('A'.$i.':D'.$i)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($bgColor);
                 }
-                
+
                 // Bold Total Row for Expenses
                 $sheet->getStyle('A'.$expenseEndRow.':D'.$expenseEndRow)->getFont()->setBold(true);
                 $sheet->getStyle('A'.$expenseEndRow.':D'.$expenseEndRow)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('FEE2E2');
@@ -184,16 +172,16 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
                 $sheet->getColumnDimension('B')->setWidth(22);
                 $sheet->getColumnDimension('C')->setWidth(45);
                 $sheet->getColumnDimension('D')->setWidth(25);
-                
+
                 // Number formatting
                 $sheet->getStyle('D8:D'.$lastRow)->getNumberFormat()->setFormatCode('#,##0');
-                
+
                 // Borders
                 $sheet->getStyle('A1:D1')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_MEDIUM);
                 $sheet->getStyle('A7:D'.$expenseEndRow)->applyFromArray([
-                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]]
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]],
                 ]);
-                
+
                 // Style Income Section
                 if ($incomeSectionRow > 0) {
                     $sheet->mergeCells('A'.$incomeSectionRow.':D'.$incomeSectionRow);
@@ -201,13 +189,13 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
                         'font' => ['bold' => true, 'size' => 12],
                         'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D1D5DB']],
                         'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
-                        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_MEDIUM]]
+                        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_MEDIUM]],
                     ]);
 
                     $sheet->getStyle('A'.$incomeHeaderRow.':D'.$incomeHeaderRow)->applyFromArray([
                         'font' => ['bold' => true],
                         'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D1FAE5']],
-                        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+                        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                     ]);
 
                     for ($i = $incomeHeaderRow + 1; $i <= $lastRow; $i++) {
@@ -221,7 +209,7 @@ class ReportExpensesSheet implements FromArray, WithTitle, WithStyles, WithEvent
                     $sheet->getStyle('A'.$lastRow.':D'.$lastRow)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('D1FAE5');
 
                     $sheet->getStyle('A'.$incomeHeaderRow.':D'.$lastRow)->applyFromArray([
-                        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]]
+                        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]],
                     ]);
                 }
 

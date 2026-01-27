@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class LandingPageResource extends JsonResource
 {
@@ -15,8 +14,8 @@ class LandingPageResource extends JsonResource
             'template_id' => $this->template_id,
             'hero_title' => $this->hero_title,
             'hero_subtitle' => $this->hero_subtitle,
-            'hero_image_url' => $this->hero_image ? asset('storage/' . $this->hero_image) : null,
-            'about_image_url' => $this->about_image ? asset('storage/' . $this->about_image) : null,
+            'hero_image_url' => $this->hero_image ? asset('storage/'.$this->hero_image) : null,
+            'about_image_url' => $this->about_image ? asset('storage/'.$this->about_image) : null,
             'about_text' => $this->about_text,
             'vision_text' => $this->vision_text,
             'mission_text' => $this->mission_text,

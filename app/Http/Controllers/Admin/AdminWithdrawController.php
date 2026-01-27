@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WithdrawalStatusMail;
 use App\Models\Setting;
 use App\Models\Withdrawal;
-use App\Mail\WithdrawalStatusMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -23,9 +23,9 @@ class AdminWithdrawController extends Controller
         if ($request->filled('status')) {
             if ($request->status === 'need_approval') {
                 $query->where('status', 'pending')
-                      ->where(function($q) {
-                          $q->whereNull('accepted_by_owner')->orWhere('accepted_by_owner', false);
-                      });
+                    ->where(function ($q) {
+                        $q->whereNull('accepted_by_owner')->orWhere('accepted_by_owner', false);
+                    });
             } else {
                 $query->where('status', $request->status);
             }
@@ -42,8 +42,8 @@ class AdminWithdrawController extends Controller
         // Search by user
         if ($request->filled('search')) {
             $query->whereHas('user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -55,8 +55,8 @@ class AdminWithdrawController extends Controller
             'approved' => Withdrawal::where('status', 'approved')->count(),
             'paid' => Withdrawal::where('status', 'paid')->count(),
             'total_pending_amount' => Withdrawal::pending()->sum('amount'),
-            'need_approval' => Withdrawal::pending()->where(function($q) {
-                 $q->whereNull('accepted_by_owner')->orWhere('accepted_by_owner', false);
+            'need_approval' => Withdrawal::pending()->where(function ($q) {
+                $q->whereNull('accepted_by_owner')->orWhere('accepted_by_owner', false);
             })->count(),
         ];
 
@@ -69,7 +69,7 @@ class AdminWithdrawController extends Controller
     public function show(Withdrawal $withdrawal)
     {
         $withdrawal->load(['user', 'outlet', 'processedBy']);
-        
+
         return view('admin.withdrawals.show', compact('withdrawal'));
     }
 
@@ -79,7 +79,7 @@ class AdminWithdrawController extends Controller
     public function approveByOwner(Request $request, Withdrawal $withdrawal)
     {
         if ($withdrawal->accepted_by_owner) {
-             return back()->with('error', 'Penarikan sudah disetujui sebelumnya.');
+            return back()->with('error', 'Penarikan sudah disetujui sebelumnya.');
         }
 
         $withdrawal->update(['accepted_by_owner' => true]);
@@ -98,11 +98,11 @@ class AdminWithdrawController extends Controller
 
         $withdrawal->update([
             'status' => 'rejected',
-            'admin_note' => 'Ditolak oleh Owner: ' . $request->reason,
+            'admin_note' => 'Ditolak oleh Owner: '.$request->reason,
             'processed_by' => auth()->id(),
             'processed_at' => now(),
         ]);
-        
+
         // Send rejection email/notification if needed
         // Mail::to($withdrawal->user->email)->queue(new WithdrawalStatusMail($withdrawal, 'rejected'));
 
@@ -114,7 +114,7 @@ class AdminWithdrawController extends Controller
      */
     public function approve(Request $request, Withdrawal $withdrawal)
     {
-        if (!$withdrawal->canBeProcessed()) {
+        if (! $withdrawal->canBeProcessed()) {
             return back()->with('error', 'Penarikan ini tidak dapat diproses.');
         }
 
@@ -139,7 +139,8 @@ class AdminWithdrawController extends Controller
             return back()->with('success', 'Penarikan berhasil disetujui.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyetujui penarikan: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menyetujui penarikan: '.$e->getMessage());
         }
     }
 
@@ -148,7 +149,7 @@ class AdminWithdrawController extends Controller
      */
     public function reject(Request $request, Withdrawal $withdrawal)
     {
-        if (!$withdrawal->canBeProcessed()) {
+        if (! $withdrawal->canBeProcessed()) {
             return back()->with('error', 'Penarikan ini tidak dapat diproses.');
         }
 
@@ -173,7 +174,8 @@ class AdminWithdrawController extends Controller
             return back()->with('success', 'Penarikan berhasil ditolak.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menolak penarikan: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menolak penarikan: '.$e->getMessage());
         }
     }
 
@@ -218,7 +220,8 @@ class AdminWithdrawController extends Controller
             if (isset($proofImage)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($proofImage);
             }
-            return back()->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal memperbarui status: '.$e->getMessage());
         }
     }
 
@@ -228,7 +231,7 @@ class AdminWithdrawController extends Controller
     public function taxSettings()
     {
         $taxPercent = Setting::getValue('withdraw', 'tax_percent', 0);
-        
+
         return view('admin.withdrawals.settings', compact('taxPercent'));
     }
 

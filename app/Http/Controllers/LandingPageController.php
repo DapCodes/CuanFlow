@@ -3,17 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\LandingPage;
+use App\Models\LandingPageVisit;
 use App\Models\Outlet;
 use App\Models\Product;
-use App\Models\LandingPageVisit;
 use App\Models\Testimonial;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LandingPageController extends Controller implements HasMiddleware
 {
@@ -34,11 +33,11 @@ class LandingPageController extends Controller implements HasMiddleware
         $chartData = [];
         $totalVisits = 0;
         $period = $request->input('period', '7d');
-        
+
         if ($user->outlet_id) {
             $outlet = Outlet::with('landingPage')->find($user->outlet_id);
             // Verify/Create landing page if not exists
-            if ($outlet && !$outlet->landingPage) {
+            if ($outlet && ! $outlet->landingPage) {
                 $outlet->landingPage()->create();
                 $outlet->load('landingPage');
             }
@@ -50,7 +49,7 @@ class LandingPageController extends Controller implements HasMiddleware
                 $totalVisits = array_sum($chartData);
             }
         }
-        
+
         return view('landing.index', compact('outlet', 'chartLabels', 'chartData', 'totalVisits', 'period'));
     }
 
@@ -71,7 +70,7 @@ class LandingPageController extends Controller implements HasMiddleware
             ->where('visited_at', '>=', now()->subMinutes(3))
             ->exists();
 
-        if (!$lastVisit) {
+        if (! $lastVisit) {
             LandingPageVisit::create([
                 'landing_page_id' => $landingPage->id,
                 'ip_address' => request()->ip(),
@@ -94,8 +93,8 @@ class LandingPageController extends Controller implements HasMiddleware
         $testimonials = [];
         if ($landingPage->selected_testimonial_ids) {
             $testimonials = Testimonial::whereIn('id', $landingPage->selected_testimonial_ids)
-                                       ->where('is_published', true)
-                                       ->get();
+                ->where('is_published', true)
+                ->get();
         }
 
         // Get ALL products for "View All" feature
@@ -110,19 +109,19 @@ class LandingPageController extends Controller implements HasMiddleware
     public function edit($id)
     {
         $outlet = Outlet::with('landingPage')->findOrFail($id);
-        
+
         // Ensure landing page entry exists
         $landingPage = $outlet->landingPage ?? $outlet->landingPage()->create();
-        
+
         // Get all products for this outlet
         $products = Product::with(['unit', 'category'])->where('outlet_id', $id)->get();
-        
+
         // Fetch published testimonials for selection
         $testimonials = Testimonial::where('outlet_id', $id)
-                                   ->where('is_published', true)
-                                   ->latest()
-                                   ->get();
-        
+            ->where('is_published', true)
+            ->latest()
+            ->get();
+
         // Calculate formatted sales count for display (e.g., 152 -> 150+)
         $salesCount = $outlet->sales()->count();
         $displaySales = $this->formatNumber($salesCount);
@@ -167,7 +166,7 @@ class LandingPageController extends Controller implements HasMiddleware
             if ($landingPage->hero_image) {
                 Storage::disk('public')->delete($landingPage->hero_image);
             }
-            
+
             // Compress and store image
             $data['hero_image'] = $this->compressAndStoreImage($request->file('hero_image'), 'landing-pages');
         }
@@ -189,13 +188,13 @@ class LandingPageController extends Controller implements HasMiddleware
      */
     private function compressAndStoreImage($image, $folder)
     {
-        $filename = uniqid() . '_' . time() . '.webp';
-        $path = $folder . '/' . $filename;
-        
+        $filename = uniqid().'_'.time().'.webp';
+        $path = $folder.'/'.$filename;
+
         // Get image info
         $imageInfo = getimagesize($image->getPathname());
         $mime = $imageInfo['mime'];
-        
+
         // Create image resource based on mime type
         switch ($mime) {
             case 'image/jpeg':
@@ -214,11 +213,11 @@ class LandingPageController extends Controller implements HasMiddleware
                 // Fallback: just store the original
                 return $image->store($folder, 'public');
         }
-        
+
         // Get original dimensions
         $width = imagesx($source);
         $height = imagesy($source);
-        
+
         // Calculate new dimensions (max 1920px width, maintain aspect ratio)
         $maxWidth = 1920;
         if ($width > $maxWidth) {
@@ -228,10 +227,10 @@ class LandingPageController extends Controller implements HasMiddleware
             $newWidth = $width;
             $newHeight = $height;
         }
-        
+
         // Create resized image
         $resized = imagecreatetruecolor($newWidth, $newHeight);
-        
+
         // Preserve transparency for PNG
         if ($mime === 'image/png') {
             imagealphablending($resized, false);
@@ -239,36 +238,37 @@ class LandingPageController extends Controller implements HasMiddleware
             $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
             imagefilledrectangle($resized, 0, 0, $newWidth, $newHeight, $transparent);
         }
-        
+
         imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-        
+
         // Save as WebP with 80% quality (good balance between size and quality)
-        $tempPath = storage_path('app/public/' . $path);
-        
+        $tempPath = storage_path('app/public/'.$path);
+
         // Ensure directory exists
         $directory = dirname($tempPath);
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             mkdir($directory, 0755, true);
         }
-        
+
         imagewebp($resized, $tempPath, 80);
-        
+
         // Clean up
         imagedestroy($source);
         imagedestroy($resized);
-        
+
         return $path;
     }
 
     private function formatNumber($num)
     {
         if ($num > 1000) {
-            return floor($num / 1000) . 'k+';
+            return floor($num / 1000).'k+';
         } elseif ($num > 100) {
-            return floor($num / 50) * 50 . '+';
+            return floor($num / 50) * 50 .'+';
         } elseif ($num > 10) {
-            return floor($num / 10) * 10 . '+';
+            return floor($num / 10) * 10 .'+';
         }
+
         return $num;
     }
 
@@ -278,8 +278,9 @@ class LandingPageController extends Controller implements HasMiddleware
         $landingPage = $outlet->landingPage;
 
         if ($landingPage) {
-            $landingPage->is_active = !$landingPage->is_active;
+            $landingPage->is_active = ! $landingPage->is_active;
             $landingPage->save();
+
             return redirect()->back()->with('success', 'Status landing page berhasil diubah.');
         }
 
@@ -311,7 +312,7 @@ class LandingPageController extends Controller implements HasMiddleware
             case '7d':
             default:
                 // Strictly 7 days ago dynamically
-                $startDate = Carbon::now()->subDays(7); 
+                $startDate = Carbon::now()->subDays(7);
                 $interval = 'day';
                 break;
         }
@@ -320,17 +321,17 @@ class LandingPageController extends Controller implements HasMiddleware
 
         // Get visits
         $visitsGrouped = $query->orderBy('visited_at')->get()
-            ->groupBy(function($visit) use ($interval) {
+            ->groupBy(function ($visit) use ($interval) {
                 return $visit->visited_at->format($interval === 'month' ? 'Y-m' : 'Y-m-d');
             });
-        
+
         $currentDate = clone $startDate;
         $endDate = Carbon::now(); // Up to this exact second
 
         if ($interval === 'day') {
             $loopDate = $currentDate->copy()->startOfDay();
             $loopEnd = $endDate->copy()->endOfDay();
-            
+
             while ($loopDate <= $loopEnd) {
                 $key = $loopDate->format('Y-m-d');
                 $labels[] = $loopDate->format('d M');
@@ -340,7 +341,7 @@ class LandingPageController extends Controller implements HasMiddleware
         } else {
             $loopDate = $currentDate->copy()->startOfMonth();
             $loopEnd = $endDate->copy()->endOfMonth();
-            
+
             while ($loopDate <= $loopEnd) {
                 $key = $loopDate->format('Y-m');
                 $labels[] = $loopDate->format($dateFormat);

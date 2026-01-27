@@ -19,7 +19,7 @@ class EmailVerifyController extends Controller
         if (! hash_equals(sha1($user->email), $hash)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Hash tidak valid.'
+                'message' => 'Hash tidak valid.',
             ], 403);
         }
 
@@ -35,8 +35,8 @@ class EmailVerifyController extends Controller
             'data' => [
                 'user_id' => $user->id,
                 'email' => $user->email,
-                'verified_at' => $user->email_verified_at
-            ]
+                'verified_at' => $user->email_verified_at,
+            ],
         ]);
     }
 }

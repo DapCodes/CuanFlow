@@ -11,7 +11,6 @@ use App\Models\StockMovement;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class SaleSeeder extends Seeder
 {
@@ -20,22 +19,23 @@ class SaleSeeder extends Seeder
         $targetOutletId = 1;
         $admin = User::where('email', 'daffa.owner1@gmail.com')->first() ?? User::first();
         $adminId = $admin ? $admin->id : null;
-        
+
         $products = Product::where('outlet_id', $targetOutletId)->where('is_sellable', true)->get();
-        
+
         if ($products->isEmpty()) {
             echo "Pastikan ProductWithRecipeSeeder sudah dijalankan.\n";
+
             return;
         }
 
         DB::transaction(function () use ($products, $targetOutletId, $adminId) {
             // Create 30-50 historical sales
             $saleCount = rand(30, 50);
-            
+
             for ($i = 0; $i < $saleCount; $i++) {
                 $daysAgo = rand(0, 5); // Recent sales
                 $saleDate = now()->subDays($daysAgo)->subHours(rand(0, 23))->subMinutes(rand(0, 59));
-                
+
                 // Randomly pick 1-3 products for this sale
                 $itemsToSellSelection = $products->random(min(rand(1, 3), $products->count()));
                 $validItems = [];
@@ -44,13 +44,13 @@ class SaleSeeder extends Seeder
                     $stock = ProductStock::where('product_id', $product->id)
                         ->where('outlet_id', $targetOutletId)
                         ->first();
-                    
+
                     if ($stock && $stock->quantity > 0) {
                         $qty = min(rand(1, 5), $stock->quantity);
                         $validItems[] = [
                             'product' => $product,
                             'qty' => $qty,
-                            'stock' => $stock
+                            'stock' => $stock,
                         ];
                     }
                 }
@@ -58,10 +58,10 @@ class SaleSeeder extends Seeder
                 if (empty($validItems)) {
                     continue; // Skip this sale if no products have stock
                 }
-                
+
                 $subtotal = 0;
                 $totalHpp = 0;
-                
+
                 // 1. Create Sale Record
                 $sale = Sale::create([
                     'outlet_id' => $targetOutletId,
@@ -114,7 +114,7 @@ class SaleSeeder extends Seeder
                         'unit_price' => $product->selling_price,
                         'reference_type' => Sale::class,
                         'reference_id' => $sale->id,
-                        'notes' => 'Sale INV ' . $sale->invoice_number,
+                        'notes' => 'Sale INV '.$sale->invoice_number,
                         'created_by' => $adminId,
                         'created_at' => $saleDate,
                     ]);

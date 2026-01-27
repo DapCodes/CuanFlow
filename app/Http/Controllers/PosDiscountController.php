@@ -149,13 +149,13 @@ class PosDiscountController extends Controller
         try {
             // Re-calculate the whole plan using calculateDiscountPlan to preserve simple discounts
             $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
-            
+
             $blacklist = Session::get('pos_discount_blacklist', []);
             $candidates = $this->discountService->findCandidates(
                 array_values($cart),
                 null,
                 Session::get('pos_customer_id')
-            )->filter(fn($d) => !in_array($d->id, $blacklist));
+            )->filter(fn ($d) => ! in_array($d->id, $blacklist));
 
             $finalPlan = $this->discountService->calculateDiscountPlan(
                 array_values($cart),
@@ -216,12 +216,12 @@ class PosDiscountController extends Controller
         // Re-calculate plan
         $cart = Session::get('pos_cart', []);
         $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
-        
+
         $candidates = $this->discountService->findCandidates(
             array_values($cart),
             null,
             Session::get('pos_customer_id')
-        )->filter(fn($d) => !in_array($d->id, $blacklist));
+        )->filter(fn ($d) => ! in_array($d->id, $blacklist));
 
         $plan = $this->discountService->calculateDiscountPlan(
             array_values($cart),
@@ -229,7 +229,7 @@ class PosDiscountController extends Controller
             $subtotal
         );
 
-        if (!$plan['discount_id']) {
+        if (! $plan['discount_id']) {
             Session::forget('pos_discount_plan');
         } else {
             Session::put('pos_discount_plan', $plan);

@@ -2,32 +2,19 @@
 
 namespace App\Exports;
 
-use App\Models\Expense;
-use App\Models\Sale;
-use App\Models\SaleItem;
 use App\Models\Product;
 use App\Models\RawMaterial;
-use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Concerns\WithDrawings;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
-use PhpOffice\PhpSpreadsheet\Chart\Chart;
-use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
-use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
-use PhpOffice\PhpSpreadsheet\Chart\Legend;
-use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
-use PhpOffice\PhpSpreadsheet\Chart\Title as ChartTitle;
-use Illuminate\Support\Facades\DB;
 
-class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
+class ReportStockSheet implements FromArray, WithEvents, WithStyles, WithTitle
 {
     public function title(): string
     {
@@ -43,7 +30,7 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
 
         $data = [
             ['LAPORAN PERSEDIAAN PRODUK & BAHAN'],
-            ['Tanggal Cetak: ' . now()->format('d M Y H:i')],
+            ['Tanggal Cetak: '.now()->format('d M Y H:i')],
             [''],
             ['STOK PRODUK JADI'],
             [''],
@@ -59,7 +46,7 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                 $currentStock,
                 $product->unit->name ?? '',
                 $product->min_stock,
-                $status
+                $status,
             ];
         }
 
@@ -78,7 +65,7 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                 $currentStock,
                 $ingredient->unit->name ?? '',
                 $ingredient->min_stock,
-                $status
+                $status,
             ];
         }
 
@@ -90,13 +77,13 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
         return [
             // Header utama - Background kuning
             1 => [
-                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => '000000']], 
+                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => '000000']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FCD34D']], // Kuning
             ],
             // Tanggal cetak - Background abu muda
             2 => [
-                'font' => ['size' => 9, 'color' => ['rgb' => '6B7280']], 
+                'font' => ['size' => 9, 'color' => ['rgb' => '6B7280']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F3F4F6']], // Abu muda
             ],
@@ -104,13 +91,13 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
             4 => [
                 'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '000000']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D1D5DB']], // Abu sedang
-                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER]
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
             ],
             // Header tabel - Background kuning
             6 => [
-                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']], 
+                'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FDE68A']], // Kuning muda
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
             ],
         ];
     }
@@ -118,14 +105,14 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                
+
                 // Merge title
                 $sheet->mergeCells('A1:F1');
                 $sheet->mergeCells('A2:F2');
-                
+
                 // Row heights
                 $sheet->getRowDimension(1)->setRowHeight(35);
                 $sheet->getRowDimension(2)->setRowHeight(20);
@@ -133,7 +120,7 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                 $sheet->getRowDimension(4)->setRowHeight(25);
                 $sheet->getRowDimension(5)->setRowHeight(10); // Spacing
                 $sheet->getRowDimension(6)->setRowHeight(25);
-                
+
                 // Column widths
                 $sheet->getColumnDimension('A')->setWidth(32);
                 $sheet->getColumnDimension('B')->setWidth(20);
@@ -141,7 +128,7 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                 $sheet->getColumnDimension('D')->setWidth(12);
                 $sheet->getColumnDimension('E')->setWidth(15);
                 $sheet->getColumnDimension('F')->setWidth(15);
-                
+
                 // Find ingredient section
                 $ingredientHeaderRow = 0;
                 $ingredientSectionRow = 0;
@@ -152,51 +139,51 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                         break;
                     }
                 }
-                
+
                 // Border untuk header
                 $sheet->getStyle('A1:F1')->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']],
+                    ],
                 ]);
-                
+
                 $sheet->getStyle('A2:F2')->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']],
+                    ],
                 ]);
-                
+
                 $sheet->getStyle('A4:F4')->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']],
+                    ],
                 ]);
-                
+
                 // Merge section title
                 $sheet->mergeCells('A4:F4');
-                
+
                 // Border untuk header tabel produk
                 $sheet->getStyle('A6:F6')->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']],
+                    ],
                 ]);
-                
+
                 // Data produk
                 $productEndRow = $ingredientSectionRow > 0 ? $ingredientSectionRow - 3 : $lastRow;
-                
+
                 // Set row heights untuk data produk
                 for ($i = 7; $i <= $productEndRow; $i++) {
                     $sheet->getRowDimension($i)->setRowHeight(22);
                 }
-                
+
                 // Border untuk data produk
                 $sheet->getStyle('A7:F'.$productEndRow)->applyFromArray([
                     'borders' => [
-                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]
-                    ]
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']],
+                    ],
                 ]);
-                
+
                 // Alternating colors untuk produk
                 for ($i = 7; $i <= $productEndRow; $i++) {
                     $bgColor = ($i % 2 == 0) ? 'FFFFFF' : 'F9FAFB';
@@ -204,7 +191,7 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                         ->setFillType(Fill::FILL_SOLID)
                         ->getStartColor()
                         ->setRGB($bgColor);
-                    
+
                     // Alignment
                     $sheet->getStyle('A'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                     $sheet->getStyle('B'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
@@ -213,7 +200,7 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                     $sheet->getStyle('E'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle('F'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle('A'.$i.':F'.$i)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-                    
+
                     // Conditional formatting untuk status
                     $status = $sheet->getCell('F'.$i)->getValue();
                     if ($status === 'RENDAH') {
@@ -221,50 +208,50 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                         $sheet->getStyle('F'.$i)->getFont()->setBold(true);
                     }
                 }
-                
+
                 // Style ingredient section
                 if ($ingredientHeaderRow > 0) {
                     $sheet->getRowDimension($ingredientSectionRow)->setRowHeight(25);
                     $sheet->getRowDimension($ingredientSectionRow + 1)->setRowHeight(10);
                     $sheet->getRowDimension($ingredientHeaderRow)->setRowHeight(25);
-                    
+
                     $sheet->mergeCells('A'.$ingredientSectionRow.':F'.$ingredientSectionRow);
-                    
+
                     $sheet->getStyle('A'.$ingredientSectionRow.':F'.$ingredientSectionRow)->applyFromArray([
                         'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '000000']],
                         'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'D1D5DB']],
                         'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
                         'borders' => [
-                            'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
-                        ]
+                            'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']],
+                        ],
                     ]);
-                    
+
                     $sheet->getStyle('A'.$ingredientHeaderRow.':F'.$ingredientHeaderRow)->applyFromArray([
-                        'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']], 
+                        'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '000000']],
                         'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FDE68A']],
                         'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                         'borders' => [
-                            'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']]
-                        ]
+                            'allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '6B7280']],
+                        ],
                     ]);
-                    
+
                     // Border dan alternating untuk data ingredient
-                    $sheet->getStyle('A'.($ingredientHeaderRow+1).':F'.$lastRow)->applyFromArray([
+                    $sheet->getStyle('A'.($ingredientHeaderRow + 1).':F'.$lastRow)->applyFromArray([
                         'borders' => [
-                            'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']]
-                        ]
+                            'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '9CA3AF']],
+                        ],
                     ]);
-                    
+
                     // Set row heights dan alternating colors untuk ingredients
                     for ($i = $ingredientHeaderRow + 1; $i <= $lastRow; $i++) {
                         $sheet->getRowDimension($i)->setRowHeight(22);
-                        
+
                         $bgColor = ($i % 2 == 0) ? 'FFFFFF' : 'F9FAFB';
                         $sheet->getStyle('A'.$i.':F'.$i)->getFill()
                             ->setFillType(Fill::FILL_SOLID)
                             ->getStartColor()
                             ->setRGB($bgColor);
-                        
+
                         // Alignment
                         $sheet->getStyle('A'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                         $sheet->getStyle('B'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
@@ -273,7 +260,7 @@ class ReportStockSheet implements FromArray, WithTitle, WithStyles, WithEvents
                         $sheet->getStyle('E'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                         $sheet->getStyle('F'.$i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                         $sheet->getStyle('A'.$i.':F'.$i)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-                        
+
                         // Conditional formatting untuk status
                         $status = $sheet->getCell('F'.$i)->getValue();
                         if ($status === 'RENDAH') {

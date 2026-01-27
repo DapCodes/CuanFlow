@@ -17,22 +17,29 @@ class ReceiptController extends Controller implements HasMiddleware
             new Middleware('permission:preview struk', only: ['previewReceipt']),
         ];
     }
+
     private function calculateReceiptHeight($sale)
     {
         // 1mm = 2.83465 points
         // Lebar 80mm = 226.77 points
-        
+
         $baseHeight = 150; // Dasar height mm (header, summary, footer, QR)
         $itemHeight = 15;  // Height per item baris mm
-        
+
         // Tambahan height jika ada diskon atau catatan
-        if ($sale->discount_amount > 0) $baseHeight += 20;
-        if ($sale->notes) $baseHeight += 30;
-        if ($sale->customer_id) $baseHeight += 10;
-        
+        if ($sale->discount_amount > 0) {
+            $baseHeight += 20;
+        }
+        if ($sale->notes) {
+            $baseHeight += 30;
+        }
+        if ($sale->customer_id) {
+            $baseHeight += 10;
+        }
+
         $totalItems = $sale->items->count();
         $totalHeightMm = $baseHeight + ($totalItems * $itemHeight);
-        
+
         // Convert to points
         return $totalHeightMm * 2.83465;
     }

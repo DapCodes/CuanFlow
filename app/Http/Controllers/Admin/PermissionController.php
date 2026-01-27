@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PermissionCategory;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller implements HasMiddleware
 {
@@ -24,15 +24,16 @@ class PermissionController extends Controller implements HasMiddleware
         $permissionCategories = PermissionCategory::with(['permissions' => function ($query) {
             $query->orderBy('name');
         }])->ordered()->get();
-        
+
         $totalPermissions = Permission::count();
-        
+
         return view('admin.master.permissions.index', compact('permissionCategories', 'totalPermissions'));
     }
 
     public function create()
     {
         $categories = PermissionCategory::ordered()->get();
+
         return view('admin.master.permissions.create', compact('categories'));
     }
 
@@ -58,19 +59,21 @@ class PermissionController extends Controller implements HasMiddleware
     public function show(Permission $permission)
     {
         $permission->load('roles');
+
         return view('admin.master.permissions.show', compact('permission'));
     }
 
     public function edit(Permission $permission)
     {
         $categories = PermissionCategory::ordered()->get();
+
         return view('admin.master.permissions.edit', compact('permission', 'categories'));
     }
 
     public function update(Request $request, Permission $permission)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:permissions,name,' . $permission->id],
+            'name' => ['required', 'string', 'max:255', 'unique:permissions,name,'.$permission->id],
             'description' => ['nullable', 'string', 'max:500'],
             'permission_category_id' => ['nullable', 'exists:permission_categories,id'],
         ]);

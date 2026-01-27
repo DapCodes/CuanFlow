@@ -12,19 +12,19 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         $query = Category::withCount(['rawMaterials', 'products']);
-        
+
         // Filter by type
         if ($request->filled('type') && in_array($request->type, ['raw_material', 'product'])) {
             $query->where('type', $request->type);
         }
-        
+
         // Search
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
-        
+
         $categories = $query->orderBy('sort_order')->orderBy('name')->paginate(15);
-        
+
         return view('admin.master.categories.index', compact('categories'));
     }
 
@@ -61,6 +61,7 @@ class CategoryController extends Controller
     public function show(Category $category)
     {
         $category->load(['rawMaterials', 'products']);
+
         return view('admin.master.categories.show', compact('category'));
     }
 
@@ -110,7 +111,7 @@ class CategoryController extends Controller
 
     public function toggleStatus(Category $category)
     {
-        $category->update(['is_active' => !$category->is_active]);
+        $category->update(['is_active' => ! $category->is_active]);
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Status kategori berhasil diubah.');

@@ -11,17 +11,17 @@ class OutletPaymentLinkController extends Controller
 {
     public function index()
     {
-        if (!auth()->user()->can('lihat metode pembayaran')) {
+        if (! auth()->user()->can('lihat metode pembayaran')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk melihat metode pembayaran.');
         }
 
         $outletId = auth()->user()->outlet_id;
-        
+
         $paymentLinks = OutletPaymentLink::with('paymentMethod')
             ->where('outlet_id', $outletId)
             ->latest()
             ->paginate(15);
-        
+
         $stats = [
             'total' => OutletPaymentLink::where('outlet_id', $outletId)->count(),
             'active' => OutletPaymentLink::where('outlet_id', $outletId)->where('is_active', true)->count(),
@@ -33,24 +33,24 @@ class OutletPaymentLinkController extends Controller
 
     public function create()
     {
-        if (!auth()->user()->can('buat metode pembayaran')) {
+        if (! auth()->user()->can('buat metode pembayaran')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk menambah metode pembayaran.');
         }
 
         $paymentMethods = PaymentMethod::active()->get();
         $outletId = auth()->user()->outlet_id;
-        
+
         // Get payment methods yang sudah digunakan
         $usedMethodIds = OutletPaymentLink::where('outlet_id', $outletId)
             ->pluck('payment_method_id')
             ->toArray();
-        
+
         return view('main.outlet-payment-links.create', compact('paymentMethods', 'usedMethodIds'));
     }
 
     public function store(Request $request)
     {
-        if (!auth()->user()->can('buat metode pembayaran')) {
+        if (! auth()->user()->can('buat metode pembayaran')) {
             abort(403);
         }
 
@@ -87,7 +87,7 @@ class OutletPaymentLinkController extends Controller
         // Upload QR Image
         if ($request->hasFile('qr_image')) {
             $file = $request->file('qr_image');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time().'_'.$file->getClientOriginalName();
             $path = $file->storeAs('qr', $filename, 'public');
             $data['qr_image'] = $path;
         }
@@ -100,7 +100,7 @@ class OutletPaymentLinkController extends Controller
 
     public function show(OutletPaymentLink $outletPaymentLink)
     {
-        if (!auth()->user()->can('lihat metode pembayaran')) {
+        if (! auth()->user()->can('lihat metode pembayaran')) {
             abort(403);
         }
 
@@ -108,15 +108,15 @@ class OutletPaymentLinkController extends Controller
         if ($outletPaymentLink->outlet_id !== auth()->user()->outlet_id) {
             abort(403, 'Anda tidak memiliki akses ke metode pembayaran ini');
         }
-        
+
         $outletPaymentLink->load('paymentMethod', 'outlet');
-        
+
         return view('main.outlet-payment-links.show', compact('outletPaymentLink'));
     }
 
     public function edit(OutletPaymentLink $outletPaymentLink)
     {
-        if (!auth()->user()->can('edit metode pembayaran')) {
+        if (! auth()->user()->can('edit metode pembayaran')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengubah metode pembayaran.');
         }
 
@@ -124,13 +124,13 @@ class OutletPaymentLinkController extends Controller
         if ($outletPaymentLink->outlet_id !== auth()->user()->outlet_id) {
             abort(403, 'Anda tidak memiliki akses ke metode pembayaran ini');
         }
-        
+
         return view('main.outlet-payment-links.edit', compact('outletPaymentLink'));
     }
 
     public function update(Request $request, OutletPaymentLink $outletPaymentLink)
     {
-        if (!auth()->user()->can('edit metode pembayaran')) {
+        if (! auth()->user()->can('edit metode pembayaran')) {
             abort(403);
         }
 
@@ -162,7 +162,7 @@ class OutletPaymentLinkController extends Controller
             }
 
             $file = $request->file('qr_image');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time().'_'.$file->getClientOriginalName();
             $path = $file->storeAs('qr', $filename, 'public');
             $data['qr_image'] = $path;
         }
@@ -175,7 +175,7 @@ class OutletPaymentLinkController extends Controller
 
     public function destroy(OutletPaymentLink $outletPaymentLink)
     {
-        if (!auth()->user()->can('hapus metode pembayaran')) {
+        if (! auth()->user()->can('hapus metode pembayaran')) {
             abort(403);
         }
 
@@ -197,7 +197,7 @@ class OutletPaymentLinkController extends Controller
 
     public function toggleStatus(OutletPaymentLink $outletPaymentLink)
     {
-        if (!auth()->user()->can('aktifkan nonaktifkan metode pembayaran')) {
+        if (! auth()->user()->can('aktifkan nonaktifkan metode pembayaran')) {
             abort(403);
         }
 
@@ -207,7 +207,7 @@ class OutletPaymentLinkController extends Controller
         }
 
         $outletPaymentLink->update([
-            'is_active' => !$outletPaymentLink->is_active
+            'is_active' => ! $outletPaymentLink->is_active,
         ]);
 
         $status = $outletPaymentLink->is_active ? 'diaktifkan' : 'dinonaktifkan';

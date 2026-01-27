@@ -152,10 +152,11 @@ class Product extends Model
         $words = explode(' ', $cleanName);
         $initials = '';
         foreach ($words as $word) {
-            if (!empty($word)) {
+            if (! empty($word)) {
                 $initials .= strtoupper(substr($word, 0, 1));
             }
         }
+
         return substr($initials, 0, 3); // Limit to 3 characters max
     }
 }

@@ -6,15 +6,14 @@ use App\Models\Category;
 use App\Models\Discount;
 use App\Models\HppCalculation;
 use App\Models\Product;
+use App\Models\Production;
+use App\Models\ProductionItem;
 use App\Models\ProductStock;
+use App\Models\PurchaseItem;
 use App\Models\RawMaterial;
 use App\Models\RawMaterialStock;
 use App\Models\Recipe;
 use App\Models\RecipeItem;
-use App\Models\Production;
-use App\Models\ProductionItem;
-use App\Models\Purchase;
-use App\Models\PurchaseItem;
 use App\Models\StockMovement;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -596,15 +595,15 @@ class ProductWithRecipeSeeder extends Seeder
 
             // SEEDING PRODUKSI & STOCK MOVEMENTS (COMPLEXITY ENHANCEMENT)
             $isIntegerUnit = in_array($productData['unit_abbreviation'], ['pcs', 'pack', 'box', 'btr', 'sct', 'lsn']);
-            
+
             // Create a randomized history for each product (3-6 batches)
             $batchCount = rand(3, 6);
             for ($i = 0; $i < $batchCount; $i++) {
                 // $i = 0 is latest, $i = batchCount-1 is oldest
-                $daysAgo = $i * (rand(1, 2)); 
+                $daysAgo = $i * (rand(1, 2));
                 $multiplier = rand(5, 15);
                 $wastePercent = rand(0, 500) / 100; // 0% to 5%
-                
+
                 $plannedQty = $recipe->output_quantity * $multiplier;
                 $wasteQty = ($plannedQty * $wastePercent) / 100;
                 $actualQty = $plannedQty - $wasteQty;
@@ -619,18 +618,18 @@ class ProductWithRecipeSeeder extends Seeder
                     $wasteQty = round($wasteQty, 4);
                     $actualQty = round($actualQty, 4);
                 }
-                
+
                 $isOldest = ($i === $batchCount - 1);
                 $isLatest = ($i === 0);
-                
+
                 $status = ($isLatest && rand(1, 10) > 8) ? 'in_progress' : 'completed';
                 $isDisposed = ($isOldest && $status === 'completed' && rand(1, 10) > 6);
-                
+
                 $prodDate = now()->subDays($daysAgo)->subHours(rand(1, 12));
 
                 // 1. Buat Record Produksi
                 $production = Production::create([
-                    'batch_number' => 'BATCH-' . Str::upper(Str::random(8)),
+                    'batch_number' => 'BATCH-'.Str::upper(Str::random(8)),
                     'outlet_id' => $targetOutletId,
                     'product_id' => $product->id,
                     'recipe_id' => $recipe->id,
@@ -665,7 +664,7 @@ class ProductWithRecipeSeeder extends Seeder
                         } else {
                             $usageQty = round($usageQty, 4);
                         }
-                        
+
                         // Production Item
                         ProductionItem::create([
                             'production_id' => $production->id,
@@ -681,15 +680,15 @@ class ProductWithRecipeSeeder extends Seeder
                             $rmStock = RawMaterialStock::where('raw_material_id', $rawMaterial->id)
                                 ->where('outlet_id', $targetOutletId)
                                 ->first();
-                            
+
                             if ($rmStock) {
                                 $qtyBefore = $rmStock->quantity;
                                 $rmStock->decrement('quantity', $usageQty);
-                                
+
                                 // --- FIFO Consumption from Batches for Seeder ---
                                 $needed = $usageQty;
                                 $batches = PurchaseItem::where('raw_material_id', $rawMaterial->id)
-                                    ->whereHas('purchase', function($q) use ($targetOutletId) {
+                                    ->whereHas('purchase', function ($q) use ($targetOutletId) {
                                         $q->where('outlet_id', $targetOutletId);
                                     })
                                     ->where('remaining_quantity', '>', 0)
@@ -698,7 +697,9 @@ class ProductWithRecipeSeeder extends Seeder
                                     ->get();
 
                                 foreach ($batches as $batch) {
-                                    if ($needed <= 0) break;
+                                    if ($needed <= 0) {
+                                        break;
+                                    }
                                     $consume = min($batch->remaining_quantity, $needed);
                                     $batch->decrement('remaining_quantity', $consume);
                                     $needed -= $consume;
@@ -715,7 +716,7 @@ class ProductWithRecipeSeeder extends Seeder
                                     'unit_price' => $rawMaterial->purchase_price,
                                     'reference_type' => Production::class,
                                     'reference_id' => $production->id,
-                                    'notes' => 'Usage for production batch ' . $production->batch_number,
+                                    'notes' => 'Usage for production batch '.$production->batch_number,
                                     'created_by' => $adminId,
                                     'created_at' => $prodDate,
                                 ]);
@@ -725,7 +726,7 @@ class ProductWithRecipeSeeder extends Seeder
                 }
 
                 // 3. Stock Movement In untuk Produk Jadi (Hanya jika COMPLETED dan TIDAK DISPOSED)
-                if ($status === 'completed' && !$isDisposed) {
+                if ($status === 'completed' && ! $isDisposed) {
                     $qtyBeforeProd = $productStock->quantity;
                     $productStock->increment('quantity', $actualQty);
 
@@ -740,7 +741,7 @@ class ProductWithRecipeSeeder extends Seeder
                         'unit_price' => round($production->total_cost / ($actualQty ?: 1), 2),
                         'reference_type' => Production::class,
                         'reference_id' => $production->id,
-                        'notes' => 'Production entry batch ' . $production->batch_number,
+                        'notes' => 'Production entry batch '.$production->batch_number,
                         'created_by' => $adminId,
                         'created_at' => $prodDate,
                     ]);
@@ -748,13 +749,13 @@ class ProductWithRecipeSeeder extends Seeder
             }
 
             echo "✓ Produk '{$product->name}' berhasil dibuat dengan riwayat produksi!\n";
-            echo '  Total Stok: ' . $productStock->quantity . ' ' . $productData['unit_abbreviation'] . "\n";
-            echo '  HPP per unit: Rp ' . number_format($hppPerUnit, 0, ',', '.') . "\n\n";
+            echo '  Total Stok: '.$productStock->quantity.' '.$productData['unit_abbreviation']."\n";
+            echo '  HPP per unit: Rp '.number_format($hppPerUnit, 0, ',', '.')."\n\n";
         }
 
         echo "========================================\n";
         echo "Seeder produk & produksi berhasil dijalankan!\n";
-        echo 'Total produk: ' . count($productsData) . "\n";
+        echo 'Total produk: '.count($productsData)."\n";
         echo "========================================\n\n";
 
         // ============ SEEDER DISKON ============

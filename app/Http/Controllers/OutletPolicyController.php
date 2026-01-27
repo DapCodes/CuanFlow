@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\OutletPolicy;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Auth;
 
 class OutletPolicyController extends Controller implements HasMiddleware
 {
@@ -19,6 +19,7 @@ class OutletPolicyController extends Controller implements HasMiddleware
             new Middleware('permission:hapus kebijakan outlet', only: ['destroy']),
         ];
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -105,6 +106,7 @@ class OutletPolicyController extends Controller implements HasMiddleware
     public function destroy(OutletPolicy $outletPolicy)
     {
         $outletPolicy->delete();
+
         return redirect()->route('outlet-policies.index')->with('success', 'Kebijakan berhasil dihapus.');
     }
 }

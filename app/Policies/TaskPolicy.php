@@ -44,7 +44,7 @@ class TaskPolicy
         // Other roles can only update if they have permission
         // and either created the task or are assigned to it
         if ($user->hasPermissionTo('tasks.update')) {
-            return $task->created_by === $user->id || 
+            return $task->created_by === $user->id ||
                    $task->assignees->contains($user->id);
         }
 
@@ -57,7 +57,7 @@ class TaskPolicy
     public function delete(User $user, Task $task): bool
     {
         // Only supervisor or task creator can delete
-        return $user->hasPermissionTo('tasks.delete') && 
+        return $user->hasPermissionTo('tasks.delete') &&
                ($user->hasRole('supervisor') || $task->created_by === $user->id);
     }
 

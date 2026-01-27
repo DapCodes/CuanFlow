@@ -1,45 +1,45 @@
 <?php
 
 use App\Http\Controllers\AiInsightController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ChangeOutletController;
 use App\Http\Controllers\ClaraAiController;
-use App\Http\Controllers\FinanceController;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\OutletInformationController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\PointOfSaleController;
-use App\Http\Controllers\ProductionController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TaskController;
-use App\Http\Controllers\TaskLabelController;
-use App\Http\Controllers\RawMaterialAndSupplierController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ReceiptController;
-use App\Http\Controllers\RegisterOutletController;
-use App\Http\Controllers\SaleController;
-use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\OutletPaymentLinkController;
-use App\Http\Controllers\OutletPolicyController;
-use App\Http\Controllers\TableController;
-use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\WithdrawController;
-use App\Http\Controllers\FlowLandingController;
-use App\Http\Controllers\ProductHppController; 
-use App\Http\Controllers\DiscountController;   
-use App\Http\Controllers\ExpenseController;    
-use App\Http\Controllers\ResellerApplicationController; 
 use App\Http\Controllers\CustomerDebtController;
 use App\Http\Controllers\DebtPaymentController;
-use App\Http\Controllers\PosDiscountController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FaqController;
-use App\Http\Controllers\StockOpnameController;
-use App\Http\Controllers\Main\StockTransferController;
+use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\FlowLandingController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LandingPageController;
-use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\Main\StockTransferController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OutletInformationController;
+use App\Http\Controllers\OutletPaymentLinkController;
+use App\Http\Controllers\OutletPolicyController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PointOfSaleController;
+use App\Http\Controllers\PosDiscountController;
+use App\Http\Controllers\ProductHppController;
+use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RawMaterialAndSupplierController;
+use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\RegisterOutletController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ResellerApplicationController;
+use App\Http\Controllers\SaleController;
+use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\TableController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskLabelController;
+use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\WithdrawController;
 use Illuminate\Support\Facades\Route;
 
 // =========================================================================
@@ -69,7 +69,6 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
     ->name('verification.verify');
 
 require __DIR__.'/auth.php';
-
 
 // =========================================================================
 // PROTECTED ROUTES (Auth & Verified)
@@ -103,14 +102,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Custom Actions
         Route::post('{outlet}/toggle-status', [OutletInformationController::class, 'toggleStatus'])->name('toggle-status');
     });
-    
+
     // Switch Outlet
     Route::post('/change-outlet', [ChangeOutletController::class, 'switch'])->name('change.outlet');
-    
+
     // Core Resources
     Route::resource('outlets', OutletInformationController::class);
     Route::resource('outlet-policies', OutletPolicyController::class);
-    
+
     // Outlet Payment Links
     Route::post('outlet-payment-links/{outletPaymentLink}/toggle-status', [OutletPaymentLinkController::class, 'toggleStatus'])->name('outlet-payment-links.toggle-status');
     Route::resource('outlet-payment-links', OutletPaymentLinkController::class);
@@ -178,7 +177,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{production}/cancel', [ProductionController::class, 'cancel'])->name('cancel');
         Route::post('/{production}/remove-expired', [ProductionController::class, 'removeExpired'])->name('remove-expired');
         Route::get('/api/recipe-details/{product}', [ProductionController::class, 'getRecipeDetails'])->name('recipe-details');
-        
+
         Route::get('/stock/{product}', [ProductionController::class, 'showStock'])->name('stock.show');
         Route::post('/stock/{product}/remove-expired', [ProductionController::class, 'removeExpiredStock'])->name('stock.remove-expired');
     });
@@ -222,7 +221,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/pos/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('pos.customer.set');
     Route::get('/pos/customer/search', [PointOfSaleController::class, 'searchCustomers'])->name('pos.customer.search');
     Route::post('/pos/products/{product}/toggle-visibility', [PointOfSaleController::class, 'toggleProductVisibility'])->name('pos.products.toggle-visibility');
-    
+
     // Cash Register Management
     Route::post('/cash-register/set-opening-amount', [PointOfSaleController::class, 'setOpeningAmount'])->name('cash-register.set-opening-amount');
     Route::get('/cash-register/close', [CashRegisterController::class, 'showClosePage'])->name('cash-register.close');
@@ -283,11 +282,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ---------------------------------------------------------------------
     // Finance
     // ---------------------------------------------------------------------
-    
+
     // Main Finance
     Route::prefix('finance')->name('finance.')->group(function () {
         Route::get('/', [FinanceController::class, 'index'])->name('index');
-        
+
         // Income
         Route::get('/income/create', [FinanceController::class, 'createIncome'])->name('income.create');
         Route::post('/income', [FinanceController::class, 'storeIncome'])->name('income.store');
@@ -310,7 +309,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/expenses-list-ajax', [FinanceController::class, 'getExpensesAjax'])->name('expenses-list-ajax');
         Route::get('/revenue-chart', [FinanceController::class, 'getRevenueChart'])->name('revenue-chart');
         Route::get('/expense-chart', [FinanceController::class, 'getExpenseChart'])->name('expense-chart');
-        
+
         Route::post('/validate-revenue', [FinanceController::class, 'validateRevenue'])->name('validate-revenue');
         Route::get('/daily', [FinanceController::class, 'daily'])->name('daily');
     });
@@ -332,7 +331,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     // Legacy payment name support if needed somewhere else with full name, but prefix covers it
     // Original: payment.check-amount
-    
+
     // Withdrawals
     Route::prefix('withdraw')->name('withdraw.')->group(function () {
         Route::get('/confirm-password', [WithdrawController::class, 'showConfirmPassword'])->name('confirm-password');
@@ -432,7 +431,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ---------------------------------------------------------------------
     // Other / Support
     // ---------------------------------------------------------------------
-    
+
     // FAQ
     Route::prefix('faqs')->name('faqs.')->group(function () {
         Route::get('/', [FaqController::class, 'index'])->name('index');

@@ -14,7 +14,7 @@ class CashRegisterController extends Controller
 {
     public function showClosePage()
     {
-        if (!auth()->user()->can('tutup kasir')) {
+        if (! auth()->user()->can('tutup kasir')) {
             abort(403, 'Anda tidak memiliki izin untuk menutup kasir');
         }
 
@@ -52,7 +52,7 @@ class CashRegisterController extends Controller
      */
     public function processClose(Request $request)
     {
-        if (!auth()->user()->can('tutup kasir')) {
+        if (! auth()->user()->can('tutup kasir')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki izin untuk menutup kasir',
@@ -109,7 +109,7 @@ class CashRegisterController extends Controller
             // FITUR BARU: Generate AI Insight otomatis
             $insight = null;
             try {
-                $aiService = new AiInsightService();
+                $aiService = new AiInsightService;
                 $insight = $aiService->generateDailyInsight($register);
             } catch (\Exception $e) {
                 Log::warning('Failed to generate AI insight', [
@@ -160,7 +160,7 @@ class CashRegisterController extends Controller
      */
     public function history()
     {
-        if (!auth()->user()->can('lihat riwayat kasir')) {
+        if (! auth()->user()->can('lihat riwayat kasir')) {
             abort(403, 'Anda tidak memiliki izin untuk melihat riwayat kasir');
         }
 
@@ -182,7 +182,7 @@ class CashRegisterController extends Controller
      */
     public function show($id)
     {
-        if (!auth()->user()->can('lihat riwayat kasir')) {
+        if (! auth()->user()->can('lihat riwayat kasir')) {
             abort(403, 'Anda tidak memiliki izin untuk melihat riwayat kasir');
         }
 

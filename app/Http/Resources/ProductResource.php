@@ -18,7 +18,7 @@ class ProductResource extends JsonResource
             'selling_price' => (float) $this->selling_price,
             'promo_price' => $this->promo_price ? (float) $this->promo_price : null,
             'description' => $this->description,
-            'image_url' => $this->image ? asset('storage/' . $this->image) : null,
+            'image_url' => $this->image ? asset('storage/'.$this->image) : null,
             'is_active' => (bool) $this->is_active,
             'is_sellable' => (bool) $this->is_sellable,
         ];

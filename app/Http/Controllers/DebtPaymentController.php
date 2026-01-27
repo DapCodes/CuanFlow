@@ -18,11 +18,11 @@ class DebtPaymentController extends Controller
     public function searchCustomer(Request $request)
     {
         $search = $request->input('search', '');
-        
+
         if (strlen($search) < 2) {
             return response()->json([
                 'success' => true,
-                'customers' => []
+                'customers' => [],
             ]);
         }
 
@@ -37,7 +37,7 @@ class DebtPaymentController extends Controller
 
         return response()->json([
             'success' => true,
-            'customers' => $customers
+            'customers' => $customers,
         ]);
     }
 
@@ -67,7 +67,7 @@ class DebtPaymentController extends Controller
         if (empty($cart)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Keranjang kosong'
+                'message' => 'Keranjang kosong',
             ], 400);
         }
 
@@ -79,7 +79,7 @@ class DebtPaymentController extends Controller
         if ($remaining <= 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tidak ada sisa pembayaran yang perlu dicatat sebagai utang'
+                'message' => 'Tidak ada sisa pembayaran yang perlu dicatat sebagai utang',
             ], 400);
         }
 
@@ -130,11 +130,11 @@ class DebtPaymentController extends Controller
 
             // Re-apply discount plan if customer changed or to ensure it's up to date
             $discountService = app(\App\Services\DiscountService::class);
-            $subtotal = collect($cart)->sum(fn($item) => $item['unit_price'] * $item['quantity']);
-            
+            $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
+
             // Find automatic (non-voucher) candidates for this specific customer
             $candidates = $discountService->findCandidates(array_values($cart), null, $customer->id);
-            $nonVoucherPlan = $discountService->calculateDiscountPlan(array_values($cart), $candidates->filter(fn($d) => !$d->is_voucher), $subtotal);
+            $nonVoucherPlan = $discountService->calculateDiscountPlan(array_values($cart), $candidates->filter(fn ($d) => ! $d->is_voucher), $subtotal);
 
             // If a voucher was already applied, we should probably keep it if it's still valid
             // Otherwise, use the better of the two (voucher vs automatic)
@@ -153,9 +153,10 @@ class DebtPaymentController extends Controller
             // Final credit limit check with updated remaining amount
             if ($customer->credit_limit > 0 && ($customer->total_debt + $remaining) > $customer->credit_limit) {
                 DB::rollBack();
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Total utang melebihi batas kredit pelanggan (Rp ' . number_format($customer->credit_limit, 0, ',', '.') . ')'
+                    'message' => 'Total utang melebihi batas kredit pelanggan (Rp '.number_format($customer->credit_limit, 0, ',', '.').')',
                 ], 400);
             }
 
@@ -248,11 +249,11 @@ class DebtPaymentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Debt Payment Error: ' . $e->getMessage());
-            
+            \Log::error('Debt Payment Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memproses pembayaran: ' . $e->getMessage()
+                'message' => 'Gagal memproses pembayaran: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -261,7 +262,8 @@ class DebtPaymentController extends Controller
     {
         $lastCustomer = Customer::orderBy('id', 'desc')->first();
         $lastNumber = $lastCustomer ? intval(substr($lastCustomer->code, 4)) : 0;
-        return 'CUST' . str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+
+        return 'CUST'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
     }
 
     private function calculateCartSummary($cart, $discountPlan)
@@ -278,7 +280,7 @@ class DebtPaymentController extends Controller
 
         // Get discount from session plan
         $planDiscount = $discountPlan['total_discount'] ?? 0;
-        
+
         // Final total discount is the higher of item-level discounts OR plan discount
         // (usually plan discount already includes itemized discounts from DiscountService)
         $totalDiscount = max($itemDiscounts, $planDiscount);
@@ -351,7 +353,7 @@ class DebtPaymentController extends Controller
     {
         foreach ($cart as $item) {
             $product = \App\Models\Product::find($item['product_id']);
-            if (!$product || !$product->track_stock) {
+            if (! $product || ! $product->track_stock) {
                 continue;
             }
 

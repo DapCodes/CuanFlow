@@ -24,7 +24,7 @@ class Expense extends Model
         parent::boot();
         static::creating(function ($m) {
             $prefix = $m->type === 'income' ? 'INC-' : 'EXP-';
-            $m->expense_number = $m->expense_number ?: $prefix . date('Ymd') . '-' . str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+            $m->expense_number = $m->expense_number ?: $prefix.date('Ymd').'-'.str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
         });
     }
 

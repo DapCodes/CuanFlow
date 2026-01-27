@@ -17,8 +17,8 @@ class PurchaseItem extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'decimal:4', 'received_quantity' => 'decimal:4', 'remaining_quantity' => 'decimal:4', 
-        'unit_price' => 'decimal:2', 'discount_percent' => 'decimal:4', 'discount_amount' => 'decimal:2', 
+        'quantity' => 'decimal:4', 'received_quantity' => 'decimal:4', 'remaining_quantity' => 'decimal:4',
+        'unit_price' => 'decimal:2', 'discount_percent' => 'decimal:4', 'discount_amount' => 'decimal:2',
         'subtotal' => 'decimal:2', 'expired_at' => 'date', 'is_disposed' => 'boolean',
     ];
 

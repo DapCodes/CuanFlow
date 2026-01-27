@@ -64,7 +64,7 @@ class DiscountSeeder extends Seeder
         foreach ($discounts as $index => $data) {
             // Variasikan product_id dari hasil limit tadi
             $product = $products->get($index % $products->count());
-            
+
             Discount::create(array_merge($data, [
                 'product_id' => $product->id,
                 'outlet_id' => $outlet->id ?? 1,

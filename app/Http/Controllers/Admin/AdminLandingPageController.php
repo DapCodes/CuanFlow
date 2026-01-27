@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLandingPage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminLandingPageController extends Controller implements HasMiddleware
 {
@@ -118,7 +118,7 @@ class AdminLandingPageController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'tagline' => 'nullable|string|max:255',
-            'slug' => 'nullable|string|max:100|unique:admin_landing_pages,slug,' . $landingPage->id,
+            'slug' => 'nullable|string|max:100|unique:admin_landing_pages,slug,'.$landingPage->id,
             'primary_color' => 'nullable|string|max:7',
             'secondary_color' => 'nullable|string|max:7',
             'accent_color' => 'nullable|string|max:7',
@@ -186,7 +186,7 @@ class AdminLandingPageController extends Controller implements HasMiddleware
      */
     public function toggleStatus(AdminLandingPage $landingPage)
     {
-        $landingPage->is_active = !$landingPage->is_active;
+        $landingPage->is_active = ! $landingPage->is_active;
         $landingPage->save();
 
         $status = $landingPage->is_active ? 'diaktifkan' : 'dinonaktifkan';

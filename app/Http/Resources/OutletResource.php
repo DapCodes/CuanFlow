@@ -23,7 +23,7 @@ class OutletResource extends JsonResource
             'longitude' => $this->longitude !== null ? (float) $this->longitude : null,
 
             'rating' => $this->testimonials_avg_rating !== null ? round((float) $this->testimonials_avg_rating, 1) : 0,
-            
+
             'landing_page_url' => route('landing-pages.show', [
                 'id' => $this->id,
                 'slug' => str($this->name)->slug(),

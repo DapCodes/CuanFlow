@@ -43,7 +43,7 @@ class TaskActivity extends Model
     public function getDescriptionAttribute(): string
     {
         $userName = $this->user ? $this->user->name : 'System';
-        
+
         return match ($this->action) {
             'created' => "{$userName} membuat task ini",
             'updated' => "{$userName} mengubah {$this->field}",

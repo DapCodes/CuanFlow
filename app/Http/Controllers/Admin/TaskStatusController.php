@@ -12,6 +12,7 @@ class TaskStatusController extends Controller
     public function index()
     {
         $statuses = TaskStatus::ordered()->get();
+
         return view('admin.master.task-statuses.index', compact('statuses'));
     }
 

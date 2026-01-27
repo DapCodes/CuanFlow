@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\AiInsight;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Log;
 
 class AiInsightController extends Controller implements HasMiddleware
 {
@@ -22,6 +22,7 @@ class AiInsightController extends Controller implements HasMiddleware
             new Middleware('permission:lihat kalender ai insight', only: ['calendarSummary']),
         ];
     }
+
     public function index(Request $request)
     {
         $user = auth()->user();

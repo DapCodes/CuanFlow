@@ -26,19 +26,19 @@ return new class extends Migration
             $table->id();
             $table->foreignId('outlet_id')->constrained('outlets')->onDelete('cascade');
             $table->foreignId('payment_method_id')->constrained('payment_methods')->onDelete('cascade');
-            
+
             // Nomor Rekening (untuk bank)
             $table->string('account_number')->nullable();
             $table->string('account_name')->nullable();
-            
+
             // QR Image
             $table->string('qr_image')->nullable();
-            
+
             // Notes
             $table->text('notes')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
+
             // Unique: satu outlet tidak bisa punya payment method yang sama 2x
             $table->unique(['outlet_id', 'payment_method_id']);
         });
@@ -47,11 +47,11 @@ return new class extends Migration
         Schema::table('sales', function (Blueprint $table) {
             // Field ini akan diisi ketika payment_method = 'qris'
             $table->foreignId('outlet_payment_link_id')
-                  ->nullable()
-                  ->after('payment_method')
-                  ->constrained('outlet_payment_links')
-                  ->nullOnDelete()
-                  ->comment('Diisi jika payment_method = qris');
+                ->nullable()
+                ->after('payment_method')
+                ->constrained('outlet_payment_links')
+                ->nullOnDelete()
+                ->comment('Diisi jika payment_method = qris');
         });
     }
 
@@ -64,7 +64,7 @@ return new class extends Migration
             $table->dropForeign(['outlet_payment_link_id']);
             $table->dropColumn('outlet_payment_link_id');
         });
-        
+
         Schema::dropIfExists('outlet_payment_links');
         Schema::dropIfExists('payment_methods');
     }

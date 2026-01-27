@@ -4,12 +4,13 @@ namespace App\Exports;
 
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
-use Maatwebsite\Excel\Concerns\WithTitle;
 
 class ReportExport implements WithMultipleSheets
 {
     protected Carbon $startDate;
+
     protected Carbon $endDate;
+
     protected array $sheets;
 
     public function __construct(Carbon $startDate, Carbon $endDate, array $sheets = [])
@@ -36,7 +37,7 @@ class ReportExport implements WithMultipleSheets
         }
 
         if (in_array('stock', $this->sheets)) {
-            $exportSheets[] = new ReportStockSheet();
+            $exportSheets[] = new ReportStockSheet;
         }
 
         if (in_array('cashier', $this->sheets)) {

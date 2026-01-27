@@ -15,6 +15,7 @@ class WithdrawalStatusMail extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public Withdrawal $withdrawal;
+
     public string $status;
 
     public function __construct(Withdrawal $withdrawal, string $status)

@@ -8,18 +8,18 @@ class ResellerApplicationController extends Controller
 {
     public function index()
     {
-        if (!auth()->user()->can('lihat reseller applications')) {
+        if (! auth()->user()->can('lihat reseller applications')) {
             abort(403);
         }
 
         $applications = \App\Models\ResellerApplication::with(['customer', 'outlet'])
             ->latest()
             ->paginate(10);
-            
+
         return view('main.reseller-applications.index', compact('applications'));
     }
 
-    public function store(Request $request) 
+    public function store(Request $request)
     {
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
@@ -38,7 +38,7 @@ class ResellerApplicationController extends Controller
             'outlet_id' => $request->outlet_id,
             'description' => $request->description,
             'document_path' => $path,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         return back()->with('success', 'Lamaran reseller berhasil dikirim.');
@@ -46,20 +46,20 @@ class ResellerApplicationController extends Controller
 
     public function update(Request $request, \App\Models\ResellerApplication $reseller_application)
     {
-        if (!auth()->user()->can('kelola reseller applications')) {
+        if (! auth()->user()->can('kelola reseller applications')) {
             abort(403);
         }
 
-        $application = $reseller_application; 
-        
+        $application = $reseller_application;
+
         $request->validate([
-            'status' => 'required|in:approved,rejected'
+            'status' => 'required|in:approved,rejected',
         ]);
 
         $application->update([
             'status' => $request->status,
             'processed_by' => auth()->id(),
-            'processed_at' => now()
+            'processed_at' => now(),
         ]);
 
         // Update customer type instead of user role

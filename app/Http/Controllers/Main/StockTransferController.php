@@ -19,7 +19,7 @@ class StockTransferController extends Controller
     public function index()
     {
         $outlet = auth()->user()->outlet;
-        
+
         $sentTransfers = StockTransfer::with('toOutlet', 'creator', 'items')
             ->where('from_outlet_id', $outlet->id)
             ->latest()
@@ -46,17 +46,17 @@ class StockTransferController extends Controller
 
         // Get outlets with same owner, excluding current outlet
         $outlets = Outlet::where('id', '!=', $userOutlet->id)
-            ->whereHas('owner', function($q) use ($userOutlet) {
+            ->whereHas('owner', function ($q) use ($userOutlet) {
                 $q->where('id', $userOutlet->owner_id);
             })
             ->get();
-            
+
         // Fallback: if owner_id is on outlet table directly (depends on schema version)
         // Adjust based on User Request: "outlet.owner_id == user.outlet.owner_id"
-        // Let's assume standard implementation. If schema implies User is Owner linked to Outlet, ok. 
+        // Let's assume standard implementation. If schema implies User is Owner linked to Outlet, ok.
         // User request: "ambil data outlet yang di miliki owner yang sama"
-        // Let's assume Outlet has owner_id or is linked via User. 
-        // Based on typical schema, Outlet usually belongs to an Owner (User). 
+        // Let's assume Outlet has owner_id or is linked via User.
+        // Based on typical schema, Outlet usually belongs to an Owner (User).
         // Checking schema via previous file views... I haven't seen Outlet schema.
         // But assuming $userOutlet->owner_id is the link.
 
@@ -75,7 +75,7 @@ class StockTransferController extends Controller
             'items.*.type' => 'required|in:product,raw_material',
             'items.*.id' => 'required',
             'items.*.quantity' => 'required|numeric|min:0.0001',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -89,7 +89,7 @@ class StockTransferController extends Controller
 
             foreach ($request->items as $item) {
                 $stockableType = $item['type'] === 'product' ? Product::class : RawMaterial::class;
-                
+
                 StockTransferItem::create([
                     'stock_transfer_id' => $transfer->id,
                     'stockable_type' => $stockableType,
@@ -136,8 +136,8 @@ class StockTransferController extends Controller
                     );
 
                     // Check stock sufficiency
-                    if (!$stock->reduceStock($item->quantity)) {
-                        throw new \Exception('Stok tidak cukup untuk produk: ' . $item->stockable->name . ' (Tersedia: ' . $stock->quantity . ')');
+                    if (! $stock->reduceStock($item->quantity)) {
+                        throw new \Exception('Stok tidak cukup untuk produk: '.$item->stockable->name.' (Tersedia: '.$stock->quantity.')');
                     }
                 } else {
                     $stock = RawMaterialStock::firstOrCreate(
@@ -146,8 +146,8 @@ class StockTransferController extends Controller
                     );
 
                     // Check stock sufficiency
-                    if (!$stock->reduceStock($item->quantity)) {
-                        throw new \Exception('Stok tidak cukup untuk bahan baku: ' . $item->stockable->name . ' (Tersedia: ' . $stock->quantity . ')');
+                    if (! $stock->reduceStock($item->quantity)) {
+                        throw new \Exception('Stok tidak cukup untuk bahan baku: '.$item->stockable->name.' (Tersedia: '.$stock->quantity.')');
                     }
                 }
 
@@ -166,8 +166,8 @@ class StockTransferController extends Controller
                     'quantity_after' => $quantityAfter,
                     'reference_type' => StockTransfer::class,
                     'reference_id' => $stockTransfer->id,
-                    'notes' => 'Transfer Keluar #' . $stockTransfer->transfer_number,
-                    'created_by' => auth()->id()
+                    'notes' => 'Transfer Keluar #'.$stockTransfer->transfer_number,
+                    'created_by' => auth()->id(),
                 ]);
             }
 
@@ -197,20 +197,20 @@ class StockTransferController extends Controller
                 if ($item->stockable_type === Product::class) {
                     $sourceProduct = Product::find($item->stockable_id);
                     if ($sourceProduct) {
-                         // 1. Try to find match by NAME in destination outlet
+                        // 1. Try to find match by NAME in destination outlet
                         $destProduct = Product::where('outlet_id', $stockTransfer->to_outlet_id)
                             ->where('name', $sourceProduct->name)
                             ->first();
 
-                        if (!$destProduct) {
-                             // 2. Clone Product if not exists
+                        if (! $destProduct) {
+                            // 2. Clone Product if not exists
                             $destProduct = $sourceProduct->replicate();
                             $destProduct->outlet_id = $stockTransfer->to_outlet_id;
-                            
+
                             // Generate Unique Code
                             $newCode = $sourceProduct->code;
                             while (Product::where('code', $newCode)->exists()) {
-                                $newCode = substr($sourceProduct->code, 0, 20) . '-' . strtoupper(substr(uniqid(), -4));
+                                $newCode = substr($sourceProduct->code, 0, 20).'-'.strtoupper(substr(uniqid(), -4));
                             }
                             $destProduct->code = $newCode;
                             $destProduct->save();
@@ -234,15 +234,15 @@ class StockTransferController extends Controller
                             ->where('name', $sourceRawMaterial->name)
                             ->first();
 
-                        if (!$destRawMaterial) {
-                             // 2. Clone Raw Material
+                        if (! $destRawMaterial) {
+                            // 2. Clone Raw Material
                             $destRawMaterial = $sourceRawMaterial->replicate();
                             $destRawMaterial->outlet_id = $stockTransfer->to_outlet_id;
-                            
+
                             // Generate Unique Code
                             $newCode = $sourceRawMaterial->code; // Assuming it has code
                             while (RawMaterial::where('code', $newCode)->exists()) {
-                                $newCode = substr($sourceRawMaterial->code, 0, 20) . '-' . strtoupper(substr(uniqid(), -4));
+                                $newCode = substr($sourceRawMaterial->code, 0, 20).'-'.strtoupper(substr(uniqid(), -4));
                             }
                             $destRawMaterial->code = $newCode;
                             $destRawMaterial->save();
@@ -255,7 +255,7 @@ class StockTransferController extends Controller
                         ['quantity' => 0, 'avg_purchase_price' => 0]
                     );
                     $oldQty = $stock->quantity;
-                    $stock->addStock($item->quantity); 
+                    $stock->addStock($item->quantity);
                     $newQty = $stock->quantity;
                 }
 
@@ -270,10 +270,10 @@ class StockTransferController extends Controller
                     'quantity_after' => $newQty,
                     'reference_type' => StockTransfer::class,
                     'reference_id' => $stockTransfer->id,
-                    'notes' => 'Transfer Masuk #' . $stockTransfer->transfer_number,
-                    'created_by' => auth()->id()
+                    'notes' => 'Transfer Masuk #'.$stockTransfer->transfer_number,
+                    'created_by' => auth()->id(),
                 ]);
-                
+
                 // Update received qty on item (Full receive for now)
                 $item->update(['received_quantity' => $item->quantity]);
             }

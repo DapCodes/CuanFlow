@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('outlets', function (Blueprint $table) {
             $table->boolean('has_table_system')->default(false)->after('is_active')
-                  ->comment('Indicates if outlet uses table management system (e.g., coffee shop)');
+                ->comment('Indicates if outlet uses table management system (e.g., coffee shop)');
         });
     }
 

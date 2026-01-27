@@ -13,13 +13,14 @@ class UnitController extends Controller
         $units = Unit::withCount(['rawMaterials', 'products'])
             ->latest()
             ->paginate(15);
-            
+
         return view('admin.master.units.index', compact('units'));
     }
 
     public function create()
     {
         $baseUnits = Unit::whereNull('base_unit_id')->get();
+
         return view('admin.master.units.create', compact('baseUnits'));
     }
 
@@ -48,6 +49,7 @@ class UnitController extends Controller
     public function show(Unit $unit)
     {
         $unit->load(['baseUnit', 'derivedUnits', 'rawMaterials', 'products']);
+
         return view('admin.master.units.show', compact('unit'));
     }
 
@@ -56,7 +58,7 @@ class UnitController extends Controller
         $baseUnits = Unit::whereNull('base_unit_id')
             ->where('id', '!=', $unit->id)
             ->get();
-            
+
         return view('admin.master.units.edit', compact('unit', 'baseUnits'));
     }
 

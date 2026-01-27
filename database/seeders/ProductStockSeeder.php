@@ -24,11 +24,13 @@ class ProductStockSeeder extends Seeder
 
         if ($products->isEmpty()) {
             $this->command->info('No products found to seed stock.');
+
             return;
         }
 
         if ($outlets->isEmpty()) {
             $this->command->info('No outlets found to seed stock.');
+
             return;
         }
 

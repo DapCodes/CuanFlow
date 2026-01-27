@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\AiChatSession;
 use App\Services\ClaraAiService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Str;
 
 class ClaraAiController extends Controller implements HasMiddleware
 {

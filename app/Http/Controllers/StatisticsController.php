@@ -3,22 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Exports\StatisticsExport;
-use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\Expense;
 use App\Models\Product;
-use App\Models\ProductStock;
 use App\Models\Purchase;
-use App\Models\RawMaterial;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\StockMovement;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-
 
 class StatisticsController extends Controller
 {
@@ -27,7 +22,7 @@ class StatisticsController extends Controller
      */
     public function index(Request $request)
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             abort(403, 'Anda tidak memiliki izin untuk melihat statistik');
         }
 
@@ -147,7 +142,7 @@ class StatisticsController extends Controller
         // Total Expenses & Other Income
         $expensesBaseQuery = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
-        
+
         $totalExpenses = (float) (clone $expensesBaseQuery)->where('amount', '>', 0)->sum('amount');
         $extraIncome = (float) abs((clone $expensesBaseQuery)->where('amount', '<', 0)->sum('amount'));
 
@@ -170,8 +165,8 @@ class StatisticsController extends Controller
         // Total Products Sold
         $totalProductsSold = SaleItem::whereHas('sale', function ($q) use ($outletId, $startDate, $endDate) {
             $q->where('outlet_id', $outletId)
-              ->completed()
-              ->whereBetween('created_at', [$startDate, $endDate]);
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate]);
         })->sum('quantity');
 
         // Total Refunds
@@ -238,6 +233,7 @@ class StatisticsController extends Controller
             ->get()
             ->filter(function ($product) {
                 $stock = $product->stocks->first();
+
                 return $stock && $stock->quantity <= $product->min_stock;
             })
             ->take(5);
@@ -248,7 +244,7 @@ class StatisticsController extends Controller
      */
     public function getSalesChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat grafik penjualan')) {
+        if (! auth()->user()->can('lihat grafik penjualan')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -299,7 +295,7 @@ class StatisticsController extends Controller
      */
     public function getTransactionChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -349,7 +345,7 @@ class StatisticsController extends Controller
      */
     public function getPaymentMethodChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -405,7 +401,7 @@ class StatisticsController extends Controller
      */
     public function getTopProductsChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat grafik produk terlaris')) {
+        if (! auth()->user()->can('lihat grafik produk terlaris')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -414,8 +410,8 @@ class StatisticsController extends Controller
 
         $topProducts = SaleItem::whereHas('sale', function ($q) use ($outletId, $startDate, $endDate) {
             $q->where('outlet_id', $outletId)
-              ->completed()
-              ->whereBetween('created_at', [$startDate, $endDate]);
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate]);
         })
             ->selectRaw('product_name, SUM(quantity) as total_qty, SUM(subtotal) as total_revenue')
             ->groupBy('product_name')
@@ -442,7 +438,7 @@ class StatisticsController extends Controller
      */
     public function getCategoryChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat grafik kategori')) {
+        if (! auth()->user()->can('lihat grafik kategori')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -451,8 +447,8 @@ class StatisticsController extends Controller
 
         $categories = SaleItem::whereHas('sale', function ($q) use ($outletId, $startDate, $endDate) {
             $q->where('outlet_id', $outletId)
-              ->completed()
-              ->whereBetween('created_at', [$startDate, $endDate]);
+                ->completed()
+                ->whereBetween('created_at', [$startDate, $endDate]);
         })
             ->join('products', 'sale_items.product_id', '=', 'products.id')
             ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
@@ -480,7 +476,7 @@ class StatisticsController extends Controller
      */
     public function getHourlyChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat grafik per jam')) {
+        if (! auth()->user()->can('lihat grafik per jam')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -525,7 +521,7 @@ class StatisticsController extends Controller
      */
     public function getWeeklyChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -571,7 +567,7 @@ class StatisticsController extends Controller
      */
     public function getExpenseChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -605,14 +601,14 @@ class StatisticsController extends Controller
         while ($currentDate <= $endDate) {
             $dateStr = $currentDate->format('Y-m-d');
             $labels[] = $currentDate->format('d M');
-            
+
             $rev = isset($revenues[$dateStr]) ? (int) $revenues[$dateStr]->total : 0;
             $exp = isset($expenses[$dateStr]) ? (int) $expenses[$dateStr]->total : 0;
-            
+
             $revenueData[] = $rev;
             $expenseData[] = $exp;
             $profitData[] = $rev - $exp;
-            
+
             $currentDate->addDay();
         }
 
@@ -643,7 +639,7 @@ class StatisticsController extends Controller
      */
     public function getProfitChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -677,15 +673,15 @@ class StatisticsController extends Controller
         while ($currentDate <= $endDate) {
             $dateStr = $currentDate->format('Y-m-d');
             $labels[] = $currentDate->format('d M');
-            
+
             $rev = isset($revenues[$dateStr]) ? (int) $revenues[$dateStr]->total : 0;
             $exp = isset($expenses[$dateStr]) ? (int) $expenses[$dateStr]->total : 0;
             $profit = $rev - $exp;
-            
+
             $profitData[] = $profit;
             $cumulative += $profit;
             $cumulativeData[] = $cumulative;
-            
+
             $currentDate->addDay();
         }
 
@@ -710,7 +706,7 @@ class StatisticsController extends Controller
      */
     public function getExpenseCategoryChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -722,8 +718,8 @@ class StatisticsController extends Controller
             ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->where('amount', '>', 0)
             ->get()
-            ->groupBy(fn($expense) => $expense->category->name ?? 'Lain-lain')
-            ->map(fn($items) => $items->sum('amount'));
+            ->groupBy(fn ($expense) => $expense->category->name ?? 'Lain-lain')
+            ->map(fn ($items) => $items->sum('amount'));
 
         $colors = ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6'];
 
@@ -744,7 +740,7 @@ class StatisticsController extends Controller
      */
     public function getCashierPerformanceChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -790,7 +786,7 @@ class StatisticsController extends Controller
      */
     public function getTopCustomersChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -837,7 +833,7 @@ class StatisticsController extends Controller
      */
     public function getStockStatusChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -846,7 +842,7 @@ class StatisticsController extends Controller
         $products = Product::where('outlet_id', $outletId)
             ->where('is_active', true)
             ->where('track_stock', true)
-            ->with(['stocks' => fn($q) => $q->where('outlet_id', $outletId)])
+            ->with(['stocks' => fn ($q) => $q->where('outlet_id', $outletId)])
             ->get();
 
         $lowStock = 0;
@@ -883,7 +879,7 @@ class StatisticsController extends Controller
      */
     public function getStockMovementChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -906,14 +902,14 @@ class StatisticsController extends Controller
         while ($currentDate <= $endDate) {
             $dateStr = $currentDate->format('Y-m-d');
             $labels[] = $currentDate->format('d M');
-            
+
             $dayMovements = $movementsByDate->get($dateStr, collect());
             $inQty = $dayMovements->whereIn('type', ['in', 'production', 'return'])->sum('total_qty');
             $outQty = $dayMovements->whereIn('type', ['out', 'sale', 'adjustment'])->sum('total_qty');
-            
+
             $inData[] = (int) $inQty;
             $outData[] = (int) $outQty;
-            
+
             $currentDate->addDay();
         }
 
@@ -945,7 +941,7 @@ class StatisticsController extends Controller
      */
     public function getDiscountUsageChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -993,7 +989,7 @@ class StatisticsController extends Controller
      */
     public function getPurchaseChart(Request $request): JsonResponse
     {
-        if (!auth()->user()->can('lihat statistik')) {
+        if (! auth()->user()->can('lihat statistik')) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
@@ -1039,7 +1035,7 @@ class StatisticsController extends Controller
      */
     public function export(Request $request)
     {
-        if (!auth()->user()->can('ekspor statistik')) {
+        if (! auth()->user()->can('ekspor statistik')) {
             abort(403, 'Anda tidak memiliki izin untuk mengekspor statistik');
         }
 
@@ -1056,7 +1052,7 @@ class StatisticsController extends Controller
             default => '30Hari',
         };
 
-        $filename = 'Statistik_' . str_replace(' ', '_', $outletName) . '_' . $periodLabel . '_' . now()->format('Ymd_His') . '.xlsx';
+        $filename = 'Statistik_'.str_replace(' ', '_', $outletName).'_'.$periodLabel.'_'.now()->format('Ymd_His').'.xlsx';
 
         return Excel::download(
             new StatisticsExport($outletId, $period, $outletName),

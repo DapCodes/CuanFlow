@@ -21,6 +21,7 @@ class UserWithdrawLock extends Model
     ];
 
     const MAX_ATTEMPTS = 3;
+
     const LOCK_DURATION_MINUTES = 5;
 
     public function user(): BelongsTo
@@ -41,9 +42,10 @@ class UserWithdrawLock extends Model
      */
     public function getRemainingLockSeconds(): int
     {
-        if (!$this->isLocked()) {
+        if (! $this->isLocked()) {
             return 0;
         }
+
         return now()->diffInSeconds($this->locked_until, false);
     }
 
@@ -53,11 +55,11 @@ class UserWithdrawLock extends Model
     public function incrementAttempts(): void
     {
         $this->attempts++;
-        
+
         if ($this->attempts >= self::MAX_ATTEMPTS) {
             $this->locked_until = now()->addMinutes(self::LOCK_DURATION_MINUTES);
         }
-        
+
         $this->save();
     }
 

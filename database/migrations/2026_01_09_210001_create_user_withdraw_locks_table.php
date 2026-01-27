@@ -14,7 +14,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('attempts')->default(0);
             $table->timestamp('locked_until')->nullable();
             $table->timestamps();
-            
+
             $table->unique('user_id');
         });
     }
