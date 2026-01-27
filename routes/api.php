@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResendVerificationController;
 use App\Http\Controllers\Api\OutletApiController;
+use App\Http\Controllers\Api\ResellerApplicationApiController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/email/verification-notification', [ResendVerificationController::class, 'send'])
             ->middleware('throttle:6,1')
             ->name('api.verification.send');
+
+        // Reseller Applications
+        Route::get('/reseller-applications', [ResellerApplicationApiController::class, 'index']);
+        Route::post('/reseller-applications', [ResellerApplicationApiController::class, 'store']);
+        Route::get('/reseller-applications/{id}', [ResellerApplicationApiController::class, 'show']);
     });
     Route::get('/outlets', [OutletApiController::class, 'index']);
     Route::get('/outlets/{outlet}', [OutletApiController::class, 'show']);

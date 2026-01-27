@@ -14,13 +14,14 @@ class Outlet extends Model
 
     protected $fillable = [
         'code', 'name', 'address', 'latitude', 'longitude', 'phone', 'email', 'logo', 'settings', 'is_active',
-        'owner_id', 'has_table_system',
+        'owner_id', 'has_table_system', 'accepts_reseller',
     ];
 
     protected $casts = [
         'settings' => 'array',
         'is_active' => 'boolean',
         'has_table_system' => 'boolean',
+        'accepts_reseller' => 'boolean',
     ];
 
     // Relasi ke User yang menjadi owner outlet ini
@@ -129,5 +130,14 @@ class Outlet extends Model
         $setting = $this->settings()->where('group', $group)->where('key', $key)->first();
 
         return $setting ? $setting->value : $default;
+    }
+
+    public function getLogoUrlAttribute(): string
+    {
+        if ($this->logo) {
+            return asset('storage/'.$this->logo);
+        }
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=31694E&background=F0E491';
     }
 }

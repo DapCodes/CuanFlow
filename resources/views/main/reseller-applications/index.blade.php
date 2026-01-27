@@ -36,7 +36,21 @@
                     Review dan kelola permohonan reseller yang masuk ke outlet Anda.
                 </p>
             </div>
-            {{-- Form removed as per request --}}
+            
+            @if(auth()->user()->outlet)
+            <div class="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-xl border border-gray-200">
+                <div class="flex flex-col">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Status Penerimaan</span>
+                    <span id="acceptance-text" class="text-sm font-semibold {{ auth()->user()->outlet->accepts_reseller ? 'text-green-600' : 'text-red-500' }}">
+                        {{ auth()->user()->outlet->accepts_reseller ? 'Menerima Lamaran' : 'Tutup Pendaftaran' }}
+                    </span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="toggle-acceptance" class="sr-only peer" {{ auth()->user()->outlet->accepts_reseller ? 'checked' : '' }}>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-dark"></div>
+                </label>
+            </div>
+            @endif
         </section>
 
         {{-- TABLE CONTENT --}}
@@ -213,6 +227,59 @@
     function closeDetailModal() {
         document.getElementById('applicationModal').classList.add('hidden');
     }
+
+    // Ajax Toggle Acceptance
+    document.getElementById('toggle-acceptance')?.addEventListener('change', function() {
+        const isChecked = this.checked;
+        const textEl = document.getElementById('acceptance-text');
+        
+        // Show loading state if desired, but for now just send
+        fetch("{{ route('reseller-applications.toggle-acceptance') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update Text
+                textEl.textContent = data.accepts_reseller ? 'Menerima Lamaran' : 'Tutup Pendaftaran';
+                textEl.className = `text-sm font-semibold ${data.accepts_reseller ? 'text-green-600' : 'text-red-500'}`;
+                
+                // Toast success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: data.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            } else {
+                // Revert toggle on failure
+                this.checked = !isChecked;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: data.message || 'Terjadi kesalahan saat mengubah status.'
+                });
+            }
+        })
+        .catch(error => {
+            this.checked = !isChecked;
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan sistem.'
+            });
+        });
+    });
 </script>
 @endpush
 

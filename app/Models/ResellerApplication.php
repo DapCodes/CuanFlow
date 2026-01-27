@@ -16,6 +16,10 @@ class ResellerApplication extends Model
         'processed_at',
     ];
 
+    protected $casts = [
+        'processed_at' => 'datetime',
+    ];
+
     public function customer()
     {
         return $this->belongsTo(\App\Models\Customer::class);

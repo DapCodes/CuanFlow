@@ -78,4 +78,27 @@ class ResellerApplicationController extends Controller
 
         return back()->with('success', 'Status lamaran diperbarui.');
     }
+    public function toggleAcceptance(Request $request)
+    {
+        $user = auth()->user();
+        $outlet = $user->outlet;
+
+        if (!$outlet) {
+            return response()->json(['message' => 'Outlet tidak ditemukan.'], 404);
+        }
+
+        if (!$user->can('kelola reseller applications') && !$user->isOwner()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $outlet->update([
+            'accepts_reseller' => !$outlet->accepts_reseller
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'accepts_reseller' => $outlet->accepts_reseller,
+            'message' => $outlet->accepts_reseller ? 'Outlet sekarang menerima lamaran reseller.' : 'Outlet berhenti menerima lamaran reseller.'
+        ]);
+    }
 }

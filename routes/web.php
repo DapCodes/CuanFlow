@@ -448,6 +448,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('testimonials/{testimonial}/toggle-status', [TestimonialController::class, 'toggleStatus'])->name('testimonials.toggle-status');
 
     // Reseller Applications
+    Route::post('reseller-applications/toggle-acceptance', [ResellerApplicationController::class, 'toggleAcceptance'])->name('reseller-applications.toggle-acceptance');
     Route::resource('reseller-applications', ResellerApplicationController::class)->only(['index', 'store', 'update']);
 
 });

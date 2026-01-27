@@ -31,6 +31,7 @@ class OutletResource extends JsonResource
 
             'settings' => $this->settings,
             'is_active' => (bool) $this->is_active,
+            'accepts_reseller' => (bool) $this->accepts_reseller,
             'created_at' => optional($this->created_at)->toISOString(),
             'updated_at' => optional($this->updated_at)->toISOString(),
 
