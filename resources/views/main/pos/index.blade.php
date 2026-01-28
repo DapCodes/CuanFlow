@@ -2559,14 +2559,15 @@
                 <!-- Customer Email -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Email (Opsional)
+                        Email <span class="text-red-500">*</span>
                     </label>
                     <input 
                         type="email" 
                         id="debtCustomerEmail" 
                         name="customer_email"
                         class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
-                        placeholder="email@example.com">
+                        placeholder="email@example.com"
+                        required>
                 </div>
 
                 <!-- Customer Address -->
@@ -2587,10 +2588,11 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         Tipe Pelanggan <span class="text-red-500">*</span>
                     </label>
+                    <input type="hidden" id="debtCustomerTypeHidden" name="customer_type" value="regular">
                     <select 
                         id="debtCustomerType" 
-                        name="customer_type"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-gray-100 cursor-not-allowed"
+                        disabled
                         required>
                         <option value="regular">Regular</option>
                         <option value="reseller">Reseller</option>
@@ -4673,6 +4675,18 @@ function openDebtPaymentModal(grandTotal, paidAmount, remainingAmount) {
         
         // Reset form
         resetDebtPaymentForm();
+
+        // If a customer is already selected in main POS, pre-fill the modal
+        if (typeof currentCustomer !== 'undefined' && currentCustomer) {
+            document.getElementById('debtCustomerId').value = currentCustomer.id || '';
+            document.getElementById('debtCustomerName').value = currentCustomer.name || '';
+            document.getElementById('debtCustomerPhone').value = currentCustomer.phone || '';
+            document.getElementById('debtCustomerEmail').value = currentCustomer.email || '';
+            document.getElementById('debtCustomerAddress').value = currentCustomer.address || '';
+            document.getElementById('debtCustomerType').value = currentCustomer.type || 'regular';
+            document.getElementById('debtCustomerTypeHidden').value = currentCustomer.type || 'regular';
+            document.getElementById('debtCreditLimit').value = currentCustomer.credit_limit || '';
+        }
         
         const modal = document.getElementById('debtPaymentModal');
         if (!modal) {
@@ -5286,7 +5300,8 @@ function selectDebtCustomer(customer) {
     document.getElementById('debtCustomerPhone').value = customer.phone;
     document.getElementById('debtCustomerEmail').value = customer.email || '';
     document.getElementById('debtCustomerAddress').value = customer.address || '';
-    document.getElementById('debtCustomerType').value = customer.type;
+    document.getElementById('debtCustomerType').value = customer.type || 'regular';
+    document.getElementById('debtCustomerTypeHidden').value = customer.type || 'regular';
     document.getElementById('debtCreditLimit').value = customer.credit_limit || '';
     
     hideDebtCustomerSearchResults();

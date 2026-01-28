@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('code', 20)->unique();
             $table->string('name');
             $table->string('phone', 20)->nullable()->index();
-            $table->string('email')->nullable();
+            $table->string('email')->index();
             $table->text('address')->nullable();
             $table->enum('type', ['regular', 'reseller', 'vip'])->default('regular');
             $table->decimal('credit_limit', 15, 2)->default(0);
