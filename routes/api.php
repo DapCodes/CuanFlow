@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResendVerificationController;
+use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\OutletApiController;
 use App\Http\Controllers\Api\ResellerApplicationApiController;
 use App\Http\Controllers\PaymentController;
@@ -28,6 +29,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/reseller-applications', [ResellerApplicationApiController::class, 'index']);
         Route::post('/reseller-applications', [ResellerApplicationApiController::class, 'store']);
         Route::get('/reseller-applications/{id}', [ResellerApplicationApiController::class, 'show']);
+
+        // Customer Data
+        Route::get('/customer/purchases', [CustomerApiController::class, 'purchases']);
+        Route::get('/customer/debts', [CustomerApiController::class, 'debts']);
     });
     Route::get('/outlets', [OutletApiController::class, 'index']);
     Route::get('/outlets/{outlet}', [OutletApiController::class, 'show']);

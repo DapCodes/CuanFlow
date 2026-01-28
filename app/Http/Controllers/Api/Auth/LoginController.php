@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class LoginController extends Controller
 {
@@ -33,22 +35,50 @@ class LoginController extends Controller
             return response()->json(['message' => 'Akun tidak aktif.'], 403);
         }
 
-        // ✅ token sanctum
-        $token = $user->createToken('mobile')->plainTextToken;
+        try {
+            DB::beginTransaction();
 
-        $user->forceFill(['last_login_at' => now()])->save();
+            // ✅ Cek apakah customer dengan email ini sudah ada
+            $customer = Customer::where('email', $user->email)->first();
 
-        return response()->json([
-            'message' => 'Login berhasil',
-            'data' => [
-                'token' => $token,
-                'user' => [
-                    'id' => $user->id,
+            // ✅ Jika tidak ada, buat data customer baru
+            if (! $customer) {
+                Customer::create([
                     'name' => $user->name,
                     'email' => $user->email,
-                    'roles' => $user->getRoleNames(),
+                    'phone' => $user->phone,
+                    'type' => 'regular',
+                    'is_active' => true,
+                ]);
+            }
+
+            // ✅ token sanctum
+            $token = $user->createToken('mobile')->plainTextToken;
+
+            $user->forceFill(['last_login_at' => now()])->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Login berhasil',
+                'data' => [
+                    'token' => $token,
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'roles' => $user->getRoleNames(),
+                    ],
                 ],
-            ],
-        ]);
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat login.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
