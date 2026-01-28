@@ -2536,7 +2536,7 @@
                         autocomplete="off">
                     
                     <!-- Customer Search Results -->
-                    <div id="customerSearchResults" class="hidden absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
+                    <div id="debtCustomerSearchResults" class="hidden absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
                         <!-- Results akan diisi via JavaScript -->
                     </div>
                 </div>
@@ -4575,8 +4575,15 @@ function processCashPayment() {
             },
             backdrop: 'rgba(0, 0, 0, 0.5)'
         }).then((result) => {
+            console.log('Swal shortfall result:', result);
             if (result.isConfirmed) {
-                openDebtPaymentModal(grandTotal, paid, shortfall);
+                try {
+                    console.log('Attempting to open debt modal...');
+                    openDebtPaymentModal(grandTotal, paid, shortfall);
+                } catch (e) {
+                    console.error('Critical error in Swal callback:', e);
+                    showToast('error', 'Terjadi kesalahan saat membuka modal utang');
+                }
             }
         });
         
@@ -4641,28 +4648,50 @@ function processCashPayment() {
 }
 
 function openDebtPaymentModal(grandTotal, paidAmount, remainingAmount) {
-    debtPaymentData = {
-        grandTotal: grandTotal,
-        paidAmount: paidAmount,
-        remainingAmount: remainingAmount
-    };
-    
-    document.getElementById('debtTotalAmount').textContent = 'Rp ' + formatNumber(grandTotal);
-    document.getElementById('debtPaidAmount').textContent = 'Rp ' + formatNumber(paidAmount);
-    document.getElementById('debtRemainingAmount').textContent = 'Rp ' + formatNumber(remainingAmount);
-    document.getElementById('debtActualPaidAmount').value = paidAmount;
-    
-    // Reset form
-    resetDebtPaymentForm();
-    
-    document.getElementById('debtPaymentModal').classList.remove('hidden');
-    
-    // Initialize customer search
-    initCustomerSearch();
-    
-    setTimeout(() => {
-        document.getElementById('debtCustomerName').focus();
-    }, 200);
+    console.log('openDebtPaymentModal called:', {grandTotal, paidAmount, remainingAmount});
+    try {
+        debtPaymentData = {
+            grandTotal: grandTotal,
+            paidAmount: paidAmount,
+            remainingAmount: remainingAmount
+        };
+        
+        const totalEl = document.getElementById('debtTotalAmount');
+        const paidEl = document.getElementById('debtPaidAmount');
+        const remEl = document.getElementById('debtRemainingAmount');
+        const actualPaidEl = document.getElementById('debtActualPaidAmount');
+
+        if (!totalEl || !paidEl || !remEl || !actualPaidEl) {
+            console.error('One or more debt modal summary elements not found');
+            throw new Error('Elemen modal tidak ditemukan');
+        }
+
+        totalEl.textContent = 'Rp ' + formatNumber(grandTotal);
+        paidEl.textContent = 'Rp ' + formatNumber(paidAmount);
+        remEl.textContent = 'Rp ' + formatNumber(remainingAmount);
+        actualPaidEl.value = paidAmount;
+        
+        // Reset form
+        resetDebtPaymentForm();
+        
+        const modal = document.getElementById('debtPaymentModal');
+        if (!modal) {
+            console.error('debtPaymentModal element not found');
+            throw new Error('Modal utang tidak ditemukan di DOM');
+        }
+        modal.classList.remove('hidden');
+        
+        // Initialize customer search
+        initDebtCustomerSearch();
+        
+        setTimeout(() => {
+            const input = document.getElementById('debtCustomerName');
+            if (input) input.focus();
+        }, 200);
+    } catch (e) {
+        console.error('Exception in openDebtPaymentModal:', e);
+        throw e;
+    }
 }
 
 /**
@@ -5140,57 +5169,57 @@ function resetDebtPaymentForm() {
     document.getElementById('debtPaymentForm').reset();
     document.getElementById('debtCustomerId').value = '';
     selectedCustomerData = null;
-    hideCustomerSearchResults();
+    hideDebtCustomerSearchResults();
 }
 
 /**
  * Initialize customer search with debounce
  */
-function initCustomerSearch() {
+function initDebtCustomerSearch() {
     const nameInput = document.getElementById('debtCustomerName');
     const phoneInput = document.getElementById('debtCustomerPhone');
     
     nameInput.addEventListener('input', function() {
         const searchTerm = this.value.trim();
-        performCustomerSearch(searchTerm);
+        performDebtCustomerSearch(searchTerm);
     });
     
     phoneInput.addEventListener('input', function() {
         const searchTerm = this.value.trim();
-        performCustomerSearch(searchTerm);
+        performDebtCustomerSearch(searchTerm);
     });
     
     // Hide results when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('#debtCustomerName') && 
             !e.target.closest('#debtCustomerPhone') && 
-            !e.target.closest('#customerSearchResults')) {
-            hideCustomerSearchResults();
+            !e.target.closest('#debtCustomerSearchResults')) {
+            hideDebtCustomerSearchResults();
         }
     });
 }
 
 /**
- * Perform customer search with debounce (300ms)
+ * Perform debt customer search with debounce (300ms)
  */
-function performCustomerSearch(searchTerm) {
-    clearTimeout(debounceTimer);
+let debounceTimerDebtCustomer;
+function performDebtCustomerSearch(searchTerm) {
+    clearTimeout(debounceTimerDebtCustomer);
     
     if (searchTerm.length < 2) {
-        hideCustomerSearchResults();
+        hideDebtCustomerSearchResults();
         return;
     }
     
-    debounceTimer = setTimeout(() => {
-        fetch(`/debt/search-customer?search=${encodeURIComponent(searchTerm)}`)
+    debounceTimerDebtCustomer = setTimeout(() => {
+        fetch(`{{ route('pos.customer.search') }}?q=${encodeURIComponent(searchTerm)}`)
             .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    displayCustomerSearchResults(data.customers);
-                }
+            .then(customers => {
+                displayDebtCustomerSearchResults(customers);
             })
             .catch(err => {
-                console.error('Customer search error:', err);
+                console.error('Debt customer search error:', err);
+                hideDebtCustomerSearchResults();
             });
     }, 300);
 }
@@ -5198,18 +5227,18 @@ function performCustomerSearch(searchTerm) {
 /**
  * Display customer search results
  */
-function displayCustomerSearchResults(customers) {
-    const resultsContainer = document.getElementById('customerSearchResults');
+function displayDebtCustomerSearchResults(customers) {
+    const resultsContainer = document.getElementById('debtCustomerSearchResults');
     
     if (customers.length === 0) {
-        hideCustomerSearchResults();
+        hideDebtCustomerSearchResults();
         return;
     }
     
     let html = '';
     customers.forEach(customer => {
         html += `
-            <div class="customer-search-item" onclick="selectCustomer(${JSON.stringify(customer).replace(/"/g, '&quot;')})">
+            <div class="customer-search-item" onclick="selectDebtCustomer(${JSON.stringify(customer).replace(/"/g, '&quot;')})">
                 <div class="flex items-center justify-between">
                     <div class="flex-1">
                         <div class="font-semibold text-gray-900">${customer.name}</div>
@@ -5238,16 +5267,18 @@ function displayCustomerSearchResults(customers) {
 /**
  * Hide customer search results
  */
-function hideCustomerSearchResults() {
-    const resultsContainer = document.getElementById('customerSearchResults');
-    resultsContainer.classList.add('hidden');
-    resultsContainer.innerHTML = '';
+function hideDebtCustomerSearchResults() {
+    const resultsContainer = document.getElementById('debtCustomerSearchResults');
+    if (resultsContainer) {
+        resultsContainer.classList.add('hidden');
+        resultsContainer.innerHTML = '';
+    }
 }
 
 /**
  * Select customer from search results
  */
-function selectCustomer(customer) {
+function selectDebtCustomer(customer) {
     selectedCustomerData = customer;
     
     document.getElementById('debtCustomerId').value = customer.id;
@@ -5258,7 +5289,7 @@ function selectCustomer(customer) {
     document.getElementById('debtCustomerType').value = customer.type;
     document.getElementById('debtCreditLimit').value = customer.credit_limit || '';
     
-    hideCustomerSearchResults();
+    hideDebtCustomerSearchResults();
     
     showToast('success', `Pelanggan ${customer.name} dipilih`);
 }
@@ -6915,13 +6946,14 @@ function closeSaleDetailModal() {
     // ==========================================
     // Overriding the existing or creating a new handler
     // Make sure this name matches what's called in main script
-    window.openDebtPaymentModal = function(totalAmount, paidAmount) {
+    window.openDebtPaymentModal = function(totalAmount, paidAmount, shortfall) {
+        console.log('OVERRIDE openDebtPaymentModal called:', {totalAmount, paidAmount, shortfall});
         const modal = document.getElementById('debtPaymentModal');
         const totalEl = document.getElementById('debtTotalAmount');
         const paidEl = document.getElementById('debtPaidAmount');
         const remainingEl = document.getElementById('debtRemainingAmount');
         
-        const remaining = totalAmount - paidAmount;
+        const remaining = shortfall || (totalAmount - paidAmount);
         
         totalEl.textContent = 'Rp ' + formatNumber(totalAmount);
         paidEl.textContent = 'Rp ' + formatNumber(paidAmount);
@@ -6933,6 +6965,7 @@ function closeSaleDetailModal() {
         const inputName = document.getElementById('debtCustomerName');
         const inputPhone = document.getElementById('debtCustomerPhone');
         const inputEmail = document.getElementById('debtCustomerEmail');
+        const inputAddress = document.getElementById('debtCustomerAddress');
         const inputId = document.getElementById('debtCustomerId');
         
         if (currentCustomer) {
@@ -6940,11 +6973,12 @@ function closeSaleDetailModal() {
             inputName.value = currentCustomer.name;
             inputPhone.value = currentCustomer.phone || '-';
             inputEmail.value = currentCustomer.email || ''; 
+            if (inputAddress) inputAddress.value = currentCustomer.address || '';
             
-            // Disable inputs
-            inputName.disabled = true;
+            // Use readOnly instead of disabled so it's included in FormData
+            inputName.readOnly = true;
             inputName.classList.add('bg-gray-100');
-            inputPhone.disabled = true;
+            inputPhone.readOnly = true;
             inputPhone.classList.add('bg-gray-100');
         } else {
              // Reset form
@@ -6952,13 +6986,24 @@ function closeSaleDetailModal() {
             inputName.value = '';
             inputPhone.value = '';
             inputEmail.value = '';
+            if (inputAddress) inputAddress.value = '';
             
-            inputName.disabled = false;
+            inputName.readOnly = false;
             inputName.classList.remove('bg-gray-100');
-            inputPhone.disabled = false;
+            inputPhone.readOnly = false;
             inputPhone.classList.remove('bg-gray-100');
         }
-        
+
+        // Show the modal!
+        if (modal) {
+            modal.classList.remove('hidden');
+            // Initialize search if needed (shared logic)
+            if (typeof initDebtCustomerSearch === 'function') {
+                initDebtCustomerSearch();
+            }
+        } else {
+            console.error('debtPaymentModal not found in DOM');
+        }
     }
 
     function togglePanelPosition(checked) {

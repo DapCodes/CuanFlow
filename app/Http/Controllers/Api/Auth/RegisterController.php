@@ -15,7 +15,8 @@ class RegisterController extends Controller
 {
     public function register(Request $request)
     {
-        $request->validate([
+        // 1. Validasi Input
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email:rfc,dns', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20'],
@@ -26,37 +27,44 @@ class RegisterController extends Controller
         try {
             DB::beginTransaction();
 
+            // 2. Simpan Data User
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => Hash::make($request->password),
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'password' => Hash::make($validated['password']),
                 'outlet_id' => null,
                 'is_active' => true,
             ]);
 
-            // ✅ role otomatis pelanggan
+            // 3. Set Role otomatis sebagai 'pelanggan'
             Role::firstOrCreate(['name' => 'pelanggan']);
             $user->assignRole('pelanggan');
 
-            // ✅ otomatis buat data customer tipe regular
-            Customer::create([
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'type' => 'regular',
-                'is_active' => true,
-            ]);
+            // 4. Simpan Data Customer (Metode Manual untuk jaminan data masuk)
+            $customer = new Customer();
+            $customer->name = $user->name;
+            $customer->email = $user->email; // Pasti tersimpan tanpa cek $fillable
+            $customer->phone = $user->phone;
+            $customer->type = 'regular';
+            $customer->is_active = true;
+            
+            // Opsional: Generate kode customer jika tabel Anda memilikinya
+            // $customer->code = 'CST-' . strtoupper(substr(uniqid(), -6));
+            
+            $customer->save();
 
             DB::commit();
 
-            // ✅ kirim email verifikasi (Laravel built-in)
+            // 5. Kirim Notifikasi Email Verifikasi
             $user->sendEmailVerificationNotification();
 
             return response()->json([
                 'message' => 'Akun berhasil dibuat. Silakan cek email untuk verifikasi.',
                 'data' => [
                     'user_id' => $user->id,
+                    'customer_id' => $customer->id,
+                    'name' => $user->name,
                     'email' => $user->email,
                 ],
             ], 201);

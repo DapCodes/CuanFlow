@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResendVerificationController;
 use App\Http\Controllers\Api\CustomerApiController;
+use App\Http\Controllers\Api\DebtPaymentApiController;
 use App\Http\Controllers\Api\OutletApiController;
 use App\Http\Controllers\Api\ResellerApplicationApiController;
 use App\Http\Controllers\PaymentController;
@@ -33,6 +34,11 @@ Route::prefix('v1')->group(function () {
         // Customer Data
         Route::get('/customer/purchases', [CustomerApiController::class, 'purchases']);
         Route::get('/customer/debts', [CustomerApiController::class, 'debts']);
+
+        // Debt Payment API
+        Route::get('/debts/{id}', [DebtPaymentApiController::class, 'show']);
+        Route::post('/debts/{id}/pay', [DebtPaymentApiController::class, 'pay']);
+        Route::post('/debts/{id}/midtrans-token', [DebtPaymentApiController::class, 'createMidtransToken']);
     });
     Route::get('/outlets', [OutletApiController::class, 'index']);
     Route::get('/outlets/{outlet}', [OutletApiController::class, 'show']);

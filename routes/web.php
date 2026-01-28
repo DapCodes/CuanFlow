@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AiInsightController;
-use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ChangeOutletController;
 use App\Http\Controllers\ClaraAiController;

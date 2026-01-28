@@ -18,7 +18,7 @@ class ResellerApplicationResource extends JsonResource
                 'logo_url' => $this->outlet->logo_url,
             ],
             'description' => $this->description,
-            'document_url' => $this->document_path ? asset('storage/' . $this->document_path) : null,
+            'document_url' => $this->document_path ? asset('storage/'.$this->document_path) : null,
             'status' => $this->status,
             'processed_at' => $this->processed_at ? $this->processed_at->toISOString() : null,
             'created_at' => $this->created_at->toISOString(),

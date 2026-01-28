@@ -23,6 +23,7 @@ class ProfileResource extends JsonResource
                 'created_at' => optional($this->created_at)->toISOString(),
             ],
             'customer_info' => $customer ? [
+                'id' => $customer->id,
                 'code' => $customer->code,
                 'type' => $customer->type,
                 'points' => (int) $customer->points,

@@ -7,7 +7,6 @@ use App\Http\Resources\ResellerApplicationResource;
 use App\Models\Customer;
 use App\Models\ResellerApplication;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ResellerApplicationApiController extends Controller
 {
@@ -19,11 +18,11 @@ class ResellerApplicationApiController extends Controller
         $user = $request->user();
         $customer = Customer::where('email', $user->email)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return response()->json([
                 'success' => true,
                 'data' => [],
-                'message' => 'No customer record found for this account.'
+                'message' => 'No customer record found for this account.',
             ]);
         }
 
@@ -66,7 +65,7 @@ class ResellerApplicationApiController extends Controller
 
         // Check if outlet actually accepts reseller applications
         $outlet = \App\Models\Outlet::find($request->outlet_id);
-        if (!$outlet || !$outlet->accepts_reseller) {
+        if (! $outlet || ! $outlet->accepts_reseller) {
             return response()->json([
                 'message' => 'Outlet ini sedang tidak menerima lamaran reseller.',
             ], 422);
@@ -105,7 +104,7 @@ class ResellerApplicationApiController extends Controller
         $user = $request->user();
         $customer = Customer::where('email', $user->email)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return response()->json(['message' => 'Application not found.'], 404);
         }
 
@@ -114,7 +113,7 @@ class ResellerApplicationApiController extends Controller
             ->where('id', $id)
             ->first();
 
-        if (!$application) {
+        if (! $application) {
             return response()->json(['message' => 'Application not found.'], 404);
         }
 
