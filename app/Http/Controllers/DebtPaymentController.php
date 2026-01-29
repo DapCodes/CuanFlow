@@ -166,7 +166,7 @@ class DebtPaymentController extends Controller
                 'paid_amount' => $request->paid_amount,
                 'service_type' => $request->service_type ?? 'take_away',
                 'table_id' => $request->table_id,
-                'payment_status' => $request->paid_amount > 0 ? 'partial' : 'pending',
+                'payment_status' => $remaining <= 0 ? 'paid' : ($request->paid_amount > 0 ? 'partial' : 'pending'),
                 'status' => 'completed',
                 'completed_at' => now(),
                 'notes' => $request->notes,
@@ -186,7 +186,7 @@ class DebtPaymentController extends Controller
                 'paid_amount' => $paidAmount,
                 'remaining_amount' => $remaining,
                 'due_date' => $request->due_date,
-                'status' => $paidAmount > 0 ? 'partial' : 'unpaid',
+                'status' => $remaining <= 0 ? 'paid' : ($paidAmount > 0 ? 'partial' : 'unpaid'),
                 'notes' => $request->notes,
             ]);
 
@@ -224,6 +224,9 @@ class DebtPaymentController extends Controller
 
             // Clear session
             session()->forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
+
+            // Invalidate Sales Cache
+            \Illuminate\Support\Facades\Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
 
             DB::commit();
 

@@ -579,12 +579,20 @@ class PaymentController extends Controller
                 if ($debt->remaining_amount <= 0) {
                     $debt->status = 'paid';
                     $debt->remaining_amount = 0;
+
+                    // Update sale status to paid
+                    if ($debt->sale) {
+                        $debt->sale->update(['payment_status' => 'paid']);
+                    }
                 } else {
                     $debt->status = 'partial';
                 }
 
                 $debt->save();
                 $debt->customer->decrement('total_debt', $amount);
+
+                // Invalidate Sales Cache
+                \Illuminate\Support\Facades\Cache::tags(['sales', 'outlet_'.$debt->outlet_id])->flush();
 
                 DB::commit();
 

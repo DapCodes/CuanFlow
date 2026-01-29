@@ -219,10 +219,14 @@ class CustomerDebtController extends Controller implements HasMiddleware
             $debt->paid_amount += $amount;
             $debt->remaining_amount -= $amount;
 
-            // Update status
             if ($debt->remaining_amount <= 0) {
                 $debt->status = 'paid';
                 $debt->remaining_amount = 0;
+
+                // Update sale payment status if fully paid
+                if ($debt->sale) {
+                    $debt->sale->update(['payment_status' => 'paid']);
+                }
             } elseif ($debt->paid_amount > 0) {
                 $debt->status = 'partial';
             }
@@ -231,6 +235,9 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
             // Update customer total debt
             $debt->customer->decrement('total_debt', $amount);
+
+            // Invalidate Sales Cache
+            \Illuminate\Support\Facades\Cache::tags(['sales', 'outlet_'.$debt->outlet_id])->flush();
 
             DB::commit();
 

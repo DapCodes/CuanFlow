@@ -179,6 +179,8 @@ class SaleController extends Controller
             'status' => 'approved',
         ]);
 
+        Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
+
         return redirect()->route('sales.index')->with('success', 'Pemasukan berhasil ditambahkan');
     }
 
@@ -220,6 +222,8 @@ class SaleController extends Controller
             'created_by' => auth()->id(),
             'status' => 'approved',
         ]);
+
+        Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
 
         return redirect()->route('sales.index')->with('success', 'Pengeluaran berhasil ditambahkan');
     }
@@ -512,6 +516,9 @@ class SaleController extends Controller
 
             // Update status
             $sale->update(['status' => 'refunded']);
+
+            // Invalidate Sales Cache
+            Cache::tags(['sales', "outlet_{$sale->outlet_id}"])->flush();
 
             DB::commit();
 
