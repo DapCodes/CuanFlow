@@ -13,7 +13,7 @@ use App\Models\StockMovement;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+
 use Maatwebsite\Excel\Facades\Excel;
 
 class StatisticsController extends Controller
@@ -41,9 +41,7 @@ class StatisticsController extends Controller
         }
 
         // Cache key for non-ajax dashboard part
-        $cacheKey = "stats_dashboard_{$outletId}_".auth()->id()."_{$period}_".($startDate ?? 'none').'_'.($endDate ?? 'none');
-
-        $data = Cache::tags(['sales', 'expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $start, $end) {
+        $data = (function () use ($outletId, $start, $end) {
             // Summary Cards Data
             $summaryData = $this->getSummaryData($outletId, $start, $end);
 
@@ -84,12 +82,9 @@ class StatisticsController extends Controller
         $endDate = $request->get('end_date');
 
         [$start, $end] = $this->getDateRange($period, $startDate, $endDate);
-
-        $cacheKey = "stats_summary_ajax_{$outletId}_".auth()->id()."_{$period}_".($startDate ?? 'none').'_'.($endDate ?? 'none');
-
-        $summary = Cache::tags(['sales', 'expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $start, $end) {
+        $summary = (function () use ($outletId, $start, $end) {
             return $this->getSummaryData($outletId, $start, $end);
-        });
+        })();
 
         return response()->json($summary);
     }
@@ -264,10 +259,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_sales_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $sales = Sale::where('outlet_id', $outletId)
                 ->completed()
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -305,7 +297,7 @@ class StatisticsController extends Controller
                 ],
                 'countData' => $countData,
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -321,10 +313,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_transactions_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $sales = Sale::where('outlet_id', $outletId)
                 ->completed()
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -361,7 +350,7 @@ class StatisticsController extends Controller
                 ],
                 'avgData' => $avgData,
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -377,10 +366,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_payment_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $payments = Sale::where('outlet_id', $outletId)
                 ->completed()
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -423,7 +409,7 @@ class StatisticsController extends Controller
                     ],
                 ],
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -439,10 +425,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_top_products_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $topProducts = SaleItem::whereHas('sale', function ($q) use ($outletId, $startDate, $endDate) {
                 $q->where('outlet_id', $outletId)
                     ->completed()
@@ -466,7 +449,7 @@ class StatisticsController extends Controller
                 ],
                 'revenue' => $topProducts->pluck('total_revenue')->map(fn ($v) => (int) $v)->toArray(),
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -482,10 +465,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_category_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $categories = SaleItem::whereHas('sale', function ($q) use ($outletId, $startDate, $endDate) {
                 $q->where('outlet_id', $outletId)
                     ->completed()
@@ -510,7 +490,7 @@ class StatisticsController extends Controller
                     ],
                 ],
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -526,10 +506,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_hourly_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $hourlyData = Sale::where('outlet_id', $outletId)
                 ->completed()
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -561,7 +538,7 @@ class StatisticsController extends Controller
                 ],
                 'revenue' => $revenueData,
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -577,10 +554,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_weekly_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $weeklyData = Sale::where('outlet_id', $outletId)
                 ->completed()
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -613,7 +587,7 @@ class StatisticsController extends Controller
                 ],
                 'countData' => $countData,
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -629,10 +603,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_expense_v_revenue_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', 'expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             // Revenue per hari
             $revenues = Sale::where('outlet_id', $outletId)
                 ->completed()
@@ -691,7 +662,7 @@ class StatisticsController extends Controller
                 ],
                 'profit' => $profitData,
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -707,10 +678,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_profit_trend_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', 'expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             // Revenue per hari
             $revenues = Sale::where('outlet_id', $outletId)
                 ->completed()
@@ -764,7 +732,7 @@ class StatisticsController extends Controller
                 ],
                 'cumulativeData' => $cumulativeData,
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -780,10 +748,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_expense_category_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['expenses', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $expenses = Expense::with('category')
                 ->where('outlet_id', $outletId)
                 ->whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
@@ -804,7 +769,7 @@ class StatisticsController extends Controller
                     ],
                 ],
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -820,10 +785,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_cashier_perf_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $cashierPerformance = Sale::with('cashier')
                 ->where('outlet_id', $outletId)
                 ->completed()
@@ -856,7 +818,7 @@ class StatisticsController extends Controller
                 ],
                 'transactionData' => $transactionData,
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -872,10 +834,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_top_customers_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $topCustomers = Sale::with('customer')
                 ->where('outlet_id', $outletId)
                 ->completed()
@@ -909,7 +868,7 @@ class StatisticsController extends Controller
                 ],
                 'transactionData' => $transactionData,
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -924,9 +883,7 @@ class StatisticsController extends Controller
         }
 
         $outletId = auth()->user()->outlet_id;
-        $cacheKey = "chart_stock_status_{$outletId}";
-
-        $data = Cache::tags(['products', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId) {
+        $data = (function () use ($outletId) {
             $products = Product::where('outlet_id', $outletId)
                 ->where('is_active', true)
                 ->where('track_stock', true)
@@ -960,7 +917,7 @@ class StatisticsController extends Controller
                     ],
                 ],
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -976,10 +933,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_stock_movement_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['products', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $movements = StockMovement::where('outlet_id', $outletId)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->selectRaw('DATE(created_at) as date, type, SUM(ABS(quantity)) as total_qty')
@@ -1028,7 +982,7 @@ class StatisticsController extends Controller
                     ],
                 ],
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -1044,10 +998,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_discount_usage_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $discounts = Sale::where('outlet_id', $outletId)
                 ->completed()
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -1082,7 +1033,7 @@ class StatisticsController extends Controller
                     ],
                 ],
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -1098,10 +1049,7 @@ class StatisticsController extends Controller
 
         $outletId = auth()->user()->outlet_id;
         [$startDate, $endDate] = $this->getDateRangeFromRequest($request);
-
-        $cacheKey = "chart_purchase_{$outletId}_".auth()->id().'_'.$startDate->format('Y-m-d').'_'.$endDate->format('Y-m-d');
-
-        $data = Cache::tags(['purchases', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startDate, $endDate) {
+        $data = (function () use ($outletId, $startDate, $endDate) {
             $purchases = Purchase::where('outlet_id', $outletId)
                 ->whereBetween('purchase_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
                 ->selectRaw('purchase_date as date, SUM(grand_total) as total, COUNT(*) as count')
@@ -1134,7 +1082,7 @@ class StatisticsController extends Controller
                     ],
                 ],
             ];
-        });
+        })();
 
         return response()->json($data);
     }

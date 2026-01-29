@@ -6,7 +6,6 @@ use App\Models\AiChatSession;
 use App\Models\AiInsight;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -563,38 +562,27 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
 
     public function generateInsightIfNeededOnOnline(int $outletId): void
     {
-        // Lock biar aman kalau ada request bersamaan
-        $lock = Cache::lock("insight_24h_outlet_{$outletId}", 30);
-        if (! $lock->get()) {
+        // 1. Cek: sudah ada insight < 24 jam?
+        $alreadyGenerated = AiInsight::where('outlet_id', $outletId)
+            ->where('created_at', '>=', now()->subHours(24))
+            ->exists();
+
+        if ($alreadyGenerated) {
             return;
         }
 
-        try {
-            // 1. Cek: sudah ada insight < 24 jam?
-            $alreadyGenerated = AiInsight::where('outlet_id', $outletId)
-                ->where('created_at', '>=', now()->subHours(24))
-                ->exists();
+        // 2. Syarat: sales > 0 (hari ini)
+        $salesCount = DB::table('sales')
+            ->where('outlet_id', $outletId)
+            ->where('status', 'completed')
+            ->whereDate('created_at', today())
+            ->count();
 
-            if ($alreadyGenerated) {
-                return;
-            }
-
-            // 2. Syarat: sales > 0 (hari ini)
-            $salesCount = DB::table('sales')
-                ->where('outlet_id', $outletId)
-                ->where('status', 'completed')
-                ->whereDate('created_at', today())
-                ->count();
-
-            if ($salesCount <= 0) {
-                return;
-            }
-
-            // 3. Generate insight otomatis
-            $this->generateDailyInsights($outletId);
-
-        } finally {
-            $lock->release();
+        if ($salesCount <= 0) {
+            return;
         }
+
+        // 3. Generate insight otomatis
+        $this->generateDailyInsights($outletId);
     }
 }

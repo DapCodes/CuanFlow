@@ -225,9 +225,6 @@ class DebtPaymentController extends Controller
             // Clear session
             session()->forget(['pos_cart', 'pos_customer_id', 'pos_discount_plan']);
 
-            // Invalidate Sales Cache
-            \Illuminate\Support\Facades\Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
-
             DB::commit();
 
             return response()->json([

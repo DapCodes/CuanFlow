@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
@@ -31,16 +30,12 @@ class Setting extends Model
 
     public static function getValue(string $group, string $key, $default = null, ?int $outletId = null)
     {
-        $cacheKey = "setting:{$outletId}:{$group}:{$key}";
+        $s = static::where('group', $group)->where('key', $key)->where('outlet_id', $outletId)->first();
+        if (! $s && $outletId) {
+            $s = static::where('group', $group)->where('key', $key)->whereNull('outlet_id')->first();
+        }
 
-        return Cache::remember($cacheKey, 3600, function () use ($group, $key, $default, $outletId) {
-            $s = static::where('group', $group)->where('key', $key)->where('outlet_id', $outletId)->first();
-            if (! $s && $outletId) {
-                $s = static::where('group', $group)->where('key', $key)->whereNull('outlet_id')->first();
-            }
-
-            return $s ? $s->getTypedValue() : $default;
-        });
+        return $s ? $s->getTypedValue() : $default;
     }
 
     public static function setValue(string $group, string $key, $value, string $type = 'string', ?int $outletId = null): self
@@ -49,7 +44,6 @@ class Setting extends Model
             ['group' => $group, 'key' => $key, 'outlet_id' => $outletId],
             ['value' => is_array($value) ? json_encode($value) : $value, 'type' => $type]
         );
-        Cache::forget("setting:{$outletId}:{$group}:{$key}");
 
         return $s;
     }

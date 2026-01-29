@@ -9,7 +9,6 @@ use App\Models\Sale;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
@@ -30,10 +29,7 @@ class SaleController extends Controller
         $startOfDay = Carbon::parse($selectedDate)->startOfDay();
         $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
-        // Cache key based on outlet, user, and filters
-        $cacheKey = "dashboard_{$selectedDate}_".auth()->id();
-
-        $cachedData = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $startOfDay, $endOfDay) {
+        $cachedData = (function () use ($outletId, $startOfDay, $endOfDay) {
             $salesQuery = Sale::where('outlet_id', $outletId)
                 ->completed()
                 ->whereBetween('created_at', [$startOfDay, $endOfDay]);
@@ -96,7 +92,7 @@ class SaleController extends Controller
                 'dailyNetIncome', 'dailyTotalDiscount', 'allTimeRevenue',
                 'allTimeProfit', 'allTimeExpenses', 'allTimeNetIncome'
             );
-        });
+        })();
 
         // Extract cached data
         extract($cachedData);
@@ -179,8 +175,6 @@ class SaleController extends Controller
             'status' => 'approved',
         ]);
 
-        Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
-
         return redirect()->route('sales.index')->with('success', 'Pemasukan berhasil ditambahkan');
     }
 
@@ -222,8 +216,6 @@ class SaleController extends Controller
             'created_by' => auth()->id(),
             'status' => 'approved',
         ]);
-
-        Cache::tags(['sales', 'outlet_'.auth()->user()->outlet_id])->flush();
 
         return redirect()->route('sales.index')->with('success', 'Pengeluaran berhasil ditambahkan');
     }
@@ -281,9 +273,7 @@ class SaleController extends Controller
         $startOfDay = Carbon::parse($selectedDate)->startOfDay();
         $endOfDay = Carbon::parse($selectedDate)->endOfDay();
 
-        $cacheKey = "daily_{$selectedDate}_".auth()->id().'_'.($request->search ?? '');
-
-        $data = Cache::tags(['sales', "outlet_{$outletId}"])->remember($cacheKey, now()->addMinutes(10), function () use ($outletId, $selectedDate, $highlightId, $startOfDay, $endOfDay) {
+        $data = (function () use ($outletId, $selectedDate, $highlightId, $startOfDay, $endOfDay) {
             $salesQuery = Sale::where('outlet_id', $outletId)
                 ->completed()
                 ->whereBetween('created_at', [$startOfDay, $endOfDay]);
@@ -354,7 +344,7 @@ class SaleController extends Controller
                     'refunds' => (int) $totalRefunds,
                 ],
             ];
-        });
+        })();
 
         return response()->json($data);
     }
@@ -516,9 +506,6 @@ class SaleController extends Controller
 
             // Update status
             $sale->update(['status' => 'refunded']);
-
-            // Invalidate Sales Cache
-            Cache::tags(['sales', "outlet_{$sale->outlet_id}"])->flush();
 
             DB::commit();
 

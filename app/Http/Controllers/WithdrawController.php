@@ -256,7 +256,8 @@ class WithdrawController extends Controller
     {
         // Start Query for Sales
         $salesQuery = Sale::where('status', 'completed')
-            ->where('payment_status', 'paid');
+            ->where('payment_status', 'paid')
+            ->where('payment_method', 'qris');
 
         // Start Query for Withdrawals (Approved/Paid)
         $withdrawalsQuery = Withdrawal::whereIn('status', ['approved', 'paid']);

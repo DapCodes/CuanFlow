@@ -145,9 +145,6 @@ class DebtPaymentApiController extends Controller
             // Update customer total debt
             $customer->decrement('total_debt', $amount);
 
-            // Invalidate Sales Cache
-            \Illuminate\Support\Facades\Cache::tags(['sales', 'outlet_'.$debt->outlet_id])->flush();
-
             DB::commit();
 
             return response()->json([
