@@ -260,7 +260,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::match(['get', 'post'], 'invoice/{sale}/print', [InvoiceController::class, 'generate'])->name('invoice.print');
     });
     // Legacy receipt routes (keeping for compatibility)
-    Route::get('/receipt/print/{id}', [ReceiptController::class, 'print'])->name('receipt.print');
+    Route::get('/receipt/print/{id}', [ReceiptController::class, 'printReceipt'])->name('receipt.print');
     Route::get('/receipt/download/{id}', [ReceiptController::class, 'download'])->name('receipt.download');
 
     // Tables Management

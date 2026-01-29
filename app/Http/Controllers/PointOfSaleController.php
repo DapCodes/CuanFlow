@@ -767,9 +767,10 @@ class PointOfSaleController extends Controller
         $customers = Customer::where(function ($q) use ($query) {
             $q->where('name', 'like', "%{$query}%")
                 ->orWhere('phone', 'like', "%{$query}%")
+                ->orWhere('email', 'like', "%{$query}%")
                 ->orWhere('code', 'like', "%{$query}%");
         })
-            ->get(['id', 'name', 'code', 'phone', 'type', 'total_debt']);
+            ->get(['id', 'name', 'code', 'phone', 'email', 'address', 'type', 'total_debt', 'credit_limit']);
 
         return response()->json($customers);
     }

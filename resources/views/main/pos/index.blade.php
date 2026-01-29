@@ -1347,6 +1347,10 @@
                     <span class="text-gray-600">Tanggal:</span>
                     <span class="text-gray-900 font-medium" id="successDate">-</span>
                 </div>
+                <div class="flex justify-between" id="successCustomerRow" style="display: none;">
+                    <span class="text-gray-600">Pelanggan:</span>
+                    <span class="font-bold text-gray-900" id="successCustomer">-</span>
+                </div>
                 <div class="flex justify-between text-base font-bold border-t border-orange-200 pt-2 mt-2">
                     <span class="text-gray-700">Total:</span>
                     <span class="text-orange-600" id="successTotal">Rp 0</span>
@@ -1354,6 +1358,10 @@
                 <div class="flex justify-between text-sm" id="successChangeRow" style="display: none;">
                     <span class="text-gray-600">Kembalian:</span>
                     <span class="font-bold text-green-600" id="successChange">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-sm" id="successDebtRow" style="display: none;">
+                    <span class="text-gray-600">Sisa Utang:</span>
+                    <span class="font-bold text-red-600" id="successDebt">Rp 0</span>
                 </div>
             </div>
         </div>
@@ -1443,7 +1451,7 @@
                         </div>
                         
                          <!-- Customer Search Dropdown -->
-                        <div class="flex items-center gap-2 w-full max-w-[350px]">
+                        <div class="flex items-center gap-2 w-full max-w-[360px]">
                             <div class="relative flex-1" id="customerSearchContainer">
                                 <div class="relative">
                                     <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -1451,7 +1459,7 @@
                                         type="text" 
                                         id="searchCustomer" 
                                         class="search-input !pl-9" 
-                                        placeholder="Cari Pelanggan..." 
+                                        placeholder="Masukan data pelanggan...  (Nama, Email, No Tlp)" 
                                         autocomplete="off">
                                     <button id="clearCustomerBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500">
                                         <i class="fas fa-times"></i>
@@ -2502,18 +2510,18 @@
         
         <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
             <!-- Payment Info Summary -->
-            <div class="grid grid-cols-2 gap-4 mb-6 bg-orange-50 p-4 rounded-xl border border-orange-200">
+            <div class="grid grid-cols-2 gap-4 mb-6 bg-gradient-to-br from-orange-50 to-red-50 p-5 rounded-2xl border border-orange-200 shadow-sm">
                 <div>
-                    <div class="text-xs text-gray-600 mb-1">Total Belanja</div>
-                    <div class="text-lg font-bold text-gray-900" id="debtTotalAmount">Rp 0</div>
+                    <div class="text-[10px] font-bold text-orange-500 uppercase mb-1">Total Belanja</div>
+                    <div class="text-xl font-black text-gray-900" id="debtTotalAmount">Rp 0</div>
                 </div>
                 <div>
-                    <div class="text-xs text-gray-600 mb-1">Dibayar</div>
-                    <div class="text-lg font-bold text-green-600" id="debtPaidAmount">Rp 0</div>
+                    <div class="text-[10px] font-bold text-green-600 uppercase mb-1">Dibayar</div>
+                    <div class="text-xl font-black text-green-600" id="debtPaidAmount">Rp 0</div>
                 </div>
-                <div class="col-span-2">
-                    <div class="text-xs text-gray-600 mb-1">Sisa (Utang)</div>
-                    <div class="text-2xl font-bold text-red-600" id="debtRemainingAmount">Rp 0</div>
+                <div class="col-span-2 pt-3 border-t border-orange-200">
+                    <div class="text-[10px] font-bold text-red-500 uppercase mb-1">Sisa (Utang)</div>
+                    <div class="text-3xl font-black text-red-600" id="debtRemainingAmount">Rp 0</div>
                 </div>
             </div>
 
@@ -4544,24 +4552,27 @@ function processCashPayment() {
         Swal.fire({
             title: 'Jumlah Uang Kurang',
             html: `
-                <div class="text-left space-y-3">
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <div class="flex justify-between mb-2">
-                            <span class="text-gray-600">Total:</span>
-                            <span class="font-bold text-gray-900">Rp ${formatNumber(grandTotal)}</span>
+                <div class="text-left space-y-4 mt-2">
+                    <div class="bg-gradient-to-br from-orange-50 to-red-50 p-5 rounded-2xl border border-orange-100 shadow-sm">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Total Transaksi</span>
+                            <span class="text-lg font-black text-gray-900">Rp ${formatNumber(grandTotal)}</span>
                         </div>
-                        <div class="flex justify-between mb-2">
-                            <span class="text-gray-600">Dibayar:</span>
-                            <span class="font-bold text-green-600">Rp ${formatNumber(paid)}</span>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Uang Diterima</span>
+                            <span class="text-lg font-black text-green-600">Rp ${formatNumber(paid)}</span>
                         </div>
-                        <div class="flex justify-between pt-2 border-t border-gray-300">
-                            <span class="text-gray-600">Kekurangan:</span>
-                            <span class="font-bold text-red-600">Rp ${formatNumber(shortfall)}</span>
+                        <div class="flex justify-between items-center pt-3 border-t border-orange-200">
+                            <span class="text-[10px] font-bold text-red-500 uppercase tracking-wider">Sisa Kekurangan</span>
+                            <span class="text-2xl font-black text-red-600">Rp ${formatNumber(shortfall)}</span>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-600">
-                        Apakah pelanggan ini hanya membayar sebagian dan sisanya akan dicatat sebagai utang?
-                    </p>
+                    <div class="flex gap-3 text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100 items-start">
+                        <i class="fas fa-info-circle mt-0.5"></i>
+                        <p class="text-xs font-medium leading-relaxed">
+                            Pembayaran kurang dari total belanja. Apakah sisa kekurangan ini akan dicatat sebagai <b>utang pelanggan</b>?
+                        </p>
+                    </div>
                 </div>
             `,
             icon: 'warning',
@@ -4633,14 +4644,15 @@ function processCashPayment() {
             // RESET INPUTS
             const cashInput = document.getElementById('cashPaidAmount');
             if (cashInput) cashInput.value = '';
-            clearCustomer();
+            clearCustomer(true);
 
             openPaymentSuccessModal({
                 sale_id: data.sale.id,
                 invoice_number: data.sale.invoice_number,
                 created_at: data.sale.created_at,
                 grand_total: data.sale.grand_total,
-                change_amount: data.change
+                change_amount: data.change,
+                customer_name: data.sale.customer_name
             });
         } else {
             showToast('error', data.message);
@@ -4652,10 +4664,14 @@ function processCashPayment() {
 function openDebtPaymentModal(grandTotal, paidAmount, remainingAmount) {
     console.log('openDebtPaymentModal called:', {grandTotal, paidAmount, remainingAmount});
     try {
+        const totalAmount = grandTotal;
+        const paid = paidAmount;
+        const shortfall = remainingAmount || (totalAmount - paid);
+
         debtPaymentData = {
-            grandTotal: grandTotal,
-            paidAmount: paidAmount,
-            remainingAmount: remainingAmount
+            grandTotal: totalAmount,
+            paidAmount: paid,
+            remainingAmount: shortfall
         };
         
         const totalEl = document.getElementById('debtTotalAmount');
@@ -4668,24 +4684,79 @@ function openDebtPaymentModal(grandTotal, paidAmount, remainingAmount) {
             throw new Error('Elemen modal tidak ditemukan');
         }
 
-        totalEl.textContent = 'Rp ' + formatNumber(grandTotal);
-        paidEl.textContent = 'Rp ' + formatNumber(paidAmount);
-        remEl.textContent = 'Rp ' + formatNumber(remainingAmount);
-        actualPaidEl.value = paidAmount;
+        totalEl.textContent = 'Rp ' + formatNumber(totalAmount);
+        paidEl.textContent = 'Rp ' + formatNumber(paid);
+        remEl.textContent = 'Rp ' + formatNumber(shortfall);
+        actualPaidEl.value = paid;
         
-        // Reset form
+        // Reset form first
         resetDebtPaymentForm();
+
+        // Target elements
+        const inputId = document.getElementById('debtCustomerId');
+        const inputName = document.getElementById('debtCustomerName');
+        const inputPhone = document.getElementById('debtCustomerPhone');
+        const inputEmail = document.getElementById('debtCustomerEmail');
+        const inputAddress = document.getElementById('debtCustomerAddress');
+        const inputType = document.getElementById('debtCustomerType');
+        const inputTypeHidden = document.getElementById('debtCustomerTypeHidden');
+        const inputCreditLimit = document.getElementById('debtCreditLimit');
 
         // If a customer is already selected in main POS, pre-fill the modal
         if (typeof currentCustomer !== 'undefined' && currentCustomer) {
-            document.getElementById('debtCustomerId').value = currentCustomer.id || '';
-            document.getElementById('debtCustomerName').value = currentCustomer.name || '';
-            document.getElementById('debtCustomerPhone').value = currentCustomer.phone || '';
-            document.getElementById('debtCustomerEmail').value = currentCustomer.email || '';
-            document.getElementById('debtCustomerAddress').value = currentCustomer.address || '';
-            document.getElementById('debtCustomerType').value = currentCustomer.type || 'regular';
-            document.getElementById('debtCustomerTypeHidden').value = currentCustomer.type || 'regular';
-            document.getElementById('debtCreditLimit').value = currentCustomer.credit_limit || '';
+            console.log('Pre-filling debt modal with currentCustomer:', currentCustomer);
+            
+            if (inputId) inputId.value = currentCustomer.id || '';
+            if (inputName) {
+                inputName.value = currentCustomer.name || '';
+                if (inputName.value) {
+                    inputName.readOnly = true;
+                    inputName.classList.add('bg-gray-100');
+                } else {
+                    inputName.readOnly = false;
+                    inputName.classList.remove('bg-gray-100');
+                }
+            }
+            if (inputPhone) {
+                inputPhone.value = currentCustomer.phone || '';
+                if (inputPhone.value) {
+                    inputPhone.readOnly = true;
+                    inputPhone.classList.add('bg-gray-100');
+                } else {
+                    inputPhone.readOnly = false;
+                    inputPhone.classList.remove('bg-gray-100');
+                }
+            }
+            if (inputEmail) {
+                inputEmail.value = currentCustomer.email || '';
+                if (inputEmail.value) {
+                    inputEmail.readOnly = true;
+                    inputEmail.classList.add('bg-gray-100');
+                }
+            }
+            if (inputAddress) inputAddress.value = currentCustomer.address || '';
+            
+            const customerType = currentCustomer.type || 'regular';
+            if (inputType) inputType.value = customerType;
+            if (inputTypeHidden) inputTypeHidden.value = customerType;
+            
+            if (inputCreditLimit) inputCreditLimit.value = currentCustomer.credit_limit || '';
+            
+            selectedCustomerData = currentCustomer;
+        } else {
+            // Ensure inputs are editable if no customer selected
+            if (inputName) {
+                inputName.readOnly = false;
+                inputName.classList.remove('bg-gray-100');
+            }
+            if (inputPhone) {
+                inputPhone.readOnly = false;
+                inputPhone.classList.remove('bg-gray-100');
+            }
+            if (inputEmail) {
+                inputEmail.readOnly = false;
+                inputEmail.classList.remove('bg-gray-100');
+            }
         }
         
         const modal = document.getElementById('debtPaymentModal');
@@ -4699,12 +4770,15 @@ function openDebtPaymentModal(grandTotal, paidAmount, remainingAmount) {
         initDebtCustomerSearch();
         
         setTimeout(() => {
-            const input = document.getElementById('debtCustomerName');
-            if (input) input.focus();
+            if (inputName && !inputName.readOnly) {
+                inputName.focus();
+            } else if (document.getElementById('debtNotes')) {
+                document.getElementById('debtNotes').focus();
+            }
         }, 200);
     } catch (e) {
         console.error('Exception in openDebtPaymentModal:', e);
-        throw e;
+        showToast('error', 'Gagal membuka modal utang: ' + e.message);
     }
 }
 
@@ -5189,10 +5263,15 @@ function resetDebtPaymentForm() {
 /**
  * Initialize customer search with debounce
  */
+let isDebtCustomerSearchInitialized = false;
 function initDebtCustomerSearch() {
+    if (isDebtCustomerSearchInitialized) return;
+    
     const nameInput = document.getElementById('debtCustomerName');
     const phoneInput = document.getElementById('debtCustomerPhone');
     
+    if (!nameInput || !phoneInput) return;
+
     nameInput.addEventListener('input', function() {
         const searchTerm = this.value.trim();
         performDebtCustomerSearch(searchTerm);
@@ -5211,6 +5290,8 @@ function initDebtCustomerSearch() {
             hideDebtCustomerSearchResults();
         }
     });
+
+    isDebtCustomerSearchInitialized = true;
 }
 
 /**
@@ -5295,14 +5376,37 @@ function hideDebtCustomerSearchResults() {
 function selectDebtCustomer(customer) {
     selectedCustomerData = customer;
     
-    document.getElementById('debtCustomerId').value = customer.id;
-    document.getElementById('debtCustomerName').value = customer.name;
-    document.getElementById('debtCustomerPhone').value = customer.phone;
-    document.getElementById('debtCustomerEmail').value = customer.email || '';
-    document.getElementById('debtCustomerAddress').value = customer.address || '';
-    document.getElementById('debtCustomerType').value = customer.type || 'regular';
-    document.getElementById('debtCustomerTypeHidden').value = customer.type || 'regular';
-    document.getElementById('debtCreditLimit').value = customer.credit_limit || '';
+    const inputId = document.getElementById('debtCustomerId');
+    const inputName = document.getElementById('debtCustomerName');
+    const inputPhone = document.getElementById('debtCustomerPhone');
+    const inputEmail = document.getElementById('debtCustomerEmail');
+    const inputAddress = document.getElementById('debtCustomerAddress');
+    const inputType = document.getElementById('debtCustomerType');
+    const inputTypeHidden = document.getElementById('debtCustomerTypeHidden');
+    const inputCreditLimit = document.getElementById('debtCreditLimit');
+
+    if (inputId) inputId.value = customer.id;
+    if (inputName) {
+        inputName.value = customer.name;
+        inputName.readOnly = true;
+        inputName.classList.add('bg-gray-100');
+    }
+    if (inputPhone) {
+        inputPhone.value = customer.phone;
+        inputPhone.readOnly = true;
+        inputPhone.classList.add('bg-gray-100');
+    }
+    if (inputEmail) {
+        inputEmail.value = customer.email || '';
+        inputEmail.readOnly = true;
+        inputEmail.classList.add('bg-gray-100');
+    }
+    if (inputAddress) inputAddress.value = customer.address || '';
+    
+    if (inputType) inputType.value = customer.type || 'regular';
+    if (inputTypeHidden) inputTypeHidden.value = customer.type || 'regular';
+    
+    if (inputCreditLimit) inputCreditLimit.value = customer.credit_limit || '';
     
     hideDebtCustomerSearchResults();
     
@@ -5387,40 +5491,16 @@ function submitDebtPayment() {
             renderCart();
             closeDebtPaymentModal();
             setUIState('browse');
-            clearCustomer();
+            clearCustomer(true);
             
             // Show success modal
-            Swal.fire({
-                icon: 'success',
-                title: 'Transaksi Berhasil!',
-                html: `
-                    <div class="text-left space-y-3 mt-4">
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-600">Invoice:</span>
-                                <span class="font-bold text-gray-900">${responseData.sale.invoice_number}</span>
-                            </div>
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-600">Pelanggan:</span>
-                                <span class="font-bold text-gray-900">${responseData.sale.customer_name}</span>
-                            </div>
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-600">Total:</span>
-                                <span class="font-bold text-gray-900">Rp ${formatNumber(responseData.sale.grand_total)}</span>
-                            </div>
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-600">Dibayar:</span>
-                                <span class="font-bold text-green-600">Rp ${formatNumber(responseData.sale.paid_amount)}</span>
-                            </div>
-                            <div class="flex justify-between pt-2 border-t border-gray-300">
-                                <span class="text-gray-600">Sisa Utang:</span>
-                                <span class="font-bold text-red-600">Rp ${formatNumber(responseData.sale.debt_amount)}</span>
-                            </div>
-                        </div>
-                    </div>
-                `,
-                confirmButtonColor: '#f97316',
-                confirmButtonText: '<i class="fas fa-check mr-2"></i>OK'
+            openPaymentSuccessModal({
+                sale_id: responseData.sale.id,
+                invoice_number: responseData.sale.invoice_number,
+                created_at: responseData.sale.created_at,
+                grand_total: responseData.sale.grand_total,
+                debt_amount: responseData.sale.debt_amount,
+                customer_name: responseData.sale.customer_name
             });
         } else {
             showToast('error', responseData.message);
@@ -5625,7 +5705,8 @@ function openMidtransPayment() {
                             sale_id: saleData.id,
                             invoice_number: saleData.invoice_number,
                             created_at: saleData.created_at,
-                            grand_total: saleData.grand_total
+                            grand_total: saleData.grand_total,
+                            customer_name: saleData.customer_name
                         });
                     })
                     .catch(()=>showToast('error','Pembayaran berhasil, tapi gagal mengambil data transaksi'));
@@ -5687,6 +5768,28 @@ function openPaymentSuccessModal(data){
     } else {
         document.getElementById('successChangeRow').style.display = 'none';
     }
+    
+    // Utang
+    const debtRow = document.getElementById('successDebtRow');
+    if (debtRow) {
+        if (data.debt_amount && data.debt_amount > 0) {
+            debtRow.style.display = 'flex';
+            document.getElementById('successDebt').textContent = 'Rp ' + formatNumber(data.debt_amount);
+        } else {
+            debtRow.style.display = 'none';
+        }
+    }
+    // Customer
+    const customerRow = document.getElementById('successCustomerRow');
+    if (customerRow) {
+        if (data.customer_name) {
+            customerRow.style.display = 'flex';
+            document.getElementById('successCustomer').textContent = data.customer_name;
+        } else {
+            customerRow.style.display = 'none';
+        }
+    }
+
     document.getElementById('paymentSuccessModal').classList.remove('hidden');
 }
 
@@ -6914,7 +7017,7 @@ function closeSaleDetailModal() {
         }
     }
 
-    async function clearCustomer() {
+    async function clearCustomer(silent = false) {
         const searchInput = document.getElementById('searchCustomer');
         const clearBtn = document.getElementById('clearCustomerBtn');
         
@@ -6946,7 +7049,7 @@ function closeSaleDetailModal() {
                 cart = data.cart;
                 cartSummary = data.cart_summary;
                 renderCart();
-                showToast('info', 'Pelanggan di-reset');
+                if (!silent) showToast('info', 'Pelanggan di-reset');
             }
         } catch(e) {
             console.error(e);
@@ -6956,70 +7059,6 @@ function closeSaleDetailModal() {
 
     // Initialize on load is now handled in the main initialization block above.
 
-    // ==========================================
-    // OVERRIDE: OPEN DEBT MODAL
-    // ==========================================
-    // Overriding the existing or creating a new handler
-    // Make sure this name matches what's called in main script
-    window.openDebtPaymentModal = function(totalAmount, paidAmount, shortfall) {
-        console.log('OVERRIDE openDebtPaymentModal called:', {totalAmount, paidAmount, shortfall});
-        const modal = document.getElementById('debtPaymentModal');
-        const totalEl = document.getElementById('debtTotalAmount');
-        const paidEl = document.getElementById('debtPaidAmount');
-        const remainingEl = document.getElementById('debtRemainingAmount');
-        
-        const remaining = shortfall || (totalAmount - paidAmount);
-        
-        totalEl.textContent = 'Rp ' + formatNumber(totalAmount);
-        paidEl.textContent = 'Rp ' + formatNumber(paidAmount);
-        remainingEl.textContent = 'Rp ' + formatNumber(remaining);
-        
-        document.getElementById('debtActualPaidAmount').value = paidAmount;
-        
-        // AUTO FILL CUSTOMER IF SELECTED
-        const inputName = document.getElementById('debtCustomerName');
-        const inputPhone = document.getElementById('debtCustomerPhone');
-        const inputEmail = document.getElementById('debtCustomerEmail');
-        const inputAddress = document.getElementById('debtCustomerAddress');
-        const inputId = document.getElementById('debtCustomerId');
-        
-        if (currentCustomer) {
-            inputId.value = currentCustomer.id;
-            inputName.value = currentCustomer.name;
-            inputPhone.value = currentCustomer.phone || '-';
-            inputEmail.value = currentCustomer.email || ''; 
-            if (inputAddress) inputAddress.value = currentCustomer.address || '';
-            
-            // Use readOnly instead of disabled so it's included in FormData
-            inputName.readOnly = true;
-            inputName.classList.add('bg-gray-100');
-            inputPhone.readOnly = true;
-            inputPhone.classList.add('bg-gray-100');
-        } else {
-             // Reset form
-            inputId.value = '';
-            inputName.value = '';
-            inputPhone.value = '';
-            inputEmail.value = '';
-            if (inputAddress) inputAddress.value = '';
-            
-            inputName.readOnly = false;
-            inputName.classList.remove('bg-gray-100');
-            inputPhone.readOnly = false;
-            inputPhone.classList.remove('bg-gray-100');
-        }
-
-        // Show the modal!
-        if (modal) {
-            modal.classList.remove('hidden');
-            // Initialize search if needed (shared logic)
-            if (typeof initDebtCustomerSearch === 'function') {
-                initDebtCustomerSearch();
-            }
-        } else {
-            console.error('debtPaymentModal not found in DOM');
-        }
-    }
 
     function togglePanelPosition(checked) {
         const main = document.querySelector('.pos-main');
