@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('selling_price', 15, 2)->default(0);
             $table->decimal('reseller_price', 15, 2)->nullable();
             $table->decimal('promo_price', 15, 2)->nullable();
-            $table->decimal('margin_percent', 8, 4)->default(0);
+            $table->decimal('margin_percent', 15, 2)->default(0);
             $table->decimal('min_stock', 15, 4)->default(0);
             $table->integer('shelf_life_days')->nullable();
             $table->string('image')->nullable();

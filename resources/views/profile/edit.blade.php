@@ -13,7 +13,8 @@
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-[#f9fafb] shadow-sm md:shadow-none" x-data="{ 
-    activeTab: '{{ session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() ? 'security' : 'profile' }}' 
+    activeTab: '{{ session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() || request()->reset_token || ($errors->any() && !session('status')) ? 'security' : 'profile' }}',
+    showResetModal: {{ request()->reset_token || ($errors->any() && !session('status')) ? 'true' : 'false' }}
 }">
     <div class="max-w-6xl mx-auto space-y-8">
         
@@ -45,6 +46,18 @@
                         <i class="fas fa-key text-xs"></i>
                     </div>
                     <span class="text-sm font-bold">Kata Sandi Berhasil Diperbarui</span>
+                </div>
+                <button @click="show = false" class="text-white/50 hover:text-white transition-colors"><i class="fas fa-times text-xs"></i></button>
+            </div>
+        @endif
+
+        @if (session('status') && !in_array(session('status'), ['profile-updated', 'password-updated']))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="px-4 py-3 bg-[#1e293b] text-white rounded-2xl shadow-lg flex items-center justify-between animate-fade-in-down border border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <i class="fas fa-paper-plane text-xs"></i>
+                    </div>
+                    <span class="text-sm font-bold">{{ session('status') }}</span>
                 </div>
                 <button @click="show = false" class="text-white/50 hover:text-white transition-colors"><i class="fas fa-times text-xs"></i></button>
             </div>
@@ -282,19 +295,92 @@
                                         Perbarui Kata Sandi
                                     </button>
                                     @endcan
-                                    
-                                    @if (Route::has('password.request'))
-                                        <a href="{{ route('password.request') }}" class="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors border-b border-transparent hover:border-gray-900">
-                                            Lupa Kata Sandi Akun?
-                                        </a>
-                                    @endif
                                 </div>
                             </form>
+
+                            <div class="mt-6 flex justify-end">
+                                @if (Route::has('password.email.authenticated'))
+                                    <form method="POST" action="{{ route('password.email.authenticated') }}">
+                                        @csrf
+                                        <input type="hidden" name="email" value="{{ auth()->user()->email }}">
+                                        <button type="submit" class="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors border-b border-transparent hover:border-gray-900">
+                                            Lupa Kata Sandi Akun?
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </section>
 
 
+            </div>
+        </div>
+    </div>
+
+    {{-- Reset Password Modal --}}
+    <div x-show="showResetModal" 
+        class="fixed inset-0 z-[100] overflow-y-auto" 
+        x-transition:enter="transition ease-out duration-300" 
+        x-transition:enter-start="opacity-0" 
+        x-transition:enter-end="opacity-100" 
+        x-transition:leave="transition ease-in duration-200" 
+        x-transition:leave-start="opacity-100" 
+        x-transition:leave-end="opacity-0"
+        x-cloak>
+        
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="showResetModal = false">
+                <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+            </div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-scale-in">
+                <div class="bg-white p-8 sm:p-10">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-sm border border-emerald-100/50">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-black text-gray-900">Reset Kata Sandi</h3>
+                                <p class="text-xs text-gray-500 font-medium">Buat kata sandi baru untuk akun Anda.</p>
+                            </div>
+                        </div>
+                        <button @click="showResetModal = false" class="text-gray-400 hover:text-gray-900 transition-colors">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                    </div>
+
+                    <form method="POST" action="{{ route('password.store') }}" class="space-y-6">
+                        @csrf
+                        <input type="hidden" name="token" value="{{ request()->reset_token ?? old('token') }}">
+                        <input type="hidden" name="email" value="{{ request()->email ?? old('email') }}">
+
+                        <div class="space-y-2">
+                            <label for="modal_password" class="text-[11px] font-black uppercase text-gray-400 tracking-[0.2em] pl-1">Kata Sandi Baru</label>
+                            <input type="password" name="password" id="modal_password" required autofocus
+                                class="w-full px-5 py-4 bg-[#f9fafb] border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all">
+                            @error('password') <p class="text-[11px] text-red-500 font-bold mt-1 pl-1 italic">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="modal_password_confirmation" class="text-[11px] font-black uppercase text-gray-400 tracking-[0.2em] pl-1">Konfirmasi Kata Sandi</label>
+                            <input type="password" name="password_confirmation" id="modal_password_confirmation" required
+                                class="w-full px-5 py-4 bg-[#f9fafb] border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 focus:bg-white transition-all">
+                        </div>
+
+                        <div class="pt-4 flex flex-col gap-3">
+                            <button type="submit" class="w-full px-10 py-4 bg-gray-900 text-white rounded-2xl shadow-xl hover:bg-black transition-all text-xs font-black uppercase tracking-[0.2em] active:scale-95">
+                                Atur Ulang Kata Sandi
+                            </button>
+                            <button type="button" @click="showResetModal = false" class="w-full px-10 py-4 bg-gray-50 text-gray-500 rounded-2xl hover:bg-gray-100 transition-all text-xs font-black uppercase tracking-[0.2em]">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
