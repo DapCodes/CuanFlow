@@ -233,6 +233,7 @@ class PointOfSaleController extends Controller
                 'quantity' => $request->quantity,
                 'unit_price' => $price,
                 'hpp' => $product->hpp,
+                'track_stock' => $product->track_stock,
                 'discount_percent' => 0,
                 'discount_amount' => 0,
                 'subtotal' => $price * $request->quantity,
@@ -607,29 +608,33 @@ class PointOfSaleController extends Controller
         }
 
         // Handle Buy X Get Y preservation
-        if ($discount->type === 'buy_x_get_y' && ! empty($plan['affected_items'])) {
-            try {
-                // Extract previous selection
-                $selection = [];
-                foreach ($plan['affected_items'] as $item) {
+    if ($discount->type === 'buy_x_get_y' && ! empty($plan['applied_discounts'])) {
+        try {
+            // Extract previous selection from applied_discounts
+            $selection = [];
+            $bogoApplied = collect($plan['applied_discounts'])->firstWhere('type', 'buy_x_get_y');
+            
+            if ($bogoApplied && !empty($bogoApplied['free_items'])) {
+                foreach ($bogoApplied['free_items'] as $item) {
                     if (isset($item['free_qty']) && $item['free_qty'] > 0) {
                         $selection[$item['product_id']] = $item['free_qty'];
                     }
                 }
-
-                if (! empty($selection)) {
-                    $newPlan = $this->discountService->applyFreeItems($discount, array_values($cart), $selection);
-                }
-            } catch (\Exception $e) {
-                // If previous selection is invalid (e.g. item removed), fall back to basic plan (requires selection)
-                // $newPlan is already set to the basic plan from calculateDiscountPlan
             }
+
+            if (! empty($selection)) {
+                // Use calculateDiscountPlan with selection to get the full formatted plan
+                $newPlan = $this->discountService->calculateDiscountPlan(array_values($cart), $candidates, $subtotal, $selection);
+            }
+        } catch (\Exception $e) {
+            // If previous selection is invalid, it stays as the basic plan
         }
-
-        Session::put('pos_discount_plan', $newPlan);
-
-        return $newPlan;
     }
+
+    Session::put('pos_discount_plan', $newPlan);
+
+    return $newPlan;
+}
 
     public function applyDiscount(Request $request)
     {
@@ -822,7 +827,7 @@ class PointOfSaleController extends Controller
             array_values($cart),
             null,
             Session::get('pos_customer_id')
-        )->filter(fn ($d) => ! in_array($d->id, $blacklist));
+        )->filter(fn ($d) => ! in_array($d->id, $blacklist) && ! $d->is_voucher);
 
         // 2. Calculate best multi-discount plan
         // PERBAIKAN: Ambil pilihan BOGO yang sudah disimpan di session agar tidak reset
@@ -836,10 +841,46 @@ class PointOfSaleController extends Controller
         );
 
         // 3. Update session and cart
+        $currentPlan = Session::get('pos_discount_plan');
+        
+        // If we found a valid auto-discount
         if ($plan['discount_id'] || $plan['total_discount'] > 0) {
+            // Check if current plan is a voucher
+            if ($currentPlan && isset($currentPlan['is_voucher']) && $currentPlan['is_voucher']) {
+                // Determine logic: Do we override voucher with auto-discount?
+                // For now, let's assume we ONLY override if the auto-discount is better? 
+                // Or maybe automatic discounts should coexist? 
+                // The current logic seems to assume one plan at a time.
+                // Let's stick to: Auto discount overrides if found (assuming auto is "base" promotion)
+                // OR: If user explicitly applied voucher, maybe we should keep it?
+                // For this task, avoiding complexity: If auto discount found, use it.
+            }
             $this->decorateCartWithDiscount($cart, $plan);
             Session::put('pos_discount_plan', $plan);
         } else {
+            // No auto discount found.
+            // Check if we have a voucher applied. If so, don't just clear it blindly.
+            if ($currentPlan) {
+                $currentDiscount = \App\Models\Discount::find($currentPlan['discount_id']);
+                if ($currentDiscount && $currentDiscount->is_voucher) {
+                    // It's a voucher. Re-validate it against new cart state.
+                    $recheck = $this->discountService->calculateDiscountPlan(
+                        array_values($cart), 
+                        collect([$currentDiscount]), 
+                        $subtotal
+                    );
+                    
+                    if ($recheck['discount_id']) {
+                        // Voucher still valid. Update the amounts.
+                        $recheck['is_voucher'] = true; // Ensure flag is preserved
+                        $this->decorateCartWithDiscount($cart, $recheck);
+                        Session::put('pos_discount_plan', $recheck);
+                        return;
+                    }
+                }
+            }
+            
+            // If we reach here, no auto discount AND no valid voucher. Clear.
             Session::forget('pos_discount_plan');
         }
     }

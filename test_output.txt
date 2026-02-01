@@ -1,0 +1,78 @@
+array:2 [
+  "success" => false
+  "message" => "Keranjang kosong"
+] // tests/Feature/PosDiscountTest.php:142
+
+   FAIL  Tests\Feature\PosDiscountTest
+  ⨯ can apply percentage discount                                        3.32s  
+  ⨯ can apply fixed discount                                             0.17s  
+  ⨯ can apply buy x get y discount                                       0.22s  
+  ⨯ discount cleared on cart update                                      0.37s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\PosDiscountTest > can apply percentage discount        
+  Expected response status code [200] but received 400.
+Failed asserting that 400 is identical to 200.
+
+  at tests/Feature/PosDiscountTest.php:59
+     55▕         $response = $this->postJson(route('pos.discounts.apply'), [
+     56▕             'discount_code' => $discount->code,
+     57▕         ]);
+     58▕ 
+  ➜  59▕         $response->assertStatus(200)
+     60▕             ->assertJsonPath('success', true)
+     61▕             ->assertJsonPath('discount_plan.total_discount', 2000); // 10% of 20,000
+     62▕     }
+     63▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\PosDiscountTest > can apply fixed discount             
+  Expected response status code [200] but received 400.
+Failed asserting that 400 is identical to 200.
+
+  at tests/Feature/PosDiscountTest.php:83
+     79▕         $response = $this->postJson(route('pos.discounts.apply'), [
+     80▕             'discount_code' => $discount->code,
+     81▕         ]);
+     82▕ 
+  ➜  83▕         $response->assertStatus(200)
+     84▕             ->assertJsonPath('success', true)
+     85▕             ->assertJsonPath('discount_plan.total_discount', 5000);
+     86▕     }
+     87▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\PosDiscountTest > can apply buy x get y discount       
+  Expected response status code [200] but received 400.
+Failed asserting that 400 is identical to 200.
+
+  at tests/Feature/PosDiscountTest.php:108
+    104▕         $response = $this->postJson(route('pos.discounts.apply'), [
+    105▕             'discount_code' => $discount->code,
+    106▕         ]);
+    107▕ 
+  ➜ 108▕         $response->assertStatus(200)
+    109▕             ->assertJsonPath('success', true)
+    110▕             ->assertJsonPath('discount_plan.requires_free_item_selection', true)
+    111▕             ->assertJsonPath('discount_plan.free_item_quota', 1);
+    112▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\PosDiscountTest > discount cleared on cart update      
+  Expected response status code [200] but received 400.
+Failed asserting that 400 is identical to 200.
+
+  at tests/Feature/PosDiscountTest.php:145
+    141▕         if ($response->status() !== 200) {
+    142▕             dump($response->json());
+    143▕         }
+    144▕ 
+  ➜ 145▕         $response->assertStatus(200);
+    146▕ 
+    147▕         $this->assertTrue(Session::has('pos_discount_plan'));
+    148▕ 
+    149▕         // Update cart
+
+
+  Tests:    4 failed (4 assertions)
+  Duration: 5.01s
+

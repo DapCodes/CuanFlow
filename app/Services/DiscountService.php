@@ -68,6 +68,7 @@ class DiscountService
                 'free_item_candidates' => [],
                 'free_item_quota' => 0,
                 'applied_discounts' => [],
+                'is_voucher' => false,
             ];
         }
 
@@ -222,6 +223,7 @@ class DiscountService
             'requires_free_item_selection' => $bestBogoPlan ? true : false,
             'free_item_candidates' => $bestBogoPlan ? $bestBogoPlan['free_item_candidates'] : [],
             'free_item_quota' => $bestBogoPlan ? $bestBogoPlan['free_item_quota'] : 0,
+            'is_voucher' => $candidates->contains(fn ($d) => $d->is_voucher),
         ];
 
         if ($bestBogoPlan) {
@@ -232,6 +234,10 @@ class DiscountService
                         $appliedBogo = $this->applyFreeItems($bogoDiscount, $cartItems, $freeItemSelection);
                         $bestBogoPlan['affected_items'] = $appliedBogo;
                         $plan['affected_items'] = array_merge($plan['affected_items'], $appliedBogo);
+                        
+                        // Add BOGO value to total discount
+                        $bogoValue = collect($appliedBogo)->sum('discount_amount');
+                        $plan['total_discount'] += $bogoValue;
                     }
                 } catch (\Exception $e) {
                     \Log::error('BOGO Apply Error: '.$e->getMessage());
@@ -425,7 +431,8 @@ class DiscountService
                 ->first();
 
             $availableStock = $stock ? $stock->quantity : 0;
-            $remainingStock = max(0, $availableStock - $item['quantity']);
+            $trackStock = $item['track_stock'] ?? true; 
+            $remainingStock = $trackStock ? max(0, $availableStock - $item['quantity']) : 999999;
 
             return [
                 'product_id' => $item['product_id'],
@@ -473,15 +480,17 @@ class DiscountService
                 $qtyInCart = $itemInCart ? $itemInCart['quantity'] : 0;
                 $totalNeeded = $qtyInCart + $qty;
 
-                $stock = \App\Models\ProductStock::where('product_id', $productId)
-                    ->where('outlet_id', auth()->user()->outlet_id)
-                    ->first();
+                if ($itemInCart && ($itemInCart['track_stock'] ?? true)) {
+                    $stock = \App\Models\ProductStock::where('product_id', $productId)
+                        ->where('outlet_id', auth()->user()->outlet_id)
+                        ->first();
 
-                $availableStock = $stock ? $stock->quantity : 0;
+                    $availableStock = $stock ? $stock->quantity : 0;
 
-                if ($availableStock < $totalNeeded) {
-                    $productName = $itemInCart['product_name'] ?? 'Produk';
-                    throw new \InvalidArgumentException("Stok $productName tidak cukup. Butuh: $totalNeeded (Beli+Gratis), Tersedia: $availableStock");
+                    if ($availableStock < $totalNeeded) {
+                        $productName = $itemInCart['product_name'] ?? 'Produk';
+                        throw new \InvalidArgumentException("Stok $productName tidak cukup. Butuh: $totalNeeded (Beli+Gratis), Tersedia: $availableStock");
+                    }
                 }
 
                 // 2. Build Item Data
@@ -490,10 +499,10 @@ class DiscountService
                     $result[] = [
                         'product_id' => $productId,
                         'product_name' => $product->name,
-                        'unit_price' => (float) $product->price,
+                        'unit_price' => (float) $product->selling_price,
                         'free_qty' => $qty,
-                        'subtotal_discount' => (float) $product->price * $qty,
-                        'discount_amount' => (float) $product->price * $qty, // Alias for compatibility
+                        'subtotal_discount' => (float) $product->selling_price * $qty,
+                        'discount_amount' => (float) $product->selling_price * $qty, // Alias for compatibility
                     ];
                 }
             }

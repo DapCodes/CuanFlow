@@ -47,6 +47,14 @@ class PosDiscountController extends Controller
                 ], 404);
             }
 
+            // Check if it's actually a voucher
+            if (! $voucher->is_voucher) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kode ini bukan voucher. Diskon ini diterapkan otomatis.',
+                ], 400);
+            }
+
             // If code is valid, ONLY consider this voucher
             $candidates = collect([$voucher]);
         } else {
@@ -55,7 +63,7 @@ class PosDiscountController extends Controller
                 array_values($cart),
                 null,
                 Session::get('pos_customer_id')
-            );
+            )->filter(fn ($d) => ! $d->is_voucher);
 
             if ($candidates->isEmpty()) {
                 return response()->json([
@@ -151,11 +159,32 @@ class PosDiscountController extends Controller
             $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
 
             $blacklist = Session::get('pos_discount_blacklist', []);
-            $candidates = $this->discountService->findCandidates(
-                array_values($cart),
-                null,
-                Session::get('pos_customer_id')
-            )->filter(fn ($d) => ! in_array($d->id, $blacklist));
+            
+            // Re-find candidates. Careful: If the current discount is a VOUCHER, findCandidates won't find it if we filter vouchers there
+            // OR if findCandidates finds it but we filter it out like in autoApply.
+            
+            // Logic:
+            // 1. Get current plan's discount ID.
+            // 2. If it's a voucher, we MUST include it in candidates explicitly, and possibly ignore others?
+            // 3. If it's NOT a voucher (regular auto-discount), then findCandidates handles it.
+            
+            $currentDiscountId = $discountPlan['discount_id'] ?? null;
+            $currentIsVoucher = $discountPlan['is_voucher'] ?? false;
+            
+            if ($currentIsVoucher && $currentDiscountId) {
+                 // It was a voucher. Use ONLY this voucher.
+                 $voucherDiscount = Discount::find($currentDiscountId);
+                 $candidates = collect([$voucherDiscount]);
+                 
+                 // Note: We don't filter blacklist for the explicitly active voucher (assumed safe)
+            } else {
+                 // Standard auto-discount logic
+                 $candidates = $this->discountService->findCandidates(
+                    array_values($cart),
+                    null,
+                    Session::get('pos_customer_id')
+                )->filter(fn ($d) => ! in_array($d->id, $blacklist) && ! $d->is_voucher);
+            }
 
             $finalPlan = $this->discountService->calculateDiscountPlan(
                 array_values($cart),
@@ -286,7 +315,7 @@ class PosDiscountController extends Controller
         $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
         $totalDiscount = $discountPlan['total_discount'] ?? 0;
 
-        $taxPercent = 0; // Get from settings if needed
+        $taxPercent = 0; // TODO: fitur pajak
         $subtotalAfterDiscount = $subtotal - $totalDiscount;
         $tax = $subtotalAfterDiscount * ($taxPercent / 100);
         $grandTotal = $subtotalAfterDiscount + $tax;
