@@ -24,6 +24,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $fillable = [
         'name', 'email', 'password', 'outlet_id', 'phone', 'avatar', 'is_active', 'last_login_at',
+        'google_id', 'google_avatar',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -107,8 +108,13 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getAvatarUrlAttribute(): string
     {
+        // Priority: local avatar > google_avatar > default placeholder
         if ($this->avatar) {
             return asset('storage/'.$this->avatar);
+        }
+
+        if ($this->google_avatar) {
+            return $this->google_avatar;
         }
 
         return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=31694E&background=F0E491';

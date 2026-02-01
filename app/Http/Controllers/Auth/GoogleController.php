@@ -1,0 +1,125 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
+
+class GoogleController extends Controller
+{
+    /**
+     * Redirect the user to the Google authentication page.
+     */
+    public function redirect()
+    {
+        return Socialite::driver('google')->stateless()->redirect();
+    }
+
+    /**
+     * Handle the callback from Google.
+     */
+    public function callback()
+    {
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+
+            // Find existing user by google_id or email
+            $user = User::where('google_id', $googleUser->getId())
+                ->orWhere('email', $googleUser->getEmail())
+                ->first();
+
+            if ($user) {
+                // Update google_id and google_avatar if not set
+                if (!$user->google_id) {
+                    $user->google_id = $googleUser->getId();
+                }
+                if (!$user->google_avatar || $user->google_avatar !== $googleUser->getAvatar()) {
+                    $user->google_avatar = $googleUser->getAvatar();
+                }
+                $user->save();
+            } else {
+                // Redirect to complete profile page with google data in session
+                session(['google_user' => [
+                    'name' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'google_id' => $googleUser->getId(),
+                    'google_avatar' => $googleUser->getAvatar(),
+                ]]);
+
+                return redirect()->route('auth.google.complete');
+            }
+
+            // Update last login
+            $user->update(['last_login_at' => now()]);
+
+            // Login the user
+            Auth::login($user, true);
+
+            return redirect()->intended(route('dashboard'));
+
+        } catch (\Exception $e) {
+            return redirect()->route('login')
+                ->with('error', 'Gagal login dengan Google. Silakan coba lagi.');
+        }
+    }
+
+    /**
+     * Show the profile completion form.
+     */
+    public function completeProfile()
+    {
+        if (!session()->has('google_user')) {
+            return redirect()->route('login');
+        }
+
+        $googleUser = session('google_user');
+        return view('auth.google-complete-profile', compact('googleUser'));
+    }
+
+    /**
+     * Store the completed profile and register the user.
+     */
+    public function storeProfile(\Illuminate\Http\Request $request)
+    {
+        if (!session()->has('google_user')) {
+            return redirect()->route('login');
+        }
+
+        $googleData = session('google_user');
+
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:15'],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $googleData['email'],
+            'phone' => $request->phone,
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'google_id' => $googleData['google_id'],
+            'google_avatar' => $googleData['google_avatar'],
+            'email_verified_at' => now(),
+            'is_active' => true,
+        ]);
+
+        // Assign default role if exists (common in CuanFlow)
+        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            $user->assignRole('owner'); // Default role for new registrations
+        }
+
+        // Send Welcome Notification
+        $user->notify(new \App\Notifications\WelcomeGoogleUserNotification($user->name));
+
+        // Clear session
+        session()->forget('google_user');
+
+        // Login
+        Auth::login($user);
+
+        return redirect()->route('dashboard')->with('success', 'Registrasi berhasil! Selamat datang di CuanFlow.');
+    }
+}
