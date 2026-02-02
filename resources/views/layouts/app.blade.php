@@ -141,6 +141,21 @@
                 opacity: 1;
             }
         }
+
+        /* FOUC Prevention */
+        #app-content-wrapper {
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #app-content-wrapper.ready {
+            opacity: 1;
+        }
+    </style>
+    
+    <style id="fouc-mask">
+        #app-content-wrapper { display: none !important; }
+        body { background-color: #ffffff !important; overflow: hidden !important; }
     </style>
     
     @stack('styles')
@@ -160,7 +175,7 @@
         <p class="global-loader-text">Loading...</p>
     </div>
 
-    <div class="min-h-screen flex flex-col">
+    <div id="app-content-wrapper" class="min-h-screen flex flex-col">
         <!-- Navbar -->
 <nav id="main-navbar" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -545,15 +560,32 @@
             
             // Handle back/forward navigation and initial load
             window.addEventListener('load', function() {
+                const foucMask = document.getElementById('fouc-mask');
+                const contentWrapper = document.getElementById('app-content-wrapper');
+                
+                // 1. Remove display:none constraint
+                if (foucMask) foucMask.remove();
+                
+                // 2. Small delay to ensure styles are applied
                 setTimeout(() => {
+                    // 3. Hide Loader
                     loader.classList.remove('active');
-                }, 300); // Small delay for smooth transition
-                isNavigating = false;
+                    
+                    // 4. Fade In Content
+                    if (contentWrapper) contentWrapper.classList.add('ready');
+                    
+                    // 5. Restore scroll
+                    document.body.style.overflow = '';
+                    isNavigating = false;
+                }, 400); 
             });
 
             window.addEventListener('pageshow', function(e) {
                 if (e.persisted) {
                     loader.classList.remove('active');
+                    const contentWrapper = document.getElementById('app-content-wrapper');
+                    if (contentWrapper) contentWrapper.classList.add('ready');
+                    document.body.style.overflow = '';
                     isNavigating = false;
                 }
             });

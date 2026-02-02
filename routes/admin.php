@@ -14,9 +14,14 @@ use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\PermissionCategoryController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SubscriptionFeatureController;
+use App\Http\Controllers\Admin\SubscriptionPlanController;
+use App\Http\Controllers\Admin\SubscriptionSettingController;
+use App\Http\Controllers\Admin\SubscriptionTierController;
 use App\Http\Controllers\Admin\TaskLabelController;
 use App\Http\Controllers\Admin\TaskStatusController;
 use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\TrialVerificationController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -105,6 +110,33 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::put('/{landingPage}/sections/{section}/items/{item}', [AdminLandingSectionController::class, 'updateItem'])->name('sections.items.update');
         Route::delete('/{landingPage}/sections/{section}/items/{item}', [AdminLandingSectionController::class, 'destroyItem'])->name('sections.items.destroy');
         Route::post('/{landingPage}/sections/{section}/items/reorder', [AdminLandingSectionController::class, 'reorderItems'])->name('sections.items.reorder');
+    });
+
+    // Subscription Management
+    Route::prefix('subscription')->name('admin.subscription-')->group(function () {
+        Route::resource('tiers', SubscriptionTierController::class)->names('tiers');
+        Route::resource('plans', SubscriptionPlanController::class)->names('plans');
+        Route::resource('features', SubscriptionFeatureController::class)->names('features');
+        
+        // Settings
+        Route::get('settings', [SubscriptionSettingController::class, 'edit'])->name('settings.edit');
+        Route::put('settings', [SubscriptionSettingController::class, 'update'])->name('settings.update');
+        
+        // Trial Requests
+        Route::get('trial-requests', [TrialVerificationController::class, 'index'])->name('trial-requests.index');
+        Route::get('trial-requests/{trialRequest}', [TrialVerificationController::class, 'show'])->name('trial-requests.show');
+        Route::post('trial-requests/{trialRequest}/approve', [TrialVerificationController::class, 'approve'])->name('trial-requests.approve');
+        Route::post('trial-requests/{trialRequest}/reject', [TrialVerificationController::class, 'reject'])->name('trial-requests.reject');
+
+        // User Subscriptions
+        Route::get('users', [App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('users.index');
+        Route::get('users/{subscription}', [App\Http\Controllers\Admin\SubscriptionController::class, 'show'])->name('users.show');
+        Route::post('users/{subscription}/status', [App\Http\Controllers\Admin\SubscriptionController::class, 'updateStatus'])->name('users.status');
+
+        // Payment History
+        Route::get('payments', [App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'index'])->name('payments.index');
+        Route::get('payments/{payment}', [App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'show'])->name('payments.show');
+        Route::post('payments/{payment}/approve', [App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'approve'])->name('payments.approve');
     });
 
     // Terms & Conditions Management

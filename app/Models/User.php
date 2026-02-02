@@ -9,7 +9,9 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -119,4 +121,146 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=31694E&background=F0E491';
     }
+
+    // =========================================================================
+    // Subscription Relationships
+    // =========================================================================
+
+    /**
+     * Get the user's active subscription.
+     */
+    public function subscription(): HasOne
+    {
+        return $this->hasOne(UserSubscription::class)->whereIn('status', [
+            UserSubscription::STATUS_ACTIVE,
+            UserSubscription::STATUS_TRIAL,
+        ])->latest();
+    }
+
+    /**
+     * Get all user subscriptions.
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    /**
+     * Get the latest trial verification request.
+     */
+    public function trialRequest(): HasOne
+    {
+        return $this->hasOne(TrialVerificationRequest::class)->latest();
+    }
+
+    /**
+     * Get all trial verification requests.
+     */
+    public function trialRequests(): HasMany
+    {
+        return $this->hasMany(TrialVerificationRequest::class);
+    }
+
+    /**
+     * Get payment transactions.
+     */
+    public function paymentTransactions(): HasMany
+    {
+        return $this->hasMany(PaymentTransaction::class);
+    }
+
+    // =========================================================================
+    // Subscription Helper Methods
+    // =========================================================================
+
+    /**
+     * Check if user has an active subscription.
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return Cache::remember("user_{$this->id}_has_subscription", 300, function () {
+            $subscription = $this->subscription;
+            return $subscription && $subscription->isActive();
+        });
+    }
+
+    /**
+     * Get the user's current subscription tier.
+     */
+    public function getSubscriptionTier(): ?SubscriptionTier
+    {
+        $subscription = $this->subscription;
+        return $subscription?->tier;
+    }
+
+    /**
+     * Get the user's tier name.
+     */
+    public function getTierName(): ?string
+    {
+        return $this->getSubscriptionTier()?->name;
+    }
+
+    /**
+     * Check if user can access a specific feature.
+     */
+    public function canAccessFeature(string $featureName): bool
+    {
+        // Admins always have access
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        return Cache::remember("user_{$this->id}_feature_{$featureName}", 300, function () use ($featureName) {
+            $tier = $this->getSubscriptionTier();
+            if (!$tier) {
+                return false;
+            }
+
+            return $tier->hasFeature($featureName);
+        });
+    }
+
+    /**
+     * Check if user has pending trial verification.
+     */
+    public function hasPendingTrialVerification(): bool
+    {
+        $trialRequest = $this->trialRequest;
+        return $trialRequest && $trialRequest->isPending();
+    }
+
+    /**
+     * Get the maximum outlets allowed for user's tier.
+     */
+    public function getMaxOutlets(): ?int
+    {
+        return $this->getSubscriptionTier()?->max_outlets;
+    }
+
+    /**
+     * Check if user can create more outlets.
+     */
+    public function canCreateOutlet(): bool
+    {
+        $maxOutlets = $this->getMaxOutlets();
+
+        // Unlimited outlets
+        if (is_null($maxOutlets)) {
+            return true;
+        }
+
+        $currentOutlets = $this->outletsOwned()->count();
+        return $currentOutlets < $maxOutlets;
+    }
+
+    /**
+     * Clear subscription cache for this user.
+     */
+    public function clearSubscriptionCache(): void
+    {
+        Cache::forget("user_{$this->id}_has_subscription");
+        Cache::flush(); // Also clear feature cache
+    }
 }
+

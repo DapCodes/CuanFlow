@@ -34,6 +34,8 @@ use App\Http\Controllers\ResellerApplicationController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\SubscriptionPaymentController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskLabelController;
@@ -68,7 +70,27 @@ require __DIR__.'/auth.php';
 // PROTECTED ROUTES (Auth & Verified)
 // =========================================================================
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'subscription.check'])->group(function () {
+
+
+
+    // ---------------------------------------------------------------------
+    // Subscription & Billing
+    // ---------------------------------------------------------------------
+    Route::prefix('subscription')->name('subscription.')->group(function () {
+        Route::get('/', [SubscriptionController::class, 'index'])->name('index');
+        Route::post('/select-plan', [SubscriptionController::class, 'selectPlan'])->name('select-plan');
+        Route::get('/payment', [SubscriptionPaymentController::class, 'show'])->name('payment');
+        Route::get('/payment/finish', [SubscriptionPaymentController::class, 'finish'])->name('payment.finish');
+        Route::get('/payment/error', [SubscriptionPaymentController::class, 'error'])->name('payment.error');
+        
+        // Trial
+        Route::post('/trial/request', [SubscriptionController::class, 'requestTrial'])->name('trial.request');
+        Route::get('/trial/verification', function () {
+            return view('subscription.trial-verification');
+        })->name('trial-verification');
+        Route::post('/trial/verification', [SubscriptionController::class, 'storeTrialVerification'])->name('trial-verification.store');
+    });
 
     // ---------------------------------------------------------------------
     // Dashboard

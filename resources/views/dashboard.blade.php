@@ -1275,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
       welcomeModal.classList.remove('hidden');
       welcomeModal.offsetHeight;
-    }, 600);
+    }, 1000); // Wait for page to fade-in fully
   }
 
   if (startWelcomeTourBtn) {
@@ -1731,6 +1731,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+@include('subscription.modal')
 
 @push('scripts')
 <script>

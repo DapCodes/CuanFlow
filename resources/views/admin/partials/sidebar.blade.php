@@ -117,6 +117,94 @@
             </li>
 
             <!-- Section Label -->
+            <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Langganan</p>
+
+            <!-- Subscription Management (Collapsible) -->
+            <li x-data="{ open: {{ request()->routeIs('admin.subscription-*') ? 'true' : 'false' }} }">
+                <button @click="open = !open" 
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-gray-500 hover:bg-gray-50 hover:text-gray-900 {{ request()->routeIs('admin.subscription-*') ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-sm shadow-emerald-100/50' : '' }}">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-gem w-5 text-center text-lg {{ request()->routeIs('admin.subscription-*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                        <span class="text-sm">Manajemen Langganan</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @php
+                            $pendingTrialCount = \App\Models\TrialVerificationRequest::pending()->count();
+                        @endphp
+                        @if($pendingTrialCount > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold leading-none text-white bg-red-500 rounded-full">
+                                {{ $pendingTrialCount }}
+                            </span>
+                        @endif
+                        <i class="fas fa-chevron-down text-[10px] transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                    </div>
+                </button>
+                
+                <ul x-show="open" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    style="display: none;"
+                    class="mt-1 ml-4 space-y-1 border-l border-gray-100 pl-4 py-2">
+                    
+                    <li>
+                        <a href="{{ route('admin.subscription-tiers.index') }}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.subscription-tiers.*') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                            <i class="fas fa-layer-group w-4 text-center {{ request()->routeIs('admin.subscription-tiers.*') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                            <span>Tier Langganan</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.subscription-plans.index') }}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.subscription-plans.*') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                            <i class="fas fa-calendar-alt w-4 text-center {{ request()->routeIs('admin.subscription-plans.*') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                            <span>Paket Langganan</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.subscription-features.index') }}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.subscription-features.*') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                            <i class="fas fa-star w-4 text-center {{ request()->routeIs('admin.subscription-features.*') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                            <span>Fitur Tier</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.subscription-trial-requests.index') }}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.subscription-trial-requests.*') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                            <i class="fas fa-clock w-4 text-center {{ request()->routeIs('admin.subscription-trial-requests.*') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                            <span>Permintaan Trial</span>
+                            @if($pendingTrialCount > 0)
+                                <span class="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold leading-none text-white bg-red-400 rounded-full">
+                                    {{ $pendingTrialCount }}
+                                </span>
+                            @endif
+                        </a>
+                    </li>
+                    <li>
+                         <a href="{{ route('admin.subscription-users.index') }}" 
+                            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.subscription-users.*') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                             <i class="fas fa-users w-4 text-center {{ request()->routeIs('admin.subscription-users.*') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                             <span>Daftar Pelanggan</span>
+                         </a>
+                    </li>
+                    <li>
+                         <a href="{{ route('admin.subscription-payments.index') }}" 
+                            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.subscription-payments.*') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                             <i class="fas fa-receipt w-4 text-center {{ request()->routeIs('admin.subscription-payments.*') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                             <span>Transaksi</span>
+                         </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.subscription-settings.edit') }}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.subscription-settings.*') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                            <i class="fas fa-sliders-h w-4 text-center {{ request()->routeIs('admin.subscription-settings.*') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                            <span>Pengaturan</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Section Label -->
             <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Konten</p>
 
             <!-- Landing Pages -->

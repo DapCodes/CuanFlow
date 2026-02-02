@@ -27,6 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'subscription.check' => \App\Http\Middleware\CheckSubscription::class,
+            'feature.access' => \App\Http\Middleware\CheckFeatureAccess::class,
+            'limit.outlet' => \App\Http\Middleware\CheckOutletLimit::class,
         ]);
     })
     ->withSchedule(function ($schedule) {

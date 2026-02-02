@@ -35,5 +35,20 @@ class AppServiceProvider extends ServiceProvider
                 ]
             );
         });
+
+        // Blade directive: Check if user has active subscription
+        \Illuminate\Support\Facades\Blade::if('hasSubscription', function () {
+            return auth()->check() && (auth()->user()->hasRole('admin') || auth()->user()->hasActiveSubscription());
+        });
+
+        // Blade directive: Check feature access
+        \Illuminate\Support\Facades\Blade::if('canAccessFeature', function ($featureName) {
+            return auth()->check() && auth()->user()->canAccessFeature($featureName);
+        });
+
+        // Blade directive: Check outlet limit
+        \Illuminate\Support\Facades\Blade::if('canCreateOutlet', function () {
+            return auth()->check() && (auth()->user()->hasRole('admin') || auth()->user()->canCreateOutlet());
+        });
     }
 }

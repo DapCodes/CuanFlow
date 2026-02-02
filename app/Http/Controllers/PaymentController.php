@@ -479,6 +479,8 @@ class PaymentController extends Controller
             // DETECT: Route to appropriate handler
             if (str_starts_with($orderId, 'DEBT-')) {
                 return $this->handleDebtNotification($notification);
+            } elseif (str_starts_with($orderId, 'SUBS-')) {
+                return $this->handleSubscriptionNotification($notification);
             } else {
                 return $this->handleSaleNotification($notification);
             }
@@ -598,6 +600,65 @@ class PaymentController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Pending/Cancelled'], 200);
+    }
+
+    private function handleSubscriptionNotification($notification)
+    {
+        $transaction = \App\Models\PaymentTransaction::where('transaction_id', $notification->order_id)->first();
+        if (!$transaction) {
+             return response()->json(['message' => 'Transaction not found'], 404);
+        }
+
+        if (in_array($notification->transaction_status, ['capture', 'settlement'])) {
+            // Avoid duplicate processing
+            if ($transaction->isSuccessful()) {
+                return response()->json(['success' => true, 'message' => 'Already processed'], 200);
+            }
+            
+            DB::beginTransaction();
+            try {
+                // 1. Mark Transaction as Successful
+                $transaction->markSuccessful((array)$notification, $notification->payment_type ?? 'qris');
+                
+                // 2. Activate Subscription
+                $user = $transaction->user;
+                $plan = $transaction->plan;
+                
+                // End current active subscription if exists
+                if ($user->subscription) {
+                    $user->subscription->update(['status' => 'expired']);
+                }
+
+                // Create New Subscription
+                $subscription = $user->subscriptions()->create([
+                    'tier_id' => $transaction->tier_id,
+                    'plan_id' => $transaction->plan_id,
+                    'status' => 'active',
+                    'started_at' => now(),
+                    'expires_at' => now()->addMonths($plan->duration_months ?? 1),
+                    'is_trial' => false,
+                ]);
+
+                // Link transaction to subscription
+                $transaction->update(['subscription_id' => $subscription->id]);
+                
+                // Clear Cache
+                $user->clearSubscriptionCache();
+
+                DB::commit();
+                return response()->json(['success' => true], 200);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::error('Subscription Payment Error: ' . $e->getMessage());
+                return response()->json(['message' => 'Failed processing'], 500);
+            }
+        } elseif (in_array($notification->transaction_status, ['expire', 'cancel', 'deny'])) {
+             $transaction->markFailed((array)$notification);
+             return response()->json(['success' => true], 200);
+        }
+
+        return response()->json(['message' => 'Pending'], 200);
     }
 
     public function midtransFinish(Request $request)
