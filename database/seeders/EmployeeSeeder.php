@@ -35,21 +35,21 @@ class EmployeeSeeder extends Seeder
                 'email' => 'sptify415@gmail.com',
                 'role' => 'inventaris',
             ],
-            [
-                'name' => 'D4pfft Inventaris 2',
-                'email' => 'd4pfft123@gmail.com',
-                'role' => 'inventaris',
-            ],
+            // [
+            //     'name' => 'D4pfft Inventaris 2',
+            //     'email' => 'd4pfft123@gmail.com',
+            //     'role' => 'inventaris',
+            // ],
             [
                 'name' => 'Atrandha Produksi 1',
                 'email' => 'atrandhaeffu@gmail.com',
                 'role' => 'produksi',
             ],
-            [
-                'name' => 'Claude Produksi 2',
-                'email' => 'claudedaffaramadhan@gmail.com',
-                'role' => 'produksi',
-            ],
+            // [
+            //     'name' => 'Claude Produksi 2',
+            //     'email' => 'claudedaffaramadhan@gmail.com',
+            //     'role' => 'produksi',
+            // ],
         ];
 
         foreach ($employees as $employeeData) {

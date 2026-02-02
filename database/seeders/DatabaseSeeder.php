@@ -28,6 +28,11 @@ class DatabaseSeeder extends Seeder
             // DiscountSeeder::class,
             AdminLandingPageSeeder::class,
             // ProductStockSeeder::class,
+            FeaturesSeeder::class,
+            SubscriptionTiersSeeder::class,
+            TierFeaturesSeeder::class,
+            SubscriptionPlansSeeder::class,
+            SubscriptionSettingsSeeder::class,
         ]);
 
         // Buat Akun Admin
