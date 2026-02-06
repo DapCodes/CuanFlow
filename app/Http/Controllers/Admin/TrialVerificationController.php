@@ -43,21 +43,28 @@ class TrialVerificationController extends Controller
 
         // Start trial for user
         $user = $trialRequest->user;
-        $userSubscription = $user->subscription;
         
-        // If user has a pending verification subscription, activate it as trial
-        if ($userSubscription && $userSubscription->isPendingVerification()) {
-            $userSubscription->startTrial();
+        // Get limits of finding subscription (don't use $user->subscription relationship as it filters active status)
+        $latestSubscription = $user->subscriptions()->latest()->first();
+        
+        // If user has any subscription, activate it as trial (updates existing data)
+        if ($latestSubscription) {
+            $latestSubscription->startTrial(
+                \App\Models\SubscriptionSetting::getTrialDays()
+            );
         } else {
-            // Create new trial if none exists
+            // Create new trial if absolutely no subscription exists (fallback)
             $user->subscriptions()->create([
-                'tier_id' => 1, // Default to lowest tier or find specific tier
+                'tier_id' => 1, // Default to lowest tier
                 'status' => 'trial',
                 'is_trial' => true,
                 'started_at' => now(),
                 'trial_ends_at' => now()->addDays(\App\Models\SubscriptionSetting::getTrialDays()),
             ]);
         }
+            
+        // Clear cache to ensure immediate effect
+        $user->clearSubscriptionCache();
 
         return redirect()->route('admin.subscription-trial-requests.index')
             ->with('success', 'Permintaan trial disetujui. Email notifikasi akan dikirim ke user.');
@@ -75,10 +82,11 @@ class TrialVerificationController extends Controller
 
         $trialRequest->reject(auth()->user(), $request->reason);
         
-        // Cancel pending subscription
-        $userSubscription = $trialRequest->user->subscription;
-        if ($userSubscription && $userSubscription->isPendingVerification()) {
-            $userSubscription->cancel();
+        // Cancel pending subscription if exists
+        $latestSubscription = $trialRequest->user->subscriptions()->latest()->first();
+        
+        if ($latestSubscription && $latestSubscription->isPendingVerification()) {
+            $latestSubscription->cancel();
         }
 
         return redirect()->route('admin.subscription-trial-requests.index')

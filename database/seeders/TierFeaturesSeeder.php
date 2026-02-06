@@ -31,6 +31,7 @@ class TierFeaturesSeeder extends Seeder
             'outlet_policies',
             'account_settings',
             'help_faq',
+            // 'clara_ai'
         ];
 
         // Gold tier features (Silver + 6 additional = 25 total)
