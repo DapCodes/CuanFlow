@@ -542,6 +542,34 @@
 <main class="flex-grow flex items-center justify-center py-8 px-4">
     <div class="w-full max-w-6xl">
 
+    {{-- Subscription Grace Period Warning --}}
+    @if(auth()->user()->subscription && auth()->user()->subscription->isInGracePeriod())
+    <div class="max-w-4xl mx-auto mb-6 px-4">
+        <div class="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden group transition-all hover:shadow-lg">
+            {{-- Animated Background Shine --}}
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]"></div>
+            
+            <div class="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 shadow-sm">
+                <i class="fa-solid fa-triangle-exclamation text-2xl animate-pulse"></i>
+            </div>
+            
+            <div class="flex-grow text-center sm:text-left">
+                <h3 class="text-amber-900 font-bold text-base sm:text-lg mb-0.5">Masa Tenggang Berlangganan</h3>
+                <p class="text-amber-800/80 text-sm leading-relaxed">
+                    Langganan Anda telah berakhir. Anda memiliki <span class="font-bold text-amber-900">{{ auth()->user()->subscription->grace_days_remaining }} hari lagi</span> sebelum akses fitur benar-benar dihentikan.
+                </p>
+            </div>
+            
+            <div class="flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+                <a href="{{ route('subscription.index') }}" class="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-amber-200 transform hover:-translate-y-0.5 active:translate-y-0">
+                    Beli Paket Sekarang
+                    <i class="fa-solid fa-arrow-right ml-2 text-sm italic group-hover:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Search Bar Component --}}
     <div class="max-w-3xl mx-auto mb-8 px-4 relative z-30">
         <div class="relative group">
@@ -579,6 +607,7 @@
 <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-6 max-w-8xl w-full">
 
     <!-- OPERASIONAL UTAMA (Prioritas Tertinggi) -->
+@canAccessFeature('pos')
 @can('akses pos')
 <a href="{{ route('pos.index') }}"
    class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300 relative"
@@ -608,8 +637,10 @@
     </span>
 </a>
 @endcan
+@endcanAccessFeature
 
 
+@canAccessFeature('sales_management')
 @can('lihat penjualan')
     <a href="{{ route('sales.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -624,7 +655,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('discount_management')
 @can('lihat diskon')
     <a href="{{ route('discounts.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -639,7 +672,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('finance_management')
 @can('lihat keuangan')
     <a href="{{ route('finance.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -654,7 +689,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('other_income')
 @can('buat pemasukan')
     <a href="{{ route('expenses.index', ['type' => 'income']) }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -672,7 +709,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('operational_costs')
 @can('buat pengeluaran')
     <a href="{{ route('expenses.index', ['type' => 'expense']) }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -690,7 +729,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('balance_withdrawal')
 @can('buat penarikan')
     <a href="{{ route('withdraw.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -705,7 +746,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('invoice_list')
 @can('lihat invoice')
     <a href="{{ route('invoices.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -720,7 +763,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('payment_methods')
 @can('lihat metode pembayaran')
     <a href="{{ route('outlet-payment-links.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -735,7 +780,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('task_management')
 @can('tasks.view')
     <a href="{{ route('tasks.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -750,8 +797,10 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
     <!-- MONITORING & ANALISIS -->
+@canAccessFeature('dashboard')
 @can('lihat statistik')
     <a href="{{ route('statistics.index') }}"
        class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -766,8 +815,10 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
 
+@canAccessFeature('reports')
 @can('lihat laporan')
     <a href="{{ route('reports.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -782,8 +833,10 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
     <!-- MANAJEMEN PRODUK & INVENTORI -->
+@canAccessFeature('products_recipes')
 @can('lihat produk')
     <a href="{{ route('products-hpp.index') }}"
        class="menu-card nav-link group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -798,7 +851,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('raw_materials')
 @can('lihat bahan baku')
     <a href="{{ route('raw-materials.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -813,7 +868,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('suppliers')
 @can('lihat supplier')
     <a href="{{ route('raw-materials.suppliers') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -828,7 +885,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('reseller_app')
 @can('lihat reseller applications')
     <a href="{{ route('reseller-applications.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -843,7 +902,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('production')
 @can('lihat produksi')
     <a href="{{ route('production.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -858,7 +919,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('stock_opname')
 @can('lihat stock opname')
     <a href="{{ route('stock-opname.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -873,7 +936,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('stock_transfer')
 @can('lihat stock transfer')
     <a href="{{ route('stock-transfers.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -888,8 +953,10 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
     <!-- PENGATURAN BISNIS -->
+@canAccessFeature('multi_outlet')
 @can('lihat outlet')
     <a href="{{ route('outlets.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -904,7 +971,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('landing_page')
 @can('lihat landing page')
     <a href="{{ route('landing-pages.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -919,7 +988,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('testimonials')
 @can('lihat testimoni')
     <a href="{{ route('testimonials.index') }}"
         class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -934,7 +1005,9 @@
             </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('employee_management')
 @can('lihat pegawai')
     <a href="{{ route('employees.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -949,7 +1022,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('customer_management')
 @can('lihat pelanggan')
     <a href="{{ route('customer-debts.index') }}"
     class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -964,7 +1039,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('table_management')
 @can('lihat meja')
     <a href="{{ route('tables.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -979,8 +1056,10 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
     <!-- AI & INSIGHT -->
+@canAccessFeature('ai_insights')
 @can('lihat ai insights')
     <a href="{{ route('ai-insights.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -995,7 +1074,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('clara_ai')
 @can('akses clara ai')
     <a href="{{ route('clara-ai.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -1011,8 +1092,10 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
     <!-- BANTUAN & PENGATURAN -->
+@canAccessFeature('outlet_policies')
 @can('lihat kebijakan outlet')
     <a href="{{ route('outlet-policies.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -1027,7 +1110,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('account_settings')
 @can('edit profil')
     <a href="{{ route('profile.edit') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -1042,7 +1127,9 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
+@canAccessFeature('help_faq')
 @can('lihat faq')
     <a href="{{ route('faqs.index') }}"
        class="menu-card group block text-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300"
@@ -1057,6 +1144,7 @@
         </span>
     </a>
 @endcan
+@endcanAccessFeature
 
 </div>
 

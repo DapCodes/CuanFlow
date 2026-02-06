@@ -48,16 +48,19 @@ class SubscriptionFeatureController extends Controller
             ->with('success', 'Fitur berhasil ditambahkan.');
     }
 
-    public function edit(Feature $subscriptionFeature)
+    public function edit(Feature $feature)
     {
         $categories = Feature::getCategories();
-        return view('admin.subscription.features.edit', compact('subscriptionFeature', 'categories'));
+        return view('admin.subscription.features.edit', [
+            'subscriptionFeature' => $feature,
+            'categories' => $categories
+        ]);
     }
 
-    public function update(Request $request, Feature $subscriptionFeature)
+    public function update(Request $request, Feature $feature)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:50', 'unique:features,name,' . $subscriptionFeature->id],
+            'name' => ['required', 'string', 'max:50', 'unique:features,name,' . $feature->id],
             'display_name' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string'],
@@ -67,7 +70,7 @@ class SubscriptionFeatureController extends Controller
             'is_active' => ['boolean'],
         ]);
 
-        $subscriptionFeature->update([
+        $feature->update([
             'name' => $validated['name'],
             'display_name' => $validated['display_name'],
             'category' => $validated['category'],
@@ -82,10 +85,10 @@ class SubscriptionFeatureController extends Controller
             ->with('success', 'Fitur berhasil diperbarui.');
     }
 
-    public function destroy(Feature $subscriptionFeature)
+    public function destroy(Feature $feature)
     {
-        $subscriptionFeature->tiers()->detach(); // Pivot table will do this automatically but clear just in case
-        $subscriptionFeature->delete();
+        $feature->tiers()->detach(); // Pivot table will do this automatically but clear just in case
+        $feature->delete();
 
         return redirect()->route('admin.subscription-features.index')
             ->with('success', 'Fitur berhasil dihapus.');

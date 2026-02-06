@@ -80,12 +80,12 @@
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('admin.subscription-features.edit', $feature) }}" 
+                                <a href="{{ route('admin.subscription-features.edit', ['feature' => $feature->id]) }}" 
                                    class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                                    title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('admin.subscription-features.destroy', $feature) }}" method="POST" 
+                                <form action="{{ route('admin.subscription-features.destroy', ['feature' => $feature->id]) }}" method="POST" 
                                       onsubmit="return confirm('Yakin ingin menghapus fitur ini?')">
                                     @csrf
                                     @method('DELETE')

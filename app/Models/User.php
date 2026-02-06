@@ -203,6 +203,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Check if user can access a specific feature.
+     * Uses centralized FeatureAccessService for consistent logic.
      */
     public function canAccessFeature(string $featureName): bool
     {
@@ -211,14 +212,8 @@ class User extends Authenticatable implements MustVerifyEmail
             return true;
         }
 
-        return Cache::remember("user_{$this->id}_feature_{$featureName}", 300, function () use ($featureName) {
-            $tier = $this->getSubscriptionTier();
-            if (!$tier) {
-                return false;
-            }
-
-            return $tier->hasFeature($featureName);
-        });
+        $accessService = app(\App\Services\FeatureAccessService::class);
+        return $accessService->canAccess($this, $featureName);
     }
 
     /**

@@ -49,7 +49,7 @@
                 </div>
                 
                 <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-                    <a href="{{ route('admin.subscription-tiers.edit', $tier) }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">Edit Paket</a>
+                    <a href="{{ route('admin.subscription-tiers.edit', ['tier' => $tier->id]) }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">Edit Paket</a>
                     <!-- Custom delete form if needed or link -->
                 </div>
             </div>

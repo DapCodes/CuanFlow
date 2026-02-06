@@ -123,13 +123,43 @@ class UserSubscription extends Model
      */
     public function getDaysRemainingAttribute(): ?int
     {
+        if ($this->status === self::STATUS_EXPIRED) {
+            return 0;
+        }
+
         $expiryDate = $this->is_trial ? $this->trial_ends_at : $this->expires_at;
 
         if (is_null($expiryDate)) {
             return null; // Unlimited
         }
 
-        return max(0, Carbon::now()->diffInDays($expiryDate, false));
+        return max(0, (int) Carbon::now()->diffInDays($expiryDate, false));
+    }
+
+    /**
+     * Get days remaining in grace period.
+     */
+    public function getGraceDaysRemainingAttribute(): int
+    {
+        // Grace period applies if status is EXPIRED or (ACTIVE/TRIAL with passed date)
+        if ($this->status === self::STATUS_CANCELLED || $this->status === self::STATUS_PENDING_VERIFICATION) {
+            return 0;
+        }
+
+        // If technically active (valid date), no grace period needed
+        if ($this->isActive()) {
+            return 0;
+        }
+
+        $graceDays = SubscriptionSetting::getGracePeriodDays();
+        $expiryDate = $this->is_trial ? $this->trial_ends_at : $this->expires_at;
+
+        if (is_null($expiryDate)) {
+            return 0;
+        }
+
+        $daysSinceExpiry = (int) Carbon::now()->diffInDays($expiryDate, false);
+        return max(0, $graceDays + $daysSinceExpiry);
     }
 
     /**
@@ -137,18 +167,11 @@ class UserSubscription extends Model
      */
     public function isInGracePeriod(): bool
     {
-        if ($this->status !== self::STATUS_EXPIRED) {
-            return false;
+        if ($this->grace_days_remaining > 0) {
+            return true;
         }
-
-        $graceDays = SubscriptionSetting::getGracePeriodDays();
-        $expiryDate = $this->is_trial ? $this->trial_ends_at : $this->expires_at;
-
-        if (is_null($expiryDate)) {
-            return false;
-        }
-
-        return Carbon::now()->diffInDays($expiryDate, false) >= -$graceDays;
+        
+        return false;
     }
 
     /**

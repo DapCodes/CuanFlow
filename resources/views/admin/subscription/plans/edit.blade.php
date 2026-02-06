@@ -23,11 +23,11 @@
                 <p class="text-sm text-gray-500 mt-1">Perbarui harga atau status aktif opsi durasi ini</p>
             </div>
             <div class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-xs">
-                {{ $subscriptionPlan->tier->display_name }}
+                {{ $subscriptionPlan->tier->display_name ?? 'Tier Deleted' }}
             </div>
         </div>
 
-        <form action="{{ route('admin.subscription-plans.update', $subscriptionPlan) }}" method="POST" class="p-8 space-y-6" x-data="{ isUnlimited: {{ $subscriptionPlan->is_unlimited ? 'true' : 'false' }} }">
+        <form action="{{ route('admin.subscription-plans.update', ['plan' => $subscriptionPlan->id]) }}" method="POST" class="p-8 space-y-6" x-data="{ isUnlimited: {{ $subscriptionPlan->is_unlimited ? 'true' : 'false' }} }">
             @csrf
             @method('PUT')
 

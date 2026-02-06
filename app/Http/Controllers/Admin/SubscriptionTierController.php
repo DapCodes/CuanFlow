@@ -59,19 +59,23 @@ class SubscriptionTierController extends Controller
             ->with('success', 'Paket berlangganan berhasil dibuat.');
     }
 
-    public function edit(SubscriptionTier $subscriptionTier)
+    public function edit(SubscriptionTier $tier)
     {
         $features = Feature::orderBy('category')->orderBy('sort_order')->get()->groupBy('category');
-        $subscriptionTier->load('features');
-        $selectedFeatures = $subscriptionTier->features->pluck('id')->toArray();
+        $tier->load('features');
+        $selectedFeatures = $tier->features->pluck('id')->toArray();
 
-        return view('admin.subscription.tiers.edit', compact('subscriptionTier', 'features', 'selectedFeatures'));
+        return view('admin.subscription.tiers.edit', [
+            'subscriptionTier' => $tier,
+            'features' => $features,
+            'selectedFeatures' => $selectedFeatures
+        ]);
     }
 
-    public function update(Request $request, SubscriptionTier $subscriptionTier)
+    public function update(Request $request, SubscriptionTier $tier)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:50', 'unique:subscription_tiers,name,' . $subscriptionTier->id],
+            'name' => ['required', 'string', 'max:50', 'unique:subscription_tiers,name,' . $tier->id],
             'display_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
@@ -83,7 +87,7 @@ class SubscriptionTierController extends Controller
             'features.*' => ['exists:features,id'],
         ]);
 
-        $subscriptionTier->update([
+        $tier->update([
             'name' => $validated['name'],
             'display_name' => $validated['display_name'],
             'description' => $validated['description'],
@@ -95,21 +99,21 @@ class SubscriptionTierController extends Controller
         ]);
 
         if (isset($validated['features'])) {
-            $subscriptionTier->features()->sync($validated['features']);
-            $this->updateFeaturesListJson($subscriptionTier);
+            $tier->features()->sync($validated['features']);
+            $this->updateFeaturesListJson($tier);
         }
 
         return redirect()->route('admin.subscription-tiers.index')
             ->with('success', 'Paket berlangganan berhasil diperbarui.');
     }
 
-    public function destroy(SubscriptionTier $subscriptionTier)
+    public function destroy(SubscriptionTier $tier)
     {
-        if ($subscriptionTier->subscriptions()->exists()) {
+        if ($tier->subscriptions()->exists()) {
             return back()->with('error', 'Tidak dapat menghapus paket yang sedang digunakan oleh pelanggan.');
         }
 
-        $subscriptionTier->delete();
+        $tier->delete();
 
         return redirect()->route('admin.subscription-tiers.index')
             ->with('success', 'Paket berlangganan berhasil dihapus.');

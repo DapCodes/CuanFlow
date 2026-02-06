@@ -123,26 +123,27 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     Route::post('/change-outlet', [ChangeOutletController::class, 'switch'])->name('change.outlet');
 
     // Core Resources
-    Route::resource('outlets', OutletInformationController::class);
-    Route::resource('outlet-policies', OutletPolicyController::class);
+    // Core outlet resources (multi_outlet feature for managing multiple outlets)
+    Route::resource('outlets', OutletInformationController::class)->middleware('feature.access:multi_outlet');
+    Route::resource('outlet-policies', OutletPolicyController::class)->middleware('feature.access:outlet_policies');
 
     // Outlet Payment Links
-    Route::post('outlet-payment-links/{outletPaymentLink}/toggle-status', [OutletPaymentLinkController::class, 'toggleStatus'])->name('outlet-payment-links.toggle-status');
-    Route::resource('outlet-payment-links', OutletPaymentLinkController::class);
+    Route::post('outlet-payment-links/{outletPaymentLink}/toggle-status', [OutletPaymentLinkController::class, 'toggleStatus'])->name('outlet-payment-links.toggle-status')->middleware('feature.access:payment_methods');
+    Route::resource('outlet-payment-links', OutletPaymentLinkController::class)->middleware('feature.access:payment_methods');
 
     // ---------------------------------------------------------------------
     // Employee Management
     // ---------------------------------------------------------------------
-    Route::post('employees/{employee}/toggle-status', [EmployeeController::class, 'toggleStatus'])->name('employees.toggle-status');
-    Route::post('employees/{employee}/resend-verification', [EmployeeController::class, 'resendVerification'])->name('employees.resend-verification');
-    Route::resource('employees', EmployeeController::class);
+    Route::post('employees/{employee}/toggle-status', [EmployeeController::class, 'toggleStatus'])->name('employees.toggle-status')->middleware('feature.access:employee_management');
+    Route::post('employees/{employee}/resend-verification', [EmployeeController::class, 'resendVerification'])->name('employees.resend-verification')->middleware('feature.access:employee_management');
+    Route::resource('employees', EmployeeController::class)->middleware('feature.access:employee_management');
 
     // ---------------------------------------------------------------------
     // Product & Inventory Management
     // ---------------------------------------------------------------------
 
     // Product HPP / Menu
-    Route::prefix('products-hpp')->name('products-hpp.')->group(function () {
+    Route::prefix('products-hpp')->name('products-hpp.')->middleware('feature.access:products_recipes')->group(function () {
         Route::get('/generate-code', [ProductHppController::class, 'generateCode'])->name('generate-code');
         Route::get('/generate-barcode', [ProductHppController::class, 'generateBarcode'])->name('generate-barcode');
         Route::get('/ajax/raw-material-price', [ProductHppController::class, 'getRawMaterialPrice'])->name('ajax.raw-material-price');
@@ -152,10 +153,10 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::get('/{product}/barcode-download', [ProductHppController::class, 'barcodeDownload'])->name('barcode-download');
         Route::post('/{product}/toggle-status', [ProductHppController::class, 'toggleStatus'])->name('toggle-status');
     });
-    Route::resource('products-hpp', ProductHppController::class)->parameters(['products-hpp' => 'product']);
+    Route::resource('products-hpp', ProductHppController::class)->parameters(['products-hpp' => 'product'])->middleware('feature.access:products_recipes');
 
     // Raw Materials
-    Route::prefix('raw-materials')->name('raw-materials.')->group(function () {
+    Route::prefix('raw-materials')->name('raw-materials.')->middleware('feature.access:raw_materials')->group(function () {
         // Main Raw Material CRUD (Custom methods)
         Route::get('/', [RawMaterialAndSupplierController::class, 'indexRawMaterial'])->name('index');
         Route::get('/create', [RawMaterialAndSupplierController::class, 'createRawMaterial'])->name('create');
@@ -172,18 +173,20 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::get('/{rawMaterial}/stock-history', [RawMaterialAndSupplierController::class, 'stockHistory'])->name('stock-history');
         Route::post('/{rawMaterial}/remove-expired', [RawMaterialAndSupplierController::class, 'removeExpired'])->name('remove-expired');
 
-        // Supplier CRUD (Custom methods)
-        Route::get('/suppliers', [RawMaterialAndSupplierController::class, 'indexSupplier'])->name('suppliers'); // Moved index here to match resource-like feel
-        Route::get('/suppliers/create', [RawMaterialAndSupplierController::class, 'createSupplier'])->name('suppliers.create');
-        Route::post('/suppliers', [RawMaterialAndSupplierController::class, 'storeSupplier'])->name('suppliers.store');
-        Route::get('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'showSupplier'])->name('suppliers.show');
-        Route::get('/suppliers/{supplier}/edit', [RawMaterialAndSupplierController::class, 'editSupplier'])->name('suppliers.edit');
-        Route::put('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'updateSupplier'])->name('suppliers.update');
-        Route::delete('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'destroySupplier'])->name('suppliers.destroy');
+        // Supplier CRUD (uses suppliers feature)
+        Route::middleware('feature.access:suppliers')->group(function () {
+            Route::get('/suppliers', [RawMaterialAndSupplierController::class, 'indexSupplier'])->name('suppliers');
+            Route::get('/suppliers/create', [RawMaterialAndSupplierController::class, 'createSupplier'])->name('suppliers.create');
+            Route::post('/suppliers', [RawMaterialAndSupplierController::class, 'storeSupplier'])->name('suppliers.store');
+            Route::get('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'showSupplier'])->name('suppliers.show');
+            Route::get('/suppliers/{supplier}/edit', [RawMaterialAndSupplierController::class, 'editSupplier'])->name('suppliers.edit');
+            Route::put('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'updateSupplier'])->name('suppliers.update');
+            Route::delete('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'destroySupplier'])->name('suppliers.destroy');
+        });
     });
 
     // Production
-    Route::prefix('production')->name('production.')->group(function () {
+    Route::prefix('production')->name('production.')->middleware('feature.access:production')->group(function () {
         Route::get('/', [ProductionController::class, 'index'])->name('index');
         Route::get('/create', [ProductionController::class, 'create'])->name('create');
         Route::post('/', [ProductionController::class, 'store'])->name('store');
@@ -199,7 +202,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     });
 
     // Stock Opname
-    Route::prefix('stock-opname')->name('stock-opname.')->group(function () {
+    Route::prefix('stock-opname')->name('stock-opname.')->middleware('feature.access:stock_opname')->group(function () {
         Route::get('/', [StockOpnameController::class, 'index'])->name('index');
         Route::get('/create', [StockOpnameController::class, 'create'])->name('create');
         Route::post('/', [StockOpnameController::class, 'store'])->name('store');
@@ -209,8 +212,8 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::delete('/{stockOpname}', [StockOpnameController::class, 'destroy'])->name('destroy');
     });
 
-    // Stock Transfer
-    Route::prefix('stock-transfers')->name('stock-transfers.')->group(function () {
+    // Stock Transfer (Platinum only)
+    Route::prefix('stock-transfers')->name('stock-transfers.')->middleware('feature.access:stock_transfer')->group(function () {
         Route::get('/', [StockTransferController::class, 'index'])->name('index');
         Route::get('/create', [StockTransferController::class, 'create'])->name('create');
         Route::post('/', [StockTransferController::class, 'store'])->name('store');
@@ -255,14 +258,14 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     });
 
     // Discount Management (Admin/Settings)
-    Route::prefix('discounts')->name('discounts.')->group(function () {
+    Route::prefix('discounts')->name('discounts.')->middleware('feature.access:discount_management')->group(function () {
         Route::get('/generate-code', [DiscountController::class, 'generateCode'])->name('generate-code');
         Route::post('/{discount}/toggle-status', [DiscountController::class, 'toggleStatus'])->name('toggle-status');
     });
-    Route::resource('discounts', DiscountController::class);
+    Route::resource('discounts', DiscountController::class)->middleware('feature.access:discount_management');
 
-    // Sales
-    Route::prefix('sales')->name('sales.')->group(function () {
+    // Sales (feature: sales_management)
+    Route::prefix('sales')->name('sales.')->middleware('feature.access:sales_management')->group(function () {
         Route::get('/', [SaleController::class, 'index'])->name('index');
         Route::get('/daily', [SaleController::class, 'daily'])->name('daily');
         Route::get('/{sale}', [SaleController::class, 'show'])->name('show');
@@ -285,13 +288,13 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     Route::get('/receipt/print/{id}', [ReceiptController::class, 'printReceipt'])->name('receipt.print');
     Route::get('/receipt/download/{id}', [ReceiptController::class, 'download'])->name('receipt.download');
 
-    // Tables Management
-    Route::prefix('tables')->name('tables.')->group(function () {
+    // Tables Management (feature: table_management)
+    Route::prefix('tables')->name('tables.')->middleware('feature.access:table_management')->group(function () {
         Route::get('/generate-code', [TableController::class, 'generateCode'])->name('generate-code');
         Route::post('/{table}/toggle-status', [TableController::class, 'toggleStatus'])->name('toggle-status');
         Route::post('/{table}/quick-toggle', [TableController::class, 'quickToggle'])->name('quick-toggle');
     });
-    Route::resource('tables', TableController::class)->except(['show']); // Show missing in controller
+    Route::resource('tables', TableController::class)->except(['show'])->middleware('feature.access:table_management');
     Route::get('/api/tables', [TableController::class, 'getTablesApi']);
     Route::post('/api/outlet/toggle-table-system', [TableController::class, 'toggleTableSystemApi']);
 
@@ -299,22 +302,26 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     // Finance
     // ---------------------------------------------------------------------
 
-    // Main Finance
-    Route::prefix('finance')->name('finance.')->group(function () {
+    // Main Finance (feature: finance_management)
+    Route::prefix('finance')->name('finance.')->middleware('feature.access:finance_management')->group(function () {
         Route::get('/', [FinanceController::class, 'index'])->name('index');
 
-        // Income
-        Route::get('/income/create', [FinanceController::class, 'createIncome'])->name('income.create');
-        Route::post('/income', [FinanceController::class, 'storeIncome'])->name('income.store');
-        Route::get('/income/{expense}/edit', [FinanceController::class, 'editIncome'])->name('income.edit');
-        Route::put('/income/{expense}', [FinanceController::class, 'updateIncome'])->name('income.update');
+        // Income (feature: other_income)
+        Route::middleware('feature.access:other_income')->group(function () {
+            Route::get('/income/create', [FinanceController::class, 'createIncome'])->name('income.create');
+            Route::post('/income', [FinanceController::class, 'storeIncome'])->name('income.store');
+            Route::get('/income/{expense}/edit', [FinanceController::class, 'editIncome'])->name('income.edit');
+            Route::put('/income/{expense}', [FinanceController::class, 'updateIncome'])->name('income.update');
+        });
 
-        // Expense (Legacy / Specific)
-        Route::get('/expense/create', [FinanceController::class, 'createExpense'])->name('expense.create');
-        Route::post('/expense', [FinanceController::class, 'storeExpense'])->name('expense.store');
-        Route::get('/expense/{expense}/edit', [FinanceController::class, 'editExpense'])->name('expense.edit');
-        Route::put('/expense/{expense}', [FinanceController::class, 'updateExpense'])->name('expense.update');
-        Route::delete('/{expense}', [FinanceController::class, 'destroy'])->name('destroy');
+        // Expense (feature: operational_costs)
+        Route::middleware('feature.access:operational_costs')->group(function () {
+            Route::get('/expense/create', [FinanceController::class, 'createExpense'])->name('expense.create');
+            Route::post('/expense', [FinanceController::class, 'storeExpense'])->name('expense.store');
+            Route::get('/expense/{expense}/edit', [FinanceController::class, 'editExpense'])->name('expense.edit');
+            Route::put('/expense/{expense}', [FinanceController::class, 'updateExpense'])->name('expense.update');
+            Route::delete('/{expense}', [FinanceController::class, 'destroy'])->name('destroy');
+        });
 
         // AJAX
         Route::get('/categories-ajax', [FinanceController::class, 'getCategoriesAjax'])->name('categories.ajax');
@@ -330,12 +337,12 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::get('/daily', [FinanceController::class, 'daily'])->name('daily');
     });
 
-    // Expenses (Resource)
-    Route::prefix('expenses')->name('expenses.')->group(function () {
+    // Expenses Resource (feature: operational_costs)
+    Route::prefix('expenses')->name('expenses.')->middleware('feature.access:operational_costs')->group(function () {
         Route::post('/{expense}/approve', [ExpenseController::class, 'approve'])->name('approve');
         Route::post('/{expense}/reject', [ExpenseController::class, 'reject'])->name('reject');
     });
-    Route::resource('expenses', ExpenseController::class);
+    Route::resource('expenses', ExpenseController::class)->middleware('feature.access:operational_costs');
 
     // Payments
     Route::prefix('payment')->name('payment.')->group(function () {
@@ -348,8 +355,8 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     // Legacy payment name support if needed somewhere else with full name, but prefix covers it
     // Original: payment.check-amount
 
-    // Withdrawals
-    Route::prefix('withdraw')->name('withdraw.')->group(function () {
+    // Withdrawals (feature: balance_withdrawal)
+    Route::prefix('withdraw')->name('withdraw.')->middleware('feature.access:balance_withdrawal')->group(function () {
         Route::get('/confirm-password', [WithdrawController::class, 'showConfirmPassword'])->name('confirm-password');
         Route::post('/confirm-password', [WithdrawController::class, 'confirmPassword'])->name('confirm-password.post');
         Route::get('/create', [WithdrawController::class, 'create'])->name('create');
@@ -359,12 +366,12 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::post('/{withdrawal}/owner-reject', [WithdrawController::class, 'ownerReject'])->name('owner-reject');
     });
 
-    // Debt Management
-    Route::prefix('debt')->name('debt.')->group(function () {
+    // Debt Management (feature: accounts_receivable)
+    Route::prefix('debt')->name('debt.')->middleware('feature.access:accounts_receivable')->group(function () {
         Route::get('/search-customer', [DebtPaymentController::class, 'searchCustomer'])->name('search-customer');
         Route::post('/process', [DebtPaymentController::class, 'processDebtPayment'])->name('process');
     });
-    Route::prefix('customer-debts')->name('customer-debts.')->group(function () {
+    Route::prefix('customer-debts')->name('customer-debts.')->middleware('feature.access:accounts_receivable')->group(function () {
         Route::get('/', [CustomerDebtController::class, 'index'])->name('index');
         Route::get('/customers', [CustomerDebtController::class, 'getCustomers'])->name('customers');
         Route::get('/debts', [CustomerDebtController::class, 'getDebts'])->name('debts');
@@ -377,7 +384,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     // ---------------------------------------------------------------------
     // Tasks (Kanban)
     // ---------------------------------------------------------------------
-    Route::prefix('tasks')->name('tasks.')->group(function () {
+    Route::prefix('tasks')->name('tasks.')->middleware('feature.access:tasks')->group(function () {
         Route::get('/table', [TaskController::class, 'tableView'])->name('table');
         Route::get('/calendar', [TaskController::class, 'calendarView'])->name('calendar');
         Route::get('/calendar-data', [TaskController::class, 'getCalendarTasks'])->name('calendar-data');
@@ -385,24 +392,25 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::post('/{task}/assign-users', [TaskController::class, 'assignUsers'])->name('assign-users');
         Route::get('/{task}/activities', [TaskController::class, 'getActivities'])->name('activities');
     });
-    Route::resource('tasks', TaskController::class)->except(['create', 'edit']); // Create/Edit handled via modals/API often
-    Route::resource('task-labels', TaskLabelController::class);
+    Route::resource('tasks', TaskController::class)->except(['create', 'edit'])->middleware('feature.access:tasks');
+    Route::resource('task-labels', TaskLabelController::class)->middleware('feature.access:tasks');
 
     // ---------------------------------------------------------------------
     // Reports & Statistics
-    // ---------------------------------------------------------------------
-    Route::prefix('reports')->name('reports.')->group(function () {
+    // Reports & Statistics (feature: reports)
+    Route::prefix('reports')->name('reports.')->middleware('feature.access:reports')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::get('/ajax-data', [ReportController::class, 'ajaxData'])->name('ajax-data');
         Route::get('/export-pdf', [ReportController::class, 'exportPdf'])->name('export-pdf');
         Route::get('/export-excel', [ReportController::class, 'exportExcel'])->name('export-excel');
     });
 
-    // Invoices summary
-    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
-    Route::get('/invoices/expense/{expense}/print', [InvoiceController::class, 'generateExpense'])->name('invoices.expense.print');
+    // Invoices summary (feature: invoice_list)
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index')->middleware('feature.access:invoice_list');
+    Route::get('/invoices/expense/{expense}/print', [InvoiceController::class, 'generateExpense'])->name('invoices.expense.print')->middleware('feature.access:invoice_list');
 
-    Route::prefix('statistics')->name('statistics.')->group(function () {
+    // Statistics (feature: dashboard - uses same feature for stats)
+    Route::prefix('statistics')->name('statistics.')->middleware('feature.access:dashboard')->group(function () {
         Route::get('/', [StatisticsController::class, 'index'])->name('index');
         Route::get('/export', [StatisticsController::class, 'export'])->name('export');
         Route::get('/summary', [StatisticsController::class, 'getSummaryDataAjax'])->name('summary');
@@ -424,10 +432,8 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::get('/purchase-chart', [StatisticsController::class, 'getPurchaseChart'])->name('purchase-chart');
     });
 
-    // ---------------------------------------------------------------------
-    // AI & Insights
-    // ---------------------------------------------------------------------
-    Route::prefix('ai-insights')->name('ai-insights.')->group(function () {
+    // AI & Insights (feature: ai_insights - Platinum only)
+    Route::prefix('ai-insights')->name('ai-insights.')->middleware('feature.access:ai_insights')->group(function () {
         Route::get('/', [AiInsightController::class, 'index'])->name('index');
         Route::get('/{id}', [AiInsightController::class, 'show'])->name('show');
         Route::post('/{id}/read', [AiInsightController::class, 'markAsRead'])->name('mark-read');
@@ -437,39 +443,36 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::get('/calendar/daily', [AiInsightController::class, 'daily'])->name('calendar.daily');
     });
 
-    Route::prefix('clara-ai')->name('clara-ai.')->group(function () {
+    // Clara AI (feature: clara_ai - Platinum only)
+    Route::prefix('clara-ai')->name('clara-ai.')->middleware('feature.access:clara_ai')->group(function () {
         Route::get('/', [ClaraAiController::class, 'index'])->name('index');
         Route::post('/chat', [ClaraAiController::class, 'chat'])->name('chat');
         Route::get('/new-session', [ClaraAiController::class, 'newSession'])->name('new-session');
         Route::delete('/session/{id}', [ClaraAiController::class, 'deleteSession'])->name('delete-session');
     });
 
-    // ---------------------------------------------------------------------
-    // Other / Support
-    // ---------------------------------------------------------------------
-
-    // FAQ
-    Route::prefix('faqs')->name('faqs.')->group(function () {
+    // FAQ (feature: help_faq)
+    Route::prefix('faqs')->name('faqs.')->middleware('feature.access:help_faq')->group(function () {
         Route::get('/', [FaqController::class, 'index'])->name('index');
         Route::get('/{faq}', [FaqController::class, 'show'])->name('show');
         Route::post('/{faq}/helpful', [FaqController::class, 'markHelpful'])->name('helpful');
         Route::post('/{faq}/not-helpful', [FaqController::class, 'markNotHelpful'])->name('not-helpful');
     });
 
-    // Landing Page Management (Admin)
-    Route::prefix('landing-pages')->name('landing-pages.')->group(function () {
+    // Landing Page Management (feature: landing_page - Platinum only)
+    Route::prefix('landing-pages')->name('landing-pages.')->middleware('feature.access:landing_page')->group(function () {
         Route::get('/', [LandingPageController::class, 'index'])->name('index');
         Route::get('/{id}/edit', [LandingPageController::class, 'edit'])->name('edit');
         Route::put('/{id}', [LandingPageController::class, 'update'])->name('update');
         Route::post('/{id}/toggle-status', [LandingPageController::class, 'toggleStatus'])->name('toggle-status');
     });
 
-    // Testimonials
-    Route::resource('testimonials', TestimonialController::class)->only(['index', 'destroy']);
-    Route::post('testimonials/{testimonial}/toggle-status', [TestimonialController::class, 'toggleStatus'])->name('testimonials.toggle-status');
+    // Testimonials (feature: testimonials - Platinum only)
+    Route::resource('testimonials', TestimonialController::class)->only(['index', 'destroy'])->middleware('feature.access:testimonials');
+    Route::post('testimonials/{testimonial}/toggle-status', [TestimonialController::class, 'toggleStatus'])->name('testimonials.toggle-status')->middleware('feature.access:testimonials');
 
-    // Reseller Applications
-    Route::post('reseller-applications/toggle-acceptance', [ResellerApplicationController::class, 'toggleAcceptance'])->name('reseller-applications.toggle-acceptance');
-    Route::resource('reseller-applications', ResellerApplicationController::class)->only(['index', 'store', 'update']);
+    // Reseller Applications (feature: reseller_app - Platinum only)
+    Route::post('reseller-applications/toggle-acceptance', [ResellerApplicationController::class, 'toggleAcceptance'])->name('reseller-applications.toggle-acceptance')->middleware('feature.access:reseller_app');
+    Route::resource('reseller-applications', ResellerApplicationController::class)->only(['index', 'store', 'update'])->middleware('feature.access:reseller_app');
 
 });

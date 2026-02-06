@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.subscription-features.update', $subscriptionFeature) }}" method="POST" class="p-8 space-y-6">
+        <form action="{{ route('admin.subscription-features.update', ['feature' => $subscriptionFeature->id]) }}" method="POST" class="p-8 space-y-6">
             @csrf
             @method('PUT')
 

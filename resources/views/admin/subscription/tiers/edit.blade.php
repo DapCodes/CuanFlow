@@ -15,7 +15,7 @@
 @endsection
 
 @section('content')
-<form action="{{ route('admin.subscription-tiers.update', $subscriptionTier) }}" method="POST" class="space-y-6 max-w-5xl mx-auto">
+<form action="{{ route('admin.subscription-tiers.update', ['tier' => $subscriptionTier->id]) }}" method="POST" class="space-y-6 max-w-5xl mx-auto">
     @csrf
     @method('PUT')
     

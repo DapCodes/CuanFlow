@@ -2,16 +2,23 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\UserSubscription;
+use App\Services\FeatureAccessService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckSubscription
 {
+    protected FeatureAccessService $accessService;
+
+    public function __construct(FeatureAccessService $accessService)
+    {
+        $this->accessService = $accessService;
+    }
+
     /**
      * Handle an incoming request.
-     * Checks if the user has an active subscription.
+     * Checks if the user has an active or grace-period subscription.
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -31,52 +38,58 @@ class CheckSubscription
             return $next($request);
         }
 
-        $subscription = $user->subscription;
+        // Get subscription status from centralized service
+        $status = $this->accessService->getSubscriptionStatus($user);
 
-        // No subscription at all
-        if (!$subscription) {
-            return $this->handleSubscriptionIssue($request, $next, 'no_subscription');
-        }
-
-        // Check subscription status
-        if ($subscription->status === UserSubscription::STATUS_PENDING_VERIFICATION) {
-            return $this->handlePendingVerification($request, $next);
-        }
-
-        if ($subscription->status === UserSubscription::STATUS_CANCELLED) {
-            return $this->handleSubscriptionIssue($request, $next, 'cancelled');
-        }
-
-        if ($subscription->status === UserSubscription::STATUS_EXPIRED) {
-            // Check grace period
-            if ($subscription->isInGracePeriod()) {
-                session()->flash('subscription_warning', 'Langganan Anda sudah berakhir. Anda memiliki ' . $subscription->days_remaining . ' hari masa tenggang.');
+        switch ($status) {
+            case FeatureAccessService::STATUS_ACTIVE:
+                // Clear any pending modal sessions
+                if (session()->has('show_subscription_modal')) {
+                    session()->forget(['show_subscription_modal', 'subscription_modal_reason']);
+                }
+                
+                // Check for upcoming expiry warning (7 days)
+                $this->checkExpiryWarning($user);
                 return $next($request);
-            }
-            return $this->handleSubscriptionIssue($request, $next, 'expired');
+
+            case FeatureAccessService::STATUS_GRACE:
+                // Allow access but show warning
+                $graceDays = $this->accessService->getGraceDaysRemaining($user);
+                session()->flash('subscription_warning', 
+                    'Langganan Anda sudah berakhir. Anda memiliki ' . $graceDays . ' hari masa tenggang.'
+                );
+                return $next($request);
+
+            case FeatureAccessService::STATUS_PENDING:
+                return $this->handlePendingVerification($request, $next);
+
+            case FeatureAccessService::STATUS_EXPIRED:
+            case FeatureAccessService::STATUS_NO_SUBSCRIPTION:
+            case FeatureAccessService::STATUS_CANCELLED:
+            default:
+                return $this->handleSubscriptionIssue($request, $next, $status);
+        }
+    }
+
+    /**
+     * Check for upcoming subscription expiry and flash warning.
+     */
+    private function checkExpiryWarning($user): void
+    {
+        $subscription = $user->subscription;
+        
+        if (!$subscription) {
+            return;
         }
 
-        // Check if subscription is still valid
-        if (!$subscription->isActive()) {
-            return $this->handleSubscriptionIssue($request, $next, 'expired');
-        }
+        $daysRemaining = $subscription->days_remaining;
 
-        // Clear subscription modal session if subscription is active
-        if (session()->has('show_subscription_modal')) {
-            session()->forget(['show_subscription_modal', 'subscription_modal_reason']);
+        if ($daysRemaining !== null && $daysRemaining <= 7 && $daysRemaining > 0) {
+            $type = $subscription->isTrial() ? 'trial' : 'langganan';
+            session()->flash('subscription_warning', 
+                "Masa {$type} Anda akan berakhir dalam {$daysRemaining} hari."
+            );
         }
-
-        // Check trial expiry warning (7 days notice)
-        if ($subscription->isTrial() && $subscription->days_remaining <= 7 && $subscription->days_remaining > 0) {
-            session()->flash('subscription_warning', 'Masa trial Anda akan berakhir dalam ' . $subscription->days_remaining . ' hari.');
-        }
-
-        // Check subscription expiry warning (7 days notice)
-        if (!$subscription->isTrial() && $subscription->days_remaining !== null && $subscription->days_remaining <= 7 && $subscription->days_remaining > 0) {
-            session()->flash('subscription_warning', 'Langganan Anda akan berakhir dalam ' . $subscription->days_remaining . ' hari.');
-        }
-
-        return $next($request);
     }
 
     /**
@@ -98,7 +111,7 @@ class CheckSubscription
             return $next($request);
         }
 
-        // Otherwise redirect to dashboard
+        // Otherwise redirect to dashboard with modal
         session(['show_subscription_modal' => true, 'subscription_modal_reason' => $reason]);
         return redirect()->route('dashboard');
     }
@@ -116,8 +129,8 @@ class CheckSubscription
         }
 
         if ($request->routeIs('dashboard')) {
-             session()->flash('info', 'Permintaan trial Anda sedang ditinjau. Kami akan menghubungi Anda dalam 24-48 jam.');
-             return $next($request);
+            session()->flash('info', 'Permintaan trial Anda sedang ditinjau. Kami akan menghubungi Anda dalam 24-48 jam.');
+            return $next($request);
         }
 
         session()->flash('info', 'Permintaan trial Anda sedang ditinjau. Kami akan menghubungi Anda dalam 24-48 jam.');
@@ -130,9 +143,9 @@ class CheckSubscription
     private function getReasonMessage(string $reason): string
     {
         return match ($reason) {
-            'no_subscription' => 'Anda belum memiliki langganan aktif. Pilih paket untuk melanjutkan.',
-            'expired' => 'Langganan Anda telah berakhir. Perpanjang untuk melanjutkan.',
-            'cancelled' => 'Langganan Anda telah dibatalkan. Berlangganan kembali untuk mengakses fitur.',
+            FeatureAccessService::STATUS_NO_SUBSCRIPTION => 'Anda belum memiliki langganan aktif. Pilih paket untuk melanjutkan.',
+            FeatureAccessService::STATUS_EXPIRED => 'Langganan Anda telah berakhir. Perpanjang untuk melanjutkan.',
+            FeatureAccessService::STATUS_CANCELLED => 'Langganan Anda telah dibatalkan. Berlangganan kembali untuk mengakses fitur.',
             default => 'Terjadi masalah dengan langganan Anda.',
         };
     }

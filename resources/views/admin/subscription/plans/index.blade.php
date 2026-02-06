@@ -90,11 +90,11 @@
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('admin.subscription-plans.edit', $plan) }}" 
+                                <a href="{{ route('admin.subscription-plans.edit', ['plan' => $plan->id]) }}" 
                                    class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('admin.subscription-plans.destroy', $plan) }}" method="POST" 
+                                <form action="{{ route('admin.subscription-plans.destroy', ['plan' => $plan->id]) }}" method="POST" 
                                       onsubmit="return confirm('Yakin ingin menghapus opsi durasi ini?')">
                                     @csrf
                                     @method('DELETE')
