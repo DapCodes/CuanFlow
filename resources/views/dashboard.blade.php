@@ -1835,102 +1835,188 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Data Source
     const searchItems = [
+        @canAccessFeature('pos')
         @can('akses pos')
         { label: 'Point of Sale (Kasir)', keywords: ['pos', 'kasir', 'transaksi', 'jual'], url: "{{ route('pos.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('sales_management')
         @can('lihat penjualan')
         { label: 'Riwayat Penjualan', keywords: ['penjualan', 'sales', 'history', 'riwayat', 'laporan'], url: "{{ route('sales.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('discount_management')
         @can('lihat diskon')
         { label: 'Daftar Diskon', keywords: ['diskon', 'promo', 'potongan'], url: "{{ route('discounts.index') }}", type: 'Menu' },
         { label: 'Buat Diskon Baru', keywords: ['buat', 'tambah', 'diskon', 'promo'], url: "{{ route('discounts.create') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('finance_management')
         @can('lihat keuangan')
         { label: 'Keuangan', keywords: ['keuangan', 'finance', 'laporan', 'uang'], url: "{{ route('finance.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('other_income')
         @can('buat pemasukan')
         { label: 'Catat Pemasukan', keywords: ['pemasukan', 'income', 'tambah', 'uang masuk'], url: "{{ route('expenses.index', ['type' => 'income']) }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('operational_costs')
         @can('buat pengeluaran')
         { label: 'Catat Pengeluaran', keywords: ['pengeluaran', 'expense', 'biaya', 'operasional', 'beli'], url: "{{ route('expenses.index', ['type' => 'expense']) }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('balance_withdrawal')
         @can('buat penarikan')
         { label: 'Penarikan Saldo', keywords: ['tarik', 'saldo', 'withdraw', 'pencairan'], url: "{{ route('withdraw.index') }}", type: 'Menu' },
         { label: 'Ajukan Penarikan', keywords: ['buat', 'ajukan', 'tarik', 'saldo'], url: "{{ route('withdraw.create') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('payment_methods')
         @can('lihat metode pembayaran')
         { label: 'Metode Pembayaran', keywords: ['payment', 'metode', 'bayar', 'qris', 'bank'], url: "{{ route('outlet-payment-links.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('task_management')
         @can('tasks.view')
         { label: 'Manajemen Tugas (Kanban)', keywords: ['tugas', 'task', 'kanban', 'kerja', 'project'], url: "{{ route('tasks.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('dashboard')
         @can('lihat statistik')
         { label: 'Dashboard & Statistik', keywords: ['statistik', 'chart', 'grafik', 'analisis', 'dashboard'], url: "{{ route('statistics.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('reports')
         @can('lihat laporan')
         { label: 'Laporan Keseluruhan', keywords: ['laporan', 'report', 'keuangan', 'pdf', 'excel'], url: "{{ route('reports.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('products_recipes')
         @can('lihat produk')
         { label: 'Daftar Produk & Resep', keywords: ['produk', 'menu', 'makanan', 'minuman', 'resep', 'barang'], url: "{{ route('products-hpp.index') }}", type: 'Menu' },
         { label: 'Tambah Produk Baru', keywords: ['tambah', 'buat', 'produk', 'menu', 'resep'], url: "{{ route('products-hpp.create') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('raw_materials')
         @can('lihat bahan baku')
         { label: 'Stok Bahan Baku', keywords: ['bahan', 'baku', 'raw', 'material', 'stok', 'inventory'], url: "{{ route('raw-materials.index') }}", type: 'Menu' },
         { label: 'Tambah Bahan Baku', keywords: ['tambah', 'bahan', 'baku'], url: "{{ route('raw-materials.create') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('suppliers')
         @can('lihat supplier')
         { label: 'Daftar Pemasok (Supplier)', keywords: ['supplier', 'pemasok', 'vendor'], url: "{{ route('raw-materials.suppliers') }}", type: 'Menu' },
         { label: 'Tambah Supplier', keywords: ['tambah', 'supplier', 'pemasok'], url: "{{ route('raw-materials.suppliers.create') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('reseller_app')
         @can('lihat reseller applications')
         { label: 'Lamaran Reseller', keywords: ['reseller', 'mitra', 'lamaran', 'aplikasi'], url: "{{ route('reseller-applications.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('production')
         @can('lihat produksi')
         { label: 'Daftar Produksi', keywords: ['produksi', 'production', 'olah', 'masak'], url: "{{ route('production.index') }}", type: 'Menu' },
         { label: 'Buat Produksi Baru', keywords: ['buat', 'tambah', 'produksi'], url: "{{ route('production.create') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('stock_opname')
         @can('lihat stock opname')
         { label: 'Stock Opname', keywords: ['stock', 'opname', 'so', 'cek', 'stok'], url: "{{ route('stock-opname.index') }}", type: 'Menu' },
         { label: 'Buat Stock Opname', keywords: ['buat', 'stock', 'opname'], url: "{{ route('stock-opname.create') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('stock_transfer')
         @can('lihat stock transfer')
         { label: 'Transfer Stok', keywords: ['transfer', 'kirim', 'stok', 'mutasi'], url: "{{ route('stock-transfers.index') }}", type: 'Menu' },
         { label: 'Buat Transfer Stok', keywords: ['buat', 'transfer', 'kirim'], url: "{{ route('stock-transfers.create') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('multi_outlet')
         @can('lihat outlet')
         { label: 'Informasi Outlet', keywords: ['outlet', 'toko', 'cabang', 'informasi', 'profil'], url: "{{ route('outlets.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('landing_page')
         @can('lihat landing page')
         { label: 'Landing Page', keywords: ['landing', 'page', 'web', 'promosi', 'online'], url: "{{ route('landing-pages.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('testimonials')
         @can('lihat testimoni')
         { label: 'Testimoni', keywords: ['testimoni', 'review', 'ulasan'], url: "{{ route('testimonials.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('employee_management')
         @can('lihat pegawai')
         { label: 'Pegawai & Hak Akses', keywords: ['pegawai', 'employee', 'karyawan', 'staff', 'hrd', 'akses'], url: "{{ route('employees.index') }}", type: 'Menu' },
         { label: 'Tambah Pegawai', keywords: ['tambah', 'buat', 'pegawai', 'karyawan'], url: "{{ route('employees.create') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('customer_management')
         @can('lihat pelanggan')
         { label: 'Pelanggan & Piutang', keywords: ['pelanggan', 'customer', 'piutang', 'hutang', 'debt'], url: "{{ route('customer-debts.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('table_management')
         @can('lihat meja')
         { label: 'Manajemen Meja', keywords: ['meja', 'table', 'nomor'], url: "{{ route('tables.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('ai_insights')
         @can('lihat ai insights')
         { label: 'AI Insights', keywords: ['ai', 'insight', 'saran', 'analisis', 'cerdas'], url: "{{ route('ai-insights.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('clara_ai')
         @can('akses clara ai')
         { label: 'Clara AI Chat', keywords: ['clara', 'ai', 'chat', 'tanya', 'asisten', 'bot'], url: "{{ route('clara-ai.index') }}", type: 'Action' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('outlet_policies')
         @can('lihat kebijakan outlet')
         { label: 'Kebijakan Outlet', keywords: ['kebijakan', 'policy', 'aturan', 'sop'], url: "{{ route('outlet-policies.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('account_settings')
         @can('edit profil')
         { label: 'Pengaturan Akun', keywords: ['akun', 'profil', 'profile', 'password', 'sandi', 'setting'], url: "{{ route('profile.edit') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
+
+        @canAccessFeature('help_faq')
         @can('lihat faq')
         { label: 'Bantuan & FAQ', keywords: ['bantuan', 'faq', 'help', 'tanya'], url: "{{ route('faqs.index') }}", type: 'Menu' },
         @endcan
+        @endcanAccessFeature
     ];
 
     // Focus shortcut
