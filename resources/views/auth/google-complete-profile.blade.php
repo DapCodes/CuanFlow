@@ -102,7 +102,7 @@
         </div>
         
         <h2 class="text-3xl font-bold text-gray-900 mb-2 animate-on-load animate-fade-in-up delay-200">
-            Satu Langkah Lagi! 🚀
+            Satu Langkah Lagi!
         </h2>
         
         <p class="text-gray-600 text-sm leading-relaxed mb-8 animate-on-load animate-fade-in-up delay-300">

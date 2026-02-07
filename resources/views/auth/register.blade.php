@@ -4,412 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>CuanFlow - Daftar</title>
+    <title>Daftar - CuanFlow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="{{ asset('assets/image/logo.svg') }}" type="image/x-icon">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body {
             font-family: 'Satoshi', sans-serif;
         }
         
-        /* Global Page Loader from app.blade.php */
-        .global-page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-            will-change: opacity, visibility;
-        }
-        
-        .global-page-loader.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .global-loader-asterisk {
-            width: 60px;
-            height: 60px;
-            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-            will-change: transform;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.15); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        
-        .global-loader-dots {
-            display: flex;
-            gap: 6px;
-            margin-top: 16px;
-        }
-        
-        .global-loader-dot {
-            width: 6px;
-            height: 6px;
-            background: #31694E;
-            border-radius: 50%;
-            animation: pulse 1.2s ease-in-out infinite;
-            will-change: transform, opacity;
-        }
-        
-        .global-loader-dot:nth-child(2) { animation-delay: 0.15s; }
-        .global-loader-dot:nth-child(3) { animation-delay: 0.3s; }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(0.8); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 1; }
-        }
-        
-        .global-loader-text {
-            color: #31694E;
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 12px;
-            animation: fadeInOut 1.5s ease-in-out infinite;
-        }
-        
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-        
-        /* Page Load Animations */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @keyframes fadeInRight {
-            from {
-                opacity: 0;
-                transform: translateX(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
         
-        /* Step Transition Animations */
-        @keyframes slideOutLeft {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(-40px);
-            }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(12deg); }
+            50% { transform: translateY(-20px) rotate(12deg); }
         }
         
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        .animate-scale-in { animation: scaleIn 0.5s ease-out forwards; }
         
-        @keyframes slideOutRight {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(40px);
-            }
-        }
-        
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        /* Page Exit Animations */
-        @keyframes fadeOutLeft {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(-50px);
-            }
-        }
-        
-        @keyframes fadeOutRight {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(50px);
-            }
-        }
-        
-        /* Progress Animation */
-        @keyframes progressPulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-        }
-        
-        @keyframes lineGrow {
-            from {
-                width: 0%;
-            }
-            to {
-                width: 100%;
-            }
-        }
-        
-        /* Initial States */
-        .animate-on-load {
-            opacity: 0;
-        }
-        
-        /* Applied Animations */
-        .animate-fade-in-up {
-            animation: fadeInUp 0.6s ease-out forwards;
-        }
-        
-        .animate-fade-in-left {
-            animation: fadeInLeft 0.6s ease-out forwards;
-        }
-        
-        .animate-fade-in-right {
-            animation: fadeInRight 0.6s ease-out forwards;
-        }
-        
-        .animate-scale-in {
-            animation: scaleIn 0.5s ease-out forwards;
-        }
-        
-        .animate-slide-in-right {
-            animation: slideInRight 0.5s ease-out forwards;
-        }
-        
-        .animate-slide-in-left {
-            animation: slideInLeft 0.5s ease-out forwards;
-        }
-        
-        .animate-slide-out-left {
-            animation: slideOutLeft 0.35s ease-out forwards;
-        }
-        
-        .animate-slide-out-right {
-            animation: slideOutRight 0.35s ease-out forwards;
-        }
-        
-        .page-exit .left-section {
-            animation: fadeOutLeft 0.4s ease-out forwards;
-        }
-        
-        .page-exit .right-section {
-            animation: fadeOutRight 0.4s ease-out forwards;
-        }
-        
-        /* Delays */
         .delay-100 { animation-delay: 0.1s; }
         .delay-200 { animation-delay: 0.2s; }
         .delay-300 { animation-delay: 0.3s; }
-        .delay-400 { animation-delay: 0.4s; }
-        .delay-500 { animation-delay: 0.5s; }
-        .delay-600 { animation-delay: 0.6s; }
         
-        /* Progress Step Styles */
-        .progress-step {
-            transition: all 0.3s ease-out;
+        .animate-on-load { opacity: 0; }
+        
+        /* Background Decorations */
+        .green-blur {
+            background: radial-gradient(circle at top left, rgba(49, 105, 78, 0.15) 0%, transparent 70%);
+            filter: blur(60px);
         }
         
-        .progress-step.active {
-            background: #31694E;
-            color: white;
+        .bg-pattern {
+            animation: float 10s ease-in-out infinite;
         }
         
-        .progress-step.completed {
-            background: #BBC863;
-            color: white;
-            transform: scale(1);
+        .bg-pattern:nth-child(2) {
+            animation-delay: 2s;
+            animation-duration: 12s;
         }
         
-        .progress-line {
-            transition: background-color 0.3s ease-out;
-            position: relative;
-            overflow: hidden;
+        /* Form Elements */
+        .input-box {
+            transition: all 0.3s ease;
         }
         
-        .progress-line.active::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            background: #BBC863;
-            animation: lineGrow 0.4s ease-out forwards;
-        }
-        
-        /* Interactive Asterisk - Ultra Smooth */
-        #asterisk-icon {
-            transition: transform 0.08s ease-out;
-            cursor: pointer;
-            will-change: transform;
-        }
-        
-        #asterisk-container {
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Button Hover */
-        .btn-hover {
-            transition: all 0.3s ease-out;
-        }
-        
-        .btn-hover:hover {
+        .input-box:focus-within {
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            border-color: #31694E;
+            box-shadow: 0 4px 12px rgba(49, 105, 78, 0.08);
         }
         
-        .btn-hover:active {
-            transform: translateY(0);
-            transition: all 0.1s ease;
+        .btn-primary {
+            transition: all 0.3s ease;
         }
         
-        /* Input Focus */
-        input, textarea, select {
-            transition: all 0.3s ease-out;
-        }
-        
-        input:focus, textarea:focus, select:focus {
+        .btn-primary:hover {
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(49, 105, 78, 0.2);
         }
         
-        /* Form Field Animation */
-        .form-field {
-            opacity: 0;
-            animation: fadeInUp 0.4s ease-out forwards;
+        /* Progress Steps */
+        .step-dot {
+            transition: all 0.3s ease;
         }
         
-        .form-field:nth-child(1) { animation-delay: 0.05s; }
-        .form-field:nth-child(2) { animation-delay: 0.1s; }
-        .form-field:nth-child(3) { animation-delay: 0.15s; }
-        .form-field:nth-child(4) { animation-delay: 0.2s; }
-        .form-field:nth-child(5) { animation-delay: 0.25s; }
-        .form-field:nth-child(6) { animation-delay: 0.3s; }
-        
-        /* Custom SweetAlert2 Styles */
-        .swal2-popup {
-            font-family: 'Satoshi', sans-serif !important;
-            border-radius: 12px !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+        .step-line {
+            transition: all 0.3s ease;
         }
-        
-        .swal2-title {
-            color: #1f2937 !important;
-            font-size: 24px !important;
-            font-weight: 700 !important;
-        }
-        
-        .swal2-html-container {
-            color: #6b7280 !important;
-            font-size: 14px !important;
-        }
-        
-        .swal2-confirm {
-            background-color: #31694E !important;
-            color: #ffffff !important;
-            border-radius: 8px !important;
-            padding: 12px 32px !important;
-            font-weight: 600 !important;
-            font-size: 15px !important;
-            box-shadow: 0 4px 12px rgba(49, 105, 78, 0.3) !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        .swal2-confirm:hover {
-            background-color: #658C58 !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 16px rgba(49, 105, 78, 0.4) !important;
-        }
-        
-        .swal2-confirm:focus {
-            box-shadow: 0 0 0 3px rgba(49, 105, 78, 0.3) !important;
-        }
-        
-        .swal2-icon.swal2-warning {
-            border-color: #BBC863 !important;
-            color: #BBC863 !important;
-        }
-        
-        .swal2-icon.swal2-error {
-            border-color: #ef4444 !important;
-            color: #dc2626 !important;
-        }
-        
-        /* Fix modal backdrop z-index */
-        .swal2-container {
-            z-index: 10000 !important;
-        }
-        
-        .swal2-backdrop-show {
-            background: rgba(0, 0, 0, 0.6) !important;
+
+        /* Checkbox & Radio */
+        .form-checkbox:checked {
+            background-color: #31694E;
+            border-color: #31694E;
         }
     </style>
     <script>
@@ -427,627 +104,259 @@
         }
     </script>
 </head>
-<body class="h-screen flex overflow-hidden bg-white">
+<body class="min-h-screen bg-white relative overflow-hidden flex items-center justify-center p-4">
     
-    <!-- Global Page Loader -->
-    <div id="global-page-loader" class="global-page-loader active">
-        <svg class="global-loader-asterisk" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#31694E" stroke-width="8" stroke-linecap="round"/>
-        </svg>
-        <div class="global-loader-dots">
-            <div class="global-loader-dot"></div>
-            <div class="global-loader-dot"></div>
-            <div class="global-loader-dot"></div>
-        </div>
-        <p class="global-loader-text">Loading...</p>
+    <!-- Decorative Background -->
+    <div class="green-blur absolute -top-40 -left-40 w-96 h-96 pointer-events-none"></div>
+    
+    <div class="absolute bottom-0 right-0 w-full h-full pointer-events-none overflow-hidden">
+        <div class="bg-pattern absolute bottom-10 right-10 w-48 h-48 border-2 border-cuan-dark opacity-10 rotate-12 rounded-3xl"></div>
+        <div class="bg-pattern absolute bottom-32 right-32 w-32 h-32 border-2 border-cuan-green opacity-10 rotate-12 rounded-3xl"></div>
     </div>
     
-    <!-- Left Section - Simple Background -->
-    <div class="left-section animate-on-load animate-fade-in-left hidden lg:flex lg:w-1/2 bg-cuan-dark text-white px-12 py-10 flex-col justify-between relative overflow-hidden">
-        <!-- Background Pattern -->
-        <div class="absolute inset-0">
-            <div class="absolute top-24 right-24 w-80 h-80 border-2 border-white opacity-10 rotate-12 rounded-3xl"></div>
-            <div class="absolute top-40 right-12 w-64 h-64 border-2 border-white opacity-10 rotate-12 rounded-3xl"></div>
-            <div class="absolute top-56 right-0 w-48 h-48 border-2 border-white opacity-10 rotate-12 rounded-3xl"></div>
-        </div>
-        
-        <!-- Asterisk Icon with Interactive Area -->
-        <div class="relative z-10 animate-on-load animate-scale-in delay-200">
-            <div id="asterisk-container" class="inline-block w-32 h-32 flex items-center justify-center">
-                <svg id="asterisk-icon" width="70" height="70" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#F0E491" stroke-width="8" stroke-linecap="round"/>
-                </svg>
-            </div>
-        </div>
-        
-        <!-- Main Content -->
-        <div class="relative z-10 mb-8 animate-on-load animate-fade-in-up delay-300">
-            <h1 class="text-5xl font-bold mb-5 leading-tight">
-                Bergabung dengan<br/>CuanFlow!
-            </h1>
-            <p class="text-lg max-w-md leading-relaxed text-cuan-yellow">
-                Platform all-in-one untuk mengelola bisnis Anda dengan lebih efisien dan profesional. Mulai kelola bisnis dengan mudah hari ini.
-            </p>
-        </div>
-        
-        <!-- Footer -->
-        <p class="relative z-10 text-sm opacity-70 animate-on-load animate-fade-in-up delay-400">© 2025 CuanFlow. All rights reserved.</p>
-    </div>
-    
-    <!-- Right Section - Registration Form -->
-    <div class="right-section animate-on-load animate-fade-in-right w-full lg:w-1/2 bg-white flex items-center justify-center px-6 sm:px-8 py-10 overflow-y-auto">
-        <div class="w-full max-w-md">
-            <!-- Header -->
-            <div class="mb-6 animate-on-load animate-scale-in delay-100">
-                <img 
-                    src="{{ asset('assets/image/full-logo.svg') }}" 
-                    alt="Logo"
-                    class="w-full max-w-[180px] h-auto"
-                />
-            </div>
+    <!-- Register Card -->
+    <div class="relative z-10 w-full max-w-[460px]" x-data="registerWizard()">
+        <div class="bg-white/80 backdrop-blur-xl border border-gray-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] animate-on-load animate-scale-in">
             
-            <h3 class="text-3xl font-bold text-gray-900 mb-2 animate-on-load animate-fade-in-up delay-200">Daftar Sekarang</h3>
-            
-            <p class="text-gray-600 mb-8 text-sm animate-on-load animate-fade-in-up delay-300">
-                Sudah punya akun? 
-                <a href="{{ route('login') }}" class="login-link text-gray-900 font-semibold underline hover:text-cuan-green transition-colors">Login di sini</a>
-            </p>
+            <!-- Logo -->
+            <div class="flex justify-center mb-6 animate-on-load animate-fade-in-up delay-100">
+                <img src="{{ asset('assets/image/full-logo.svg') }}" alt="CuanFlow Logo" class="h-9">
+            </div>
 
-            <!-- Error Messages -->
-            @if ($errors->any())
-                <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg animate-fade-in-up">
-                    <ul class="text-sm text-red-600 space-y-1">
+            <!-- Progress Indicator -->
+            <div class="flex items-center justify-center mb-8 px-8 animate-on-load animate-fade-in-up delay-100">
+                <div class="flex items-center w-full relative">
+                    <!-- Step 1 Dot -->
+                    <div class="relative z-10">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300"
+                             :class="step >= 1 ? 'bg-cuan-dark text-white shadow-lg shadow-cuan-dark/30' : 'bg-gray-200 text-gray-500'">
+                            1
+                        </div>
+                    </div>
+                    
+                    <!-- Line 1-2 -->
+                    <div class="flex-1 h-1 mx-2 rounded-full overflow-hidden bg-gray-100">
+                        <div class="h-full bg-cuan-dark transition-all duration-500" :style="`width: ${step >= 2 ? '100%' : '0%'}`"></div>
+                    </div>
+                    
+                    <!-- Step 2 Dot -->
+                    <div class="relative z-10">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300"
+                             :class="step >= 2 ? 'bg-cuan-dark text-white shadow-lg shadow-cuan-dark/30' : 'bg-gray-200 text-gray-500'">
+                            2
+                        </div>
+                    </div>
+                    
+                    <!-- Line 2-3 -->
+                    <div class="flex-1 h-1 mx-2 rounded-full overflow-hidden bg-gray-100">
+                        <div class="h-full bg-cuan-dark transition-all duration-500" :style="`width: ${step >= 3 ? '100%' : '0%'}`"></div>
+                    </div>
+                    
+                    <!-- Step 3 Dot -->
+                    <div class="relative z-10">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300"
+                             :class="step >= 3 ? 'bg-cuan-dark text-white shadow-lg shadow-cuan-dark/30' : 'bg-gray-200 text-gray-500'">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <!-- Error Messages -->
+             @if ($errors->any())
+                <div class="mb-5 p-3.5 bg-red-50 border border-red-100 rounded-xl animate-fade-in-up">
+                    <ul class="text-xs font-medium text-red-600 space-y-1">
                         @foreach ($errors->all() as $error)
-                            <li>• {{ $error }}</li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                                {{ $error }}
+                            </li>
                         @endforeach
                     </ul>
                 </div>
             @endif
-
-            @if (session('success'))
-                <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg animate-fade-in-up">
-                    <p class="text-sm text-green-700 font-semibold">Berhasil membuat akun ✅</p>
-                    <p class="text-sm text-green-700 mt-1">
-                        {{ session('success') }}
-                    </p>
-                </div>
-            @endif
-
-
-            <!-- Progress Indicator -->
-            <div class="flex items-center justify-center mb-8 space-x-2 animate-on-load animate-fade-in-up delay-400">
-                <div id="progress-1" class="progress-step active w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
-                    1
-                </div>
-                <div id="progress-line-1" class="progress-line w-12 h-1 bg-gray-200"></div>
-                <div id="progress-2" class="progress-step w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-500">
-                    2
-                </div>
-                <div id="progress-line-2" class="progress-line w-12 h-1 bg-gray-200"></div>
-                <div id="progress-3" class="progress-step w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-500">
-                    ✓
-                </div>
-            </div>
             
-            <!-- Registration Form -->
-            <form method="POST" action="{{ route('register') }}" class="space-y-5 animate-on-load animate-fade-in-up delay-500" id="registerForm">
+            <form method="POST" action="{{ route('register') }}" x-ref="form" class="animate-on-load animate-fade-in-up delay-200">
                 @csrf
                 
-                <!-- Step 1: Personal Information -->
-                <div id="step1">
-                    <p class="text-xs font-semibold text-gray-500 mb-4 uppercase tracking-wide form-field">
-                        Informasi Pribadi
-                    </p>
-                    
-                    <!-- Name Input -->
-                    <div class="mb-5 form-field">
-                        <input 
-                            type="text" 
-                            name="name"
-                            value="{{ old('name') }}"
-                            placeholder="Nama Lengkap"
-                            required
-                            autofocus
-                            class="w-full px-0 py-2.5 text-gray-900 border-b-2 border-gray-300 focus:border-cuan-dark outline-none placeholder-gray-500 text-base @error('name') border-red-500 @enderror"
-                        />
-                        @error('name')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    
-                    <!-- Email Input -->
-                    <div class="mb-5 form-field">
-                        <input 
-                            type="email" 
-                            name="email"
-                            value="{{ old('email') }}"
-                            placeholder="Email"
-                            required
-                            class="w-full px-0 py-2.5 text-gray-900 border-b-2 border-gray-300 focus:border-cuan-dark outline-none placeholder-gray-500 text-base @error('email') border-red-500 @enderror"
-                        />
-                        @error('email')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    
-                    <!-- Phone Input -->
-                    <div class="mb-5 form-field">
-                        <input 
-                            type="tel" 
-                            name="phone"
-                            value="{{ old('phone') }}"
-                            placeholder="Nomor Telepon (08xxx)"
-                            required
-                            class="w-full px-0 py-2.5 text-gray-900 border-b-2 border-gray-300 focus:border-cuan-dark outline-none placeholder-gray-500 text-base @error('phone') border-red-500 @enderror"
-                        />
-                        @error('phone')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    
-                    <!-- Next Button -->
-                    <button 
-                        type="button"
-                        onclick="goToStep2()"
-                        class="w-full py-3.5 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-base mt-6 btn-hover form-field"
-                    >
-                        Lanjutkan
-                    </button>
-                </div>
-
-                <!-- Step 2: Password -->
-                <div id="step2" class="hidden">
-                    <button 
-                        type="button"
-                        onclick="goToStep1()"
-                        class="text-sm text-gray-600 hover:text-cuan-dark mb-4 flex items-center transition-colors"
-                    >
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                        Kembali
-                    </button>
-                    
-                    <p class="text-xs font-semibold text-gray-500 mb-4 uppercase tracking-wide form-field">
-                        Keamanan Akun
-                    </p>
-                    
-                    <!-- Password Input -->
-                    <div class="mb-5 form-field">
-                        <input 
-                            type="password" 
-                            name="password"
-                            id="password"
-                            placeholder="Password (Min. 8 karakter)"
-                            required
-                            class="w-full px-0 py-2.5 text-gray-900 border-b-2 border-gray-300 focus:border-cuan-dark outline-none placeholder-gray-500 text-base @error('password') border-red-500 @enderror"
-                        />
-                        <p class="text-xs text-gray-500 mt-1">Gunakan kombinasi huruf, angka, dan simbol</p>
-                        @error('password')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    
-                    <!-- Confirm Password Input -->
-                    <div class="mb-5 form-field">
-                        <input 
-                            type="password" 
-                            name="password_confirmation"
-                            id="password_confirmation"
-                            placeholder="Konfirmasi Password"
-                            required
-                            class="w-full px-0 py-2.5 text-gray-900 border-b-2 border-gray-300 focus:border-cuan-dark outline-none placeholder-gray-500 text-base"
-                        />
+                <!-- STEP 1: Info Personal -->
+                <div x-show="step === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-x-4" x-transition:enter-end="opacity-100 transform translate-x-0">
+                    <div class="text-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Buat Akun Baru</h2>
+                        <p class="text-sm text-gray-500 mt-1">Isi data diri Anda untuk memulai</p>
                     </div>
 
-                    <!-- Terms & Conditions -->
-                    <div class="flex items-start mb-5 form-field">
-                        <input 
-                            type="checkbox" 
-                            name="terms" 
-                            id="terms"
-                            value="1"
-                            required
-                            class="w-4 h-4 text-cuan-dark border-gray-300 rounded focus:ring-cuan-dark mt-1 flex-shrink-0 @error('terms') border-red-500 @enderror"
-                        />
-                        <label for="terms" class="ml-2 text-sm text-gray-600">
-                            Saya menyetujui <a href="{{ route('legal.terms') }}" target="_blank" class="text-gray-900 font-semibold underline hover:text-cuan-green transition-colors">Syarat & Ketentuan</a>
-                        </label>
-                    </div>
-                    @error('terms')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <!-- Next Button -->
-                    <button 
-                        type="button"
-                        onclick="goToStep3()"
-                        class="w-full py-3.5 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-base mt-6 btn-hover form-field"
-                    >
-                        Lanjutkan
-                    </button>
-                </div>
-
-                <!-- Step 3: Success Message -->
-                <div id="step3" class="hidden text-center">
-                    <button 
-                        type="button"
-                        onclick="backToStep2()"
-                        class="text-sm text-gray-600 hover:text-cuan-dark mb-6 flex items-center transition-colors"
-                    >
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                        Kembali
-                    </button>
-
-                    <!-- Success Icon -->
-                    <div class="mb-6 form-field flex justify-center">
-                        <div class="w-20 h-20 bg-cuan-green rounded-full flex items-center justify-center">
-                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                            </svg>
+                    <div class="space-y-4">
+                        <!-- Nama -->
+                        <div class="relative input-box border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden group hover:border-gray-300">
+                            <input type="text" name="name" x-model="form.name" required
+                                class="block w-full px-4 py-3 bg-transparent text-gray-900 text-sm placeholder-gray-400 focus:outline-none"
+                                placeholder="Nama Lengkap">
                         </div>
-                    </div>
 
-                    <!-- Success Message -->
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3 form-field">
-                        Siap! Tinggal Verifikasi Email 📩
-                    </h3>
-                    <p class="text-gray-600 mb-8 form-field max-w-sm mx-auto">
-                        Kami akan mengirim link verifikasi ke email kamu. Setelah klik link verifikasi, baru kamu bisa login.
-                        <br><span class="text-xs text-gray-500">Cek juga folder Spam/Promotions.</span>
-                    </p>
+                        <!-- Email -->
+                        <div class="relative input-box border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden group hover:border-gray-300">
+                             <input type="email" name="email" x-model="form.email" required
+                                class="block w-full px-4 py-3 bg-transparent text-gray-900 text-sm placeholder-gray-400 focus:outline-none"
+                                placeholder="Email Address">
+                        </div>
 
-                    <div class="form-field">
-                        <button 
-                            type="submit"
-                            class="w-full py-3.5 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-base btn-hover"
-                        >
-                            Buat Akun & Kirim Email Verifikasi
+                        <!-- Phone -->
+                         <div class="relative input-box border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden group hover:border-gray-300">
+                             <input type="tel" name="phone" x-model="form.phone" required
+                                class="block w-full px-4 py-3 bg-transparent text-gray-900 text-sm placeholder-gray-400 focus:outline-none"
+                                placeholder="Nomor Telepon">
+                        </div>
+
+                        <button type="button" @click="nextStep()"
+                            class="btn-primary w-full py-3 px-4 bg-gray-900 hover:bg-black text-white text-sm font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 mt-2">
+                            <span>Lanjutkan</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </button>
                     </div>
+
+                     <div class="my-6 flex items-center gap-3">
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                        <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Atau</span>
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                    </div>
+            
+                    <a href="{{ route('auth.google') }}" class="btn-google w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all group bg-white">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        <span class="text-sm font-semibold text-gray-600 group-hover:text-gray-800">Daftar dengan Google</span>
+                    </a>
                 </div>
+
+                <!-- STEP 2: Password & Security -->
+                <div x-show="step === 2" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-x-4" x-transition:enter-end="opacity-100 transform translate-x-0" style="display: none;">
+                    <div class="text-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Amankan Akun</h2>
+                        <p class="text-sm text-gray-500 mt-1">Buat password yang kuat</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Password -->
+                        <div x-data="{ show: false }">
+                            <div class="relative input-box border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden group hover:border-gray-300">
+                                <input :type="show ? 'text' : 'password'" name="password" x-model="form.password"
+                                    class="block w-full px-4 py-3 bg-transparent text-gray-900 text-sm placeholder-gray-400 focus:outline-none"
+                                    placeholder="Password (Min. 8 karakter)">
+                                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
+                                    <svg x-show="!show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.206 3.84-4.8 6.745-9.01 6.985" /></svg>
+                                    <svg x-show="show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29" /></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="relative input-box border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden group hover:border-gray-300">
+                             <input type="password" name="password_confirmation" x-model="form.password_confirmation"
+                                class="block w-full px-4 py-3 bg-transparent text-gray-900 text-sm placeholder-gray-400 focus:outline-none"
+                                placeholder="Konfirmasi Password">
+                        </div>
+
+                         <!-- Terms -->
+                        <div class="flex items-start gap-2 pt-2">
+                            <input type="checkbox" name="terms" id="terms" required checked
+                                class="mt-1 h-4 w-4 rounded border-gray-300 text-cuan-dark focus:ring-cuan-dark cursor-pointer">
+                            <label for="terms" class="text-xs text-gray-500 leading-snug">
+                                Saya setuju dengan <a href="{{ route('legal.terms') }}" target="_blank" class="font-semibold text-gray-900 hover:text-cuan-green underline">Syarat & Ketentuan</a> dan Kebijakan Privasi
+                            </label>
+                        </div>
+
+                        <div class="flex gap-3 mt-4">
+                            <button type="button" @click="step = 1"
+                                class="w-1/3 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold rounded-xl transition-all">
+                                Kembali
+                            </button>
+                            <button type="button" @click="submitForm()"
+                                class="w-2/3 py-3 px-4 bg-gray-900 hover:bg-black text-white text-sm font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                                <span>Daftar Sekarang</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Loading / Success State (Managed via standard form submission mostly, but visualized here if needed) -->
+                <!-- We stick to form submission for simplicity, but if errors occur page reloads to step 1. -->
+
             </form>
-
-            <!-- Divider -->
-            <div class="flex items-center my-6 animate-on-load animate-fade-in-up delay-500">
-                <div class="flex-1 border-t border-gray-300"></div>
-                <span class="px-4 text-sm text-gray-500">atau</span>
-                <div class="flex-1 border-t border-gray-300"></div>
-            </div>
-
-            <!-- Google Sign Up Button -->
-            <a href="{{ route('auth.google') }}" 
-               class="google-link w-full flex items-center justify-center gap-3 py-3.5 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all text-base btn-hover animate-on-load animate-fade-in-up delay-600">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Daftar dengan Google
-            </a>
+            
+            <p class="mt-8 text-center text-sm text-gray-500 animate-on-load animate-fade-in-up delay-300">
+                Sudah punya akun? 
+                <a href="{{ route('login') }}" class="font-bold text-gray-900 hover:text-cuan-green transition-colors">Masuk</a>
+            </p>
         </div>
+        
+        <p class="text-center text-xs text-gray-400 mt-6 animate-on-load animate-fade-in-up delay-300">
+            &copy; {{ date('Y') }} CuanFlow. All rights reserved.
+        </p>
     </div>
 
     <script>
-        // Custom SweetAlert2 Configuration
-        const Toast = Swal.mixin({
-            customClass: {
-                popup: 'swal2-popup',
-                title: 'swal2-title',
-                htmlContainer: 'swal2-html-container',
-                confirmButton: 'swal2-confirm'
-            },
-            buttonsStyling: false,
-            heightAuto: false,
-            scrollbarPadding: false 
-        });
-
-        // Show custom alert
-        function showAlert(icon, title, text) {
-            return Toast.fire({
-                icon: icon,
-                title: title,
-                text: text,
-                confirmButtonText: 'Mengerti'
-            });
+        function registerWizard() {
+            return {
+                step: 1,
+                form: {
+                    name: '{{ old('name') }}',
+                    email: '{{ old('email') }}',
+                    phone: '{{ old('phone') }}',
+                    password: '',
+                    password_confirmation: ''
+                },
+                nextStep() {
+                    if (!this.form.name || !this.form.email || !this.form.phone) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Mohon Lengkapi Data',
+                            text: 'Silakan isi nama, email, dan nomor telepon.',
+                            confirmButtonText: 'Oke',
+                             customClass: {
+                                popup: 'swal2-popup',
+                                confirmButton: 'swal2-confirm'
+                            },
+                        });
+                        return;
+                    }
+                    this.step = 2;
+                },
+                submitForm() {
+                     if (!this.form.password || !this.form.password_confirmation) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Password Kosong',
+                            text: 'Silakan isi password dan konfirmasi password.',
+                            confirmButtonText: 'Oke',
+                            customClass: {
+                                popup: 'swal2-popup',
+                                confirmButton: 'swal2-confirm'
+                            },
+                        });
+                        return;
+                    }
+                    if (this.form.password !== this.form.password_confirmation) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Password Tidak Sama',
+                            text: 'Konfirmasi password tidak cocok.',
+                            confirmButtonText: 'Perbaiki',
+                            customClass: {
+                                popup: 'swal2-popup',
+                                confirmButton: 'swal2-confirm'
+                            },
+                        });
+                        return;
+                    }
+                    this.$refs.form.submit();
+                }
+            }
         }
-        
-        // Ultra Smooth Interactive Asterisk - Direct cursor following
-        const asteriskContainer = document.getElementById('asterisk-container');
-        const asteriskIcon = document.getElementById('asterisk-icon');
-        let isHovering = false;
-        
-        asteriskContainer.addEventListener('mouseenter', () => {
-            isHovering = true;
-        });
-        
-        asteriskContainer.addEventListener('mouseleave', () => {
-            isHovering = false;
-            asteriskIcon.style.transform = 'rotate(0deg)';
-        });
-        
-        asteriskContainer.addEventListener('mousemove', (e) => {
-            if (!isHovering) return;
-            
-            const rect = asteriskIcon.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            const deltaX = e.clientX - centerX;
-            const deltaY = e.clientY - centerY;
-            
-            // Calculate angle and apply smooth rotation
-            const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-            const rotation = angle + 90;
-            
-            // Use requestAnimationFrame for ultra smooth animation
-            requestAnimationFrame(() => {
-                asteriskIcon.style.transform = `rotate(${rotation}deg)`;
-            });
-        });
-        
-        // Step Navigation with Animations
-        function goToStep2() {
-            // Validate step 1 fields
-            const name = document.querySelector('input[name="name"]').value;
-            const email = document.querySelector('input[name="email"]').value;
-            const phone = document.querySelector('input[name="phone"]').value;
-            
-            if (!name || !email || !phone) {
-                showAlert('warning', 'Oops!', 'Mohon lengkapi semua field yang wajib diisi');
-                return;
-            }
-            
-            // Animate step 1 out
-            const step1 = document.getElementById('step1');
-            step1.classList.add('animate-slide-out-left');
-            
-            setTimeout(() => {
-                step1.classList.add('hidden');
-                step1.classList.remove('animate-slide-out-left');
-                
-                // Update progress
-                document.getElementById('progress-1').classList.remove('active');
-                document.getElementById('progress-1').classList.add('completed');
-                document.getElementById('progress-line-1').classList.add('active');
-                
-                setTimeout(() => {
-                    document.getElementById('progress-2').classList.add('active');
-                }, 200);
-                
-                // Show step 2 with animation
-                const step2 = document.getElementById('step2');
-                step2.classList.remove('hidden');
-                step2.classList.add('animate-slide-in-right');
-                
-                // Re-apply form field animations
-                setTimeout(() => {
-                    step2.querySelectorAll('.form-field').forEach((field, index) => {
-                        field.style.opacity = '0';
-                        setTimeout(() => {
-                            field.style.animation = 'fadeInUp 0.4s ease-out forwards';
-                        }, index * 50);
-                    });
-                }, 100);
-            }, 400);
-        }
-        
-        function goToStep3() {
-            // Validate step 2 fields
-            const password = document.querySelector('input[name="password"]').value;
-            const passwordConfirm = document.querySelector('input[name="password_confirmation"]').value;
-            const terms = document.querySelector('input[name="terms"]').checked;
-            
-            if (!password || !passwordConfirm) {
-                showAlert('warning', 'Oops!', 'Mohon lengkapi password dan konfirmasi password');
-                return;
-            }
-            
-            if (password.length < 8) {
-                showAlert('warning', 'Password Terlalu Pendek', 'Password harus minimal 8 karakter');
-                return;
-            }
-            
-            if (password !== passwordConfirm) {
-                showAlert('error', 'Password Tidak Cocok', 'Password dan konfirmasi password tidak sama');
-                return;
-            }
-            
-            if (!terms) {
-                showAlert('warning', 'Syarat & Ketentuan', 'Mohon setujui syarat dan ketentuan untuk melanjutkan');
-                return;
-            }
-            
-            // Animate step 2 out
-            const step2 = document.getElementById('step2');
-            step2.classList.add('animate-slide-out-left');
-            
-            setTimeout(() => {
-                step2.classList.add('hidden');
-                step2.classList.remove('animate-slide-out-left');
-                
-                // Update progress - complete step 2
-                document.getElementById('progress-2').classList.remove('active');
-                document.getElementById('progress-2').classList.add('completed');
-                document.getElementById('progress-line-2').classList.add('active');
-                
-                setTimeout(() => {
-                    document.getElementById('progress-3').classList.add('active');
-                }, 200);
-                
-                // Show step 3 with animation
-                const step3 = document.getElementById('step3');
-                step3.classList.remove('hidden');
-                step3.classList.add('animate-slide-in-right');
-                
-                // Re-apply form field animations
-                setTimeout(() => {
-                    step3.querySelectorAll('.form-field').forEach((field, index) => {
-                        field.style.opacity = '0';
-                        setTimeout(() => {
-                            field.style.animation = 'fadeInUp 0.4s ease-out forwards';
-                        }, index * 50);
-                    });
-                }, 100);
-            }, 400);
-        }
-        
-        function goToStep1() {
-            // Animate step 2 out
-            const step2 = document.getElementById('step2');
-            step2.classList.add('animate-slide-out-right');
-            
-            setTimeout(() => {
-                step2.classList.add('hidden');
-                step2.classList.remove('animate-slide-out-right');
-                
-                // Update progress
-                document.getElementById('progress-2').classList.remove('active');
-                document.getElementById('progress-1').classList.add('active');
-                document.getElementById('progress-1').classList.remove('completed');
-                document.getElementById('progress-line-1').classList.remove('active');
-                
-                // Show step 1 with animation
-                const step1 = document.getElementById('step1');
-                step1.classList.remove('hidden');
-                step1.classList.add('animate-slide-in-left');
-                
-                // Re-apply form field animations
-                setTimeout(() => {
-                    step1.querySelectorAll('.form-field').forEach((field, index) => {
-                        field.style.opacity = '0';
-                        setTimeout(() => {
-                            field.style.animation = 'fadeInUp 0.4s ease-out forwards';
-                        }, index * 50);
-                    });
-                }, 100);
-            }, 400);
-        }
-        
-        function backToStep2() {
-            // Animate step 3 out
-            const step3 = document.getElementById('step3');
-            step3.classList.add('animate-slide-out-right');
-            
-            setTimeout(() => {
-                step3.classList.add('hidden');
-                step3.classList.remove('animate-slide-out-right');
-                
-                // Update progress - back to step 2
-                document.getElementById('progress-3').classList.remove('active');
-                document.getElementById('progress-2').classList.add('active');
-                document.getElementById('progress-2').classList.remove('completed');
-                document.getElementById('progress-line-2').classList.remove('active');
-                
-                // Show step 2 with animation
-                const step2 = document.getElementById('step2');
-                step2.classList.remove('hidden');
-                step2.classList.add('animate-slide-in-left');
-                
-                // Re-apply form field animations
-                setTimeout(() => {
-                    step2.querySelectorAll('.form-field').forEach((field, index) => {
-                        field.style.opacity = '0';
-                        setTimeout(() => {
-                            field.style.animation = 'fadeInUp 0.4s ease-out forwards';
-                        }, index * 50);
-                    });
-                }, 100);
-            }, 400);
-        }
-        
-        // Real-time password match validation
-        document.getElementById('password_confirmation')?.addEventListener('input', function() {
-            const password = document.getElementById('password').value;
-            if (this.value && password !== this.value) {
-                this.style.borderColor = '#ef4444';
-            } else {
-                this.style.borderColor = '';
-            }
-        });
-
-        // Check if there are validation errors and auto-navigate to step 2
-        @if($errors->has('password') || $errors->has('password_confirmation') || $errors->has('terms'))
-            window.addEventListener('DOMContentLoaded', function() {
-                goToStep2();
-            });
-        @endif
-
-        @if (session('success'))
-            window.addEventListener('DOMContentLoaded', function() {
-                // langsung lompat ke step 3 supaya user paham harus verifikasi email
-                const step1 = document.getElementById('step1');
-                const step2 = document.getElementById('step2');
-                const step3 = document.getElementById('step3');
-
-                if (step1) step1.classList.add('hidden');
-                if (step2) step2.classList.add('hidden');
-                if (step3) step3.classList.remove('hidden');
-
-                // update progress indicator
-                document.getElementById('progress-1')?.classList.remove('active');
-                document.getElementById('progress-1')?.classList.add('completed');
-                document.getElementById('progress-line-1')?.classList.add('active');
-
-                document.getElementById('progress-2')?.classList.add('completed');
-                document.getElementById('progress-2')?.classList.remove('active');
-                document.getElementById('progress-line-2')?.classList.add('active');
-
-                document.getElementById('progress-3')?.classList.add('active');
-            });
-        @endif
-
-        
-        // Page Loader Logic
-        const loader = document.getElementById('global-page-loader');
-        let isNavigating = false;
-
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                loader.classList.remove('active');
-            }, 300);
-        });
-
-        function exitPage(url) {
-            if (isNavigating) return;
-            isNavigating = true;
-            loader.classList.add('active');
-            
-            setTimeout(() => {
-                document.body.classList.add('page-exit');
-            }, 300);
-            
-            setTimeout(() => {
-                window.location.href = url;
-            }, 800);
-        }
-        
-        // Handle navigation with animation
-        document.querySelectorAll('.login-link, .google-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const url = link.getAttribute('href');
-                exitPage(url);
-            });
-        });
-        
-        // Handle form submission with animation
-        document.getElementById('registerForm').addEventListener('submit', (e) => {
-            if (isNavigating) {
-                e.preventDefault();
-                return;
-            }
-            
-            isNavigating = true;
-            loader.classList.add('active');
-            
-            setTimeout(() => {
-                document.body.classList.add('page-exit');
-            }, 300);
-        });
     </script>
 </body>
 </html>
