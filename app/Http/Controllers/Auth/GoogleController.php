@@ -93,7 +93,15 @@ class GoogleController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:15'],
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'avatar' => ['nullable', 'image', 'max:2048'], // 2MB Max
         ]);
+
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+             $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        } elseif (!empty($googleData['google_avatar'])) {
+            $avatarPath = $googleData['google_avatar']; // Use Google avatar URL if no file uploaded
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -101,7 +109,8 @@ class GoogleController extends Controller
             'phone' => $request->phone,
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             'google_id' => $googleData['google_id'],
-            'google_avatar' => $googleData['google_avatar'],
+            'google_avatar' => $googleData['google_avatar'], // Keep original google avatar url for reference
+            'avatar' => $avatarPath, // Store the chosen avatar (file path or google url)
             'email_verified_at' => now(),
             'is_active' => true,
         ]);
