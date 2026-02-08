@@ -624,23 +624,54 @@ class PaymentController extends Controller
                 $user = $transaction->user;
                 $plan = $transaction->plan;
 
-                // End current active subscription if exists
-                if ($user->subscription) {
-                    $user->subscription->update(['status' => 'expired']);
+                if (str_starts_with($transaction->transaction_id, 'SUBS-EXT-')) {
+                    // --- EXTENSION LOGIC ---
+                    $subscription = $transaction->subscription; // This should have been linked in Controller
+                    
+                    if ($subscription) {
+                        // Calculate new expiry: if currently valid, add to expires_at; if expired/past, add to now()
+                        $currentExpiry = $subscription->expires_at ? \Carbon\Carbon::parse($subscription->expires_at) : now();
+                        $newExpiry = $currentExpiry->isFuture() ? $currentExpiry->addMonths($plan->duration_months) : now()->addMonths($plan->duration_months);
+
+                        $subscription->update([
+                            'expires_at' => $newExpiry,
+                            'status' => 'active', // Reactivate if it was expired
+                            'plan_id' => $plan->id, // Update plan reference if needed
+                        ]);
+                    } else {
+                        // Fallback: This shouldn't happen for EXT, but if it does, create new
+                        \Log::warning("Extension transaction {$transaction->id} has no linked subscription. Creating new.");
+                         $subscription = $user->subscriptions()->create([
+                            'tier_id' => $transaction->tier_id,
+                            'plan_id' => $transaction->plan_id,
+                            'status' => 'active',
+                            'started_at' => now(),
+                            'expires_at' => now()->addMonths($plan->duration_months ?? 1),
+                            'is_trial' => false,
+                        ]);
+                        $transaction->update(['subscription_id' => $subscription->id]);
+                    }
+
+                } else {
+                    // --- NEW SUBSCRIPTION / UPGRADE LOGIC ---
+                    // End current active subscription if exists
+                    if ($user->subscription) {
+                        $user->subscription->update(['status' => 'expired']);
+                    }
+
+                    // Create New Subscription
+                    $subscription = $user->subscriptions()->create([
+                        'tier_id' => $transaction->tier_id,
+                        'plan_id' => $transaction->plan_id,
+                        'status' => 'active',
+                        'started_at' => now(),
+                        'expires_at' => now()->addMonths($plan->duration_months ?? 1),
+                        'is_trial' => false,
+                    ]);
+
+                    // Link transaction to subscription
+                    $transaction->update(['subscription_id' => $subscription->id]);
                 }
-
-                // Create New Subscription
-                $subscription = $user->subscriptions()->create([
-                    'tier_id' => $transaction->tier_id,
-                    'plan_id' => $transaction->plan_id,
-                    'status' => 'active',
-                    'started_at' => now(),
-                    'expires_at' => now()->addMonths($plan->duration_months ?? 1),
-                    'is_trial' => false,
-                ]);
-
-                // Link transaction to subscription
-                $transaction->update(['subscription_id' => $subscription->id]);
 
                 // Clear Cache
                 $user->clearSubscriptionCache();

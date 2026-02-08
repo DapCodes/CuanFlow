@@ -114,6 +114,11 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
 
             return response()->json(['success' => true]);
         })->name('destroy-onboarding-flag');
+
+        // Manage Subscription
+        Route::get('/manage', [\App\Http\Controllers\SubscriptionManagementController::class, 'index'])->name('manage');
+        Route::post('/manage/add-duration', [\App\Http\Controllers\SubscriptionManagementController::class, 'addDuration'])->name('manage.add-duration');
+        Route::post('/manage/upgrade', [\App\Http\Controllers\SubscriptionManagementController::class, 'upgrade'])->name('manage.upgrade');
     });
 
     // ---------------------------------------------------------------------
