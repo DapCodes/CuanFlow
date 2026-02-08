@@ -34,6 +34,12 @@ class FeatureAccessService
         // Check subscription status
         $status = $this->getSubscriptionStatus($user);
         
+        // NEW USERS: Allow viewing all features during onboarding
+        // They can see the features but the actual routes are protected by middleware
+        if ($status === self::STATUS_NO_SUBSCRIPTION) {
+            return true; // Show all features for onboarding tour
+        }
+        
         // Only allow if subscription is active or in grace period
         if (!in_array($status, [self::STATUS_ACTIVE, self::STATUS_GRACE])) {
             return false;

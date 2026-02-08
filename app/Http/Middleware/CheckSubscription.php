@@ -33,8 +33,8 @@ class CheckSubscription
             return $next($request);
         }
 
-        // Exclude subscription, payment, and profile routes (so they can logout/pay)
-        if ($request->routeIs('subscription.*', 'payment.*', 'profile.*', 'logout')) {
+        // Exclude subscription, payment, and profile routes (so they can logout/pay/register outlet)
+        if ($request->routeIs('subscription.*', 'payment.*', 'profile.*', 'outlets.register.*', 'logout')) {
             return $next($request);
         }
 
@@ -64,7 +64,14 @@ class CheckSubscription
                 return $this->handlePendingVerification($request, $next);
 
             case FeatureAccessService::STATUS_EXPIRED:
+                // For expired, check if past grace period
+                return $this->handleExpiredSubscription($request, $next, $user);
+
             case FeatureAccessService::STATUS_NO_SUBSCRIPTION:
+                // New user - don't show subscription modal immediately
+                // Let the dashboard handle the onboarding flow
+                return $this->handleNewUser($request, $next);
+
             case FeatureAccessService::STATUS_CANCELLED:
             default:
                 return $this->handleSubscriptionIssue($request, $next, $status);
@@ -128,12 +135,16 @@ class CheckSubscription
             ], 202);
         }
 
+        // Set session to show modal
+        session([
+            'show_subscription_modal' => true, 
+            'subscription_modal_reason' => 'pending_verification'
+        ]);
+
         if ($request->routeIs('dashboard')) {
-            session()->flash('info', 'Permintaan trial Anda sedang ditinjau. Kami akan menghubungi Anda dalam 24-48 jam.');
             return $next($request);
         }
 
-        session()->flash('info', 'Permintaan trial Anda sedang ditinjau. Kami akan menghubungi Anda dalam 24-48 jam.');
         return redirect()->route('dashboard');
     }
 
@@ -148,5 +159,71 @@ class CheckSubscription
             FeatureAccessService::STATUS_CANCELLED => 'Langganan Anda telah dibatalkan. Berlangganan kembali untuk mengakses fitur.',
             default => 'Terjadi masalah dengan langganan Anda.',
         };
+    }
+
+    /**
+     * Handle expired subscription - check if past grace period.
+     */
+    private function handleExpiredSubscription(Request $request, Closure $next, $user): Response
+    {
+        // Get the latest subscription to check grace period
+        $subscription = $user->subscriptions()
+            ->whereIn('status', [
+                \App\Models\UserSubscription::STATUS_EXPIRED,
+                \App\Models\UserSubscription::STATUS_ACTIVE,
+                \App\Models\UserSubscription::STATUS_TRIAL,
+            ])
+            ->latest()
+            ->first();
+
+        if ($subscription) {
+            $graceDaysRemaining = $subscription->grace_days_remaining;
+            
+            // If still within grace period, allow access with warning
+            if ($graceDaysRemaining > 0) {
+                session()->flash('subscription_warning', 
+                    'Langganan Anda sudah berakhir. Anda memiliki ' . $graceDaysRemaining . ' hari masa tenggang.'
+                );
+                return $next($request);
+            }
+        }
+
+        // Past grace period - show subscription modal
+        return $this->handleSubscriptionIssue($request, $next, FeatureAccessService::STATUS_EXPIRED);
+    }
+
+    /**
+     * Handle new user without subscription - allow onboarding flow.
+     */
+    private function handleNewUser(Request $request, Closure $next): Response
+    {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'error' => 'subscription_required',
+                'message' => 'Anda belum memiliki langganan aktif.',
+                'reason' => 'no_subscription',
+            ], 402);
+        }
+
+        $user = $request->user();
+
+        // For dashboard, set appropriate flags based on user state
+        if ($request->routeIs('dashboard')) {
+            // Set a flag to indicate this is a new user needing onboarding
+            session(['new_user_onboarding' => true]);
+            
+            // If user has outlet but no subscription completed tour, show subscription choice modal
+            // But ONLY if we are not already showing the main subscription modal (user clicked 'Buy')
+            if ($user->outlet_id && !session('show_welcome_tour') && !session('show_subscription_modal')) {
+                // Check if they haven't completed onboarding yet
+                session(['force_subscription_choice' => true]);
+            }
+            
+            return $next($request);
+        }
+
+        // For other routes, redirect to dashboard to start onboarding
+        session(['new_user_onboarding' => true]);
+        return redirect()->route('dashboard');
     }
 }

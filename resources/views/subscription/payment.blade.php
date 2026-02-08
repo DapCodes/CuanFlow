@@ -4,6 +4,15 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto py-12 px-4">
+    <div class="mb-8">
+        <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-semibold group text-sm">
+            <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-gray-50 transition-colors">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+            </div>
+            Kembali ke Dashboard
+        </a>
+    </div>
+
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="p-8 border-b border-gray-100">
             <h1 class="text-2xl font-bold text-gray-900">Konfirmasi Pembayaran</h1>

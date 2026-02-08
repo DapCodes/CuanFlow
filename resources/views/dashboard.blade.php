@@ -539,7 +539,9 @@
 @endpush
 
 @section('content')
-<main class="flex-grow flex items-center justify-center py-8 px-4">
+<div class="relative min-h-[calc(100vh-64px)] flex flex-col">
+    @include('subscription.modal')
+    <div class="flex-grow flex items-center justify-center py-8 px-4">
     <div class="w-full max-w-6xl">
 
     {{-- Subscription Grace Period Warning --}}
@@ -1179,8 +1181,59 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Pilihan Langganan (muncul setelah onboarding tour selesai untuk user baru) -->
+@if(auth()->check() && !auth()->user()->subscriptions()->exists() && !is_null(auth()->user()->outlet_id))
+<div id="subscriptionChoiceModal" class="hidden modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-effect"></div>
+    
+    <div class="modal-content relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-8 text-center transform">
+        <div class="mb-6">
+            <div class="mx-auto w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-rocket text-4xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-3">Siap Memulai Bisnis Anda?</h2>
+            <p class="text-gray-600 leading-relaxed">
+                Pilih cara Anda untuk mulai menggunakan CuanFlow dan kelola bisnis Anda dengan lebih mudah.
+            </p>
+        </div>
+        
+        <div class="space-y-3">
+            <!-- Trial Option -->
+            <a href="{{ route('subscription.trial-verification') }}" 
+               onclick="localStorage.setItem('cuanflow_onboarding_completed', '1'); destroyOnboardingFlag();"
+               class="block w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <i class="fa-solid fa-gift mr-2"></i>
+                Coba Gratis {{ \App\Models\SubscriptionSetting::getTrialDays() }} Hari
+                <p class="text-xs font-normal opacity-80 mt-1">Akses semua fitur tanpa biaya</p>
+            </a>
+            
+            <!-- Buy Subscription Option -->
+            <button id="showSubscriptionModalBtn" 
+                    class="block w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <i class="fa-solid fa-crown mr-2"></i>
+                Beli Paket Langganan
+                <p class="text-xs font-normal opacity-80 mt-1">Pilih paket sesuai kebutuhan Anda</p>
+            </button>
+            
+            <!-- Re-explore Option -->
+            <button id="reExploreTourBtn" 
+                    class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-200">
+                <i class="fa-solid fa-compass mr-2"></i>
+                Jelajahi Lagi Fitur CuanFlow
+            </button>
+        </div>
+        
+        <p class="text-xs text-gray-400 mt-4">
+            <i class="fa-solid fa-shield-check mr-1"></i>
+            Data Anda aman bersama kami
+        </p>
     </div>
-</main>
+</div>
+@endif
+</div>
+</div>
+</div>
 
 <!-- Modal untuk user yang belum memiliki outlet -->
 @if(auth()->check() && is_null(auth()->user()->outlet_id))
@@ -1353,9 +1406,27 @@ document.addEventListener('DOMContentLoaded', function() {
   const startWelcomeTourBtn = document.getElementById('startWelcomeTourBtn');
   const skipTourBtn = document.getElementById('skipTourBtn');
   const WELCOME_KEY = 'cuanflow_show_welcome';
+  const ONBOARDING_COMPLETED_KEY = 'cuanflow_onboarding_completed';
 
+  // Check if this is a new user (from middleware session flag)
+  const isNewUser = @json(session('new_user_onboarding', false));
+  const forceSubscriptionChoice = @json(session('force_subscription_choice', false));
+  const hasOutlet = @json(auth()->user()->outlet_id !== null);
+  
   const shouldShowWelcome = @json(session('show_welcome_tour', false)) || 
                            localStorage.getItem(WELCOME_KEY) === '1';
+
+  // For new users with outlet but haven't completed onboarding, show subscription choice modal
+  if (isNewUser && hasOutlet && !modal && !shouldShowWelcome) {
+    const onboardingCompleted = localStorage.getItem(ONBOARDING_COMPLETED_KEY) === '1';
+    
+    // If onboarding not completed OR force flag is set, show subscription choice modal
+    if (forceSubscriptionChoice || !onboardingCompleted) {
+      setTimeout(() => {
+        showSubscriptionChoiceModal();
+      }, 1000);
+    }
+  }
 
   if (shouldShowWelcome && welcomeModal && !modal) {
     if (@json(session('show_welcome_tour', false))) {
@@ -1386,6 +1457,8 @@ document.addEventListener('DOMContentLoaded', function() {
       setTimeout(() => {
         welcomeModal.classList.add('hidden');
         welcomeModal.classList.remove('modal-exit');
+        // Show subscription choice modal for new users
+        showSubscriptionChoiceModal();
       }, 500);
     });
   }
@@ -1535,8 +1608,8 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.removeItem(WELCOME_KEY);
 
     if (autoMode) {
-      note.style.display = 'block';
-      setTimeout(() => { note.style.display = 'none'; }, 3500);
+      // Show subscription choice modal for new users after tour ends
+      showSubscriptionChoiceModal();
     }
     autoMode = false;
     window.removeEventListener('resize', updateLayout);
@@ -1584,6 +1657,77 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
+
+  /* ====== SUBSCRIPTION CHOICE MODAL LOGIC ====== */
+  const subscriptionChoiceModal = document.getElementById('subscriptionChoiceModal');
+  const showSubscriptionModalBtn = document.getElementById('showSubscriptionModalBtn');
+  const reExploreTourBtn = document.getElementById('reExploreTourBtn');
+
+  function showSubscriptionChoiceModal() {
+    if (subscriptionChoiceModal) {
+      setTimeout(() => {
+        subscriptionChoiceModal.classList.remove('hidden');
+      }, 300);
+    }
+  }
+
+  function hideSubscriptionChoiceModal() {
+    if (subscriptionChoiceModal) {
+      subscriptionChoiceModal.classList.add('modal-exit');
+      setTimeout(() => {
+        subscriptionChoiceModal.classList.add('hidden');
+        subscriptionChoiceModal.classList.remove('modal-exit');
+      }, 300);
+    }
+  }
+
+// Helper to destroy onboarding flag (Expose to window for onclick usage)
+window.destroyOnboardingFlag = function() {
+    fetch('{{ route("subscription.destroy-onboarding-flag") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    }); // Fire and forget
+};
+
+  // Show subscription packages modal
+  if (showSubscriptionModalBtn) {
+    showSubscriptionModalBtn.addEventListener('click', function() {
+      hideSubscriptionChoiceModal();
+      // Mark onboarding as completed
+      localStorage.setItem('cuanflow_onboarding_completed', '1');
+      // Destroy server session flag
+      destroyOnboardingFlag();
+      
+      // Trigger showing subscription modal by setting session via AJAX
+      fetch('{{ route("subscription.show-modal") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'X-Requested-With': 'XMLHttpRequest',
+        }
+      }).then(() => {
+        window.location.reload();
+      }).catch(() => {
+        // Fallback: redirect to subscription page
+        window.location.href = '{{ route("subscription.index") }}';
+      });
+    });
+  }
+
+  // Re-explore tour button
+  if (reExploreTourBtn) {
+    reExploreTourBtn.addEventListener('click', function() {
+      hideSubscriptionChoiceModal();
+      setTimeout(() => {
+        startTour({auto: true, force: true, fromWelcome: true});
+      }, 400);
+    });
+  }
 });
 </script>
 
@@ -1822,7 +1966,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-@include('subscription.modal')
 
 @push('scripts')
 <script>

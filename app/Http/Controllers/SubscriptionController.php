@@ -109,6 +109,11 @@ class SubscriptionController extends Controller
             'started_at' => now(),
             'is_trial' => true, // Intent is trial
         ]);
+        // Mark onboarding as completed and set session to show pending status
+        session([
+            'show_subscription_modal' => true, 
+            'subscription_modal_reason' => 'pending_verification'
+        ]);
 
         return redirect()->route('dashboard')
             ->with('success', 'Permintaan verifikasi trial berhasil dikirim. Tim kami akan meninjau data Anda dalam 1x24 jam.');
