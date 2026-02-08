@@ -33,7 +33,7 @@
                      <h2 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Langganan Nonaktif</h2>
                      <p class="text-gray-600 mb-10 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">Langganan Anda saat ini tidak aktif. Pilih paket di bawah ini untuk melanjutkan.</p>
                  
-                 @elseif(session('subscription_modal_reason') == 'pending_verification')
+                @elseif(session('subscription_modal_reason') == 'pending_verification')
                      <div class="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600">
                          <i class="fa-solid fa-clock text-3xl"></i>
                      </div>
@@ -47,6 +47,41 @@
                          </button>
                      </div>
                      <p class="text-sm text-amber-600 mb-6"><i class="fa-solid fa-info-circle mr-1"></i> Atau pilih paket berbayar di bawah untuk akses langsung</p>
+                 
+                 @elseif(session('subscription_modal_reason') == 'trial_rejected')
+                     <div class="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600">
+                         <i class="fa-solid fa-circle-xmark text-3xl"></i>
+                     </div>
+                     <h2 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Permohonan Uji Coba Ditolak</h2>
+                     <p class="text-gray-600 mb-4 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">Maaf, permohonan uji coba gratis Anda tidak dapat kami setujui saat ini.</p>
+                     
+                     @if(session('subscription_rejection_notes'))
+                        <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-6 max-w-lg mx-auto">
+                            <h4 class="text-red-800 font-semibold mb-1 text-sm uppercase tracking-wide">Alasan Penolakan:</h4>
+                            <p class="text-red-600">{{ session('subscription_rejection_notes') }}</p>
+                        </div>
+                     @endif
+
+                     @if(session('subscription_retry_available'))
+                        <div class="mb-8">
+                            <a href="{{ route('subscription.trial-verification') }}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-200 transform hover:-translate-y-0.5">
+                                <i class="fa-solid fa-rotate-right"></i>
+                                Ajukan Trial Lagi
+                            </a>
+                            <p class="text-xs text-gray-500 mt-2">Anda dapat mengajukan permohonan trial baru.</p>
+                        </div>
+                     @elseif(session('subscription_retry_wait_time'))
+                        <div class="mb-8">
+                             <button disabled class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-300 text-gray-500 font-bold rounded-xl cursor-not-allowed">
+                                <i class="fa-solid fa-clock"></i>
+                                Coba Lagi dalam {{ session('subscription_retry_wait_time') }}
+                            </button>
+                            <p class="text-xs text-gray-500 mt-2">Permohonan trial baru dapat diajukan 7 hari setelah penolakan.</p>
+                        </div>
+                     @endif
+
+                     <p class="text-gray-600 mb-8 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">Silakan pilih paket langganan di bawah ini untuk mulai menggunakan CuanFlow.</p>
+
                  
                  @elseif(session('subscription_modal_reason') == 'no_subscription' || session('subscription_modal_reason') == 'user_requested')
                      <div class="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600">

@@ -84,9 +84,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
 
         // Trial
         Route::post('/trial/request', [SubscriptionController::class, 'requestTrial'])->name('trial.request');
-        Route::get('/trial/verification', function () {
-            return view('subscription.trial-verification');
-        })->name('trial-verification');
+        Route::get('/trial/verification', [SubscriptionController::class, 'createTrialVerification'])->name('trial-verification');
         Route::post('/trial/verification', [SubscriptionController::class, 'storeTrialVerification'])->name('trial-verification.store');
 
         // Show modal via AJAX

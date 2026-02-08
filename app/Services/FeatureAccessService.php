@@ -74,6 +74,8 @@ class FeatureAccessService
                 UserSubscription::STATUS_ACTIVE,
                 UserSubscription::STATUS_TRIAL,
                 UserSubscription::STATUS_EXPIRED,
+                UserSubscription::STATUS_CANCELLED,
+                UserSubscription::STATUS_PENDING_VERIFICATION,
             ])
             ->latest()
             ->first();

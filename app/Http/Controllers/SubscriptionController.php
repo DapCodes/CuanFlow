@@ -71,8 +71,34 @@ class SubscriptionController extends Controller
         return redirect()->route('subscription.trial-verification');
     }
 
+    public function createTrialVerification()
+    {
+        // Check for recent rejection
+        $latestRejection = auth()->user()->trialRequests()
+            ->where('status', 'rejected')
+            ->latest()
+            ->first();
+
+        if ($latestRejection && $latestRejection->updated_at->addDays(7)->isFuture()) {
+             $daysRemaining = now()->diffInDays($latestRejection->updated_at->addDays(7)) + 1;
+             return redirect()->route('dashboard')->with('error', "Permohonan trial baru dapat diajukan dalam {$daysRemaining} hari.");
+        }
+
+        return view('subscription.trial-verification');
+    }
+
     public function storeTrialVerification(Request $request)
     {
+        // Check for recent rejection (server-side validation)
+        $latestRejection = auth()->user()->trialRequests()
+            ->where('status', 'rejected')
+            ->latest()
+            ->first();
+
+        if ($latestRejection && $latestRejection->updated_at->addDays(7)->isFuture()) {
+             return back()->with('error', 'Permohonan trial baru belum dapat diajukan.');
+        }
+
         $validated = $request->validate([
             'outlet_name' => ['required', 'string', 'max:255'],
             'business_type' => ['required', 'string', 'max:100'],

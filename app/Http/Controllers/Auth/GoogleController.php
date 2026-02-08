@@ -100,8 +100,6 @@ class GoogleController extends Controller
         $avatarPath = null;
         if ($request->hasFile('avatar')) {
             $avatarPath = $request->file('avatar')->store('avatars', 'public');
-        } elseif (! empty($googleData['google_avatar'])) {
-            $avatarPath = $googleData['google_avatar']; // Use Google avatar URL if no file uploaded
         }
 
         $user = User::create([

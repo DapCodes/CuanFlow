@@ -114,6 +114,51 @@ class CheckSubscription
             ], 402);
         }
 
+        // Check for rejected trial request if status is cancelled or no_subscription
+        if (in_array($reason, [\App\Services\FeatureAccessService::STATUS_CANCELLED, \App\Services\FeatureAccessService::STATUS_NO_SUBSCRIPTION])) {
+            $rejectedTrial = \App\Models\TrialVerificationRequest::where('user_id', $request->user()->id)
+                ->where('status', 'rejected')
+                ->latest()
+                ->first();
+
+            if ($rejectedTrial) {
+                // Check if 7 days have passed since rejection
+                $canRetry = false;
+                $waitTime = '';
+                
+                if ($rejectedTrial->updated_at) {
+                    $rejectionDate = $rejectedTrial->updated_at;
+                    $retryDate = $rejectionDate->copy()->addDays(7);
+                    
+                    if (now()->greaterThanOrEqualTo($retryDate)) {
+                        $canRetry = true;
+                    } else {
+                        $diff = now()->diff($retryDate);
+                        $parts = [];
+                        if ($diff->d > 0) $parts[] = $diff->d . ' Hari';
+                        if ($diff->h > 0) $parts[] = $diff->h . ' Jam';
+                        if (empty($parts) && $diff->i > 0) $parts[] = $diff->i . ' Menit';
+                        
+                        $waitTime = implode(' ', $parts) ?: 'Beberapa saat';
+                    }
+                }
+
+                session([
+                    'show_subscription_modal' => true, 
+                    'subscription_modal_reason' => 'trial_rejected',
+                    'subscription_rejection_notes' => $rejectedTrial->admin_notes,
+                    'subscription_retry_available' => $canRetry,
+                    'subscription_retry_wait_time' => $waitTime,
+                ]);
+                
+                if ($request->routeIs('dashboard')) {
+                    return $next($request);
+                }
+
+                return redirect()->route('dashboard');
+            }
+        }
+
         // If on dashboard, allow access but show modal
         if ($request->routeIs('dashboard')) {
             session(['show_subscription_modal' => true, 'subscription_modal_reason' => $reason]);
