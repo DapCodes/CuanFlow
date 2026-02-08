@@ -70,6 +70,12 @@ require __DIR__.'/auth.php';
 // PROTECTED ROUTES (Auth & Verified)
 // =========================================================================
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/employee-locked', function () {
+        return view('subscription.employee_locked');
+    })->name('employee.locked');
+});
+
 Route::middleware(['auth', 'verified', 'subscription.check'])->group(function () {
 
     // ---------------------------------------------------------------------

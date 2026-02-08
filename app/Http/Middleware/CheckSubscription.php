@@ -34,8 +34,13 @@ class CheckSubscription
         }
 
         // Exclude subscription, payment, and profile routes (so they can logout/pay/register outlet)
-        if ($request->routeIs('subscription.*', 'payment.*', 'profile.*', 'outlets.register.*', 'logout')) {
+        if ($request->routeIs('subscription.*', 'payment.*', 'profile.*', 'outlets.register.*', 'logout', 'employee.locked')) {
             return $next($request);
+        }
+
+        // EMPLOYEE CHECK (Non-Owner)
+        if (! $user->hasRole('owner')) {
+            return $this->handleEmployeeCheck($request, $next, $user);
         }
 
         // Get subscription status from centralized service
@@ -276,5 +281,67 @@ class CheckSubscription
         session(['new_user_onboarding' => true]);
 
         return redirect()->route('dashboard');
+    }
+    /**
+     * Handle check for employees (non-owners).
+     */
+    private function handleEmployeeCheck(Request $request, Closure $next, $user): Response
+    {
+        // 1. Get the owner of the outlet the user belongs to
+        $outlet = $user->outlet;
+        
+        if (! $outlet) {
+             // If user has no outlet, arguably they shouldn't be here or are a fresh user. 
+             // But for employees, they must belong to an outlet.
+             // Let's assume they are stuck or need to be assigned.
+             // For now, let's treat as no subscription or specific error.
+             session(['employee_lock_reason' => 'no_subscription']);
+             return redirect()->route('employee.locked');
+        }
+
+        $owner = $outlet->owner;
+
+        if (! $owner) {
+             // Orphaned outlet?
+             session(['employee_lock_reason' => 'no_subscription']);
+             return redirect()->route('employee.locked');
+        }
+
+        // 2. Check Owner's Subscription
+        $status = $this->accessService->getSubscriptionStatus($owner);
+
+        // Map owner status to employee lock reason
+        if ($status === FeatureAccessService::STATUS_NO_SUBSCRIPTION || $status === FeatureAccessService::STATUS_CANCELLED) {
+             session(['employee_lock_reason' => 'no_subscription']);
+             return redirect()->route('employee.locked');
+        }
+
+        if ($status === FeatureAccessService::STATUS_EXPIRED) {
+             // Check grace period for owner
+             $graceDays = $this->accessService->getGraceDaysRemaining($owner);
+             if ($graceDays <= 0) {
+                 session(['employee_lock_reason' => 'expired']);
+                 return redirect()->route('employee.locked');
+             }
+             // If within grace period, employee can continue (maybe show warning?)
+             // For now, allow access.
+        }
+
+        if ($status === FeatureAccessService::STATUS_PENDING) {
+             session(['employee_lock_reason' => 'no_subscription']); // Or specific pending message
+             return redirect()->route('employee.locked');
+        }
+
+        // 3. Check if Owner has 'employee_management' feature
+        // We can use tierHasFeature from service
+        $hasEmployeeFeature = $this->accessService->tierHasFeature($owner, 'employee_management');
+
+        if (! $hasEmployeeFeature) {
+             session(['employee_lock_reason' => 'feature_unavailable']);
+             return redirect()->route('employee.locked');
+        }
+
+        // All checks passed
+        return $next($request);
     }
 }

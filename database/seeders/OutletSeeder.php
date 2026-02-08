@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\Outlet;
 use App\Models\User;
+use App\Models\SubscriptionPlan;
+use App\Models\SubscriptionTier;
+use App\Models\UserSubscription;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -65,7 +68,7 @@ class OutletSeeder extends Seeder
 
         // 3) USERS (BANYAKIN) - outlet_id awal null, nanti di-set ke outlet pertama yg dimiliki
         $usersData = [
-            ['name' => 'Daffa Ramadhan', 'email' => 'daffa.owner1@gmail.com', 'phone' => '080011220001'],
+            ['name' => 'Daffa Ramadhan', 'email' => 'daffaramadhan929@gmail.com', 'phone' => '081221049828'],
             ['name' => 'Rio Oktora', 'email' => 'rio.owner2@gmail.com', 'phone' => '080011220002'],
             ['name' => 'Nabila Putri', 'email' => 'nabila.owner3@gmail.com', 'phone' => '080011220003'],
             ['name' => 'Fajar Maulana', 'email' => 'fajar.owner4@gmail.com', 'phone' => '080011220004'],
@@ -120,6 +123,32 @@ class OutletSeeder extends Seeder
                 }
                 $outlets[$code]->owner_id = $user->id;
                 $outlets[$code]->save();
+            }
+        }
+
+        // 5) SUBSCRIPTION UNTUK DAFFA (Highest Tier, 1 Month)
+        $daffa = User::where('email', 'daffaramadhan929@gmail.com')->first();
+        if ($daffa) {
+            $highestTier = SubscriptionTier::orderBy('sort_order', 'desc')->first();
+            if ($highestTier) {
+                $plan = SubscriptionPlan::where('tier_id', $highestTier->id)
+                    ->where('duration_months', 1)
+                    ->first();
+
+                if ($plan) {
+                    UserSubscription::updateOrCreate(
+                        ['user_id' => $daffa->id],
+                        [
+                            'tier_id' => 1,
+                            'plan_id' => 1,
+                            'status' => UserSubscription::STATUS_ACTIVE,
+                            'started_at' => now(),
+                            'expires_at' => now()->addMonth(),
+                            'is_trial' => false,
+                            'auto_renew' => true,
+                        ]
+                    );
+                }
             }
         }
     }
