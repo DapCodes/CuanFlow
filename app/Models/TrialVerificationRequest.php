@@ -27,7 +27,9 @@ class TrialVerificationRequest extends Model
     ];
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_APPROVED = 'approved';
+
     public const STATUS_REJECTED = 'rejected';
 
     /**
@@ -129,7 +131,7 @@ class TrialVerificationRequest extends Model
      */
     public function getPhotoStoreFrontUrlAttribute(): ?string
     {
-        return $this->photo_store_front_path ? asset('storage/' . $this->photo_store_front_path) : null;
+        return $this->photo_store_front_path ? asset('storage/'.$this->photo_store_front_path) : null;
     }
 
     /**
@@ -137,7 +139,7 @@ class TrialVerificationRequest extends Model
      */
     public function getPhotoProductsUrlAttribute(): ?string
     {
-        return $this->photo_products_path ? asset('storage/' . $this->photo_products_path) : null;
+        return $this->photo_products_path ? asset('storage/'.$this->photo_products_path) : null;
     }
 
     /**

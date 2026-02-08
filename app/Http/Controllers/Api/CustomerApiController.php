@@ -17,10 +17,10 @@ class CustomerApiController extends Controller
     {
         $customer = Customer::where('email', $request->user()->email)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return response()->json([
                 'message' => 'Customer profile not found.',
-                'data' => []
+                'data' => [],
             ], 404);
         }
 
@@ -39,10 +39,10 @@ class CustomerApiController extends Controller
     {
         $customer = Customer::where('email', $request->user()->email)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return response()->json([
                 'message' => 'Customer profile not found.',
-                'data' => []
+                'data' => [],
             ], 404);
         }
 

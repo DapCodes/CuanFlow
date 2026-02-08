@@ -56,7 +56,7 @@ class RegisterController extends Controller
 
             // 3. Set Role otomatis sebagai 'pelanggan'
             Role::firstOrCreate(['name' => 'pelanggan']);
-            if (!$user->hasRole('pelanggan')) {
+            if (! $user->hasRole('pelanggan')) {
                 $user->assignRole('pelanggan');
             }
 
@@ -88,12 +88,12 @@ class RegisterController extends Controller
             DB::commit();
 
             // 5. Kirim Notifikasi Email Verifikasi (jika email belum diverifikasi)
-            if (!$user->hasVerifiedEmail()) {
+            if (! $user->hasVerifiedEmail()) {
                 $user->sendEmailVerificationNotification();
             }
 
             return response()->json([
-                'message' => 'Akun berhasil ' . ($user->wasRecentlyCreated ? 'dibuat' : 'diperbarui') . '. Silakan cek email untuk verifikasi.',
+                'message' => 'Akun berhasil '.($user->wasRecentlyCreated ? 'dibuat' : 'diperbarui').'. Silakan cek email untuk verifikasi.',
                 'data' => [
                     'user_id' => $user->id,
                     'customer_id' => $customer->id,

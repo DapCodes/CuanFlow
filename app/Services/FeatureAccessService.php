@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Feature;
-use App\Models\SubscriptionSetting;
 use App\Models\User;
 use App\Models\UserSubscription;
 use Illuminate\Support\Facades\Cache;
@@ -14,10 +13,15 @@ class FeatureAccessService
      * Subscription status constants.
      */
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_GRACE = 'grace';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_NO_SUBSCRIPTION = 'no_subscription';
+
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     /**
@@ -33,15 +37,15 @@ class FeatureAccessService
 
         // Check subscription status
         $status = $this->getSubscriptionStatus($user);
-        
+
         // NEW USERS: Allow viewing all features during onboarding
         // They can see the features but the actual routes are protected by middleware
         if ($status === self::STATUS_NO_SUBSCRIPTION) {
             return true; // Show all features for onboarding tour
         }
-        
+
         // Only allow if subscription is active or in grace period
-        if (!in_array($status, [self::STATUS_ACTIVE, self::STATUS_GRACE])) {
+        if (! in_array($status, [self::STATUS_ACTIVE, self::STATUS_GRACE])) {
             return false;
         }
 
@@ -74,7 +78,7 @@ class FeatureAccessService
             ->latest()
             ->first();
 
-        if (!$subscription) {
+        if (! $subscription) {
             return self::STATUS_NO_SUBSCRIPTION;
         }
 
@@ -118,7 +122,7 @@ class FeatureAccessService
 
             $tier = $subscription?->tier;
 
-            if (!$tier) {
+            if (! $tier) {
                 return false;
             }
 

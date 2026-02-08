@@ -23,7 +23,7 @@ class SubscriptionController extends Controller
     public function index(Request $request)
     {
         $tiers = SubscriptionTier::active()
-            ->with(['plans' => function($q) {
+            ->with(['plans' => function ($q) {
                 $q->active()->orderBy('duration_months');
             }])
             ->orderBy('sort_order')
@@ -111,8 +111,8 @@ class SubscriptionController extends Controller
         ]);
         // Mark onboarding as completed and set session to show pending status
         session([
-            'show_subscription_modal' => true, 
-            'subscription_modal_reason' => 'pending_verification'
+            'show_subscription_modal' => true,
+            'subscription_modal_reason' => 'pending_verification',
         ]);
 
         return redirect()->route('dashboard')

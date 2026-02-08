@@ -23,9 +23,10 @@ class NewPasswordController extends Controller
         if (auth()->check()) {
             return redirect()->route('profile.edit', [
                 'reset_token' => $request->route('token'),
-                'email' => $request->email
+                'email' => $request->email,
             ]);
         }
+
         return view('auth.reset-password', ['request' => $request]);
     }
 

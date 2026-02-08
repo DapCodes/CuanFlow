@@ -59,6 +59,7 @@ class SubscriptionSetting extends Model
     {
         $result = parent::save($options);
         self::clearCache();
+
         return $result;
     }
 

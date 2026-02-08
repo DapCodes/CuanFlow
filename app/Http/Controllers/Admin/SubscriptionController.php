@@ -14,9 +14,9 @@ class SubscriptionController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status');
-        
+
         $subscriptions = UserSubscription::with(['user', 'tier', 'plan'])
-            ->when($status, function($q) use ($status) {
+            ->when($status, function ($q) use ($status) {
                 return $q->where('status', $status);
             })
             ->latest()
@@ -32,6 +32,7 @@ class SubscriptionController extends Controller
     public function show(UserSubscription $subscription)
     {
         $subscription->load(['user', 'tier', 'plan', 'payments']);
+
         return view('admin.subscription.show', compact('subscription'));
     }
 

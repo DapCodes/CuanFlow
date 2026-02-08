@@ -13,7 +13,6 @@ use App\Models\StockMovement;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
 use Maatwebsite\Excel\Facades\Excel;
 
 class StatisticsController extends Controller

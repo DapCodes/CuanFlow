@@ -16,7 +16,7 @@ class CheckOutletLimit
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login');
         }
 
@@ -25,7 +25,7 @@ class CheckOutletLimit
             return $next($request);
         }
 
-        if (!$user->canCreateOutlet()) {
+        if (! $user->canCreateOutlet()) {
             $maxOutlets = $user->getMaxOutlets();
             $message = "Anda telah mencapai batas maksimum outlet untuk paket langganan Anda ({$maxOutlets} outlet). Upgrade paket untuk menambah outlet.";
 
@@ -41,7 +41,7 @@ class CheckOutletLimit
             session([
                 'show_upgrade_modal' => true,
                 'upgrade_reason' => 'outlet_limit',
-                'message' => $message
+                'message' => $message,
             ]);
 
             return redirect()->back()->with('error', $message);

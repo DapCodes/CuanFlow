@@ -22,6 +22,7 @@ class SubscriptionPlanController extends Controller
     public function create()
     {
         $tiers = SubscriptionTier::orderBy('sort_order')->get();
+
         return view('admin.subscription.plans.create', compact('tiers'));
     }
 
@@ -52,9 +53,10 @@ class SubscriptionPlanController extends Controller
     public function edit(SubscriptionPlan $plan)
     {
         $tiers = SubscriptionTier::orderBy('sort_order')->get();
+
         return view('admin.subscription.plans.edit', [
             'subscriptionPlan' => $plan,
-            'tiers' => $tiers
+            'tiers' => $tiers,
         ]);
     }
 

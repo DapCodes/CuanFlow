@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Carbon\Carbon;
 
 class UserSubscription extends Model
 {
@@ -33,9 +33,13 @@ class UserSubscription extends Model
     ];
 
     public const STATUS_TRIAL = 'trial';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_CANCELLED = 'cancelled';
+
     public const STATUS_PENDING_VERIFICATION = 'pending_verification';
 
     /**
@@ -159,6 +163,7 @@ class UserSubscription extends Model
         }
 
         $daysSinceExpiry = (int) Carbon::now()->diffInDays($expiryDate, false);
+
         return max(0, $graceDays + $daysSinceExpiry);
     }
 
@@ -170,7 +175,7 @@ class UserSubscription extends Model
         if ($this->grace_days_remaining > 0) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -216,6 +221,7 @@ class UserSubscription extends Model
     public function markExpired(): self
     {
         $this->update(['status' => self::STATUS_EXPIRED]);
+
         return $this;
     }
 
@@ -225,6 +231,7 @@ class UserSubscription extends Model
     public function cancel(): self
     {
         $this->update(['status' => self::STATUS_CANCELLED, 'auto_renew' => false]);
+
         return $this;
     }
 }

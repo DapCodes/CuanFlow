@@ -11,9 +11,9 @@ class TrialVerificationController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status', 'pending');
-        
+
         $requests = TrialVerificationRequest::with('user')
-            ->when($status, function($q) use ($status) {
+            ->when($status, function ($q) use ($status) {
                 return $q->where('status', $status);
             })
             ->latest()
@@ -26,12 +26,13 @@ class TrialVerificationController extends Controller
     public function show(TrialVerificationRequest $trialRequest)
     {
         $trialRequest->load('user');
+
         return view('admin.subscription.trial-requests.show', compact('trialRequest'));
     }
 
     public function approve(Request $request, TrialVerificationRequest $trialRequest)
     {
-        if (!$trialRequest->isPending()) {
+        if (! $trialRequest->isPending()) {
             return back()->with('error', 'Permintaan ini sudah diproses sebelumnya.');
         }
 
@@ -43,10 +44,10 @@ class TrialVerificationController extends Controller
 
         // Start trial for user
         $user = $trialRequest->user;
-        
+
         // Get limits of finding subscription (don't use $user->subscription relationship as it filters active status)
         $latestSubscription = $user->subscriptions()->latest()->first();
-        
+
         // If user has any subscription, activate it as trial (updates existing data)
         if ($latestSubscription) {
             $latestSubscription->startTrial(
@@ -62,7 +63,7 @@ class TrialVerificationController extends Controller
                 'trial_ends_at' => now()->addDays(\App\Models\SubscriptionSetting::getTrialDays()),
             ]);
         }
-            
+
         // Clear cache to ensure immediate effect
         $user->clearSubscriptionCache();
 
@@ -72,7 +73,7 @@ class TrialVerificationController extends Controller
 
     public function reject(Request $request, TrialVerificationRequest $trialRequest)
     {
-        if (!$trialRequest->isPending()) {
+        if (! $trialRequest->isPending()) {
             return back()->with('error', 'Permintaan ini sudah diproses sebelumnya.');
         }
 
@@ -81,10 +82,10 @@ class TrialVerificationController extends Controller
         ]);
 
         $trialRequest->reject(auth()->user(), $request->reason);
-        
+
         // Cancel pending subscription if exists
         $latestSubscription = $trialRequest->user->subscriptions()->latest()->first();
-        
+
         if ($latestSubscription && $latestSubscription->isPendingVerification()) {
             $latestSubscription->cancel();
         }

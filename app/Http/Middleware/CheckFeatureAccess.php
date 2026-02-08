@@ -21,13 +21,13 @@ class CheckFeatureAccess
      * Handle an incoming request.
      * Checks BOTH subscription validity AND tier feature access.
      *
-     * @param string|null $featureName The feature name to check access for
+     * @param  string|null  $featureName  The feature name to check access for
      */
     public function handle(Request $request, Closure $next, ?string $featureName = null): Response
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login');
         }
 
@@ -37,28 +37,28 @@ class CheckFeatureAccess
         }
 
         // If no specific feature is specified, just proceed
-        if (!$featureName) {
+        if (! $featureName) {
             return $next($request);
         }
 
         // Check if feature exists and is active
         $feature = Feature::where('name', $featureName)->where('is_active', true)->first();
 
-        if (!$feature) {
+        if (! $feature) {
             abort(404, 'Fitur tidak ditemukan.');
         }
 
         // Use the centralized service for access check
         $accessResult = $this->accessService->checkAccess($user, $featureName);
 
-        if (!$accessResult['can_access']) {
+        if (! $accessResult['can_access']) {
             return $this->handleNoAccess($request, $feature, $accessResult);
         }
 
         // If in grace period, flash a warning message
         if ($accessResult['status'] === FeatureAccessService::STATUS_GRACE) {
-            session()->flash('subscription_warning', 
-                'Langganan Anda sudah berakhir. Anda memiliki ' . $accessResult['grace_days'] . ' hari masa tenggang.'
+            session()->flash('subscription_warning',
+                'Langganan Anda sudah berakhir. Anda memiliki '.$accessResult['grace_days'].' hari masa tenggang.'
             );
         }
 

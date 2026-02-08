@@ -26,7 +26,7 @@ class PosDiscountTest extends TestCase
 
         $this->outlet = Outlet::factory()->create();
         $this->user = User::factory()->create(['outlet_id' => $this->outlet->id]);
-        
+
         // Setup permission
         $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Karyawan', 'guard_name' => 'web']);
         $permission = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'akses pos', 'guard_name' => 'web']);
@@ -57,7 +57,7 @@ class PosDiscountTest extends TestCase
             'product_id' => $this->product->id,
             'quantity' => 2,
         ]);
-        
+
         if ($response->status() !== 200) {
             dump('AddToCart Failed:', $response->json());
         }
@@ -138,7 +138,7 @@ class PosDiscountTest extends TestCase
     {
         $discount = Discount::factory()->percentage()->create([
             'value' => 10,
-            'is_voucher' => true // Ensure it's a voucher as per new rules
+            'is_voucher' => true, // Ensure it's a voucher as per new rules
         ]);
 
         $this->postJson(route('pos.cart.add'), [
@@ -149,7 +149,7 @@ class PosDiscountTest extends TestCase
         $response = $this->postJson(route('pos.discounts.apply'), [
             'discount_code' => $discount->code,
         ]);
-        
+
         $response->assertStatus(200);
 
         $this->assertTrue(Session::has('pos_discount_plan'));
@@ -162,7 +162,7 @@ class PosDiscountTest extends TestCase
 
         // Expect discount to persist and update
         $this->assertTrue(Session::has('pos_discount_plan'));
-        
+
         $plan = Session::get('pos_discount_plan');
         $this->assertEquals(3000, $plan['total_discount']); // 10% of 30,000
     }

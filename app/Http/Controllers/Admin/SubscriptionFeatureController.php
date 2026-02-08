@@ -11,12 +11,14 @@ class SubscriptionFeatureController extends Controller
     public function index()
     {
         $features = Feature::orderBy('category')->orderBy('sort_order')->get();
+
         return view('admin.subscription.features.index', compact('features'));
     }
 
     public function create()
     {
         $categories = Feature::getCategories();
+
         return view('admin.subscription.features.create', compact('categories'));
     }
 
@@ -51,16 +53,17 @@ class SubscriptionFeatureController extends Controller
     public function edit(Feature $feature)
     {
         $categories = Feature::getCategories();
+
         return view('admin.subscription.features.edit', [
             'subscriptionFeature' => $feature,
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
     public function update(Request $request, Feature $feature)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:50', 'unique:features,name,' . $feature->id],
+            'name' => ['required', 'string', 'max:50', 'unique:features,name,'.$feature->id],
             'display_name' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string'],

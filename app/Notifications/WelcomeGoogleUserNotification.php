@@ -37,14 +37,14 @@ class WelcomeGoogleUserNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->subject('Selamat Datang di CuanFlow! 👋')
-                    ->greeting('Halo, ' . $this->userName . '!')
-                    ->line('Terima kasih sudah mendaftar melalui akun Google Anda.')
-                    ->line('Akun Anda telah berhasil dibuat dan diverifikasi secara otomatis.')
-                    ->line('Sekarang Anda bisa mulai mengelola bisnis Anda dengan lebih efisien menggunakan fitur-fitur unggulan CuanFlow.')
-                    ->action('Masuk ke Dashboard', route('dashboard'))
-                    ->line('Senang bisa menemani perjalanan bisnis Anda!')
-                    ->salutation('Salam Hangat, Tim CuanFlow');
+            ->subject('Selamat Datang di CuanFlow! 👋')
+            ->greeting('Halo, '.$this->userName.'!')
+            ->line('Terima kasih sudah mendaftar melalui akun Google Anda.')
+            ->line('Akun Anda telah berhasil dibuat dan diverifikasi secara otomatis.')
+            ->line('Sekarang Anda bisa mulai mengelola bisnis Anda dengan lebih efisien menggunakan fitur-fitur unggulan CuanFlow.')
+            ->action('Masuk ke Dashboard', route('dashboard'))
+            ->line('Senang bisa menemani perjalanan bisnis Anda!')
+            ->salutation('Salam Hangat, Tim CuanFlow');
     }
 
     /**

@@ -11,6 +11,7 @@ class SubscriptionSettingController extends Controller
     public function edit()
     {
         $settings = SubscriptionSetting::instance();
+
         return view('admin.subscription.settings.edit', compact('settings'));
     }
 
@@ -25,7 +26,7 @@ class SubscriptionSettingController extends Controller
         ]);
 
         $settings = SubscriptionSetting::instance();
-        
+
         $settings->update([
             'trial_duration_days' => $validated['trial_duration_days'],
             'grace_period_days' => $validated['grace_period_days'],

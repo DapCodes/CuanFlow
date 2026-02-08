@@ -64,7 +64,7 @@ class SubscriptionPlan extends Model
             3 => '3 Bulan',
             6 => '6 Bulan',
             12 => '1 Tahun',
-            default => $this->duration_months . ' Bulan',
+            default => $this->duration_months.' Bulan',
         };
     }
 
@@ -73,7 +73,7 @@ class SubscriptionPlan extends Model
      */
     public function getFormattedPriceAttribute(): string
     {
-        return 'Rp ' . number_format($this->price, 0, ',', '.');
+        return 'Rp '.number_format($this->price, 0, ',', '.');
     }
 
     /**
@@ -84,6 +84,7 @@ class SubscriptionPlan extends Model
         if ($this->discount_percentage > 0) {
             return $this->price / (1 - ($this->discount_percentage / 100));
         }
+
         return $this->price;
     }
 
@@ -106,6 +107,7 @@ class SubscriptionPlan extends Model
 
         $expiry = clone $startDate;
         $expiry->modify("+{$this->duration_months} months");
+
         return $expiry;
     }
 }

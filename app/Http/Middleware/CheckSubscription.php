@@ -24,7 +24,7 @@ class CheckSubscription
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login');
         }
 
@@ -47,17 +47,19 @@ class CheckSubscription
                 if (session()->has('show_subscription_modal')) {
                     session()->forget(['show_subscription_modal', 'subscription_modal_reason']);
                 }
-                
+
                 // Check for upcoming expiry warning (7 days)
                 $this->checkExpiryWarning($user);
+
                 return $next($request);
 
             case FeatureAccessService::STATUS_GRACE:
                 // Allow access but show warning
                 $graceDays = $this->accessService->getGraceDaysRemaining($user);
-                session()->flash('subscription_warning', 
-                    'Langganan Anda sudah berakhir. Anda memiliki ' . $graceDays . ' hari masa tenggang.'
+                session()->flash('subscription_warning',
+                    'Langganan Anda sudah berakhir. Anda memiliki '.$graceDays.' hari masa tenggang.'
                 );
+
                 return $next($request);
 
             case FeatureAccessService::STATUS_PENDING:
@@ -84,8 +86,8 @@ class CheckSubscription
     private function checkExpiryWarning($user): void
     {
         $subscription = $user->subscription;
-        
-        if (!$subscription) {
+
+        if (! $subscription) {
             return;
         }
 
@@ -93,7 +95,7 @@ class CheckSubscription
 
         if ($daysRemaining !== null && $daysRemaining <= 7 && $daysRemaining > 0) {
             $type = $subscription->isTrial() ? 'trial' : 'langganan';
-            session()->flash('subscription_warning', 
+            session()->flash('subscription_warning',
                 "Masa {$type} Anda akan berakhir dalam {$daysRemaining} hari."
             );
         }
@@ -115,11 +117,13 @@ class CheckSubscription
         // If on dashboard, allow access but show modal
         if ($request->routeIs('dashboard')) {
             session(['show_subscription_modal' => true, 'subscription_modal_reason' => $reason]);
+
             return $next($request);
         }
 
         // Otherwise redirect to dashboard with modal
         session(['show_subscription_modal' => true, 'subscription_modal_reason' => $reason]);
+
         return redirect()->route('dashboard');
     }
 
@@ -137,8 +141,8 @@ class CheckSubscription
 
         // Set session to show modal
         session([
-            'show_subscription_modal' => true, 
-            'subscription_modal_reason' => 'pending_verification'
+            'show_subscription_modal' => true,
+            'subscription_modal_reason' => 'pending_verification',
         ]);
 
         if ($request->routeIs('dashboard')) {
@@ -178,12 +182,13 @@ class CheckSubscription
 
         if ($subscription) {
             $graceDaysRemaining = $subscription->grace_days_remaining;
-            
+
             // If still within grace period, allow access with warning
             if ($graceDaysRemaining > 0) {
-                session()->flash('subscription_warning', 
-                    'Langganan Anda sudah berakhir. Anda memiliki ' . $graceDaysRemaining . ' hari masa tenggang.'
+                session()->flash('subscription_warning',
+                    'Langganan Anda sudah berakhir. Anda memiliki '.$graceDaysRemaining.' hari masa tenggang.'
                 );
+
                 return $next($request);
             }
         }
@@ -211,19 +216,20 @@ class CheckSubscription
         if ($request->routeIs('dashboard')) {
             // Set a flag to indicate this is a new user needing onboarding
             session(['new_user_onboarding' => true]);
-            
+
             // If user has outlet but no subscription completed tour, show subscription choice modal
             // But ONLY if we are not already showing the main subscription modal (user clicked 'Buy')
-            if ($user->outlet_id && !session('show_welcome_tour') && !session('show_subscription_modal')) {
+            if ($user->outlet_id && ! session('show_welcome_tour') && ! session('show_subscription_modal')) {
                 // Check if they haven't completed onboarding yet
                 session(['force_subscription_choice' => true]);
             }
-            
+
             return $next($request);
         }
 
         // For other routes, redirect to dashboard to start onboarding
         session(['new_user_onboarding' => true]);
+
         return redirect()->route('dashboard');
     }
 }

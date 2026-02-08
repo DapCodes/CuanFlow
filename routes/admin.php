@@ -117,11 +117,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::resource('tiers', SubscriptionTierController::class)->names('tiers');
         Route::resource('plans', SubscriptionPlanController::class)->names('plans');
         Route::resource('features', SubscriptionFeatureController::class)->names('features');
-        
+
         // Settings
         Route::get('settings', [SubscriptionSettingController::class, 'edit'])->name('settings.edit');
         Route::put('settings', [SubscriptionSettingController::class, 'update'])->name('settings.update');
-        
+
         // Trial Requests
         Route::get('trial-requests', [TrialVerificationController::class, 'index'])->name('trial-requests.index');
         Route::get('trial-requests/{trialRequest}', [TrialVerificationController::class, 'show'])->name('trial-requests.show');

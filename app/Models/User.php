@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\CausesActivity;
@@ -180,6 +180,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return Cache::remember("user_{$this->id}_has_subscription", 300, function () {
             $subscription = $this->subscription;
+
             return $subscription && $subscription->isActive();
         });
     }
@@ -190,6 +191,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getSubscriptionTier(): ?SubscriptionTier
     {
         $subscription = $this->subscription;
+
         return $subscription?->tier;
     }
 
@@ -213,6 +215,7 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         $accessService = app(\App\Services\FeatureAccessService::class);
+
         return $accessService->canAccess($this, $featureName);
     }
 
@@ -222,6 +225,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasPendingTrialVerification(): bool
     {
         $trialRequest = $this->trialRequest;
+
         return $trialRequest && $trialRequest->isPending();
     }
 
@@ -246,6 +250,7 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         $currentOutlets = $this->outletsOwned()->count();
+
         return $currentOutlets < $maxOutlets;
     }
 
@@ -258,4 +263,3 @@ class User extends Authenticatable implements MustVerifyEmail
         Cache::flush(); // Also clear feature cache
     }
 }
-

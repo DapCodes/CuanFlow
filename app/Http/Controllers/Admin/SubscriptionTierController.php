@@ -21,6 +21,7 @@ class SubscriptionTierController extends Controller
     public function create()
     {
         $features = Feature::orderBy('category')->orderBy('sort_order')->get()->groupBy('category');
+
         return view('admin.subscription.tiers.create', compact('features'));
     }
 
@@ -50,7 +51,7 @@ class SubscriptionTierController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        if (!empty($validated['features'])) {
+        if (! empty($validated['features'])) {
             $tier->features()->sync($validated['features']);
             $this->updateFeaturesListJson($tier);
         }
@@ -68,14 +69,14 @@ class SubscriptionTierController extends Controller
         return view('admin.subscription.tiers.edit', [
             'subscriptionTier' => $tier,
             'features' => $features,
-            'selectedFeatures' => $selectedFeatures
+            'selectedFeatures' => $selectedFeatures,
         ]);
     }
 
     public function update(Request $request, SubscriptionTier $tier)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:50', 'unique:subscription_tiers,name,' . $tier->id],
+            'name' => ['required', 'string', 'max:50', 'unique:subscription_tiers,name,'.$tier->id],
             'display_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],

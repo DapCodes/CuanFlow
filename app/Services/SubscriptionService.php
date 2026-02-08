@@ -55,7 +55,7 @@ class SubscriptionService
                 ->update(['status' => UserSubscription::STATUS_CANCELLED]);
 
             // Get silver tier (default for trial) or lowest paid tier
-            $tier = SubscriptionTier::where('name', 'silver')->first() 
+            $tier = SubscriptionTier::where('name', 'silver')->first()
                  ?? SubscriptionTier::orderBy('price', 'asc')->first();
 
             $subscription = $user->subscriptions()->create([
@@ -80,7 +80,7 @@ class SubscriptionService
     {
         $subscription = $user->subscription;
 
-        if (!$subscription) {
+        if (! $subscription) {
             return false;
         }
 

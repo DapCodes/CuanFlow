@@ -72,8 +72,6 @@ require __DIR__.'/auth.php';
 
 Route::middleware(['auth', 'verified', 'subscription.check'])->group(function () {
 
-
-
     // ---------------------------------------------------------------------
     // Subscription & Billing
     // ---------------------------------------------------------------------
@@ -83,30 +81,33 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::get('/payment', [SubscriptionPaymentController::class, 'show'])->name('payment');
         Route::get('/payment/finish', [SubscriptionPaymentController::class, 'finish'])->name('payment.finish');
         Route::get('/payment/error', [SubscriptionPaymentController::class, 'error'])->name('payment.error');
-        
+
         // Trial
         Route::post('/trial/request', [SubscriptionController::class, 'requestTrial'])->name('trial.request');
         Route::get('/trial/verification', function () {
             return view('subscription.trial-verification');
         })->name('trial-verification');
         Route::post('/trial/verification', [SubscriptionController::class, 'storeTrialVerification'])->name('trial-verification.store');
-        
+
         // Show modal via AJAX
         Route::post('/show-modal', function () {
             session(['show_subscription_modal' => true, 'subscription_modal_reason' => 'user_requested']);
+
             return response()->json(['success' => true]);
         })->name('show-modal');
-        
+
         // Clear modal via AJAX (for re-explore tour)
         Route::post('/clear-modal', function () {
             session()->forget(['show_subscription_modal', 'subscription_modal_reason', 'force_subscription_choice']);
             session(['show_welcome_tour' => true]);
+
             return response()->json(['success' => true]);
         })->name('clear-modal');
 
         // Destroy onboarding flag via AJAX (when user chooses trial/buy)
         Route::post('/destroy-onboarding-flag', function () {
             session()->forget(['new_user_onboarding', 'force_subscription_choice']);
+
             return response()->json(['success' => true]);
         })->name('destroy-onboarding-flag');
     });

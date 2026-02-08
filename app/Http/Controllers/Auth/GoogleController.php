@@ -32,10 +32,10 @@ class GoogleController extends Controller
 
             if ($user) {
                 // Update google_id and google_avatar if not set
-                if (!$user->google_id) {
+                if (! $user->google_id) {
                     $user->google_id = $googleUser->getId();
                 }
-                if (!$user->google_avatar || $user->google_avatar !== $googleUser->getAvatar()) {
+                if (! $user->google_avatar || $user->google_avatar !== $googleUser->getAvatar()) {
                     $user->google_avatar = $googleUser->getAvatar();
                 }
                 $user->save();
@@ -70,11 +70,12 @@ class GoogleController extends Controller
      */
     public function completeProfile()
     {
-        if (!session()->has('google_user')) {
+        if (! session()->has('google_user')) {
             return redirect()->route('login');
         }
 
         $googleUser = session('google_user');
+
         return view('auth.google-complete-profile', compact('googleUser'));
     }
 
@@ -83,7 +84,7 @@ class GoogleController extends Controller
      */
     public function storeProfile(\Illuminate\Http\Request $request)
     {
-        if (!session()->has('google_user')) {
+        if (! session()->has('google_user')) {
             return redirect()->route('login');
         }
 
@@ -98,8 +99,8 @@ class GoogleController extends Controller
 
         $avatarPath = null;
         if ($request->hasFile('avatar')) {
-             $avatarPath = $request->file('avatar')->store('avatars', 'public');
-        } elseif (!empty($googleData['google_avatar'])) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        } elseif (! empty($googleData['google_avatar'])) {
             $avatarPath = $googleData['google_avatar']; // Use Google avatar URL if no file uploaded
         }
 

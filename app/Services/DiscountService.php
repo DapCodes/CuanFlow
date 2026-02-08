@@ -234,7 +234,7 @@ class DiscountService
                         $appliedBogo = $this->applyFreeItems($bogoDiscount, $cartItems, $freeItemSelection);
                         $bestBogoPlan['affected_items'] = $appliedBogo;
                         $plan['affected_items'] = array_merge($plan['affected_items'], $appliedBogo);
-                        
+
                         // Add BOGO value to total discount
                         $bogoValue = collect($appliedBogo)->sum('discount_amount');
                         $plan['total_discount'] += $bogoValue;
@@ -431,7 +431,7 @@ class DiscountService
                 ->first();
 
             $availableStock = $stock ? $stock->quantity : 0;
-            $trackStock = $item['track_stock'] ?? true; 
+            $trackStock = $item['track_stock'] ?? true;
             $remainingStock = $trackStock ? max(0, $availableStock - $item['quantity']) : 999999;
 
             return [

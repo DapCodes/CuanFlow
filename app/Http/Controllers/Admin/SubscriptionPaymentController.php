@@ -14,9 +14,9 @@ class SubscriptionPaymentController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status');
-        
+
         $payments = PaymentTransaction::with(['user', 'tier', 'plan'])
-            ->when($status, function($q) use ($status) {
+            ->when($status, function ($q) use ($status) {
                 return $q->where('status', $status);
             })
             ->latest()
@@ -32,6 +32,7 @@ class SubscriptionPaymentController extends Controller
     public function show(PaymentTransaction $payment)
     {
         $payment->load(['user', 'tier', 'plan', 'subscription']);
+
         return view('admin.subscription.payments.show', compact('payment'));
     }
 
@@ -40,12 +41,12 @@ class SubscriptionPaymentController extends Controller
      */
     public function approve(PaymentTransaction $payment)
     {
-        if (!$payment->isPending()) {
+        if (! $payment->isPending()) {
             return back()->with('error', 'Pembayaran ini tidak dalam status pending.');
         }
 
         $payment->markSuccessful(['admin_note' => 'Manually approved by admin'], 'Manual/Admin');
-        
+
         // Logic to activate subscription if not already activated by webhooks
         if ($payment->subscription && $payment->subscription->isPendingVerification()) {
             $payment->subscription->activate($payment->plan);

@@ -605,8 +605,8 @@ class PaymentController extends Controller
     private function handleSubscriptionNotification($notification)
     {
         $transaction = \App\Models\PaymentTransaction::where('transaction_id', $notification->order_id)->first();
-        if (!$transaction) {
-             return response()->json(['message' => 'Transaction not found'], 404);
+        if (! $transaction) {
+            return response()->json(['message' => 'Transaction not found'], 404);
         }
 
         if (in_array($notification->transaction_status, ['capture', 'settlement'])) {
@@ -614,16 +614,16 @@ class PaymentController extends Controller
             if ($transaction->isSuccessful()) {
                 return response()->json(['success' => true, 'message' => 'Already processed'], 200);
             }
-            
+
             DB::beginTransaction();
             try {
                 // 1. Mark Transaction as Successful
-                $transaction->markSuccessful((array)$notification, $notification->payment_type ?? 'qris');
-                
+                $transaction->markSuccessful((array) $notification, $notification->payment_type ?? 'qris');
+
                 // 2. Activate Subscription
                 $user = $transaction->user;
                 $plan = $transaction->plan;
-                
+
                 // End current active subscription if exists
                 if ($user->subscription) {
                     $user->subscription->update(['status' => 'expired']);
@@ -641,21 +641,24 @@ class PaymentController extends Controller
 
                 // Link transaction to subscription
                 $transaction->update(['subscription_id' => $subscription->id]);
-                
+
                 // Clear Cache
                 $user->clearSubscriptionCache();
 
                 DB::commit();
+
                 return response()->json(['success' => true], 200);
 
             } catch (\Exception $e) {
                 DB::rollBack();
-                \Log::error('Subscription Payment Error: ' . $e->getMessage());
+                \Log::error('Subscription Payment Error: '.$e->getMessage());
+
                 return response()->json(['message' => 'Failed processing'], 500);
             }
         } elseif (in_array($notification->transaction_status, ['expire', 'cancel', 'deny'])) {
-             $transaction->markFailed((array)$notification);
-             return response()->json(['success' => true], 200);
+            $transaction->markFailed((array) $notification);
+
+            return response()->json(['success' => true], 200);
         }
 
         return response()->json(['message' => 'Pending'], 200);

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPlan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Midtrans\Config;
 use Midtrans\Snap;
-use Illuminate\Support\Str;
 
 class SubscriptionPaymentController extends Controller
 {
@@ -16,15 +16,15 @@ class SubscriptionPaymentController extends Controller
     public function show(Request $request)
     {
         $planId = $request->query('plan');
-        
-        if (!$planId) {
+
+        if (! $planId) {
             return redirect()->route('subscription.index');
         }
 
         $plan = SubscriptionPlan::with('tier')->findOrFail($planId);
-        
+
         // Ensure plan is active
-        if (!$plan->is_active) {
+        if (! $plan->is_active) {
             return back()->with('error', 'Paket tidak tersedia.');
         }
 
@@ -35,13 +35,13 @@ class SubscriptionPaymentController extends Controller
         Config::$is3ds = true;
 
         // Create Transaction Data
-        $orderId = 'SUBS-' . auth()->id() . '-' . time() . '-' . Str::random(5);
+        $orderId = 'SUBS-'.auth()->id().'-'.time().'-'.Str::random(5);
         $user = auth()->user();
-        
+
         // Calculate Amount (Add Logic for Taxes/Discounts if needed)
         // For now, simple price
-        $amount = (int) $plan->price; 
-        
+        $amount = (int) $plan->price;
+
         // Add Tax (11% PPN)
         $tax = (int) ($amount * 0.11);
         $total = $amount + $tax;
@@ -68,11 +68,11 @@ class SubscriptionPaymentController extends Controller
             ],
             'item_details' => [
                 [
-                    'id' => 'PLAN-' . $plan->id,
+                    'id' => 'PLAN-'.$plan->id,
                     'price' => $total, // Total per item
                     'quantity' => 1,
-                    'name' => $plan->tier->display_name . ' (' . $plan->duration_months . ' Bulan)',
-                ]
+                    'name' => $plan->tier->display_name.' ('.$plan->duration_months.' Bulan)',
+                ],
             ],
             'callbacks' => [
                 'finish' => route('subscription.payment.finish'),
@@ -82,7 +82,7 @@ class SubscriptionPaymentController extends Controller
         try {
             $snapToken = Snap::getSnapToken($params);
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses pembayaran: '.$e->getMessage());
         }
 
         return view('subscription.payment', compact('plan', 'snapToken', 'orderId', 'amount', 'tax', 'total'));

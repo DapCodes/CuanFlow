@@ -60,8 +60,9 @@ class TierFeaturesSeeder extends Seeder
         $goldTier = SubscriptionTier::where('name', 'gold')->first();
         $platinumTier = SubscriptionTier::where('name', 'platinum')->first();
 
-        if (!$silverTier || !$goldTier || !$platinumTier) {
+        if (! $silverTier || ! $goldTier || ! $platinumTier) {
             $this->command->error('Please run SubscriptionTiersSeeder first!');
+
             return;
         }
 
@@ -87,7 +88,7 @@ class TierFeaturesSeeder extends Seeder
         $featureIds = Feature::whereIn('name', $featureNames)->pluck('id');
         $tier->features()->sync($featureIds);
 
-        $this->command->info("Assigned " . count($featureIds) . " features to {$tier->display_name} tier");
+        $this->command->info('Assigned '.count($featureIds)." features to {$tier->display_name} tier");
     }
 
     private function updateFeaturesListJson(SubscriptionTier $tier): void
