@@ -413,7 +413,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     // ---------------------------------------------------------------------
     // Tasks (Kanban)
     // ---------------------------------------------------------------------
-    Route::prefix('tasks')->name('tasks.')->middleware('feature.access:tasks')->group(function () {
+    Route::prefix('tasks')->name('tasks.')->middleware('feature.access:task_management')->group(function () {
         Route::get('/table', [TaskController::class, 'tableView'])->name('table');
         Route::get('/calendar', [TaskController::class, 'calendarView'])->name('calendar');
         Route::get('/calendar-data', [TaskController::class, 'getCalendarTasks'])->name('calendar-data');
@@ -421,8 +421,8 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::post('/{task}/assign-users', [TaskController::class, 'assignUsers'])->name('assign-users');
         Route::get('/{task}/activities', [TaskController::class, 'getActivities'])->name('activities');
     });
-    Route::resource('tasks', TaskController::class)->except(['create', 'edit'])->middleware('feature.access:tasks');
-    Route::resource('task-labels', TaskLabelController::class)->middleware('feature.access:tasks');
+    Route::resource('tasks', TaskController::class)->except(['create', 'edit'])->middleware('feature.access:task_management');
+    Route::resource('task-labels', TaskLabelController::class)->middleware('feature.access:task_management');
 
     // ---------------------------------------------------------------------
     // Reports & Statistics
