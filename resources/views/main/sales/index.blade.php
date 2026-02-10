@@ -525,15 +525,6 @@
     border: 1px solid #e5e7eb;
   }
 
-  /* Disable scrolling */
-  .fc .fc-scroller {
-    overflow: hidden !important;
-  }
-
-  .fc .fc-scroller-liquid-absolute {
-    position: relative !important;
-  }
-  
   /* Day Numbers */
   .fc .fc-daygrid-day-number {
     font-weight: 600;
@@ -562,9 +553,6 @@
   /* Day cell height - compact */
   .fc .fc-daygrid-day-frame {
     min-height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   /* Selected day */

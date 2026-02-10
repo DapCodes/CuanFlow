@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\EmailVerifyController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Http\Controllers\Api\Auth\GoogleAuthController;
 use App\Http\Controllers\Api\Auth\ResendVerificationController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\DebtPaymentApiController;
@@ -15,6 +16,11 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     Route::post('/auth/register', [RegisterController::class, 'register']);
     Route::post('/auth/login', [LoginController::class, 'login']);
+
+    // Google Auth
+    Route::post('/auth/google/login', [GoogleAuthController::class, 'login']);
+    Route::post('/auth/google/register', [GoogleAuthController::class, 'register']);
+
     Route::get('/email/verify/{id}/{hash}', EmailVerifyController::class)
         ->middleware(['signed', 'throttle:6,1'])
         ->name('api.verification.verify');

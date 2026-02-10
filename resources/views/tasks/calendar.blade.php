@@ -103,10 +103,6 @@
         padding: 0.75rem 0 !important;
     }
 
-    .fc-daygrid-day {
-        transition: background-color 0.2s ease;
-    }
-
     .fc-daygrid-day:hover {
         background-color: #f9fafb;
     }
