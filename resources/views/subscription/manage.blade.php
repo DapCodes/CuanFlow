@@ -137,11 +137,25 @@
                             @foreach($extensionPlans as $plan)
                                 <div class="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:border-cuan-green/30 transition-all group relative cursor-pointer"
                                     onclick="processExtension({{ $plan->id }}, {{ $plan->price }}, {{ $plan->duration_months }}, {{ \Carbon\Carbon::parse($subscription->expires_at)->timestamp }})">
+                                    
+                                    @if($plan->discount_percentage > 0)
+                                        <div class="absolute -top-3 -right-3 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg rotate-12 group-hover:rotate-0 transition-transform">
+                                             Hemat {{ number_format($plan->discount_percentage, 0) }}%
+                                        </div>
+                                    @endif
+
                                     <div class="absolute top-4 right-4 text-gray-300 group-hover:text-cuan-green transition-colors">
                                         <i class="fas fa-circle-plus text-xl"></i>
                                     </div>
                                     <p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">{{ $plan->duration_months }} Bulan</p>
-                                    <p class="text-2xl font-black text-gray-900 mb-4">Rp {{ number_format($plan->price, 0, ',', '.') }}</p>
+                                    
+                                    <div class="mb-4">
+                                        @if($plan->discount_percentage > 0)
+                                            <p class="text-xs text-gray-400 line-through font-medium">Rp {{ number_format($plan->original_price, 0, ',', '.') }}</p>
+                                        @endif
+                                        <p class="text-2xl font-black text-gray-900">Rp {{ number_format($plan->price, 0, ',', '.') }}</p>
+                                    </div>
+
                                     <button class="w-full py-3 rounded-xl bg-gray-50 text-gray-900 text-xs font-black uppercase tracking-widest group-hover:bg-cuan-dark group-hover:text-white transition-colors">
                                         Pilih Paket
                                     </button>
@@ -188,8 +202,22 @@
                                                     @foreach($tier->plans as $plan)
                                                         <button onclick="confirmUpgrade({{ $plan->id }}, '{{ $tier->display_name }}', {{ $plan->price }}, {{ $plan->duration_months }}, {{ json_encode($tier->features->map(function($f){ return ['name' => $f->display_name ?? $f->name, 'description' => $f->description, 'icon' => $f->icon]; })) }})"
                                                             class="group relative flex flex-col p-4 border border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50/30 transition-all text-left">
+                                                            
+                                                            @if($plan->discount_percentage > 0)
+                                                                <div class="absolute -top-2 -right-2 bg-purple-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm z-10">
+                                                                    -{{ number_format($plan->discount_percentage, 0) }}%
+                                                                </div>
+                                                            @endif
+
                                                             <span class="text-xs font-bold text-gray-500 uppercase tracking-wider group-hover:text-purple-700">{{ $plan->duration_months }} Bulan</span>
-                                                            <span class="text-lg font-black text-gray-900 mt-1">Rp {{ number_format($plan->price, 0, ',', '.') }}</span>
+                                                            
+                                                            <div class="mt-1">
+                                                                @if($plan->discount_percentage > 0)
+                                                                    <span class="text-[10px] text-gray-400 line-through block leading-none">Rp {{ number_format($plan->original_price, 0, ',', '.') }}</span>
+                                                                @endif
+                                                                <span class="text-lg font-black text-gray-900">Rp {{ number_format($plan->price, 0, ',', '.') }}</span>
+                                                            </div>
+
                                                             <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-purple-600">
                                                                 <i class="fa-solid fa-arrow-right"></i>
                                                             </div>
