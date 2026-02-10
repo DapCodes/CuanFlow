@@ -30,34 +30,60 @@ class GoogleAuthController extends Controller
             ->first();
 
         if ($user) {
-            // Update google info if not set
-            if (!$user->google_id) {
-                $user->google_id = $request->google_id;
-            }
-            if (!$user->google_avatar || $user->google_avatar !== $request->avatar) {
-                $user->google_avatar = $request->avatar;
-            }
-            
-            $user->last_login_at = now();
-            $user->save();
+            try {
+                DB::beginTransaction();
 
-            // Generate token
-            $token = $user->createToken('flutter-google')->plainTextToken;
+                // Update google info if not set
+                if (!$user->google_id) {
+                    $user->google_id = $request->google_id;
+                }
+                if (!$user->google_avatar || $user->google_avatar !== $request->avatar) {
+                    $user->google_avatar = $request->avatar;
+                }
+                
+                $user->last_login_at = now();
+                $user->save();
 
-            return response()->json([
-                'message' => 'Login berhasil',
-                'status' => 'SUCCESS',
-                'data' => [
-                    'token' => $token,
-                    'user' => [
-                        'id' => $user->id,
+                // Sync with Customer (sama dengan LoginController)
+                $customer = Customer::where('email', $user->email)->first();
+
+                if (!$customer) {
+                    Customer::create([
                         'name' => $user->name,
                         'email' => $user->email,
-                        'roles' => $user->getRoleNames(),
-                        'google_avatar' => $user->google_avatar,
+                        'phone' => $user->phone,
+                        'type' => 'regular',
+                        'is_active' => true,
+                    ]);
+                }
+
+                // Generate token
+                $token = $user->createToken('flutter-google')->plainTextToken;
+
+                DB::commit();
+
+                return response()->json([
+                    'message' => 'Login berhasil',
+                    'status' => 'SUCCESS',
+                    'data' => [
+                        'token' => $token,
+                        'user' => [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'roles' => $user->getRoleNames(),
+                            'google_avatar' => $user->google_avatar,
+                        ],
                     ],
-                ],
-            ]);
+                ]);
+
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Terjadi kesalahan saat login.',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
         }
 
         // User not found, return data to be used for registration
@@ -106,22 +132,32 @@ class GoogleAuthController extends Controller
                 'is_active' => true,
             ]);
 
-            // Assign role
-            if (class_exists(Role::class)) {
-                $role = Role::firstOrCreate(['name' => 'owner']);
-                $user->assignRole($role);
+            // Assign role (Sesuai dengan RegisterController)
+            Role::firstOrCreate(['name' => 'pelanggan']);
+            if (!$user->hasRole('pelanggan')) {
+                $user->assignRole('pelanggan');
             }
 
-            // Sync with Customer
-            Customer::updateOrCreate(
-                ['email' => $user->email],
-                [
+            // Sync with Customer (Sesuai dengan RegisterController)
+            $customer = Customer::where('email', $user->email)
+                ->orWhere('phone', $user->phone)
+                ->first();
+
+            if ($customer) {
+                $customer->update([
                     'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                ]);
+            } else {
+                Customer::create([
+                    'name' => $user->name,
+                    'email' => $user->email,
                     'phone' => $user->phone,
                     'type' => 'regular',
                     'is_active' => true,
-                ]
-            );
+                ]);
+            }
 
             $token = $user->createToken('flutter-google')->plainTextToken;
 

@@ -38,10 +38,8 @@ class LoginController extends Controller
         try {
             DB::beginTransaction();
 
-            // ✅ Cek apakah customer dengan email ini sudah ada
             $customer = Customer::where('email', $user->email)->first();
 
-            // ✅ Jika tidak ada, buat data customer baru
             if (! $customer) {
                 Customer::create([
                     'name' => $user->name,
