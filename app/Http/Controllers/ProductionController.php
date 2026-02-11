@@ -351,7 +351,7 @@ class ProductionController extends Controller
                 'planned_quantity' => $validated['planned_quantity'],
                 'actual_quantity' => $actualQty, // Set actual if completed
                 'status' => $status,
-                'notes' => $validated['notes'],
+                'notes' => $validated['notes'] ?? null,
                 'created_by' => auth()->id(),
                 'completed_at' => $status === 'completed' ? now() : null, // Set completed time if completed
             ]);
