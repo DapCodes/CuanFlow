@@ -186,23 +186,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
 
     // Raw Materials
     Route::prefix('raw-materials')->name('raw-materials.')->middleware('feature.access:raw_materials')->group(function () {
-        // Main Raw Material CRUD (Custom methods)
-        Route::get('/', [RawMaterialAndSupplierController::class, 'indexRawMaterial'])->name('index');
-        Route::get('/create', [RawMaterialAndSupplierController::class, 'createRawMaterial'])->name('create');
-        Route::post('/', [RawMaterialAndSupplierController::class, 'storeRawMaterial'])->name('store');
-        Route::get('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'showRawMaterial'])->name('show');
-        Route::get('/{rawMaterial}/edit', [RawMaterialAndSupplierController::class, 'editRawMaterial'])->name('edit');
-        Route::put('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'updateRawMaterial'])->name('update');
-        Route::delete('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'destroyRawMaterial'])->name('destroy');
-
-        // Stock Management
-        Route::get('/{rawMaterial}/manage-stock', [RawMaterialAndSupplierController::class, 'manageStock'])->name('manage-stock');
-        Route::get('/{rawMaterial}/stock-show', [RawMaterialAndSupplierController::class, 'stockShow'])->name('stock-show');
-        Route::post('/{rawMaterial}/update-stock', [RawMaterialAndSupplierController::class, 'updateStock'])->name('update-stock');
-        Route::get('/{rawMaterial}/stock-history', [RawMaterialAndSupplierController::class, 'stockHistory'])->name('stock-history');
-        Route::post('/{rawMaterial}/remove-expired', [RawMaterialAndSupplierController::class, 'removeExpired'])->name('remove-expired');
-
-        // Supplier CRUD (uses suppliers feature)
+        // Supplier CRUD (uses suppliers feature) - Moved up to avoid wildcard collision
         Route::middleware('feature.access:suppliers')->group(function () {
             Route::get('/suppliers', [RawMaterialAndSupplierController::class, 'indexSupplier'])->name('suppliers');
             Route::get('/suppliers/create', [RawMaterialAndSupplierController::class, 'createSupplier'])->name('suppliers.create');
@@ -212,6 +196,24 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
             Route::put('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'updateSupplier'])->name('suppliers.update');
             Route::delete('/suppliers/{supplier}', [RawMaterialAndSupplierController::class, 'destroySupplier'])->name('suppliers.destroy');
         });
+
+        // Main Raw Material CRUD (Custom methods)
+        Route::get('/', [RawMaterialAndSupplierController::class, 'indexRawMaterial'])->name('index');
+        Route::get('/create', [RawMaterialAndSupplierController::class, 'createRawMaterial'])->name('create');
+        Route::post('/', [RawMaterialAndSupplierController::class, 'storeRawMaterial'])->name('store');
+        
+        // Stock Management
+        Route::get('/{rawMaterial}/manage-stock', [RawMaterialAndSupplierController::class, 'manageStock'])->name('manage-stock');
+        Route::get('/{rawMaterial}/stock-show', [RawMaterialAndSupplierController::class, 'stockShow'])->name('stock-show');
+        Route::post('/{rawMaterial}/update-stock', [RawMaterialAndSupplierController::class, 'updateStock'])->name('update-stock');
+        Route::get('/{rawMaterial}/stock-history', [RawMaterialAndSupplierController::class, 'stockHistory'])->name('stock-history');
+        Route::post('/{rawMaterial}/remove-expired', [RawMaterialAndSupplierController::class, 'removeExpired'])->name('remove-expired');
+
+        // Wildcard routes MUST be at the end
+        Route::get('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'showRawMaterial'])->name('show');
+        Route::get('/{rawMaterial}/edit', [RawMaterialAndSupplierController::class, 'editRawMaterial'])->name('edit');
+        Route::put('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'updateRawMaterial'])->name('update');
+        Route::delete('/{rawMaterial}', [RawMaterialAndSupplierController::class, 'destroyRawMaterial'])->name('destroy');
     });
 
     // Production
