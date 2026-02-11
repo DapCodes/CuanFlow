@@ -56,7 +56,7 @@ class StatisticsController extends Controller
                 ->get();
 
             return compact('summaryData', 'lowStockProducts', 'recentSales');
-        });
+        })();
 
         extract($data);
 
