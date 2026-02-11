@@ -13,11 +13,13 @@ class SaleItem extends Model
     protected $fillable = [
         'sale_id', 'product_id', 'product_name', 'quantity',
         'unit_price', 'discount_percent', 'discount_amount', 'subtotal', 'hpp', 'profit', 'notes',
+        'production_status', 'served_at',
     ];
 
     protected $casts = [
         'quantity' => 'decimal:4', 'unit_price' => 'decimal:2', 'discount_percent' => 'decimal:4',
         'discount_amount' => 'decimal:2', 'subtotal' => 'decimal:2', 'hpp' => 'decimal:2', 'profit' => 'decimal:2',
+        'served_at' => 'datetime',
     ];
 
     protected static function boot()

@@ -43,13 +43,132 @@
             </div>
         </section>
 
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+        <!-- Tabs Navigation -->
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button type="button" 
+                    id="tab-queue"
+                    class="tab-btn active-tab border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2"
+                    onclick="switchTab('queue')">
+                    <i class="fas fa-clipboard-list"></i>
+                    Antrian Pesanan
+                    @php
+                        $totalPending = $madeToOrderProducts->sum('pending_quantity');
+                    @endphp
+                    @if($totalPending > 0)
+                    <span class="bg-red-100 text-red-600 py-0.5 px-2.5 rounded-full text-xs font-bold">{{ $totalPending }}</span>
+                    @endif
+                </button>
+                <button type="button" 
+                    id="tab-stock"
+                    class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2"
+                    onclick="switchTab('stock')">
+                    <i class="fas fa-boxes"></i>
+                    Stok & Inventaris
+                </button>
+            </nav>
+        </div>
+
+        <!-- QUEUE SECTION (Cards) -->
+        <section id="content-queue" class="tab-content block">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                @forelse($madeToOrderProducts as $product)
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full">
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="flex items-start justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-3">
+                                @if($product->image)
+                                <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" 
+                                    class="h-12 w-12 rounded-lg object-cover border border-gray-100 flex-shrink-0">
+                                @else
+                                <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-utensils text-orange-500"></i>
+                                </div>
+                                @endif
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 line-clamp-2 leading-tight">{{ $product->name }}</h3>
+                                    <p class="text-xs text-gray-500 mt-1">{{ $product->code }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto">
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100 mb-4 text-center">
+                                <span class="block text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Pesanan Tertunda</span>
+                                <div class="text-2xl font-bold {{ $product->pending_quantity > 0 ? 'text-red-600' : 'text-gray-400' }}">
+                                    {{ number_format($product->pending_quantity) }} <span class="text-sm font-normal text-gray-500">{{ $product->unit->name ?? 'Pcs' }}</span>
+                                </div>
+                            </div>
+                            
+                            @if($product->defaultRecipe)
+                                <form action="{{ route('production.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    
+                                    <div class="flex gap-2 mb-3">
+                                        <div class="relative flex-1">
+                                            <input type="number" name="planned_quantity" 
+                                                value="{{ $product->pending_quantity > 0 ? $product->pending_quantity : 1 }}" 
+                                                min="1" step="any"
+                                                class="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">Qty</span>
+                                        </div>
+                                        <button type="submit" 
+                                            class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                            <i class="fas fa-check"></i>
+                                            Produksi
+                                        </button>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 text-center">
+                                        Klik produksi untuk menyelesaikan pesanan & potong stok bahan.
+                                    </p>
+                                </form>
+                            @else
+                                <div class="text-center py-2">
+                                    <span class="text-xs text-red-500 bg-red-50 px-2 py-1 rounded border border-red-100">
+                                        Perlu Resep
+                                    </span>
+                                </div>
+                                <div class="mt-3">
+                                     @can('buat produk')
+                                     <a href="{{ route('products-hpp.edit', $product->id) }}" class="block w-full text-center text-sm text-blue-600 hover:underline">
+                                        Atur Resep
+                                     </a>
+                                     @endcan
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    @if($product->pending_quantity > 0)
+                    <div class="bg-red-50 px-4 py-2 border-t border-red-100 flex items-center justify-center gap-2 text-xs text-red-700 font-medium">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                        Segera Proses
+                    </div>
+                    @endif
+                </div>
+                @empty
+                <div class="col-span-full py-16 text-center bg-white rounded-xl border border-gray-200 border-dashed">
+                    <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                    </div>
+                    <h3 class="text-gray-900 font-semibold mb-1">Semua Pesanan Selesai</h3>
+                    <p class="text-gray-500 text-sm">Tidak ada antrian pesanan yang perlu diproduksi saat ini.</p>
+                </div>
+                @endforelse
+            </div>
+        </section>
+
+        <!-- STOCK SECTION (Table) -->
+        <section id="content-stock" class="tab-content hidden bg-white border border-gray-200 rounded-xl shadow-sm">
             <div class="border-b border-gray-200 px-4 md:px-6 py-4 bg-gray-50">
                 <div class="flex flex-col md:flex-row gap-3">
                     <div class="flex-1">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Cari produk</label>
+                        <label class="text-xs font-medium text-gray-500 mb-1 block">Cari produk stok</label>
                         <div class="relative">
-                            <input type="text" id="searchProduct" placeholder="Cari berdasarkan nama produk..." 
+                            <input type="text" id="searchProduct" placeholder="Cari berdasarkan nama..." 
                                 class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
                             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                         </div>
@@ -80,7 +199,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 bg-white" id="productTableBody">
-                        @forelse($products as $product)
+                        @forelse($stockProducts as $product)
                         <tr class="hover:bg-gray-50 transition-colors product-row" 
                             data-name="{{ strtolower($product['name']) }}"
                             data-stock-status="{{ $product['stock'] == 0 ? 'empty' : ($product['is_low_stock'] ? 'low' : 'available') }}">
@@ -196,9 +315,9 @@
                                     <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                                         <i class="fas fa-box-open text-3xl text-gray-300"></i>
                                     </div>
-                                    <h3 class="text-base font-semibold text-gray-900 mb-1">Belum Ada Produk</h3>
+                                    <h3 class="text-base font-semibold text-gray-900 mb-1">Belum Ada Produk Stok</h3>
                                     <p class="text-sm text-gray-500 mb-4 max-w-sm">
-                                        Tambahkan produk terlebih dahulu untuk memulai produksi
+                                        Tambahkan produk yang dapat d-stok untuk memulai
                                     </p>
                                     @can('buat produk')
                                     <a href="{{ route('products-hpp.create') }}" 
@@ -294,29 +413,56 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchProduct');
-    const filterStock = document.getElementById('filterStock');
-    const productRows = document.querySelectorAll('.product-row');
-
-    function filterProducts() {
-        const searchTerm = (searchInput.value || '').toLowerCase();
-        const stockFilter = filterStock.value;
-
-        productRows.forEach(row => {
-            const productName = row.dataset.name || '';
-            const stockStatus = row.dataset.stockStatus || '';
-
-            const matchesSearch = !searchTerm || productName.includes(searchTerm);
-            const matchesFilter = !stockFilter || stockStatus === stockFilter;
-
-            row.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+    function switchTab(tabId) {
+        // Update Buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active-tab', 'border-blue-500', 'text-blue-600');
+            btn.classList.add('border-transparent', 'text-gray-500');
         });
+        
+        const activeBtn = document.getElementById('tab-' + tabId);
+        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+        activeBtn.classList.add('active-tab', 'border-blue-500', 'text-blue-600');
+
+        // Update Content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        document.getElementById('content-' + tabId).classList.remove('hidden');
     }
 
-    searchInput.addEventListener('input', filterProducts);
-    filterStock.addEventListener('change', filterProducts);
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initial Tab State (Queue by default, or Stock if Queue is empty?)
+        // Let's stick to Queue as default for KDS focus
+        
+        const searchInput = document.getElementById('searchProduct');
+        const filterStock = document.getElementById('filterStock');
+        // Note: multiple tables might need separate search logic if heavily used, 
+        // but for now we only have search on the Stock table. 
+        // The Queue section doesn't have a search bar yet (it was removed/not added).
+        
+        if(searchInput && filterStock) {
+            const productRows = document.querySelectorAll('.product-row');
+
+            function filterProducts() {
+                const searchTerm = (searchInput.value || '').toLowerCase();
+                const stockFilter = filterStock.value;
+
+                productRows.forEach(row => {
+                    const productName = row.dataset.name || '';
+                    const stockStatus = row.dataset.stockStatus || '';
+
+                    const matchesSearch = !searchTerm || productName.includes(searchTerm);
+                    const matchesFilter = !stockFilter || stockStatus === stockFilter;
+
+                    row.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+                });
+            }
+
+            searchInput.addEventListener('input', filterProducts);
+            filterStock.addEventListener('change', filterProducts);
+        }
+    });
 </script>
 @endpush
 @endsection
