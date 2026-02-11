@@ -206,8 +206,18 @@
                                         @endif
                                         <div>
                                             <div class="text-sm font-semibold text-gray-900">{{ $product->name }}</div>
-                                            <div class="text-xs text-gray-500 flex items-center mt-1">
-                                                {{ $product->unit->name ?? '-' }}
+                                            <div class="text-xs text-gray-500 flex items-center mt-1 gap-2">
+                                                <span>{{ $product->unit->name ?? '-' }}</span>
+                                                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                                                @if($product->is_stock)
+                                                    <span class="inline-flex items-center text-[10px] font-bold text-blue-600">
+                                                        <i class="fas fa-boxes mr-1"></i> BISA STOK
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center text-[10px] font-bold text-amber-600">
+                                                        <i class="fas fa-mortar-pestle mr-1"></i> DIBUAT SAAT DIPESAN
+                                                    </span>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>

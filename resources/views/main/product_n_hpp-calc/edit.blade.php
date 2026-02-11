@@ -303,6 +303,25 @@
                                 </p>
                             </div>
 
+                            {{-- Toggle Produk Bisa Stok --}}
+                            <div class="md:col-span-2">
+                                <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-boxes"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-gray-900">Produk Bisa Di-stok?</h4>
+                                            <p class="text-xs text-gray-500">Aktifkan jika produk ini bisa diproduksi masal & disimpan (Contoh: minuman botol, sambal kemasan).</p>
+                                        </div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="is_stock" value="1" class="sr-only peer" {{ old('is_stock', $product->is_stock) ? 'checked' : '' }}>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+
                             {{-- Instruksi --}}
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">

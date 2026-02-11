@@ -98,6 +98,7 @@ class ProductHppController extends Controller
             'daily_revenue_target' => 'nullable|numeric|min:0',
             'sales_pattern' => 'nullable|string',
             'target_start_date' => 'nullable|date',
+            'is_stock' => 'nullable|boolean',
         ]);
 
         DB::beginTransaction();
@@ -125,6 +126,7 @@ class ProductHppController extends Controller
                 'is_active' => true,
                 'is_sellable' => true,
                 'track_stock' => true,
+                'is_stock' => $request->boolean('is_stock'),
             ]);
 
             $recipe = Recipe::create([
@@ -309,6 +311,7 @@ class ProductHppController extends Controller
             'promo_price' => 'nullable|numeric|min:0',
             'min_stock' => 'nullable|numeric|min:0',
             'shelf_life_days' => 'nullable|integer|min:1',
+            'is_stock' => 'nullable|boolean',
         ]);
 
         DB::beginTransaction();
@@ -333,6 +336,7 @@ class ProductHppController extends Controller
                 'promo_price' => $validated['promo_price'] ?? null,
                 'min_stock' => $validated['min_stock'] ?? 0,
                 'shelf_life_days' => $validated['shelf_life_days'] ?? null,
+                'is_stock' => $request->boolean('is_stock'),
             ]);
 
             $recipe = $product->defaultRecipe;

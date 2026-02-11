@@ -20,14 +20,14 @@ class Product extends Model
         'code', 'name', 'barcode', 'category_id', 'unit_id',
         'hpp', 'selling_price', 'reseller_price', 'promo_price', 'margin_percent',
         'min_stock', 'shelf_life_days', 'image', 'description',
-        'is_active', 'is_sellable', 'track_stock', 'outlet_id',
+        'is_active', 'is_sellable', 'track_stock', 'is_stock', 'outlet_id',
     ];
 
     protected $casts = [
         'hpp' => 'decimal:2', 'selling_price' => 'decimal:2',
         'reseller_price' => 'decimal:2', 'promo_price' => 'decimal:2',
         'margin_percent' => 'decimal:4', 'min_stock' => 'decimal:4',
-        'is_active' => 'boolean', 'is_sellable' => 'boolean', 'track_stock' => 'boolean',
+        'is_active' => 'boolean', 'is_sellable' => 'boolean', 'track_stock' => 'boolean', 'is_stock' => 'boolean',
         'outlet_id' => 'integer',
     ];
 

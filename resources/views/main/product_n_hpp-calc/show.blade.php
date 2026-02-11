@@ -146,6 +146,21 @@
                                     </span>
                                 </p>
                             </div>
+
+                            <div>
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Jenis Produk (Stok)</p>
+                                <p class="mt-1">
+                                    @if($product->is_stock)
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 flex items-center w-fit gap-1">
+                                            <i class="fas fa-boxes"></i> Bisa Di-stok
+                                        </span>
+                                    @else
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 flex items-center w-fit gap-1">
+                                            <i class="fas fa-mortar-pestle"></i> Dibuat Saat Dipesan (Fresh)
+                                        </span>
+                                    @endif
+                                </p>
+                            </div>
                         </div>
 
                         @if($product->description)
