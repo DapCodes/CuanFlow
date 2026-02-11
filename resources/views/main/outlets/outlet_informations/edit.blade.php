@@ -102,279 +102,253 @@
 @endpush
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
-        <x-card-container>
-            <!-- Header -->
-            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                            Edit Outlet: {{ $outlet->name }}
-                        </h2>
-                        <p class="text-sm text-gray-600 mt-1">Perbarui informasi outlet Anda</p>
-                    </div>
-                    <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 shadow-md">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Kembali
-                    </a>
-                </div>
-            </div>
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
 
-            <!-- Form -->
-            <form action="{{ route('outlets.update', $outlet->id) }}" method="POST" enctype="multipart/form-data" class="p-6">
+        {{-- Alert error --}}
+        @if(session('error'))
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
+                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
+                <p class="text-red-800">{{ session('error') }}</p>
+            </div>
+        @endif
+
+        {{-- HEADER --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-yellow-50 text-yellow-500 border border-yellow-100">
+                        <i class="fas fa-edit text-sm"></i>
+                    </span>
+                    <span>Edit Outlet: {{ $outlet->name }}</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Perbarui informasi <span class="font-semibold">{{ $outlet->name }}</span> dengan mudah dan cepat.
+                </p>
+            </div>
+            <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm">
+                <i class="fas fa-arrow-left mr-2 text-xs"></i>
+                Kembali
+            </a>
+        </section>
+
+        {{-- FORM CARD --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+            <form action="{{ route('outlets.update', $outlet->id) }}" method="POST" enctype="multipart/form-data" class="px-4 md:px-6 py-6 space-y-8">
                 @csrf
                 @method('PUT')
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Left Column - Logo & Status -->
-                    <div class="lg:col-span-1 space-y-6">
+                    <div class="lg:col-span-1 space-y-8">
                         <!-- Logo Upload -->
-                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-image text-purple-500 mr-2"></i>
+                        <div>
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4">
                                 Logo Outlet
                             </h3>
-                            
-                            <div class="logo-preview-container mx-auto mb-4" id="logoPreviewContainer">
-                                @if($outlet->logo)
-                                <span class="current-logo-badge">Logo Saat Ini</span>
-                                @endif
-                                <button type="button" class="remove-logo-btn" id="removeLogo" title="Hapus Logo">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                                @if($outlet->logo)
-                                <img id="logoPreview" src="{{ Storage::url($outlet->logo) }}" alt="Current Logo">
-                                @else
-                                <div class="logo-preview-placeholder" id="logoPlaceholder">
-                                    <i class="fas fa-cloud-upload-alt text-5xl mb-2"></i>
-                                    <p class="text-sm font-medium">Upload Logo</p>
-                                    <p class="text-xs mt-1">JPG, PNG (Max 2MB)</p>
+                            <div class="bg-gray-50 rounded-xl p-6 border-2 border-dashed border-gray-300 flex flex-col items-center">
+                                <div class="logo-preview-container mb-4" id="logoPreviewContainer">
+                                    @if($outlet->logo)
+                                    <span class="current-logo-badge">Logo Saat Ini</span>
+                                    @endif
+                                    <button type="button" class="remove-logo-btn" id="removeLogo" title="Hapus Logo">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    @if($outlet->logo)
+                                    <img id="logoPreview" src="{{ Storage::url($outlet->logo) }}" alt="Current Logo" class="rounded-lg shadow-sm">
+                                    @else
+                                    <div class="logo-preview-placeholder" id="logoPlaceholder">
+                                        <i class="fas fa-cloud-upload-alt text-5xl mb-2 text-gray-400"></i>
+                                        <p class="text-sm font-medium text-gray-500">Upload Logo</p>
+                                        <p class="text-xs text-gray-400 mt-1">JPG, PNG (Max 2MB)</p>
+                                    </div>
+                                    <img id="logoPreview" class="rounded-lg shadow-sm" style="display: none;">
+                                    @endif
                                 </div>
-                                <img id="logoPreview" style="display: none;">
+
+                                <input type="file" name="logo" id="logoInput" accept="image/*" class="hidden">
+                                
+                                <button type="button" 
+                                        onclick="document.getElementById('logoInput').click()"
+                                        class="w-full px-4 py-2.5 bg-yellow-500 text-white rounded-lg text-sm font-semibold hover:bg-yellow-600 transition-colors shadow-sm mb-2">
+                                    <i class="fas fa-upload mr-2"></i>
+                                    Ubah Logo
+                                </button>
+
+                                @if($outlet->logo)
+                                <button type="button" id="resetLogo" class="w-full px-4 py-2 text-yellow-600 border border-yellow-200 bg-yellow-50 rounded-lg text-xs font-semibold hover:bg-yellow-100 transition-colors">
+                                    <i class="fas fa-undo mr-1"></i>
+                                    Reset ke Logo Lama
+                                </button>
                                 @endif
+                                
+                                @error('logo')
+                                <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
-
-                            <input type="file" 
-                                   name="logo" 
-                                   id="logoInput"
-                                   accept="image/*"
-                                   class="hidden">
-                            
-                            <button type="button" 
-                                    onclick="document.getElementById('logoInput').click()"
-                                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors mb-2">
-                                <i class="fas fa-upload mr-2"></i>
-                                Ubah Logo
-                            </button>
-
-                            @if($outlet->logo)
-                            <button type="button" 
-                                    id="resetLogo"
-                                    class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors text-sm">
-                                <i class="fas fa-undo mr-2"></i>
-                                Reset ke Logo Lama
-                            </button>
-                            @endif
-                            
-                            @error('logo')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-
-                            <p class="mt-2 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Kosongkan jika tidak ingin mengubah logo
-                            </p>
                         </div>
 
                         <!-- Code Info -->
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                <i class="fas fa-barcode text-blue-600 mr-2"></i>
+                        <div>
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4">
                                 Kode Outlet
                             </h3>
-                            <div class="bg-white rounded-lg p-4 border-2 border-blue-300">
-                                <p class="text-2xl font-bold text-blue-600 text-center font-mono">
-                                    {{ $outlet->code }}
+                            <div class="bg-blue-50 rounded-xl p-5 border border-blue-100 text-center">
+                                <p class="text-xs text-blue-500 font-medium mb-1 uppercase tracking-wider">Identifikasi Sistem</p>
+                                <p class="text-2xl font-bold text-blue-700 font-mono tracking-widest">{{ $outlet->code }}</p>
+                                <p class="mt-2 text-[10px] text-blue-400">
+                                    <i class="fas fa-lock mr-1"></i> Kode ini bersifat permanen
                                 </p>
                             </div>
-                            <p class="text-xs text-gray-600 mt-2 text-center">
-                                <i class="fas fa-lock mr-1"></i>
-                                Kode tidak dapat diubah
-                            </p>
                         </div>
 
                         <!-- Status Toggle -->
-                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-toggle-on text-orange-500 mr-2"></i>
-                                Status Outlet
+                        <div>
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4">
+                                Status Aktif
                             </h3>
-                            
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">Status Aktif</p>
-                                    <p class="text-xs text-gray-500 mt-1">Outlet dapat digunakan</p>
-                                </div>
-                                <div class="relative">
-                                    <input type="checkbox" 
-                                           name="is_active" 
-                                           id="is_active"
-                                           value="1"
-                                           {{ old('is_active', $outlet->is_active) ? 'checked' : '' }}
-                                           class="sr-only toggle-checkbox">
-                                    <label for="is_active" class="block relative w-14 h-8 cursor-pointer">
-                                        <div class="toggle-label block overflow-hidden h-8 rounded-full bg-gray-300 transition-colors duration-200"></div>
-                                        <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform duration-200" id="toggleDot"></div>
-                                    </label>
+                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Status Outlet</p>
+                                        <p class="text-xs text-gray-500 mt-1">Dapat diakses sistem</p>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="checkbox" 
+                                               name="is_active" 
+                                               id="is_active"
+                                               value="1"
+                                               {{ old('is_active', $outlet->is_active) ? 'checked' : '' }}
+                                               class="sr-only toggle-checkbox">
+                                        <label for="is_active" class="block relative w-12 h-6 cursor-pointer">
+                                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 transition-colors duration-200"></div>
+                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200" id="toggleDot"></div>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Right Column - Form Fields -->
-                    <div class="lg:col-span-2 space-y-6">
+                    <div class="lg:col-span-2 space-y-8">
                         <!-- Informasi Dasar -->
-                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                        <div>
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-info-circle text-blue-500 text-sm"></i>
                                 Informasi Dasar
                             </h3>
-
                             <div class="space-y-4">
-                                <!-- Nama Outlet -->
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-store mr-1"></i>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                         Nama Outlet <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" 
                                            name="name" 
                                            value="{{ old('name', $outlet->name) }}"
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('name') border-red-500 @enderror"
+                                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('name') border-red-500 @enderror"
                                            placeholder="Contoh: Outlet Cabang Utama"
                                            required>
                                     @error('name')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
                             </div>
                         </div>
 
                         <!-- Informasi Kontak -->
-                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-address-book text-green-500 mr-2"></i>
+                        <div>
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-address-book text-green-500 text-sm"></i>
                                 Informasi Kontak
                             </h3>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Phone -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-phone mr-1"></i>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                         Nomor Telepon <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" 
                                            name="phone" 
                                            value="{{ old('phone', $outlet->phone) }}"
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('phone') border-red-500 @enderror"
+                                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('phone') border-red-500 @enderror"
                                            placeholder="08123456789"
                                            required>
                                     @error('phone')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
-
-                                <!-- Email -->
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-envelope mr-1"></i>
-                                        Email
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Email <span class="text-gray-400 font-normal">(Opsional)</span>
                                     </label>
                                     <input type="email" 
                                            name="email" 
                                            value="{{ old('email', $outlet->email) }}"
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('email') border-red-500 @enderror"
+                                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('email') border-red-500 @enderror"
                                            placeholder="outlet@example.com">
                                     @error('email')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
                             </div>
                         </div>
 
                         <!-- Lokasi -->
-                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-map-marked-alt text-red-500 mr-2"></i>
-                                Lokasi
+                        <div>
+                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-map-marked-alt text-red-500 text-sm"></i>
+                                Lokasi GPS
                             </h3>
-
-                            <div class="space-y-4">
-                                <!-- Address -->
+                            <div class="space-y-6">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                         Alamat Lengkap <span class="text-red-500">*</span>
                                     </label>
                                     <textarea name="address" 
                                               rows="3"
-                                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('address') border-red-500 @enderror"
+                                              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('address') border-red-500 @enderror"
                                               placeholder="Jl. Contoh No. 123, Kota, Provinsi"
                                               required>{{ old('address', $outlet->address) }}</textarea>
                                     @error('address')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
 
-                                <!-- Map -->
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        <i class="fas fa-map mr-1"></i>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
                                         Pilih Lokasi di Peta
                                     </label>
-                                    <div id="map"></div>
+                                    <div id="map" class="border border-gray-200 rounded-xl overflow-hidden shadow-inner"></div>
                                     <p class="mt-2 text-xs text-gray-500">
                                         <i class="fas fa-info-circle mr-1"></i>
-                                        Klik atau drag marker pada peta untuk mengubah lokasi outlet
+                                        Klik pada peta atau geser marker untuk menentukan lokasi yang tepat.
                                     </p>
                                 </div>
 
-                                <!-- Coordinates -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                            <i class="fas fa-globe mr-1"></i>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                             Latitude
                                         </label>
                                         <input type="text" 
                                                name="latitude" 
                                                id="latitude"
                                                value="{{ old('latitude', $outlet->latitude) }}"
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('latitude') border-red-500 @enderror"
+                                               class="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 rounded-lg text-sm text-gray-600 font-mono"
                                                placeholder="-6.200000"
                                                readonly>
-                                        @error('latitude')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
                                     </div>
-
                                     <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                            <i class="fas fa-globe mr-1"></i>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                             Longitude
                                         </label>
                                         <input type="text" 
                                                name="longitude" 
                                                id="longitude"
                                                value="{{ old('longitude', $outlet->longitude) }}"
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('longitude') border-red-500 @enderror"
+                                               class="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 rounded-lg text-sm text-gray-600 font-mono"
                                                placeholder="106.816666"
                                                readonly>
-                                        @error('longitude')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -382,21 +356,23 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-gray-200">
-                    <a href="{{ route('outlets.index') }}" 
-                       class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                        <i class="fas fa-times mr-2"></i>
-                        Batal
-                    </a>
-                    <button type="submit" 
-                            class="px-6 py-2.5 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-colors shadow-md hover:shadow-lg">
-                        <i class="fas fa-save mr-2"></i>
-                        Update Outlet
-                    </button>
+                <!-- Action Buttons: mobile full width -->
+                <div class="pt-5 border-t border-gray-200">
+                    <div class="flex flex-col md:flex-row md:justify-end gap-3">
+                        <a href="{{ route('outlets.index') }}" 
+                           class="w-full md:w-auto inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-times mr-2 text-xs"></i>
+                            <span>Batal</span>
+                        </a>
+                        <button type="submit" 
+                                class="w-full md:w-auto inline-flex items-center justify-center px-6 py-2.5 bg-yellow-500 text-sm font-semibold text-white rounded-lg hover:bg-yellow-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1">
+                            <i class="fas fa-save mr-2 text-xs"></i>
+                            <span>Simpan Perubahan</span>
+                        </button>
+                    </div>
                 </div>
             </form>
-        </x-card-container>
+        </section>
     </div>
 </main>
 @endsection

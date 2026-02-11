@@ -18,264 +18,237 @@
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+<main class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Main Information -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Basic Info Card -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-                                    {{ $outlet->name }}
-                                </h2>
-                                <p class="text-sm text-gray-600 mt-1">Detail informasi outlet</p>
-                            </div>
+        {{-- HEADER --}}
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm transition-transform hover:scale-105">
+                    @if($outlet->logo)
+                        <img src="{{ Storage::url($outlet->logo) }}" alt="{{ $outlet->name }}" class="w-full h-full object-cover">
+                    @else
+                        <div class="w-full h-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                            <i class="fas fa-store text-2xl text-white"></i>
                         </div>
-                    </div>
-                            
-                    <div class="p-6 space-y-6">
-                        <!-- Logo & Name -->
-                        <div class="flex items-start gap-4">
-                            @if($outlet->logo)
-                            <img src="{{ Storage::url($outlet->logo) }}" alt="{{ $outlet->name }}" class="h-24 w-24 rounded-lg object-cover border-2 border-gray-200 shadow-md">
-                            @else
-                            <div class="h-24 w-24 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center shadow-md">
-                                <i class="fas fa-store text-white text-3xl"></i>
-                            </div>
-                            @endif
-                            <div class="flex-1">
-                                <h3 class="text-2xl font-bold text-gray-900">{{ $outlet->name }}</h3>
-                                <p class="text-sm text-gray-500 mt-1">
-                                    <span class="font-mono bg-gray-100 px-2 py-1 rounded">{{ $outlet->code }}</span>
-                                </p>
-                                <div class="mt-3">
-                                    @if($outlet->is_active)
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                        Aktif
-                                    </span>
-                                    @else
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                                        <span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                                        Nonaktif
-                                    </span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="border-t border-gray-200 pt-6">
-                            <dl class="grid grid-cols-1 gap-4">
-                                <div class="flex items-start">
-                                    <dt class="flex items-center text-sm font-semibold text-gray-700 w-32">
-                                        <i class="fas fa-calendar-plus text-blue-500 mr-2"></i>
-                                        Dibuat
-                                    </dt>
-                                    <dd class="text-sm text-gray-900">{{ $outlet->created_at->format('d F Y, H:i') }}</dd>
-                                </div>
-                                <div class="flex items-start">
-                                    <dt class="flex items-center text-sm font-semibold text-gray-700 w-32">
-                                        <i class="fas fa-calendar-check text-green-500 mr-2"></i>
-                                        Diperbarui
-                                    </dt>
-                                    <dd class="text-sm text-gray-900">{{ $outlet->updated_at->format('d F Y, H:i') }}</dd>
-                                </div>
-                            </dl>
-                        </div>
-                    </div>
-                </x-card-container>
-
-                <!-- Contact Info Card -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-address-book text-green-500 mr-2"></i>
-                            Informasi Kontak
-                        </h2>
-                    </div>
-                    
-                    <div class="p-6">
-                        <dl class="grid grid-cols-1 gap-4">
-                            <div class="flex items-start">
-                                <dt class="flex items-center text-sm font-semibold text-gray-700 w-32">
-                                    <i class="fas fa-phone text-green-500 mr-2"></i>
-                                    Telepon
-                                </dt>
-                                <dd class="text-sm text-gray-900">{{ $outlet->phone ?? '-' }}</dd>
-                            </div>
-                            <div class="flex items-start">
-                                <dt class="flex items-center text-sm font-semibold text-gray-700 w-32">
-                                    <i class="fas fa-envelope text-blue-500 mr-2"></i>
-                                    Email
-                                </dt>
-                                <dd class="text-sm text-gray-900">{{ $outlet->email ?? '-' }}</dd>
-                            </div>
-                        </dl>
-                    </div>
-                </x-card-container>
-
-                <!-- Location Card -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-map-marked-alt text-red-500 mr-2"></i>
-                            Lokasi
-                        </h2>
-                    </div>
-                    
-                    <div class="p-6 space-y-4">
-                        <div>
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
-                                Alamat Lengkap
-                            </h4>
-                            <p class="text-sm text-gray-900 leading-relaxed">{{ $outlet->address }}</p>
-                        </div>
-
-                        @if($outlet->latitude && $outlet->longitude)
-                        <div class="border-t border-gray-200 pt-4">
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                <i class="fas fa-globe text-blue-500 mr-2"></i>
-                                Koordinat
-                            </h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-xs text-gray-500 mb-1">Latitude</p>
-                                    <p class="text-sm font-mono text-gray-900">{{ number_format($outlet->latitude, 6) }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500 mb-1">Longitude</p>
-                                    <p class="text-sm font-mono text-gray-900">{{ number_format($outlet->longitude, 6) }}</p>
-                                </div>
-                            </div>
-                            <a href="https://www.google.com/maps?q={{ $outlet->latitude }},{{ $outlet->longitude }}" 
-                               target="_blank"
-                               class="mt-3 inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium">
-                                <i class="fas fa-external-link-alt mr-1"></i>
-                                Lihat di Google Maps
-                            </a>
-                        </div>
+                    @endif
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 class="text-xl md:text-2xl font-bold text-gray-900">{{ $outlet->name }}</h1>
+                        @if($outlet->is_active)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
+                                Aktif
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>
+                                Non-aktif
+                            </span>
                         @endif
                     </div>
-                </x-card-container>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                <!-- Owner Card -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
-                        <h2 class="text-lg font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-user-tie text-purple-500 mr-2"></i>
-                            Owner
-                        </h2>
+                    <div class="mt-1 flex items-center gap-3 text-sm text-gray-500">
+                        <span class="font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600 text-xs tracking-wider border border-gray-200">{{ $outlet->code }}</span>
+                        <span class="hidden md:inline text-gray-300">|</span>
+                        <span><i class="fas fa-calendar-alt mr-1 text-gray-400"></i> Terdaftar {{ $outlet->created_at->format('d M Y') }}</span>
                     </div>
-                    
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm">
+                    <i class="fas fa-arrow-left mr-2 text-xs"></i>
+                    Kembali
+                </a>
+                <a href="{{ route('outlets.edit', $outlet->id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition-all shadow-md">
+                    <i class="fas fa-edit mr-2 text-xs"></i>
+                    Edit Outlet
+                </a>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column: Details -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Informasi Kontak & Alamat -->
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-address-card text-blue-500"></i>
+                            Informasi Kontak & Lokasi
+                        </h3>
+                    </div>
                     <div class="p-6">
-                        @if($outlet->owner)
-                        <div class="flex items-center gap-3">
-                            <div class="h-16 w-16 rounded-full bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center shadow-md">
-                                <span class="text-white text-4xl font-semibold">{{ strtoupper(substr($outlet->owner->name, 0, 1)) }}</span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-6">
+                                <div>
+                                    <p class="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1.5">Nomor Telepon</p>
+                                    <p class="text-sm text-gray-900 font-semibold p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                        <i class="fas fa-phone mr-2 text-green-500"></i>
+                                        {{ $outlet->phone }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1.5">Email</p>
+                                    <p class="text-sm text-gray-900 font-semibold p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                        <i class="fas fa-envelope mr-2 text-blue-500"></i>
+                                        {{ $outlet->email ?? '-' }}
+                                    </p>
+                                </div>
                             </div>
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-900">{{ $outlet->owner->name }}</h3>
-                                <p class="text-sm text-gray-500">{{ $outlet->owner->email }}</p>
-                                <span class="inline-block mt-1 px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-medium rounded">
-                                    {{ ucfirst($outlet->owner->role) }}
+                                <p class="text-xs font-medium text-gray-400 uppercase tracking-widest mb-1.5">Alamat Lengkap</p>
+                                <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 min-h-[120px]">
+                                    <p class="text-sm text-gray-900 font-medium leading-relaxed">
+                                        {{ $outlet->address }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 pt-8 border-t border-gray-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <p class="text-xs font-medium text-gray-400 uppercase tracking-widest">Lokasi GPS</p>
+                                <a href="https://www.google.com/maps?q={{ $outlet->latitude }},{{ $outlet->longitude }}" 
+                                   target="_blank"
+                                   class="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    Google Maps
+                                </a>
+                            </div>
+                            <div id="map" class="border border-gray-200 rounded-xl shadow-inner bg-gray-100 overflow-hidden"></div>
+                            <div class="mt-4 grid grid-cols-2 gap-4">
+                                <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Latitude</p>
+                                    <p class="text-xs font-mono text-gray-700">{{ $outlet->latitude }}</p>
+                                </div>
+                                <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Longitude</p>
+                                    <p class="text-xs font-mono text-gray-700">{{ $outlet->longitude }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Sidebar -->
+            <div class="space-y-6">
+                <!-- Statistics Card -->
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden text-white bg-gradient-to-br from-yellow-500 via-orange-500 to-orange-600">
+                    <div class="p-6">
+                        <h3 class="font-bold text-white/90 flex items-center gap-2 mb-6 text-lg border-b border-white/10 pb-4">
+                            <i class="fas fa-chart-pie"></i>
+                            Ringkasan Outlet
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                                <p class="text-[10px] text-yellow-100 font-bold uppercase tracking-wider mb-1">Produk</p>
+                                <p class="text-2xl font-bold">{{ number_format($stats['total_products']) }}</p>
+                            </div>
+                            <div class="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                                <p class="text-[10px] text-yellow-100 font-bold uppercase tracking-wider mb-1">Penjualan</p>
+                                <p class="text-2xl font-bold">{{ number_format($stats['total_sales']) }}</p>
+                            </div>
+                            <div class="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                                <p class="text-[10px] text-yellow-100 font-bold uppercase tracking-wider mb-1">Bahan Baku</p>
+                                <p class="text-2xl font-bold">{{ number_format($stats['total_raw_materials']) }}</p>
+                            </div>
+                            <div class="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                                <p class="text-[10px] text-yellow-100 font-bold uppercase tracking-wider mb-1">Karyawan</p>
+                                <p class="text-2xl font-bold">{{ number_format($stats['total_employees']) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Owner Info -->
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <h3 class="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                            <i class="fas fa-user-tie text-purple-500"></i>
+                            Informasi Pemilik
+                        </h3>
+                    </div>
+                    <div class="p-6 text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-purple-50 shadow-lg text-white text-2xl font-bold">
+                            {{ strtoupper(substr($outlet->owner->name ?? 'U', 0, 1)) }}
+                        </div>
+                        <h4 class="font-bold text-gray-900 text-lg">{{ $outlet->owner->name ?? 'Tidak Ada Pemilik' }}</h4>
+                        <p class="text-sm text-gray-500">{{ $outlet->owner->email ?? '-' }}</p>
+                        <div class="mt-4 pt-4 border-t border-gray-50 flex justify-center gap-4">
+                            <div class="text-center px-4">
+                                <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">Peran</p>
+                                <span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full border border-purple-200">
+                                    {{ strtoupper($outlet->owner->role ?? 'OWNER') }}
                                 </span>
                             </div>
                         </div>
-                        @else
-                        <p class="text-sm text-gray-500">Owner belum ditentukan</p>
-                        @endif
                     </div>
-                </x-card-container>
-
-                <!-- Statistics Card -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
-                        <h2 class="text-lg font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-chart-bar text-blue-500 mr-2"></i>
-                            Statistik
-                        </h2>
-                    </div>
-                    
-                    <div class="p-6 space-y-4">
-                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-box text-blue-600"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-600">Produk</p>
-                                    <p class="text-lg font-bold text-gray-900">{{ $stats['total_products'] }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-cubes text-green-600"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-600">Bahan Baku</p>
-                                    <p class="text-lg font-bold text-gray-900">{{ $stats['total_raw_materials'] }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-shopping-cart text-purple-600"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-600">Penjualan</p>
-                                    <p class="text-lg font-bold text-gray-900">{{ $stats['total_sales'] }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-users text-yellow-600"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-600">Karyawan</p>
-                                    <p class="text-lg font-bold text-gray-900">{{ $stats['total_employees'] }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </x-card-container>
+                </div>
 
                 <!-- Quick Actions -->
-                <x-card-container>
-                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 border-b border-gray-200">
-                        <h2 class="text-lg font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-bolt text-orange-500 mr-2"></i>
-                            Aksi Cepat
-                        </h2>
-                    </div>
-                    
-                    <div class="p-6 space-y-2">
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 space-y-4">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Aksi Pengelolaan</h3>
+                    <div class="grid grid-cols-1 gap-2">
                         <form action="{{ route('outlets.toggle-status', $outlet->id) }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                                <i class="fas fa-toggle-{{ $outlet->is_active ? 'off' : 'on' }} mr-2"></i>
-                                {{ $outlet->is_active ? 'Nonaktifkan' : 'Aktifkan' }} Outlet
+                            <button type="submit" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all {{ $outlet->is_active ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-100' : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-100' }}">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-8 h-8 rounded-lg flex items-center justify-center {{ $outlet->is_active ? 'bg-red-100' : 'bg-green-100' }}">
+                                        <i class="fas fa-power-off"></i>
+                                    </span>
+                                    {{ $outlet->is_active ? 'Nonaktifkan Outlet' : 'Aktifkan Outlet' }}
+                                </span>
+                                <i class="fas fa-chevron-right text-[10px] opacity-40"></i>
                             </button>
                         </form>
                     </div>
-                </x-card-container>
+                    <p class="text-[10px] text-gray-500 text-center leading-relaxed">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Status non-aktif akan menghentikan akses operasional pada outlet ini untuk sementara.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </main>
 @endsection
+
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map {
+        height: 300px;
+        z-index: 1;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lat = {{ $outlet->latitude ?? -6.2088 }};
+    const lng = {{ $outlet->longitude ?? 106.8456 }};
+    
+    const map = L.map('map').setView([lat, lng], 15);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const customIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    L.marker([lat, lng], {icon: customIcon}).addTo(map)
+        .bindPopup('<b>{{ $outlet->name }}</b><br>{{ $outlet->address }}').openPopup();
+});
+</script>
+@endpush
