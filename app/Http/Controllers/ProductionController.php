@@ -26,29 +26,28 @@ class ProductionController extends Controller
         $now = now();
         $warningDays = 7;
 
-        // 1. Fetch Non-Stock Products (Made to Order) with Pending Counts
-        $madeToOrderProducts = Product::where('outlet_id', $outletId)
-            ->where('is_active', true)
-            ->where('is_stock', false) // Only non-stock items
-            ->with(['unit', 'category', 'defaultRecipe'])
-            ->get()
-            ->map(function ($product) {
-                // Calculate pending quantity from SaleItems
-                $pendingQty = \App\Models\SaleItem::where('product_id', $product->id)
-                    ->whereHas('sale', function ($q) {
-                        $q->where('status', 'completed') // Only completed sales
-                          ->where('payment_status', 'paid');
-                    })
-                    ->where('production_status', 'pending')
-                    ->sum('quantity');
-
-                $product->pending_quantity = $pendingQty;
-                return $product;
+        // 1. Fetch Sales with Pending Made-to-Order Items
+        $pendingSales = \App\Models\Sale::where('outlet_id', $outletId)
+            ->where('status', 'completed') // Consider both completed sales and active orders if applicable
+            ->whereHas('items', function ($q) {
+                $q->where('production_status', 'pending')
+                  ->whereHas('product', function ($pq) {
+                      $pq->where('is_stock', false);
+                  });
             })
-            // Filter only products that have pending orders OR show all? User said "show products that is_stock=false"
-            // Let's show all, but maybe sort by pending qty desc
-            ->sortByDesc('pending_quantity')
-            ->values();
+            ->with([
+                'items' => function ($q) {
+                    $q->where('production_status', 'pending')
+                      ->whereHas('product', function ($pq) {
+                          $pq->where('is_stock', false);
+                      })
+                      ->with(['product.unit', 'product.defaultRecipe']);
+                },
+                'customer',
+                'table'
+            ])
+            ->oldest('created_at')
+            ->get();
 
         // 2. Fetch Stock Products (Inventory) - Existing Logic
         $stockProducts = Product::with([
@@ -123,7 +122,7 @@ class ProductionController extends Controller
             ->limit(5)
             ->get();
 
-        return view('main.production.index', compact('stockProducts', 'madeToOrderProducts', 'recentProductions'));
+        return view('main.production.index', compact('stockProducts', 'pendingSales', 'recentProductions'));
     }
 
     public function create(Request $request)
@@ -299,6 +298,7 @@ class ProductionController extends Controller
             'product_id' => 'required|exists:products,id',
             'planned_quantity' => 'required|numeric|min:0.01',
             'notes' => 'nullable|string',
+            'sale_item_id' => 'nullable|exists:sale_items,id',
         ]);
 
         $outletId = auth()->user()->outlet_id;
@@ -404,14 +404,22 @@ class ProductionController extends Controller
                 // Find pending sale items for this product and mark as completed
                 $qtyToFulfill = $validated['planned_quantity'];
                 
-                $pendingItems = \App\Models\SaleItem::where('product_id', $product->id)
+                $pendingItemsQuery = \App\Models\SaleItem::where('product_id', $product->id)
                     ->whereHas('sale', function ($q) use ($outletId) {
                         $q->where('outlet_id', $outletId)
                           ->where('status', 'completed');
                     })
-                    ->where('production_status', 'pending')
-                    ->orderBy('created_at', 'asc') // Oldest first
-                    ->get();
+                    ->where('production_status', 'pending');
+
+                if (!empty($validated['sale_item_id'])) {
+                    // Prioritize this specific item if provided
+                    $pendingItems = $pendingItemsQuery->orderByRaw('id = ? DESC', [$validated['sale_item_id']])
+                        ->orderBy('created_at', 'asc')
+                        ->get();
+                } else {
+                    $pendingItems = $pendingItemsQuery->orderBy('created_at', 'asc') // Oldest first
+                        ->get();
+                }
                     
                 foreach ($pendingItems as $saleItem) {
                     if ($qtyToFulfill <= 0) break;
@@ -424,31 +432,9 @@ class ProductionController extends Controller
                         ]);
                         $qtyToFulfill -= $saleItem->quantity;
                     } else {
-                        // Partial fulfill? 
-                        // The db schema is per-row. If quantity is 2 and we produce 1, we can't easily split without splitting rows.
-                        // For MVP, if we produce 1 but need 2, we might not mark it completed?
-                        // OR we assume staff produces exactly what's needed.
-                        // Let's just mark it completed if we have enough "remaining" production to cover it.
-                        // Simplification: Can't split row easily. We will only mark fully covered rows for now, 
-                        // OR if we assume 1 row = 1 qty (not guaranteed).
-                        // Better strategy: We don't split. If we produce 5, we look for items.
-                        // If an item needs 2 and we have 5, we mark it done. Remain 3.
-                        // If an item needs 4 and we have 3, we skip it? Or we wait?
-                        // Let's stick to: Fulfill fully if possible.
-                        
-                        // BUT, user inputs "Quantity".
-                        // Let's assume user is truthful.
-                        
-                        // For now, let's just mark as many as possible.
-                        // Realistically, in KDS, you tick off specific orders. 
-                        // Here we are "Bulk Producing". 
-                        // Let's mark it as done.
-                        
-                        // If we can't fully fulfill this line item, we skip it to avoid partial state complexity
-                        // OR we could just toggle the status if the user requested it specifically. 
-                        // But here we are just inputting a number.
-                        // PROPOSAL: Only mark items where saleItem->quantity <= qtyToFulfill
-                         $saleItem->update([
+                        // Handle partial if needed, but for made-to-order we usually fulfill full lines
+                        // For now we fulfill whatever we can.
+                        $saleItem->update([
                             'production_status' => 'completed',
                             'served_at' => now(),
                         ]);

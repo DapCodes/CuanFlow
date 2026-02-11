@@ -53,10 +53,10 @@
                     <i class="fas fa-clipboard-list"></i>
                     Antrian Pesanan
                     @php
-                        $totalPending = $madeToOrderProducts->sum('pending_quantity');
+                        $totalPending = $pendingSales->count();
                     @endphp
                     @if($totalPending > 0)
-                    <span class="bg-red-100 text-red-600 py-0.5 px-2.5 rounded-full text-xs font-bold">{{ $totalPending }}</span>
+                    <span class="bg-red-100 text-red-600 py-0.5 px-2.5 rounded-full text-xs font-bold">{{ $totalPending }} PESANAN</span>
                     @endif
                 </button>
                 <button type="button" 
@@ -72,90 +72,162 @@
         <!-- QUEUE SECTION (Cards) -->
         <section id="content-queue" class="tab-content block">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @forelse($madeToOrderProducts as $product)
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full">
-                    <div class="p-4 flex-1 flex flex-col">
-                        <div class="flex items-start justify-between gap-3 mb-4">
-                            <div class="flex items-center gap-3">
-                                @if($product->image)
-                                <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" 
-                                    class="h-12 w-12 rounded-lg object-cover border border-gray-100 flex-shrink-0">
-                                @else
-                                <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-utensils text-orange-500"></i>
+                @forelse($pendingSales as $sale)
+                <div class="group bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full relative">
+                    <!-- Status Indicator (Subtle) -->
+                    <div class="absolute top-0 right-0 w-16 h-16 pointer-events-none overflow-hidden">
+                        <div class="absolute top-0 right-0 translate-x-8 -translate-y-8 rotate-45 bg-orange-500/10 w-full h-full border-b border-orange-500/20"></div>
+                    </div>
+
+                    <div class="p-5 flex-1 flex flex-col">
+                        <div class="flex items-start justify-between gap-3 mb-5">
+                            <div class="space-y-1">
+                                <h3 class="font-bold text-gray-900 text-lg tracking-tight">{{ $sale->invoice_number }}</h3>
+                                <div class="flex items-center gap-3">
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                                        <i class="far fa-clock text-orange-500"></i>
+                                        {{ $sale->created_at->format('H:i') }}
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
+                                        <i class="fas fa-layer-group"></i>
+                                        {{ $sale->items->count() }} Item
+                                    </span>
                                 </div>
-                                @endif
-                                <div>
-                                    <h3 class="font-semibold text-gray-900 line-clamp-2 leading-tight">{{ $product->name }}</h3>
-                                    <p class="text-xs text-gray-500 mt-1">{{ $product->code }}</p>
-                                </div>
+                            </div>
+                            <div class="h-11 w-11 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-200 group-hover:rotate-12 transition-transform duration-300">
+                                <i class="fas fa-receipt text-lg"></i>
                             </div>
                         </div>
 
-                        <div class="mt-auto">
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100 mb-4 text-center">
-                                <span class="block text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Pesanan Tertunda</span>
-                                <div class="text-2xl font-bold {{ $product->pending_quantity > 0 ? 'text-red-600' : 'text-gray-400' }}">
-                                    {{ number_format($product->pending_quantity) }} <span class="text-sm font-normal text-gray-500">{{ $product->unit->name ?? 'Pcs' }}</span>
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center gap-3 p-2 rounded-lg bg-gray-50/50 border border-transparent group-hover:border-gray-100 group-hover:bg-gray-50 transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
+                                    <i class="fas fa-user text-xs"></i>
                                 </div>
+                                <span class="text-sm font-semibold text-gray-700 truncate">{{ $sale->customer->name ?? 'Pelanggan Umum' }}</span>
                             </div>
                             
-                            @if($product->defaultRecipe)
-                                <form action="{{ route('production.store') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                    
-                                    <div class="flex gap-2 mb-3">
-                                        <div class="relative flex-1">
-                                            <input type="number" name="planned_quantity" 
-                                                value="{{ $product->pending_quantity > 0 ? $product->pending_quantity : 1 }}" 
-                                                min="1" step="any"
-                                                class="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">Qty</span>
-                                        </div>
-                                        <button type="submit" 
-                                            class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm">
-                                            <i class="fas fa-check"></i>
-                                            Produksi
-                                        </button>
-                                    </div>
-                                    <p class="text-[10px] text-gray-400 text-center">
-                                        Klik produksi untuk menyelesaikan pesanan & potong stok bahan.
-                                    </p>
-                                </form>
-                            @else
-                                <div class="text-center py-2">
-                                    <span class="text-xs text-red-500 bg-red-50 px-2 py-1 rounded border border-red-100">
-                                        Perlu Resep
-                                    </span>
+                            @if($sale->table)
+                            <div class="flex items-center gap-3 p-2 rounded-lg bg-gray-50/50 border border-transparent group-hover:border-gray-100 group-hover:bg-gray-50 transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
+                                    <i class="fas fa-chair text-xs"></i>
                                 </div>
-                                <div class="mt-3">
-                                     @can('buat produk')
-                                     <a href="{{ route('products-hpp.edit', $product->id) }}" class="block w-full text-center text-sm text-blue-600 hover:underline">
-                                        Atur Resep
-                                     </a>
-                                     @endcan
-                                </div>
+                                <span class="text-sm font-semibold text-gray-700">Meja: {{ $sale->table->name }}</span>
+                            </div>
                             @endif
                         </div>
+
+                        <div class="mt-auto">
+                            <button type="button" 
+                                onclick="openSaleModal('{{ $sale->id }}')"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-3 text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-blue-200 active:scale-95">
+                                <i class="fas fa-external-link-alt text-xs opacity-70"></i>
+                                Buka Pesanan
+                            </button>
+                        </div>
                     </div>
-                    @if($product->pending_quantity > 0)
-                    <div class="bg-red-50 px-4 py-2 border-t border-red-100 flex items-center justify-center gap-2 text-xs text-red-700 font-medium">
-                        <span class="relative flex h-2 w-2">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                        </span>
-                        Segera Proses
+                </div>
+
+                <!-- Modal for each sale -->
+                <div id="modal-sale-{{ $sale->id }}" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeSaleModal('{{ $sale->id }}')"></div>
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                        
+                        <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-white/20">
+                            <!-- Modal Header -->
+                            <div class="relative bg-white px-6 pt-5 pb-4 border-b border-gray-100">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="h-12 w-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-100 shadow-sm">
+                                            <i class="fas fa-clipboard-list text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-xl font-extrabold text-gray-900 tracking-tight" id="modal-title">{{ $sale->invoice_number }}</h3>
+                                            <div class="flex items-center gap-2 mt-0.5">
+                                                <span class="text-xs font-semibold text-gray-500">{{ $sale->customer->name ?? 'Pelanggan Umum' }}</span>
+                                                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                                                <span class="text-xs font-medium text-gray-400">{{ $sale->created_at->format('d M, H:i') }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button onclick="closeSaleModal('{{ $sale->id }}')" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-all">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Modal Body -->
+                            <div class="p-6 bg-gray-50/30">
+                                <div class="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                                    @foreach($sale->items as $item)
+                                    <div class="flex items-center justify-between p-5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-4">
+                                            <div class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100 group-hover:scale-110 transition-transform">
+                                                <i class="fas fa-utensils text-lg"></i>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h4 class="text-sm font-bold text-gray-900 truncate pr-4">{{ $item->product->name }}</h4>
+                                                <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-gray-100 text-gray-700 border border-gray-200">
+                                                        {{ number_format($item->quantity) }} {{ $item->product->unit->name ?? 'Pcs' }}
+                                                    </span>
+                                                    @if($item->notes)
+                                                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-100">
+                                                        <i class="fas fa-comment-dots text-[10px]"></i>
+                                                        <span class="text-[11px] font-medium">{{ $item->notes }}</span>
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex-shrink-0">
+                                            @if($item->product->defaultRecipe)
+                                            <form action="{{ route('production.store') }}" method="POST">
+                                                @csrf
+                                                <input type="hidden" name="product_id" value="{{ $item->product_id }}">
+                                                <input type="hidden" name="planned_quantity" value="{{ $item->quantity }}">
+                                                <input type="hidden" name="sale_item_id" value="{{ $item->id }}">
+                                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-2.5 text-xs font-bold transition-all flex items-center gap-2 shadow-md hover:shadow-blue-200 active:scale-95 whitespace-nowrap">
+                                                    <i class="fas fa-fire-alt text-sm"></i>
+                                                    Masak
+                                                </button>
+                                            </form>
+                                            @else
+                                            <div class="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg border border-red-100">
+                                                <i class="fas fa-exclamation-triangle text-xs pr-1"></i>
+                                                <span class="text-[11px] font-bold uppercase tracking-wider">Tanpa Resep</span>
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="bg-white px-6 py-5 border-t border-gray-100">
+                                <div class="flex items-center justify-center gap-2 text-gray-400">
+                                    <span class="flex h-2 w-2 relative">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                    </span>
+                                    <p class="text-[11px] font-medium tracking-wide first-letter:uppercase italic">
+                                        Gunakan tombol "Masak" untuk setiap item yang ingin diproses sekarang.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    @endif
                 </div>
                 @empty
-                <div class="col-span-full py-16 text-center bg-white rounded-xl border border-gray-200 border-dashed">
-                    <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                <div class="col-span-full py-20 text-center bg-white rounded-3xl border border-gray-200 border-dashed shadow-inner">
+                    <div class="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-5 border border-green-100">
+                        <i class="fas fa-check-circle text-green-500 text-3xl"></i>
                     </div>
-                    <h3 class="text-gray-900 font-semibold mb-1">Semua Pesanan Selesai</h3>
-                    <p class="text-gray-500 text-sm">Tidak ada antrian pesanan yang perlu diproduksi saat ini.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Semua Pesanan Selesai!</h3>
+                    <p class="text-gray-500 text-sm max-w-xs mx-auto">Tidak ada antrian pesanan yang perlu diproduksi saat ini. Santai sejenak.</p>
                 </div>
                 @endforelse
             </div>
@@ -429,6 +501,16 @@
             content.classList.add('hidden');
         });
         document.getElementById('content-' + tabId).classList.remove('hidden');
+    }
+
+    function openSaleModal(saleId) {
+        document.getElementById('modal-sale-' + saleId).classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeSaleModal(saleId) {
+        document.getElementById('modal-sale-' + saleId).classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
     }
 
     document.addEventListener('DOMContentLoaded', function() {
