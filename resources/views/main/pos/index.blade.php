@@ -1705,7 +1705,7 @@
                             <span class="text-lg font-bold text-green-600" id="changeAmount">Rp 0</span>
                         </div>
                     </div>
-                    <button onclick="processCashPayment()" class="btn-primary">
+                    <button id="btn-process-cash" onclick="processCashPayment()" class="btn-primary">
                         <i class="fas fa-check-circle"></i>
                         Proses Pembayaran
                     </button>
@@ -1792,7 +1792,7 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-2">No. Referensi (Opsional):</label>
                         <input type="text" id="transferReference" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-sm font-medium" placeholder="Contoh: REF-123456">
                         
-                        <button onclick="processTransferPayment()" class="btn-primary w-full py-3.5 text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
+                        <button id="btn-process-transfer" onclick="processTransferPayment()" class="btn-primary w-full py-3.5 text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
                             <i class="fas fa-check-circle text-lg"></i>
                             <span>Konfirmasi Pembayaran</span>
                         </button>
@@ -1810,7 +1810,7 @@
                         <p class="text-2xl font-bold text-purple-600" id="midtransTotal">Rp 0</p>
                     </div>
                     <p class="text-sm text-gray-600 mb-4">Klik tombol di bawah untuk membuka Snap (QRIS / E-Wallet / VA).</p>
-                    <button onclick="openMidtransPayment()" class="btn-primary">
+                    <button id="btn-process-midtrans" onclick="openMidtransPayment()" class="btn-primary">
                         <i class="fas fa-qrcode"></i>
                         Bayar via Midtrans
                     </button>
@@ -4610,6 +4610,11 @@ function processCashPayment() {
         return;
     }
     
+    const btn = document.getElementById('btn-process-cash');
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...`;
+
     // Process normal cash payment if amount is sufficient
     fetch('{{ route("payment.cash") }}', {
         method: 'POST',
@@ -4625,6 +4630,8 @@ function processCashPayment() {
     })
     .then(r => r.json())
     .then(async data => {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
         if (data.success) {
             if (data.sale && data.sale.items) {
                 updateProductStockFromSaleItems(data.sale.items);
@@ -4662,10 +4669,16 @@ function processCashPayment() {
                 customer_name: data.sale.customer_name
             });
         } else {
-            showToast('error', data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            showToast('error', data.message || 'Gagal proses pembayaran');
         }
     })
-    .catch(() => showToast('error', 'Gagal proses pembayaran'));
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        showToast('error', 'Gagal proses pembayaran');
+    });
 }
 
 function openDebtPaymentModal(grandTotal, paidAmount, remainingAmount) {
@@ -5614,6 +5627,11 @@ function processTransferPayment() {
         return;
     }
     
+    const btn = document.getElementById('btn-process-transfer');
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...`;
+
     fetch('{{ route("payment.transfer") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
@@ -5627,6 +5645,8 @@ function processTransferPayment() {
     })
     .then(r=>r.json())
     .then(async data=>{
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
         if (data.success) {
             if (data.sale && data.sale.items) { 
                 updateProductStockFromSaleItems(data.sale.items); 
@@ -5656,10 +5676,16 @@ function processTransferPayment() {
                 grand_total: data.sale.grand_total
             });
         } else { 
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
             showToast('error', data.message); 
         }
     })
-    .catch(()=>showToast('error','Gagal proses pembayaran'));
+    .catch(()=>{
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        showToast('error','Gagal proses pembayaran');
+    });
 }
 
 function openMidtransPayment() {
@@ -5667,6 +5693,11 @@ function openMidtransPayment() {
         showToast('warning','Keranjang kosong');
         return;
     }
+    const btn = document.getElementById('btn-process-midtrans');
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Menghubungkan...`;
+
     fetch('{{ route("payment.midtrans.token") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
@@ -5677,6 +5708,8 @@ function openMidtransPayment() {
     })
     .then(r=>r.json())
     .then(data=>{
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
         if (!data.success) { 
             showToast('error', data.message || 'Gagal membuat token Midtrans'); 
             return; 
@@ -5723,7 +5756,11 @@ function openMidtransPayment() {
             onClose: function(){ showToast('info','Jendela pembayaran ditutup'); }
         });
     })
-    .catch(()=>showToast('error','Gagal membuat token'));
+    .catch(()=>{
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        showToast('error','Gagal membuat token');
+    });
 }
 
 function updateProductStockFromSaleItems(items){

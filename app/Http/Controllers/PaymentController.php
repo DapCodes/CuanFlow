@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewProductionOrder;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Product;
@@ -157,6 +158,29 @@ class PaymentController extends Controller
     }
 
     /**
+     * Broadcast production order to Pusher if sale has non-stock items
+     */
+    private function broadcastProductionOrder(Sale $sale)
+    {
+        $sale->loadMissing(['items.product']);
+        $hasNonStockItems = $sale->items->contains(function ($item) {
+            return $item->product && !$item->product->is_stock;
+        });
+
+        if ($hasNonStockItems) {
+            \Log::info('Broadcasting NewProductionOrder for Sale ID: ' . $sale->id);
+            try {
+                event(new NewProductionOrder($sale));
+                \Log::info('Broadcast successful for Sale ID: ' . $sale->id);
+            } catch (\Exception $e) {
+                \Log::error('Pusher broadcast failed: ' . $e->getMessage());
+            }
+        } else {
+            \Log::info('No non-stock items found for Sale ID: ' . $sale->id . '. Skipping broadcast.');
+        }
+    }
+
+    /**
      * Update sale items status based on product stock type
      * - If product is_stock == true -> production_status = completed
      * - If ALL items in sale are is_stock == true -> served_at = now()
@@ -270,6 +294,9 @@ class PaymentController extends Controller
             // AUTOMATION: Update items status (production & served)
             $this->updateSaleItemsStatus($sale);
 
+            // REALTIME: Notify production screen if sale has non-stock items
+            $this->broadcastProductionOrder($sale);
+
             if ($discountPlan) {
                 $this->safeIncrementDiscountUsage($discountPlan, $cart);
             }
@@ -376,6 +403,9 @@ class PaymentController extends Controller
 
             // AUTOMATION: Update items status (production & served)
             $this->updateSaleItemsStatus($sale);
+
+            // REALTIME: Notify production screen if sale has non-stock items
+            $this->broadcastProductionOrder($sale);
 
             if ($discountPlan) {
                 $this->safeIncrementDiscountUsage($discountPlan, $cart);
@@ -569,6 +599,9 @@ class PaymentController extends Controller
                     
                     // AUTOMATION: Update items status (production & served)
                     $this->updateSaleItemsStatus($sale);
+
+                    // REALTIME: Notify production screen if sale has non-stock items
+                    $this->broadcastProductionOrder($sale);
 
                     if ($sale->discount_amount > 0) {
                         $this->incrementDiscountUsageFromSaleNotes($sale);

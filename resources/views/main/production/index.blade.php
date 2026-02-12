@@ -553,5 +553,237 @@
         }
     });
 </script>
+
+<!-- Pusher Realtime for Production Queue -->
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+    (function() {
+        const PUSHER_KEY = @json(config('broadcasting.connections.pusher.key'));
+        const PUSHER_CLUSTER = @json(config('broadcasting.connections.pusher.options.cluster'));
+        const OUTLET_ID = @json(auth()->user()->outlet_id);
+
+        if (!PUSHER_KEY || PUSHER_KEY === 'your-app-key') {
+            console.warn('[Production] Pusher key not configured. Realtime disabled.');
+            return;
+        }
+
+        const pusher = new Pusher(PUSHER_KEY, {
+            cluster: PUSHER_CLUSTER,
+            forceTLS: true
+        });
+
+        const channel = pusher.subscribe('production.outlet.' + OUTLET_ID);
+
+        channel.bind('new-order', function(data) {
+            console.log('[Production] New order received:', data);
+            const order = data.orderData;
+            if (!order || !order.items || order.items.length === 0) return;
+
+            // Remove empty state if present
+            const emptyState = document.querySelector('#content-queue .col-span-full');
+            if (emptyState) emptyState.remove();
+
+            const grid = document.querySelector('#content-queue .grid');
+            if (!grid) return;
+
+            // Build items HTML
+            let itemsHtml = '';
+            order.items.forEach(function(item) {
+                const notesHtml = item.notes 
+                    ? `<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-100">
+                           <i class="fas fa-comment-dots text-[10px]"></i>
+                           <span class="text-[11px] font-medium">${escapeHtml(item.notes)}</span>
+                       </div>` 
+                    : '';
+
+                const actionHtml = item.has_recipe
+                    ? `<div class="flex items-center gap-2">
+                           <a href="/production/preparation/${item.id}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-xl px-4 py-2.5 text-xs font-bold transition-all flex items-center gap-2 shadow-sm whitespace-nowrap">
+                               <i class="fas fa-info-circle text-sm"></i> Detail
+                           </a>
+                           <form action="/production" method="POST">
+                               <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]')?.content || ''}">
+                               <input type="hidden" name="product_id" value="${item.product_id}">
+                               <input type="hidden" name="planned_quantity" value="${item.quantity}">
+                               <input type="hidden" name="sale_item_id" value="${item.id}">
+                               <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2.5 text-xs font-bold transition-all flex items-center gap-2 shadow-md hover:shadow-blue-200 active:scale-95 whitespace-nowrap">
+                                   <i class="fas fa-fire-alt text-sm"></i> Masak
+                               </button>
+                           </form>
+                       </div>`
+                    : `<div class="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg border border-red-100">
+                           <i class="fas fa-exclamation-triangle text-xs pr-1"></i>
+                           <span class="text-[11px] font-bold uppercase tracking-wider">Tanpa Resep</span>
+                       </div>`;
+
+                itemsHtml += `
+                    <div class="flex items-center justify-between p-5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:border-blue-300 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100">
+                                <i class="fas fa-utensils text-lg"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="text-sm font-bold text-gray-900 truncate pr-4">${escapeHtml(item.product_name)}</h4>
+                                <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-gray-100 text-gray-700 border border-gray-200">
+                                        ${item.quantity} ${escapeHtml(item.unit)}
+                                    </span>
+                                    ${notesHtml}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">${actionHtml}</div>
+                    </div>`;
+            });
+
+            const modalId = 'modal-sale-rt-' + order.sale_id;
+            const tableHtml = order.table_name 
+                ? `<div class="flex items-center gap-3 p-2 rounded-lg bg-gray-50/50 border border-transparent group-hover:border-gray-100 group-hover:bg-gray-50 transition-colors">
+                       <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
+                           <i class="fas fa-chair text-xs"></i>
+                       </div>
+                       <span class="text-sm font-semibold text-gray-700">Meja: ${escapeHtml(order.table_name)}</span>
+                   </div>` 
+                : '';
+
+            const cardHtml = `
+                <div class="group bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full relative animate-fade-in" id="card-sale-${order.sale_id}">
+                    <!-- Status Indicator (Subtle) -->
+                    <div class="absolute top-0 right-0 w-16 h-16 pointer-events-none overflow-hidden">
+                        <div class="absolute top-0 right-0 translate-x-8 -translate-y-8 rotate-45 bg-orange-500/10 w-full h-full border-b border-orange-500/20"></div>
+                    </div>
+
+                    <div class="p-5 flex-1 flex flex-col">
+                        <div class="flex items-start justify-between gap-3 mb-5">
+                            <div class="space-y-1">
+                                <h3 class="font-bold text-gray-900 text-lg tracking-tight">${escapeHtml(order.invoice_number)}</h3>
+                                <div class="flex items-center gap-3">
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                                        <i class="far fa-clock text-orange-500"></i> ${order.created_at}
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
+                                        <i class="fas fa-layer-group"></i> ${order.items_count} Item
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="h-11 w-11 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-200 group-hover:rotate-12 transition-transform duration-300">
+                                <i class="fas fa-receipt text-lg"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center gap-3 p-2 rounded-lg bg-gray-50/50 border border-transparent group-hover:border-gray-100 group-hover:bg-gray-50 transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
+                                    <i class="fas fa-user text-xs"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-700 truncate">${escapeHtml(order.customer_name)}</span>
+                            </div>
+                            ${tableHtml}
+                        </div>
+
+                        <div class="mt-auto">
+                            <button type="button" onclick="openSaleModal('rt-${order.sale_id}')"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-3 text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-blue-200 active:scale-95">
+                                <i class="fas fa-external-link-alt text-xs opacity-70"></i> Buka Pesanan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal -->
+                <div id="modal-sale-rt-${order.sale_id}" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
+                    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeSaleModal('rt-${order.sale_id}')"></div>
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                        <div class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-white/20">
+                            <div class="relative bg-white px-6 pt-5 pb-4 border-b border-gray-100">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="h-12 w-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-100 shadow-sm">
+                                            <i class="fas fa-clipboard-list text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">${escapeHtml(order.invoice_number)}</h3>
+                                            <div class="flex items-center gap-2 mt-0.5">
+                                                <span class="text-xs font-semibold text-gray-500">${escapeHtml(order.customer_name)}</span>
+                                                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                                                <span class="text-xs font-medium text-gray-400">${order.created_at}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button onclick="closeSaleModal('rt-${order.sale_id}')" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-all">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-gray-50/30">
+                                <div class="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">${itemsHtml}</div>
+                            </div>
+                            <div class="bg-white px-6 py-5 border-t border-gray-100">
+                                <div class="flex items-center justify-center gap-2 text-gray-400">
+                                    <span class="flex h-2 w-2 relative">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                    </span>
+                                    <p class="text-[11px] font-medium tracking-wide first-letter:uppercase italic">Gunakan tombol "Masak" untuk setiap item yang ingin diproses sekarang.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            grid.insertAdjacentHTML('beforeend', cardHtml);
+
+            // Flash the new card
+            const newCard = document.getElementById('card-sale-' + order.sale_id);
+            if (newCard) {
+                newCard.style.animation = 'fadeInUp 0.5s ease-out';
+            }
+
+            // Play notification sound
+            try {
+                const audio = new Audio('{{ asset("assets/sounds/ting.mp3") }}');
+                audio.play().catch(e => console.warn('[Production] Audio play failed (autoplay policy):', e));
+            } catch (e) {
+                console.error('[Production] Sound error:', e);
+            }
+
+            // Show toast
+            showRealtimeToast('Pesanan Baru: ' + order.invoice_number);
+        });
+
+        // Helper: escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Helper: toast notification
+        function showRealtimeToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-6 right-6 z-[9999] bg-green-600 text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-bold flex items-center gap-3 animate-slide-in';
+            toast.innerHTML = `<i class="fas fa-bell animate-bounce"></i> <span>${escapeHtml(message)}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.5s, transform 0.5s';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+    })();
+</script>
+<style>
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(100%); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .animate-slide-in { animation: slideIn 0.4s ease-out; }
+    .animate-fade-in { animation: fadeInUp 0.5s ease-out; }
+</style>
 @endpush
 @endsection
