@@ -177,12 +177,12 @@
 
     <div id="app-content-wrapper" class="min-h-screen flex flex-col">
         <!-- Navbar -->
-<nav id="main-navbar" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false }">
+<nav id="main-navbar" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 items-center">
             
             <!-- Left: Logo / Outlet -->
-            <div class="flex items-center min-w-0">
+            <div class="flex items-center min-w-0 flex-1">
                 @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
                     @php
                         $userOutlets = auth()->user()->isOwner()
@@ -287,10 +287,6 @@
                             <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
                                 alt="{{ auth()->user()->outlet->name }}"
                                 class="h-9 w-9 object-contain rounded-lg">
-                        @else
-                            <div class="h-9 w-9 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
-                                {{ substr(auth()->user()->outlet->name, 0, 1) }}
-                            </div>
                         @endif
                         <span class="text-base font-bold text-gray-900 truncate">
                             {{ auth()->user()->outlet->name }}
@@ -306,8 +302,89 @@
                 @endif
             </div>
 
+            <!-- Center: Notification (Desktop) -->
+            <div class="hidden md:flex justify-center items-center flex-1">
+                <div class="relative">
+                    <button @click="notiOpen = !notiOpen" 
+                        class="p-2 text-gray-400 hover:text-cuan-dark transition-colors relative group">
+                        <i class="fa-solid fa-bell text-xl"></i>
+                        <span class="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
+                            3
+                        </span>
+                    </button>
+
+                    <!-- Dropdown Desktop -->
+                    <div x-show="notiOpen" 
+                        @click.away="notiOpen = false"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 translate-y-1"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 translate-y-1"
+                        class="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden"
+                        style="display:none;">
+                        
+                        <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
+                            <h3 class="text-sm font-bold text-gray-900 leading-none">Notifikasi</h3>
+                            <span class="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full uppercase tracking-wider">Dummy</span>
+                        </div>
+
+                        <div class="max-h-[350px] overflow-y-auto custom-scrollbar">
+                            <!-- Dummy Item 1 -->
+                            <a href="#" class="block px-4 py-3.5 hover:bg-gray-50 transition-colors border-b border-gray-50 group">
+                                <div class="flex gap-3">
+                                    <div class="h-9 w-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        <i class="fas fa-receipt text-sm"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-gray-900 mb-0.5">Pesanan Baru: #INV-2656</p>
+                                        <p class="text-[11px] text-gray-500 line-clamp-2">Ada pesanan baru dari Pelanggan Umum yang perlu diproses segera.</p>
+                                        <p class="text-[10px] text-blue-500 font-medium mt-1">2 menit yang lalu</p>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <!-- Dummy Item 2 -->
+                            <a href="#" class="block px-4 py-3.5 hover:bg-gray-50 transition-colors border-b border-gray-50 group">
+                                <div class="flex gap-3">
+                                    <div class="h-9 w-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        <i class="fas fa-exclamation-triangle text-sm"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-gray-900 mb-0.5">Stok Menipis: Telur Ayam</p>
+                                        <p class="text-[11px] text-gray-500 line-clamp-2">Persediaan stok barang Telur Ayam sudah mencapai batas minimum (0.5 kg).</p>
+                                        <p class="text-[10px] text-blue-500 font-medium mt-1">1 jam yang lalu</p>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <!-- Dummy Item 3 -->
+                            <a href="#" class="block px-4 py-3.5 hover:bg-gray-50 transition-colors group">
+                                <div class="flex gap-3">
+                                    <div class="h-9 w-9 rounded-xl bg-green-50 text-green-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        <i class="fas fa-check-circle text-sm"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-gray-900 mb-0.5">Laporan Harian Siap</p>
+                                        <p class="text-[11px] text-gray-500 line-clamp-2">Laporan transaksi untuk tanggal 11 Feb sudah selesai digenerate.</p>
+                                        <p class="text-[10px] text-blue-500 font-medium mt-1">3 jam yang lalu</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="p-2 bg-gray-50 mt-1">
+                            <a href="#" class="block w-full text-center py-2 text-xs font-bold text-blue-600 hover:text-blue-700 hover:bg-white rounded-lg transition-all border border-transparent hover:border-blue-100">
+                                Lihat Semua Notifikasi
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Right: Desktop user dropdown -->
-            <div class="hidden sm:flex items-center space-x-4">
+            <div class="hidden sm:flex items-center space-x-4 flex-1 justify-end">
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open"
                         class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
@@ -362,8 +439,66 @@
                 </div>
             </div>
 
-            <!-- Right: Mobile hamburger -->
-            <div class="sm:hidden flex items-center">
+            <!-- Right: Mobile hamburger & Notification -->
+            <div class="sm:hidden flex items-center space-x-3">
+                <div class="relative">
+                    <button @click="notiOpen = !notiOpen" 
+                        class="p-2 text-gray-400 hover:text-gray-900 focus:outline-none relative">
+                        <i class="fa-solid fa-bell text-xl"></i>
+                        <span class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
+                            3
+                        </span>
+                    </button>
+
+                    <!-- Dropdown Mobile -->
+                    <div x-show="notiOpen" 
+                        @click.away="notiOpen = false"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute right-0 mt-3 w-[280px] bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden origin-top-right"
+                        style="display:none;">
+                        
+                        <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
+                            <h3 class="text-sm font-bold text-gray-900 leading-none">Notifikasi</h3>
+                            <span class="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full uppercase tracking-wider">Dummy</span>
+                        </div>
+
+                        <div class="max-h-[300px] overflow-y-auto custom-scrollbar">
+                            <a href="#" class="block px-4 py-3.5 hover:bg-gray-50 border-b border-gray-50">
+                                <div class="flex gap-3">
+                                    <div class="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-receipt text-xs"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-gray-900 truncate">Pesanan Baru: #INV-2656</p>
+                                        <p class="text-[10px] text-gray-500 mt-0.5">Ada pesanan baru masuk.</p>
+                                    </div>
+                                </div>
+                            </a>
+                            <a href="#" class="block px-4 py-3.5 hover:bg-gray-50">
+                                <div class="flex gap-3">
+                                    <div class="h-8 w-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-xs"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-gray-900 truncate">Stok Menipis: Telur</p>
+                                        <p class="text-[10px] text-gray-500 mt-0.5">Sisa stok sisa 0.5 kg.</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="p-2 border-t border-gray-50">
+                            <a href="#" class="block w-full text-center py-2 text-xs font-bold text-blue-600">
+                                Lihat Semua
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <button @click="mobileOpen = !mobileOpen"
                     class="inline-flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 focus:outline-none"
                     aria-label="Open menu">
