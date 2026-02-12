@@ -212,6 +212,46 @@ class ProductionController extends Controller
         ]);
     }
 
+    public function preparation(\App\Models\SaleItem $saleItem)
+    {
+        if (! auth()->user()->can('buat produksi')) {
+            abort(403);
+        }
+        
+        $saleItem->load(['product.unit', 'product.defaultRecipe.items.rawMaterial.unit', 'sale.customer']);
+        
+        $product = $saleItem->product;
+        if (!$product || !$product->defaultRecipe) {
+             return back()->with('error', 'Produk tidak memiliki resep.');
+        }
+
+        $recipe = $product->defaultRecipe;
+        $outletId = auth()->user()->outlet_id;
+
+        // Calculate material requirements for the *default* quantity (item quantity)
+        $materials = $recipe->items->map(function ($item) use ($outletId, $saleItem, $recipe) {
+            $multiplier = $saleItem->quantity / $recipe->output_quantity;
+            $required = $item->quantity * $multiplier;
+            
+            $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
+                ->where('outlet_id', $outletId)
+                ->first();
+                
+            $available = $stock ? $stock->quantity : 0;
+            
+            return [
+                'raw_material' => $item->rawMaterial,
+                'required_per_recipe' => $item->quantity,
+                'required_total' => $required,
+                'available' => $available,
+                'unit' => $item->rawMaterial->unit->name ?? '',
+                'is_sufficient' => $available >= $required
+            ];
+        });
+
+        return view('main.production.preparation', compact('saleItem', 'product', 'recipe', 'materials'));
+    }
+
     public function show(Production $production)
     {
         if (! auth()->user()->can('lihat produksi')) {
@@ -439,6 +479,22 @@ class ProductionController extends Controller
                             'served_at' => now(),
                         ]);
                         $qtyToFulfill -= $saleItem->quantity;
+                    }
+
+                    // --- NEW LOGIC: Check for sibling Stock Items that are waiting ---
+                    // "jika ada produk lain yang is_stock nya == true otomatis yang itu juga served at nya == now"
+                    $sale = $saleItem->sale;
+                    if ($sale) {
+                        $waitingStockItems = $sale->items()
+                            ->whereNull('served_at')
+                            ->whereHas('product', function ($q) {
+                                $q->where('is_stock', true);
+                            })
+                            ->get();
+
+                        foreach ($waitingStockItems as $wsItem) {
+                            $wsItem->update(['served_at' => now()]);
+                        }
                     }
                 }
             }

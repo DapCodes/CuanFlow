@@ -184,16 +184,23 @@
                                         
                                         <div class="flex-shrink-0">
                                             @if($item->product->defaultRecipe)
-                                            <form action="{{ route('production.store') }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="product_id" value="{{ $item->product_id }}">
-                                                <input type="hidden" name="planned_quantity" value="{{ $item->quantity }}">
-                                                <input type="hidden" name="sale_item_id" value="{{ $item->id }}">
-                                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-2.5 text-xs font-bold transition-all flex items-center gap-2 shadow-md hover:shadow-blue-200 active:scale-95 whitespace-nowrap">
-                                                    <i class="fas fa-fire-alt text-sm"></i>
-                                                    Masak
-                                                </button>
-                                            </form>
+                                            <div class="flex items-center gap-2">
+                                                <a href="{{ route('production.preparation', $item->id) }}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-xl px-4 py-2.5 text-xs font-bold transition-all flex items-center gap-2 shadow-sm whitespace-nowrap">
+                                                    <i class="fas fa-info-circle text-sm"></i>
+                                                    Detail
+                                                </a>
+
+                                                <form action="{{ route('production.store') }}" method="POST">
+                                                    @csrf
+                                                    <input type="hidden" name="product_id" value="{{ $item->product_id }}">
+                                                    <input type="hidden" name="planned_quantity" value="{{ $item->quantity }}">
+                                                    <input type="hidden" name="sale_item_id" value="{{ $item->id }}">
+                                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2.5 text-xs font-bold transition-all flex items-center gap-2 shadow-md hover:shadow-blue-200 active:scale-95 whitespace-nowrap">
+                                                        <i class="fas fa-fire-alt text-sm"></i>
+                                                        Masak
+                                                    </button>
+                                                </form>
+                                            </div>
                                             @else
                                             <div class="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg border border-red-100">
                                                 <i class="fas fa-exclamation-triangle text-xs pr-1"></i>
