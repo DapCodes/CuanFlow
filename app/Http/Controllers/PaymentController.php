@@ -157,6 +157,45 @@ class PaymentController extends Controller
     }
 
     /**
+     * Update sale items status based on product stock type
+     * - If product is_stock == true -> production_status = completed
+     * - If ALL items in sale are is_stock == true -> served_at = now()
+     * - If ANY item is is_stock == false -> served_at = null for ALL items (wait for production)
+     */
+    private function updateSaleItemsStatus(Sale $sale)
+    {
+        $sale->loadMissing(['items.product']); // Ensure items and products are loaded
+
+        // Check if there are any non-stock items (made to order)
+        $hasNonStockItems = $sale->items->contains(function ($item) {
+            return $item->product && ! $item->product->is_stock;
+        });
+
+        foreach ($sale->items as $item) {
+            $product = $item->product;
+
+            if ($product && $product->is_stock) {
+                // Stock items are immediately "produced" (picked from shelf)
+                $item->production_status = 'completed';
+
+                // If there are NO non-stock items, we can serve immediately.
+                // Otherwise, we wait for the whole order (or at least don't auto-serve).
+                if (! $hasNonStockItems) {
+                    $item->served_at = now();
+                } else {
+                    $item->served_at = null;
+                }
+            } else {
+                // Non-stock items (kitchen/bar)
+                // production_status remains 'pending' (default)
+                $item->served_at = null;
+            }
+
+            $item->save();
+        }
+    }
+
+    /**
      * Process cash payment with discount support
      */
     public function processCashPayment(Request $request)
@@ -227,6 +266,9 @@ class PaymentController extends Controller
 
             // PERBAIKAN: Pass discount plan to reduce stock
             $this->reduceStock($cart, $discountPlan);
+            
+            // AUTOMATION: Update items status (production & served)
+            $this->updateSaleItemsStatus($sale);
 
             if ($discountPlan) {
                 $this->safeIncrementDiscountUsage($discountPlan, $cart);
@@ -331,6 +373,9 @@ class PaymentController extends Controller
 
             // PERBAIKAN: Pass discount plan
             $this->reduceStock($cart, $discountPlan);
+
+            // AUTOMATION: Update items status (production & served)
+            $this->updateSaleItemsStatus($sale);
 
             if ($discountPlan) {
                 $this->safeIncrementDiscountUsage($discountPlan, $cart);
@@ -521,6 +566,10 @@ class PaymentController extends Controller
 
                 if ($shouldProcess) {
                     $this->reduceStockFromSale($sale);
+                    
+                    // AUTOMATION: Update items status (production & served)
+                    $this->updateSaleItemsStatus($sale);
+
                     if ($sale->discount_amount > 0) {
                         $this->incrementDiscountUsageFromSaleNotes($sale);
                     }
