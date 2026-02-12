@@ -206,6 +206,10 @@
                                             <div class="flex-shrink-0">
                                                 @if($item->product->defaultRecipe)
                                                 <div class="flex items-center gap-2">
+                                                    <a href="{{ route('production.preparation', $item->id) }}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-xl px-4 py-2.5 text-xs font-bold transition-all flex items-center gap-2 shadow-sm whitespace-nowrap">
+                                                        <i class="fas fa-info-circle text-sm"></i>
+                                                        Detail
+                                                    </a>
                                                     <form action="{{ route('production.store') }}" method="POST">
                                                         @csrf
                                                         <input type="hidden" name="product_id" value="{{ $item->product_id }}">
