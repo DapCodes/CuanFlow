@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Product;
+use App\Models\ResellerApplication;
 use App\Models\Sale;
 use App\Services\DiscountService;
 use Illuminate\Http\Request;
@@ -60,6 +61,13 @@ class PointOfSaleController extends Controller
 
         $selectedCustomerId = Session::get('pos_customer_id');
         $selectedCustomer = $selectedCustomerId ? Customer::find($selectedCustomerId) : null;
+        
+        if ($selectedCustomer && $selectedCustomer->type === 'reseller') {
+            $selectedCustomer->is_verified_reseller = ResellerApplication::where('customer_id', $selectedCustomer->id)
+                ->where('outlet_id', auth()->user()->outlet_id)
+                ->where('status', 'approved')
+                ->exists();
+        }
 
         return view('main.pos.index', compact('products', 'activeDiscounts', 'customers', 'cart', 'categories', 'cartSummary', 'activeDiscountPlan', 'outletPaymentLinks', 'selectedCustomer'));
     }
@@ -215,11 +223,22 @@ class PointOfSaleController extends Controller
         if ($customerId) {
             $customer = Customer::find($customerId);
             if ($customer) {
-                if ($customer->type === 'reseller' && $product->reseller_price) {
-                    $price = $product->reseller_price;
-                } elseif ($customer->type === 'vip' && $product->promo_price) {
-                    $price = $product->promo_price;
+                // Per Check Request: Reseller logic must verify ResellerApplication first
+                $isVerifiedReseller = false;
+                if ($customer->type === 'reseller') {
+                    $isVerifiedReseller = ResellerApplication::where('customer_id', $customer->id)
+                        ->where('outlet_id', auth()->user()->outlet_id)
+                        ->where('status', 'approved')
+                        ->exists();
                 }
+
+                if ($isVerifiedReseller && $product->reseller_price) {
+                    $price = $product->reseller_price;
+                } 
+                // VIP Logic disabled per request ("dihilangkan dulu")
+                /* elseif ($customer->type === 'vip' && $product->promo_price) {
+                    $price = $product->promo_price;
+                } */
             }
         }
 
@@ -406,11 +425,22 @@ class PointOfSaleController extends Controller
                 if ($product) {
                     $price = $product->selling_price;
                     if ($customer) {
-                        if ($customer->type === 'reseller' && $product->reseller_price) {
-                            $price = $product->reseller_price;
-                        } elseif ($customer->type === 'vip' && $product->promo_price) {
-                            $price = $product->promo_price;
+                        // Per Check Request: Reseller logic must verify ResellerApplication first
+                        $isVerifiedReseller = false;
+                        if ($customer->type === 'reseller') {
+                            $isVerifiedReseller = ResellerApplication::where('customer_id', $customer->id)
+                                ->where('outlet_id', auth()->user()->outlet_id)
+                                ->where('status', 'approved')
+                                ->exists();
                         }
+
+                        if ($isVerifiedReseller && $product->reseller_price) {
+                            $price = $product->reseller_price;
+                        } 
+                        // VIP Logic disabled per request ("dihilangkan dulu")
+                        /* elseif ($customer->type === 'vip' && $product->promo_price) {
+                            $price = $product->promo_price;
+                        } */
                     }
                     $cart[$key]['unit_price'] = $price;
                     $cart[$key]['subtotal'] = ($price * $item['quantity']) - ($item['discount_amount'] ?? 0);
@@ -775,7 +805,24 @@ class PointOfSaleController extends Controller
                 ->orWhere('email', 'like', "%{$query}%")
                 ->orWhere('code', 'like', "%{$query}%");
         })
+            ->where('type', '!=', 'vip') // Disable VIP per request
+            ->take(20) // Limit results
             ->get(['id', 'name', 'code', 'phone', 'email', 'address', 'type', 'total_debt', 'credit_limit']);
+
+        // Append Verification Status for Resellers
+        $customers->transform(function ($customer) {
+            $customer->is_verified_reseller = false;
+            if ($customer->type === 'reseller') {
+                $customer->is_verified_reseller = ResellerApplication::where('customer_id', $customer->id)
+                    ->where('outlet_id', auth()->user()->outlet_id)
+                    ->where('status', 'approved')
+                    ->exists();
+            }
+
+            // Fallback for frontend badge logic
+            // If not verified, frontend might want to know (optional)
+            return $customer;
+        });
 
         return response()->json($customers);
     }

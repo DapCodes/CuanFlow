@@ -6887,11 +6887,14 @@ function closeSaleDetailModal() {
         cards.forEach(card => {
             let price = parseFloat(card.dataset.productPrice);
             if (currentCustomer) {
-                if (currentCustomer.type === 'reseller' && card.dataset.productResellerPrice && card.dataset.productResellerPrice !== '') {
+                // PERBAIKAN: Cek verifikasi ResellerApplication sebelum terapkan harga
+                if (currentCustomer.type === 'reseller' && currentCustomer.is_verified_reseller && card.dataset.productResellerPrice && card.dataset.productResellerPrice !== '') {
                     price = parseFloat(card.dataset.productResellerPrice);
-                } else if (currentCustomer.type === 'vip' && card.dataset.productPromoPrice && card.dataset.productPromoPrice !== '') {
+                } 
+                // VIP Disabled per request
+                /* else if (currentCustomer.type === 'vip' && card.dataset.productPromoPrice && card.dataset.productPromoPrice !== '') {
                     price = parseFloat(card.dataset.productPromoPrice);
-                }
+                } */
             }
             
             const priceEl = card.querySelector('.product-price');
@@ -6972,7 +6975,17 @@ function closeSaleDetailModal() {
             let html = '';
             customers.forEach(customer => {
                 let badgeClass = 'bg-gray-100 text-gray-800';
-                if(customer.type === 'reseller') badgeClass = 'bg-blue-100 text-blue-800';
+                let typeLabel = customer.type;
+
+                if(customer.type === 'reseller') {
+                    if (customer.is_verified_reseller) {
+                        badgeClass = 'bg-blue-100 text-blue-800';
+                        typeLabel = 'RESELLER';
+                    } else {
+                        badgeClass = 'bg-gray-200 text-gray-600';
+                        typeLabel = 'RESELLER (PENDING)';
+                    }
+                }
                 if(customer.type === 'vip') badgeClass = 'bg-purple-100 text-purple-800';
 
                 html += `
@@ -6984,7 +6997,7 @@ function closeSaleDetailModal() {
                                 <div class="text-xs text-gray-500">${customer.phone || '-'} | ${customer.code}</div>
                             </div>
                             <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${badgeClass}">
-                                ${customer.type}
+                                ${typeLabel}
                             </span>
                         </div>
                     </div>
@@ -7024,9 +7037,15 @@ function closeSaleDetailModal() {
             badgeIcon.className = 'fas fa-crown text-purple-600';
             badgeText.textContent = 'VIP';
         } else if (customer.type === 'reseller') {
-            badge.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
-            badgeIcon.className = 'fas fa-store text-blue-600';
-            badgeText.textContent = 'RESELLER';
+            if (customer.is_verified_reseller) {
+                badge.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
+                badgeIcon.className = 'fas fa-store text-blue-600';
+                badgeText.textContent = 'RESELLER';
+            } else {
+                badge.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-300');
+                badgeIcon.className = 'fas fa-store text-gray-500';
+                badgeText.textContent = 'RESELLER (PENDING)';
+            }
         } else {
             badge.classList.add('bg-gray-50', 'text-gray-700', 'border-gray-200');
             badgeIcon.className = 'fas fa-user text-gray-500';
