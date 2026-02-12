@@ -31,6 +31,7 @@ class NewProductionOrder implements ShouldBroadcastNow
             'table_name' => $sale->table->name ?? null,
             'created_at' => $sale->created_at->format('H:i'),
             'created_at_human' => $sale->created_at->diffForHumans(),
+            'timestamp' => $sale->created_at->timestamp,
             'items_count' => $pendingItems->count(),
             'items' => $pendingItems->map(function ($item) {
                 return [
