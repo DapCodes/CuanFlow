@@ -29,7 +29,7 @@ class PointOfSaleController extends Controller
         $products = Product::where('outlet_id', $outletId)
             ->where('is_active', true)
             ->where('is_sellable', true)
-            ->with(['category', 'unit', 'stocks'])
+            ->with(['category', 'unit', 'stocks', 'defaultRecipe.items.rawMaterial.stocks'])
             ->get();
 
         // Ambil kategori yang memiliki produk aktif
@@ -194,7 +194,7 @@ class PointOfSaleController extends Controller
         $currentQtyInCart = isset($cart[$cartKey]) ? $cart[$cartKey]['quantity'] : 0;
         $newTotalQty = $currentQtyInCart + $request->quantity;
 
-        if ($product->track_stock) {
+        if ($product->track_stock && $product->is_stock) {
             $stock = $product->stocks()
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->first();
@@ -292,7 +292,7 @@ class PointOfSaleController extends Controller
 
         $product = Product::find($cart[$request->cart_key]['product_id']);
 
-        if ($product && $product->track_stock) {
+        if ($product && $product->track_stock && $product->is_stock) {
             $stock = $product->stocks()
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->first();

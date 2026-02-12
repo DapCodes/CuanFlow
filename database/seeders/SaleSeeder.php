@@ -106,6 +106,8 @@ class SaleSeeder extends Seeder
                         'subtotal' => $itemSubtotal,
                         'hpp' => $product->hpp,
                         'profit' => $itemSubtotal - (($product->hpp ?: 0) * $qty),
+                        'production_status' => 'completed',
+                        'served_at' => now(),
                         'created_at' => $saleDate,
                     ]);
 
@@ -129,12 +131,6 @@ class SaleSeeder extends Seeder
                             'created_by' => $adminId,
                             'created_at' => $saleDate,
                         ]);
-                    } else {
-                        // For non-stock items, set production_status to pending
-                        // This will make them appear in the "Order Queue" tab
-                        SaleItem::where('sale_id', $sale->id)
-                            ->where('product_id', $product->id)
-                            ->update(['production_status' => 'pending']);
                     }
                 }
 

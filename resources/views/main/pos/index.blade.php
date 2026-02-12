@@ -1511,7 +1511,14 @@
                             @endif
                             <div class="product-name">{{ $product->name }}</div>
                             <div class="product-price">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</div>
-                            @if($product->track_stock)
+                            @if(!$product->is_stock)
+                                @php
+                                    $estimatedStock = $product->getEstimatedStockPortions(auth()->user()->outlet_id);
+                                @endphp
+                                <div class="product-stock {{ $estimatedStock > 0 ? 'text-blue-600' : 'text-red-400' }}" data-product-id="{{ $product->id }}" title="Estimasi stok berdasarkan bahan baku yang tersedia">
+                                    ± <span class="stock-qty">{{ number_format($estimatedStock, 0, ',', '.') }}</span> porsi
+                                </div>
+                            @elseif($product->track_stock)
                                 @php
                                     $stock = $product->stocks->where('outlet_id', auth()->user()->outlet_id)->first();
                                     $stockQty = $stock ? $stock->quantity : 0;

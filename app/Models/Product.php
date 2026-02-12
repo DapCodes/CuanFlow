@@ -143,11 +143,51 @@ class Product extends Model
     }
 
     /**
-     * Get product name initials
+     * Get estimated stock based on recipe and raw material availability
+     */
+    public function getEstimatedStockPortions($outletId): int
+    {
+        $recipe = $this->defaultRecipe;
+        if (! $recipe || $recipe->items->isEmpty()) {
+            return 0;
+        }
+
+        $maxPortions = null;
+
+        foreach ($recipe->items as $item) {
+            $rawMaterial = $item->rawMaterial;
+            if (! $rawMaterial) {
+                continue;
+            }
+
+            $currentStock = $rawMaterial->getStockQuantity($outletId);
+            $requiredPerRecipe = $item->quantity;
+
+            if ($requiredPerRecipe <= 0) {
+                continue;
+            }
+
+            // How many times can we make this recipe based on THIS raw material?
+            $possibleTimes = $currentStock / $requiredPerRecipe;
+
+            if ($maxPortions === null || $possibleTimes < $maxPortions) {
+                $maxPortions = $possibleTimes;
+            }
+        }
+
+        if ($maxPortions === null) {
+            return 0;
+        }
+
+        // Final estimated portions = (number of times recipe can be made) * (output quantity of recipe)
+        return (int) floor($maxPortions * $recipe->output_quantity);
+    }
+
+    /**
+     * Get product name initials (2 characters)
      */
     public function getInitialsAttribute(): string
     {
-        // Remove non-alphanumeric except space
         $cleanName = preg_replace('/[^a-zA-Z\s]/', '', $this->name);
         $words = explode(' ', $cleanName);
         $initials = '';
@@ -157,6 +197,6 @@ class Product extends Model
             }
         }
 
-        return substr($initials, 0, 3); // Limit to 3 characters max
+        return substr($initials, 0, 2);
     }
 }

@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             // DiscountSeeder::class,
             AdminLandingPageSeeder::class,
             // ProductStockSeeder::class,
+            TermsAndConditionSeeder::class,
         ]);
 
         // Buat Akun Admin
