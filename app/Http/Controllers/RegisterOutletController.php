@@ -35,6 +35,7 @@ class RegisterOutletController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'has_table_system' => 'nullable|boolean',
+            'auto_production' => 'nullable|boolean',
         ]);
 
         try {
@@ -61,6 +62,7 @@ class RegisterOutletController extends Controller
                 'email' => $request->email,
                 'logo' => $logoPath,
                 'has_table_system' => $request->boolean('has_table_system'),
+                'auto_production' => $request->boolean('auto_production'),
                 'settings' => [
                     'business_type' => $request->business_type,
                     'business_category' => $request->business_category,

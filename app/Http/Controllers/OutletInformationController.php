@@ -166,6 +166,7 @@ class OutletInformationController extends Controller implements HasMiddleware
             'longitude' => 'nullable|numeric',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'boolean',
+            'auto_production' => 'boolean',
         ]);
 
         if ($request->hasFile('logo')) {
@@ -174,6 +175,8 @@ class OutletInformationController extends Controller implements HasMiddleware
             }
             $validated['logo'] = $request->file('logo')->store('outlets/logos', 'public');
         }
+
+        $validated['auto_production'] = $request->has('auto_production');
 
         $outlet->update($validated);
 

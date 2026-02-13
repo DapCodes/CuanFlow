@@ -205,9 +205,9 @@
                         <!-- Status Toggle -->
                         <div>
                             <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4">
-                                Status Aktif
+                                Pengaturan Outlet
                             </h3>
-                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200 space-y-6">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">Status Outlet</p>
@@ -222,7 +222,26 @@
                                                class="sr-only toggle-checkbox">
                                         <label for="is_active" class="block relative w-12 h-6 cursor-pointer">
                                             <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 transition-colors duration-200"></div>
-                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200" id="toggleDot"></div>
+                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200" id="is_active_dot"></div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between border-t border-gray-100 pt-6">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Produksi Otomatis</p>
+                                        <p class="text-xs text-gray-500 mt-1">Status produksi otomatis selesai</p>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="checkbox" 
+                                               name="auto_production" 
+                                               id="auto_production"
+                                               value="1"
+                                               {{ old('auto_production', $outlet->auto_production) ? 'checked' : '' }}
+                                               class="sr-only toggle-checkbox">
+                                        <label for="auto_production" class="block relative w-12 h-6 cursor-pointer">
+                                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 transition-colors duration-200"></div>
+                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200" id="auto_production_dot"></div>
                                         </label>
                                     </div>
                                 </div>
@@ -454,19 +473,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Toggle Switch Handler
-    const toggleCheckbox = document.getElementById('is_active');
-    const toggleDot = document.getElementById('toggleDot');
-
-    function updateToggle() {
-        if (toggleCheckbox.checked) {
-            toggleDot.style.transform = 'translateX(1.5rem)';
+    function updateToggle(checkbox, dot) {
+        if (checkbox.checked) {
+            dot.style.transform = 'translateX(1.5rem)';
         } else {
-            toggleDot.style.transform = 'translateX(0)';
+            dot.style.transform = 'translateX(0)';
         }
     }
 
-    toggleCheckbox.addEventListener('change', updateToggle);
-    updateToggle(); // Initial state
+    const isActiveCheckbox = document.getElementById('is_active');
+    const isActiveDot = document.getElementById('is_active_dot');
+    const autoProdCheckbox = document.getElementById('auto_production');
+    const autoProdDot = document.getElementById('auto_production_dot');
+
+    isActiveCheckbox.addEventListener('change', () => updateToggle(isActiveCheckbox, isActiveDot));
+    autoProdCheckbox.addEventListener('change', () => updateToggle(autoProdCheckbox, autoProdDot));
+    
+    updateToggle(isActiveCheckbox, isActiveDot); // Initial state
+    updateToggle(autoProdCheckbox, autoProdDot); // Initial state
 
     // Leaflet Map Handler
     const currentLat = {{ $outlet->latitude ?? -6.2088 }};

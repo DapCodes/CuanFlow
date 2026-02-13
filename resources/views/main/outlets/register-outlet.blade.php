@@ -519,6 +519,31 @@
                                     </div>
                                 </div>
 
+                                <!-- Produksi Otomatis -->
+                                <div class="bg-emerald-50/80 border border-emerald-100 rounded-2xl p-4 space-y-3">
+                                    <div class="flex items-start gap-3">
+                                        <div class="mt-0.5 w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                                            <i class="fa-solid fa-magic text-emerald-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-gray-900 text-sm">Aktifkan Produksi Otomatis?</p>
+                                            <p class="text-xs text-gray-500 mt-0.5">Otomatis menyelesaikan status produksi untuk produk non-stok segera setelah pembayaran selesai.</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-3 ml-11">
+                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                            <input type="radio" name="auto_production" value="1" 
+                                                   class="w-4 h-4 text-cuan-primary border-gray-300 focus:ring-cuan-primary">
+                                            <span class="text-sm font-medium text-gray-700 group-hover:text-cuan-primary transition-colors">Ya, aktifkan</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer group">
+                                            <input type="radio" name="auto_production" value="0" checked
+                                                   class="w-4 h-4 text-cuan-primary border-gray-300 focus:ring-cuan-primary">
+                                            <span class="text-sm font-medium text-gray-700 group-hover:text-cuan-primary transition-colors">Tidak, biar saya kelola manual</span>
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <div class="bg-blue-50/80 border border-blue-100 rounded-2xl p-4 flex gap-3 items-start text-sm">
                                     <div class="mt-0.5">
                                         <i class="fa-solid fa-circle-info text-blue-500"></i>
