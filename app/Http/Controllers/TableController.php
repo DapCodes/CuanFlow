@@ -23,6 +23,7 @@ class TableController extends Controller implements HasMiddleware
             new Middleware('permission:generate kode meja', only: ['generateCode']),
             new Middleware('permission:pilih meja pos', only: ['getTablesApi']),
             new Middleware('permission:toggle sistem meja outlet', only: ['toggleTableSystemApi']),
+            new Middleware('permission:atur tampilan produk pos', only: ['toggleAutoProductionApi']),
         ];
     }
 
@@ -322,6 +323,29 @@ class TableController extends Controller implements HasMiddleware
         $enabled = $request->boolean('enabled');
 
         $outlet->update(['has_table_system' => $enabled]);
+
+        return response()->json([
+            'success' => true,
+            'enabled' => $enabled,
+        ]);
+    }
+
+    /**
+     * Toggle auto production for outlet.
+     */
+    public function toggleAutoProductionApi(Request $request)
+    {
+        if (! auth()->user()->can('atur tampilan produk pos')) { // Using existing relevant permission
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk mengubah pengaturan ini',
+            ], 403);
+        }
+
+        $outlet = auth()->user()->outlet;
+        $enabled = $request->boolean('enabled');
+
+        $outlet->update(['auto_production' => $enabled]);
 
         return response()->json([
             'success' => true,

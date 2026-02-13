@@ -330,6 +330,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     Route::resource('tables', TableController::class)->except(['show'])->middleware('feature.access:table_management');
     Route::get('/api/tables', [TableController::class, 'getTablesApi']);
     Route::post('/api/outlet/toggle-table-system', [TableController::class, 'toggleTableSystemApi']);
+    Route::post('/api/outlet/toggle-auto-production', [TableController::class, 'toggleAutoProductionApi']);
 
     // ---------------------------------------------------------------------
     // Finance

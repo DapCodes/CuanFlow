@@ -188,7 +188,10 @@ class PaymentController extends Controller
      */
     private function updateSaleItemsStatus(Sale $sale)
     {
-        $sale->loadMissing(['items.product']); // Ensure items and products are loaded
+        $sale->loadMissing(['items.product', 'outlet']); // Ensure items, products, and outlet are loaded
+
+        // Check if auto production is enabled for this outlet
+        $autoProduction = $sale->outlet && $sale->outlet->auto_production;
 
         // Check if there are any non-stock items (made to order)
         $hasNonStockItems = $sale->items->contains(function ($item) {
@@ -198,7 +201,11 @@ class PaymentController extends Controller
         foreach ($sale->items as $item) {
             $product = $item->product;
 
-            if ($product && $product->is_stock) {
+            if ($autoProduction) {
+                // If auto production is enabled, everything is completed and served immediately
+                $item->production_status = 'completed';
+                $item->served_at = now();
+            } elseif ($product && $product->is_stock) {
                 // Stock items are immediately "produced" (picked from shelf)
                 $item->production_status = 'completed';
 

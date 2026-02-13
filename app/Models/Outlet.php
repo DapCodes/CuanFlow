@@ -14,7 +14,7 @@ class Outlet extends Model
 
     protected $fillable = [
         'code', 'name', 'address', 'latitude', 'longitude', 'phone', 'email', 'logo', 'settings', 'is_active',
-        'owner_id', 'has_table_system', 'accepts_reseller',
+        'owner_id', 'has_table_system', 'accepts_reseller', 'auto_production',
     ];
 
     protected $casts = [
@@ -22,6 +22,7 @@ class Outlet extends Model
         'is_active' => 'boolean',
         'has_table_system' => 'boolean',
         'accepts_reseller' => 'boolean',
+        'auto_production' => 'boolean',
     ];
 
     // Relasi ke User yang menjadi owner outlet ini

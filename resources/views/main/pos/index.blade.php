@@ -2158,6 +2158,23 @@
                 </label>
             </div>
 
+            <!-- Toggle: Produksi Otomatis -->
+            <div class="flex items-center justify-between p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                <div class="flex-1">
+                    <div class="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                        <i class="fas fa-magic text-emerald-600"></i>
+                        Produksi Otomatis
+                    </div>
+                    <div class="text-sm text-gray-600">Otomatis menyelesaikan produksi untuk item non-stok</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="autoProductionToggle" class="sr-only peer" 
+                           {{ auth()->user()->outlet && auth()->user()->outlet->auto_production ? 'checked' : '' }}
+                           onchange="toggleAutoProduction(this.checked)">
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+            </div>
+
             <!-- Toggle: Posisi Panel -->
             <div class="flex items-center justify-between p-4 bg-orange-50 rounded-xl border border-orange-200">
                 <div class="flex-1">
@@ -4966,6 +4983,30 @@ async function toggleTableSystem(enabled) {
     } catch (error) {
         showToast('error', 'Gagal mengubah pengaturan sistem meja');
         document.getElementById('tableSystemToggle').checked = !enabled;
+    }
+}
+
+async function toggleAutoProduction(enabled) {
+    try {
+        const response = await fetch('/api/outlet/toggle-auto-production', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ enabled })
+        });
+        const data = await response.json();
+        if (data.success) {
+            showToast('success', enabled ? 'Produksi otomatis diaktifkan' : 'Produksi otomatis dinonaktifkan');
+        } else {
+            showToast('error', data.message || 'Gagal mengubah pengaturan produksi otomatis');
+            document.getElementById('autoProductionToggle').checked = !enabled;
+        }
+    } catch (error) {
+        showToast('error', 'Gagal mengubah pengaturan produksi otomatis');
+        document.getElementById('autoProductionToggle').checked = !enabled;
     }
 }
 
