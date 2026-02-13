@@ -31,11 +31,13 @@
             visibility: hidden;
             transition: opacity 0.2s ease, visibility 0.2s ease;
             will-change: opacity, visibility;
+            pointer-events: none;
         }
         
         .global-page-loader.active {
             opacity: 1;
             visibility: visible;
+            pointer-events: auto;
         }
         
         .global-loader-asterisk {
@@ -549,6 +551,8 @@
         window.addEventListener('load', () => {
             setTimeout(() => {
                 loader.classList.remove('active');
+                document.body.classList.remove('overflow-hidden');
+                document.body.classList.add('overflow-auto');
             }, 300);
         });
 
@@ -556,6 +560,8 @@
             if (isNavigating) return;
             isNavigating = true;
             loader.classList.add('active');
+            document.body.classList.remove('overflow-auto');
+            document.body.classList.add('overflow-hidden');
             
             setTimeout(() => {
                 document.body.classList.add('page-exit');
@@ -593,6 +599,8 @@
             
             isNavigating = true;
             loader.classList.add('active');
+            document.body.classList.remove('overflow-auto');
+            document.body.classList.add('overflow-hidden');
             
             setTimeout(() => {
                 document.body.classList.add('page-exit');
