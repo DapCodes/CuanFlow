@@ -399,9 +399,9 @@
             @if ($lockoutSeconds > 0)
                 <div id="lockout-container" class="space-y-6 animate-fade-in-up">
                     <div class="p-6 bg-red-50 border border-red-100 rounded-2xl text-center">
-                        <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <!-- <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-lock text-2xl"></i>
-                        </div>
+                        </div> -->
                         <h4 class="text-lg font-bold text-red-900 mb-2">Batas login harian anda sudah habis</h4>
                         <p class="text-sm text-red-700 leading-relaxed">
                             Terlalu banyak percobaan masuk yang gagal. Untuk keamanan akun Anda, akses masuk dibatasi sementara.
