@@ -583,6 +583,180 @@ class ProductionController extends Controller
         }
     }
 
+    public function storeAll(Request $request)
+    {
+        if (! auth()->user()->can('buat produksi')) {
+            abort(403);
+        }
+        $validated = $request->validate([
+            'sale_id' => 'required|exists:sales,id',
+        ]);
+
+        $outletId = auth()->user()->outlet_id;
+        $userId = auth()->id();
+
+        $sale = \App\Models\Sale::where('id', $validated['sale_id'])
+            ->where('outlet_id', $outletId)
+            ->firstOrFail();
+
+        // Get items to produce
+        $items = $sale->items()
+            ->where('production_status', 'pending')
+            ->whereHas('product', function($q) {
+                $q->where('is_stock', false);
+            })
+            ->get();
+
+        if ($items->count() <= 1) {
+             return back()->with('error', 'Aksi Masak Semua hanya tersedia jika item lebih dari 1.');
+        }
+
+        // Pre-flight check for materials
+        $transactionMaterials = [];
+        
+        foreach ($items as $item) {
+            $product = $item->product;
+            if (!$product || !$product->defaultRecipe) continue;
+            
+            $recipe = $product->defaultRecipe;
+            $multiplier = $item->quantity / $recipe->output_quantity;
+            
+            foreach ($recipe->items as $rItem) {
+                $rmId = $rItem->raw_material_id;
+                $reqQty = $rItem->quantity * $multiplier;
+                
+                if (!isset($transactionMaterials[$rmId])) {
+                    $transactionMaterials[$rmId] = [
+                        'required' => 0,
+                        'name' => $rItem->rawMaterial->name,
+                        'obj' => $rItem->rawMaterial 
+                    ];
+                }
+                $transactionMaterials[$rmId]['required'] += $reqQty;
+            }
+        }
+
+        // Verify Stock
+        $insufficient = [];
+        foreach ($transactionMaterials as $rmId => $data) {
+            $stock = RawMaterialStock::where('raw_material_id', $rmId)
+                ->where('outlet_id', $outletId)
+                ->first();
+            $avail = $stock ? $stock->quantity : 0;
+            
+            if ($avail < $data['required']) {
+                $insufficient[] = [
+                    'name' => $data['name'],
+                    'required' => $data['required'],
+                    'available' => $avail,
+                    'shortage' => $data['required'] - $avail
+                ];
+            }
+        }
+
+        if (!empty($insufficient)) {
+            // Simplify error message for bulk action
+            $msg = "Stok bahan tidak mencukupi untuk Masak Semua: ";
+            foreach ($insufficient as $inf) {
+                $msg .= $inf['name'] . " (Kurang " . number_format($inf['shortage'], 2) . "), ";
+            }
+            return back()->with('error', rtrim($msg, ', '));
+        }
+
+        DB::beginTransaction();
+        try {
+            foreach ($items as $item) {
+                $product = $item->product;
+                if (!$product || !$product->defaultRecipe) continue;
+
+                $this->completeSaleItemProduction($outletId, $userId, $item);
+            }
+            
+            // Check for sibling Stock Items that are waiting (copied from store method)
+            $waitingStockItems = $sale->items()
+                ->whereNull('served_at')
+                ->whereHas('product', function ($q) {
+                    $q->where('is_stock', true);
+                })
+                ->get();
+
+            foreach ($waitingStockItems as $wsItem) {
+                $wsItem->update(['served_at' => now()]);
+            }
+
+            DB::commit();
+            return back()->with('success', 'Semua pesanan berhasil dimasak dan stok telah dipotong.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    private function completeSaleItemProduction($outletId, $userId, $saleItem)
+    {
+        $product = $saleItem->product;
+        $recipe = $product->defaultRecipe;
+        $qty = $saleItem->quantity;
+        $multiplier = $qty / $recipe->output_quantity;
+
+        // Create Production
+        $production = Production::create([
+            'outlet_id' => $outletId,
+            'product_id' => $product->id,
+            'recipe_id' => $recipe->id,
+            'planned_quantity' => $qty,
+            'actual_quantity' => $qty,
+            'status' => 'completed',
+            'notes' => 'Masak Semua - ' . $saleItem->sale->invoice_number,
+            'created_by' => $userId,
+            'completed_at' => now(),
+        ]);
+
+        foreach ($recipe->items as $item) {
+             $quantity = $item->quantity * $multiplier;
+             $unitPrice = $item->rawMaterial->purchase_price ?? 0;
+             $lineTotal = $quantity * $unitPrice;
+             
+             $production->items()->create([
+                'raw_material_id' => $item->raw_material_id,
+                'planned_quantity' => $quantity,
+                'actual_quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'total_price' => $lineTotal,
+             ]);
+             
+             // Deduct Stock
+             $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
+                ->where('outlet_id', $outletId)
+                ->first();
+             
+             if ($stock) {
+                 $qtyBefore = $stock->quantity;
+                 $stock->reduceStock($quantity);
+                 
+                 StockMovement::create([
+                    'stockable_type' => 'App\Models\RawMaterial',
+                    'stockable_id' => $item->raw_material_id,
+                    'outlet_id' => $outletId,
+                    'type' => 'out',
+                    'quantity' => $quantity,
+                    'quantity_before' => $qtyBefore,
+                    'quantity_after' => $qtyBefore - $quantity,
+                    'reference_type' => 'App\Models\Production',
+                    'reference_id' => $production->id,
+                    'notes' => 'Produksi (Bulk) #' . $production->batch_number,
+                    'created_by' => $userId,
+                ]);
+             }
+        }
+        
+        // Update Sale Item
+        $saleItem->update([
+            'production_status' => 'completed',
+            'served_at' => now(),
+        ]);
+    }
+
     public function complete(Request $request, Production $production)
     {
         if (! auth()->user()->can('selesaikan produksi')) {

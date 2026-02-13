@@ -6978,13 +6978,8 @@ function closeSaleDetailModal() {
                 let typeLabel = customer.type;
 
                 if(customer.type === 'reseller') {
-                    if (customer.is_verified_reseller) {
-                        badgeClass = 'bg-blue-100 text-blue-800';
-                        typeLabel = 'RESELLER';
-                    } else {
-                        badgeClass = 'bg-gray-200 text-gray-600';
-                        typeLabel = 'RESELLER (PENDING)';
-                    }
+                    badgeClass = 'bg-blue-100 text-blue-800';
+                    typeLabel = 'RESELLER';
                 }
                 if(customer.type === 'vip') badgeClass = 'bg-purple-100 text-purple-800';
 

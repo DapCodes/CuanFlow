@@ -221,6 +221,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::get('/', [ProductionController::class, 'index'])->name('index');
         Route::get('/create', [ProductionController::class, 'create'])->name('create');
         Route::post('/', [ProductionController::class, 'store'])->name('store');
+        Route::post('/store-all', [ProductionController::class, 'storeAll'])->name('store-all'); // NEW ROUTE
         Route::get('/preparation/{saleItem}', [ProductionController::class, 'preparation'])->name('preparation'); // NEW ROUTE
         Route::get('/{production}', [ProductionController::class, 'show'])->name('show');
         Route::post('/{production}/start', [ProductionController::class, 'start'])->name('start');

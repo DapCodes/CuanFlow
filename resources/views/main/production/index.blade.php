@@ -234,7 +234,17 @@
                                 </div>
 
                                 <!-- Modal Footer -->
-                                <div class="bg-white px-6 py-5 border-t border-gray-100">
+                                <div class="bg-white px-6 py-5 border-t border-gray-100 flex flex-col items-center gap-3">
+                                    @if($saleItems->count() > 1)
+                                    <form action="{{ route('production.store-all') }}" method="POST" class="w-full">
+                                        @csrf
+                                        <input type="hidden" name="sale_id" value="{{ $sale->id }}">
+                                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-green-200 active:scale-95">
+                                            <i class="fas fa-check-double"></i>
+                                            Masak Semua ({{ $saleItems->count() }} Item)
+                                        </button>
+                                    </form>
+                                    @endif
                                     <div class="flex items-center justify-center gap-2 text-gray-400">
                                         <span class="flex h-2 w-2 relative">
                                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -706,6 +716,21 @@
                    </div>` 
                 : '';
 
+            const showCookAll = order.items.length > 1;
+            let cookAllHtml = '';
+            
+            if (showCookAll) {
+                cookAllHtml = `
+                    <form action="/production/store-all" method="POST" class="w-full">
+                        <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]')?.content || ''}">
+                        <input type="hidden" name="sale_id" value="${order.sale_id}">
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-green-200 active:scale-95">
+                            <i class="fas fa-check-double"></i>
+                            Masak Semua (${order.items.length} Item)
+                        </button>
+                    </form>`;
+            }
+
             const cardHtml = `
                 <div class="production-card-wrapper" data-timestamp="${order.timestamp}">
                     <div class="group bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full relative animate-fade-in" id="card-sale-${order.sale_id}">
@@ -780,7 +805,8 @@
                             <div class="p-6 bg-gray-50/30">
                                 <div class="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">${itemsHtml}</div>
                             </div>
-                            <div class="bg-white px-6 py-5 border-t border-gray-100">
+                            <div class="bg-white px-6 py-5 border-t border-gray-100 flex flex-col items-center gap-3">
+                                ${cookAllHtml}
                                 <div class="flex items-center justify-center gap-2 text-gray-400">
                                     <span class="flex h-2 w-2 relative">
                                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>

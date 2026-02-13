@@ -812,15 +812,21 @@ class PointOfSaleController extends Controller
         // Append Verification Status for Resellers
         $customers->transform(function ($customer) {
             $customer->is_verified_reseller = false;
+            
             if ($customer->type === 'reseller') {
-                $customer->is_verified_reseller = ResellerApplication::where('customer_id', $customer->id)
+                $application = ResellerApplication::where('customer_id', $customer->id)
                     ->where('outlet_id', auth()->user()->outlet_id)
                     ->where('status', 'approved')
-                    ->exists();
+                    ->first();
+
+                if ($application) {
+                    $customer->is_verified_reseller = true;
+                } else {
+                    // Jika tidak ada aplikasi reseller yang disetujui di outlet ini, anggap regular
+                    $customer->type = 'regular';
+                }
             }
 
-            // Fallback for frontend badge logic
-            // If not verified, frontend might want to know (optional)
             return $customer;
         });
 
