@@ -42,6 +42,8 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            $this->recordFailedAttempt();
+            
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -49,6 +51,7 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $this->clearLockouts();
         RateLimiter::clear($this->throttleKey());
     }
 
@@ -59,14 +62,64 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
-            return;
+        // 1. Check IP-based persistent lockout from database
+        $lockout = \App\Models\LoginLockout::where('ip_address', $this->ip())
+            ->where('locked_until', '>', now())
+            ->first();
+
+        if ($lockout) {
+            $seconds = now()->diffInSeconds($lockout->locked_until);
+            $this->throwLockoutException($seconds);
         }
 
-        event(new Lockout($this));
+        // 2. Check traditional rate limiter
+        if (RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+            event(new Lockout($this));
+            $seconds = RateLimiter::availableIn($this->throttleKey());
+            $this->throwLockoutException($seconds);
+        }
+    }
 
-        $seconds = RateLimiter::availableIn($this->throttleKey());
+    /**
+     * Record a failed attempt in the database.
+     */
+    protected function recordFailedAttempt(): void
+    {
+        $ip = $this->ip();
+        $email = $this->string('email');
 
+        $lockout = \App\Models\LoginLockout::firstOrCreate(
+            ['ip_address' => $ip, 'email' => $email],
+            ['attempts' => 0]
+        );
+
+        $lockout->increment('attempts');
+        $lockout->update(['last_attempt_at' => now()]);
+
+        // Check total attempts for this IP across all emails
+        $totalIpAttempts = \App\Models\LoginLockout::where('ip_address', $ip)->sum('attempts');
+
+        if ($totalIpAttempts >= 5) {
+            // Lock for 3 hours
+            \App\Models\LoginLockout::where('ip_address', $ip)->update([
+                'locked_until' => now()->addHours(3)
+            ]);
+        }
+    }
+
+    /**
+     * Clear lockouts for the current IP after successful login.
+     */
+    protected function clearLockouts(): void
+    {
+        \App\Models\LoginLockout::where('ip_address', $this->ip())->delete();
+    }
+
+    /**
+     * Throw a lockout validation exception.
+     */
+    protected function throwLockoutException(int $seconds): void
+    {
         throw ValidationException::withMessages([
             'email' => trans('auth.throttle', [
                 'seconds' => $seconds,

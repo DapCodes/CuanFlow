@@ -54,6 +54,9 @@ class GoogleController extends Controller
             // Update last login
             $user->update(['last_login_at' => now()]);
 
+            // Clear lockouts for this IP
+            \App\Models\LoginLockout::where('ip_address', request()->ip())->delete();
+
             // Login the user
             Auth::login($user, true);
 
@@ -124,6 +127,9 @@ class GoogleController extends Controller
 
         // Clear session
         session()->forget('google_user');
+
+        // Clear lockouts for this IP
+        \App\Models\LoginLockout::where('ip_address', request()->ip())->delete();
 
         // Login
         Auth::login($user);

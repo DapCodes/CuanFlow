@@ -16,7 +16,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        $lockout = \App\Models\LoginLockout::where('ip_address', request()->ip())
+            ->where('locked_until', '>', now())
+            ->first();
+
+        $lockoutSeconds = $lockout ? $lockout->remainingSeconds() : 0;
+
+        return view('auth.login', compact('lockoutSeconds'));
     }
 
     /**

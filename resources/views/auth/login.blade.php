@@ -396,91 +396,131 @@
                 </div>
             @endif
             
-            <!-- Login Form -->
-            <form id="login-form" method="POST" action="{{ route('login') }}" class="space-y-5 animate-on-load animate-fade-in-up delay-400">
-                @csrf
-                
-                <!-- Email Input -->
-                <div>
-                    <input 
-                        type="email" 
-                        name="email"
-                        value="{{ old('email') }}"
-                        placeholder="email@example.com"
-                        required
-                        autofocus
-                        class="w-full px-0 py-2.5 text-gray-900 border-b-2 border-gray-300 focus:border-cuan-dark outline-none placeholder-gray-500 text-base @error('email') border-red-500 @enderror"
-                    />
-                    @error('email')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+            @if ($lockoutSeconds > 0)
+                <div id="lockout-container" class="space-y-6 animate-fade-in-up">
+                    <div class="p-6 bg-red-50 border border-red-100 rounded-2xl text-center">
+                        <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-lock text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-red-900 mb-2">Batas login harian anda sudah habis</h4>
+                        <p class="text-sm text-red-700 leading-relaxed">
+                            Terlalu banyak percobaan masuk yang gagal. Untuk keamanan akun Anda, akses masuk dibatasi sementara.
+                        </p>
+                    </div>
+
+                    <div class="text-center space-y-2">
+                        <p class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Tersisa Waktu Tunggu</p>
+                        <div id="countdown" class="text-4xl font-black text-gray-900 font-mono tracking-tighter">
+                            00:00:00
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3">
+                        <a href="{{ route('auth.google') }}" 
+                           class="google-link w-full flex items-center justify-center gap-3 py-3.5 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all text-base btn-hover">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                            </svg>
+                            Login dengan Google
+                        </a>
+
+                        <a href="https://wa.me/6281221049828" target="_blank"
+                           class="w-full flex items-center justify-center gap-3 py-3.5 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition-all text-base btn-hover">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                            Hubungi Admin
+                        </a>
+                    </div>
                 </div>
-                
-                <!-- Password Input -->
-                <div x-data="{ show: false }">
-                    <div class="relative">
+            @else
+                <!-- Login Form -->
+                <form id="login-form" method="POST" action="{{ route('login') }}" class="space-y-5 animate-on-load animate-fade-in-up delay-400">
+                    @csrf
+                    
+                    <!-- Email Input -->
+                    <div>
                         <input 
-                            :type="show ? 'text' : 'password'" 
-                            name="password"
-                            placeholder="Password"
+                            type="email" 
+                            name="email"
+                            value="{{ old('email') }}"
+                            placeholder="email@example.com"
                             required
-                            class="w-full px-0 py-2.5 pr-8 text-gray-900 border-b-2 border-gray-300 focus:border-cuan-dark outline-none placeholder-gray-500 text-base @error('password') border-red-500 @enderror"
+                            autofocus
+                            class="w-full px-0 py-2.5 text-gray-900 border-b-2 border-gray-300 focus:border-cuan-dark outline-none placeholder-gray-500 text-base @error('email') border-red-500 @enderror"
                         />
-                        <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
-                            <i class="fas" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
-                        </button>
+                        @error('email')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    @error('password')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    
+                    <!-- Password Input -->
+                    <div x-data="{ show: false }">
+                        <div class="relative">
+                            <input 
+                                :type="show ? 'text' : 'password'" 
+                                name="password"
+                                placeholder="Password"
+                                required
+                                class="w-full px-0 py-2.5 pr-8 text-gray-900 border-b-2 border-gray-300 focus:border-cuan-dark outline-none placeholder-gray-500 text-base @error('password') border-red-500 @enderror"
+                            />
+                            <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
+                                <i class="fas" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
+                            </button>
+                        </div>
+                        @error('password')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    name="remember" 
+                                    id="remember"
+                                    class="w-4 h-4 text-cuan-dark border-gray-300 rounded focus:ring-cuan-dark"
+                                />
+                                <label for="remember" class="ml-2 text-sm text-gray-600">Ingat Saya</label>
+                            </div>
+
+                            <p class="text-center text-gray-600 text-sm pt-2">
+                                Lupa Password?
+                                <a href="{{ route('password.request') }}" class="forgot-link text-gray-900 font-semibold underline hover:text-cuan-green transition-colors">Klik Disini</a>
+                            </p>
+                    </div>
+                    
+                    <!-- Login Button -->
+                    <button 
+                        type="submit"
+                        class="w-full py-3.5 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-base mt-6 btn-hover"
+                    >
+                        Masuk
+                    </button>
+
+                </form>
+
+                <!-- Divider -->
+                <div class="flex items-center my-6 animate-on-load animate-fade-in-up delay-400">
+                    <div class="flex-1 border-t border-gray-300"></div>
+                    <span class="px-4 text-sm text-gray-500">atau</span>
+                    <div class="flex-1 border-t border-gray-300"></div>
                 </div>
 
-                <!-- Remember Me -->
-               <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input 
-                            type="checkbox" 
-                            name="remember" 
-                            id="remember"
-                            class="w-4 h-4 text-cuan-dark border-gray-300 rounded focus:ring-cuan-dark"
-                        />
-                        <label for="remember" class="ml-2 text-sm text-gray-600">Ingat Saya</label>
-                    </div>
-
-                    <p class="text-center text-gray-600 text-sm pt-2">
-                        Lupa Password?
-                        <a href="{{ route('password.request') }}" class="forgot-link text-gray-900 font-semibold underline hover:text-cuan-green transition-colors">Klik Disini</a>
-                    </p>
-               </div>
-                
-                <!-- Login Button -->
-                <button 
-                    type="submit"
-                    class="w-full py-3.5 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-base mt-6 btn-hover"
-                >
-                    Masuk
-                </button>
-
-            </form>
-
-            <!-- Divider -->
-            <div class="flex items-center my-6 animate-on-load animate-fade-in-up delay-400">
-                <div class="flex-1 border-t border-gray-300"></div>
-                <span class="px-4 text-sm text-gray-500">atau</span>
-                <div class="flex-1 border-t border-gray-300"></div>
-            </div>
-
-            <!-- Google Sign In Button -->
-            <a href="{{ route('auth.google') }}" 
-               class="google-link w-full flex items-center justify-center gap-3 py-3.5 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all text-base btn-hover animate-on-load animate-fade-in-up delay-400">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Lanjutkan dengan Google
-            </a>
+                <!-- Google Sign In Button -->
+                <a href="{{ route('auth.google') }}" 
+                   class="google-link w-full flex items-center justify-center gap-3 py-3.5 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all text-base btn-hover animate-on-load animate-fade-in-up delay-400">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Lanjutkan dengan Google
+                </a>
+            @endif
         </div>
         </div>
     </div>
@@ -581,31 +621,61 @@
             });
         });
         
-        // Handle form submission with animation
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            if (isNavigating) {
-                e.preventDefault();
-                return;
+        // Handle form submission with animation (safely check if form exists)
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                if (isNavigating) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                const email = document.querySelector('input[name="email"]').value;
+                const password = document.querySelector('input[name="password"]').value;
+                
+                if (!email || !password) {
+                    e.preventDefault();
+                    showAlert('warning', 'Oops!', 'Mohon lengkapi email dan password');
+                    return;
+                }
+                
+                isNavigating = true;
+                loader.classList.add('active');
+                document.body.classList.remove('overflow-auto');
+                document.body.classList.add('overflow-hidden');
+                
+                setTimeout(() => {
+                    document.body.classList.add('page-exit');
+                }, 300);
+            });
+        }
+
+        // Lockout Countdown Logic
+        const countdownElement = document.getElementById('countdown');
+        if (countdownElement) {
+            let secondsLeft = {{ $lockoutSeconds }};
+            
+            function updateCountdown() {
+                const hours = Math.floor(secondsLeft / 3600);
+                const minutes = Math.floor((secondsLeft % 3600) / 60);
+                const seconds = secondsLeft % 60;
+                
+                countdownElement.textContent = 
+                    String(hours).padStart(2, '0') + ':' + 
+                    String(minutes).padStart(2, '0') + ':' + 
+                    String(seconds).padStart(2, '0');
+                
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    window.location.reload();
+                }
+                
+                secondsLeft--;
             }
             
-            const email = document.querySelector('input[name="email"]').value;
-            const password = document.querySelector('input[name="password"]').value;
-            
-            if (!email || !password) {
-                e.preventDefault();
-                showAlert('warning', 'Oops!', 'Mohon lengkapi email dan password');
-                return;
-            }
-            
-            isNavigating = true;
-            loader.classList.add('active');
-            document.body.classList.remove('overflow-auto');
-            document.body.classList.add('overflow-hidden');
-            
-            setTimeout(() => {
-                document.body.classList.add('page-exit');
-            }, 300);
-        });
+            updateCountdown();
+            const timerInterval = setInterval(updateCountdown, 1000);
+        }
         
         // Auto show alert if there are Laravel validation errors
         @if ($errors->any())
