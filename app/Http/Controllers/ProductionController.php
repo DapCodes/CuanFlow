@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductionCompleted;
 use App\Models\Product;
 use App\Models\Production;
 use App\Models\ProductStock;
@@ -503,6 +504,21 @@ class ProductionController extends Controller
 
             DB::commit();
 
+            // Fire realtime notification if all items in any affected sale are completed
+            if (!empty($validated['sale_item_id'])) {
+                $affectedSaleItem = \App\Models\SaleItem::find($validated['sale_item_id']);
+                if ($affectedSaleItem) {
+                    $this->checkAndFireProductionCompleted($affectedSaleItem->sale);
+                }
+            } else {
+                // Check all affected sales from the pending items we just processed
+                $affectedSaleIds = $pendingItems->pluck('sale_id')->unique();
+                foreach ($affectedSaleIds as $sId) {
+                    $s = \App\Models\Sale::find($sId);
+                    if ($s) $this->checkAndFireProductionCompleted($s);
+                }
+            }
+
             return redirect()->route('production.index')->with('success', 'Produksi berhasil. Stok bahan baku dikurangi dan status pesanan diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -685,6 +701,10 @@ class ProductionController extends Controller
             }
 
             DB::commit();
+
+            // Fire realtime notification — storeAll always completes all items in the sale
+            $this->checkAndFireProductionCompleted($sale);
+
             return back()->with('success', 'Semua pesanan berhasil dimasak dan stok telah dipotong.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -750,11 +770,32 @@ class ProductionController extends Controller
              }
         }
         
-        // Update Sale Item
+         // Update Sale Item
         $saleItem->update([
             'production_status' => 'completed',
             'served_at' => now(),
         ]);
+    }
+
+    /**
+     * Check if all non-stock (made-to-order) items in a sale are completed.
+     * If so, fire the ProductionCompleted event for realtime POS notification.
+     */
+    private function checkAndFireProductionCompleted(\App\Models\Sale $sale)
+    {
+        // Reload fresh to get current state
+        $sale->loadMissing('items.product');
+
+        $pendingCount = $sale->items
+            ->filter(function ($item) {
+                return $item->product && !$item->product->is_stock;
+            })
+            ->where('production_status', '!=', 'completed')
+            ->count();
+
+        if ($pendingCount === 0) {
+            event(new ProductionCompleted($sale));
+        }
     }
 
     public function complete(Request $request, Production $production)

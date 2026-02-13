@@ -7144,4 +7144,86 @@ function closeSaleDetailModal() {
     });
 </script>
 @include('main.pos.partials.barcode_script')
+
+{{-- Realtime Production Completed Notification (via Pusher CDN) --}}
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+(function() {
+    const PUSHER_KEY = @json(config('broadcasting.connections.pusher.key'));
+    const PUSHER_CLUSTER = @json(config('broadcasting.connections.pusher.options.cluster'));
+    const OUTLET_ID = @json(auth()->user()->outlet_id);
+
+    console.log('[POS Realtime] Initializing...', { key: PUSHER_KEY ? '***' + PUSHER_KEY.slice(-4) : 'MISSING', cluster: PUSHER_CLUSTER, outlet: OUTLET_ID });
+
+    if (!PUSHER_KEY || PUSHER_KEY === 'your-app-key') {
+        console.error('[POS Realtime] Pusher key not configured. Realtime notifications DISABLED.');
+        return;
+    }
+
+    const pusher = new Pusher(PUSHER_KEY, {
+        cluster: PUSHER_CLUSTER,
+        forceTLS: true
+    });
+
+    pusher.connection.bind('connected', function() {
+        console.log('[POS Realtime] ✅ Connected to Pusher successfully');
+    });
+    pusher.connection.bind('error', function(err) {
+        console.error('[POS Realtime] ❌ Pusher connection error:', err);
+    });
+
+    const channelName = 'production.outlet.' + OUTLET_ID;
+    const channel = pusher.subscribe(channelName);
+
+    channel.bind('pusher:subscription_succeeded', function() {
+        console.log('[POS Realtime] ✅ Subscribed to channel:', channelName);
+    });
+
+    channel.bind('pusher:subscription_error', function(err) {
+        console.error('[POS Realtime] ❌ Subscription error for channel:', channelName, err);
+    });
+
+    // Listen for production-completed event
+    channel.bind('production-completed', function(data) {
+        console.log('[POS Realtime] 🔔 Production completed event received:', data);
+
+        const invoice = data.orderData ? data.orderData.invoice_number : (data.invoice_number || 'Unknown');
+
+        // Play ting.mp3 notification sound
+        try {
+            const audio = new Audio('{{ asset("assets/sounds/ting.mp3") }}');
+            audio.volume = 0.8;
+            audio.play().catch(function(e) {
+                console.warn('[POS Realtime] Audio play blocked (autoplay policy):', e.message);
+            });
+        } catch(err) {
+            console.warn('[POS Realtime] Audio error:', err);
+        }
+
+        // Show SweetAlert2 Toast
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            html: '<div style="line-height:1.4">' +
+                      '<strong>Pesanan ' + invoice + ' sudah selesai di masak</strong>' +
+                      '<br><small style="color:#6b7280">Siap di sajikan pada pelanggan</small>' +
+                  '</div>',
+            showConfirmButton: false,
+            timer: 8000,
+            timerProgressBar: true,
+            background: '#f0fdf4',
+            iconColor: '#22c55e',
+            didOpen: function(toast) {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        console.log('[POS Realtime] ✅ Toast notification displayed for:', invoice);
+    });
+
+    console.log('[POS Realtime] 🎧 Listening for production-completed on channel:', channelName);
+})();
+</script>
 @endpush
