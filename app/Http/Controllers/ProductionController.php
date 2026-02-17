@@ -372,9 +372,11 @@ class ProductionController extends Controller
             }
         }
 
-        if (! empty($insufficientMaterials)) {
+        if (! empty($insufficientMaterials) && ! $request->boolean('ignore_insufficient')) {
             return back()->with('insufficient_materials', $insufficientMaterials);
         }
+
+        $ignoreInsufficient = $request->boolean('ignore_insufficient');
 
         DB::beginTransaction();
         try {
@@ -422,22 +424,26 @@ class ProductionController extends Controller
                         
                     if ($stock) {
                          $qtyBefore = $stock->quantity;
-                         $stock->reduceStock($item->planned_quantity);
+                         $deductQty = $ignoreInsufficient ? min($item->planned_quantity, $qtyBefore) : $item->planned_quantity;
                          
-                         // FIFO & Movement Log (Simplified here, ideally reuse logic from start())
-                         StockMovement::create([
-                            'stockable_type' => 'App\Models\RawMaterial',
-                            'stockable_id' => $item->raw_material_id,
-                            'outlet_id' => $outletId,
-                            'type' => 'out',
-                            'quantity' => $item->planned_quantity,
-                            'quantity_before' => $qtyBefore,
-                            'quantity_after' => $qtyBefore - $item->planned_quantity,
-                            'reference_type' => 'App\Models\Production',
-                            'reference_id' => $production->id,
-                            'notes' => 'Produksi Langsung (KDS) #'.$production->batch_number,
-                            'created_by' => auth()->id(),
-                        ]);
+                         if ($deductQty > 0) {
+                             $stock->reduceStock($deductQty);
+                             
+                             // FIFO & Movement Log (Simplified here, ideally reuse logic from start())
+                             StockMovement::create([
+                                'stockable_type' => 'App\Models\RawMaterial',
+                                'stockable_id' => $item->raw_material_id,
+                                'outlet_id' => $outletId,
+                                'type' => 'out',
+                                'quantity' => $deductQty,
+                                'quantity_before' => $qtyBefore,
+                                'quantity_after' => $qtyBefore - $deductQty,
+                                'reference_type' => 'App\Models\Production',
+                                'reference_id' => $production->id,
+                                'notes' => 'Produksi Langsung (KDS) #'.$production->batch_number . ($ignoreInsufficient ? ' [Bypass Stok]' : ''),
+                                'created_by' => auth()->id(),
+                            ]);
+                         }
                     }
                 }
                 
@@ -606,6 +612,7 @@ class ProductionController extends Controller
         }
         $validated = $request->validate([
             'sale_id' => 'required|exists:sales,id',
+            'ignore_insufficient' => 'nullable|boolean',
         ]);
 
         $outletId = auth()->user()->outlet_id;
@@ -670,7 +677,7 @@ class ProductionController extends Controller
             }
         }
 
-        if (!empty($insufficient)) {
+        if (!empty($insufficient) && ! $request->boolean('ignore_insufficient')) {
             // Simplify error message for bulk action
             $msg = "Stok bahan tidak mencukupi untuk Masak Semua: ";
             foreach ($insufficient as $inf) {
@@ -679,13 +686,15 @@ class ProductionController extends Controller
             return back()->with('error', rtrim($msg, ', '));
         }
 
+        $ignoreInsufficient = $request->boolean('ignore_insufficient');
+
         DB::beginTransaction();
         try {
             foreach ($items as $item) {
                 $product = $item->product;
                 if (!$product || !$product->defaultRecipe) continue;
 
-                $this->completeSaleItemProduction($outletId, $userId, $item);
+                $this->completeSaleItemProduction($outletId, $userId, $item, $ignoreInsufficient);
             }
             
             // Check for sibling Stock Items that are waiting (copied from store method)
@@ -712,7 +721,7 @@ class ProductionController extends Controller
         }
     }
 
-    private function completeSaleItemProduction($outletId, $userId, $saleItem)
+    private function completeSaleItemProduction($outletId, $userId, $saleItem, $ignoreInsufficient = false)
     {
         $product = $saleItem->product;
         $recipe = $product->defaultRecipe;
@@ -752,21 +761,25 @@ class ProductionController extends Controller
              
              if ($stock) {
                  $qtyBefore = $stock->quantity;
-                 $stock->reduceStock($quantity);
+                 $deductQty = $ignoreInsufficient ? min($quantity, $qtyBefore) : $quantity;
                  
-                 StockMovement::create([
-                    'stockable_type' => 'App\Models\RawMaterial',
-                    'stockable_id' => $item->raw_material_id,
-                    'outlet_id' => $outletId,
-                    'type' => 'out',
-                    'quantity' => $quantity,
-                    'quantity_before' => $qtyBefore,
-                    'quantity_after' => $qtyBefore - $quantity,
-                    'reference_type' => 'App\Models\Production',
-                    'reference_id' => $production->id,
-                    'notes' => 'Produksi (Bulk) #' . $production->batch_number,
-                    'created_by' => $userId,
-                ]);
+                 if ($deductQty > 0) {
+                     $stock->reduceStock($deductQty);
+                     
+                     StockMovement::create([
+                        'stockable_type' => 'App\Models\RawMaterial',
+                        'stockable_id' => $item->raw_material_id,
+                        'outlet_id' => $outletId,
+                        'type' => 'out',
+                        'quantity' => $deductQty,
+                        'quantity_before' => $qtyBefore,
+                        'quantity_after' => $qtyBefore - $deductQty,
+                        'reference_type' => 'App\Models\Production',
+                        'reference_id' => $production->id,
+                        'notes' => 'Produksi (Bulk) #' . $production->batch_number . ($ignoreInsufficient ? ' [Bypass Stok]' : ''),
+                        'created_by' => $userId,
+                    ]);
+                 }
              }
         }
         
@@ -1157,6 +1170,106 @@ class ProductionController extends Controller
             DB::rollBack();
 
             return back()->with('error', 'Gagal menghapus stok kadaluarsa: '.$e->getMessage());
+        }
+    }
+    public function checkMaterialsAjax(Request $request)
+    {
+        $outletId = auth()->user()->outlet_id;
+        $items = [];
+
+        if ($request->sale_item_id) {
+            $si = \App\Models\SaleItem::with('product.defaultRecipe.items.rawMaterial')->findOrFail($request->sale_item_id);
+            $items[] = $si;
+        } elseif ($request->sale_id) {
+            $sale = \App\Models\Sale::with('items.product.defaultRecipe.items.rawMaterial')->findOrFail($request->sale_id);
+            $items = $sale->items->filter(fn($i) => $i->production_status === 'pending' && $i->product && !$i->product->is_stock);
+        }
+
+        $insufficient = [];
+        $materialRequirements = [];
+
+        foreach ($items as $item) {
+            $product = $item->product;
+            if (!$product || !$product->defaultRecipe) continue;
+
+            $recipe = $product->defaultRecipe;
+            $multiplier = $item->quantity / $recipe->output_quantity;
+
+            foreach ($recipe->items as $rItem) {
+                $rmId = $rItem->raw_material_id;
+                $reqQty = $rItem->quantity * $multiplier;
+
+                if (!isset($materialRequirements[$rmId])) {
+                    $materialRequirements[$rmId] = [
+                        'required' => 0,
+                        'name' => $rItem->rawMaterial->name,
+                        'unit' => $rItem->rawMaterial->unit->name ?? 'pcs'
+                    ];
+                }
+                $materialRequirements[$rmId]['required'] += $reqQty;
+            }
+        }
+
+        foreach ($materialRequirements as $rmId => $data) {
+            $stock = RawMaterialStock::where('raw_material_id', $rmId)->where('outlet_id', $outletId)->first();
+            $available = $stock ? (float)$stock->quantity : 0;
+
+            if ($available < $data['required']) {
+                $insufficient[] = [
+                    'name' => $data['name'],
+                    'required' => $data['required'],
+                    'available' => $available,
+                    'unit' => $data['unit'],
+                    'shortage' => $data['required'] - $available
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'insufficient' => $insufficient
+        ]);
+    }
+
+    public function refundSaleAjax(Request $request)
+    {
+        $saleId = $request->sale_id;
+        if (!$saleId && $request->sale_item_id) {
+            $si = \App\Models\SaleItem::findOrFail($request->sale_item_id);
+            $saleId = $si->sale_id;
+        }
+
+        if (!$saleId) {
+             return response()->json(['success' => false, 'message' => 'Sale ID tidak ditemukan'], 400);
+        }
+
+        $sale = \App\Models\Sale::where('outlet_id', auth()->user()->outlet_id)->findOrFail($saleId);
+
+        DB::beginTransaction();
+        try {
+            $sale->update([
+                'status' => 'refunded',
+                'refunded_at' => now(),
+                'notes' => ($sale->notes ? $sale->notes . "\n" : "") . "Refunded from Production Validation"
+            ]);
+
+            foreach ($sale->items as $item) {
+                $item->update(['production_status' => 'refunded']);
+                
+                // If it was a stock item (already completed), we might need to return stock
+                if ($item->product && $item->product->is_stock && $item->served_at) {
+                    $stock = $item->product->stocks()->where('outlet_id', $sale->outlet_id)->first();
+                    if ($stock) {
+                        $stock->increment('quantity', $item->quantity);
+                    }
+                }
+            }
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Transaksi berhasil di-refund']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 }

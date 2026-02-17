@@ -549,6 +549,127 @@
         document.body.classList.remove('overflow-hidden');
     }
 
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        const isStore = form.action.includes('{{ route("production.store") }}');
+        const isStoreAll = form.action.includes('{{ route("production.store-all") }}');
+
+        if ((isStore || isStoreAll) && !form.dataset.validated) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
+
+            // Show loading
+            Swal.fire({
+                title: 'Memeriksa Bahan Baku...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch('{{ route("production.check-materials") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(res => {
+                Swal.close();
+                if (res.success && res.insufficient && res.insufficient.length > 0) {
+                    let materialList = '<ul class="text-left space-y-2 mt-4">';
+                    res.insufficient.forEach(m => {
+                        materialList += `<li class="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
+                            <span class="font-medium text-gray-700">${m.name}</span>
+                            <span class="text-red-500 font-bold">Kurang ${parseFloat(m.shortage).toFixed(2)} ${m.unit}</span>
+                        </li>`;
+                    });
+                    materialList += '</ul>';
+
+                    Swal.fire({
+                        title: 'Bahan Baku Tidak Mencukupi',
+                        html: `<p class="text-sm text-gray-500">Bahan berikut tidak tersedia di dapur:</p>${materialList}`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#f97316',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Lanjutkan',
+                        cancelButtonText: 'Batalkan Pesanan',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Lanjutkan: Add ignore_insufficient and submit
+                            const hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'ignore_insufficient';
+                            hiddenInput.value = '1';
+                            form.appendChild(hiddenInput);
+                            form.dataset.validated = 'true';
+                            form.submit();
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            // Batalkan: Refund Sale
+                            Swal.fire({
+                                title: 'Konfirmasi Pembatalan',
+                                text: 'Seluruh pesanan dalam transaksi ini akan di-refund. Lanjutkan?',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonText: 'Ya, Refund',
+                                cancelButtonText: 'Tutup'
+                            }).then((refundRes) => {
+                                if (refundRes.isConfirmed) {
+                                    refundSale(data.sale_id || null, data.sale_item_id || null);
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    form.dataset.validated = 'true';
+                    form.submit();
+                }
+            })
+            .catch(err => {
+                Swal.close();
+                console.error(err);
+                showToast('error', 'Gagal memvalidasi bahan baku');
+            });
+        }
+    });
+
+    function refundSale(saleId, saleItemId) {
+        Swal.fire({
+            title: 'Memproses Refund...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch('{{ route("production.refund-sale") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ sale_id: saleId, sale_item_id: saleItemId })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                Swal.fire('Berhasil', res.message, 'success').then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
+        })
+        .catch(() => {
+            Swal.fire('Error', 'Gagal memproses refund', 'error');
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Initial Tab State (Queue by default, or Stock if Queue is empty?)
         // Let's stick to Queue as default for KDS focus
