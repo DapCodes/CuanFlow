@@ -5,10 +5,12 @@ use App\Http\Controllers\Admin\AdminLandingPageController;
 use App\Http\Controllers\Admin\AdminLandingSectionController;
 use App\Http\Controllers\Admin\AdminManagementController;
 use App\Http\Controllers\Admin\AdminWithdrawController;
+use App\Http\Controllers\Admin\BannedIpController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\LoginHistoryController;
 use App\Http\Controllers\Admin\OutletController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\PermissionCategoryController;
@@ -137,6 +139,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('payments', [App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'index'])->name('payments.index');
         Route::get('payments/{payment}', [App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'show'])->name('payments.show');
         Route::post('payments/{payment}/approve', [App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'approve'])->name('payments.approve');
+    });
+
+    // Security - IP Ban & Login Tracking
+    Route::prefix('security')->name('admin.security.')->group(function () {
+        Route::get('login-histories', [LoginHistoryController::class, 'index'])->name('login-histories.index');
+        Route::post('banned-ips', [BannedIpController::class, 'store'])->name('banned-ips.store');
+        Route::get('banned-ips', [BannedIpController::class, 'index'])->name('banned-ips.index');
+        Route::delete('banned-ips/{bannedIp}', [BannedIpController::class, 'destroy'])->name('banned-ips.destroy');
     });
 
     // Terms & Conditions Management

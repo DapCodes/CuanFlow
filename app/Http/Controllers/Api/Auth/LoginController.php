@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\LoginHistory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,6 +55,14 @@ class LoginController extends Controller
             $token = $user->createToken('mobile')->plainTextToken;
 
             $user->forceFill(['last_login_at' => now()])->save();
+
+            // Track login history
+            LoginHistory::create([
+                'user_id' => $user->id,
+                'ip_address' => $request->ip(),
+                'app_name' => 'JajanFlow',
+                'user_agent' => $request->userAgent(),
+            ]);
 
             DB::commit();
 

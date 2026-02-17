@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ['prefix' => 'api', 'middleware' => ['api', 'auth:sanctum']],
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Global middleware: block banned IPs
+        $middleware->prepend(\App\Http\Middleware\CheckBannedIp::class);
+
         // Exclude CSRF untuk route Midtrans notification
         $middleware->validateCsrfTokens(except: [
             'api/*', // Semua route API
