@@ -962,4 +962,30 @@ class PointOfSaleController extends Controller
             'is_active' => (bool) $product->is_active,
         ]);
     }
+    public function getProductStocks()
+    {
+        $outletId = auth()->user()->outlet_id;
+        $products = Product::where('outlet_id', $outletId)
+            ->where('is_active', true)
+            ->where('is_sellable', true)
+            ->with(['stocks', 'defaultRecipe.items.rawMaterial.stocks'])
+            ->get();
+
+        $stocks = $products->map(function ($product) use ($outletId) {
+            if (! $product->is_stock) {
+                $estStock = $product->getEstimatedStockPortions($outletId);
+            } else {
+                $stock = $product->stocks->where('outlet_id', $outletId)->first();
+                $estStock = $stock ? (float)$stock->quantity : 0;
+            }
+
+            return [
+                'product_id' => $product->id,
+                'stock' => $estStock,
+                'is_produced' => ! $product->is_stock,
+            ];
+        });
+
+        return response()->json(['success' => true, 'stocks' => $stocks]);
+    }
 }

@@ -143,6 +143,50 @@ class Product extends Model
     }
 
     /**
+     * Cache for reserved raw materials across all products in a single request.
+     */
+    protected static $reservedMaterialsCache = [];
+
+    /**
+     * Get reserved raw materials for an outlet based on pending production orders.
+     */
+    protected function getReservedMaterials($outletId): array
+    {
+        if (!isset(self::$reservedMaterialsCache[$outletId])) {
+            // Find all pending sale items for non-stock products
+            $pendingItems = SaleItem::whereHas('sale', function ($query) use ($outletId) {
+                $query->where('outlet_id', $outletId)
+                    ->where('status', 'completed'); // Only finalized sales
+            })
+            ->where('production_status', 'pending')
+            ->whereHas('product', function ($query) {
+                $query->where('is_stock', false);
+            })
+            ->with('product.defaultRecipe.items')
+            ->get();
+
+            $reserved = [];
+            foreach ($pendingItems as $item) {
+                if (!$item->product || !$item->product->defaultRecipe) {
+                    continue;
+                }
+
+                $recipe = $item->product->defaultRecipe;
+                $multiplier = $item->quantity / $recipe->output_quantity;
+
+                foreach ($recipe->items as $recipeItem) {
+                    $materialId = $recipeItem->raw_material_id;
+                    $needed = $recipeItem->quantity * $multiplier;
+                    $reserved[$materialId] = ($reserved[$materialId] ?? 0) + $needed;
+                }
+            }
+            self::$reservedMaterialsCache[$outletId] = $reserved;
+        }
+
+        return self::$reservedMaterialsCache[$outletId];
+    }
+
+    /**
      * Get estimated stock based on recipe and raw material availability
      */
     public function getEstimatedStockPortions($outletId): int
@@ -152,6 +196,7 @@ class Product extends Model
             return 0;
         }
 
+        $reservedMaterials = $this->getReservedMaterials($outletId);
         $maxPortions = null;
 
         foreach ($recipe->items as $item) {
@@ -161,6 +206,9 @@ class Product extends Model
             }
 
             $currentStock = $rawMaterial->getStockQuantity($outletId);
+            $reserved = $reservedMaterials[$rawMaterial->id] ?? 0;
+            $effectiveStock = max(0, $currentStock - $reserved);
+            
             $requiredPerRecipe = $item->quantity;
 
             if ($requiredPerRecipe <= 0) {
@@ -168,7 +216,7 @@ class Product extends Model
             }
 
             // How many times can we make this recipe based on THIS raw material?
-            $possibleTimes = $currentStock / $requiredPerRecipe;
+            $possibleTimes = $effectiveStock / $requiredPerRecipe;
 
             if ($maxPortions === null || $possibleTimes < $maxPortions) {
                 $maxPortions = $possibleTimes;

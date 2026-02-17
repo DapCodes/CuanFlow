@@ -274,6 +274,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     Route::post('/pos/cart/clear', [PointOfSaleController::class, 'clearCart'])->name('pos.cart.clear');
     Route::post('/pos/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('pos.customer.set');
     Route::get('/pos/customer/search', [PointOfSaleController::class, 'searchCustomers'])->name('pos.customer.search');
+    Route::get('/pos/products/stocks', [PointOfSaleController::class, 'getProductStocks'])->name('pos.products.stocks');
     Route::post('/pos/products/{product}/toggle-visibility', [PointOfSaleController::class, 'toggleProductVisibility'])->name('pos.products.toggle-visibility');
 
     // Cash Register Management

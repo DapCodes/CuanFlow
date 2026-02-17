@@ -565,6 +565,9 @@
             Swal.fire({
                 title: 'Memeriksa Bahan Baku...',
                 allowOutsideClick: false,
+                customClass: {
+                    popup: 'rounded-[32px] border-none shadow-2xl',
+                },
                 didOpen: () => {
                     Swal.showLoading();
                 }
@@ -592,15 +595,37 @@
                     materialList += '</ul>';
 
                     Swal.fire({
-                        title: 'Bahan Baku Tidak Mencukupi',
-                        html: `<p class="text-sm text-gray-500">Bahan berikut tidak tersedia di dapur:</p>${materialList}`,
+                        title: '<h3 class="text-xl font-extrabold text-gray-900 tracking-tight">Bahan Baku Tidak Mencukupi</h3>',
+                        html: `
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500 mb-4 px-4">Maaf, stok beberapa bahan berikut tidak tersedia di dapur untuk pesanan ini:</p>
+                                <div class="bg-gray-50 rounded-2xl border border-gray-100 p-4 max-h-60 overflow-y-auto custom-scrollbar">
+                                    ${materialList}
+                                </div>
+                                <div class="mt-6 flex items-center gap-2 p-3 bg-blue-50 border border-blue-100 rounded-xl text-left">
+                                    <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-500 flex-shrink-0 shadow-sm border border-blue-100">
+                                        <i class="fas fa-info-circle text-xs"></i>
+                                    </div>
+                                    <p class="text-[11px] text-blue-700 font-medium leading-tight">
+                                        Pilih <b>Lanjutkan</b> jika Anda tetap ingin memproses dengan stok yang ada, atau <b>Batalkan</b> untuk me-refund transaksi ini.
+                                    </p>
+                                </div>
+                            </div>
+                        `,
                         icon: 'warning',
+                        iconColor: '#f97316',
                         showCancelButton: true,
-                        confirmButtonColor: '#f97316',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Lanjutkan',
-                        cancelButtonText: 'Batalkan Pesanan',
-                        reverseButtons: true
+                        confirmButtonText: '<i class="fas fa-play mr-2"></i> Lanjutkan',
+                        cancelButtonText: '<i class="fas fa-times-circle mr-2"></i> Batalkan Pesanan',
+                        customClass: {
+                            popup: 'rounded-[32px] border-none shadow-2xl',
+                            confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-3 text-sm font-bold shadow-lg shadow-blue-200 border-none transition-all active:scale-95 mx-2',
+                            cancelButton: 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-red-600 rounded-xl px-6 py-3 text-sm font-bold transition-all mx-2',
+                            actions: 'mt-6 gap-2',
+                        },
+                        buttonsStyling: false,
+                        reverseButtons: true,
+                        allowOutsideClick: false
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // Lanjutkan: Add ignore_insufficient and submit
@@ -614,12 +639,20 @@
                         } else if (result.dismiss === Swal.DismissReason.cancel) {
                             // Batalkan: Refund Sale
                             Swal.fire({
-                                title: 'Konfirmasi Pembatalan',
-                                text: 'Seluruh pesanan dalam transaksi ini akan di-refund. Lanjutkan?',
+                                title: '<h3 class="text-xl font-extrabold text-gray-900 tracking-tight">Konfirmasi Refund</h3>',
+                                text: 'Seluruh pesanan dalam transaksi ini akan dibatalkan dan uang akan dikembalikan (jika sudah bayar). Lanjutkan?',
                                 icon: 'question',
+                                iconColor: '#2563eb',
                                 showCancelButton: true,
-                                confirmButtonText: 'Ya, Refund',
-                                cancelButtonText: 'Tutup'
+                                confirmButtonText: 'Ya, Batalkan & Refund',
+                                cancelButtonText: 'Kembali',
+                                customClass: {
+                                    popup: 'rounded-[32px] border-none shadow-2xl',
+                                    confirmButton: 'bg-red-600 hover:bg-red-700 text-white rounded-xl px-6 py-3 text-sm font-bold shadow-lg shadow-red-200 border-none transition-all active:scale-95 mx-2',
+                                    cancelButton: 'bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-xl px-6 py-3 text-sm font-bold border-none transition-all mx-2',
+                                },
+                                buttonsStyling: false,
+                                reverseButtons: true
                             }).then((refundRes) => {
                                 if (refundRes.isConfirmed) {
                                     refundSale(data.sale_id || null, data.sale_item_id || null);
@@ -644,6 +677,9 @@
         Swal.fire({
             title: 'Memproses Refund...',
             allowOutsideClick: false,
+            customClass: {
+                popup: 'rounded-[32px] border-none shadow-2xl',
+            },
             didOpen: () => { Swal.showLoading(); }
         });
 
@@ -658,15 +694,48 @@
         .then(r => r.json())
         .then(res => {
             if (res.success) {
-                Swal.fire('Berhasil', res.message, 'success').then(() => {
+                Swal.fire({
+                    title: 'Berhasil',
+                    text: res.message,
+                    icon: 'success',
+                    iconColor: '#22c55e',
+                    confirmButtonText: 'Tutup',
+                    customClass: {
+                        popup: 'rounded-[32px] border-none shadow-2xl',
+                        confirmButton: 'bg-green-600 hover:bg-green-700 text-white rounded-xl px-6 py-3 text-sm font-bold shadow-lg shadow-green-200 border-none transition-all active:scale-95 mx-2',
+                    },
+                    buttonsStyling: false
+                }).then(() => {
                     location.reload();
                 });
             } else {
-                Swal.fire('Gagal', res.message, 'error');
+                Swal.fire({
+                    title: 'Gagal',
+                    text: res.message,
+                    icon: 'error',
+                    iconColor: '#ef4444',
+                    confirmButtonText: 'Tutup',
+                    customClass: {
+                        popup: 'rounded-[32px] border-none shadow-2xl',
+                        confirmButton: 'bg-red-600 hover:bg-red-700 text-white rounded-xl px-6 py-3 text-sm font-bold shadow-lg shadow-red-200 border-none transition-all active:scale-95 mx-2',
+                    },
+                    buttonsStyling: false
+                });
             }
         })
         .catch(() => {
-            Swal.fire('Error', 'Gagal memproses refund', 'error');
+            Swal.fire({
+                title: 'Error',
+                text: 'Gagal memproses refund',
+                icon: 'error',
+                iconColor: '#ef4444',
+                confirmButtonText: 'Tutup',
+                customClass: {
+                    popup: 'rounded-[32px] border-none shadow-2xl',
+                    confirmButton: 'bg-red-600 hover:bg-red-700 text-white rounded-xl px-6 py-3 text-sm font-bold shadow-lg shadow-red-200 border-none transition-all active:scale-95 mx-2',
+                },
+                buttonsStyling: false
+            });
         });
     }
 

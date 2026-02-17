@@ -4735,6 +4735,8 @@ function processCashPayment() {
             if (activeDiscountPlan && activeDiscountPlan.discount_type === 'buy_x_get_y') {
                 updateProductStockWithFreeItems(activeDiscountPlan);
             }
+
+            refreshAllProductStocks();
             
             await fetch('{{ route("pos.cart.clear") }}', {
                 method: 'POST',
@@ -5614,6 +5616,8 @@ function submitDebtPayment() {
             if (activeDiscountPlan && activeDiscountPlan.discount_type === 'buy_x_get_y') {
                 updateProductStockWithFreeItems(activeDiscountPlan);
             }
+
+            refreshAllProductStocks();
             
             // Clear cart
             await fetch('{{ route("pos.cart.clear") }}', {
@@ -5775,6 +5779,8 @@ function processTransferPayment() {
             if (activeDiscountPlan && activeDiscountPlan.discount_type === 'buy_x_get_y') {
                 updateProductStockWithFreeItems(activeDiscountPlan);
             }
+
+            refreshAllProductStocks();
             
             await fetch('{{ route("pos.cart.clear") }}', { 
                 method:'POST', 
@@ -5848,6 +5854,8 @@ function openMidtransPayment() {
                             updateProductStockWithFreeItems(activeDiscountPlan);
                         }
                         
+                        refreshAllProductStocks();
+                        
                         await fetch('{{ route("pos.cart.clear") }}', { 
                             method:'POST', 
                             headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'} 
@@ -5919,6 +5927,40 @@ function updateProductStockWithFreeItems(discountPlan) {
         wrap.classList.toggle('text-green-600', newQty > 0);
         wrap.classList.toggle('text-red-600', newQty <= 0);
     });
+}
+
+function refreshAllProductStocks() {
+    fetch('{{ route("pos.products.stocks") }}')
+    .then(r => r.json())
+    .then(data => {
+        if (data.success && data.stocks) {
+            data.stocks.forEach(s => {
+                const wrap = document.querySelector(`.product-stock[data-product-id="${s.product_id}"]`);
+                if (!wrap) return;
+                
+                const qtySpan = wrap.querySelector('.stock-qty');
+                if (qtySpan) {
+                    qtySpan.textContent = formatNumber(Math.floor(s.stock));
+                    if (s.is_produced) {
+                        wrap.classList.toggle('text-blue-600', s.stock > 0);
+                        wrap.classList.toggle('text-red-400', s.stock <= 0);
+                        wrap.classList.remove('text-green-600', 'text-red-600');
+                    } else {
+                        wrap.classList.toggle('text-green-600', s.stock > 0);
+                        wrap.classList.toggle('text-red-600', s.stock <= 0);
+                        wrap.classList.remove('text-blue-600', 'text-red-400');
+                    }
+                }
+                
+                // Update dataset for product card
+                const card = document.querySelector(`.product-card[data-product-id="${s.product_id}"]`);
+                if (card) {
+                    card.dataset.estimatedStock = s.stock;
+                }
+            });
+        }
+    })
+    .catch(err => console.error('Failed to refresh stocks:', err));
 }
 
 function openPaymentSuccessModal(data){
