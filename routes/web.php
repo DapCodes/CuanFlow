@@ -407,6 +407,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     Route::prefix('debt')->name('debt.')->middleware('feature.access:accounts_receivable')->group(function () {
         Route::get('/search-customer', [DebtPaymentController::class, 'searchCustomer'])->name('search-customer');
         Route::post('/process', [DebtPaymentController::class, 'processDebtPayment'])->name('process');
+        Route::post('/{sale}/produce', [DebtPaymentController::class, 'triggerProduction'])->name('produce');
     });
     Route::prefix('customer-debts')->name('customer-debts.')->middleware('feature.access:accounts_receivable')->group(function () {
         Route::get('/', [CustomerDebtController::class, 'index'])->name('index');

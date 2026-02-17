@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewProductionOrder;
 use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\DebtPayment;
@@ -208,6 +209,9 @@ class DebtPaymentController extends Controller
             // Reduce stock
             $this->reduceStock($cart, $discountPlan);
 
+            // Update items status (standard completion for stock items)
+            $this->updateSaleItemsStatus($sale);
+
             // Increment discount usage
             if ($discountPlan) {
                 if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
@@ -242,6 +246,7 @@ class DebtPaymentController extends Controller
                         return [
                             'product_id' => $item->product_id,
                             'quantity' => $item->quantity,
+                            'is_stock' => $item->product ? (bool)$item->product->is_stock : true,
                         ];
                     })->values(),
                 ],
@@ -382,6 +387,71 @@ class DebtPaymentController extends Controller
         $discount = \App\Models\Discount::find($discountId);
         if ($discount) {
             $discount->incrementUsage();
+        }
+    }
+
+    /**
+     * Trigger production for a sale manually (e.g. after debt confirmation)
+     */
+    public function triggerProduction(Request $request, Sale $sale)
+    {
+        $this->broadcastProductionOrder($sale);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pesanan berhasil dikirim ke dapur/produksi',
+        ]);
+    }
+
+    /**
+     * Broadcast production order to Pusher if sale has non-stock items
+     */
+    private function broadcastProductionOrder(Sale $sale)
+    {
+        $sale->loadMissing(['items.product']);
+        $hasNonStockItems = $sale->items->contains(function ($item) {
+            return $item->product && ! $item->product->is_stock;
+        });
+
+        if ($hasNonStockItems) {
+            try {
+                event(new NewProductionOrder($sale));
+            } catch (\Exception $e) {
+                \Log::error('Pusher broadcast failed from Debt: '.$e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Update sale items status based on product stock type
+     */
+    private function updateSaleItemsStatus(Sale $sale)
+    {
+        $sale->loadMissing(['items.product', 'outlet']);
+        $autoProduction = $sale->outlet && $sale->outlet->auto_production;
+
+        $hasNonStockItems = $sale->items->contains(function ($item) {
+            return $item->product && ! $item->product->is_stock;
+        });
+
+        foreach ($sale->items as $item) {
+            $product = $item->product;
+
+            if ($autoProduction) {
+                $item->production_status = 'completed';
+                $item->served_at = now();
+            } elseif ($product && $product->is_stock) {
+                $item->production_status = 'completed';
+                if (! $hasNonStockItems) {
+                    $item->served_at = now();
+                } else {
+                    $item->served_at = null;
+                }
+            } else {
+                $item->served_at = null;
+            }
+
+            $item->save();
         }
     }
 }

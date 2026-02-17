@@ -5631,21 +5631,73 @@ function submitDebtPayment() {
             cart = {};
             cartSummary = { subtotal: 0, total_discount: 0, tax: 0, grand_total: 0, total_items: 0 };
             activeDiscountPlan = null;
-            
             renderCart();
+
             closeDebtPaymentModal();
             setUIState('browse');
             clearCustomer(true);
-            
-            // Show success modal
-            openPaymentSuccessModal({
-                sale_id: responseData.sale.id,
-                invoice_number: responseData.sale.invoice_number,
-                created_at: responseData.sale.created_at,
-                grand_total: responseData.sale.grand_total,
-                debt_amount: responseData.sale.debt_amount,
-                customer_name: responseData.sale.customer_name
-            });
+
+            // Check if there are non-stock items that need production
+            const hasNonStockItems = responseData.sale.items && responseData.sale.items.some(item => !item.is_stock);
+
+            if (hasNonStockItems) {
+                Swal.fire({
+                    title: '<h3 class="text-xl font-extrabold text-gray-900">Produksi Sekarang?</h3>',
+                    html: '<p class="text-sm text-gray-500">Terdapat produk yang perlu dimasak/diproduksi. Kirim pesanan ke dapur sekarang?</p>',
+                    icon: 'question',
+                    iconColor: '#2563eb',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-play mr-2"></i> Ya, Produksi Sekarang',
+                    cancelButtonText: 'Tidak, Nanti Saja',
+                    customClass: {
+                        popup: 'rounded-[32px] border-none shadow-2xl',
+                        confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-3 text-sm font-bold shadow-lg shadow-blue-200 border-none transition-all active:scale-95 mx-2',
+                        cancelButton: 'bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-xl px-6 py-3 text-sm font-bold border-none transition-all mx-2',
+                        actions: 'mt-6',
+                    },
+                    buttonsStyling: false,
+                    reverseButtons: true,
+                    allowOutsideClick: false
+                }).then((prodResult) => {
+                    if (prodResult.isConfirmed) {
+                        // Trigger production broadcast
+                        fetch(`/debt/${responseData.sale.id}/produce`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        })
+                        .then(r => r.json())
+                        .then(prodResponse => {
+                            if (prodResponse.success) {
+                                showToast('success', prodResponse.message);
+                            }
+                        })
+                        .catch(err => console.error('Failed to trigger production:', err));
+                    }
+                    
+                    // Always show success modal after confirmation
+                    openPaymentSuccessModal({
+                        sale_id: responseData.sale.id,
+                        invoice_number: responseData.sale.invoice_number,
+                        created_at: responseData.sale.created_at,
+                        grand_total: responseData.sale.grand_total,
+                        debt_amount: responseData.sale.debt_amount,
+                        customer_name: responseData.sale.customer_name
+                    });
+                });
+            } else {
+                // Show success modal directly if no production needed
+                openPaymentSuccessModal({
+                    sale_id: responseData.sale.id,
+                    invoice_number: responseData.sale.invoice_number,
+                    created_at: responseData.sale.created_at,
+                    grand_total: responseData.sale.grand_total,
+                    debt_amount: responseData.sale.debt_amount,
+                    customer_name: responseData.sale.customer_name
+                });
+            }
         } else {
             showToast('error', responseData.message);
         }
