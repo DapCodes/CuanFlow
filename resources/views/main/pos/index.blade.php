@@ -1501,6 +1501,17 @@
                             data-product-promo-price="{{ $product->promo_price }}"
                             data-product-hpp="{{ $product->hpp }}"
                             data-category="{{ $product->category_id }}"
+                            @php
+                                $isProduced = !$product->is_stock;
+                                if ($isProduced) {
+                                    $estStock = $product->getEstimatedStockPortions(auth()->user()->outlet_id);
+                                } else {
+                                    $stock = $product->stocks->where('outlet_id', auth()->user()->outlet_id)->first();
+                                    $estStock = $stock ? $stock->quantity : 0;
+                                }
+                            @endphp
+                            data-estimated-stock="{{ $estStock }}"
+                            data-is-produced="{{ $isProduced ? 'true' : 'false' }}"
                             onclick="addProductToCart(this)">
                             @if($product->image)
                                 <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="product-image">
@@ -4214,6 +4225,35 @@ function addProductToCart(el) {
     }
 
     const productId = el.dataset.productId;
+    const estStock = parseFloat(el.dataset.estimatedStock || 0);
+    const isProduced = el.dataset.isProduced === 'true';
+    const productName = el.dataset.productName;
+
+    const currentQty = cart[productId] ? parseFloat(cart[productId].quantity) : 0;
+    const newQty = currentQty + 1;
+
+    if (isProduced && newQty > estStock) {
+        Swal.fire({
+            title: 'Stok Terbatas',
+            text: `Stok bahan baku di dapur untuk ${productName} mungkin kurang. Lanjutkan?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f97316',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Lanjutkan',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                performAddToCart(productId);
+            }
+        });
+    } else {
+        performAddToCart(productId);
+    }
+}
+
+function performAddToCart(productId) {
     fetch('{{ route("pos.cart.add") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
@@ -4237,6 +4277,41 @@ function addProductToCart(el) {
 function updateCartQuantity(cartKey, newQty) {
     let qty = parseFloat(newQty);
     if (isNaN(qty) || qty < 0) qty = 0;
+
+    const el = document.querySelector(`.product-card[data-product-id="${cartKey}"]`);
+    if (el) {
+        const estStock = parseFloat(el.dataset.estimatedStock || 0);
+        const isProduced = el.dataset.isProduced === 'true';
+        const productName = el.dataset.productName;
+
+        const currentQty = cart[cartKey] ? parseFloat(cart[cartKey].quantity) : 0;
+        
+        // Only show modal if qty increased and exceeds estStock
+        if (isProduced && qty > estStock && qty > currentQty) {
+            Swal.fire({
+                title: 'Stok Terbatas',
+                text: `Stok bahan baku di dapur untuk ${productName} mungkin kurang. Lanjutkan?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f97316',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Lanjutkan',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    performUpdateCartQuantity(cartKey, qty);
+                } else {
+                    renderCart(); // Reset quantity in UI
+                }
+            });
+            return;
+        }
+    }
+    performUpdateCartQuantity(cartKey, qty);
+}
+
+function performUpdateCartQuantity(cartKey, qty) {
     fetch('{{ route("pos.cart.update") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' },
@@ -4251,9 +4326,13 @@ function updateCartQuantity(cartKey, newQty) {
             renderCart();
         } else {
             showToast('error', data.message || 'Gagal update item');
+            renderCart(); // Reset locally
         }
     })
-    .catch(() => showToast('error', 'Gagal update item'));
+    .catch(() => {
+        showToast('error', 'Gagal update item');
+        renderCart(); // Reset locally
+    });
 }
 
 function removeCartItem(cartKey) {
