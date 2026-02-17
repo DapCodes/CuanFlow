@@ -275,6 +275,8 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
     Route::post('/pos/customer/set', [PointOfSaleController::class, 'setCustomer'])->name('pos.customer.set');
     Route::get('/pos/customer/search', [PointOfSaleController::class, 'searchCustomers'])->name('pos.customer.search');
     Route::get('/pos/products/stocks', [PointOfSaleController::class, 'getProductStocks'])->name('pos.products.stocks');
+    Route::get('/pos/pending-production', [PointOfSaleController::class, 'getPendingProductionSales'])->name('pos.pending-production');
+    Route::post('/pos/notify-kitchen/{sale}', [PointOfSaleController::class, 'notifyKitchen'])->name('pos.notify-kitchen');
     Route::post('/pos/products/{product}/toggle-visibility', [PointOfSaleController::class, 'toggleProductVisibility'])->name('pos.products.toggle-visibility');
 
     // Cash Register Management
@@ -408,6 +410,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::get('/search-customer', [DebtPaymentController::class, 'searchCustomer'])->name('search-customer');
         Route::post('/process', [DebtPaymentController::class, 'processDebtPayment'])->name('process');
         Route::post('/{sale}/produce', [DebtPaymentController::class, 'triggerProduction'])->name('produce');
+        Route::post('/{sale}/wait', [DebtPaymentController::class, 'markAsWaiting'])->name('wait');
     });
     Route::prefix('customer-debts')->name('customer-debts.')->middleware('feature.access:accounts_receivable')->group(function () {
         Route::get('/', [CustomerDebtController::class, 'index'])->name('index');

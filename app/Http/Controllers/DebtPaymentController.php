@@ -231,9 +231,13 @@ class DebtPaymentController extends Controller
 
             DB::commit();
 
+            // Auto-broadcast production removed - handled by POS prompt modal
+            $autoProduction = $sale->outlet && $sale->outlet->auto_production;
+
             return response()->json([
                 'success' => true,
                 'message' => 'Transaksi berhasil dicatat dengan utang',
+                'auto_production' => $autoProduction,
                 'sale' => [
                     'id' => $sale->id,
                     'invoice_number' => $sale->invoice_number,
@@ -395,11 +399,50 @@ class DebtPaymentController extends Controller
      */
     public function triggerProduction(Request $request, Sale $sale)
     {
-        $this->broadcastProductionOrder($sale);
+        $sale->loadMissing(['items.product', 'outlet']);
+        $autoProduction = $sale->outlet && $sale->outlet->auto_production;
+
+        foreach ($sale->items as $item) {
+            if ($item->product && !$item->product->is_stock) {
+                if ($autoProduction) {
+                    $item->production_status = 'completed';
+                    $item->served_at = now();
+                } else {
+                    $item->production_status = 'pending';
+                    $item->served_at = null;
+                }
+                $item->save();
+            }
+        }
+
+        if (!$autoProduction) {
+            $this->broadcastProductionOrder($sale);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Pesanan berhasil dikirim ke dapur/produksi',
+            'message' => $autoProduction ? 'Produksi otomatis selesai' : 'Pesanan dikirim ke dapur',
+        ]);
+    }
+
+    /**
+     * Mark sale items as waiting (postponed)
+     */
+    public function markAsWaiting(Sale $sale)
+    {
+        $sale->loadMissing('items.product');
+
+        foreach ($sale->items as $item) {
+            if ($item->product && !$item->product->is_stock) {
+                $item->production_status = 'waiting';
+                $item->served_at = null;
+                $item->save();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Produksi ditunda',
         ]);
     }
 
@@ -437,17 +480,16 @@ class DebtPaymentController extends Controller
         foreach ($sale->items as $item) {
             $product = $item->product;
 
-            if ($autoProduction) {
+            if ($product && $product->is_stock) {
                 $item->production_status = 'completed';
-                $item->served_at = now();
-            } elseif ($product && $product->is_stock) {
-                $item->production_status = 'completed';
-                if (! $hasNonStockItems) {
+                if (!$hasNonStockItems) {
                     $item->served_at = now();
                 } else {
                     $item->served_at = null;
                 }
             } else {
+                // Non-stock items for debt default to waiting until prompt choice
+                $item->production_status = 'waiting';
                 $item->served_at = null;
             }
 

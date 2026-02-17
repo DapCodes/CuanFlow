@@ -834,10 +834,14 @@
 
         const channel = pusher.subscribe('production.outlet.' + OUTLET_ID);
 
-        channel.bind('new-order', function(data) {
-            console.log('[Production] New order received:', data);
-            const order = data.orderData;
+        // Helper: handle incoming order data
+        window.handleIncomingOrder = function(order) {
             if (!order || !order.items || order.items.length === 0) return;
+
+            // If card already exists, just return its ID for flashing
+            if (document.getElementById('card-sale-' + order.sale_id)) {
+                return order.sale_id;
+            }
 
             // Remove empty state if present
             const emptyState = document.querySelector('#content-queue .col-span-full');
@@ -1014,23 +1018,60 @@
             // Re-sort cards
             sortProductionCards();
 
-            // Flash the new card
-            const newCard = document.getElementById('card-sale-' + order.sale_id);
-            if (newCard) {
-                newCard.style.animation = 'fadeInUp 0.5s ease-out';
-            }
+            return order.sale_id;
+        };
 
-            // Play notification sound
+        const playNotificationSound = function() {
             try {
                 const audio = new Audio('{{ asset("assets/sounds/ting.mp3") }}');
                 audio.play().catch(e => console.warn('[Production] Audio play failed (autoplay policy):', e));
             } catch (e) {
                 console.error('[Production] Sound error:', e);
             }
+        };
 
-            // Show toast
-            showRealtimeToast('Pesanan Baru: ' + order.invoice_number);
+        channel.bind('new-order', function(data) {
+            console.log('[Production] New order received:', data);
+            const saleId = handleIncomingOrder(data.orderData);
+            
+            // Flash the card
+            if (saleId) {
+                const card = document.getElementById('card-sale-' + saleId);
+                if (card) {
+                    card.style.animation = 'none';
+                    card.offsetHeight; // force reflow
+                    card.style.animation = 'fadeInUp 0.5s ease-out';
+                }
+            }
+
+            playNotificationSound();
+            showRealtimeToast('Pesanan Baru: ' + data.orderData.invoice_number);
         });
+
+        channel.bind('kitchen-bell', function(data) {
+            console.log('[Production] Kitchen bell received:', data);
+            const saleId = handleIncomingOrder(data.orderData);
+
+            // Flash the card with a special color or animation for bell
+            if (saleId) {
+                const card = document.getElementById('card-sale-' + saleId);
+                if (card) {
+                    card.classList.add('ring-4', 'ring-blue-500', 'ring-opacity-50');
+                    card.style.animation = 'none';
+                    card.offsetHeight; // force reflow
+                    card.style.animation = 'flashBlue 1s ease-in-out infinite';
+                    
+                    setTimeout(() => {
+                        card.style.animation = '';
+                        card.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-50');
+                    }, 5000);
+                }
+            }
+
+            playNotificationSound();
+            showRealtimeToast('Permintaan Produksi: ' + data.orderData.invoice_number, true);
+        });
+
 
         // Helper: escape HTML
         function escapeHtml(text) {
@@ -1040,11 +1081,15 @@
         }
 
         // Helper: toast notification
-        function showRealtimeToast(message) {
+        function showRealtimeToast(message, isBell = false) {
             const toast = document.createElement('div');
-            toast.className = 'fixed top-6 right-6 z-[9999] bg-green-600 text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-bold flex items-center gap-3 animate-slide-in';
-            toast.innerHTML = `<i class="fas fa-bell animate-bounce"></i> <span>${escapeHtml(message)}</span>`;
+            const bgColor = isBell ? 'bg-blue-600' : 'bg-green-600';
+            const icon = isBell ? 'fa-bell' : 'fa-check-circle';
+            
+            toast.className = `fixed top-6 right-6 z-[9999] ${bgColor} text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-bold flex items-center gap-3 animate-slide-in`;
+            toast.innerHTML = `<i class="fas ${icon} ${isBell ? 'animate-bounce' : ''}"></i> <span>${escapeHtml(message)}</span>`;
             document.body.appendChild(toast);
+            
             setTimeout(() => {
                 toast.style.transition = 'opacity 0.5s, transform 0.5s';
                 toast.style.opacity = '0';
@@ -1063,6 +1108,16 @@
         from { opacity: 0; transform: translateX(100%); }
         to { opacity: 1; transform: translateX(0); }
     }
+    @keyframes flashBlue {
+        0%, 100% { background-color: white; }
+        50% { background-color: #eff6ff; border-color: #3b82f6; }
+    }
+    @keyframes shake {
+        0%, 100% { transform: rotate(0deg); }
+        20%, 60% { transform: rotate(-10deg); }
+        40%, 80% { transform: rotate(10deg); }
+    }
+    .animate-shake { animation: shake 0.5s ease-in-out infinite; }
     .animate-slide-in { animation: slideIn 0.4s ease-out; }
     .animate-fade-in { animation: fadeInUp 0.5s ease-out; }
 </style>

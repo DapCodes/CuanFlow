@@ -14,9 +14,11 @@ class NewProductionOrder implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public array $orderData;
+    public string $type;
 
-    public function __construct(Sale $sale)
+    public function __construct(Sale $sale, string $type = 'new-order')
     {
+        $this->type = $type;
         $sale->loadMissing(['items.product.unit', 'items.product.defaultRecipe', 'customer', 'table']);
 
         // Only include non-stock items (items that need production)
@@ -59,6 +61,6 @@ class NewProductionOrder implements ShouldBroadcastNow
 
     public function broadcastAs(): string
     {
-        return 'new-order';
+        return $this->type;
     }
 }

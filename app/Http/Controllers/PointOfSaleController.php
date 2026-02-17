@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashRegister;
+use App\Events\NewProductionOrder;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Product;
-use App\Models\ResellerApplication;
 use App\Models\Sale;
+use App\Models\SaleItem;
+use App\Models\Table;
 use App\Services\DiscountService;
+use App\Models\ResellerApplication;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class PointOfSaleController extends Controller
@@ -987,5 +991,56 @@ class PointOfSaleController extends Controller
         });
 
         return response()->json(['success' => true, 'stocks' => $stocks]);
+    }
+
+    public function getPendingProductionSales()
+    {
+        $outletId = auth()->user()->outlet_id;
+        $sales = Sale::where('outlet_id', $outletId)
+            ->whereHas('items', function ($query) {
+                $query->whereIn('production_status', ['pending', 'waiting'])
+                    ->whereHas('product', function ($q) {
+                        $q->where('is_stock', false);
+                    });
+            })
+            ->with(['items' => function ($query) {
+                $query->whereIn('production_status', ['pending', 'waiting'])
+                    ->whereHas('product', function ($q) {
+                        $q->where('is_stock', false);
+                    })
+                    ->with('product.unit');
+            }, 'customer'])
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json(['success' => true, 'sales' => $sales]);
+    }
+
+    public function notifyKitchen(Sale $sale)
+    {
+        if ($sale->outlet_id !== auth()->user()->outlet_id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            // Update items from 'waiting' to 'pending' if any
+            $hasWaiting = false;
+            foreach ($sale->items as $item) {
+                if ($item->production_status === 'waiting') {
+                    $item->production_status = 'pending';
+                    $item->save();
+                    $hasWaiting = true;
+                }
+            }
+
+            event(new NewProductionOrder($sale, 'kitchen-bell'));
+            return response()->json([
+                'success' => true, 
+                'message' => 'Notifikasi terkirim ke dapur',
+                'was_waiting' => $hasWaiting
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }

@@ -1478,9 +1478,15 @@
                             </div>
                         </div>
                     </div>
-                    <button onclick="openScanner()" class="h-[38px] w-[38px] flex-shrink-0 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors border border-purple-200" title="Scan Barcode">
-                        <i class="fas fa-qrcode"></i>
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="openScanner()" class="h-[38px] w-[38px] flex-shrink-0 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors border border-purple-200" title="Scan Barcode">
+                            <i class="fas fa-qrcode"></i>
+                        </button>
+                        <button onclick="openPendingProductionModal()" class="h-[38px] px-3 flex-shrink-0 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors border border-blue-100 font-bold text-xs gap-2" title="Antrean Dapur">
+                            <i class="fas fa-utensils"></i>
+                            <span class="hidden sm:inline">Antrean Dapur</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="category-tabs" id="categoryTabs">
                 </div>
@@ -2264,6 +2270,46 @@
             <button onclick="closeProductSettingsModal()" class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
                 <i class="fas fa-check mr-2"></i>Selesai
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Antrean Dapur (Kitchen Queue) -->
+<div id="pendingProductionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+            <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="fas fa-utensils text-blue-600"></i>
+                Antrean Dapur
+            </h3>
+            <div class="flex items-center gap-3">
+                <button onclick="refreshPendingProduction()" class="text-blue-500 hover:text-blue-700 text-sm font-semibold flex items-center gap-1 transition-colors" title="Refresh">
+                    <i class="fas fa-sync-alt" id="refreshSpinner"></i>
+                </button>
+                <button onclick="closePendingProductionModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 custom-scrollbar" id="pendingProductionContent">
+            <!-- Loading state -->
+            <div id="pendingProductionLoading" class="flex flex-col items-center justify-center py-12">
+                <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600 mb-4"></div>
+                <p class="text-sm text-gray-500">Memuat antrean dapur...</p>
+            </div>
+
+            <!-- Empty state -->
+            <div id="pendingProductionEmpty" class="hidden flex flex-col items-center justify-center py-12">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-check-circle text-3xl text-green-500"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-800">Semua Pesanan Selesai!</p>
+                <p class="text-sm text-gray-500 mt-1">Tidak ada pesanan yang menunggu produksi</p>
+            </div>
+
+            <!-- Sales list -->
+            <div id="pendingProductionList" class="hidden space-y-4"></div>
         </div>
     </div>
 </div>
@@ -5660,7 +5706,7 @@ function submitDebtPayment() {
                     allowOutsideClick: false
                 }).then((prodResult) => {
                     if (prodResult.isConfirmed) {
-                        // Trigger production broadcast
+                        // Trigger production (handles auto_production status updates)
                         fetch(`/debt/${responseData.sale.id}/produce`, {
                             method: 'POST',
                             headers: {
@@ -5669,12 +5715,28 @@ function submitDebtPayment() {
                             }
                         })
                         .then(r => r.json())
-                        .then(prodResponse => {
-                            if (prodResponse.success) {
-                                showToast('success', prodResponse.message);
+                        .then(data => {
+                            if (data.success) {
+                                showToast('success', data.message);
+                            } else {
+                                showToast('error', data.message);
+                            }
+                        }).catch(err => console.error('Failed to trigger production:', err));
+                    } else if (prodResult.dismiss === Swal.DismissReason.cancel) {
+                        // Mark as waiting
+                        fetch(`/debt/${responseData.sale.id}/wait`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             }
                         })
-                        .catch(err => console.error('Failed to trigger production:', err));
+                        .then(r => r.json())
+                        .then(waitResponse => {
+                             if (waitResponse.success) {
+                                 showToast('info', waitResponse.message);
+                             }
+                        })
+                        .catch(err => console.error('Failed to mark as waiting:', err));
                     }
                     
                     // Always show success modal after confirmation
@@ -5688,7 +5750,6 @@ function submitDebtPayment() {
                     });
                 });
             } else {
-                // Show success modal directly if no production needed
                 openPaymentSuccessModal({
                     sale_id: responseData.sale.id,
                     invoice_number: responseData.sale.invoice_number,
@@ -6280,6 +6341,142 @@ function openProductSettingsModal() {
 function closeProductSettingsModal() {
     document.getElementById('productSettingsModal').classList.add('hidden');
 }
+
+/* -------------------------------------------------------------------------- */
+/*                        PENDING PRODUCTION (KITCHEN QUEUE)                  */
+/* -------------------------------------------------------------------------- */
+
+async function openPendingProductionModal() {
+    document.getElementById('pendingProductionModal').classList.remove('hidden');
+    await refreshPendingProduction();
+}
+
+function closePendingProductionModal() {
+    document.getElementById('pendingProductionModal').classList.add('hidden');
+}
+
+async function refreshPendingProduction() {
+    const spinner = document.getElementById('refreshSpinner');
+    const list = document.getElementById('pendingProductionList');
+    const loading = document.getElementById('pendingProductionLoading');
+    const empty = document.getElementById('pendingProductionEmpty');
+
+    if (spinner) spinner.classList.add('animate-spin');
+    loading.classList.remove('hidden');
+    list.classList.add('hidden');
+    empty.classList.add('hidden');
+
+    try {
+        const response = await fetch('{{ route("pos.pending-production") }}');
+        const data = await response.json();
+
+        if (data.success && data.sales && data.sales.length > 0) {
+            renderPendingProductionList(data.sales);
+            list.classList.remove('hidden');
+            loading.classList.add('hidden');
+        } else {
+            empty.classList.remove('hidden');
+            loading.classList.add('hidden');
+        }
+    } catch (err) {
+        console.error('Failed to fetch pending production:', err);
+        showToast('error', 'Gagal memuat antrean dapur');
+        empty.classList.remove('hidden');
+        loading.classList.add('hidden');
+    } finally {
+        if (spinner) spinner.classList.remove('animate-spin');
+    }
+}
+
+function renderPendingProductionList(sales) {
+    const list = document.getElementById('pendingProductionList');
+    list.innerHTML = '';
+
+    sales.forEach(sale => {
+        const saleEl = document.createElement('div');
+        saleEl.className = 'bg-gray-50 rounded-xl overflow-hidden border border-gray-200';
+        
+        let itemsHtml = '';
+        sale.items.forEach(item => {
+            const productName = item.product?.name || 'Produk Tidak Dikenal';
+            const unitName = item.product?.unit?.name || 'Pcs';
+            const quantity = item.quantity || 0;
+            const notes = item.notes || '';
+            const isWaiting = item.production_status === 'waiting';
+
+            itemsHtml += `
+                <div class="flex justify-between items-start py-2 border-b border-gray-100 last:border-0">
+                    <div class="flex-1">
+                        <div class="text-sm font-bold text-gray-800">
+                            ${productName}
+                            ${isWaiting ? '<span class="text-[10px] font-bold bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded ml-2">Tunda</span>' : ''}
+                        </div>
+                        ${notes ? `<div class="text-xs text-orange-600">Note: ${notes}</div>` : ''}
+                    </div>
+                    <div class="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
+                        ${quantity} ${unitName}
+                    </div>
+                </div>
+            `;
+        });
+
+        saleEl.innerHTML = `
+            <div class="p-4 bg-white border-b border-gray-100 flex justify-between items-center">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${sale.invoice_number}</span>
+                        <span class="text-xs text-gray-400">${sale.created_at ? new Date(sale.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}</span>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800 mt-1">${sale.customer ? sale.customer.name : 'Pelanggan Umum'}</div>
+                </div>
+                <button onclick="ringKitchenBell(${sale.id}, this)" class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-all active:scale-95 shadow-sm border border-blue-100 group">
+                    <i class="fas fa-bell group-hover:animate-shake"></i>
+                </button>
+            </div>
+            <div class="p-4 bg-gray-50/50">
+                ${itemsHtml}
+            </div>
+        `;
+        list.appendChild(saleEl);
+    });
+}
+
+function ringKitchenBell(saleId, button) {
+    const icon = button.querySelector('i');
+    
+    // Visual feedback (animation)
+    icon.classList.add('animate-shake');
+    button.classList.add('bg-blue-600', 'text-white');
+    button.classList.remove('bg-blue-50', 'text-blue-600');
+
+    fetch(`/pos/notify-kitchen/${saleId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Optional: minimal success feedback
+        } else {
+            showToast('error', data.message);
+        }
+    })
+    .catch(err => {
+        console.error('Failed to ring bell:', err);
+    })
+    .finally(() => {
+        // Keep animation for a bit
+        setTimeout(() => {
+            icon.classList.remove('animate-shake');
+            button.classList.remove('bg-blue-600', 'text-white');
+            button.classList.add('bg-blue-50', 'text-blue-600');
+        }, 1000);
+    });
+}
+
 
 function loadProductSettings() {
     const saved = localStorage.getItem('pos_product_settings');
