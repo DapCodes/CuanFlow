@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(\Illuminate\Auth\Events\Login::class, \App\Listeners\LogSuccessfulLogin::class);
         Event::listen(\Illuminate\Auth\Events\Logout::class, \App\Listeners\LogSuccessfulLogout::class);
         Event::listen(\Illuminate\Auth\Events\Failed::class, \App\Listeners\LogFailedLogin::class);
+        Event::subscribe(\App\Listeners\UserPresenceSubscriber::class);
 
         // Inject context metadata into every activity log entry
         \App\Models\Activity::saving(function (\App\Models\Activity $activity) {

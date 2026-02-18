@@ -41,7 +41,38 @@
     </div>
     
     <!-- Stats Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4" 
+         x-data="{ 
+            activeUsers: {{ $stats['active_users'] }},
+            async updateActiveUsers() {
+                try {
+                    const response = await fetch('{{ route('admin.dashboard.active-users') }}');
+                    const data = await response.json();
+                    this.activeUsers = data.count;
+                } catch (error) {
+                    console.error('Error fetching active users:', error);
+                }
+            }
+         }"
+         x-init="setInterval(() => updateActiveUsers(), 30000)">
+        
+        <!-- Active Users (Realtime) -->
+        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-5 shadow-lg shadow-emerald-100 transition-all hover:scale-[1.02]">
+            <div class="flex items-center justify-between">
+                <div class="text-white">
+                    <p class="text-xs font-bold uppercase tracking-wider opacity-80">User Aktif</p>
+                    <p class="text-3xl font-black mt-1" x-text="activeUsers">{{ $stats['active_users'] }}</p>
+                </div>
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                    <i class="fas fa-signal text-white text-xl animate-pulse"></i>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 mt-3">
+                <div class="w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
+                <span class="text-[10px] font-bold text-white uppercase tracking-widest">Real-time</span>
+            </div>
+        </div>
+
         <!-- Users -->
         <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between">
