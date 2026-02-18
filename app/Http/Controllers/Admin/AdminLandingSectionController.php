@@ -57,7 +57,11 @@ class AdminLandingSectionController extends Controller implements HasMiddleware
             'background_value' => 'nullable|string|max:500',
             'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'extra_settings' => 'nullable|array',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        // Handle is_active checkbox (default to false if not present in request)
+        $validated['is_active'] = $request->has('is_active');
 
         // Handle background image upload
         if ($request->hasFile('background_image')) {
@@ -162,6 +166,9 @@ class AdminLandingSectionController extends Controller implements HasMiddleware
             'extra_data' => 'nullable|array',
             'is_active' => 'nullable|boolean',
         ]);
+
+        // Handle is_active checkbox (default to false if not present in request)
+        $validated['is_active'] = $request->has('is_active');
 
         // Handle image upload
         if ($request->hasFile('image')) {

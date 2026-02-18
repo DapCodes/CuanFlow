@@ -6,7 +6,6 @@ use App\Models\Product;
 use App\Models\RawMaterial;
 use App\Models\StockNotification;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class StockNotificationService
 {
@@ -15,7 +14,9 @@ class StockNotificationService
      */
     public function checkAllStock(?int $outletId): void
     {
-        if (!$outletId) return;
+        if (! $outletId) {
+            return;
+        }
 
         $this->checkProducts($outletId);
         $this->checkRawMaterials($outletId);
@@ -29,7 +30,7 @@ class StockNotificationService
         $products = Product::where('outlet_id', $outletId)
             ->where('track_stock', true)
             ->where('is_stock', true) // Only check products marked as stock
-            ->with(['stocks' => function($q) use ($outletId) {
+            ->with(['stocks' => function ($q) use ($outletId) {
                 $q->where('outlet_id', $outletId);
             }])
             ->get();
@@ -89,7 +90,7 @@ class StockNotificationService
     private function checkRawMaterials(int $outletId): void
     {
         $materials = RawMaterial::where('outlet_id', $outletId)
-            ->with(['stocks' => function($q) use ($outletId) {
+            ->with(['stocks' => function ($q) use ($outletId) {
                 $q->where('outlet_id', $outletId);
             }])
             ->get();
@@ -156,7 +157,7 @@ class StockNotificationService
             ->where('is_read', false)
             ->exists();
 
-        if (!$exists) {
+        if (! $exists) {
             StockNotification::create([
                 'outlet_id' => $outletId,
                 'stockable_id' => $model->id,
@@ -176,13 +177,15 @@ class StockNotificationService
      */
     public function getLatestNotifications(?int $outletId, int $limit = 10)
     {
-        if (!$outletId) return collect();
+        if (! $outletId) {
+            return collect();
+        }
 
         $userId = auth()->id();
 
         $notifications = StockNotification::where('outlet_id', $outletId)
             ->where('is_read', false) // Still filter by globally "active" notifications
-            ->with(['readByUsers' => function($q) {
+            ->with(['readByUsers' => function ($q) {
                 $q->select('users.id', 'users.name', 'avatar'); // For avatars
             }])
             ->latest()

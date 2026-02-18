@@ -100,6 +100,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{landingPage}', [AdminLandingPageController::class, 'destroy'])->name('destroy');
         Route::post('/{landingPage}/toggle-status', [AdminLandingPageController::class, 'toggleStatus'])->name('toggle-status');
         Route::get('/{landingPage}/preview', [AdminLandingPageController::class, 'preview'])->name('preview');
+        Route::put('/{landingPage}/cta', [AdminLandingPageController::class, 'updateCta'])->name('update-cta');
 
         // Section Management
         Route::get('/{landingPage}/sections', [AdminLandingSectionController::class, 'index'])->name('sections.index');

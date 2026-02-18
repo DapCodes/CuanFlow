@@ -57,13 +57,11 @@
                         </p>
                     </div>
                 </div>
-                <form action="{{ route('admin.landing-pages.toggle-status', $landingPage) }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" 
-                            class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ $landingPage->is_active ? 'bg-white text-green-700 hover:bg-green-100' : 'bg-amber-100 text-amber-700 hover:bg-amber-200' }}">
-                        {{ $landingPage->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
-                    </button>
-                </form>
+                <button type="button" 
+                        onclick="document.getElementById('toggle-status-form').submit()"
+                        class="px-4 py-2 text-sm font-medium rounded-lg transition-colors {{ $landingPage->is_active ? 'bg-white text-green-700 hover:bg-green-100' : 'bg-amber-100 text-amber-700 hover:bg-amber-200' }}">
+                    {{ $landingPage->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                </button>
             </div>
         </div>
 
@@ -90,6 +88,9 @@
                     <input type="text" name="tagline" id="tagline"
                            value="{{ old('tagline', $landingPage->tagline) }}"
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                    @error('tagline')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
@@ -100,6 +101,9 @@
                                value="{{ old('slug', $landingPage->slug) }}"
                                class="flex-1 px-4 py-3 border border-gray-200 rounded-r-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
                     </div>
+                    @error('slug')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
@@ -206,6 +210,9 @@
                                 </div>
                             @endif
                         </div>
+                        @error('logo')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 
@@ -224,6 +231,9 @@
                                 </div>
                             @endif
                         </div>
+                        @error('favicon')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -285,3 +295,7 @@
 </script>
 @endpush
 @endsection
+
+<form id="toggle-status-form" action="{{ route('admin.landing-pages.toggle-status', $landingPage) }}" method="POST" class="hidden">
+    @csrf
+</form>

@@ -63,7 +63,7 @@ class StockNotification extends Model
      */
     public function scopeUnreadBy($query, $userId)
     {
-        return $query->whereDoesntHave('readByUsers', function($q) use ($userId) {
+        return $query->whereDoesntHave('readByUsers', function ($q) use ($userId) {
             $q->where('user_id', $userId);
         });
     }

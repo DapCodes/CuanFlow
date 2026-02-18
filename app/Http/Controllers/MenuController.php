@@ -24,7 +24,7 @@ class MenuController extends Controller
         }
 
         // Cek apakah ada sesi POS yang sedang buka
-        $isPosOpen = $user->outlet_id 
+        $isPosOpen = $user->outlet_id
             ? \App\Models\CashRegister::where('outlet_id', $user->outlet_id)
                 ->where('user_id', $user->id)
                 ->where('status', 'open')

@@ -30,9 +30,9 @@ class StockNotificationController extends Controller
         }
 
         // Join with reads to handle 'unread' filter and sorting
-        $query->leftJoin('stock_notification_reads', function($join) use ($userId) {
+        $query->leftJoin('stock_notification_reads', function ($join) use ($userId) {
             $join->on('stock_notifications.id', '=', 'stock_notification_reads.stock_notification_id')
-                 ->where('stock_notification_reads.user_id', '=', $userId);
+                ->where('stock_notification_reads.user_id', '=', $userId);
         });
 
         if ($type === 'unread') {
@@ -46,7 +46,7 @@ class StockNotificationController extends Controller
             ->withQueryString();
 
         foreach ($notifications as $notification) {
-            $notification->is_read_by_me = !is_null($notification->my_read_at);
+            $notification->is_read_by_me = ! is_null($notification->my_read_at);
         }
 
         return view('stock-notifications.index', compact('notifications', 'type'));

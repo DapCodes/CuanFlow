@@ -116,6 +116,8 @@ class AdminLandingSection extends Model
      */
     public function getSectionNameAttribute(): string
     {
-        return AdminLandingPage::SECTION_KEYS[$this->section_key]['title'] ?? ucfirst(str_replace('_', ' ', $this->section_key));
+        $keys = AdminLandingPage::SECTION_KEYS;
+
+        return $keys[$this->section_key]['title'] ?? ucfirst(str_replace('_', ' ', $this->section_key));
     }
 }

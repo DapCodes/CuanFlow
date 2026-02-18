@@ -197,6 +197,46 @@ class AdminLandingPageController extends Controller implements HasMiddleware
     }
 
     /**
+     * Update CTA section for a landing page
+     */
+    public function updateCta(Request $request, AdminLandingPage $landingPage)
+    {
+        $validated = $request->validate([
+            'headline' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'button_text' => 'nullable|string|max:100',
+            'button_link' => 'nullable|string|max:255',
+            'button_color' => 'nullable|string|max:7',
+            'secondary_button_text' => 'nullable|string|max:100',
+            'secondary_button_link' => 'nullable|string|max:255',
+            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
+        ]);
+
+        $cta = $landingPage->cta;
+
+        // Handle background image upload
+        if ($request->hasFile('background_image')) {
+            // Delete old image if exists
+            if ($cta && $cta->background_image) {
+                Storage::disk('public')->delete($cta->background_image);
+            }
+
+            $validated['background_image'] = $request->file('background_image')
+                ->store('admin-landing-pages/ctas', 'public');
+        }
+
+        if ($cta) {
+            $cta->update($validated);
+        } else {
+            $landingPage->cta()->create($validated);
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', 'CTA berhasil diperbarui.');
+    }
+
+    /**
      * Preview landing page (admin only)
      */
     public function preview(AdminLandingPage $landingPage)
@@ -204,7 +244,7 @@ class AdminLandingPageController extends Controller implements HasMiddleware
         // Load all sections with their items (including inactive for preview)
         $landingPage->load([
             'sections' => function ($query) {
-                $query->where('is_active', true)->orderBy('order')->with('activeItems');
+                $query->orderBy('order')->with('items');
             },
             'cta',
         ]);
