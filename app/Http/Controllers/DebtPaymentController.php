@@ -250,7 +250,7 @@ class DebtPaymentController extends Controller
                         return [
                             'product_id' => $item->product_id,
                             'quantity' => $item->quantity,
-                            'is_stock' => $item->product ? (bool)$item->product->is_stock : true,
+                            'is_stock' => $item->product ? (bool) $item->product->is_stock : true,
                         ];
                     })->values(),
                 ],
@@ -403,7 +403,7 @@ class DebtPaymentController extends Controller
         $autoProduction = $sale->outlet && $sale->outlet->auto_production;
 
         foreach ($sale->items as $item) {
-            if ($item->product && !$item->product->is_stock) {
+            if ($item->product && ! $item->product->is_stock) {
                 if ($autoProduction) {
                     $item->production_status = 'completed';
                     $item->served_at = now();
@@ -415,7 +415,7 @@ class DebtPaymentController extends Controller
             }
         }
 
-        if (!$autoProduction) {
+        if (! $autoProduction) {
             $this->broadcastProductionOrder($sale);
         }
 
@@ -433,7 +433,7 @@ class DebtPaymentController extends Controller
         $sale->loadMissing('items.product');
 
         foreach ($sale->items as $item) {
-            if ($item->product && !$item->product->is_stock) {
+            if ($item->product && ! $item->product->is_stock) {
                 $item->production_status = 'waiting';
                 $item->served_at = null;
                 $item->save();
@@ -482,7 +482,7 @@ class DebtPaymentController extends Controller
 
             if ($product && $product->is_stock) {
                 $item->production_status = 'completed';
-                if (!$hasNonStockItems) {
+                if (! $hasNonStockItems) {
                     $item->served_at = now();
                 } else {
                     $item->served_at = null;

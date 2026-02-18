@@ -18,16 +18,16 @@ class ProductionCompleted implements ShouldBroadcastNow
     public function __construct(Sale $sale)
     {
         $this->orderData = [
-            'sale_id'        => $sale->id,
+            'sale_id' => $sale->id,
             'invoice_number' => $sale->invoice_number,
-            'outlet_id'      => $sale->outlet_id,
+            'outlet_id' => $sale->outlet_id,
         ];
     }
 
     public function broadcastOn(): array
     {
         return [
-            new Channel('production.outlet.' . $this->orderData['outlet_id']),
+            new Channel('production.outlet.'.$this->orderData['outlet_id']),
         ];
     }
 

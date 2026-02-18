@@ -83,7 +83,7 @@ class Activity extends SpatieActivity
             'created' => ['label' => 'Created', 'color' => 'emerald'],
             'updated' => ['label' => 'Updated', 'color' => 'blue'],
             'deleted' => ['label' => 'Deleted', 'color' => 'red'],
-            default   => ['label' => ucfirst($this->event ?? $this->description), 'color' => 'gray'],
+            default => ['label' => ucfirst($this->event ?? $this->description), 'color' => 'gray'],
         };
     }
 
@@ -115,8 +115,8 @@ class Activity extends SpatieActivity
     {
         return $query->where(function ($q) use ($search) {
             $q->where('description', 'like', "%{$search}%")
-              ->orWhere('properties', 'like', "%{$search}%")
-              ->orWhere('ip_address', 'like', "%{$search}%");
+                ->orWhere('properties', 'like', "%{$search}%")
+                ->orWhere('ip_address', 'like', "%{$search}%");
         });
     }
 

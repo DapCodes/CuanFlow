@@ -22,7 +22,8 @@ class ArchiveActivityLogs extends Command
         $count = $query->count();
 
         if ($count === 0) {
-            $this->info('No activity logs older than ' . $days . ' days to archive.');
+            $this->info('No activity logs older than '.$days.' days to archive.');
+
             return self::SUCCESS;
         }
 
@@ -98,7 +99,7 @@ class ArchiveActivityLogs extends Command
                 'created_by' => null,
             ]);
 
-            $this->error('❌ Archive failed: ' . $e->getMessage());
+            $this->error('❌ Archive failed: '.$e->getMessage());
             $this->error('Original logs were NOT deleted.');
 
             return self::FAILURE;
@@ -114,6 +115,6 @@ class ArchiveActivityLogs extends Command
             $i++;
         }
 
-        return round($bytes, 2) . ' ' . $units[$i];
+        return round($bytes, 2).' '.$units[$i];
     }
 }

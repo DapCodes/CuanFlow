@@ -54,7 +54,7 @@ class RawMaterialSeeder extends Seeder
                 'category_slug' => 'bumbu-perasa', 'unit_abbreviation' => 'g', 'purchase_price' => 100.00,
                 'min_stock' => 1000.0, 'shelf_life_days' => 365,
             ],
-            
+
             // ISIAN & TOPPING
             [
                 'code' => 'RM019', 'name' => 'Gurita (Octopus)', 'barcode' => '89900070001',

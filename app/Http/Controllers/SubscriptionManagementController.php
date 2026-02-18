@@ -21,12 +21,12 @@ class SubscriptionManagementController extends Controller
         $subscription = $user->subscription;
 
         // Ensure user has a subscription (even if expired)
-        if (!$subscription) {
+        if (! $subscription) {
             return redirect()->route('subscription.index');
         }
 
         $currentTier = $subscription->tier;
-        
+
         // Plans for "Add Duration" (Extension) - Same Tier
         $extensionPlans = $currentTier->plans()
             ->where('is_active', true)
@@ -38,7 +38,7 @@ class SubscriptionManagementController extends Controller
         $upgradeTiers = SubscriptionTier::where('is_active', true)
             ->where('id', '!=', $currentTier->id)
             ->where('price', '>', $currentTier->price) // Assuming price determines hierarchy
-            ->with(['plans' => function($q) {
+            ->with(['plans' => function ($q) {
                 $q->where('is_active', true)->orderBy('duration_months');
             }, 'features']) // Eager load features
             ->orderBy('price')
@@ -58,8 +58,8 @@ class SubscriptionManagementController extends Controller
 
         $user = auth()->user();
         $subscription = $user->subscription;
-        
-        if (!$subscription) {
+
+        if (! $subscription) {
             return response()->json(['success' => false, 'message' => 'Subscription not found.'], 404);
         }
 
@@ -67,15 +67,15 @@ class SubscriptionManagementController extends Controller
 
         // Verify plan belongs to current tier
         if ($plan->tier_id !== $subscription->tier_id) {
-             return response()->json(['success' => false, 'message' => 'Invalid plan for extension.'], 400);
+            return response()->json(['success' => false, 'message' => 'Invalid plan for extension.'], 400);
         }
 
         // Create Payment Transaction
         $snapToken = $this->createSnapToken($user, $plan, 'SUBS-EXT-');
 
         return response()->json([
-            'success' => true, 
-            'snap_token' => $snapToken
+            'success' => true,
+            'snap_token' => $snapToken,
         ]);
     }
 
@@ -91,7 +91,7 @@ class SubscriptionManagementController extends Controller
         $user = auth()->user();
         $subscription = $user->subscription;
 
-         if (!$subscription) {
+        if (! $subscription) {
             return response()->json(['success' => false, 'message' => 'Subscription not found.'], 404);
         }
 
@@ -99,15 +99,15 @@ class SubscriptionManagementController extends Controller
 
         // Verify plan does NOT belong to current tier (it is an upgrade)
         if ($plan->tier_id === $subscription->tier_id) {
-             return response()->json(['success' => false, 'message' => 'Please use extension for the same tier.'], 400);
+            return response()->json(['success' => false, 'message' => 'Please use extension for the same tier.'], 400);
         }
 
         // Create Payment Transaction
         $snapToken = $this->createSnapToken($user, $plan, 'SUBS-UPG-');
 
         return response()->json([
-            'success' => true, 
-            'snap_token' => $snapToken
+            'success' => true,
+            'snap_token' => $snapToken,
         ]);
     }
 
@@ -122,8 +122,8 @@ class SubscriptionManagementController extends Controller
         Config::$isSanitized = true;
         Config::$is3ds = true;
 
-        $orderId = $prefix . $user->id . '-' . time() . '-' . Str::random(5);
-        
+        $orderId = $prefix.$user->id.'-'.time().'-'.Str::random(5);
+
         $amount = (int) $plan->price;
         $tax = (int) ($amount * 0.11);
         $total = $amount + $tax;
@@ -152,15 +152,15 @@ class SubscriptionManagementController extends Controller
             ],
             'item_details' => [
                 [
-                    'id' => 'PLAN-' . $plan->id,
+                    'id' => 'PLAN-'.$plan->id,
                     'price' => $total,
                     'quantity' => 1,
-                    'name' => ($prefix === 'SUBS-EXT-' ? 'Perpanjangan ' : 'Upgrade ') . $plan->tier->display_name,
+                    'name' => ($prefix === 'SUBS-EXT-' ? 'Perpanjangan ' : 'Upgrade ').$plan->tier->display_name,
                 ],
             ],
             // Only enabled Qris / E-Wallet as per requirement usually, but let's keep it open or strictly qris if desired
-             // 'enabled_payments' => ['gopay', 'shopeepay', 'other_qris'], 
-             'callbacks' => [
+            // 'enabled_payments' => ['gopay', 'shopeepay', 'other_qris'],
+            'callbacks' => [
                 'finish' => route('subscription.payment.finish'),
             ],
         ];

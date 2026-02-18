@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -34,20 +34,20 @@ class GoogleAuthController extends Controller
                 DB::beginTransaction();
 
                 // Update google info if not set
-                if (!$user->google_id) {
+                if (! $user->google_id) {
                     $user->google_id = $request->google_id;
                 }
-                if (!$user->google_avatar || $user->google_avatar !== $request->avatar) {
+                if (! $user->google_avatar || $user->google_avatar !== $request->avatar) {
                     $user->google_avatar = $request->avatar;
                 }
-                
+
                 $user->last_login_at = now();
                 $user->save();
 
                 // Sync with Customer (sama dengan LoginController)
                 $customer = Customer::where('email', $user->email)->first();
 
-                if (!$customer) {
+                if (! $customer) {
                     Customer::create([
                         'name' => $user->name,
                         'email' => $user->email,
@@ -79,6 +79,7 @@ class GoogleAuthController extends Controller
 
             } catch (\Throwable $e) {
                 DB::rollBack();
+
                 return response()->json([
                     'message' => 'Terjadi kesalahan saat login.',
                     'error' => $e->getMessage(),
@@ -134,7 +135,7 @@ class GoogleAuthController extends Controller
 
             // Assign role (Sesuai dengan RegisterController)
             Role::firstOrCreate(['name' => 'pelanggan']);
-            if (!$user->hasRole('pelanggan')) {
+            if (! $user->hasRole('pelanggan')) {
                 $user->assignRole('pelanggan');
             }
 
@@ -180,6 +181,7 @@ class GoogleAuthController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => 'Terjadi kesalahan saat registrasi.',
                 'error' => $e->getMessage(),

@@ -14,6 +14,6 @@ class LogFailedLogin
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
             ])
-            ->log("Failed login attempt for " . ($event->credentials['email'] ?? 'unknown'));
+            ->log('Failed login attempt for '.($event->credentials['email'] ?? 'unknown'));
     }
 }

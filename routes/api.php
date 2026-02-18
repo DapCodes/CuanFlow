@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\EmailVerifyController;
+use App\Http\Controllers\Api\Auth\GoogleAuthController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterController;
-use App\Http\Controllers\Api\Auth\GoogleAuthController;
 use App\Http\Controllers\Api\Auth\ResendVerificationController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\DebtPaymentApiController;

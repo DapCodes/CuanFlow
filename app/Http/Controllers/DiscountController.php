@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Product;
 use Illuminate\Http\Request;

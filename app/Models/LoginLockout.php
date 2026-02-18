@@ -32,7 +32,7 @@ class LoginLockout extends Model
      */
     public function remainingSeconds(): int
     {
-        if (!$this->isLocked()) {
+        if (! $this->isLocked()) {
             return 0;
         }
 

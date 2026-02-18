@@ -201,7 +201,7 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         Route::get('/', [RawMaterialAndSupplierController::class, 'indexRawMaterial'])->name('index');
         Route::get('/create', [RawMaterialAndSupplierController::class, 'createRawMaterial'])->name('create');
         Route::post('/', [RawMaterialAndSupplierController::class, 'storeRawMaterial'])->name('store');
-        
+
         // Stock Management
         Route::get('/{rawMaterial}/manage-stock', [RawMaterialAndSupplierController::class, 'manageStock'])->name('manage-stock');
         Route::get('/{rawMaterial}/stock-show', [RawMaterialAndSupplierController::class, 'stockShow'])->name('stock-show');

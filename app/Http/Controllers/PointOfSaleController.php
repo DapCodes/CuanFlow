@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CashRegister;
 use App\Events\NewProductionOrder;
+use App\Models\CashRegister;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Product;
-use App\Models\Sale;
-use App\Models\SaleItem;
-use App\Models\Table;
-use App\Services\DiscountService;
 use App\Models\ResellerApplication;
+use App\Models\Sale;
+use App\Services\DiscountService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class PointOfSaleController extends Controller
@@ -65,7 +62,7 @@ class PointOfSaleController extends Controller
 
         $selectedCustomerId = Session::get('pos_customer_id');
         $selectedCustomer = $selectedCustomerId ? Customer::find($selectedCustomerId) : null;
-        
+
         if ($selectedCustomer && $selectedCustomer->type === 'reseller') {
             $selectedCustomer->is_verified_reseller = ResellerApplication::where('customer_id', $selectedCustomer->id)
                 ->where('outlet_id', auth()->user()->outlet_id)
@@ -238,7 +235,7 @@ class PointOfSaleController extends Controller
 
                 if ($isVerifiedReseller && $product->reseller_price) {
                     $price = $product->reseller_price;
-                } 
+                }
                 // VIP Logic disabled per request ("dihilangkan dulu")
                 /* elseif ($customer->type === 'vip' && $product->promo_price) {
                     $price = $product->promo_price;
@@ -440,7 +437,7 @@ class PointOfSaleController extends Controller
 
                         if ($isVerifiedReseller && $product->reseller_price) {
                             $price = $product->reseller_price;
-                        } 
+                        }
                         // VIP Logic disabled per request ("dihilangkan dulu")
                         /* elseif ($customer->type === 'vip' && $product->promo_price) {
                             $price = $product->promo_price;
@@ -816,7 +813,7 @@ class PointOfSaleController extends Controller
         // Append Verification Status for Resellers
         $customers->transform(function ($customer) {
             $customer->is_verified_reseller = false;
-            
+
             if ($customer->type === 'reseller') {
                 $application = ResellerApplication::where('customer_id', $customer->id)
                     ->where('outlet_id', auth()->user()->outlet_id)
@@ -966,6 +963,7 @@ class PointOfSaleController extends Controller
             'is_active' => (bool) $product->is_active,
         ]);
     }
+
     public function getProductStocks()
     {
         $outletId = auth()->user()->outlet_id;
@@ -980,7 +978,7 @@ class PointOfSaleController extends Controller
                 $estStock = $product->getEstimatedStockPortions($outletId);
             } else {
                 $stock = $product->stocks->where('outlet_id', $outletId)->first();
-                $estStock = $stock ? (float)$stock->quantity : 0;
+                $estStock = $stock ? (float) $stock->quantity : 0;
             }
 
             return [
@@ -1034,10 +1032,11 @@ class PointOfSaleController extends Controller
             }
 
             event(new NewProductionOrder($sale, 'kitchen-bell'));
+
             return response()->json([
-                'success' => true, 
+                'success' => true,
                 'message' => 'Notifikasi terkirim ke dapur',
-                'was_waiting' => $hasWaiting
+                'was_waiting' => $hasWaiting,
             ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

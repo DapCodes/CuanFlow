@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Outlet;
-use App\Models\User;
 use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionTier;
+use App\Models\User;
 use App\Models\UserSubscription;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;

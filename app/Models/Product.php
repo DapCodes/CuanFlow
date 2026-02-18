@@ -156,22 +156,22 @@ class Product extends Model
      */
     protected function getReservedMaterials($outletId): array
     {
-        if (!isset(self::$reservedMaterialsCache[$outletId])) {
+        if (! isset(self::$reservedMaterialsCache[$outletId])) {
             // Find all pending sale items for non-stock products
             $pendingItems = SaleItem::whereHas('sale', function ($query) use ($outletId) {
                 $query->where('outlet_id', $outletId)
                     ->where('status', 'completed'); // Only finalized sales
             })
-            ->where('production_status', 'pending')
-            ->whereHas('product', function ($query) {
-                $query->where('is_stock', false);
-            })
-            ->with('product.defaultRecipe.items')
-            ->get();
+                ->where('production_status', 'pending')
+                ->whereHas('product', function ($query) {
+                    $query->where('is_stock', false);
+                })
+                ->with('product.defaultRecipe.items')
+                ->get();
 
             $reserved = [];
             foreach ($pendingItems as $item) {
-                if (!$item->product || !$item->product->defaultRecipe) {
+                if (! $item->product || ! $item->product->defaultRecipe) {
                     continue;
                 }
 
@@ -212,7 +212,7 @@ class Product extends Model
             $currentStock = $rawMaterial->getStockQuantity($outletId);
             $reserved = $reservedMaterials[$rawMaterial->id] ?? 0;
             $effectiveStock = max(0, $currentStock - $reserved);
-            
+
             $requiredPerRecipe = $item->quantity;
 
             if ($requiredPerRecipe <= 0) {

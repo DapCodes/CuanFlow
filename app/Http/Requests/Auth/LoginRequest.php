@@ -43,7 +43,7 @@ class LoginRequest extends FormRequest
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             $this->recordFailedAttempt();
-            
+
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -102,7 +102,7 @@ class LoginRequest extends FormRequest
         if ($totalIpAttempts >= 5) {
             // Lock for 3 hours
             \App\Models\LoginLockout::where('ip_address', $ip)->update([
-                'locked_until' => now()->addHours(3)
+                'locked_until' => now()->addHours(3),
             ]);
         }
     }

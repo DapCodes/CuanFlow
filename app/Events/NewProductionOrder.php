@@ -14,6 +14,7 @@ class NewProductionOrder implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public array $orderData;
+
     public string $type;
 
     public function __construct(Sale $sale, string $type = 'new-order')
@@ -23,7 +24,7 @@ class NewProductionOrder implements ShouldBroadcastNow
 
         // Only include non-stock items (items that need production)
         $pendingItems = $sale->items->filter(function ($item) {
-            return $item->product && !$item->product->is_stock && $item->production_status === 'pending';
+            return $item->product && ! $item->product->is_stock && $item->production_status === 'pending';
         });
 
         $this->orderData = [
@@ -55,7 +56,7 @@ class NewProductionOrder implements ShouldBroadcastNow
         $outletId = \App\Models\Sale::find($this->orderData['sale_id'])?->outlet_id;
 
         return [
-            new Channel('production.outlet.' . $outletId),
+            new Channel('production.outlet.'.$outletId),
         ];
     }
 

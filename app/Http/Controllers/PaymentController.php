@@ -164,19 +164,19 @@ class PaymentController extends Controller
     {
         $sale->loadMissing(['items.product']);
         $hasNonStockItems = $sale->items->contains(function ($item) {
-            return $item->product && !$item->product->is_stock;
+            return $item->product && ! $item->product->is_stock;
         });
 
         if ($hasNonStockItems) {
-            \Log::info('Broadcasting NewProductionOrder for Sale ID: ' . $sale->id);
+            \Log::info('Broadcasting NewProductionOrder for Sale ID: '.$sale->id);
             try {
                 event(new NewProductionOrder($sale));
-                \Log::info('Broadcast successful for Sale ID: ' . $sale->id);
+                \Log::info('Broadcast successful for Sale ID: '.$sale->id);
             } catch (\Exception $e) {
-                \Log::error('Pusher broadcast failed: ' . $e->getMessage());
+                \Log::error('Pusher broadcast failed: '.$e->getMessage());
             }
         } else {
-            \Log::info('No non-stock items found for Sale ID: ' . $sale->id . '. Skipping broadcast.');
+            \Log::info('No non-stock items found for Sale ID: '.$sale->id.'. Skipping broadcast.');
         }
     }
 
@@ -297,7 +297,7 @@ class PaymentController extends Controller
 
             // PERBAIKAN: Pass discount plan to reduce stock
             $this->reduceStock($cart, $discountPlan);
-            
+
             // AUTOMATION: Update items status (production & served)
             $this->updateSaleItemsStatus($sale);
 
@@ -603,7 +603,7 @@ class PaymentController extends Controller
 
                 if ($shouldProcess) {
                     $this->reduceStockFromSale($sale);
-                    
+
                     // AUTOMATION: Update items status (production & served)
                     $this->updateSaleItemsStatus($sale);
 
@@ -716,7 +716,7 @@ class PaymentController extends Controller
                 if (str_starts_with($transaction->transaction_id, 'SUBS-EXT-')) {
                     // --- EXTENSION LOGIC ---
                     $subscription = $transaction->subscription; // This should have been linked in Controller
-                    
+
                     if ($subscription) {
                         // Calculate new expiry: if currently valid, add to expires_at; if expired/past, add to now()
                         $currentExpiry = $subscription->expires_at ? \Carbon\Carbon::parse($subscription->expires_at) : now();
@@ -730,7 +730,7 @@ class PaymentController extends Controller
                     } else {
                         // Fallback: This shouldn't happen for EXT, but if it does, create new
                         \Log::warning("Extension transaction {$transaction->id} has no linked subscription. Creating new.");
-                         $subscription = $user->subscriptions()->create([
+                        $subscription = $user->subscriptions()->create([
                             'tier_id' => $transaction->tier_id,
                             'plan_id' => $transaction->plan_id,
                             'status' => 'active',

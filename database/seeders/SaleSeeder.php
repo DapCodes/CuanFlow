@@ -48,6 +48,7 @@ class SaleSeeder extends Seeder
                             'qty' => rand(1, 3),
                             'stock' => null,
                         ];
+
                         continue;
                     }
 

@@ -32,20 +32,20 @@ class ProductionController extends Controller
             ->where('status', 'completed') // Consider both completed sales and active orders if applicable
             ->whereHas('items', function ($q) {
                 $q->where('production_status', 'pending')
-                  ->whereHas('product', function ($pq) {
-                      $pq->where('is_stock', false);
-                  });
+                    ->whereHas('product', function ($pq) {
+                        $pq->where('is_stock', false);
+                    });
             })
             ->with([
                 'items' => function ($q) {
                     $q->where('production_status', 'pending')
-                      ->whereHas('product', function ($pq) {
-                          $pq->where('is_stock', false);
-                      })
-                      ->with(['product.unit', 'product.defaultRecipe']);
+                        ->whereHas('product', function ($pq) {
+                            $pq->where('is_stock', false);
+                        })
+                        ->with(['product.unit', 'product.defaultRecipe']);
                 },
                 'customer',
-                'table'
+                'table',
             ])
             ->oldest('created_at')
             ->get();
@@ -218,12 +218,12 @@ class ProductionController extends Controller
         if (! auth()->user()->can('buat produksi')) {
             abort(403);
         }
-        
+
         $saleItem->load(['product.unit', 'product.defaultRecipe.items.rawMaterial.unit', 'sale.customer']);
-        
+
         $product = $saleItem->product;
-        if (!$product || !$product->defaultRecipe) {
-             return back()->with('error', 'Produk tidak memiliki resep.');
+        if (! $product || ! $product->defaultRecipe) {
+            return back()->with('error', 'Produk tidak memiliki resep.');
         }
 
         $recipe = $product->defaultRecipe;
@@ -233,20 +233,20 @@ class ProductionController extends Controller
         $materials = $recipe->items->map(function ($item) use ($outletId, $saleItem, $recipe) {
             $multiplier = $saleItem->quantity / $recipe->output_quantity;
             $required = $item->quantity * $multiplier;
-            
+
             $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
                 ->where('outlet_id', $outletId)
                 ->first();
-                
+
             $available = $stock ? $stock->quantity : 0;
-            
+
             return [
                 'raw_material' => $item->rawMaterial,
                 'required_per_recipe' => $item->quantity,
                 'required_total' => $required,
                 'available' => $available,
                 'unit' => $item->rawMaterial->unit->name ?? '',
-                'is_sufficient' => $available >= $required
+                'is_sufficient' => $available >= $required,
             ];
         });
 
@@ -383,7 +383,7 @@ class ProductionController extends Controller
             // Determine Status: Planned (for stock) or Completed (for KDS/Direct Serve)
             // If the product is NOT a stock product (is_stock = false), we assume immediate production/service
             // User requested: "Produce now" button -> means immediate deduction and completion
-            
+
             $status = $product->is_stock ? 'planned' : 'completed';
             $actualQty = $product->is_stock ? 0 : $validated['planned_quantity']; // If completed, actual = planned
 
@@ -414,23 +414,23 @@ class ProductionController extends Controller
                     'total_price' => $lineTotal,
                 ]);
             }
-            
+
             // If Immediate Completion (KDS Style), Deduct Stock NOW
             if ($status === 'completed') {
                 foreach ($production->items as $item) {
                     $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
                         ->where('outlet_id', $outletId)
                         ->first();
-                        
+
                     if ($stock) {
-                         $qtyBefore = $stock->quantity;
-                         $deductQty = $ignoreInsufficient ? min($item->planned_quantity, $qtyBefore) : $item->planned_quantity;
-                         
-                         if ($deductQty > 0) {
-                             $stock->reduceStock($deductQty);
-                             
-                             // FIFO & Movement Log (Simplified here, ideally reuse logic from start())
-                             StockMovement::create([
+                        $qtyBefore = $stock->quantity;
+                        $deductQty = $ignoreInsufficient ? min($item->planned_quantity, $qtyBefore) : $item->planned_quantity;
+
+                        if ($deductQty > 0) {
+                            $stock->reduceStock($deductQty);
+
+                            // FIFO & Movement Log (Simplified here, ideally reuse logic from start())
+                            StockMovement::create([
                                 'stockable_type' => 'App\Models\RawMaterial',
                                 'stockable_id' => $item->raw_material_id,
                                 'outlet_id' => $outletId,
@@ -440,25 +440,25 @@ class ProductionController extends Controller
                                 'quantity_after' => $qtyBefore - $deductQty,
                                 'reference_type' => 'App\Models\Production',
                                 'reference_id' => $production->id,
-                                'notes' => 'Produksi Langsung (KDS) #'.$production->batch_number . ($ignoreInsufficient ? ' [Bypass Stok]' : ''),
+                                'notes' => 'Produksi Langsung (KDS) #'.$production->batch_number.($ignoreInsufficient ? ' [Bypass Stok]' : ''),
                                 'created_by' => auth()->id(),
                             ]);
-                         }
+                        }
                     }
                 }
-                
+
                 // UPDATE PENDING SALE ITEMS
                 // Find pending sale items for this product and mark as completed
                 $qtyToFulfill = $validated['planned_quantity'];
-                
+
                 $pendingItemsQuery = \App\Models\SaleItem::where('product_id', $product->id)
                     ->whereHas('sale', function ($q) use ($outletId) {
                         $q->where('outlet_id', $outletId)
-                          ->where('status', 'completed');
+                            ->where('status', 'completed');
                     })
                     ->where('production_status', 'pending');
 
-                if (!empty($validated['sale_item_id'])) {
+                if (! empty($validated['sale_item_id'])) {
                     // Prioritize this specific item if provided
                     $pendingItems = $pendingItemsQuery->orderByRaw('id = ? DESC', [$validated['sale_item_id']])
                         ->orderBy('created_at', 'asc')
@@ -467,10 +467,12 @@ class ProductionController extends Controller
                     $pendingItems = $pendingItemsQuery->orderBy('created_at', 'asc') // Oldest first
                         ->get();
                 }
-                    
+
                 foreach ($pendingItems as $saleItem) {
-                    if ($qtyToFulfill <= 0) break;
-                    
+                    if ($qtyToFulfill <= 0) {
+                        break;
+                    }
+
                     if ($saleItem->quantity <= $qtyToFulfill) {
                         // Full fulfill
                         $saleItem->update([
@@ -511,7 +513,7 @@ class ProductionController extends Controller
             DB::commit();
 
             // Fire realtime notification if all items in any affected sale are completed
-            if (!empty($validated['sale_item_id'])) {
+            if (! empty($validated['sale_item_id'])) {
                 $affectedSaleItem = \App\Models\SaleItem::find($validated['sale_item_id']);
                 if ($affectedSaleItem) {
                     $this->checkAndFireProductionCompleted($affectedSaleItem->sale);
@@ -521,7 +523,9 @@ class ProductionController extends Controller
                 $affectedSaleIds = $pendingItems->pluck('sale_id')->unique();
                 foreach ($affectedSaleIds as $sId) {
                     $s = \App\Models\Sale::find($sId);
-                    if ($s) $this->checkAndFireProductionCompleted($s);
+                    if ($s) {
+                        $this->checkAndFireProductionCompleted($s);
+                    }
                 }
             }
 
@@ -625,34 +629,36 @@ class ProductionController extends Controller
         // Get items to produce
         $items = $sale->items()
             ->where('production_status', 'pending')
-            ->whereHas('product', function($q) {
+            ->whereHas('product', function ($q) {
                 $q->where('is_stock', false);
             })
             ->get();
 
         if ($items->count() <= 1) {
-             return back()->with('error', 'Aksi Masak Semua hanya tersedia jika item lebih dari 1.');
+            return back()->with('error', 'Aksi Masak Semua hanya tersedia jika item lebih dari 1.');
         }
 
         // Pre-flight check for materials
         $transactionMaterials = [];
-        
+
         foreach ($items as $item) {
             $product = $item->product;
-            if (!$product || !$product->defaultRecipe) continue;
-            
+            if (! $product || ! $product->defaultRecipe) {
+                continue;
+            }
+
             $recipe = $product->defaultRecipe;
             $multiplier = $item->quantity / $recipe->output_quantity;
-            
+
             foreach ($recipe->items as $rItem) {
                 $rmId = $rItem->raw_material_id;
                 $reqQty = $rItem->quantity * $multiplier;
-                
-                if (!isset($transactionMaterials[$rmId])) {
+
+                if (! isset($transactionMaterials[$rmId])) {
                     $transactionMaterials[$rmId] = [
                         'required' => 0,
                         'name' => $rItem->rawMaterial->name,
-                        'obj' => $rItem->rawMaterial 
+                        'obj' => $rItem->rawMaterial,
                     ];
                 }
                 $transactionMaterials[$rmId]['required'] += $reqQty;
@@ -666,23 +672,24 @@ class ProductionController extends Controller
                 ->where('outlet_id', $outletId)
                 ->first();
             $avail = $stock ? $stock->quantity : 0;
-            
+
             if ($avail < $data['required']) {
                 $insufficient[] = [
                     'name' => $data['name'],
                     'required' => $data['required'],
                     'available' => $avail,
-                    'shortage' => $data['required'] - $avail
+                    'shortage' => $data['required'] - $avail,
                 ];
             }
         }
 
-        if (!empty($insufficient) && ! $request->boolean('ignore_insufficient')) {
+        if (! empty($insufficient) && ! $request->boolean('ignore_insufficient')) {
             // Simplify error message for bulk action
-            $msg = "Stok bahan tidak mencukupi untuk Masak Semua: ";
+            $msg = 'Stok bahan tidak mencukupi untuk Masak Semua: ';
             foreach ($insufficient as $inf) {
-                $msg .= $inf['name'] . " (Kurang " . number_format($inf['shortage'], 2) . "), ";
+                $msg .= $inf['name'].' (Kurang '.number_format($inf['shortage'], 2).'), ';
             }
+
             return back()->with('error', rtrim($msg, ', '));
         }
 
@@ -692,11 +699,13 @@ class ProductionController extends Controller
         try {
             foreach ($items as $item) {
                 $product = $item->product;
-                if (!$product || !$product->defaultRecipe) continue;
+                if (! $product || ! $product->defaultRecipe) {
+                    continue;
+                }
 
                 $this->completeSaleItemProduction($outletId, $userId, $item, $ignoreInsufficient);
             }
-            
+
             // Check for sibling Stock Items that are waiting (copied from store method)
             $waitingStockItems = $sale->items()
                 ->whereNull('served_at')
@@ -717,7 +726,8 @@ class ProductionController extends Controller
             return back()->with('success', 'Semua pesanan berhasil dimasak dan stok telah dipotong.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -736,37 +746,37 @@ class ProductionController extends Controller
             'planned_quantity' => $qty,
             'actual_quantity' => $qty,
             'status' => 'completed',
-            'notes' => 'Masak Semua - ' . $saleItem->sale->invoice_number,
+            'notes' => 'Masak Semua - '.$saleItem->sale->invoice_number,
             'created_by' => $userId,
             'completed_at' => now(),
         ]);
 
         foreach ($recipe->items as $item) {
-             $quantity = $item->quantity * $multiplier;
-             $unitPrice = $item->rawMaterial->purchase_price ?? 0;
-             $lineTotal = $quantity * $unitPrice;
-             
-             $production->items()->create([
+            $quantity = $item->quantity * $multiplier;
+            $unitPrice = $item->rawMaterial->purchase_price ?? 0;
+            $lineTotal = $quantity * $unitPrice;
+
+            $production->items()->create([
                 'raw_material_id' => $item->raw_material_id,
                 'planned_quantity' => $quantity,
                 'actual_quantity' => $quantity,
                 'unit_price' => $unitPrice,
                 'total_price' => $lineTotal,
-             ]);
-             
-             // Deduct Stock
-             $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
+            ]);
+
+            // Deduct Stock
+            $stock = RawMaterialStock::where('raw_material_id', $item->raw_material_id)
                 ->where('outlet_id', $outletId)
                 ->first();
-             
-             if ($stock) {
-                 $qtyBefore = $stock->quantity;
-                 $deductQty = $ignoreInsufficient ? min($quantity, $qtyBefore) : $quantity;
-                 
-                 if ($deductQty > 0) {
-                     $stock->reduceStock($deductQty);
-                     
-                     StockMovement::create([
+
+            if ($stock) {
+                $qtyBefore = $stock->quantity;
+                $deductQty = $ignoreInsufficient ? min($quantity, $qtyBefore) : $quantity;
+
+                if ($deductQty > 0) {
+                    $stock->reduceStock($deductQty);
+
+                    StockMovement::create([
                         'stockable_type' => 'App\Models\RawMaterial',
                         'stockable_id' => $item->raw_material_id,
                         'outlet_id' => $outletId,
@@ -776,14 +786,14 @@ class ProductionController extends Controller
                         'quantity_after' => $qtyBefore - $deductQty,
                         'reference_type' => 'App\Models\Production',
                         'reference_id' => $production->id,
-                        'notes' => 'Produksi (Bulk) #' . $production->batch_number . ($ignoreInsufficient ? ' [Bypass Stok]' : ''),
+                        'notes' => 'Produksi (Bulk) #'.$production->batch_number.($ignoreInsufficient ? ' [Bypass Stok]' : ''),
                         'created_by' => $userId,
                     ]);
-                 }
-             }
+                }
+            }
         }
-        
-         // Update Sale Item
+
+        // Update Sale Item
         $saleItem->update([
             'production_status' => 'completed',
             'served_at' => now(),
@@ -801,7 +811,7 @@ class ProductionController extends Controller
 
         $pendingCount = $sale->items
             ->filter(function ($item) {
-                return $item->product && !$item->product->is_stock;
+                return $item->product && ! $item->product->is_stock;
             })
             ->where('production_status', '!=', 'completed')
             ->count();
@@ -1172,6 +1182,7 @@ class ProductionController extends Controller
             return back()->with('error', 'Gagal menghapus stok kadaluarsa: '.$e->getMessage());
         }
     }
+
     public function checkMaterialsAjax(Request $request)
     {
         $outletId = auth()->user()->outlet_id;
@@ -1182,7 +1193,7 @@ class ProductionController extends Controller
             $items[] = $si;
         } elseif ($request->sale_id) {
             $sale = \App\Models\Sale::with('items.product.defaultRecipe.items.rawMaterial')->findOrFail($request->sale_id);
-            $items = $sale->items->filter(fn($i) => $i->production_status === 'pending' && $i->product && !$i->product->is_stock);
+            $items = $sale->items->filter(fn ($i) => $i->production_status === 'pending' && $i->product && ! $i->product->is_stock);
         }
 
         $insufficient = [];
@@ -1190,7 +1201,9 @@ class ProductionController extends Controller
 
         foreach ($items as $item) {
             $product = $item->product;
-            if (!$product || !$product->defaultRecipe) continue;
+            if (! $product || ! $product->defaultRecipe) {
+                continue;
+            }
 
             $recipe = $product->defaultRecipe;
             $multiplier = $item->quantity / $recipe->output_quantity;
@@ -1199,11 +1212,11 @@ class ProductionController extends Controller
                 $rmId = $rItem->raw_material_id;
                 $reqQty = $rItem->quantity * $multiplier;
 
-                if (!isset($materialRequirements[$rmId])) {
+                if (! isset($materialRequirements[$rmId])) {
                     $materialRequirements[$rmId] = [
                         'required' => 0,
                         'name' => $rItem->rawMaterial->name,
-                        'unit' => $rItem->rawMaterial->unit->name ?? 'pcs'
+                        'unit' => $rItem->rawMaterial->unit->name ?? 'pcs',
                     ];
                 }
                 $materialRequirements[$rmId]['required'] += $reqQty;
@@ -1212,7 +1225,7 @@ class ProductionController extends Controller
 
         foreach ($materialRequirements as $rmId => $data) {
             $stock = RawMaterialStock::where('raw_material_id', $rmId)->where('outlet_id', $outletId)->first();
-            $available = $stock ? (float)$stock->quantity : 0;
+            $available = $stock ? (float) $stock->quantity : 0;
 
             if ($available < $data['required']) {
                 $insufficient[] = [
@@ -1220,27 +1233,27 @@ class ProductionController extends Controller
                     'required' => $data['required'],
                     'available' => $available,
                     'unit' => $data['unit'],
-                    'shortage' => $data['required'] - $available
+                    'shortage' => $data['required'] - $available,
                 ];
             }
         }
 
         return response()->json([
             'success' => true,
-            'insufficient' => $insufficient
+            'insufficient' => $insufficient,
         ]);
     }
 
     public function refundSaleAjax(Request $request)
     {
         $saleId = $request->sale_id;
-        if (!$saleId && $request->sale_item_id) {
+        if (! $saleId && $request->sale_item_id) {
             $si = \App\Models\SaleItem::findOrFail($request->sale_item_id);
             $saleId = $si->sale_id;
         }
 
-        if (!$saleId) {
-             return response()->json(['success' => false, 'message' => 'Sale ID tidak ditemukan'], 400);
+        if (! $saleId) {
+            return response()->json(['success' => false, 'message' => 'Sale ID tidak ditemukan'], 400);
         }
 
         $sale = \App\Models\Sale::where('outlet_id', auth()->user()->outlet_id)->findOrFail($saleId);
@@ -1250,12 +1263,12 @@ class ProductionController extends Controller
             $sale->update([
                 'status' => 'refunded',
                 'refunded_at' => now(),
-                'notes' => ($sale->notes ? $sale->notes . "\n" : "") . "Refunded from Production Validation"
+                'notes' => ($sale->notes ? $sale->notes."\n" : '').'Refunded from Production Validation',
             ]);
 
             foreach ($sale->items as $item) {
                 $item->update(['production_status' => 'refunded']);
-                
+
                 // If it was a stock item (already completed), we might need to return stock
                 if ($item->product && $item->product->is_stock && $item->served_at) {
                     $stock = $item->product->stocks()->where('outlet_id', $sale->outlet_id)->first();
@@ -1266,9 +1279,11 @@ class ProductionController extends Controller
             }
 
             DB::commit();
+
             return response()->json(['success' => true, 'message' => 'Transaksi berhasil di-refund']);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }

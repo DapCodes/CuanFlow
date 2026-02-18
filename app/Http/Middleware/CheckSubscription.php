@@ -130,32 +130,38 @@ class CheckSubscription
                 // Check if 7 days have passed since rejection
                 $canRetry = false;
                 $waitTime = '';
-                
+
                 if ($rejectedTrial->updated_at) {
                     $rejectionDate = $rejectedTrial->updated_at;
                     $retryDate = $rejectionDate->copy()->addDays(7);
-                    
+
                     if (now()->greaterThanOrEqualTo($retryDate)) {
                         $canRetry = true;
                     } else {
                         $diff = now()->diff($retryDate);
                         $parts = [];
-                        if ($diff->d > 0) $parts[] = $diff->d . ' Hari';
-                        if ($diff->h > 0) $parts[] = $diff->h . ' Jam';
-                        if (empty($parts) && $diff->i > 0) $parts[] = $diff->i . ' Menit';
-                        
+                        if ($diff->d > 0) {
+                            $parts[] = $diff->d.' Hari';
+                        }
+                        if ($diff->h > 0) {
+                            $parts[] = $diff->h.' Jam';
+                        }
+                        if (empty($parts) && $diff->i > 0) {
+                            $parts[] = $diff->i.' Menit';
+                        }
+
                         $waitTime = implode(' ', $parts) ?: 'Beberapa saat';
                     }
                 }
 
                 session([
-                    'show_subscription_modal' => true, 
+                    'show_subscription_modal' => true,
                     'subscription_modal_reason' => 'trial_rejected',
                     'subscription_rejection_notes' => $rejectedTrial->admin_notes,
                     'subscription_retry_available' => $canRetry,
                     'subscription_retry_wait_time' => $waitTime,
                 ]);
-                
+
                 if ($request->routeIs('dashboard')) {
                     return $next($request);
                 }
@@ -282,6 +288,7 @@ class CheckSubscription
 
         return redirect()->route('dashboard');
     }
+
     /**
      * Handle check for employees (non-owners).
      */
@@ -289,22 +296,24 @@ class CheckSubscription
     {
         // 1. Get the owner of the outlet the user belongs to
         $outlet = $user->outlet;
-        
+
         if (! $outlet) {
-             // If user has no outlet, arguably they shouldn't be here or are a fresh user. 
-             // But for employees, they must belong to an outlet.
-             // Let's assume they are stuck or need to be assigned.
-             // For now, let's treat as no subscription or specific error.
-             session(['employee_lock_reason' => 'no_subscription']);
-             return redirect()->route('employee.locked');
+            // If user has no outlet, arguably they shouldn't be here or are a fresh user.
+            // But for employees, they must belong to an outlet.
+            // Let's assume they are stuck or need to be assigned.
+            // For now, let's treat as no subscription or specific error.
+            session(['employee_lock_reason' => 'no_subscription']);
+
+            return redirect()->route('employee.locked');
         }
 
         $owner = $outlet->owner;
 
         if (! $owner) {
-             // Orphaned outlet?
-             session(['employee_lock_reason' => 'no_subscription']);
-             return redirect()->route('employee.locked');
+            // Orphaned outlet?
+            session(['employee_lock_reason' => 'no_subscription']);
+
+            return redirect()->route('employee.locked');
         }
 
         // 2. Check Owner's Subscription
@@ -312,24 +321,27 @@ class CheckSubscription
 
         // Map owner status to employee lock reason
         if ($status === FeatureAccessService::STATUS_NO_SUBSCRIPTION || $status === FeatureAccessService::STATUS_CANCELLED) {
-             session(['employee_lock_reason' => 'no_subscription']);
-             return redirect()->route('employee.locked');
+            session(['employee_lock_reason' => 'no_subscription']);
+
+            return redirect()->route('employee.locked');
         }
 
         if ($status === FeatureAccessService::STATUS_EXPIRED) {
-             // Check grace period for owner
-             $graceDays = $this->accessService->getGraceDaysRemaining($owner);
-             if ($graceDays <= 0) {
-                 session(['employee_lock_reason' => 'expired']);
-                 return redirect()->route('employee.locked');
-             }
-             // If within grace period, employee can continue (maybe show warning?)
-             // For now, allow access.
+            // Check grace period for owner
+            $graceDays = $this->accessService->getGraceDaysRemaining($owner);
+            if ($graceDays <= 0) {
+                session(['employee_lock_reason' => 'expired']);
+
+                return redirect()->route('employee.locked');
+            }
+            // If within grace period, employee can continue (maybe show warning?)
+            // For now, allow access.
         }
 
         if ($status === FeatureAccessService::STATUS_PENDING) {
-             session(['employee_lock_reason' => 'no_subscription']); // Or specific pending message
-             return redirect()->route('employee.locked');
+            session(['employee_lock_reason' => 'no_subscription']); // Or specific pending message
+
+            return redirect()->route('employee.locked');
         }
 
         // 3. Check if Owner has 'employee_management' feature
@@ -337,8 +349,9 @@ class CheckSubscription
         $hasEmployeeFeature = $this->accessService->tierHasFeature($owner, 'employee_management');
 
         if (! $hasEmployeeFeature) {
-             session(['employee_lock_reason' => 'feature_unavailable']);
-             return redirect()->route('employee.locked');
+            session(['employee_lock_reason' => 'feature_unavailable']);
+
+            return redirect()->route('employee.locked');
         }
 
         // All checks passed

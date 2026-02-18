@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\CashRegister;
 use App\Models\DailySummary;
-use App\Models\Sale;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Models\Sale;
 use App\Services\AiInsightService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -108,11 +108,11 @@ class CashRegisterController extends Controller
                     'amount' => $register->difference < 0 ? abs($register->difference) : -abs($register->difference),
                     'type' => $register->difference < 0 ? 'expense' : 'income',
                     'expense_date' => now(),
-                    'description' => 'Selisih Kas ' . ($register->difference < 0 ? '(Kurang)' : '(Lebih)') . ' - Sesi #' . $register->id,
+                    'description' => 'Selisih Kas '.($register->difference < 0 ? '(Kurang)' : '(Lebih)').' - Sesi #'.$register->id,
                     'status' => 'approved',
                     'created_by' => $userId,
                     'payment_method' => 'cash',
-                    'notes' => 'Dibuat otomatis dari penutupan sesi kasir #' . $register->id . '. ' . $register->notes,
+                    'notes' => 'Dibuat otomatis dari penutupan sesi kasir #'.$register->id.'. '.$register->notes,
                 ]);
             }
 

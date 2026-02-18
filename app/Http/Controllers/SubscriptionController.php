@@ -80,8 +80,9 @@ class SubscriptionController extends Controller
             ->first();
 
         if ($latestRejection && $latestRejection->updated_at->addDays(7)->isFuture()) {
-             $daysRemaining = now()->diffInDays($latestRejection->updated_at->addDays(7)) + 1;
-             return redirect()->route('dashboard')->with('error', "Permohonan trial baru dapat diajukan dalam {$daysRemaining} hari.");
+            $daysRemaining = now()->diffInDays($latestRejection->updated_at->addDays(7)) + 1;
+
+            return redirect()->route('dashboard')->with('error', "Permohonan trial baru dapat diajukan dalam {$daysRemaining} hari.");
         }
 
         return view('subscription.trial-verification');
@@ -96,7 +97,7 @@ class SubscriptionController extends Controller
             ->first();
 
         if ($latestRejection && $latestRejection->updated_at->addDays(7)->isFuture()) {
-             return back()->with('error', 'Permohonan trial baru belum dapat diajukan.');
+            return back()->with('error', 'Permohonan trial baru belum dapat diajukan.');
         }
 
         $validated = $request->validate([
