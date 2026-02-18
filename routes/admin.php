@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\SubscriptionTierController;
 use App\Http\Controllers\Admin\TaskLabelController;
 use App\Http\Controllers\Admin\TaskStatusController;
 use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\TrialVerificationController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
@@ -162,4 +163,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Terms & Conditions Management
     Route::get('/terms', [App\Http\Controllers\Admin\TermAndConditionController::class, 'edit'])->name('admin.terms.edit');
     Route::put('/terms', [App\Http\Controllers\Admin\TermAndConditionController::class, 'update'])->name('admin.terms.update');
+
+    // Profile Management
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('admin.profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('admin.profile.update');
 });

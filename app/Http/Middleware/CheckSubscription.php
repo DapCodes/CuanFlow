@@ -34,8 +34,15 @@ class CheckSubscription
         }
 
         // Exclude subscription, payment, and profile routes (so they can logout/pay/register outlet)
-        if ($request->routeIs('subscription.*', 'payment.*', 'profile.*', 'outlets.register.*', 'logout', 'employee.locked')) {
+        // Added 'dashboard' to prevent redirection loop when outlet_id is null
+        if ($request->routeIs('dashboard', 'subscription.*', 'payment.*', 'profile.*', 'outlets.register.*', 'logout', 'employee.locked')) {
             return $next($request);
+        }
+
+        // Check if user has registered an outlet
+        // This handles owners who have a subscription but no outlet yet
+        if (! $user->outlet_id) {
+            return redirect()->route('dashboard');
         }
 
         // EMPLOYEE CHECK (Non-Owner)
