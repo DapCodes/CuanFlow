@@ -18,6 +18,7 @@ class TrialVerificationRequest extends Model
         'admin_notes',
         'reviewed_by',
         'reviewed_at',
+        'ip_address',
     ];
 
     protected $casts = [

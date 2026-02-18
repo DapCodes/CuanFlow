@@ -71,25 +71,22 @@ class SubscriptionController extends Controller
         return redirect()->route('subscription.trial-verification');
     }
 
-    public function createTrialVerification()
+    public function createTrialVerification(Request $request)
     {
-        // Check for recent rejection
-        $latestRejection = auth()->user()->trialRequests()
-            ->where('status', 'rejected')
-            ->latest()
-            ->first();
+        // Check if this IP address has already used a trial
+        $existingIpTrial = \App\Models\TrialVerificationRequest::where('ip_address', $request->ip())->exists();
+        $hasUsedTrialBefore = $existingIpTrial || auth()->user()->subscriptions()->where('is_trial', true)->exists();
 
-        if ($latestRejection && $latestRejection->updated_at->addDays(7)->isFuture()) {
-            $daysRemaining = now()->diffInDays($latestRejection->updated_at->addDays(7)) + 1;
-
-            return redirect()->route('dashboard')->with('error', "Permohonan trial baru dapat diajukan dalam {$daysRemaining} hari.");
-        }
-
-        return view('subscription.trial-verification');
+        return view('subscription.trial-verification', compact('hasUsedTrialBefore'));
     }
 
     public function storeTrialVerification(Request $request)
     {
+        // Double check for IP-based trial (server-side)
+        if (\App\Models\TrialVerificationRequest::where('ip_address', $request->ip())->exists()) {
+            return back()->with('error', 'Perangkat ini sudah pernah melakukan uji coba.');
+        }
+
         // Check for recent rejection (server-side validation)
         $latestRejection = auth()->user()->trialRequests()
             ->where('status', 'rejected')
@@ -123,6 +120,7 @@ class SubscriptionController extends Controller
             'business_description' => $validated['business_description'],
             'photo_store_front_path' => $paths['store_front'] ?? null,
             'photo_products_path' => $paths['products'] ?? null,
+            'ip_address' => $request->ip(),
             'status' => 'pending',
         ]);
 

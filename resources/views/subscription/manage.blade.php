@@ -95,7 +95,11 @@
                                         <h3 class="text-3xl font-black tracking-tight text-white mb-1">
                                             @php
                                                 $now = now();
-                                                $expires = \Carbon\Carbon::parse($subscription->expires_at);
+                                                $isTrial = $subscription->status === \App\Models\UserSubscription::STATUS_TRIAL;
+                                                $expires = $isTrial 
+                                                    ? \Carbon\Carbon::parse($subscription->trial_ends_at) 
+                                                    : \Carbon\Carbon::parse($subscription->expires_at);
+                                                
                                                 $isExpired = $now->gt($expires);
                                                 $diff = $now->diff($expires);
                                                 
@@ -136,7 +140,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             @foreach($extensionPlans as $plan)
                                 <div class="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:border-cuan-green/30 transition-all group relative cursor-pointer"
-                                    onclick="processExtension({{ $plan->id }}, {{ $plan->price }}, {{ $plan->duration_months }}, {{ \Carbon\Carbon::parse($subscription->expires_at)->timestamp }})">
+                                    onclick="processExtension({{ $plan->id }}, {{ $plan->price }}, {{ $plan->duration_months }}, {{ $isTrial ? \Carbon\Carbon::parse($subscription->trial_ends_at)->timestamp : \Carbon\Carbon::parse($subscription->expires_at)->timestamp }})">
                                     
                                     @if($plan->discount_percentage > 0)
                                         <div class="absolute -top-3 -right-3 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg rotate-12 group-hover:rotate-0 transition-transform">
@@ -277,7 +281,10 @@
         // Calculate new expiry date
         const currentExpiry = new Date(currentExpiresAtTimestamp * 1000);
         const now = new Date();
-        // If expired, start from now. If active, start from current expiry.
+        
+        // Logic for extension:
+        // 1. If trial/active and still has time, start from current expiry (extend)
+        // 2. If expired, start from now
         let startDate = (currentExpiry > now) ? currentExpiry : now;
         
         // Add months

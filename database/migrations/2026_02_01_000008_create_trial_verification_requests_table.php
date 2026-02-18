@@ -23,6 +23,7 @@ return new class extends Migration
             $table->text('admin_notes')->nullable();
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('reviewed_at')->nullable();
+            $table->string('ip_address')->nullable()->index();
             $table->timestamps();
 
             $table->index(['status', 'created_at']);

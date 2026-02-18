@@ -160,7 +160,17 @@
     
     @stack('styles')
 </head>
-<body class="antialiased bg-gray-50">
+<body class="antialiased bg-gray-50 relative">
+    @if(auth()->check() && auth()->user()->isOnTrial())
+    <div class="fixed bottom-6 right-6 z-[9999] pointer-events-none opacity-40 select-none">
+        <div class="bg-gray-900/10 backdrop-blur-sm border border-gray-900/20 px-4 py-2 rounded-full">
+            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-900/60 flex items-center gap-2">
+                <i class="fa-solid fa-flask-vial animate-pulse text-emerald-600"></i>
+                Dalam Uji Coba
+            </span>
+        </div>
+    </div>
+    @endif
     
     <!-- Optimized Global Page Loader -->
     <div id="global-page-loader" class="global-page-loader active">

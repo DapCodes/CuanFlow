@@ -234,6 +234,16 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Check if user is currently on trial.
+     */
+    public function isOnTrial(): bool
+    {
+        $subscription = $this->subscription;
+
+        return $subscription && $subscription->status === UserSubscription::STATUS_TRIAL;
+    }
+
+    /**
      * Get the maximum outlets allowed for user's tier.
      */
     public function getMaxOutlets(): ?int

@@ -99,7 +99,27 @@
 
             <!-- Form Area -->
             <section class="bg-white/90 backdrop-blur rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-xl">
-                @if(auth()->user()->hasPendingTrialVerification())
+                @if(isset($hasUsedTrialBefore) && $hasUsedTrialBefore)
+                    <div class="py-12 text-center space-y-6">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-50 text-red-500 border border-red-100 shadow-sm">
+                            <i class="fa-solid fa-circle-xmark text-4xl"></i>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h2 class="text-2xl font-bold text-gray-900">Akses Dibatasi</h2>
+                            <p class="text-gray-500 max-w-sm mx-auto">
+                                Maaf, anda atau perangkat ini sudah pernah melakukan uji coba gratis (Trial) sebelumnya. Silakan pilih paket langganan untuk melanjutkan.
+                            </p>
+                        </div>
+
+                        <div class="pt-4">
+                            <a href="{{ route('subscription.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all shadow-md">
+                                <i class="fa-solid fa-crown text-sm"></i>
+                                Lihat Paket Langganan
+                            </a>
+                        </div>
+                    </div>
+                @elseif(auth()->user()->hasPendingTrialVerification())
                     <div class="py-12 text-center space-y-6">
                         <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-50 text-amber-500 border border-amber-100 shadow-sm animate-bounce">
                             <i class="fa-solid fa-clock-rotate-left text-4xl"></i>
