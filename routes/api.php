@@ -45,7 +45,13 @@ Route::prefix('v1')->group(function () {
         Route::get('/debts/{id}', [DebtPaymentApiController::class, 'show']);
         Route::post('/debts/{id}/pay', [DebtPaymentApiController::class, 'pay']);
         Route::post('/debts/{id}/midtrans-token', [DebtPaymentApiController::class, 'createMidtransToken']);
+
+        Route::post('/vouchers/claim', [\App\Http\Controllers\Api\VoucherClaimController::class, 'claim']);
+        Route::get('/vouchers/my-vouchers', [\App\Http\Controllers\Api\VoucherClaimController::class, 'myVouchers']);
     });
+    // Voucher Claims
+    Route::get('/vouchers/available', [\App\Http\Controllers\Api\VoucherClaimController::class, 'availableVouchers']);
+
     Route::get('/outlets', [OutletApiController::class, 'index']);
     Route::get('/outlets/{outlet}', [OutletApiController::class, 'show']);
 });
