@@ -28,7 +28,11 @@ class RawMaterial extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnly(['name', 'purchase_price', 'min_stock'])->logOnlyDirty();
+        return LogOptions::defaults()
+            ->logOnly(['name', 'purchase_price', 'min_stock'])
+            ->logOnlyDirty()
+            ->useLogName('raw-material')
+            ->setDescriptionForEvent(fn (string $eventName) => "Raw material {$this->name} was {$eventName}");
     }
 
     public function category(): BelongsTo

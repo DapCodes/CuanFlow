@@ -6,10 +6,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Expense extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['amount', 'status', 'expense_date', 'description', 'type'])
+            ->logOnlyDirty()
+            ->useLogName('expense')
+            ->setDescriptionForEvent(fn (string $eventName) => "Expense {$this->expense_number} was {$eventName}");
+    }
 
     protected $fillable = [
         'expense_number', 'outlet_id', 'expense_category_id', 'amount',

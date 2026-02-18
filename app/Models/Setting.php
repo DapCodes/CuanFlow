@@ -5,10 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Setting extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['group', 'key', 'value'])
+            ->logOnlyDirty()
+            ->useLogName('setting')
+            ->setDescriptionForEvent(fn (string $eventName) => "Setting [{$this->group}.{$this->key}] was {$eventName}");
+    }
 
     protected $fillable = ['outlet_id', 'group', 'key', 'value', 'type', 'description'];
 

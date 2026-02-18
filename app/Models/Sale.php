@@ -38,7 +38,11 @@ class Sale extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnly(['status', 'payment_status', 'grand_total'])->logOnlyDirty();
+        return LogOptions::defaults()
+            ->logOnly(['status', 'payment_status', 'grand_total', 'discount_amount'])
+            ->logOnlyDirty()
+            ->useLogName('sale')
+            ->setDescriptionForEvent(fn (string $eventName) => "Sale {$this->invoice_number} was {$eventName}");
     }
 
     protected static function boot()

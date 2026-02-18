@@ -44,7 +44,9 @@ class Withdrawal extends Model
     {
         return LogOptions::defaults()
             ->logOnly(['status', 'amount', 'processed_by', 'admin_note', 'proof_image'])
-            ->logOnlyDirty();
+            ->logOnlyDirty()
+            ->useLogName('withdrawal')
+            ->setDescriptionForEvent(fn (string $eventName) => "Withdrawal #{$this->id} was {$eventName}");
     }
 
     // Relationships

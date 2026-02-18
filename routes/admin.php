@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminLandingPageController;
 use App\Http\Controllers\Admin\AdminLandingSectionController;
@@ -147,6 +148,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('banned-ips', [BannedIpController::class, 'store'])->name('banned-ips.store');
         Route::get('banned-ips', [BannedIpController::class, 'index'])->name('banned-ips.index');
         Route::delete('banned-ips/{bannedIp}', [BannedIpController::class, 'destroy'])->name('banned-ips.destroy');
+
+        // Activity Logs
+        Route::prefix('activity-logs')->name('activity-logs.')->group(function () {
+            Route::get('/', [ActivityLogController::class, 'index'])->name('index');
+            Route::get('/archives', [ActivityLogController::class, 'archives'])->name('archives');
+            Route::get('/archives/{id}/download', [ActivityLogController::class, 'downloadArchive'])->name('archives.download');
+            Route::get('/{id}', [ActivityLogController::class, 'show'])->name('show');
+        });
     });
 
     // Terms & Conditions Management

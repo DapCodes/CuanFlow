@@ -7,10 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Outlet extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'is_active', 'has_table_system', 'accepts_reseller', 'auto_production'])
+            ->logOnlyDirty()
+            ->useLogName('outlet')
+            ->setDescriptionForEvent(fn (string $eventName) => "Outlet {$this->name} was {$eventName}");
+    }
 
     protected $fillable = [
         'code', 'name', 'address', 'latitude', 'longitude', 'phone', 'email', 'logo', 'settings', 'is_active',

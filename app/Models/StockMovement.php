@@ -6,10 +6,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class StockMovement extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['type', 'quantity', 'quantity_before', 'quantity_after', 'notes'])
+            ->logOnlyDirty()
+            ->useLogName('stock')
+            ->setDescriptionForEvent(fn (string $eventName) => "Stock movement #{$this->id} ({$this->type}) was {$eventName}");
+    }
 
     protected $fillable = [
         'outlet_id', 'stockable_type', 'stockable_id', 'type',

@@ -33,7 +33,11 @@ class Product extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnly(['name', 'hpp', 'selling_price'])->logOnlyDirty();
+        return LogOptions::defaults()
+            ->logOnly(['name', 'hpp', 'selling_price'])
+            ->logOnlyDirty()
+            ->useLogName('product')
+            ->setDescriptionForEvent(fn (string $eventName) => "Product {$this->name} was {$eventName}");
     }
 
     public function category(): BelongsTo

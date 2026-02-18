@@ -50,7 +50,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnly(['name', 'email', 'outlet_id', 'is_active'])->logOnlyDirty();
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'outlet_id', 'is_active'])
+            ->logOnlyDirty()
+            ->useLogName('user')
+            ->setDescriptionForEvent(fn (string $eventName) => "User {$this->name} was {$eventName}");
     }
 
     public function outlet(): BelongsTo

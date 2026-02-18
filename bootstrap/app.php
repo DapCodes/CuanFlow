@@ -25,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Global middleware: block banned IPs
         $middleware->prepend(\App\Http\Middleware\CheckBannedIp::class);
 
+        // Append activity log context middleware to web group
+        $middleware->appendToGroup('web', \App\Http\Middleware\LogActivityContext::class);
+
         // Exclude CSRF untuk route Midtrans notification
         $middleware->validateCsrfTokens(except: [
             'api/*', // Semua route API
@@ -40,8 +43,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withSchedule(function ($schedule) {
-        // Schedule sudah didefinisikan di routes/console.php
-        // Tapi bisa juga ditambahkan di sini jika diperlukan
+        // Archive old activity logs every Sunday at 2 AM
+        $schedule->command('log:archive')->weeklyOn(0, '02:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
