@@ -37,22 +37,48 @@ class PosDiscountController extends Controller
 
         // Find discount candidates
         if ($request->discount_code) {
-            // Strict check for the requested code
-            $voucher = Discount::where('code', $request->discount_code)->first();
+            // 1. Check Personal Voucher (CustomerDiscount)
+            $customerDiscount = \App\Models\CustomerDiscount::where('secret_code', $request->discount_code)
+                ->where('is_used', false)
+                ->first();
 
-            if (! $voucher || ! $voucher->isValid()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Kode voucher tidak valid atau sudah tidak berlaku',
-                ], 404);
-            }
+            if ($customerDiscount) {
+                // Automatically set the customer from the voucher
+                Session::put('pos_customer_id', $customerDiscount->customer_id);
+                $customerId = $customerDiscount->customer_id;
 
-            // Check if it's actually a voucher
-            if (! $voucher->is_voucher) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Kode ini bukan voucher. Diskon ini diterapkan otomatis.',
-                ], 400);
+                $voucher = $customerDiscount->discount;
+
+                if (! $voucher || ! $voucher->isValid()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Voucher tidak valid atau sudah tidak berlaku',
+                    ], 404);
+                }
+
+                $isCustomerDiscount = true;
+                $customerDiscountId = $customerDiscount->id;
+                $customerData = $customerDiscount->customer;
+            } else {
+                // 2. Strict check for the requested code in public discounts
+                $voucher = Discount::where('code', $request->discount_code)->first();
+
+                if (! $voucher || ! $voucher->isValid()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Kode voucher tidak valid atau sudah tidak berlaku',
+                    ], 404);
+                }
+
+                // Check if it's actually a voucher
+                if (! $voucher->is_voucher) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Kode ini bukan voucher. Diskon ini diterapkan otomatis.',
+                    ], 400);
+                }
+
+                $isCustomerDiscount = false;
             }
 
             // If code is valid, ONLY consider this voucher
@@ -80,6 +106,11 @@ class PosDiscountController extends Controller
             $subtotal
         );
 
+        // Track if this is a personal voucher for usage recording
+        if (isset($isCustomerDiscount) && $isCustomerDiscount) {
+            $plan['customer_discount_id'] = $customerDiscountId;
+        }
+
         // PERBAIKAN: Validasi berbeda untuk BOGO vs percentage/fixed
         if (! $plan['discount_id']) {
             return response()->json([
@@ -106,15 +137,33 @@ class PosDiscountController extends Controller
             }
         }
 
+        // Track if this is a personal voucher for usage recording
+        if (isset($isCustomerDiscount) && $isCustomerDiscount) {
+            $plan['customer_discount_id'] = $customerDiscountId;
+            $plan['customer_id'] = $customerId;
+        }
+
         // Store discount plan in session
         Session::put('pos_discount_plan', $plan);
 
-        return response()->json([
+        $response = [
             'success' => true,
             'message' => 'Diskon berhasil diterapkan',
             'discount_plan' => $plan,
             'cart_summary' => $this->calculateSummaryWithDiscount($cart, $plan),
-        ]);
+        ];
+
+        // Include customer info if it was automatically set
+        if (isset($customerData)) {
+            $response['customer'] = [
+                'id' => $customerData->id,
+                'name' => $customerData->name,
+                'phone' => $customerData->phone,
+                'type' => $customerData->type,
+            ];
+        }
+
+        return response()->json($response);
     }
 
     /**

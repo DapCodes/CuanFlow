@@ -805,7 +805,9 @@ class PaymentController extends Controller
      */
     private function createSaleWithDiscount($cart, $summary, $discountPlan, $additionalData = [])
     {
-        $customerId = Session::get('pos_customer_id');
+        $customerId = ($discountPlan && isset($discountPlan['customer_id'])) 
+            ? $discountPlan['customer_id'] 
+            : Session::get('pos_customer_id');
 
         // PERBAIKAN: Simpan discount plan lengkap dengan free items info
         $notesData = [];
@@ -967,6 +969,19 @@ class PaymentController extends Controller
     {
         if (! $discountPlan) {
             return;
+        }
+
+        // Handle Personal Voucher (CustomerDiscount)
+        if (isset($discountPlan['customer_discount_id'])) {
+            $cd = \App\Models\CustomerDiscount::find($discountPlan['customer_discount_id']);
+            if ($cd) {
+                $cd->update([
+                    'is_used' => true,
+                    'used_at' => now(),
+                ]);
+                \Log::info("Used personal voucher ID: {$cd->id}");
+                return; // SKIP normal Discount usage increment
+            }
         }
 
         // Group usage by discount ID
