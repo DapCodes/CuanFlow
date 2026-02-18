@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Events\UserPresenceChanged;
 
 class LoginController extends Controller
 {
@@ -54,7 +55,12 @@ class LoginController extends Controller
             // ✅ token sanctum
             $token = $user->createToken('mobile')->plainTextToken;
 
-            $user->forceFill(['last_login_at' => now()])->save();
+            $user->forceFill([
+                'last_login_at' => now(),
+                'last_seen_at' => now(),
+            ])->save();
+
+            broadcast(new UserPresenceChanged($user, 'online'));
 
             // Track login history
             LoginHistory::create([

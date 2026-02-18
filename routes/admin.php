@@ -49,6 +49,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/dashboard/active-users', [DashboardController::class, 'activeUsersCount'])->name('admin.dashboard.active-users');
+    Route::get('/dashboard/active-users-list', [DashboardController::class, 'activeUsersList'])->name('admin.dashboard.active-users-list');
     Route::get('/', fn () => redirect()->route('admin.dashboard'));
 
     // Outlets

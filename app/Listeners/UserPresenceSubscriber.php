@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Events\UserPresenceChanged;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Events\Dispatcher;
@@ -15,6 +16,7 @@ class UserPresenceSubscriber
     {
         if ($event->user) {
             $event->user->update(['last_seen_at' => now()]);
+            broadcast(new UserPresenceChanged($event->user, 'online'));
         }
     }
 
@@ -24,7 +26,9 @@ class UserPresenceSubscriber
     public function handleUserLogout($event): void
     {
         if ($event->user) {
-            $event->user->update(['last_seen_at' => null]);
+            $user = $event->user;
+            $user->update(['last_seen_at' => null]);
+            broadcast(new UserPresenceChanged($user, 'offline'));
         }
     }
 

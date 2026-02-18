@@ -44,17 +44,39 @@
     <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4" 
          x-data="{ 
             activeUsers: {{ $stats['active_users'] }},
-            async updateActiveUsers() {
+            onlineUsers: [],
+            async init() {
+                // Fetch initial list
                 try {
-                    const response = await fetch('{{ route('admin.dashboard.active-users') }}');
-                    const data = await response.json();
-                    this.activeUsers = data.count;
-                } catch (error) {
-                    console.error('Error fetching active users:', error);
+                    const response = await fetch('{{ route('admin.dashboard.active-users-list') }}');
+                    this.onlineUsers = await response.json();
+                    this.activeUsers = this.onlineUsers.length;
+                } catch (e) {
+                    console.error('Error fetching online users:', e);
+                }
+
+                // Listen for presence changes
+                if (window.Echo) {
+                    window.Echo.channel('admin-monitoring')
+                        .listen('.user.presence', (data) => {
+                            console.log('Presence changed:', data);
+                            if (data.status === 'online') {
+                                // Add or update user
+                                const index = this.onlineUsers.findIndex(u => u.id === data.user.id);
+                                if (index !== -1) {
+                                    this.onlineUsers[index] = data.user;
+                                } else {
+                                    this.onlineUsers.unshift(data.user);
+                                }
+                            } else {
+                                // Remove user
+                                this.onlineUsers = this.onlineUsers.filter(u => u.id !== data.user.id);
+                            }
+                            this.activeUsers = this.onlineUsers.length;
+                        });
                 }
             }
-         }"
-         x-init="setInterval(() => updateActiveUsers(), 30000)">
+         }">
         
         <!-- Active Users (Realtime) -->
         <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-5 shadow-lg shadow-emerald-100 transition-all hover:scale-[1.02]">
@@ -69,7 +91,7 @@
             </div>
             <div class="flex items-center gap-1.5 mt-3">
                 <div class="w-1.5 h-1.5 bg-white rounded-full animate-ping"></div>
-                <span class="text-[10px] font-bold text-white uppercase tracking-widest">Real-time</span>
+                <span class="text-[10px] font-bold text-white uppercase tracking-widest">Pusher Live</span>
             </div>
         </div>
 
@@ -151,6 +173,49 @@
             <a href="{{ route('admin.expense-categories.index') }}" class="inline-flex items-center gap-1 text-sm text-rose-600 hover:text-rose-700 mt-3">
                 Lihat detail <i class="fas fa-arrow-right text-xs"></i>
             </a>
+        </div>
+
+        <!-- NEW: Online Users List -->
+        <div class="col-span-2 lg:col-span-3 xl:col-span-6 mt-6">
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-check text-emerald-600 text-sm"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900">Daftar User Online</h3>
+                    </div>
+                    <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100">
+                        Live Now
+                    </span>
+                </div>
+                <div class="p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <template x-for="user in onlineUsers" :key="user.id">
+                            <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-50 bg-gray-50/20 hover:bg-white hover:shadow-md hover:border-emerald-100 transition-all group">
+                                <div class="relative">
+                                    <img :src="user.avatar_url" class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" alt="">
+                                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-gray-900 truncate" x-text="user.name"></p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] font-medium text-gray-500 capitalize" x-text="user.role"></span>
+                                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                        <span class="text-[10px] text-emerald-600 font-bold" x-text="user.last_seen_at"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="onlineUsers.length === 0" class="col-span-full py-8 text-center" style="display: none;">
+                            <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-user-slash text-gray-300 text-xl"></i>
+                                </div>
+                            <p class="text-sm text-gray-400 font-medium">Tidak ada user yang online</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     

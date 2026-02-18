@@ -33,4 +33,21 @@ class DashboardController extends Controller
             'count' => $activeCount,
         ]);
     }
+
+    public function activeUsersList()
+    {
+        $users = \App\Models\User::where('last_seen_at', '>=', now()->subMinutes(5))
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'avatar_url' => $user->avatar_url,
+                    'role' => $user->getRoleNames()->first() ?? 'User',
+                    'last_seen_at' => optional($user->last_seen_at)->format('H:i:s'),
+                ];
+            });
+
+        return response()->json($users);
+    }
 }
