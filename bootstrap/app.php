@@ -40,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscription.check' => \App\Http\Middleware\CheckSubscription::class,
             'feature.access' => \App\Http\Middleware\CheckFeatureAccess::class,
             'limit.outlet' => \App\Http\Middleware\CheckOutletLimit::class,
+            'admin.redirect' => \App\Http\Middleware\RedirectAdmin::class,
         ]);
     })
     ->withSchedule(function ($schedule) {
