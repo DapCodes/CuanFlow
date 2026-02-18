@@ -238,34 +238,22 @@
 
                             <div>
                                 <label for="product_id" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Produk Spesifik <span class="text-gray-400">(Opsional)</span>
+                                    Pilih Produk <span class="text-red-500">*</span>
                                 </label>
                                 <select name="product_id"
                                         id="product_id"
-                                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400">
-                                    <option value="">Semua Produk</option>
+                                        required
+                                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 @error('product_id') border-red-500 @enderror">
+                                    <option value="">Pilih Produk</option>
                                     @foreach($products as $product)
                                         <option value="{{ $product->id }}" {{ old('product_id', $discount->product_id) == $product->id ? 'selected' : '' }}>
                                             {{ $product->name }}
                                         </option>
                                     @endforeach
                                 </select>
-                            </div>
-
-                            <div>
-                                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Kategori <span class="text-gray-400">(Opsional)</span>
-                                </label>
-                                <select name="category_id"
-                                        id="category_id"
-                                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400">
-                                    <option value="">Semua Kategori</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}" {{ old('category_id', $discount->category_id) == $category->id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                @error('product_id')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -547,20 +535,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (buyQuantityInput && getQuantityInput) {
         buyQuantityInput.addEventListener('input', updatePromoPreview);
         getQuantityInput.addEventListener('input', updatePromoPreview);
-    }
-
-    // Sync product vs category
-    const productId = document.getElementById('product_id');
-    const categoryId = document.getElementById('category_id');
-
-    if (productId && categoryId) {
-        productId.addEventListener('change', function() {
-            if (this.value) categoryId.value = '';
-        });
-
-        categoryId.addEventListener('change', function() {
-            if (this.value) productId.value = '';
-        });
     }
 });
 </script>

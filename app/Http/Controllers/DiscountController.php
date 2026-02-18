@@ -37,14 +37,17 @@ class DiscountController extends Controller
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk membuat diskon baru.');
         }
 
+        $usedProductIds = Discount::whereNotNull('product_id')
+            ->where('outlet_id', auth()->user()->outlet_id)
+            ->pluck('product_id');
+
         $products = Product::where('outlet_id', auth()->user()->outlet_id)
             ->where('is_active', true)
+            ->whereNotIn('id', $usedProductIds)
             ->orderBy('name')
             ->get();
 
-        $categories = Category::orderBy('name')->get();
-
-        return view('main.discount.create', compact('products', 'categories'));
+        return view('main.discount.create', compact('products'));
     }
 
     public function store(Request $request)
@@ -65,7 +68,7 @@ class DiscountController extends Controller
             'usage_limit' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
             'is_voucher' => 'boolean',
-            'product_id' => 'nullable|exists:products,id',
+            'product_id' => 'required|exists:products,id|unique:discounts,product_id',
             'category_id' => 'nullable|exists:categories,id',
             'buy_quantity' => 'nullable|integer|min:1',
             'get_quantity' => 'nullable|integer|min:1',
@@ -118,14 +121,18 @@ class DiscountController extends Controller
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengubah data diskon.');
         }
 
+        $usedProductIds = Discount::whereNotNull('product_id')
+            ->where('outlet_id', auth()->user()->outlet_id)
+            ->where('id', '!=', $discount->id)
+            ->pluck('product_id');
+
         $products = Product::where('outlet_id', auth()->user()->outlet_id)
             ->where('is_active', true)
+            ->whereNotIn('id', $usedProductIds)
             ->orderBy('name')
             ->get();
 
-        $categories = Category::orderBy('name')->get();
-
-        return view('main.discount.edit', compact('discount', 'products', 'categories'));
+        return view('main.discount.edit', compact('discount', 'products'));
     }
 
     public function update(Request $request, Discount $discount)
@@ -146,7 +153,7 @@ class DiscountController extends Controller
             'usage_limit' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
             'is_voucher' => 'boolean',
-            'product_id' => 'nullable|exists:products,id',
+            'product_id' => 'required|exists:products,id|unique:discounts,product_id,'.$discount->id,
             'category_id' => 'nullable|exists:categories,id',
             'buy_quantity' => 'nullable|integer|min:1',
             'get_quantity' => 'nullable|integer|min:1',
