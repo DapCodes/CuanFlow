@@ -67,6 +67,7 @@ class DiscountController extends Controller
             'usage_limit' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
             'is_voucher' => 'boolean',
+            'is_public' => 'boolean',
             'product_id' => 'required|exists:products,id|unique:discounts,product_id',
             'category_id' => 'nullable|exists:categories,id',
             'buy_quantity' => 'nullable|integer|min:1',
@@ -88,6 +89,7 @@ class DiscountController extends Controller
         $validated['min_purchase'] = $validated['min_purchase'] ?? 0;
         $validated['is_active'] = $request->has('is_active');
         $validated['is_voucher'] = $request->has('is_voucher');
+        $validated['is_public'] = $request->has('is_public');
 
         if ($validated['type'] === 'buy_x_get_y') {
             $validated['value'] = 0;
@@ -152,6 +154,7 @@ class DiscountController extends Controller
             'usage_limit' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
             'is_voucher' => 'boolean',
+            'is_public' => 'boolean',
             'product_id' => 'required|exists:products,id|unique:discounts,product_id,'.$discount->id,
             'category_id' => 'nullable|exists:categories,id',
             'buy_quantity' => 'nullable|integer|min:1',
@@ -169,6 +172,7 @@ class DiscountController extends Controller
         $validated['min_purchase'] = $validated['min_purchase'] ?? 0;
         $validated['is_active'] = $request->has('is_active');
         $validated['is_voucher'] = $request->has('is_voucher');
+        $validated['is_public'] = $request->has('is_public');
 
         if ($validated['type'] === 'buy_x_get_y') {
             $validated['value'] = 0;

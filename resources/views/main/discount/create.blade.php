@@ -50,7 +50,8 @@
                 </div>
             @endif
 
-            <form action="{{ route('discounts.store') }}" method="POST" class="px-4 md:px-6 py-6 space-y-8">
+            <form action="{{ route('discounts.store') }}" method="POST" class="px-4 md:px-6 py-6 space-y-8" 
+                  x-data="{ isVoucher: {{ old('is_voucher') ? 'true' : 'false' }} }">
                 @csrf
 
                 {{-- Informasi Dasar --}}
@@ -393,9 +394,22 @@
                                    id="is_voucher"
                                    value="1"
                                    {{ old('is_voucher') ? 'checked' : '' }}
+                                   @change="isVoucher = $event.target.checked"
                                    class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                             <label for="is_voucher" class="ml-3 text-sm font-medium text-gray-700">
                                 Gunakan sebagai voucher / kupon
+                            </label>
+                        </div>
+
+                        <div class="flex items-center" x-show="isVoucher" x-cloak>
+                            <input type="checkbox"
+                                   name="is_public"
+                                   id="is_public"
+                                   value="1"
+                                   {{ old('is_public') ? 'checked' : '' }}
+                                   class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
+                            <label for="is_public" class="ml-3 text-sm font-medium text-gray-700">
+                                Voucher Publik (Bisa diklaim semua user)
                             </label>
                         </div>
 
