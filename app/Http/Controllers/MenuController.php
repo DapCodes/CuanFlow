@@ -3,12 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\AiInsight;
+use App\Services\StockNotificationService;
 
-class MenuController extends Controller // Atau HomeController tergantung route Anda
+class MenuController extends Controller
 {
+    protected $stockNotificationService;
+
+    public function __construct(StockNotificationService $stockNotificationService)
+    {
+        $this->stockNotificationService = $stockNotificationService;
+    }
+
     public function index()
     {
         $user = auth()->user();
+
+        // Check stock and generate notifications
+        $this->stockNotificationService->checkAllStock($user->outlet_id);
 
         // Cek apakah ada sesi POS yang sedang buka
         $isPosOpen = \App\Models\CashRegister::where('outlet_id', $user->outlet_id)

@@ -177,6 +177,16 @@
 
     <div id="app-content-wrapper" class="min-h-screen flex flex-col">
         <!-- Navbar -->
+@inject('stockNotiService', 'App\Services\StockNotificationService')
+@php
+    $navStockNotifications = auth()->check() && auth()->user()->outlet_id 
+        ? $stockNotiService->getLatestNotifications(auth()->user()->outlet_id, 15)
+        : collect();
+    
+    // Only show unread notifications in the navbar
+    $navStockNotifications = $navStockNotifications->where('is_read_by_me', false)->values();
+    $unreadStockCount = $navStockNotifications->count();
+@endphp
 <nav id="main-navbar" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 items-center">
@@ -308,10 +318,12 @@
                     <button @click="notiOpen = !notiOpen" 
                         class="p-2.5 text-gray-500 hover:text-cuan-dark hover:bg-cuan-green/5 rounded-xl transition-all duration-200 relative group active:scale-95">
                         <i class="fa-regular fa-bell text-xl"></i>
+                        @if($unreadStockCount > 0)
                         <span class="absolute top-2 right-2 flex h-2.5 w-2.5">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white"></span>
                         </span>
+                        @endif
                     </button>
 
                     <!-- Dropdown Desktop -->
@@ -329,81 +341,51 @@
                         <div class="px-5 py-4 flex items-center justify-between border-b border-gray-50">
                             <div>
                                 <h3 class="text-base font-bold text-gray-900">Notifikasi</h3>
-                                <p class="text-xs text-gray-500 font-medium mt-0.5">Anda memiliki 3 notifikasi baru</p>
+                                <p class="text-xs text-gray-500 font-medium mt-0.5">
+                                    @if($unreadStockCount > 0)
+                                        Anda memiliki {{ $unreadStockCount }} peringatan stok
+                                    @else
+                                        Tidak ada peringatan stok baru
+                                    @endif
+                                </p>
                             </div>
-                            <button class="text-[10px] font-bold text-cuan-dark hover:text-cuan-green bg-cuan-green/10 hover:bg-cuan-green/20 px-3 py-1.5 rounded-full transition-colors">
+                            @if($unreadStockCount > 0)
+                            <button onclick="markAllStockAsRead()" class="text-[10px] font-bold text-cuan-dark hover:text-cuan-green bg-cuan-green/10 hover:bg-cuan-green/20 px-3 py-1.5 rounded-full transition-colors">
                                 Tandai Dibaca
                             </button>
+                            @endif
                         </div>
 
                         <div class="max-h-[380px] overflow-y-auto custom-scrollbar p-2">
-                            <!-- Dummy Item 1: New Order -->
-                            <a href="#" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1">
+                            @forelse($navStockNotifications as $noti)
+                            <a href="{{ route('stock-notifications.index') }}" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1 {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
                                 <div class="flex gap-4">
-                                    <div class="h-10 w-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm border border-blue-100">
-                                        <i class="fa-solid fa-bag-shopping text-sm"></i>
+                                    <div class="h-10 w-10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-all duration-300 shadow-sm border 
+                                        {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
+                                        <i class="fa-solid {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'fa-circle-xmark' : 'fa-triangle-exclamation' }} text-sm"></i>
                                     </div>
                                     <div class="flex-1 min-w-0 pt-0.5">
                                         <div class="flex justify-between items-start mb-0.5">
-                                            <p class="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Pesanan Baru</p>
-                                            <span class="text-[10px] text-gray-400 font-medium bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">2m</span>
+                                            <p class="text-sm font-bold text-gray-900 truncate">{{ $noti->title }}</p>
+                                            <span class="text-[10px] text-gray-400 font-medium">{{ $noti->created_at->diffForHumans() }}</span>
                                         </div>
-                                        <p class="text-xs text-gray-500 leading-relaxed line-clamp-2">
-                                            Pesanan <span class="font-bold text-gray-700">#INV-2656</span> dari Pelanggan Umum senilai <span class="font-bold text-gray-700">Rp 150.000</span> perlu diproses.
+                                        <p class="text-xs text-gray-500 leading-relaxed line-clamp-1">
+                                            {{ $noti->message }}
                                         </p>
-                                    </div>
-                                    <div class="self-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0">
-                                        <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
                                     </div>
                                 </div>
                             </a>
-
-                            <!-- Dummy Item 2: Warning -->
-                            <a href="#" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1 bg-amber-50/30">
-                                <div class="flex gap-4">
-                                    <div class="h-10 w-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm border border-amber-200">
-                                        <i class="fa-solid fa-triangle-exclamation text-sm"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0 pt-0.5">
-                                        <div class="flex justify-between items-start mb-0.5">
-                                            <p class="text-sm font-bold text-gray-900 group-hover:text-amber-600 transition-colors">Stok Menipis</p>
-                                            <span class="text-[10px] text-gray-400 font-medium bg-white px-1.5 py-0.5 rounded border border-gray-100 shadow-sm">1j</span>
-                                        </div>
-                                        <p class="text-xs text-gray-500 leading-relaxed line-clamp-2">
-                                            Stok bahan baku <span class="font-bold text-gray-700">Telur Ayam</span> tersisa <span class="font-bold text-red-500">0.5 kg</span>. Segera lakukan restock.
-                                        </p>
-                                    </div>
-                                    <div class="self-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0">
-                                        <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <!-- Dummy Item 3: Success -->
-                            <a href="#" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group">
-                                <div class="flex gap-4">
-                                    <div class="h-10 w-10 rounded-2xl bg-cuan-green/10 text-cuan-green flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm border border-cuan-green/20">
-                                        <i class="fa-solid fa-file-invoice text-sm"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0 pt-0.5">
-                                        <div class="flex justify-between items-start mb-0.5">
-                                            <p class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors">Laporan Siap</p>
-                                            <span class="text-[10px] text-gray-400 font-medium bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">3j</span>
-                                        </div>
-                                        <p class="text-xs text-gray-500 leading-relaxed line-clamp-2">
-                                            Laporan penjualan harian untuk tanggal <span class="font-bold text-gray-700">11 Feb 2026</span> telah berhasil digenerate.
-                                        </p>
-                                    </div>
-                                    <div class="self-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0">
-                                        <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
-                                    </div>
-                                </div>
-                            </a>
+                            @empty
+                            <div class="py-12 text-center">
+                                <i class="fa-solid fa-check-circle text-gray-200 text-3xl mb-2"></i>
+                                <p class="text-xs text-gray-400 font-medium">Semua stok aman</p>
+                            </div>
+                            @endforelse
                         </div>
 
                         <div class="p-3 border-t border-gray-50 bg-gray-50/50">
-                            <a href="#" class="flex items-center justify-center w-full py-2.5 text-xs font-bold text-cuan-dark bg-white border border-gray-200 rounded-xl hover:bg-cuan-dark hover:text-white hover:border-cuan-dark transition-all duration-200 shadow-sm group">
-                                Lihat Semua Notifikasi
+                            <a href="{{ route('stock-notifications.index') }}" class="flex items-center justify-center w-full py-2.5 text-xs font-bold text-cuan-dark bg-white border border-gray-200 rounded-xl hover:bg-cuan-dark hover:text-white hover:border-cuan-dark transition-all duration-200 shadow-sm group">
+                                Lihat Semua Pemberitahuan Stok
                                 <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                             </a>
                         </div>
@@ -473,10 +455,12 @@
                     <button @click="notiOpen = !notiOpen" 
                         class="p-2 text-gray-500 hover:text-gray-900 focus:outline-none relative active:bg-gray-100 rounded-lg transition-colors">
                         <i class="fa-regular fa-bell text-xl"></i>
+                        @if($unreadStockCount > 0)
                         <span class="absolute top-1.5 right-2 flex h-2 w-2">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500 border-2 border-white"></span>
                         </span>
+                        @endif
                     </button>
 
                     <!-- Dropdown Mobile -->
@@ -492,63 +476,39 @@
                         style="display:none;">
                         
                         <div class="px-4 py-3 flex items-center justify-between border-b border-gray-50">
-                            <h3 class="text-sm font-bold text-gray-900">Notifikasi (3)</h3>
-                            <button class="text-[10px] font-bold text-cuan-dark">
+                            <h3 class="text-sm font-bold text-gray-900">Notifikasi ({{ $unreadStockCount }})</h3>
+                            @if($unreadStockCount > 0)
+                            <button onclick="markAllStockAsRead()" class="text-[10px] font-bold text-cuan-dark">
                                 Tandai Dibaca
                             </button>
+                            @endif
                         </div>
 
                         <div class="max-h-[350px] overflow-y-auto custom-scrollbar">
-                            <!-- Mobile Item 1 -->
-                            <a href="#" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 group">
+                            @forelse($navStockNotifications as $noti)
+                            <a href="{{ route('stock-notifications.index') }}" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 group {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
                                 <div class="flex gap-3">
-                                    <div class="h-9 w-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100">
-                                        <i class="fa-solid fa-bag-shopping text-xs"></i>
+                                    <div class="h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 border 
+                                        {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
+                                        <i class="fa-solid {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'fa-circle-xmark' : 'fa-triangle-exclamation' }} text-xs"></i>
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <div class="flex justify-between items-start">
-                                            <p class="text-xs font-bold text-gray-900 truncate">Pesanan Baru</p>
-                                            <span class="text-[10px] text-gray-400">2m</span>
+                                            <p class="text-xs font-bold text-gray-900 truncate">{{ $noti->title }}</p>
+                                            <span class="text-[10px] text-gray-400">{{ $noti->created_at->diffForHumans() }}</span>
                                         </div>
-                                        <p class="text-[11px] text-gray-500 mt-0.5 line-clamp-1">#INV-2656 dari Pelanggan Umum</p>
+                                        <p class="text-[11px] text-gray-500 mt-0.5 line-clamp-1">{{ $noti->message }}</p>
                                     </div>
                                 </div>
                             </a>
-                            
-                            <!-- Mobile Item 2 -->
-                            <a href="#" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 bg-amber-50/30">
-                                <div class="flex gap-3">
-                                    <div class="h-9 w-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 border border-amber-200">
-                                        <i class="fa-solid fa-triangle-exclamation text-xs"></i>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex justify-between items-start">
-                                            <p class="text-xs font-bold text-gray-900 truncate">Stok Menipis</p>
-                                            <span class="text-[10px] text-gray-400">1j</span>
-                                        </div>
-                                        <p class="text-[11px] text-gray-500 mt-0.5 line-clamp-1">Telur Ayam sisa 0.5 kg</p>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <!-- Mobile Item 3 -->
-                            <a href="#" class="block px-4 py-3 hover:bg-gray-50 group">
-                                <div class="flex gap-3">
-                                    <div class="h-9 w-9 rounded-xl bg-cuan-green/10 text-cuan-green flex items-center justify-center flex-shrink-0 border border-cuan-green/20">
-                                        <i class="fa-solid fa-file-invoice text-xs"></i>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex justify-between items-start">
-                                            <p class="text-xs font-bold text-gray-900 truncate">Laporan Siap</p>
-                                            <span class="text-[10px] text-gray-400">3j</span>
-                                        </div>
-                                        <p class="text-[11px] text-gray-500 mt-0.5 line-clamp-1">Laporan harian berhasil dibuat</p>
-                                    </div>
-                                </div>
-                            </a>
+                            @empty
+                            <div class="py-8 text-center">
+                                <p class="text-[10px] text-gray-400">Tidak ada notifikasi</p>
+                            </div>
+                            @endforelse
                         </div>
                         <div class="p-3 border-t border-gray-50 bg-gray-50/50">
-                            <a href="#" class="block w-full text-center py-2 text-xs font-bold text-cuan-dark bg-white border border-gray-200 rounded-lg shadow-sm">
+                            <a href="{{ route('stock-notifications.index') }}" class="block w-full text-center py-2 text-xs font-bold text-cuan-dark bg-white border border-gray-200 rounded-lg shadow-sm">
                                 Lihat Semua
                             </a>
                         </div>
@@ -796,6 +756,27 @@
         })();
     </script>
     
+    <script>
+        function markAllStockAsRead() {
+            if (!confirm('Tandai semua pemberitahuan stok sebagai dibaca?')) return;
+
+            fetch('/stock-notifications/read-all', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Refresh is usually fine for "mark all", but let's be consistent
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
     @stack('scripts')
 </body>
 </html>

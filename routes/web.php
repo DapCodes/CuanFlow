@@ -128,6 +128,11 @@ Route::middleware(['auth', 'verified', 'subscription.check'])->group(function ()
         ->middleware([\App\Http\Middleware\TriggerInsightOnOnline::class])
         ->name('dashboard');
 
+    // Stock Notifications
+    Route::get('/stock-notifications', [\App\Http\Controllers\StockNotificationController::class, 'index'])->name('stock-notifications.index');
+    Route::post('/stock-notifications/{id}/read', [\App\Http\Controllers\StockNotificationController::class, 'markAsRead'])->name('stock-notifications.read');
+    Route::post('/stock-notifications/read-all', [\App\Http\Controllers\StockNotificationController::class, 'markAllAsRead'])->name('stock-notifications.read-all');
+
     // ---------------------------------------------------------------------
     // User Profile
     // ---------------------------------------------------------------------

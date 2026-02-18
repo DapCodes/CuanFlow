@@ -12,14 +12,30 @@ class StockNotification extends Model
     use HasFactory;
 
     protected $fillable = [
-        'outlet_id', 'stockable_type', 'stockable_id', 'type',
-        'title', 'message', 'current_stock', 'min_stock', 'days_until_expiry',
-        'is_read', 'is_sent_email', 'is_sent_wa', 'read_at',
+        'outlet_id',
+        'stockable_id',
+        'stockable_type',
+        'type',
+        'title',
+        'message',
+        'current_stock',
+        'min_stock',
+        'days_until_expiry',
+        'is_read',
+        'is_sent_email',
+        'is_sent_wa',
+        'read_at',
     ];
 
     protected $casts = [
-        'current_stock' => 'decimal:4', 'min_stock' => 'decimal:4',
-        'is_read' => 'boolean', 'is_sent_email' => 'boolean', 'is_sent_wa' => 'boolean', 'read_at' => 'datetime',
+        'outlet_id' => 'integer',
+        'current_stock' => 'decimal:4',
+        'min_stock' => 'decimal:4',
+        'days_until_expiry' => 'integer',
+        'is_read' => 'boolean',
+        'is_sent_email' => 'boolean',
+        'is_sent_wa' => 'boolean',
+        'read_at' => 'datetime',
     ];
 
     public function outlet(): BelongsTo
@@ -32,23 +48,23 @@ class StockNotification extends Model
         return $this->morphTo();
     }
 
-    public function markAsRead(): void
+    /**
+     * Users who have read this notification.
+     */
+    public function readByUsers()
     {
-        $this->update(['is_read' => true, 'read_at' => now()]);
+        return $this->belongsToMany(User::class, 'stock_notification_reads')
+            ->withPivot('read_at')
+            ->withTimestamps();
     }
 
-    public function scopeUnread($q)
+    /**
+     * Scope for notifications unread by current user.
+     */
+    public function scopeUnreadBy($query, $userId)
     {
-        return $q->where('is_read', false);
-    }
-
-    public function scopeByType($q, $t)
-    {
-        return $q->where('type', $t);
-    }
-
-    public function scopeByOutlet($q, $id)
-    {
-        return $q->where('outlet_id', $id);
+        return $query->whereDoesntHave('readByUsers', function($q) use ($userId) {
+            $q->where('user_id', $userId);
+        });
     }
 }

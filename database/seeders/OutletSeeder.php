@@ -139,8 +139,8 @@ class OutletSeeder extends Seeder
                     UserSubscription::updateOrCreate(
                         ['user_id' => $daffa->id],
                         [
-                            'tier_id' => 1,
-                            'plan_id' => 1,
+                            'tier_id' => 3,
+                            'plan_id' => 11,
                             'status' => UserSubscription::STATUS_ACTIVE,
                             'started_at' => now(),
                             'expires_at' => now()->addMonth(),

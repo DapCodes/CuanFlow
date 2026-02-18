@@ -605,6 +605,7 @@
         </div>
     </div>
 
+
 <div class="flex justify-center p-4">
 <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-6 max-w-8xl w-full">
 
@@ -2257,6 +2258,67 @@ document.addEventListener('DOMContentLoaded', function() {
 
         searchResults.appendChild(ul);
         searchResults.classList.remove('hidden');
+    }
+
+    window.markStockAsRead = function(id) {
+        fetch(`/stock-notifications/${id}/read`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const element = document.getElementById(`notification-${id}`);
+                element.style.opacity = '0';
+                element.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    element.remove();
+                    checkEmptyNotifications();
+                }, 300);
+            }
+        });
+    }
+
+    window.markAllStockAsRead = function() {
+        if (!confirm('Tandai semua pemberitahuan stok sebagai dibaca?')) return;
+
+        fetch('/stock-notifications/read-all', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const container = document.getElementById('stockNotificationContainer');
+                container.style.opacity = '0';
+                container.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    container.remove();
+                }, 300);
+            }
+        });
+    }
+
+    function checkEmptyNotifications() {
+        const container = document.getElementById('stockNotificationContainer');
+        const items = container.querySelectorAll('.stock-item');
+        if (items.length === 0) {
+            container.style.opacity = '0';
+            setTimeout(() => {
+                container.remove();
+            }, 300);
+        } else {
+            const badge = container.querySelector('span.bg-orange-100');
+            if (badge) badge.textContent = items.length;
+        }
     }
 });
 </script>
