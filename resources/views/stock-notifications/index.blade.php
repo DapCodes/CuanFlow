@@ -78,7 +78,7 @@
             {{-- Notifications List --}}
             <div class="lg:col-span-9 space-y-4" id="notifications-list">
                 @forelse($notifications as $notification)
-                <div class="notification-card bg-white border border-gray-200 rounded-2xl p-6 shadow-sm transition-all relative overflow-hidden animate-fade-in-up {{ $notification->is_read_by_me ? 'opacity-60 bg-gray-50/50 grayscale' : 'hover:shadow-md border-l-4 border-l-orange-500 shadow-orange-100/20' }}" 
+                <div class="notification-card bg-white border border-gray-200 rounded-2xl p-6 shadow-sm transition-all relative overflow-hidden animate-fade-in-up {{ $notification->is_read_by_me ? 'opacity-60 bg-gray-50/50 grayscale' : 'hover:shadow-md border-l-4' }}" 
                      id="notification-{{ $notification->id }}"
                      data-is-read="{{ $notification->is_read_by_me ? 'true' : 'false' }}">
                     <div class="flex flex-col sm:flex-row gap-6">

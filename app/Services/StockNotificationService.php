@@ -13,8 +13,10 @@ class StockNotificationService
     /**
      * Check all stock conditions for a specific outlet.
      */
-    public function checkAllStock(int $outletId): void
+    public function checkAllStock(?int $outletId): void
     {
+        if (!$outletId) return;
+
         $this->checkProducts($outletId);
         $this->checkRawMaterials($outletId);
     }
@@ -172,8 +174,10 @@ class StockNotificationService
     /**
      * Get recent notifications for an outlet, including read status for current user.
      */
-    public function getLatestNotifications(int $outletId, int $limit = 10)
+    public function getLatestNotifications(?int $outletId, int $limit = 10)
     {
+        if (!$outletId) return collect();
+
         $userId = auth()->id();
 
         $notifications = StockNotification::where('outlet_id', $outletId)

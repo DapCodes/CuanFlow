@@ -437,6 +437,13 @@
                             Pengaturan Akun
                         </a>
 
+
+                        <a href="{{ route('stock-notifications.index') }}"
+                            class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">
+                            <i class="fa-solid fa-bell mr-2"></i>
+                            Notifikasi
+                        </a>
+
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
