@@ -251,4 +251,9 @@ class Product extends Model
 
         return substr($initials, 0, 2);
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
 }

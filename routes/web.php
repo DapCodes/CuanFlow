@@ -41,6 +41,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\WithdrawController;
+use App\Http\Controllers\ProductReviewController;
 use Illuminate\Support\Facades\Route;
 
 // =========================================================================
@@ -59,6 +60,7 @@ Route::get('/flow/{slug}', [FlowLandingController::class, 'show'])->name('flow.s
 Route::get('/store/{id}/analytics', [LandingPageController::class, 'getAnalytics'])->name('landing-pages.analytics');
 Route::get('/store/{id}/{slug?}', [LandingPageController::class, 'show'])->name('landing-pages.show');
 Route::post('/testimonials', [TestimonialController::class, 'store'])->name('testimonials.store');
+Route::post('/product-reviews', [ProductReviewController::class, 'store'])->name('product-reviews.store');
 
 // Legal & Receipts
 Route::get('/terms', [LegalController::class, 'terms'])->name('legal.terms');

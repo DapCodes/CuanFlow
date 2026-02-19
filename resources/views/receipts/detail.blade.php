@@ -85,12 +85,31 @@
             </h3>
             <div class="space-y-3">
                 @foreach($sale->items as $item)
-                <div class="flex justify-between items-start">
+                <div class="flex justify-between items-start gap-4 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-800">{{ $item->product->name ?? 'Item Terhapus' }}</p>
-                        <p class="text-xs text-gray-500">{{ $item->quantity }} x Rp {{ number_format($item->unit_price, 0, ',', '.') }}</p>
+                        <p class="text-sm font-bold text-gray-800">{{ $item->product->name ?? 'Item Terhapus' }}</p>
+                        <p class="text-[11px] text-gray-500 font-medium">
+                            {{ (float)$item->quantity }} {{ $item->product->unit->name ?? 'Unit' }} x Rp {{ number_format($item->unit_price, 0, ',', '.') }}
+                        </p>
+                        
+                        {{-- Review Button --}}
+                        @if($item->product_id && !$item->review)
+                        <button type="button" 
+                                onclick="openReviewModal('{{ $item->id }}', '{{ addslashes($item->product->name) }}', '{{ $item->product_id }}')"
+                                class="mt-2 text-[10px] font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1.5 transition-colors uppercase tracking-wider group">
+                            <i class="fas fa-star group-hover:scale-110 transition-transform"></i>
+                            Beri Ulasan
+                        </button>
+                        @elseif($item->review)
+                        <div class="mt-2 flex items-center gap-1 text-[10px] text-emerald-600 font-bold uppercase tracking-wider">
+                            <i class="fas fa-check-circle"></i>
+                            Sudah Diulas ({{ $item->review->rating }} ★)
+                        </div>
+                        @endif
                     </div>
-                    <p class="text-sm font-semibold text-gray-800">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</p>
+                    <div class="text-right">
+                        <p class="text-sm font-extrabold text-gray-900 italic">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</p>
+                    </div>
                 </div>
                 @endforeach
             </div>
@@ -190,7 +209,56 @@
             </div>
         </div>
 
-        <!-- Testimonial Form -->
+        <!-- Product Review Modal -->
+        <div id="productReviewModal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="modalContainer">
+                <div class="bg-gradient-to-br from-orange-500 to-red-600 p-6 text-white text-center relative">
+                    <button onclick="closeReviewModal()" class="absolute top-4 right-4 text-white/80 hover:text-white bg-white/10 p-2 rounded-full backdrop-blur-md transition-colors">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                        <i class="fas fa-star text-2xl animate-pulse"></i>
+                    </div>
+                    <h2 class="text-lg font-bold">Beri Ulasan</h2>
+                    <p class="text-white/70 text-[11px] uppercase tracking-widest font-bold mt-1" id="reviewProductName"></p>
+                </div>
+                
+                <form id="product-review-form" class="p-6">
+                    @csrf
+                    <input type="hidden" name="sale_item_id" id="modal_sale_item_id">
+                    <input type="hidden" name="product_id" id="modal_product_id">
+                    
+                    <div class="mb-6">
+                        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest text-center mb-4">Rating Produk</p>
+                        <div class="star-rating">
+                            <input type="radio" id="p_star5" name="rating" value="5" /><label for="p_star5" title="Sempurna"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="p_star4" name="rating" value="4" /><label for="p_star4" title="Sangat Baik"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="p_star3" name="rating" value="3" /><label for="p_star3" title="Baik"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="p_star2" name="rating" value="2" /><label for="p_star2" title="Cukup"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="p_star1" name="rating" value="1" /><label for="p_star1" title="Buruk"><i class="fas fa-star"></i></label>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Kritik / Saran</p>
+                        <textarea name="comment" rows="3" 
+                                  class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-xs focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all resize-none shadow-inner" 
+                                  placeholder="Bagaimana kualitas produk ini?"></textarea>
+                    </div>
+
+                    <button type="submit" id="submitProductReview" class="w-full bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 text-white font-extrabold py-4 rounded-2xl shadow-xl shadow-gray-200 transition-all active:scale-95 flex items-center justify-center gap-3">
+                        <span>Kirim Ulasan</span>
+                        <i class="fas fa-paper-plane text-xs"></i>
+                    </button>
+                    
+                    <p class="mt-4 text-[9px] text-gray-400 text-center leading-relaxed italic">
+                        Ulasan Anda membantu kami meningkatkan kualitas produk dan layanan yang kami berikan.
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Receipt Testimonial -->
         <div class="p-6 bg-gradient-to-b from-white to-orange-50 border-t border-gray-100">
             <h3 class="font-semibold text-gray-900 mb-2 text-center">Bagaimana pengalaman belanja Anda?</h3>
             <p class="text-xs text-gray-500 mb-4 text-center">Beri rating dan ulasan untuk layanan kami</p>
@@ -312,6 +380,92 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
                 submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        });
+
+        function openReviewModal(itemId, productName, productId) {
+            document.getElementById('modal_sale_item_id').value = itemId;
+            document.getElementById('modal_product_id').value = productId;
+            document.getElementById('reviewProductName').textContent = productName;
+            
+            const modal = document.getElementById('productReviewModal');
+            const container = document.getElementById('modalContainer');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                container.classList.remove('opacity-0', 'scale-95');
+                container.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function closeReviewModal() {
+            const modal = document.getElementById('productReviewModal');
+            const container = document.getElementById('modalContainer');
+            
+            container.classList.remove('opacity-100', 'scale-100');
+            container.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('product-review-form').reset();
+            }, 300);
+        }
+
+        document.getElementById('product-review-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const submitBtn = document.getElementById('submitProductReview');
+            const originalBtnContent = submitBtn.innerHTML;
+            
+            const rating = form.querySelector('input[name="rating"]:checked');
+            if (!rating) {
+                alert('Mohon pilih rating bintang untuk produk ini.');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SEBENTAR...';
+            
+            const formData = new FormData(form);
+
+            fetch('{{ route("product-reviews.store") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const container = document.getElementById('modalContainer');
+                    container.innerHTML = `
+                        <div class="p-10 text-center bg-white rounded-3xl">
+                            <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-500 shadow-sm border border-emerald-100">
+                                <i class="fas fa-check text-4xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-black text-gray-900 mb-3">Selesai!</h3>
+                            <p class="text-gray-500 text-sm font-medium mb-8">${data.message}</p>
+                            <button onclick="window.location.reload()" class="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl shadow-xl">
+                                Tutup Berhasil
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    alert(data.message || 'Terjadi kesalahan.');
+                    resetBtn();
+                }
+            })
+            .catch(error => {
+                alert('Kesalahan koneksi.');
+                resetBtn();
+            });
+
+            function resetBtn() {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
             }
         });
     </script>
