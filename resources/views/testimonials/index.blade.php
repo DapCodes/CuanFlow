@@ -36,106 +36,84 @@
             </div>
         </section>
 
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            @if($testimonials->count() > 0)
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b border-gray-200">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Pelanggan</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Rating & Ulasan</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 bg-white">
-                            @foreach($testimonials as $testimonial)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            @if($testimonial->image)
-                                                <img src="{{ Storage::url($testimonial->image) }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
-                                            @else
-                                                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 font-bold">
-                                                    {{ strtoupper(substr($testimonial->name, 0, 1)) }}
-                                                </div>
-                                            @endif
-                                            <div>
-                                                <div class="font-semibold text-gray-900">{{ $testimonial->name }}</div>
-                                                <div class="text-xs text-gray-500">{{ $testimonial->role ?? 'Pelanggan' }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center text-yellow-400 text-xs mb-1">
-                                            @for($i = 1; $i <= 5; $i++)
-                                                <i class="fas fa-star {{ $i <= $testimonial->rating ? '' : 'text-gray-300' }}"></i>
-                                            @endfor
-                                        </div>
-                                        <p class="text-gray-600 line-clamp-2 max-w-sm">{{ $testimonial->content }}</p>
-                                    </td>
-
-                                    <td class="px-6 py-4 text-gray-500 text-xs">
-                                        {{ $testimonial->created_at->format('d M Y, H:i') }}
-                                    </td>
-
-                                    <td class="px-6 py-4">
-                                        @if($testimonial->is_published)
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100">
-                                                Publik
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">
-                                                Draft / Hidden
-                                            </span>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-6 py-4 text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            @can('aktifkan nonaktifkan testimoni')
-                                            <form action="{{ route('testimonials.toggle-status', $testimonial->id) }}" method="POST">
-                                                @csrf
-                                                <button type="submit" 
-                                                        class="w-8 h-8 flex items-center justify-center rounded-lg border transition-colors {{ $testimonial->is_published ? 'border-green-200 text-green-600 hover:bg-green-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50' }}"
-                                                        title="{{ $testimonial->is_published ? 'Sembunyikan' : 'Tampilkan Publik' }}">
-                                                    <i class="fas {{ $testimonial->is_published ? 'fa-eye' : 'fa-eye-slash' }}"></i>
-                                                </button>
-                                            </form>
-                                            @endcan
-
-                                            @can('hapus testimoni')
-                                            <form action="{{ route('testimonials.destroy', $testimonial->id) }}" method="POST" onsubmit="return confirm('Hapus testimoni ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors" title="Hapus">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                            @endcan
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    
-                    <div class="px-6 py-4 border-t border-gray-100">
-                        {{ $testimonials->links() }}
+        <section class="bg-gray-100/50 border border-gray-200 rounded-2xl p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                {{-- Filter Produk --}}
+                <div>
+                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Pilih Produk</label>
+                    <select id="filterProduct" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-blue-50 focus:border-blue-400 transition-all font-semibold text-gray-700 shadow-sm border-gray-200">
+                        <option value="">Semua Produk (Layanan Umum)</option>
+                        @foreach($products as $product)
+                            <option value="{{ $product->id }}" {{ $selectedProduct == $product->id ? 'selected' : '' }}>
+                                {{ $product->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="flex items-center gap-2 pb-1">
+                    <div id="filterLoading" class="hidden">
+                        <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
+                        <span class="text-[11px] font-bold text-gray-400 uppercase ml-2">Memasifikasi...</span>
                     </div>
                 </div>
-            @else
-                <div class="p-12 text-center">
-                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="far fa-comments text-gray-400 text-2xl"></i>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900">Belum Ada Testimoni</h3>
-                    <p class="text-gray-500 mt-1">Testimoni yang dikirim pelanggan akan muncul di sini.</p>
-                </div>
-            @endif
+            </div>
+        </section>
+
+        <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" id="testimonialTableContainer">
+            @include('testimonials._table')
         </section>
     </div>
 </main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterProduct = document.getElementById('filterProduct');
+        const tableContainer = document.getElementById('testimonialTableContainer');
+        const loading = document.getElementById('filterLoading');
+
+        function fetchTestimonials(page = 1) {
+            loading.classList.remove('hidden');
+            tableContainer.classList.add('opacity-50', 'pointer-events-none');
+
+            const productId = filterProduct.value;
+            const url = `{{ route('testimonials.index') }}?product_id=${productId}&page=${page}`;
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                tableContainer.innerHTML = html;
+                loading.classList.add('hidden');
+                tableContainer.classList.remove('opacity-50', 'pointer-events-none');
+                
+                // Re-bind pagination links
+                bindPagination();
+            })
+            .catch(error => {
+                console.error('Error fetching testimonials:', error);
+                loading.classList.add('hidden');
+                tableContainer.classList.remove('opacity-50', 'pointer-events-none');
+            });
+        }
+
+        function bindPagination() {
+            document.querySelectorAll('.ajax-pagination a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const url = new URL(this.href);
+                    const page = url.searchParams.get('page');
+                    fetchTestimonials(page);
+                });
+            });
+        }
+
+        filterProduct.addEventListener('change', () => fetchTestimonials(1));
+        
+        bindPagination();
+    });
+</script>
 @endsection

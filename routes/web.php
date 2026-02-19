@@ -518,6 +518,7 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
     });
 
     // Testimonials (feature: testimonials - Platinum only)
+    Route::get('testimonials/get-products', [TestimonialController::class, 'getProductsByOutlet'])->name('testimonials.get-products')->middleware('feature.access:testimonials');
     Route::resource('testimonials', TestimonialController::class)->only(['index', 'destroy'])->middleware('feature.access:testimonials');
     Route::post('testimonials/{testimonial}/toggle-status', [TestimonialController::class, 'toggleStatus'])->name('testimonials.toggle-status')->middleware('feature.access:testimonials');
 
