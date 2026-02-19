@@ -151,6 +151,14 @@
                         <span>Tunggakan</span>
                     </button>
                     @endcan
+
+                    @can('lihat reseller applications')
+                    <button type="button" id="tabSupplier" onclick="switchTab('supplier')"
+                            class="tab-btn px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 text-gray-600 border border-gray-200">
+                        <i class="fas fa-truck-loading"></i>
+                        <span>Daftar Supplier</span>
+                    </button>
+                    @endcan
                 </div>
             </div>
 
@@ -269,6 +277,47 @@
 
                 {{-- Pagination --}}
                 <div id="debtPagination" class="mt-4 flex items-center justify-between text-sm text-gray-500"></div>
+            </div>
+
+            {{-- TAB CONTENT: SUPPLIER --}}
+            <div id="contentSupplier" class="p-4 md:p-6 hidden">
+                {{-- Toolbar --}}
+                <div class="flex flex-col md:flex-row md:items-end gap-4 mb-4">
+                    <div class="flex-1 max-w-md">
+                        <label class="text-xs font-medium text-gray-500 mb-1 block">Cari supplier</label>
+                        <div class="relative">
+                            <input type="text" id="searchSupplier" placeholder="Cari nama atau telepon supplier..."
+                                   class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Table --}}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Supplier</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Kontak</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipe</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Diterima</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierTableBody" class="divide-y divide-gray-100 bg-white">
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                                    <i class="fas fa-spinner fa-spin text-2xl text-gray-300 mb-2"></i>
+                                    <p>Memuat data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Pagination --}}
+                <div id="supplierPagination" class="mt-4 flex items-center justify-between text-sm text-gray-500"></div>
             </div>
         </section>
     </div>
@@ -470,6 +519,87 @@
         </div>
     </div>
 </div>
+
+{{-- SUPPLIER DETAIL MODAL --}}
+<div id="supplierDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(4px);">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all">
+        {{-- Header with Gradient --}}
+        <div class="relative h-32 bg-gradient-to-br from-teal-500 to-cyan-600">
+            <button onclick="closeSupplierDetail()" class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 p-2 rounded-full backdrop-blur-md">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="absolute -bottom-12 left-8">
+                <div class="w-24 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center border-4 border-white overflow-hidden">
+                    <span id="modalSupplierInitial" class="text-3xl font-bold text-teal-600 uppercase">S</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Content --}}
+        <div class="pt-16 pb-8 px-8">
+            <div class="mb-6">
+                <h3 id="modalSupplierName" class="text-2xl font-bold text-gray-900 leading-tight">-</h3>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="modalSupplierCode" class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded">-</span>
+                    <span id="modalSupplierType" class="text-xs font-medium text-gray-500 uppercase tracking-wider">-</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6">
+                {{-- Contact Info --}}
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
+                        <div class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="fas fa-phone text-teal-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-medium text-gray-400">Telepon / WA</p>
+                            <p id="modalSupplierPhone" class="text-sm font-semibold text-gray-900">-</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
+                        <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="fas fa-envelope text-blue-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-medium text-gray-400">Email</p>
+                            <p id="modalSupplierEmail" class="text-sm font-semibold text-gray-900">-</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
+                        <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="fas fa-map-marker-alt text-amber-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-medium text-gray-400">Alamat</p>
+                            <p id="modalSupplierAddress" class="text-sm font-semibold text-gray-900 leading-relaxed">-</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-dashed border-gray-200">
+                        <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="fas fa-info-circle text-gray-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-medium text-gray-400">Status Kontrak</p>
+                            <p class="text-sm font-semibold text-emerald-600">Aktif sejak <span id="modalSupplierAcceptedAt">-</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- CTA Button --}}
+            <div class="mt-8">
+                <a id="btnSupplierWa" href="#" target="_blank" class="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#20ba59] text-white py-4 rounded-2xl font-bold shadow-lg shadow-green-200 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <i class="fab fa-whatsapp text-xl"></i>
+                    Hubungi via WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -481,6 +611,7 @@ let currentDebt = null;
 let selectedPaymentMethod = 'cash';
 let customerPage = 1;
 let debtPage = 1;
+let supplierPage = 1;
 
 // Debounce helper
 function debounce(func, wait) {
@@ -506,18 +637,30 @@ function switchTab(tab) {
     
     document.getElementById('tabCustomer').classList.toggle('active', tab === 'customer');
     document.getElementById('tabDebt').classList.toggle('active', tab === 'debt');
+    document.getElementById('tabSupplier')?.classList.toggle('active', tab === 'supplier');
+
     document.getElementById('tabCustomer').classList.toggle('border', tab !== 'customer');
     document.getElementById('tabCustomer').classList.toggle('border-gray-200', tab !== 'customer');
     document.getElementById('tabCustomer').classList.toggle('text-gray-600', tab !== 'customer');
+    
     document.getElementById('tabDebt').classList.toggle('border', tab !== 'debt');
     document.getElementById('tabDebt').classList.toggle('border-gray-200', tab !== 'debt');
     document.getElementById('tabDebt').classList.toggle('text-gray-600', tab !== 'debt');
+
+    if (document.getElementById('tabSupplier')) {
+        document.getElementById('tabSupplier').classList.toggle('border', tab !== 'supplier');
+        document.getElementById('tabSupplier').classList.toggle('border-gray-200', tab !== 'supplier');
+        document.getElementById('tabSupplier').classList.toggle('text-gray-600', tab !== 'supplier');
+    }
     
     document.getElementById('contentCustomer').classList.toggle('hidden', tab !== 'customer');
     document.getElementById('contentDebt').classList.toggle('hidden', tab !== 'debt');
+    document.getElementById('contentSupplier').classList.toggle('hidden', tab !== 'supplier');
     
     if (tab === 'customer') {
         loadCustomers();
+    } else if (tab === 'supplier') {
+        loadSuppliers();
     } else {
         loadDebts();
     }
@@ -718,6 +861,178 @@ function renderDebtTable(debts, pagination) {
     `).join('');
     
     renderPagination('debtPagination', pagination, loadDebts);
+}
+
+// Load suppliers
+function loadSuppliers(page = 1) {
+    supplierPage = page;
+    const search = document.getElementById('searchSupplier').value;
+    const params = new URLSearchParams({ page, search });
+    
+    document.getElementById('supplierTableBody').innerHTML = `
+        <tr>
+            <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                <i class="fas fa-spinner fa-spin text-2xl text-gray-300 mb-2"></i>
+                <p>Memuat data...</p>
+            </td>
+        </tr>
+    `;
+    
+    fetch(`{{ route('customer-debts.suppliers') }}?${params}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                renderSupplierTable(data.suppliers, data.pagination);
+            }
+        })
+        .catch(err => {
+            console.error('Load suppliers error:', err);
+            document.getElementById('supplierTableBody').innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-4 py-8 text-center text-red-500">
+                        <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                        <p>Gagal memuat data</p>
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+// Render supplier table
+function renderSupplierTable(suppliers, pagination) {
+    const tbody = document.getElementById('supplierTableBody');
+    
+    if (suppliers.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="px-4 py-12 text-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                            <i class="fas fa-truck-loading text-2xl text-gray-300"></i>
+                        </div>
+                        <p class="text-gray-500 font-medium">Belum ada supplier (reseller)</p>
+                        <p class="text-gray-400 text-sm">Supplier muncul dari lamaran reseller yang diterima</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = suppliers.map(s => `
+        <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3">
+                <div class="font-semibold text-gray-900">${s.name}</div>
+                <div class="text-xs text-gray-500">${s.code || '-'}</div>
+            </td>
+            <td class="px-4 py-3">
+                <div class="text-sm font-medium text-gray-900">${s.phone || '-'}</div>
+                <div class="text-xs text-gray-500">${s.email || '-'}</div>
+            </td>
+             <td class="px-4 py-3">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getTypeBadgeClass(s.type)}">
+                    ${getTypeLabel(s.type)}
+                </span>
+            </td>
+            <td class="px-4 py-3 text-gray-600 text-sm">${s.accepted_at}</td>
+            <td class="px-4 py-3 text-center">
+                <div class="flex items-center justify-center gap-2">
+                    <button onclick='openSupplierDetail(${JSON.stringify(s).replace(/'/g, "&#39;")})'
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors text-xs font-semibold border border-teal-100 shadow-sm" title="Detail Supplier">
+                        <i class="fas fa-eye"></i>
+                        Detail
+                    </button>
+                    <button onclick="cancelSupplierContract(${s.id}, '${s.name}')" 
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-xs font-semibold border border-red-100 shadow-sm" title="Batalkan Kontrak">
+                        <i class="fas fa-times-circle"></i>
+                        Putus Mitra
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    renderPagination('supplierPagination', pagination, loadSuppliers);
+}
+
+function openSupplierDetail(s) {
+    const modal = document.getElementById('supplierDetailModal');
+    
+    document.getElementById('modalSupplierInitial').textContent = s.name.charAt(0);
+    document.getElementById('modalSupplierName').textContent = s.name;
+    document.getElementById('modalSupplierCode').textContent = s.code || '-';
+    document.getElementById('modalSupplierType').textContent = getTypeLabel(s.type);
+    document.getElementById('modalSupplierPhone').textContent = s.phone || 'N/A';
+    document.getElementById('modalSupplierEmail').textContent = s.email || 'N/A';
+    document.getElementById('modalSupplierAddress').textContent = s.address || 'Alamat tidak tersedia';
+    document.getElementById('modalSupplierAcceptedAt').textContent = s.accepted_at;
+    
+    const waBtn = document.getElementById('btnSupplierWa');
+    if (s.whatsapp_url) {
+        waBtn.href = s.whatsapp_url;
+        waBtn.classList.remove('hidden');
+    } else {
+        waBtn.classList.add('hidden');
+    }
+    
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.querySelector('div').classList.remove('scale-95', 'opacity-0');
+        modal.querySelector('div').classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function closeSupplierDetail() {
+    const modal = document.getElementById('supplierDetailModal');
+    modal.querySelector('div').classList.add('scale-95', 'opacity-0');
+    modal.querySelector('div').classList.remove('scale-100', 'opacity-100');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 200);
+}
+
+function cancelSupplierContract(id, name) {
+    Swal.fire({
+        title: 'Batalkan Kontrak?',
+        text: `Apakah Anda yakin ingin menghentikan hubungan reseller dengan "${name}"? Status pelanggan akan kembali menjadi Regular.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Putuskan Mitra',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Memproses...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/customer-debts/${id}/cancel-contract`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Berhasil', data.message, 'success');
+                    loadSuppliers(supplierPage);
+                } else {
+                    Swal.fire('Gagal', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+            });
+        }
+    });
 }
 
 // Render pagination
@@ -1074,9 +1389,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Search with debounce
     const debouncedCustomerSearch = debounce(() => loadCustomers(1), 400);
     const debouncedDebtSearch = debounce(() => loadDebts(1), 400);
+    const debouncedSupplierSearch = debounce(() => loadSuppliers(1), 400);
     
     document.getElementById('searchCustomer').addEventListener('input', debouncedCustomerSearch);
     document.getElementById('searchDebt').addEventListener('input', debouncedDebtSearch);
+    document.getElementById('searchSupplier').addEventListener('input', debouncedSupplierSearch);
     
     // Filters
     document.getElementById('filterCustomerType').addEventListener('change', () => loadCustomers(1));
@@ -1087,6 +1404,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('paymentModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closePaymentModal();
+        }
+    });
+
+    document.getElementById('supplierDetailModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeSupplierDetail();
         }
     });
 });

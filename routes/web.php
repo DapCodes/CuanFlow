@@ -421,8 +421,10 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
         Route::get('/', [CustomerDebtController::class, 'index'])->name('index');
         Route::get('/customers', [CustomerDebtController::class, 'getCustomers'])->name('customers');
         Route::get('/debts', [CustomerDebtController::class, 'getDebts'])->name('debts');
+        Route::get('/suppliers', [CustomerDebtController::class, 'getSuppliers'])->name('suppliers');
         Route::get('/{debt}/detail', [CustomerDebtController::class, 'getDebtDetail'])->name('detail');
         Route::post('/{debt}/pay', [CustomerDebtController::class, 'payDebt'])->name('pay');
+        Route::post('/{application}/cancel-contract', [CustomerDebtController::class, 'cancelContract'])->name('cancel-contract');
         Route::post('/{debt}/midtrans-token', [CustomerDebtController::class, 'createMidtransToken'])->name('midtrans-token');
         Route::get('/{customer}/history', [CustomerDebtController::class, 'getCustomerHistory'])->name('history');
     });

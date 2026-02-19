@@ -17,10 +17,11 @@ class CustomerDebtController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:lihat pelanggan', only: ['index', 'getCustomers']),
+            new Middleware('permission:lihat pelanggan', only: ['index', 'getCustomers', 'getSuppliers']),
             new Middleware('permission:lihat piutang', only: ['getDebts']),
             new Middleware('permission:lihat detail piutang', only: ['getDebtDetail']),
             new Middleware('permission:bayar piutang', only: ['payDebt', 'createMidtransToken']),
+            new Middleware('permission:kelola reseller applications', only: ['cancelContract']),
         ];
     }
 
@@ -43,8 +44,12 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
         // Summary statistics
         $stats = [
-            'total_customers' => Customer::count(),
-            'active_customers' => Customer::active()->count(),
+            'total_customers' => Customer::whereHas('sales', function ($q) use ($outletId) {
+                $q->where('outlet_id', $outletId);
+            })->count(),
+            'active_customers' => Customer::active()->whereHas('sales', function ($q) use ($outletId) {
+                $q->where('outlet_id', $outletId);
+            })->count(),
             'total_debt' => CustomerDebt::where('outlet_id', $outletId)
                 ->whereIn('status', ['unpaid', 'partial'])
                 ->sum('remaining_amount'),
@@ -377,6 +382,116 @@ class CustomerDebtController extends Controller implements HasMiddleware
     /**
      * Get customer sales history
      */
+    /**
+     * Get suppliers (accepted reseller applications) (AJAX)
+     */
+    public function getSuppliers(Request $request)
+    {
+        $outletId = auth()->user()->outlet_id;
+
+        $query = \App\Models\ResellerApplication::with(['customer'])
+            ->where('outlet_id', $outletId)
+            ->where('status', 'approved');
+
+        // Search filter
+        if ($request->search) {
+            $search = $request->search;
+            $query->whereHas('customer', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $suppliers = $query->latest('processed_at')->paginate(15);
+
+        $supplierData = $suppliers->map(function ($app) {
+            $c = $app->customer;
+            return [
+                'id' => $app->id,
+                'customer_id' => $c->id,
+                'code' => $c->code,
+                'name' => $c->name,
+                'phone' => $c->phone,
+                'email' => $c->email,
+                'address' => $c->address,
+                'type' => $c->type,
+                'status' => $c->is_active ? 'active' : 'inactive',
+                'description' => $app->description,
+                'accepted_at' => $app->processed_at ? $app->processed_at->format('d M Y') : '-',
+                'whatsapp_url' => $this->getWhatsappUrl($c->phone),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'suppliers' => $supplierData,
+            'pagination' => [
+                'current_page' => $suppliers->currentPage(),
+                'last_page' => $suppliers->lastPage(),
+                'per_page' => $suppliers->perPage(),
+                'total' => $suppliers->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Cancel reseller contract
+     */
+    public function cancelContract(\App\Models\ResellerApplication $application)
+    {
+        $outletId = auth()->user()->outlet_id;
+
+        if ($application->outlet_id !== $outletId) {
+            abort(403);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Update application status
+            $application->update([
+                'status' => 'rejected', // Or we could add a 'cancelled' status if preferred, but existing logic uses rejected/approved
+                'processed_by' => auth()->id(),
+                'processed_at' => now(),
+            ]);
+
+            // Revert customer type to regular
+            $customer = $application->customer;
+            if ($customer && $customer->type === 'reseller') {
+                $customer->update(['type' => 'regular']);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kontrak reseller berhasil dibatalkan.',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membatalkan kontrak: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Helper to generate WhatsApp URL
+     */
+    private function getWhatsappUrl($phone)
+    {
+        if (empty($phone)) return null;
+        $number = preg_replace('/[^0-9]/', '', $phone);
+        if (empty($number)) return null;
+        if (str_starts_with($number, '0')) {
+            $number = '62' . substr($number, 1);
+        } elseif (!str_starts_with($number, '62')) {
+            $number = '62' . $number;
+        }
+        return "https://wa.me/{$number}";
+    }
+
     public function getCustomerHistory(Customer $customer)
     {
         $outletId = auth()->user()->outlet_id;
