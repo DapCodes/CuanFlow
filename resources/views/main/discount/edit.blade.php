@@ -379,42 +379,57 @@
                 </div>
 
                 {{-- Status Aktif --}}
-                <div>
-                    <div class="flex items-center gap-6">
-                        <div class="flex items-center">
-                            <input type="checkbox"
-                                   name="is_voucher"
-                                   id="is_voucher"
-                                   value="1"
-                                   {{ old('is_voucher', $discount->is_voucher) ? 'checked' : '' }}
-                                   @change="isVoucher = $event.target.checked"
-                                   class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                            <label for="is_voucher" class="ml-3 text-sm font-medium text-gray-700">
-                                Gunakan sebagai voucher / kupon
+                <div class="bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {{-- Toggle Voucher --}}
+                        <div class="flex items-center justify-between p-1">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-sm font-bold text-gray-900 leading-tight">Gunakan Voucher</span>
+                                <span class="text-xs text-gray-500">Jadikan diskon sebagai kode kupon</span>
+                            </div>
+                            <label for="is_voucher" class="relative inline-flex items-center cursor-pointer group">
+                                <input type="checkbox"
+                                       name="is_voucher"
+                                       id="is_voucher"
+                                       value="1"
+                                       {{ old('is_voucher', $discount->is_voucher) ? 'checked' : '' }}
+                                       @change="isVoucher = $event.target.checked"
+                                       class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 group-hover:ring-4 group-hover:ring-indigo-50/50 transition-all"></div>
                             </label>
                         </div>
 
-                        <div class="flex items-center" x-show="isVoucher" x-cloak>
-                            <input type="checkbox"
-                                   name="is_public"
-                                   id="is_public"
-                                   value="1"
-                                   {{ old('is_public', $discount->is_public) ? 'checked' : '' }}
-                                   class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
-                            <label for="is_public" class="ml-3 text-sm font-medium text-gray-700">
-                                Voucher Publik (Bisa diklaim semua user)
+                        {{-- Toggle Public Voucher --}}
+                        <div class="flex items-center justify-between p-1" x-show="isVoucher" x-cloak x-transition>
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-sm font-bold text-gray-700 leading-tight">Voucher Publik</span>
+                                <span class="text-xs text-gray-400">Bisa diklaim semua pembeli</span>
+                            </div>
+                            <label for="is_public" class="relative inline-flex items-center cursor-pointer group">
+                                <input type="checkbox"
+                                       name="is_public"
+                                       id="is_public"
+                                       value="1"
+                                       {{ old('is_public', $discount->is_public) ? 'checked' : '' }}
+                                       class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 group-hover:ring-4 group-hover:ring-emerald-50/50 transition-all"></div>
                             </label>
                         </div>
 
-                        <div class="flex items-center">
-                            <input type="checkbox"
-                                   name="is_active"
-                                   id="is_active"
-                                   value="1"
-                                   {{ old('is_active', $discount->is_active) ? 'checked' : '' }}
-                                   class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
-                            <label for="is_active" class="ml-3 text-sm font-medium text-gray-700">
-                                Aktifkan diskon
+                        {{-- Toggle Active --}}
+                        <div class="flex items-center justify-between p-1">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-sm font-bold text-gray-900 leading-tight">Aktifkan Diskon</span>
+                                <span class="text-xs text-gray-500">Munculkan diskon di outlet</span>
+                            </div>
+                            <label for="is_active" class="relative inline-flex items-center cursor-pointer group">
+                                <input type="checkbox"
+                                       name="is_active"
+                                       id="is_active"
+                                       value="1"
+                                       {{ old('is_active', $discount->is_active) ? 'checked' : '' }}
+                                       class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500 group-hover:ring-4 group-hover:ring-red-50/50 transition-all"></div>
                             </label>
                         </div>
                     </div>
