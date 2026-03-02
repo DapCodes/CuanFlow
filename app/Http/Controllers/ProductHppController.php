@@ -748,7 +748,7 @@ class ProductHppController extends Controller
             // Panggil AI API dengan timeout lebih lama
             $response = Http::timeout(120)
                 ->withHeaders([
-                    'Authorization' => 'Bearer '.env('CLARA_AI_API_KEY'),
+                    'Authorization' => 'Bearer ' . config('services.clara.key'),
                     'Content-Type' => 'application/json',
                 ])
                 ->post('https://openrouter.ai/api/v1/chat/completions', [
