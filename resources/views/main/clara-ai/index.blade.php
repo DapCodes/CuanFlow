@@ -194,28 +194,32 @@
             <!-- Input Area (quota removed, always available) -->
             <div class="bg-white border-t border-gray-200 flex-shrink-0" id="inputArea">
                 <div class="max-w-3xl mx-auto px-4 py-4">
-                    <form id="chatForm" class="flex gap-2">
+                    <form id="chatForm" class="flex items-center gap-2">
                         @csrf
                         <input type="hidden" name="session_id" value="{{ $session->id }}">
-                        <div class="flex-1 relative">
+                        
+                        <div class="flex-1">
                             @can('chat dengan clara ai')
                             <input type="text" id="messageInput" name="message"
                                 placeholder="Tanyakan sesuatu tentang bisnis Anda..."
-                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition-shadow shadow-sm"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition-shadow shadow-sm"
                                 maxlength="1000" autocomplete="off">
-                            <button type="submit" id="sendButton"
-                                class="absolute right-2 top-2 bottom-2 px-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-lg font-medium hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm hover:shadow">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                                </svg>
-                            </button>
                             @else
                             <input type="text" disabled
                                 placeholder="Anda tidak memiliki izin untuk chat dengan Clara AI"
                                 class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-sm cursor-not-allowed">
                             @endcan
                         </div>
+
+                        @can('chat dengan clara ai')
+                        <button type="submit" id="sendButton"
+                            class="p-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm hover:shadow flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                        </button>
+                        @endcan
                     </form>
                     <p class="text-xs text-gray-400 text-center mt-2">Clara AI dapat membuat kesalahan. Harap
                         verifikasi informasi penting.</p>
