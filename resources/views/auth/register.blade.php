@@ -69,15 +69,61 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+        /* Custom Smooth Marquee Layout */
+        .feature-slider {
+            width: 100%;
+            overflow: visible;
+            position: relative;
         }
-        @media (min-width: 1280px) {
-            .feature-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+
+        .marquee-wrapper {
+            display: flex;
+            gap: 16px;
+            width: max-content;
+            will-change: transform;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.01);
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(600px circle at var(--x) var(--y), rgba(217, 232, 142, 0.08), transparent 40%);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .feature-card:hover::after {
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(217, 232, 142, 0.3);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.4);
+        }
+
+        .feature-icon-wrapper {
+            background: rgba(217, 232, 142, 0.05);
+            border: 1px solid rgba(217, 232, 142, 0.1);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .feature-card:hover .feature-icon-wrapper {
+            background: var(--accent-green);
+            color: var(--primary-green);
+            transform: rotate(-10deg) scale(1.1);
+            box-shadow: 0 0 20px rgba(217, 232, 142, 0.2);
         }
     </style>
 </head>
@@ -103,92 +149,70 @@
                 </div>
             </div>
 
-            <!-- Features Carousel -->
-            <div class="relative z-10 mb-10 max-w-lg">
-                <p class="text-sm font-medium mb-6 opacity-70 italic">Manfaat yang akan anda dapatkan:</p>
+            <!-- Features Carousel (Custom Smooth Ticker) -->
+            <div class="relative z-10 mb-10 w-full overflow-hidden" id="marquee-container">
+                <p class="text-sm font-medium mb-6 opacity-70 italic px-1">Manfaat yang akan anda dapatkan:</p>
                 
-                <div class="swiper feature-slider overflow-visible">
-                    <div class="swiper-wrapper">
-                        <!-- Slide 1 (Features 1-4) -->
-                        <div class="swiper-slide">
-                            <div class="feature-grid">
-                                <div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex flex-col gap-3">
-                                    <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-sm">Kasir Digital (POS)</h4>
-                                        <p class="text-[10px] opacity-50 leading-tight">Transaksi cepat & rekam otomatis</p>
-                                    </div>
-                                </div>
-                                <div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex flex-col gap-3">
-                                    <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-sm">Stok & Inventaris</h4>
-                                        <p class="text-[10px] opacity-50 leading-tight">Pantau barang secara real-time</p>
-                                    </div>
-                                </div>
-                                <div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex flex-col gap-3">
-                                    <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-sm">Laporan Keuangan</h4>
-                                        <p class="text-[10px] opacity-50 leading-tight">Analisis laba rugi instan</p>
-                                    </div>
-                                </div>
-                                <div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex flex-col gap-3">
-                                    <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-sm">Manajemen Karyawan</h4>
-                                        <p class="text-[10px] opacity-50 leading-tight">Atur akses & absensi tim</p>
-                                    </div>
-                                </div>
+                <div class="feature-slider">
+                    <div class="marquee-wrapper" id="marquee-wrapper">
+                        <!-- Slide 1 (Kasir) -->
+                        <div class="feature-card w-[260px] p-6 rounded-3xl flex flex-col gap-5">
+                            <div class="feature-icon-wrapper w-14 h-14 rounded-2xl flex items-center justify-center text-accent">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base mb-2">Kasir Digital (POS)</h4>
+                                <p class="text-[11px] opacity-60 leading-relaxed">Eksekusi transaksi kilat dengan rekapitulasi penjualan otomatis dan real-time.</p>
                             </div>
                         </div>
-                        <!-- Slide 2 (Features 5-8) -->
-                        <div class="swiper-slide">
-                            <div class="feature-grid">
-                                <div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex flex-col gap-3">
-                                    <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-sm">Multi-Pembayaran</h4>
-                                        <p class="text-[10px] opacity-50 leading-tight">QRIS, E-Wallet & Tunai</p>
-                                    </div>
-                                </div>
-                                <div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex flex-col gap-3">
-                                    <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-sm">Manajemen Cabang</h4>
-                                        <p class="text-[10px] opacity-50 leading-tight">Kontrol semua outlet terpusat</p>
-                                    </div>
-                                </div>
-                                <div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex flex-col gap-3">
-                                    <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-sm">Analitik Produk</h4>
-                                        <p class="text-[10px] opacity-50 leading-tight">Pantau produk paling laris</p>
-                                    </div>
-                                </div>
-                                <div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl flex flex-col gap-3">
-                                    <div class="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-sm">Efisiensi Biaya</h4>
-                                        <p class="text-[10px] opacity-50 leading-tight">Hemat biaya operasional harian</p>
-                                    </div>
-                                </div>
+                        <!-- Slide 2 (Stok) -->
+                        <div class="feature-card w-[260px] p-6 rounded-3xl flex flex-col gap-5">
+                            <div class="feature-icon-wrapper w-14 h-14 rounded-2xl flex items-center justify-center text-accent">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base mb-2">Stok & Inventaris</h4>
+                                <p class="text-[11px] opacity-60 leading-relaxed">Pantau aliran stok barang Anda secara presisi tanpa takut kehabisan barang.</p>
+                            </div>
+                        </div>
+                        <!-- Slide 3 (Keuangan) -->
+                        <div class="feature-card w-[260px] p-6 rounded-3xl flex flex-col gap-5">
+                            <div class="feature-icon-wrapper w-14 h-14 rounded-2xl flex items-center justify-center text-accent">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base mb-2">Laporan Keuangan</h4>
+                                <p class="text-[11px] opacity-60 leading-relaxed">Dapatkan wawasan performa laba rugi instan untuk keputusan bisnis yang tepat.</p>
+                            </div>
+                        </div>
+                        <!-- Slide 4 (Karyawan) -->
+                        <div class="feature-card w-[260px] p-6 rounded-3xl flex flex-col gap-5">
+                            <div class="feature-icon-wrapper w-14 h-14 rounded-2xl flex items-center justify-center text-accent">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base mb-2">Manajemen Karyawan</h4>
+                                <p class="text-[11px] opacity-60 leading-relaxed">Orkestrasi jadwal, absensi, dan hak akses tim Anda dalam satu dasbor cerdas.</p>
+                            </div>
+                        </div>
+                        <!-- Slide 5 (Pembayaran) -->
+                        <div class="feature-card w-[260px] p-6 rounded-3xl flex flex-col gap-5">
+                            <div class="feature-icon-wrapper w-14 h-14 rounded-2xl flex items-center justify-center text-accent">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base mb-2">Multi-Pembayaran</h4>
+                                <p class="text-[11px] opacity-60 leading-relaxed">Terima segala bentuk pembayaran dari QRIS, Dompet Digital, hingga Tunai.</p>
+                            </div>
+                        </div>
+                        <!-- Slide 6 (Cabang) -->
+                        <div class="feature-card w-[260px] p-6 rounded-3xl flex flex-col gap-5">
+                            <div class="feature-icon-wrapper w-14 h-14 rounded-2xl flex items-center justify-center text-accent">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base mb-2">Manajemen Cabang</h4>
+                                <p class="text-[11px] opacity-60 leading-relaxed">Kendali penuh seluruh outlet Anda dari manapun secara terintegrasi.</p>
                             </div>
                         </div>
                     </div>
@@ -358,18 +382,62 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        // Swiper Initialization
-        new Swiper(".feature-slider", {
-            loop: true,
-            autoplay: {
-                delay: 4000,
-                disableOnInteraction: false,
-            },
-            effect: "fade",
-            fadeEffect: {
-                crossFade: true
-            },
-        });
+        // Custom Smooth Ticker Logic with Deceleration (Glide Effect)
+        function initSmoothMarquee() {
+            const container = document.getElementById('marquee-container');
+            const wrapper = document.getElementById('marquee-wrapper');
+            if (!wrapper) return;
+            
+            // Clone items for seamless loop
+            const initialItems = [...wrapper.children];
+            initialItems.forEach(item => {
+                const clone = item.cloneNode(true);
+                wrapper.appendChild(clone);
+            });
+
+            let x = 0;
+            let currentSpeed = 0.8;
+            let targetSpeed = 0.8;
+            let rafId = null;
+
+            // Deceleration/Acceleration factor (the "Smoothness")
+            const friction = 0.05; 
+
+            function animate() {
+                // Lerp speed for smooth transition
+                currentSpeed += (targetSpeed - currentSpeed) * friction;
+                
+                x -= currentSpeed;
+                
+                // Reset position when half way
+                const halfWidth = wrapper.scrollWidth / 2;
+                if (Math.abs(x) >= halfWidth) {
+                    x = 0;
+                }
+                
+                wrapper.style.transform = `translateX(${x}px)`;
+                rafId = requestAnimationFrame(animate);
+            }
+
+            container.addEventListener('mouseenter', () => { targetSpeed = 0; });
+            container.addEventListener('mouseleave', () => { targetSpeed = 0.8; });
+
+            // Spotlight Effect for cards
+            wrapper.addEventListener('mousemove', (e) => {
+                const cards = wrapper.querySelectorAll('.feature-card');
+                cards.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--x', `${x}px`);
+                    card.style.setProperty('--y', `${y}px`);
+                });
+            });
+
+            animate();
+        }
+
+        window.addEventListener('load', initSmoothMarquee);
 
         // SweetAlert config
         const Toast = Swal.mixin({
