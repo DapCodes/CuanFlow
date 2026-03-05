@@ -155,8 +155,8 @@ return [
 
     'attributes' => [
         'name' => 'Nama',
-        'email' => 'Email',
-        'password' => 'Password',
+        'email' => 'Alamat Email',
+        'password' => 'Kata Sandi',
         'phone' => 'Nomor Telepon',
         'terms' => 'Syarat dan Ketentuan',
     ],

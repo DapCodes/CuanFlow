@@ -152,7 +152,7 @@
                         </div>
 
                         <div class="space-y-1.5" x-data="{ show: false }">
-                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Buat Password</label>
+                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Buat Kata Sandi</label>
                             <div class="relative">
                                 <input :type="show ? 'text' : 'password'" name="password" required placeholder="••••••••"
                                     class="w-full px-4 py-3.5 pr-12 text-sm font-medium text-gray-900 bg-gray-50/50 border border-gray-100 rounded-xl placeholder-gray-400 input-focus focus:outline-none" />
@@ -164,7 +164,7 @@
                         </div>
 
                         <div class="space-y-1.5" x-data="{ show: false }">
-                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Konfirmasi Password</label>
+                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Konfirmasi Kata Sandi</label>
                             <div class="relative">
                                 <input :type="show ? 'text' : 'password'" name="password_confirmation" required placeholder="••••••••"
                                     class="w-full px-4 py-3.5 pr-12 text-sm font-medium text-gray-900 bg-gray-50/50 border border-gray-100 rounded-xl placeholder-gray-400 input-focus focus:outline-none" />
@@ -229,13 +229,13 @@
 
             if (password !== confirm) {
                 e.preventDefault();
-                showAlert('error', 'Password tidak cocok', 'Konfirmasi password tidak sesuai.');
+                showAlert('error', 'Kata sandi tidak cocok', 'Konfirmasi kata sandi tidak sesuai.');
             }
         });
 
         // Laravel alerts
         @if ($errors->any())
-            window.addEventListener('DOMContentLoaded', () => showAlert('error', 'Oops!', '{{ $errors->first() }}'));
+            window.addEventListener('DOMContentLoaded', () => showAlert('error', 'Peringatan', '{{ $errors->first() }}'));
         @endif
     </script>
 </body>

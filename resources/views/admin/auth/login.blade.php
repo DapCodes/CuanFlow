@@ -113,7 +113,7 @@
                     <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gray-50 text-gray-900 mb-4 border border-gray-100">
                         <i class="fas fa-shield-alt text-xl"></i>
                     </div>
-                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Admin Login!</h2>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Masuk Admin!</h2>
                     <p class="text-gray-500 text-sm xl:text-base">
                         Silakan masuk untuk mengakses Dashboard Admin.
                     </p>
@@ -135,13 +135,13 @@
                     
                     <div class="space-y-4 xl:space-y-5">
                         <div class="space-y-1.5">
-                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Email Address</label>
+                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Alamat Email</label>
                             <input type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="admin@cuanflow.com"
                                 class="w-full px-4 py-3.5 text-sm font-medium text-gray-900 bg-gray-50/50 border border-gray-100 rounded-xl placeholder-gray-400 input-focus focus:outline-none" />
                         </div>
 
                         <div class="space-y-1.5" x-data="{ show: false }">
-                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Password</label>
+                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Kata Sandi</label>
                             <div class="relative">
                                 <input :type="show ? 'text' : 'password'" name="password" required placeholder="••••••••"
                                     class="w-full px-4 py-3.5 pr-12 text-sm font-medium text-gray-900 bg-gray-50/50 border border-gray-100 rounded-xl placeholder-gray-400 input-focus focus:outline-none" />
@@ -199,7 +199,7 @@
             
             if (!email || !password) {
                 e.preventDefault();
-                showAlert('warning', 'Oops!', 'Email dan Password wajib diisi.');
+                showAlert('warning', 'Oops!', 'Email dan kata sandi wajib diisi.');
             }
         });
 

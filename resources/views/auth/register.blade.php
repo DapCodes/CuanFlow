@@ -263,7 +263,7 @@
                         </div>
 
                         <div class="space-y-1.5">
-                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Email Address</label>
+                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Alamat Email</label>
                             <input type="email" name="email" x-model="form.email" required placeholder="email@example.com"
                                 class="w-full px-4 py-3.5 text-sm font-medium text-gray-900 bg-gray-50/50 border border-gray-100 rounded-xl placeholder-gray-400 input-focus focus:outline-none" />
                         </div>
@@ -300,7 +300,7 @@
                          x-transition:enter-end="opacity-100 translate-x-0">
 
                         <div class="space-y-1.5" x-data="{ show: false }">
-                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Password</label>
+                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Kata Sandi</label>
                             <div class="relative">
                                 <input :type="show ? 'text' : 'password'" name="password" x-model="form.password" placeholder="••••••••"
                                     class="w-full px-4 py-3.5 pr-12 text-sm font-medium text-gray-900 bg-gray-50/50 border border-gray-100 rounded-xl placeholder-gray-400 input-focus focus:outline-none" />
@@ -312,7 +312,7 @@
                         </div>
 
                         <div class="space-y-1.5" x-data="{ show: false }">
-                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Konfirmasi Password</label>
+                            <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Konfirmasi Kata Sandi</label>
                             <div class="relative">
                                 <input :type="show ? 'text' : 'password'" name="password_confirmation" x-model="form.password_confirmation" placeholder="••••••••"
                                     class="w-full px-4 py-3.5 pr-12 text-sm font-medium text-gray-900 bg-gray-50/50 border border-gray-100 rounded-xl placeholder-gray-400 input-focus focus:outline-none" />
@@ -402,11 +402,11 @@
                 },
                 submitForm() {
                     if (!this.form.password || !this.form.password_confirmation) {
-                        showAlert('warning', 'Password kosong', 'Silakan isi password dan konfirmasi password.');
+                        showAlert('warning', 'Kata sandi kosong', 'Silakan isi kata sandi dan konfirmasi kata sandi.');
                         return;
                     }
                     if (this.form.password !== this.form.password_confirmation) {
-                        showAlert('error', 'Password tidak cocok', 'Konfirmasi password tidak sesuai.');
+                        showAlert('error', 'Kata sandi tidak cocok', 'Konfirmasi kata sandi tidak sesuai.');
                         return;
                     }
                     this.$refs.form.submit();
