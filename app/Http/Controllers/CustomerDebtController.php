@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\DebtPayment;
+use App\Models\ResellerApplication;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -36,6 +37,37 @@ class CustomerDebtController extends Controller implements HasMiddleware
     }
 
     /**
+     * Get statistics (AJAX)
+     */
+    public function getStats()
+    {
+        $outletId = auth()->user()->outlet_id;
+
+        $stats = [
+            'total_customers' => Customer::whereHas('sales', function ($q) use ($outletId) {
+                $q->where('outlet_id', $outletId);
+            })->count(),
+            'active_resellers' => ResellerApplication::where('outlet_id', $outletId)
+                ->where('status', 'accepted')
+                ->count(),
+            'total_debt' => (float) CustomerDebt::where('outlet_id', $outletId)
+                ->whereIn('status', ['unpaid', 'partial'])
+                ->sum('remaining_amount'),
+            'paid_this_month' => (float) DebtPayment::whereHas('customerDebt', function ($q) use ($outletId) {
+                $q->where('outlet_id', $outletId);
+            })
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('amount'),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'stats' => $stats
+        ]);
+    }
+
+    /**
      * Display the customer & debt management page
      */
     public function index()
@@ -47,9 +79,9 @@ class CustomerDebtController extends Controller implements HasMiddleware
             'total_customers' => Customer::whereHas('sales', function ($q) use ($outletId) {
                 $q->where('outlet_id', $outletId);
             })->count(),
-            'active_customers' => Customer::active()->whereHas('sales', function ($q) use ($outletId) {
-                $q->where('outlet_id', $outletId);
-            })->count(),
+            'active_resellers' => ResellerApplication::where('outlet_id', $outletId)
+                ->where('status', 'accepted')
+                ->count(),
             'total_debt' => CustomerDebt::where('outlet_id', $outletId)
                 ->whereIn('status', ['unpaid', 'partial'])
                 ->sum('remaining_amount'),
@@ -238,6 +270,25 @@ class CustomerDebtController extends Controller implements HasMiddleware
         DB::beginTransaction();
         try {
             $amount = (float) $request->amount;
+            $referenceNumber = $request->reference_number;
+
+            // PREVENT DUPLICATE: Check if this payment (especially for qris/transfer) has been recorded
+            if ($referenceNumber) {
+                $exists = DebtPayment::where('reference_number', $referenceNumber)->exists();
+                if ($exists) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Pembayaran sudah tercatat sebelumnya',
+                        'debt' => [
+                            'id' => $debt->id,
+                            'paid_amount' => $debt->paid_amount,
+                            'remaining_amount' => $debt->remaining_amount,
+                            'status' => $debt->status,
+                        ],
+                    ]);
+                }
+            }
 
             // Create payment record
             DebtPayment::create([

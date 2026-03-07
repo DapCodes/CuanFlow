@@ -639,14 +639,15 @@ class PaymentController extends Controller
         }
 
         if (in_array($notification->transaction_status, ['capture', 'settlement'])) {
-            // Check duplicate
-            $exists = \App\Models\DebtPayment::where('reference_number', $notification->transaction_id)->exists();
-            if ($exists) {
-                return response()->json(['success' => true, 'message' => 'Already recorded'], 200);
-            }
-
             DB::beginTransaction();
             try {
+                // Check duplicate INSIDE transaction block for robustness
+                $exists = \App\Models\DebtPayment::where('reference_number', $notification->transaction_id)->exists();
+                if ($exists) {
+                    DB::rollBack();
+                    return response()->json(['success' => true, 'message' => 'Already recorded by another process'], 200);
+                }
+
                 $amount = (float) ($notification->gross_amount ?? 0);
 
                 \App\Models\DebtPayment::create([

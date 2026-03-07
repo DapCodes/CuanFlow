@@ -97,7 +97,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Pelanggan</p>
-                        <p class="mt-1 text-2xl font-semibold text-gray-900">{{ number_format($stats['total_customers']) }}</p>
+                        <p id="statTotalCustomers" class="mt-1 text-2xl font-semibold text-gray-900">{{ number_format($stats['total_customers'], 0, ',', '.') }}</p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center border border-teal-100">
                         <i class="fas fa-users text-teal-500 text-lg"></i>
@@ -108,8 +108,8 @@
             <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Pelanggan Aktif</p>
-                        <p class="mt-1 text-2xl font-semibold text-amber-600">{{ number_format($stats['active_customers']) }}</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Reseller Aktif</p>
+                        <p id="statActiveResellers" class="mt-1 text-2xl font-semibold text-amber-600">{{ number_format($stats['active_resellers'], 0, ',', '.') }}</p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100">
                         <i class="fas fa-user-check text-amber-500 text-lg"></i>
@@ -121,7 +121,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Piutang</p>
-                        <p class="mt-1 text-2xl font-semibold text-red-600">Rp {{ number_format($stats['total_debt'], 0, ',', '.') }}</p>
+                        <p id="statTotalDebt" class="mt-1 text-2xl font-semibold text-red-600">Rp {{ number_format($stats['total_debt'], 0, ',', '.') }}</p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center border border-red-100">
                         <i class="fas fa-money-bill-wave text-red-500 text-lg"></i>
@@ -133,7 +133,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Terbayar Bulan Ini</p>
-                        <p class="mt-1 text-2xl font-semibold text-emerald-600">Rp {{ number_format($stats['paid_this_month'], 0, ',', '.') }}</p>
+                        <p id="statPaidThisMonth" class="mt-1 text-2xl font-semibold text-emerald-600">Rp {{ number_format($stats['paid_this_month'], 0, ',', '.') }}</p>
                     </div>
                     <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
                         <i class="fas fa-check-circle text-emerald-500 text-lg"></i>
@@ -173,7 +173,7 @@
             </div>
 
             {{-- TAB CONTENT: CUSTOMER --}}
-            <div id="contentCustomer" class="p-4 md:p-6">
+            <div id="contentCustomer" class="tab-content p-4 md:p-6">
                 {{-- Toolbar --}}
                 <div class="flex flex-col md:flex-row md:items-end gap-4 mb-4">
                     <div class="flex-1 max-w-md">
@@ -236,7 +236,7 @@
             </div>
 
             {{-- TAB CONTENT: DEBT --}}
-            <div id="contentDebt" class="p-4 md:p-6 hidden">
+            <div id="contentDebt" class="tab-content p-4 md:p-6 hidden">
                 {{-- Toolbar --}}
                 <div class="flex flex-col md:flex-row md:items-end gap-4 mb-4">
                     <div class="flex-1 max-w-md">
@@ -290,7 +290,7 @@
             </div>
 
             {{-- TAB CONTENT: SUPPLIER --}}
-            <div id="contentSupplier" class="p-4 md:p-6 hidden">
+            <div id="contentSupplier" class="tab-content p-4 md:p-6 hidden">
                 {{-- Toolbar --}}
                 <div class="flex flex-col md:flex-row md:items-end gap-4 mb-4">
                     <div class="flex-1 max-w-md">
@@ -711,47 +711,80 @@ function formatRupiah(amount) {
 }
 
 // Switch tabs
+// URL Persistence Helpers
+function updateUrlParams(params) {
+    const url = new URL(window.location);
+    Object.keys(params).forEach(key => {
+        if (params[key] === null || params[key] === '') {
+            url.searchParams.delete(key);
+        } else {
+            url.searchParams.set(key, params[key]);
+        }
+    });
+    window.history.pushState({}, '', url);
+}
+
 function switchTab(tab) {
     currentTab = tab;
     
-    document.getElementById('tabCustomer').classList.toggle('active', tab === 'customer');
-    document.getElementById('tabDebt').classList.toggle('active', tab === 'debt');
-    document.getElementById('tabSupplier')?.classList.toggle('active', tab === 'supplier');
+    // Update Tab Buttons UI
+    const tabs = ['customer', 'debt', 'supplier'];
+    tabs.forEach(t => {
+        const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+        const content = document.getElementById('content' + t.charAt(0).toUpperCase() + t.slice(1));
+        
+        if (btn) {
+            const isActive = t === tab;
+            btn.classList.toggle('active', isActive);
+            btn.classList.toggle('text-gray-600', !isActive);
+            btn.classList.toggle('border', !isActive);
+            btn.classList.toggle('border-gray-200', !isActive);
+            // If active, remove those classes
+            if (isActive) {
+                btn.classList.remove('text-gray-600', 'border', 'border-gray-200');
+            }
+        }
+        
+        if (content) {
+            content.classList.toggle('hidden', t !== tab);
+        }
+    });
+    
+    // Load Data
+    if (tab === 'customer') loadCustomers();
+    else if (tab === 'debt') loadDebts();
+    else if (tab === 'supplier') loadSuppliers();
+    
+    updateUrlParams({ tab: tab });
+}
 
-    document.getElementById('tabCustomer').classList.toggle('border', tab !== 'customer');
-    document.getElementById('tabCustomer').classList.toggle('border-gray-200', tab !== 'customer');
-    document.getElementById('tabCustomer').classList.toggle('text-gray-600', tab !== 'customer');
-    
-    document.getElementById('tabDebt').classList.toggle('border', tab !== 'debt');
-    document.getElementById('tabDebt').classList.toggle('border-gray-200', tab !== 'debt');
-    document.getElementById('tabDebt').classList.toggle('text-gray-600', tab !== 'debt');
-
-    if (document.getElementById('tabSupplier')) {
-        document.getElementById('tabSupplier').classList.toggle('border', tab !== 'supplier');
-        document.getElementById('tabSupplier').classList.toggle('border-gray-200', tab !== 'supplier');
-        document.getElementById('tabSupplier').classList.toggle('text-gray-600', tab !== 'supplier');
-    }
-    
-    document.getElementById('contentCustomer').classList.toggle('hidden', tab !== 'customer');
-    document.getElementById('contentDebt').classList.toggle('hidden', tab !== 'debt');
-    document.getElementById('contentSupplier').classList.toggle('hidden', tab !== 'supplier');
-    
-    if (tab === 'customer') {
-        loadCustomers();
-    } else if (tab === 'supplier') {
-        loadSuppliers();
-    } else {
-        loadDebts();
-    }
+function loadStats() {
+    fetch('{{ url("customer-debts/stats") }}')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('statTotalCustomers').textContent = new Intl.NumberFormat('id-ID').format(data.stats.total_customers);
+                document.getElementById('statActiveResellers').textContent = new Intl.NumberFormat('id-ID').format(data.stats.active_resellers);
+                document.getElementById('statTotalDebt').textContent = formatRupiah(data.stats.total_debt);
+                document.getElementById('statPaidThisMonth').textContent = formatRupiah(data.stats.paid_this_month);
+            }
+        })
+        .catch(err => console.error('Load stats error:', err));
 }
 
 // Load customers
 function loadCustomers(page = 1) {
-    customerPage = page;
-    const search = document.getElementById('searchCustomer').value;
-    const type = document.getElementById('filterCustomerType').value;
-    const status = document.getElementById('filterCustomerStatus').value;
+    const urlParams = new URLSearchParams(window.location.search);
+    const search = urlParams.get('search') || document.getElementById('searchCustomer').value;
+    const type = urlParams.get('type') || document.getElementById('filterCustomerType').value;
+    const status = urlParams.get('status') || document.getElementById('filterCustomerStatus').value;
     
+    // Sync inputs if coming from URL
+    if (urlParams.has('search')) document.getElementById('searchCustomer').value = search;
+    if (urlParams.has('type')) document.getElementById('filterCustomerType').value = type;
+    if (urlParams.has('status')) document.getElementById('filterCustomerStatus').value = status;
+    
+    customerPage = page;
     const params = new URLSearchParams({ page, search, type, status });
     
     document.getElementById('customerTableBody').innerHTML = `
@@ -847,10 +880,15 @@ function renderCustomerTable(customers, pagination) {
 
 // Load debts
 function loadDebts(page = 1) {
-    debtPage = page;
-    const search = document.getElementById('searchDebt').value;
-    const status = document.getElementById('filterDebtStatus').value;
+    const urlParams = new URLSearchParams(window.location.search);
+    const search = urlParams.get('debt_search') || document.getElementById('searchDebt').value;
+    const status = urlParams.get('debt_status') || document.getElementById('filterDebtStatus').value;
     
+    // Sync inputs if coming from URL
+    if (urlParams.has('debt_search')) document.getElementById('searchDebt').value = search;
+    if (urlParams.has('debt_status')) document.getElementById('filterDebtStatus').value = status;
+    
+    debtPage = page;
     const params = new URLSearchParams({ page, search, status });
     
     document.getElementById('debtTableBody').innerHTML = `
@@ -944,8 +982,13 @@ function renderDebtTable(debts, pagination) {
 
 // Load suppliers
 function loadSuppliers(page = 1) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const search = urlParams.get('supplier_search') || document.getElementById('searchSupplier').value;
+    
+    // Sync inputs if coming from URL
+    if (urlParams.has('supplier_search')) document.getElementById('searchSupplier').value = search;
+    
     supplierPage = page;
-    const search = document.getElementById('searchSupplier').value;
     const params = new URLSearchParams({ page, search });
     
     document.getElementById('supplierTableBody').innerHTML = `
@@ -1494,6 +1537,10 @@ function showPaymentSuccessModal(debt, amountPaid) {
     
     // Set for printing functions
     modal.dataset.saleId = currentDebt.sale_id;
+    
+    // Refresh background data without full reload
+    loadDebts(debtPage);
+    loadStats();
 }
 
 function closePaymentSuccessModal() {
@@ -1502,7 +1549,6 @@ function closePaymentSuccessModal() {
     modal.firstElementChild.classList.remove('scale-100', 'opacity-100');
     setTimeout(() => {
         modal.classList.add('hidden');
-        window.location.reload();
     }, 300);
 }
 
@@ -1541,22 +1587,47 @@ function handlePrintInvoice() {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Load initial data
-    loadCustomers();
+    // Load initial data from URL or default
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
     
-    // Search with debounce
-    const debouncedCustomerSearch = debounce(() => loadCustomers(1), 400);
-    const debouncedDebtSearch = debounce(() => loadDebts(1), 400);
-    const debouncedSupplierSearch = debounce(() => loadSuppliers(1), 400);
+    if (tabParam && ['customer', 'debt', 'supplier'].includes(tabParam)) {
+        switchTab(tabParam);
+    } else {
+        switchTab(currentTab);
+    }
     
-    document.getElementById('searchCustomer').addEventListener('input', debouncedCustomerSearch);
-    document.getElementById('searchDebt').addEventListener('input', debouncedDebtSearch);
-    document.getElementById('searchSupplier').addEventListener('input', debouncedSupplierSearch);
-    
-    // Filters
-    document.getElementById('filterCustomerType').addEventListener('change', () => loadCustomers(1));
-    document.getElementById('filterCustomerStatus').addEventListener('change', () => loadCustomers(1));
-    document.getElementById('filterDebtStatus').addEventListener('change', () => loadDebts(1));
+    loadStats();
+
+    // Customer Search
+    document.getElementById('searchCustomer').addEventListener('input', debounce(function(e) {
+        updateUrlParams({ search: e.target.value });
+        loadCustomers();
+    }, 500));
+
+    // Customer Type Filter
+    document.getElementById('filterCustomerType').addEventListener('change', function(e) {
+        updateUrlParams({ type: e.target.value });
+        loadCustomers();
+    });
+
+    // Customer Status Filter
+    document.getElementById('filterCustomerStatus').addEventListener('change', function(e) {
+        updateUrlParams({ status: e.target.value });
+        loadCustomers();
+    });
+
+    // Debt Search
+    document.getElementById('searchDebt').addEventListener('input', debounce(function(e) {
+        updateUrlParams({ debt_search: e.target.value });
+        loadDebts();
+    }, 500));
+
+    // Debt Status Filter
+    document.getElementById('filterDebtStatus').addEventListener('change', function(e) {
+        updateUrlParams({ debt_status: e.target.value });
+        loadDebts();
+    });
     
     // Close modal on backdrop click
     document.getElementById('paymentModal').addEventListener('click', function(e) {

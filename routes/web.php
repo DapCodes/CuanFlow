@@ -427,6 +427,7 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
         Route::post('/{debt}/pay', [CustomerDebtController::class, 'payDebt'])->name('pay');
         Route::post('/{application}/cancel-contract', [CustomerDebtController::class, 'cancelContract'])->name('cancel-contract');
         Route::post('/{debt}/midtrans-token', [CustomerDebtController::class, 'createMidtransToken'])->name('midtrans-token');
+        Route::get('/stats', [CustomerDebtController::class, 'getStats'])->name('stats');
         Route::get('/{customer}/history', [CustomerDebtController::class, 'getCustomerHistory'])->name('history');
     });
 
