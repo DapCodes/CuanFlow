@@ -613,6 +613,74 @@
 </div>
 @endsection
 
+@section('modals')
+{{-- PAYMENT SUCCESS MODAL --}}
+<div id="paymentSuccessModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(4px);">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 lg:p-8 transform transition-all scale-95 opacity-0 duration-300">
+        <div class="flex justify-center mb-5">
+            <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center">
+                <svg class="w-10 h-10 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 text-center mb-1.5">Pembayaran Berhasil!</h3>
+        <p class="text-gray-600 text-sm text-center mb-5">Transaksi tunggakan telah berhasil diproses</p>
+        
+        <div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-4 mb-5 border border-teal-100">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium font-mono text-xs uppercase tracking-wider">Invoice:</span>
+                    <span class="font-bold text-teal-700" id="successInvoiceNumber">-</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium font-mono text-xs uppercase tracking-wider">Tanggal:</span>
+                    <span class="text-gray-900 font-semibold" id="successDate">-</span>
+                </div>
+                <div class="flex justify-between" id="successCustomerRow">
+                    <span class="text-gray-500 font-medium font-mono text-xs uppercase tracking-wider">Pelanggan:</span>
+                    <span class="font-bold text-gray-900 underline decoration-teal-300 underline-offset-4" id="successCustomer">-</span>
+                </div>
+                <div class="flex justify-between text-base font-bold border-t border-teal-200/50 pt-2 mt-2">
+                    <span class="text-gray-600">Total Bayar:</span>
+                    <span class="text-teal-600" id="successTotal">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-sm pt-1" id="successDebtRow">
+                    <span class="text-gray-500">Sisa Utang:</span>
+                    <span class="font-bold text-red-500" id="successDebt">Rp 0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            @can('cetak struk')
+            <button onclick="printReceipt()" class="group w-full flex items-center justify-center gap-2.5 px-4 py-3.5 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-2xl text-sm font-bold hover:from-teal-600 hover:to-cyan-600 transition-all shadow-lg shadow-teal-100 hover:scale-[1.01] active:scale-[0.99]">
+                <i class="fas fa-print text-teal-100 group-hover:text-white transition-colors"></i>
+                <span class="ml-1">Cetak Struk</span>
+            </button>
+            @endcan
+            
+            @can('unduh struk')
+            <button onclick="downloadReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-teal-100 text-teal-600 rounded-2xl text-sm font-bold hover:bg-teal-50 hover:border-teal-200 transition-all active:scale-[0.99]">
+                <i class="fas fa-file-pdf mr-1"></i>
+                <span>Download Struk (PDF)</span>
+            </button>
+            @endcan
+            
+            <button onclick="handlePrintInvoice()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-gray-100 text-gray-700 rounded-2xl text-sm font-bold hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-[0.99]">
+                <i class="fas fa-file-invoice text-gray-400 mr-1"></i>
+                <span>Cetak Surat Invoice</span>
+            </button>
+
+            <div class="pt-2">
+                <button onclick="closePaymentSuccessModal()" class="w-full px-4 py-3.5 bg-gray-900 text-white rounded-2xl text-sm font-bold hover:bg-black transition-all shadow-md active:scale-[0.99]">
+                    Selesai
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 <script>
@@ -1323,16 +1391,7 @@ function processCashTransferPayment(amount) {
         
         if (response.success) {
             closePaymentModal();
-            Swal.fire({
-                icon: 'success',
-                title: 'Pembayaran Berhasil',
-                text: response.message,
-                confirmButtonColor: '#14b8a6',
-            }).then(() => {
-                loadDebts(debtPage);
-                // Reload page to update stats
-                window.location.reload();
-            });
+            showPaymentSuccessModal(response.debt, amount);
         } else {
             Swal.fire('Error', response.message || 'Gagal memproses pembayaran', 'error');
         }
@@ -1379,15 +1438,20 @@ function processMidtransPayment(amount) {
                             notes: 'Pembayaran via Midtrans QRIS',
                         }),
                     })
-                    .then(() => {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Pembayaran Berhasil',
-                            text: 'Pembayaran QRIS berhasil dicatat',
-                            confirmButtonColor: '#14b8a6',
-                        }).then(() => {
-                            window.location.reload();
-                        });
+                    .then(r => r.json())
+                    .then(payResp => {
+                        if (payResp.success) {
+                            showPaymentSuccessModal(payResp.debt, amount);
+                        } else {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Pembayaran Berhasil',
+                                text: 'Pembayaran QRIS berhasil, namun pelaporan ke sistem gagal. Silakan hubungi admin.',
+                                confirmButtonColor: '#14b8a6',
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        }
                     });
                 },
                 onPending: function(result) {
@@ -1411,6 +1475,69 @@ function processMidtransPayment(amount) {
         btn.innerHTML = '<i class="fas fa-check mr-2"></i>Bayar Sekarang';
         Swal.fire('Error', 'Gagal terhubung ke payment gateway', 'error');
     });
+}
+
+// Success Modal Helpers
+function showPaymentSuccessModal(debt, amountPaid) {
+    const modal = document.getElementById('paymentSuccessModal');
+    
+    document.getElementById('successInvoiceNumber').textContent = currentDebt.invoice_number;
+    document.getElementById('successDate').textContent = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+    document.getElementById('successCustomer').textContent = currentDebt.customer_name;
+    document.getElementById('successTotal').textContent = formatRupiah(amountPaid);
+    document.getElementById('successDebt').textContent = formatRupiah(debt.remaining_amount);
+    
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.firstElementChild.classList.remove('scale-95', 'opacity-0');
+        modal.firstElementChild.classList.add('scale-100', 'opacity-100');
+    }, 10);
+    
+    // Set for printing functions
+    modal.dataset.saleId = currentDebt.sale_id;
+}
+
+function closePaymentSuccessModal() {
+    const modal = document.getElementById('paymentSuccessModal');
+    modal.firstElementChild.classList.add('scale-95', 'opacity-0');
+    modal.firstElementChild.classList.remove('scale-100', 'opacity-100');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        window.location.reload();
+    }, 300);
+}
+
+function printReceipt() {
+    const saleId = document.getElementById('paymentSuccessModal').dataset.saleId;
+    if (saleId) {
+        const printUrl = `{{ url('receipt/print') }}/${saleId}`;
+        const win = window.open(printUrl, '_blank');
+        if (win) {
+            win.focus();
+        } else {
+            Swal.fire('Error', 'Gagal membuka tab cetak. Pastikan pop-up diizinkan.', 'error');
+        }
+    }
+}
+
+function downloadReceipt() {
+    const saleId = document.getElementById('paymentSuccessModal').dataset.saleId;
+    if (saleId) {
+        window.location.href = `{{ url('receipt/download') }}/${saleId}`;
+    }
+}
+
+function handlePrintInvoice() {
+    const saleId = document.getElementById('paymentSuccessModal').dataset.saleId;
+    if (saleId) {
+        const printUrl = `{{ url('receipt/invoice') }}/${saleId}/print`;
+        const win = window.open(printUrl, '_blank');
+        if (win) {
+            win.focus();
+        } else {
+            Swal.fire('Error', 'Gagal membuka tab cetak. Pastikan pop-up diizinkan.', 'error');
+        }
+    }
 }
 
 // Event listeners

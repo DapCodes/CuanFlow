@@ -186,6 +186,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
         $debtData = $debts->map(function ($debt) {
             return [
                 'id' => $debt->id,
+                'sale_id' => $debt->sale_id,
                 'invoice_number' => $debt->sale->invoice_number ?? '-',
                 'customer_name' => $debt->customer->name ?? 'Unknown',
                 'customer_code' => $debt->customer->code ?? '-',
