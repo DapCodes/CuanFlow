@@ -156,7 +156,7 @@
                     <button type="button" id="tabSupplier" onclick="switchTab('supplier')"
                             class="tab-btn px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 text-gray-600 border border-gray-200">
                         <i class="fas fa-truck-loading"></i>
-                        <span>Daftar Supplier</span>
+                        <span>Daftar Reseller</span>
                     </button>
                     @endcan
                 </div>
