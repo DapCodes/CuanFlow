@@ -110,6 +110,11 @@ class Customer extends Model
         return max(0, $this->credit_limit - $this->total_debt);
     }
 
+    public function resellerApplications(): HasMany
+    {
+        return $this->hasMany(ResellerApplication::class);
+    }
+
     public function scopeReseller($q)
     {
         return $q->where('type', 'reseller');

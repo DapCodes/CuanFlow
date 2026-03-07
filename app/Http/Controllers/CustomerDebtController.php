@@ -86,7 +86,10 @@ class CustomerDebtController extends Controller implements HasMiddleware
             }])
             ->withSum(['sales' => function ($q) use ($outletId) {
                 $q->where('outlet_id', $outletId);
-            }], 'grand_total');
+            }], 'grand_total')
+            ->withExists(['resellerApplications as is_accepted_reseller' => function ($q) use ($outletId) {
+                $q->where('outlet_id', $outletId)->where('status', 'approved');
+            }]);
 
         // Search filter
         if ($request->search) {
@@ -100,7 +103,24 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
         // Type filter
         if ($request->type) {
-            $query->where('type', $request->type);
+            if ($request->type === 'reseller') {
+                $query->where('type', 'reseller')
+                    ->whereHas('resellerApplications', function ($q) use ($outletId) {
+                        $q->where('outlet_id', $outletId)->where('status', 'approved');
+                    });
+            } elseif ($request->type === 'regular') {
+                $query->where(function ($q) use ($outletId) {
+                    $q->where('type', 'regular')
+                        ->orWhere(function ($sub) use ($outletId) {
+                            $sub->where('type', 'reseller')
+                                ->whereDoesntHave('resellerApplications', function ($qApp) use ($outletId) {
+                                    $qApp->where('outlet_id', $outletId)->where('status', 'approved');
+                                });
+                        });
+                });
+            } else {
+                $query->where('type', $request->type);
+            }
         }
 
         // Status filter
@@ -110,9 +130,18 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
         $customers = $query->orderBy('name', 'asc')->paginate(15);
 
+        // Map results to override type if reseller not accepted
+        $customerData = $customers->getCollection()->map(function ($c) {
+            if ($c->type === 'reseller' && ! $c->is_accepted_reseller) {
+                $c->type = 'regular';
+            }
+
+            return $c;
+        });
+
         return response()->json([
             'success' => true,
-            'customers' => $customers->items(),
+            'customers' => $customerData,
             'pagination' => [
                 'current_page' => $customers->currentPage(),
                 'last_page' => $customers->lastPage(),
@@ -343,7 +372,16 @@ class CustomerDebtController extends Controller implements HasMiddleware
      */
     public function getDebtDetail(CustomerDebt $debt)
     {
-        $debt->load(['customer', 'sale.items', 'payments.receivedBy']);
+        $outletId = auth()->user()->outlet_id;
+        $debt->load(['customer.resellerApplications' => function ($q) use ($outletId) {
+            $q->where('outlet_id', $outletId)->where('status', 'approved');
+        }, 'sale.items', 'payments.receivedBy']);
+
+        $customer = $debt->customer;
+        $customerType = $customer->type ?? 'regular';
+        if ($customerType === 'reseller' && $customer->resellerApplications->isEmpty()) {
+            $customerType = 'regular';
+        }
 
         return response()->json([
             'success' => true,
@@ -351,11 +389,11 @@ class CustomerDebtController extends Controller implements HasMiddleware
                 'id' => $debt->id,
                 'invoice_number' => $debt->sale->invoice_number ?? '-',
                 'customer' => [
-                    'name' => $debt->customer->name ?? 'Unknown',
-                    'code' => $debt->customer->code ?? '-',
-                    'phone' => $debt->customer->phone ?? '-',
-                    'email' => $debt->customer->email ?? '-',
-                    'type' => $debt->customer->type ?? 'regular',
+                    'name' => $customer->name ?? 'Unknown',
+                    'code' => $customer->code ?? '-',
+                    'phone' => $customer->phone ?? '-',
+                    'email' => $customer->email ?? '-',
+                    'type' => $customerType,
                 ],
                 'amount' => (float) $debt->amount,
                 'paid_amount' => (float) $debt->paid_amount,
