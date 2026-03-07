@@ -501,6 +501,7 @@
                             <th class="px-4 py-3 text-center font-medium">Item</th>
                             <th class="px-4 py-3 text-left font-medium">Metode</th>
                             <th class="px-4 py-3 text-left font-medium">Total</th>
+                            <th class="px-4 py-3 text-left font-medium">Tunggakan</th>
                             <th class="px-4 py-3 text-center font-medium">Status</th>
                         </tr>
                     </thead>
@@ -1203,9 +1204,12 @@ function openHistoryModal(customerId) {
                         <td class="px-4 py-3 text-center text-gray-600">${s.items_count}</td>
                         <td class="px-4 py-3 capitalize text-gray-800">${s.payment_method}</td>
                         <td class="px-4 py-3 font-semibold text-gray-900">${formatRupiah(s.grand_total)}</td>
+                        <td class="px-4 py-3 font-semibold ${s.remaining_debt > 0 ? 'text-red-500' : 'text-emerald-500'}">
+                            ${s.remaining_debt > 0 ? formatRupiah(s.remaining_debt) : '-'}
+                        </td>
                         <td class="px-4 py-3 text-center">
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusBadgeClass(s.status)}">
-                                ${s.status}
+                                ${getStatusLabel(s.status)}
                             </span>
                         </td>
                     </tr>
@@ -1231,10 +1235,22 @@ function closeHistoryModal() {
 function getStatusBadgeClass(status) {
     switch (status) {
         case 'completed': return 'bg-green-100 text-green-800';
+        case 'debt': return 'bg-amber-100 text-amber-800';
         case 'pending': return 'bg-yellow-100 text-yellow-800';
         case 'canceled': return 'bg-gray-100 text-gray-800';
         case 'refunded': return 'bg-red-100 text-red-800';
         default: return 'bg-gray-100 text-gray-800';
+    }
+}
+
+function getStatusLabel(status) {
+    switch (status) {
+        case 'completed': return 'Lunas / Selesai';
+        case 'debt': return 'Belum Lunas';
+        case 'pending': return 'Pending';
+        case 'canceled': return 'Dibatalkan';
+        case 'refunded': return 'Refund';
+        default: return status;
     }
 }
 

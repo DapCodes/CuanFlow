@@ -536,17 +536,29 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
         $sales = $customer->sales()
             ->where('outlet_id', $outletId)
+            ->with(['debt', 'items'])
             ->withCount('items')
             ->orderBy('created_at', 'desc')
             ->take(50)
             ->get()
             ->map(function ($sale) {
+                $remainingDebt = $sale->debt ? (float) $sale->debt->remaining_amount : 0;
+                $status = $sale->status;
+
+                // If sale is completed but has remaining debt, show status as "pending_payment" 
+                // or similar, but the user specifically asked: 
+                // "cek lagi jika pada CustomerDebt sudah complete dan sudah tidak ada sisa hutang lagi baru complete"
+                if ($status === 'completed' && $remainingDebt > 0) {
+                    $status = 'debt'; // We'll handle this status in the frontend
+                }
+
                 return [
                     'id' => $sale->id,
                     'invoice_number' => $sale->invoice_number,
                     'date' => $sale->created_at->format('d M Y H:i'),
                     'grand_total' => (float) $sale->grand_total,
-                    'status' => $sale->status,
+                    'remaining_debt' => $remainingDebt,
+                    'status' => $status,
                     'payment_method' => $sale->payment_method,
                     'items_count' => $sale->items_count,
                 ];
