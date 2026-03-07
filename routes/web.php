@@ -331,7 +331,6 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
     });
     // Legacy receipt routes (keeping for compatibility)
     Route::get('/receipt/print/{id}', [ReceiptController::class, 'printReceipt'])->name('receipt.print');
-    Route::get('/receipt/download/{id}', [ReceiptController::class, 'download'])->name('receipt.download');
 
     // Tables Management (feature: table_management)
     Route::prefix('tables')->name('tables.')->middleware('feature.access:table_management')->group(function () {
