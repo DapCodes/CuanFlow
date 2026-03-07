@@ -50,7 +50,7 @@ class ReceiptController extends Controller implements HasMiddleware
     public function downloadReceipt($saleId)
     {
 
-        $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product'])
+        $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product', 'debt.payments'])
             ->findOrFail($saleId);
 
         // Pastikan user hanya bisa akses struk dari outlet mereka
@@ -71,7 +71,7 @@ class ReceiptController extends Controller implements HasMiddleware
     public function printReceipt($saleId)
     {
 
-        $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product'])
+        $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product', 'debt.payments'])
             ->findOrFail($saleId);
 
         // Pastikan user hanya bisa akses struk dari outlet mereka
@@ -87,7 +87,7 @@ class ReceiptController extends Controller implements HasMiddleware
      */
     public function previewReceipt($saleId)
     {
-        $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product'])
+        $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product', 'debt.payments'])
             ->findOrFail($saleId);
 
         if ($sale->outlet_id !== auth()->user()->outlet_id && ! auth()->user()->isOwner()) {
@@ -106,7 +106,7 @@ class ReceiptController extends Controller implements HasMiddleware
      */
     public function show($invoiceNumber)
     {
-        $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product'])
+        $sale = Sale::with(['outlet', 'customer', 'cashier', 'items.product', 'debt.payments'])
             ->where('invoice_number', $invoiceNumber)
             ->firstOrFail();
 

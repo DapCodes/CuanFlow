@@ -406,6 +406,40 @@
             @endif
             @endif
         </div>
+
+        @if($sale->debt)
+        <!-- Debt Info -->
+        <div class="payment-section" style="background-color: #f9fafb; border: 1px dashed #000; padding: 10px; margin-top: 10px;">
+            <div style="text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 8px; text-decoration: underline;">RIWAYAT PEMBAYARAN TUNGGAKAN</div>
+            <div class="payment-row">
+                <span>Total Pinjaman:</span>
+                <span>Rp {{ number_format($sale->debt->amount, 0, ',', '.') }}</span>
+            </div>
+            
+            @if($sale->debt->payments->count() > 0)
+                <div style="margin: 8px 0; border-top: 1px dotted #000; padding-top: 5px;">
+                    <div style="font-size: 10px; font-weight: bold; margin-bottom: 4px;">PEMBAYARAN MASUK:</div>
+                    @foreach($sale->debt->payments as $payment)
+                        <div class="payment-row" style="font-size: 10px;">
+                            <span>{{ $payment->created_at->format('d/m/Y H:i') }} ({{ strtoupper($payment->payment_method) }})</span>
+                            <span style="font-weight: bold;">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            <div class="payment-row total" style="margin-top: 5px; border-top: 1px solid #000; padding-top: 8px; font-weight: bold; font-size: 14px;">
+                <span>SISA PINJAMAN:</span>
+                <span class="text-red-500">Rp {{ number_format($sale->debt->remaining_amount, 0, ',', '.') }}</span>
+            </div>
+            
+            @if($sale->debt->remaining_amount <= 0)
+                <div style="text-align: center; color: #15803d; font-weight: bold; font-size: 14px; margin-top: 10px; border: 2px solid #16a34a; padding: 5px;">
+                    *** LUNAS ***
+                </div>
+            @endif
+        </div>
+        @endif
         
         <!-- QR (scanable) -->
         <div class="barcode">
