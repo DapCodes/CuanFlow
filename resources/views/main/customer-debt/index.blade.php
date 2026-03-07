@@ -1164,6 +1164,12 @@ function closePaymentModal() {
     currentDebt = null;
 }
 
+function setPaymentAmount(percent) {
+    if (!currentDebt) return;
+    const amount = Math.floor(currentDebt.remaining_amount * percent);
+    document.getElementById('paymentAmount').value = amount;
+}
+
 function selectPaymentMethod(method) {
     selectedPaymentMethod = method;
     
