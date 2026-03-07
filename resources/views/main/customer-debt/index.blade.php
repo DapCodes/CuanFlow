@@ -16,6 +16,16 @@
     .tab-btn {
         transition: all 0.2s ease;
     }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .scrollbar-hide {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
     .tab-btn.active {
         background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
         color: white;
@@ -135,10 +145,10 @@
         {{-- TAB NAVIGATION --}}
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
             <div class="border-b border-gray-200 px-4 md:px-6 py-4">
-                <div class="flex gap-2">
+                <div class="flex gap-2 overflow-x-auto pb-2 -mb-2 scrollbar-hide snap-x">
                     @can('lihat pelanggan')
                     <button type="button" id="tabCustomer" onclick="switchTab('customer')"
-                            class="tab-btn active px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2">
+                            class="tab-btn active px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 whitespace-nowrap snap-start shrink-0">
                         <i class="fas fa-users"></i>
                         <span>Pelanggan</span>
                     </button>
@@ -146,7 +156,7 @@
                     
                     @can('lihat piutang')
                     <button type="button" id="tabDebt" onclick="switchTab('debt')"
-                            class="tab-btn px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 text-gray-600 border border-gray-200">
+                            class="tab-btn px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 text-gray-600 border border-gray-200 whitespace-nowrap snap-start shrink-0">
                         <i class="fas fa-file-invoice-dollar"></i>
                         <span>Tunggakan</span>
                     </button>
@@ -154,7 +164,7 @@
 
                     @can('lihat reseller applications')
                     <button type="button" id="tabSupplier" onclick="switchTab('supplier')"
-                            class="tab-btn px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 text-gray-600 border border-gray-200">
+                            class="tab-btn px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 text-gray-600 border border-gray-200 whitespace-nowrap snap-start shrink-0">
                         <i class="fas fa-truck-loading"></i>
                         <span>Daftar Reseller</span>
                     </button>
