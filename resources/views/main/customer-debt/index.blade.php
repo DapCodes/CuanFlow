@@ -1229,7 +1229,6 @@ function selectTransferMethod(element, linkId, methodName, accNumber, accName, q
 
 function closePaymentModal() {
     document.getElementById('paymentModal').classList.add('hidden');
-    currentDebt = null;
 }
 
 function setPaymentAmount(percent) {
