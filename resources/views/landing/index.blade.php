@@ -52,7 +52,7 @@
                     </a>
                     
                     @can('edit landing page')
-                    <a href="{{ route('landing-pages.edit', $outlet->id) }}"
+                    <a href="{{ route('landing-pages.edit', $outlet->id) }}" target="_blank"
                        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1">
                         <i class="fas fa-pen-paintbrush text-sm"></i>
                         <span>Edit Tampilan</span>
@@ -280,7 +280,7 @@
                             <!-- Overlay Button -->
                             <div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-50">
                                 @can('edit landing page')
-                                <a href="{{ route('landing-pages.edit', $outlet->id) }}" class="bg-white/90 backdrop-blur text-gray-900 px-5 py-2 rounded-full text-xs font-bold shadow-2xl transform scale-90 group-hover:scale-100 transition-all hover:bg-white">
+                                <a href="{{ route('landing-pages.edit', $outlet->id) }}" target="_blank" class="bg-white/90 backdrop-blur text-gray-900 px-5 py-2 rounded-full text-xs font-bold shadow-2xl transform scale-90 group-hover:scale-100 transition-all hover:bg-white">
                                     <i class="fas fa-magic mr-2 text-blue-600"></i> Kustomisasi Penuh
                                 </a>
                                 @endcan
