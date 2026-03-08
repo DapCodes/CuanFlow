@@ -176,13 +176,16 @@ class EmployeeController extends Controller implements HasMiddleware
             $rolePermissions[$role->name] = $role->permissions->pluck('name')->toArray();
         }
 
-        // Ambil permission yang dimiliki employee (direct permissions, bukan dari role)
+        // Ambil permission yang dimiliki employee (direct permissions)
         $employeeDirectPermissions = $employee->getDirectPermissions()->pluck('name')->toArray();
+
+        // Ambil SEMUA permission yang dimiliki employee (direct + dari role)
+        $employeeAllPermissions = $employee->getAllPermissions()->pluck('name')->toArray();
 
         // Ambil role yang dimiliki employee
         $employeeRoles = $employee->roles->pluck('name')->toArray();
 
-        return view('main.employees.edit', compact('employee', 'roles', 'permissionCategories', 'rolePermissions', 'employeeDirectPermissions', 'employeeRoles'));
+        return view('main.employees.edit', compact('employee', 'roles', 'permissionCategories', 'rolePermissions', 'employeeDirectPermissions', 'employeeAllPermissions', 'employeeRoles'));
     }
 
     public function update(Request $request, User $employee)

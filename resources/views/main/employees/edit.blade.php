@@ -355,28 +355,28 @@
                                     <div class="p-3 category-content" data-category-id="{{ $category->id }}">
                                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                                             @foreach($category->permissions as $permission)
-                                                @php
-                                                    // Cek apakah permission ini dimiliki (dari role atau direct)
-                                                    $isFromRole = false;
-                                                    foreach ($employeeRoles as $roleName) {
-                                                        if (in_array($permission->name, $rolePermissions[$roleName] ?? [])) {
-                                                            $isFromRole = true;
-                                                            break;
-                                                        }
-                                                    }
-                                                    $isDirect = in_array($permission->name, $employeeDirectPermissions);
-                                                    $isChecked = $isFromRole || $isDirect || in_array($permission->name, old('permissions', []));
-                                                @endphp
+
                                                 <label class="permission-item flex items-center gap-2.5 p-2.5 rounded-lg border border-transparent hover:border-gray-200 cursor-pointer transition-all"
                                                        data-permission-name="{{ $permission->name }}">
                                                     <input type="checkbox" name="permissions[]" value="{{ $permission->name }}"
                                                            class="permission-checkbox w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-offset-0"
                                                            data-category="{{ $category->id }}"
-                                                           {{ $isChecked ? 'checked' : '' }}>
+                                                           {{ in_array($permission->name, old('permissions', $employeeAllPermissions)) ? 'checked' : '' }}>
                                                     <div class="flex-1 min-w-0">
-                                                        <span class="permission-label text-sm text-gray-700 block truncate">
-                                                            {{ ucfirst($permission->name) }}
-                                                        </span>
+                                                        <div class="flex items-center gap-1.5 overflow-hidden">
+                                                            <span class="permission-label text-sm text-gray-700 block truncate">
+                                                                {{ ucfirst($permission->name) }}
+                                                            </span>
+                                                            @if(in_array($permission->name, $employeeAllPermissions) && !in_array($permission->name, $employeeDirectPermissions))
+                                                                <span class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-gray-100 text-gray-500 border border-gray-200 uppercase tracking-tighter" title="Diwariskan dari Role">
+                                                                    Role
+                                                                </span>
+                                                            @elseif(in_array($permission->name, $employeeDirectPermissions))
+                                                                <span class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-tighter" title="Custom (Diberikan Langsung)">
+                                                                    Custom
+                                                                </span>
+                                                            @endif
+                                                        </div>
                                                         @if($permission->description)
                                                             <span class="text-xs text-gray-400 block truncate">{{ $permission->description }}</span>
                                                         @endif

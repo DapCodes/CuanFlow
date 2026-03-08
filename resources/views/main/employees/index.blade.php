@@ -181,6 +181,7 @@
                                 data-name="{{ strtolower($employee->name) }}"
                                 data-email="{{ strtolower($employee->email) }}"
                                 data-role="{{ $employee->roles->pluck('name')->join(',') }}"
+                                data-permissions="{{ $employee->getAllPermissions()->pluck('name')->join(',') }}"
                                 data-status="{{ $employee->is_active ? 'active' : 'inactive' }}">
                                 
                                 {{-- Pegawai --}}
@@ -237,16 +238,27 @@
 
                                 {{-- Permission --}}
                                 <td class="px-6 py-3">
-                                    @if($employee->permissions->count() > 0)
+                                    @php
+                                        $allPermissions = $employee->getAllPermissions();
+                                        $directPermissions = $employee->getDirectPermissions()->pluck('name')->toArray();
+                                    @endphp
+                                    @if($allPermissions->count() > 0)
                                         <div class="flex flex-wrap gap-1">
-                                            @foreach($employee->permissions->take(2) as $permission)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                                            @foreach($allPermissions->take(3) as $permission)
+                                                @php
+                                                    $isDirect = in_array($permission->name, $directPermissions);
+                                                @endphp
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium {{ $isDirect ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-gray-100 text-gray-700 border border-gray-200' }}" 
+                                                      title="{{ $isDirect ? 'Custom Permission (Diberikan Langsung)' : 'Inherited from Role' }}">
                                                     {{ str_replace('-', ' ', $permission->name) }}
+                                                    @if($isDirect)
+                                                        <i class="fas fa-user-gear ml-1 text-[8px]"></i>
+                                                    @endif
                                                 </span>
                                             @endforeach
-                                            @if($employee->permissions->count() > 2)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
-                                                    +{{ $employee->permissions->count() - 2 }}
+                                            @if($allPermissions->count() > 3)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-50 text-gray-500 border border-gray-100">
+                                                    +{{ $allPermissions->count() - 3 }}
                                                 </span>
                                             @endif
                                         </div>
