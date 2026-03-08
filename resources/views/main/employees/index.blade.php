@@ -113,11 +113,11 @@
         {{-- KONTEN UTAMA: TOOLBAR + TABEL --}}
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
             {{-- Toolbar: Search & Filter --}}
-            <div class="border-b border-gray-200 px-4 md:px-6 py-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between gap-4">
+            <form action="{{ route('employees.index') }}" method="GET" id="filterForm" class="border-b border-gray-200 px-4 md:px-6 py-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between gap-4">
                 <div class="w-full md:max-w-md">
                     <label class="text-xs font-medium text-gray-500 mb-1 block">Cari pegawai</label>
                     <div class="relative">
-                        <input type="text" id="searchEmployee" placeholder="Cari berdasarkan nama atau email..."
+                        <input type="text" name="search" id="searchEmployee" value="{{ request('search') }}" placeholder="Cari berdasarkan nama atau email..."
                                class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                     </div>
@@ -126,26 +126,26 @@
                 <div class="flex flex-wrap gap-3 w-full md:w-auto">
                     <div class="w-full sm:w-40 md:w-44">
                         <label class="text-xs font-medium text-gray-500 mb-1 block">Role</label>
-                        <select id="filterRole"
+                        <select name="role" id="filterRole" onchange="this.form.submit()"
                                 class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
                             <option value="">Semua Role</option>
-                            <option value="kasir">Kasir</option>
-                            <option value="produksi">Produksi</option>
-                            <option value="inventaris">Inventaris</option>
+                            @foreach($availableRoles as $role)
+                                <option value="{{ $role->name }}" {{ request('role') == $role->name ? 'selected' : '' }}>{{ ucfirst($role->name) }}</option>
+                            @endforeach
                         </select>
                     </div>
 
                     <div class="w-full sm:w-40 md:w-44">
                         <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
-                        <select id="filterStatus"
+                        <select name="status" id="filterStatus" onchange="this.form.submit()"
                                 class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
                             <option value="">Semua Status</option>
-                            <option value="active">Aktif</option>
-                            <option value="inactive">Tidak Aktif</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
+                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
                         </select>
                     </div>
                 </div>
-            </div>
+            </form>
 
             {{-- Tabel --}}
             <div class="overflow-x-auto">
@@ -348,19 +348,31 @@
                                             <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                                                 <i class="fas fa-users text-3xl text-gray-300"></i>
                                             </div>
-                                            <h3 class="text-base font-semibold text-gray-900 mb-1">Belum ada pegawai</h3>
-                                            <p class="text-sm text-gray-500 mb-4 max-w-sm">
-                                                Tambahkan pegawai untuk memulai pengelolaan tim dan hak akses.
-                                            </p>
-                                            @can('buat pegawai')
-                                            <a href="{{ route('employees.create') }}"
-                                               class="inline-flex items-center gap-2 rounded-lg bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600">
-                                                <i class="fas fa-user-plus text-xs"></i>
-                                                Tambah Pegawai
-                                            </a>
-                                            @endcan
+                                            @if(request('search') || request('role') || request('status'))
+                                                <h3 class="text-base font-semibold text-gray-900 mb-1">Pencarian tidak ditemukan</h3>
+                                                <p class="text-sm text-gray-500 mb-4 max-w-sm">
+                                                    Tidak ada pegawai yang cocok dengan kriteria filter Anda. Silakan coba sesuaikan kata kunci atau filter Anda.
+                                                </p>
+                                                <a href="{{ route('employees.index') }}"
+                                                   class="inline-flex items-center gap-2 rounded-lg bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600">
+                                                    <i class="fas fa-undo text-xs"></i>
+                                                    Reset Filter
+                                                </a>
+                                            @else
+                                                <h3 class="text-base font-semibold text-gray-900 mb-1">Belum ada pegawai</h3>
+                                                <p class="text-sm text-gray-500 mb-4 max-w-sm">
+                                                    Tambahkan pegawai untuk memulai pengelolaan tim dan hak akses.
+                                                </p>
+                                                @can('buat pegawai')
+                                                <a href="{{ route('employees.create') }}"
+                                                   class="inline-flex items-center gap-2 rounded-lg bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600">
+                                                    <i class="fas fa-user-plus text-xs"></i>
+                                                    Tambah Pegawai
+                                                </a>
+                                                @endcan
+                                            @endif
                                         </div>
-                                </td>
+                                    </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -381,35 +393,15 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchEmployee');
-    const filterRole = document.getElementById('filterRole');
-    const filterStatus = document.getElementById('filterStatus');
-    const employeeRows = document.querySelectorAll('.employee-row');
+    const filterForm = document.getElementById('filterForm');
+    let timeout = null;
 
-    function filterEmployees() {
-        const searchTerm = (searchInput.value || '').toLowerCase();
-        const roleFilter = filterRole.value;
-        const statusFilter = filterStatus.value;
-
-        employeeRows.forEach(row => {
-            const name = row.dataset.name || '';
-            const email = row.dataset.email || '';
-            const roles = row.dataset.role || '';
-            const status = row.dataset.status || '';
-
-            const matchesSearch = !searchTerm
-                || name.includes(searchTerm)
-                || email.includes(searchTerm);
-
-            const matchesRole = !roleFilter || roles.includes(roleFilter);
-            const matchesStatus = !statusFilter || status === statusFilter;
-
-            row.style.display = (matchesSearch && matchesRole && matchesStatus) ? '' : 'none';
-        });
-    }
-
-    searchInput.addEventListener('input', filterEmployees);
-    filterRole.addEventListener('change', filterEmployees);
-    filterStatus.addEventListener('change', filterEmployees);
+    searchInput.addEventListener('keyup', function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            filterForm.submit();
+        }, 700);
+    });
 });
 </script>
 @endpush

@@ -29,15 +29,36 @@ class EmployeeController extends Controller implements HasMiddleware
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $employees = User::with(['roles', 'permissions', 'outlet'])
+        $search = $request->get('search');
+        $roleFilter = $request->get('role');
+        $statusFilter = $request->get('status');
+
+        $query = User::with(['roles', 'permissions', 'outlet'])
             ->whereHas('roles', function ($query) {
                 $query->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']);
             })
-            ->where('outlet_id', auth()->user()->outlet_id)
-            ->latest()
-            ->paginate(15);
+            ->where('outlet_id', auth()->user()->outlet_id);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($roleFilter) {
+            $query->whereHas('roles', function($q) use ($roleFilter) {
+                $q->where('name', $roleFilter);
+            });
+        }
+
+        if ($statusFilter !== null && $statusFilter !== '') {
+            $query->where('is_active', $statusFilter === 'active');
+        }
+
+        $employees = $query->latest()->paginate(15)->withQueryString();
 
         $stats = [
             'total' => User::whereHas('roles', fn ($q) => $q->whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller']))
@@ -57,7 +78,9 @@ class EmployeeController extends Controller implements HasMiddleware
                 ->count(),
         ];
 
-        return view('main.employees.index', compact('employees', 'stats'));
+        $availableRoles = Role::whereIn('name', ['supervisor', 'kasir', 'produksi', 'inventaris', 'supplier', 'reseller'])->get();
+
+        return view('main.employees.index', compact('employees', 'stats', 'availableRoles'));
     }
 
     public function create()
