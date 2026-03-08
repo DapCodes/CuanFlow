@@ -910,7 +910,7 @@
 @can('lihat invoice')
   <a href="{{ route('invoices.index') }}"
     class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="14"
+    data-step="7.5"
     data-title="Ringkasan Invoice"
     data-intro="<strong>Pantau tagihan & transaksi.</strong> Lihat ringkasan terbaru dari penjualan, pemasukan, pengeluaran, dan piutang dalam satu tampilan cepat.">
     <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-400 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
@@ -2141,10 +2141,19 @@ document.addEventListener('DOMContentLoaded', function() {
     ============================ */
   function initMenuCards() {
     const cards = document.querySelectorAll('#menuGrid .menu-card');
+    const usedIds = new Set();
+    
     cards.forEach((card, i) => {
       // Generate unique menu-id from data-step or index
-      const step = card.getAttribute('data-step') || i;
-      const menuId = 'menu-' + step;
+      let step = card.getAttribute('data-step') || i;
+      let menuId = 'menu-' + step;
+      
+      // Ensure absolute uniqueness if data-step is duplicated in HTML
+      if (usedIds.has(menuId)) {
+        menuId = 'menu-' + step + '-' + i;
+      }
+      usedIds.add(menuId);
+      
       card.setAttribute('data-menu-id', menuId);
       if (!card.classList.contains('relative')) {
         card.classList.add('relative');
