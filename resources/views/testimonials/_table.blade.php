@@ -79,15 +79,18 @@
                                     </form>
                                     @endcan
 
-                                    @can('hapus testimoni')
-                                    <form action="{{ route('testimonials.destroy', $testimonial->id) }}" method="POST" onsubmit="return confirm('Hapus testimoni ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all shadow-sm" title="Hapus">
-                                            <i class="fas fa-trash text-xs"></i>
-                                        </button>
-                                    </form>
-                                    @endcan
+                                    {{-- Feature: Hapus Testimoni (Hidden per request) --}}
+                                    @if(false)
+                                        @can('hapus testimoni')
+                                        <form action="{{ route('testimonials.destroy', $testimonial->id) }}" method="POST" onsubmit="return confirm('Hapus testimoni ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all shadow-sm" title="Hapus">
+                                                <i class="fas fa-trash text-xs"></i>
+                                            </button>
+                                        </form>
+                                        @endcan
+                                    @endif
                                 @else
                                     {{-- For Product Reviews, maybe just view link or simple delete if allowed --}}
                                     <span class="text-[10px] font-bold text-gray-400 italic">Review Produk</span>
