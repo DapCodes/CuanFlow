@@ -118,6 +118,8 @@ class CheckSubscription
      */
     private function handleSubscriptionIssue(Request $request, Closure $next, string $reason): Response
     {
+        $user = $request->user();
+
         if ($request->expectsJson()) {
             return response()->json([
                 'error' => 'subscription_required',
@@ -128,12 +130,12 @@ class CheckSubscription
 
         // Check for rejected trial request if status is cancelled or no_subscription
         if (in_array($reason, [\App\Services\FeatureAccessService::STATUS_CANCELLED, \App\Services\FeatureAccessService::STATUS_NO_SUBSCRIPTION])) {
-            $rejectedTrial = \App\Models\TrialVerificationRequest::where('user_id', $request->user()->id)
+            $rejectedTrial = \App\Models\TrialVerificationRequest::where('user_id', $user->id)
                 ->where('status', 'rejected')
                 ->latest()
                 ->first();
 
-            if ($rejectedTrial) {
+            if ($rejectedTrial && $user->hasRole('owner')) {
                 // Check if 7 days have passed since rejection
                 $canRetry = false;
                 $waitTime = '';
@@ -177,17 +179,25 @@ class CheckSubscription
             }
         }
 
-        // If on dashboard, allow access but show modal
-        if ($request->routeIs('dashboard')) {
+        // Only owners can see and interact with subscription modals
+        if ($user->hasRole('owner')) {
+            // If on dashboard, allow access but show modal
+            if ($request->routeIs('dashboard')) {
+                session(['show_subscription_modal' => true, 'subscription_modal_reason' => $reason]);
+
+                return $next($request);
+            }
+
+            // Otherwise redirect to dashboard with modal
             session(['show_subscription_modal' => true, 'subscription_modal_reason' => $reason]);
 
-            return $next($request);
+            return redirect()->route('dashboard');
         }
 
-        // Otherwise redirect to dashboard with modal
-        session(['show_subscription_modal' => true, 'subscription_modal_reason' => $reason]);
+        // Non-owners (employees) get redirected to locked page
+        session(['employee_lock_reason' => 'no_subscription']);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('employee.locked');
     }
 
     /**
@@ -195,6 +205,8 @@ class CheckSubscription
      */
     private function handlePendingVerification(Request $request, Closure $next): Response
     {
+        $user = $request->user();
+
         if ($request->expectsJson()) {
             return response()->json([
                 'error' => 'pending_verification',
@@ -202,17 +214,25 @@ class CheckSubscription
             ], 202);
         }
 
-        // Set session to show modal
-        session([
-            'show_subscription_modal' => true,
-            'subscription_modal_reason' => 'pending_verification',
-        ]);
+        // Only owners can see and interact with subscription modals
+        if ($user->hasRole('owner')) {
+            // Set session to show modal
+            session([
+                'show_subscription_modal' => true,
+                'subscription_modal_reason' => 'pending_verification',
+            ]);
 
-        if ($request->routeIs('dashboard')) {
-            return $next($request);
+            if ($request->routeIs('dashboard')) {
+                return $next($request);
+            }
+
+            return redirect()->route('dashboard');
         }
 
-        return redirect()->route('dashboard');
+        // Non-owners (employees) get redirected to locked page
+        session(['employee_lock_reason' => 'no_subscription']);
+
+        return redirect()->route('employee.locked');
     }
 
     /**
@@ -265,6 +285,8 @@ class CheckSubscription
      */
     private function handleNewUser(Request $request, Closure $next): Response
     {
+        $user = $request->user();
+
         if ($request->expectsJson()) {
             return response()->json([
                 'error' => 'subscription_required',
@@ -273,25 +295,32 @@ class CheckSubscription
             ], 402);
         }
 
-        $user = $request->user();
-
         // For dashboard, set appropriate flags based on user state
         if ($request->routeIs('dashboard')) {
-            // Set a flag to indicate this is a new user needing onboarding
-            session(['new_user_onboarding' => true]);
+            // Only owners get onboarding flags and subscription choices
+            if ($user->hasRole('owner')) {
+                // Set a flag to indicate this is a new user needing onboarding
+                session(['new_user_onboarding' => true]);
 
-            // If user has outlet but no subscription completed tour, show subscription choice modal
-            // But ONLY if we are not already showing the main subscription modal (user clicked 'Buy')
-            if ($user->outlet_id && ! session('show_welcome_tour') && ! session('show_subscription_modal')) {
-                // Check if they haven't completed onboarding yet
-                session(['force_subscription_choice' => true]);
+                // If user has outlet but no subscription completed tour, show subscription choice modal
+                // But ONLY if we are not already showing the main subscription modal (user clicked 'Buy')
+                if ($user->outlet_id && ! session('show_welcome_tour') && ! session('show_subscription_modal')) {
+                    // Check if they haven't completed onboarding yet
+                    session(['force_subscription_choice' => true]);
+                }
             }
 
             return $next($request);
         }
 
-        // For other routes, redirect to dashboard to start onboarding
-        session(['new_user_onboarding' => true]);
+        // For other routes, redirect to dashboard to start onboarding/lock
+        if ($user->hasRole('owner')) {
+            session(['new_user_onboarding' => true]);
+        } else {
+            session(['employee_lock_reason' => 'no_subscription']);
+
+            return redirect()->route('employee.locked');
+        }
 
         return redirect()->route('dashboard');
     }

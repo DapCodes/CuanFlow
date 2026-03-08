@@ -90,22 +90,32 @@ class CheckFeatureAccess
      */
     private function handleSubscriptionIssue(Request $request, string $status, string $reason): Response
     {
+        $user = $request->user();
+
         if ($request->expectsJson()) {
             return response()->json([
                 'error' => 'subscription_required',
                 'message' => $reason,
                 'status' => $status,
-                'upgrade_url' => route('subscription.index'),
+                'upgrade_url' => $user->hasRole('owner') ? route('subscription.index') : null,
             ], 402);
         }
 
-        // Redirect to dashboard with subscription modal
-        session([
-            'show_subscription_modal' => true,
-            'subscription_modal_reason' => $status,
-        ]);
+        // Only owners can see and interact with subscription modals
+        if ($user->hasRole('owner')) {
+            // Redirect to dashboard with subscription modal
+            session([
+                'show_subscription_modal' => true,
+                'subscription_modal_reason' => $status,
+            ]);
 
-        return redirect()->route('dashboard');
+            return redirect()->route('dashboard');
+        }
+
+        // Non-owners (employees) get redirected to locked page
+        session(['employee_lock_reason' => 'no_subscription']);
+
+        return redirect()->route('employee.locked');
     }
 
     /**

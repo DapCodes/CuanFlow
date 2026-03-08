@@ -83,7 +83,7 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
     // ---------------------------------------------------------------------
     // Subscription & Billing
     // ---------------------------------------------------------------------
-    Route::prefix('subscription')->name('subscription.')->group(function () {
+    Route::prefix('subscription')->name('subscription.')->middleware(['role:owner'])->group(function () {
         Route::get('/', [SubscriptionController::class, 'index'])->name('index');
         Route::post('/select-plan', [SubscriptionController::class, 'selectPlan'])->name('select-plan');
         Route::get('/payment', [SubscriptionPaymentController::class, 'show'])->name('payment');

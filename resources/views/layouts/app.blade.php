@@ -435,11 +435,13 @@
                             </div>
                         @endif
 
+                        @hasrole('owner')
                         <a href="{{ route('subscription.manage') }}"
                             class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">
                             <i class="fa-solid fa-crown mr-2 text-cuan-green"></i>
                             Kelola Langganan
                         </a>
+                        @endhasrole
 
                         <a href="{{ route('profile.edit') }}"
                             class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">

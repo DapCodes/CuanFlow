@@ -689,12 +689,14 @@
 
 @section('content')
 <div class="relative min-h-[calc(100vh-64px)] flex flex-col">
+  @hasrole('owner')
   @include('subscription.modal')
+  @endhasrole
   <div class="flex-grow flex items-center justify-center py-8 px-4">
   <div class="w-full max-w-6xl">
 
   {{-- Subscription Grace Period Warning --}}
-  @if(auth()->user()->subscription && auth()->user()->subscription->isInGracePeriod())
+  @if(auth()->user()->hasRole('owner') && auth()->user()->subscription && auth()->user()->subscription->isInGracePeriod())
   <div class="max-w-4xl mx-auto mb-6 px-4">
     <div class="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden group transition-all hover:shadow-lg">
       {{-- Animated Background Shine --}}
