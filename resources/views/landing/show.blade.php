@@ -383,10 +383,22 @@
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        // Handle validation errors or other server errors
+                        let errorMessage = data.message || 'Gagal mengirim ulasan.';
+                        if (data.errors) {
+                            errorMessage = Object.values(data.errors).flat().join('\n');
+                        }
+                        throw new Error(errorMessage);
+                    }
+                    return data;
+                })
                 .then(data => {
                     if (data.success) {
                         Swal.fire({
@@ -398,15 +410,13 @@
                         });
                         this.reset();
                         document.getElementById('testimonialImageLabel').innerText = 'Upload Foto';
-                    } else {
-                        throw new Error(data.message || 'Terjadi kesalahan');
                     }
                 })
                 .catch(error => {
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
-                        text: 'Gagal mengirim ulasan. Silakan coba lagi.',
+                        text: error.message || 'Gagal mengirim ulasan. Silakan coba lagi.',
                         confirmButtonColor: '#EF4444'
                     });
                 })

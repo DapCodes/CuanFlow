@@ -28,7 +28,7 @@ class TestimonialController extends Controller
             'role' => ['nullable', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'image', 'max:5120'],
             'is_published' => ['nullable', 'boolean'],
         ]);
 
@@ -56,7 +56,7 @@ class TestimonialController extends Controller
             'role' => ['nullable', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'image', 'max:5120'],
             'is_published' => ['nullable', 'boolean'],
         ]);
 

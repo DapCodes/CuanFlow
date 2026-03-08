@@ -118,7 +118,7 @@ class TestimonialController extends Controller implements HasMiddleware
             'role' => 'nullable|string|max:100',
             'content' => 'required|string|max:1000',
             'rating' => 'required|integer|min:1|max:5',
-            'image' => 'nullable|image|max:2048', // 2MB Max
+            'image' => 'nullable|image|max:5120', // 5MB Max
         ]);
 
         if ($request->hasFile('image')) {
