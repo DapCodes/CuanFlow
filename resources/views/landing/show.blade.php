@@ -167,6 +167,23 @@
         }
     @endphp
 
+    @if(!$landingPage->is_active)
+        <div class="fixed top-0 left-0 w-full z-[1000] bg-yellow-500 text-white py-2 shadow-lg flex items-center justify-center gap-3">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span class="text-[10px] md:text-sm font-bold uppercase tracking-widest">Preview Mode: Halaman ini sedang nonaktif.</span>
+            @can('edit landing page')
+            <a href="{{ route('landing-pages.index') }}" class="px-3 py-1 bg-white text-yellow-600 rounded-full text-[9px] font-black uppercase hover:bg-gray-100 transition whitespace-nowrap">
+                Aktifkan
+            </a>
+            @endcan
+        </div>
+        <style>
+            .navbar, #navbar { top: 40px !important; }
+            .mobile-menu, #mobileMenu { top: 40px !important; }
+            body { padding-top: 40px; }
+        </style>
+    @endif
+
     @include('landing.templates.template_' . $template)
 
     <!-- ========== PRODUCT DETAIL MODAL ========== -->

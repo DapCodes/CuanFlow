@@ -58,6 +58,16 @@ class LandingPageController extends Controller implements HasMiddleware
         $landingPage = LandingPage::with('outlet')->where('outlet_id', $id)->firstOrFail();
         $outlet = $landingPage->outlet;
 
+        // Check if landing page is active. Allow admins and outlet owners to preview even if inactive.
+        if (!$landingPage->is_active) {
+            $user = auth()->user();
+            $canPreview = $user && ($user->hasRole('admin') || $user->outlet_id == $id);
+            
+            if (!$canPreview) {
+                abort(404, 'Landing page ini sedang tidak aktif.');
+            }
+        }
+
         // Redirect to cool URL if slug is missing or doesn't match
         $correctSlug = Str::slug($outlet->name);
         if ($slug !== $correctSlug) {
