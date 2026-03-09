@@ -25,6 +25,18 @@ class FeatureAccessService
     public const STATUS_CANCELLED = 'cancelled';
 
     /**
+     * Get the effective user for subscription checks (the owner of the outlet).
+     */
+    protected function getEffectiveUser(User $user): User
+    {
+        if (! $user->hasRole('owner') && ! $user->hasRole('admin')) {
+            return $user->outlet?->owner ?? $user;
+        }
+
+        return $user;
+    }
+
+    /**
      * Check if user can access a specific feature.
      * This checks BOTH subscription validity AND tier feature access.
      */
@@ -58,6 +70,8 @@ class FeatureAccessService
      */
     public function getSubscriptionStatus(User $user): string
     {
+        $user = $this->getEffectiveUser($user);
+
         return Cache::remember("user_{$user->id}_sub_status", 60, function () use ($user) {
             return $this->computeSubscriptionStatus($user);
         });
@@ -111,6 +125,8 @@ class FeatureAccessService
      */
     public function tierHasFeature(User $user, string $featureName): bool
     {
+        $user = $this->getEffectiveUser($user);
+
         return Cache::remember("user_{$user->id}_feature_{$featureName}", 300, function () use ($user, $featureName) {
             // Get the user's tier from any subscription (active, trial, or even expired)
             $subscription = $user->subscriptions()
@@ -137,6 +153,8 @@ class FeatureAccessService
      */
     public function getGraceDaysRemaining(User $user): int
     {
+        $user = $this->getEffectiveUser($user);
+
         $subscription = $user->subscriptions()
             ->whereIn('status', [
                 UserSubscription::STATUS_ACTIVE,
@@ -220,6 +238,8 @@ class FeatureAccessService
      */
     public function clearCache(User $user): void
     {
+        $user = $this->getEffectiveUser($user);
+
         Cache::forget("user_{$user->id}_sub_status");
         // Feature cache uses pattern, need to clear all
         $user->clearSubscriptionCache();

@@ -1116,9 +1116,22 @@
 @endcanAccessFeature
 
   <!-- PENGATURAN BISNIS -->
-@canAccessFeature('multi_outlet')
 @can('lihat outlet')
-  <a href="{{ route('outlets.index') }}"
+  @php
+      $authServices = app(\App\Services\FeatureAccessService::class);
+      $hasMultiOutlet = $authServices->checkAccess(auth()->user(), 'multi_outlet')['can_access'];
+      $outletUrl = route('outlets.index');
+
+      if (!$hasMultiOutlet) {
+          $singleOutlet = auth()->user()->hasRole('owner')
+              ? auth()->user()->ownedOutlets()->first()
+              : auth()->user()->outlet;
+          if ($singleOutlet) {
+              $outletUrl = route('outlets.show', $singleOutlet->id);
+          }
+      }
+  @endphp
+  <a href="{{ $outletUrl }}"
     class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
     data-step="19"
     data-title="Identitas Outlet"
@@ -1131,7 +1144,6 @@
     </span>
   </a>
 @endcan
-@endcanAccessFeature
 
 @canAccessFeature('landing_page')
 @can('lihat landing page')

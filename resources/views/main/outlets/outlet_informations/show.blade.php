@@ -56,10 +56,15 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                @php
+                    $hasMultiOutlet = app(\App\Services\FeatureAccessService::class)->checkAccess(auth()->user(), 'multi_outlet')['can_access'];
+                @endphp
+                @if($hasMultiOutlet)
                 <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm">
                     <i class="fas fa-arrow-left mr-2 text-xs"></i>
                     Kembali
                 </a>
+                @endif
                 <a href="{{ route('outlets.edit', $outlet->id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition-all shadow-md">
                     <i class="fas fa-edit mr-2 text-xs"></i>
                     Edit Outlet

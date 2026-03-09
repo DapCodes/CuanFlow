@@ -159,8 +159,9 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
     Route::post('/change-outlet', [ChangeOutletController::class, 'switch'])->name('change.outlet');
 
     // Core Resources
-    // Core outlet resources (multi_outlet feature for managing multiple outlets)
-    Route::resource('outlets', OutletInformationController::class)->middleware('feature.access:multi_outlet');
+    // Core outlet resources
+    Route::resource('outlets', OutletInformationController::class)->only(['index', 'create', 'store', 'destroy'])->middleware('feature.access:multi_outlet');
+    Route::resource('outlets', OutletInformationController::class)->only(['show', 'edit', 'update']);
     Route::resource('outlet-policies', OutletPolicyController::class)->middleware('feature.access:outlet_policies');
 
     // Outlet Payment Links
