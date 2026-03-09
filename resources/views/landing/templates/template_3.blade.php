@@ -167,23 +167,7 @@
                 <p class="text-center mb-10 text-gray-400 bg-white/5 p-4 rounded-2xl border border-white/10 text-sm">
                     <i class="fas fa-info-circle mr-2 text-primary"></i> Pilih produk unggulan untuk ditampilkan di carousel
                 </p>
-                <script>
-                    // Swiper Init
-    (function() {
-        new Swiper('.products-carousel', {
-            slidesPerView: 1,
-            spaceBetween: 20,
-            pagination: { el: '.swiper-pagination', clickable: true },
-            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-            breakpoints: {
-                640: { slidesPerView: 2, spaceBetween: 20 },
-                1024: { slidesPerView: 3, spaceBetween: 30 }
-            },
-            autoplay: { delay: 3000, disableOnInteraction: false }
-        });
-    })();
-                </script>
-            @endif
+                @endif
 
             @if(count($products) > 0)
                 <div class="swiper products-carousel pb-12">

@@ -474,6 +474,38 @@
                     .openPopup();
             }
         });
+
+        // Global Products Carousel Initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.querySelector('.products-carousel')) {
+                new Swiper('.products-carousel', {
+                    slidesPerView: 1,
+                    spaceBetween: 20,
+                    pagination: {
+                        el: '.swiper-pagination',
+                        clickable: true,
+                    },
+                    navigation: {
+                        nextEl: '.swiper-button-next',
+                        prevEl: '.swiper-button-prev',
+                    },
+                    autoplay: {
+                        delay: 3000,
+                        disableOnInteraction: false,
+                    },
+                    breakpoints: {
+                        640: {
+                            slidesPerView: 2,
+                            spaceBetween: 20,
+                        },
+                        1024: {
+                            slidesPerView: 3,
+                            spaceBetween: 30,
+                        },
+                    },
+                });
+            }
+        });
     </script>
 </body>
 </html>
