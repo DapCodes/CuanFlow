@@ -169,7 +169,7 @@
                                             <input type="number" step="any" min="0" 
                                                 name="items[{{ $index }}][physical_quantity]" 
                                                 value="{{ old('items.' . $index . '.physical_quantity', $item->physical_quantity) }}"
-                                                class="w-full text-right rounded-lg border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm py-1.5 physical-qty-input"
+                                                class="w-full text-right rounded-md border-2 border-gray-400 bg-white text-gray-900 font-bold focus:bg-white focus:ring-emerald-500 focus:border-emerald-600 sm:text-sm py-2 px-3 shadow-sm physical-qty-input placeholder-gray-300" placeholder="0"
                                                 data-system-qty="{{ $item->system_quantity }}"
                                                 oninput="calculateDiff(this)">
                                             @endif
@@ -195,7 +195,7 @@
                                                 <input type="text" 
                                                     name="items[{{ $index }}][notes]" 
                                                     value="{{ $item->notes }}"
-                                                    class="w-full rounded-lg border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 sm:text-xs py-1.5"
+                                                    class="w-full rounded-md border-2 border-gray-300 bg-white text-gray-900 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm py-2 px-3 shadow-sm"
                                                     placeholder="Ket.">
                                             @endif
                                         @endif

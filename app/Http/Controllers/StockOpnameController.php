@@ -60,6 +60,7 @@ class StockOpnameController extends Controller implements HasMiddleware
         $products = Product::where('outlet_id', $outletId)
             ->where('is_active', true)
             ->where('track_stock', true)
+            ->where('is_stock', true)
             ->get();
 
         $rawMaterials = RawMaterial::where('outlet_id', $outletId)

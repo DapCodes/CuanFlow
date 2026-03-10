@@ -113,11 +113,11 @@
         {{-- KONTEN UTAMA: TOOLBAR + TABEL --}}
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
             {{-- Toolbar: Search & Filter --}}
-            <form action="{{ route('stock-opname.index') }}" method="GET" class="border-b border-gray-200 px-4 md:px-6 py-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between gap-4">
+            <form id="filter-form" action="{{ route('stock-opname.index') }}" method="GET" class="border-b border-gray-200 px-4 md:px-6 py-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between gap-4">
                 <div class="w-full md:max-w-md">
                     <label class="text-xs font-medium text-gray-500 mb-1 block">Cari Opname</label>
                     <div class="relative">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Nomor Stock Opname..."
+                        <input type="text" name="search" id="search-input" value="{{ request('search') }}" placeholder="Nomor Stock Opname..."
                                class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                     </div>
@@ -126,7 +126,7 @@
                 <div class="flex flex-wrap gap-3 w-full md:w-auto">
                     <div class="w-full sm:w-40 md:w-44">
                         <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
-                        <select name="status" onchange="this.form.submit()"
+                        <select name="status" id="status-select"
                                 class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
                             <option value="">Semua Status</option>
                             <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
@@ -138,6 +138,7 @@
             </form>
 
             {{-- Tabel --}}
+            <div id="table-container">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 border-b border-gray-200">
@@ -267,7 +268,62 @@
                     {{ $stockOpnames->links() }}
                 </div>
             @endif
+            </div>
         </section>
     </div>
 </main>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('filter-form');
+        const searchInput = document.getElementById('search-input');
+        const statusSelect = document.getElementById('status-select');
+        const tableContainer = document.getElementById('table-container');
+
+        let timeout = null;
+
+        function fetchResults() {
+            const url = new URL(form.action);
+            const formData = new FormData(form);
+            for (const [key, value] of formData.entries()) {
+                url.searchParams.append(key, value);
+            }
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'text/html'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTableContainer = doc.getElementById('table-container');
+                if (newTableContainer) {
+                    tableContainer.innerHTML = newTableContainer.innerHTML;
+                }
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                clearTimeout(timeout);
+                timeout = setTimeout(fetchResults, 300);
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // no enter
+                }
+            });
+        }
+
+        if (statusSelect) {
+            statusSelect.addEventListener('change', fetchResults);
+        }
+    });
+</script>
+@endpush
 @endsection
