@@ -1432,6 +1432,7 @@
 
 @canAccessFeature('ai_insights')
 @if(isset($unreadInsights) && $unreadInsights->isNotEmpty())
+@can('lihat ai insights')
 <div id="insightsModal" class="hidden insights-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
   <div class="absolute inset-0 bg-gray-900 bg-opacity-70"></div>
   
@@ -1544,6 +1545,7 @@
     </div>
   </div>
 </div>
+@endcan
 @endif
 @endcanAccessFeature
 
