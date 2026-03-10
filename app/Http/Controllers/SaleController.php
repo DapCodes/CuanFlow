@@ -509,6 +509,8 @@ class SaleController extends Controller
 
             DB::commit();
 
+            event(new \App\Events\ProductionOrderRefunded($sale));
+
             return response()->json(['success' => true, 'message' => 'Refund berhasil. Stok telah dikembalikan.']);
         } catch (\Exception $e) {
             DB::rollBack();

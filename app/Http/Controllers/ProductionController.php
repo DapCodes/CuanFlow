@@ -1269,7 +1269,6 @@ class ProductionController extends Controller
             foreach ($sale->items as $item) {
                 $item->update(['production_status' => 'refunded']);
 
-                // If it was a stock item (already completed), we might need to return stock
                 if ($item->product && $item->product->is_stock && $item->served_at) {
                     $stock = $item->product->stocks()->where('outlet_id', $sale->outlet_id)->first();
                     if ($stock) {
@@ -1279,6 +1278,8 @@ class ProductionController extends Controller
             }
 
             DB::commit();
+
+            event(new \App\Events\ProductionOrderRefunded($sale));
 
             return response()->json(['success' => true, 'message' => 'Transaksi berhasil di-refund']);
         } catch (\Exception $e) {

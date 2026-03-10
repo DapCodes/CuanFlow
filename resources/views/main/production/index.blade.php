@@ -1104,6 +1104,42 @@
             showRealtimeToast('Permintaan Produksi: ' + data.orderData.invoice_number, true);
         });
 
+        channel.bind('order-refunded', function(data) {
+            console.log('[Production] Order refunded received:', data);
+            const saleId = data.orderData.sale_id;
+            
+            // Remove the card if it exists
+            const card = document.getElementById('card-sale-' + saleId);
+            if (card) {
+                const wrapper = card.closest('.production-card-wrapper');
+                if (wrapper) {
+                    wrapper.style.transition = 'all 0.4s ease-out';
+                    wrapper.style.opacity = '0';
+                    wrapper.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        wrapper.remove();
+                        // Show empty state if no cards left
+                        const grid = document.getElementById('production-grid');
+                        if (grid) {
+                            const wrappers = grid.querySelectorAll('.production-card-wrapper');
+                            if (wrappers.length === 0 && !document.getElementById('no-orders-empty-state')) {
+                                grid.innerHTML = `
+                <div id="no-orders-empty-state" class="col-span-full py-20 text-center bg-white rounded-3xl border border-gray-200 border-dashed shadow-inner">
+                    <div class="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5 border border-red-100">
+                        <i class="fas fa-times-circle text-red-500 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Semua Pesanan Selesai atau Diretur!</h3>
+                    <p class="text-gray-500 text-sm max-w-xs mx-auto">Tidak ada antrian pesanan yang perlu diproduksi saat ini. Santai sejenak.</p>
+                </div>
+                                `;
+                            }
+                        }
+                    }, 400);
+                }
+            }
+            playNotificationSound();
+            showRealtimeToast('Pesanan Diretur: ' + data.orderData.invoice_number, true); // True to show bell icon / alternate style
+        });
 
         // Helper: escape HTML
         function escapeHtml(text) {
