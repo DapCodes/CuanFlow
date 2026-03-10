@@ -521,6 +521,18 @@
 
 @push('scripts')
 <script>
+    function updateURLParams(params) {
+        const url = new URL(window.location);
+        for (const [key, value] of Object.entries(params)) {
+            if (value) {
+                url.searchParams.set(key, value);
+            } else {
+                url.searchParams.delete(key);
+            }
+        }
+        window.history.replaceState({}, '', url);
+    }
+
     function switchTab(tabId) {
         // Update Buttons
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -537,6 +549,8 @@
             content.classList.add('hidden');
         });
         document.getElementById('content-' + tabId).classList.remove('hidden');
+
+        updateURLParams({ tab: tabId });
     }
 
     function openSaleModal(saleId) {
@@ -740,16 +754,25 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Initial Tab State (Queue by default, or Stock if Queue is empty?)
-        // Let's stick to Queue as default for KDS focus
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Initial Tab State (Queue by default)
+        const initialTab = urlParams.get('tab') || 'queue';
+        switchTab(initialTab);
+        
+        // Initial Sort State
+        const initialSort = urlParams.get('sort') || 'oldest';
+        if (typeof setSortMode === 'function') {
+            setSortMode(initialSort);
+        }
         
         const searchInput = document.getElementById('searchProduct');
         const filterStock = document.getElementById('filterStock');
-        // Note: multiple tables might need separate search logic if heavily used, 
-        // but for now we only have search on the Stock table. 
-        // The Queue section doesn't have a search bar yet (it was removed/not added).
         
         if(searchInput && filterStock) {
+            if (urlParams.has('search')) searchInput.value = urlParams.get('search');
+            if (urlParams.has('stock')) filterStock.value = urlParams.get('stock');
+
             const productRows = document.querySelectorAll('.product-row');
 
             function filterProducts() {
@@ -765,10 +788,15 @@
 
                     row.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
                 });
+                
+                updateURLParams({ search: searchInput.value, stock: filterStock.value });
             }
 
             searchInput.addEventListener('input', filterProducts);
             filterStock.addEventListener('change', filterProducts);
+            
+            // Trigger initial filter
+            filterProducts();
         }
     });
 </script>
@@ -798,6 +826,10 @@
             } else {
                 btnOldest.className = 'flex-1 md:flex-none px-4 py-1.5 text-xs font-bold rounded-md text-gray-500 hover:text-gray-700 transition-all border border-transparent text-center';
                 btnNewest.className = 'flex-1 md:flex-none px-4 py-1.5 text-xs font-bold rounded-md shadow-sm bg-white text-blue-600 transition-all border border-transparent text-center';
+            }
+
+            if (typeof updateURLParams === 'function') {
+                updateURLParams({ sort: mode });
             }
 
             sortProductionCards();
