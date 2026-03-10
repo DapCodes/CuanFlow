@@ -101,19 +101,19 @@
                                 </button>
 
                                 {{-- Type Select --}}
-                                <div class="col-span-12 md:col-span-3">
+                                <div class="col-span-12 md:col-span-2">
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Tipe</label>
-                                    <select x-model="item.type" :name="'items[' + index + '][type]'" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-white">
+                                    <select x-model="item.type" :name="'items[' + index + '][type]'" @change="item.batch_number = ''; item.id = ''" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-white">
                                         <option value="product">Produk Jadi</option>
                                         <option value="raw_material">Bahan Baku</option>
                                     </select>
                                 </div>
 
                                 {{-- Item Select --}}
-                                <div class="col-span-12 md:col-span-6">
+                                <div class="col-span-12 md:col-span-4">
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Pilih Item</label>
                                     <div class="relative">
-                                        <select x-model="item.id" :name="'items[' + index + '][id]'" required class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-white">
+                                        <select x-model="item.id" :name="'items[' + index + '][id]'" @change="item.batch_number = ''" required class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-white">
                                             <option value="">-- Pilih --</option>
                                             <template x-if="item.type === 'product'">
                                                 <template x-for="p in products" :key="p.id">
@@ -132,8 +132,81 @@
                                     </div>
                                 </div>
 
+                                {{-- Batch Selection --}}
+                                <div class="col-span-12 md:col-span-4" x-data="{ open: false }">
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Pilih Batch (Bisa > 1)</label>
+                                    
+                                    <div class="relative">
+                                        {{-- Toggle Button --}}
+                                        <button type="button" @click="open = !open" 
+                                            class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white text-left flex justify-between items-center focus:ring-2 focus:ring-cyan-400 focus:outline-none"
+                                            :class="item.selected_batches && item.selected_batches.length > 0 ? 'border-cyan-300 ring-1 ring-cyan-100' : ''">
+                                            <span x-text="item.selected_batches && item.selected_batches.length > 0 
+                                                ? item.selected_batches.length + ' Batch Terpilih' 
+                                                : 'Pilih Otomatis (FIFO)'"
+                                                class="truncate text-gray-700"></span>
+                                            <i class="fas fa-chevron-down text-[10px] text-gray-400"></i>
+                                        </button>
+
+                                        {{-- Batch List Dropdown --}}
+                                        <div x-show="open" @click.away="open = false" 
+                                            class="absolute z-50 w-[350px] md:w-[450px] mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden p-2 space-y-1 transition-all"
+                                            x-transition:enter="transition ease-out duration-200"
+                                            x-transition:enter-start="opacity-0 translate-y-2"
+                                            x-transition:enter-end="opacity-100 translate-y-0">
+                                            
+                                            <div class="px-2 py-1.5 border-b border-gray-100 mb-1 flex justify-between items-center">
+                                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Daftar Batch Tersedia</span>
+                                                <button type="button" @click="item.selected_batches = []" class="text-[10px] text-cyan-600 hover:text-cyan-700 font-bold">Reset</button>
+                                            </div>
+
+                                            <div class="max-h-60 overflow-y-auto space-y-1 custom-scrollbar">
+                                                <template x-if="!item.id">
+                                                    <div class="p-4 text-center text-xs text-gray-400 italic">Pilih item terlebih dahulu</div>
+                                                </template>
+                                                
+                                                <template x-if="item.id">
+                                                    <template x-for="b in (item.type === 'product' ? (products.find(p => p.id == item.id)?.batches || []) : (rawMaterials.find(rm => rm.id == item.id)?.batches || []))" :key="b.batch_number">
+                                                        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-gray-100"
+                                                            :class="item.selected_batches.includes(b.batch_number) ? 'bg-cyan-50/50 border-cyan-100' : ''">
+                                                            <input type="checkbox" :value="b.batch_number" x-model="item.selected_batches" class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+                                                            
+                                                            <div class="flex-grow min-w-0">
+                                                                <div class="flex items-center justify-between mb-0.5">
+                                                                    <span class="text-xs font-bold text-gray-800" x-text="'#' + b.batch_number"></span>
+                                                                    <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase" 
+                                                                        :class="{
+                                                                            'bg-red-100 text-red-600': b.status === 'Kadaluarsa',
+                                                                            'bg-yellow-100 text-yellow-600': b.status === 'Akan Kadaluarsa',
+                                                                            'bg-green-100 text-green-600': b.status === 'Aman'
+                                                                        }" x-text="b.status"></span>
+                                                                </div>
+                                                                <div class="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                                                                    <span>Sisa: <span class="text-gray-900 font-bold" x-text="b.qty"></span></span>
+                                                                    <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                                                                    <span>Exp: <span class="text-gray-900" x-text="b.expired_at"></span></span>
+                                                                </div>
+                                                            </div>
+                                                        </label>
+                                                    </template>
+                                                </template>
+                                            </div>
+
+                                            <template x-if="item.id && (item.type === 'product' ? (products.find(p => p.id == item.id)?.batches || []).length === 0 : (rawMaterials.find(rm => rm.id == item.id)?.batches || []).length === 0)">
+                                                <div class="p-4 text-center text-xs text-gray-400 italic">Tidak ada data batch ditemukan</div>
+                                            </template>
+                                        </div>
+
+                                        {{-- Hidden inputs for form submission --}}
+                                        <template x-for="batchNo in item.selected_batches" :key="batchNo">
+                                            <input type="hidden" :name="'items[' + index + '][selected_batches][]'" :value="batchNo">
+                                        </template>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 mt-1">Jika memilih banyak batch, sistem akan membagi jumlah otomatis.</p>
+                                </div>
+
                                 {{-- Quantity Input --}}
-                                <div class="col-span-12 md:col-span-3">
+                                <div class="col-span-12 md:col-span-2">
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Jumlah</label>
                                     <input type="number" step="any" x-model="item.quantity" :name="'items[' + index + '][quantity]'" required min="0.0001" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 placeholder:text-gray-300" placeholder="0">
                                 </div>
@@ -166,26 +239,66 @@
     function stockTransferForm() {
         return {
             items: [
-                { type: 'raw_material', id: '', quantity: '' }
+                { type: 'raw_material', id: '', selected_batches: [], quantity: '' }
             ],
-            products: {!! json_encode($products->map(function($p) { 
+            products: {!! json_encode($products->map(function($p) use ($productBatches) { 
+                $batches = collect($productBatches->get($p->id, []))->map(function($batch) {
+                    $qty = $batch->actual_quantity - $batch->waste_quantity;
+                    if ($qty <= 0) return null;
+                    
+                    $status = 'Aman';
+                    if ($batch->expired_at) {
+                        $days = now()->diffInDays($batch->expired_at, false);
+                        if ($days < 0) $status = 'Kadaluarsa';
+                        elseif ($days <= 7) $status = 'Akan Kadaluarsa';
+                    }
+
+                    return [
+                        'batch_number' => $batch->batch_number,
+                        'qty' => number_format($qty, 2),
+                        'expired_at' => $batch->expired_at ? date('d M Y', strtotime($batch->expired_at)) : '-',
+                        'status' => $status,
+                    ];
+                })->filter()->values();
+
                 return [
                     'id' => $p->id, 
                     'name' => $p->name, 
-                    'stock' => $p->getStockQuantity(auth()->user()->outlet_id)
+                    'stock' => $p->getStockQuantity(auth()->user()->outlet_id),
+                    'batches' => $batches
                 ]; 
             })) !!},
             rawMaterials: {!! json_encode($rawMaterials->map(function($rm) { 
+                $batches = collect($rm->purchaseItems)->map(function($batch) {
+                    $qty = $batch->remaining_quantity;
+                    if ($qty <= 0) return null;
+                    
+                    $status = 'Aman';
+                    if ($batch->expired_at) {
+                        $days = now()->diffInDays($batch->expired_at, false);
+                        if ($days < 0) $status = 'Kadaluarsa';
+                        elseif ($days <= 7) $status = 'Akan Kadaluarsa';
+                    }
+
+                    return [
+                        'batch_number' => $batch->batch_number,
+                        'qty' => number_format($qty, 2),
+                        'expired_at' => $batch->expired_at ? date('d M Y', strtotime($batch->expired_at)) : '-',
+                        'status' => $status,
+                    ];
+                })->filter()->values();
+
                 return [
                     'id' => $rm->id, 
                     'name' => $rm->name, 
                     'stock' => $rm->getStockQuantity(auth()->user()->outlet_id), 
-                    'unit_name' => optional($rm->unit)->name ?? ''
+                    'unit_name' => optional($rm->unit)->name ?? '',
+                    'batches' => $batches
                 ]; 
             })) !!},
             
             addItem() {
-                this.items.push({ type: 'raw_material', id: '', quantity: '' });
+                this.items.push({ type: 'raw_material', id: '', selected_batches: [], quantity: '' });
             },
             
             removeItem(index) {

@@ -63,11 +63,41 @@ class StockTransferController extends Controller
         // Checking schema via previous file views... I haven't seen Outlet schema.
         // But assuming $userOutlet->owner_id is the link.
 
-        // Get Stockables
-        $rawMaterials = RawMaterial::where('outlet_id', $userOutlet->id)->where('is_active', true)->get();
-        $products = Product::where('outlet_id', $userOutlet->id)->where('is_active', true)->where('track_stock', true)->get();
+        // Get Stockables with Batches
+        $rawMaterials = RawMaterial::with(['purchaseItems' => function($q) use ($userOutlet) {
+                // Find purchase items for purchases in this outlet
+                $q->whereHas('purchase', function($q2) use ($userOutlet) {
+                    $q2->where('outlet_id', $userOutlet->id);
+                })
+                ->where('remaining_quantity', '>', 0)
+                ->where('is_disposed', false)
+                ->orderByRaw('expired_at IS NULL, expired_at ASC')
+                ->orderBy('created_at', 'ASC');
+            }])
+            ->where('outlet_id', $userOutlet->id)
+            ->where('is_active', true)
+            ->get();
 
-        return view('main.stock-transfers.create', compact('outlets', 'rawMaterials', 'products'));
+        $products = Product::where('outlet_id', $userOutlet->id)
+            ->where('is_active', true)
+            ->where('track_stock', true)
+            ->get();
+
+        // Attach batches for products manually to avoid heavy nested relations if unnecessary, 
+        // but let's just use eager loading on Production since product has many productions? Wait.
+        // Actually, let's load productions manually since the relationship is Outlet->Productions.
+        // Products don't have a direct 'productions' relation in the default model assuming.
+        $productions = Production::where('outlet_id', $userOutlet->id)
+            ->where('status', 'completed')
+            ->where('is_disposed', false)
+            ->whereNotNull('completed_at')
+            ->orderByRaw('expired_at IS NULL, expired_at ASC')
+            ->orderBy('completed_at', 'ASC')
+            ->get();
+        // Group productions by product_id
+        $productBatches = $productions->groupBy('product_id');
+
+        return view('main.stock-transfers.create', compact('outlets', 'rawMaterials', 'products', 'productBatches'));
     }
 
     public function store(Request $request)
@@ -77,6 +107,7 @@ class StockTransferController extends Controller
             'items' => 'required|array|min:1',
             'items.*.type' => 'required|in:product,raw_material',
             'items.*.id' => 'required',
+            'items.*.selected_batches' => 'nullable|array',
             'items.*.quantity' => 'required|numeric|min:0.0001',
             'notes' => 'nullable|string',
         ]);
@@ -92,11 +123,19 @@ class StockTransferController extends Controller
 
             foreach ($request->items as $item) {
                 $stockableType = $item['type'] === 'product' ? Product::class : RawMaterial::class;
+                
+                // If specific batches were selected, join them temporarily in batch_number 
+                // We will split them into separate items during the Send (updateStatus) phase
+                $batchIdentifier = null;
+                if (!empty($item['selected_batches'])) {
+                    $batchIdentifier = implode(',', $item['selected_batches']);
+                }
 
                 StockTransferItem::create([
                     'stock_transfer_id' => $transfer->id,
                     'stockable_type' => $stockableType,
                     'stockable_id' => $item['id'],
+                    'batch_number' => $batchIdentifier,
                     'quantity' => $item['quantity'],
                 ]);
             }
@@ -130,92 +169,135 @@ class StockTransferController extends Controller
         }
 
         DB::transaction(function () use ($stockTransfer) {
-            foreach ($stockTransfer->items as $item) {
-                // Find Batch Info
-                $batchNumber = null;
-                $expiredAt = null;
+            $newItems = [];
+            $itemsToDelete = [];
 
-                // Determine stock model and capture batch
+            foreach ($stockTransfer->items as $item) {
+                $itemsToDelete[] = $item->id;
+                $neededQuantity = $item->quantity;
+                $userSelectedBatches = $item->batch_number ? explode(',', $item->batch_number) : [];
+
+                // 1. DEDUCT MAIN STOCK RECORD
                 if ($item->stockable_type === Product::class) {
                     $stock = ProductStock::firstOrCreate(
                         ['product_id' => $item->stockable_id, 'outlet_id' => $stockTransfer->from_outlet_id],
                         ['quantity' => 0]
                     );
-
-                    // Check stock sufficiency
                     if (! $stock->reduceStock($item->quantity)) {
                         throw new \Exception('Stok tidak cukup untuk produk: '.$item->stockable->name.' (Tersedia: '.$stock->quantity.')');
-                    }
-
-                    // Get oldest batch info for tracking
-                    $batch = Production::where('product_id', $item->stockable_id)
-                        ->where('outlet_id', $stockTransfer->from_outlet_id)
-                        ->where('status', 'completed')
-                        ->where('is_disposed', false)
-                        ->orderByRaw('expired_at IS NULL, expired_at ASC')
-                        ->orderBy('completed_at', 'ASC')
-                        ->first();
-                    
-                    if ($batch) {
-                        $batchNumber = $batch->batch_number;
-                        $expiredAt = $batch->expired_at;
                     }
                 } else {
                     $stock = RawMaterialStock::firstOrCreate(
                         ['raw_material_id' => $item->stockable_id, 'outlet_id' => $stockTransfer->from_outlet_id],
                         ['quantity' => 0, 'avg_purchase_price' => 0]
                     );
-
-                    // Check stock sufficiency
                     if (! $stock->reduceStock($item->quantity)) {
                         throw new \Exception('Stok tidak cukup untuk bahan baku: '.$item->stockable->name.' (Tersedia: '.$stock->quantity.')');
                     }
+                }
 
-                    // Get oldest batch info for tracking (FIFO)
-                    $batch = PurchaseItem::where('raw_material_id', $item->stockable_id)
+                // 2. FIND BATCHES TO CONSUME
+                $candidateBatches = [];
+                if ($item->stockable_type === Product::class) {
+                    $query = Production::where('product_id', $item->stockable_id)
+                        ->where('outlet_id', $stockTransfer->from_outlet_id)
+                        ->where('status', 'completed')
+                        ->where('is_disposed', false);
+                    
+                    if (!empty($userSelectedBatches)) {
+                        $query->whereIn('batch_number', $userSelectedBatches);
+                    }
+                    
+                    $candidateBatches = $query->orderByRaw('expired_at IS NULL, expired_at ASC')
+                        ->orderBy('completed_at', 'ASC')
+                        ->get();
+                } else {
+                    $query = PurchaseItem::where('raw_material_id', $item->stockable_id)
                         ->whereHas('purchase', function($q) use ($stockTransfer) {
                             $q->where('outlet_id', $stockTransfer->from_outlet_id);
                         })
-                        ->where('remaining_quantity', '>', 0)
-                        ->orderByRaw('expired_at IS NULL, expired_at ASC')
-                        ->orderBy('created_at', 'ASC')
-                        ->first();
+                        ->where('remaining_quantity', '>', 0);
                     
-                    if ($batch) {
-                        $batchNumber = $batch->batch_number;
-                        $expiredAt = $batch->expired_at;
-                        
-                        // Decrement batch remaining quantity in source
-                        $consume = min($batch->remaining_quantity, $item->quantity);
-                        $batch->decrement('remaining_quantity', $consume);
+                    if (!empty($userSelectedBatches)) {
+                        $query->whereIn('batch_number', $userSelectedBatches);
+                    }
+
+                    $candidateBatches = $query->orderByRaw('expired_at IS NULL, expired_at ASC')
+                        ->orderBy('created_at', 'ASC')
+                        ->get();
+                }
+
+                // 3. CONSUME BATCHES AND SPLIT ITEMS
+                $remainingToDistribute = $neededQuantity;
+                foreach ($candidateBatches as $batch) {
+                    if ($remainingToDistribute <= 0.00001) break;
+
+                    // Calculate how much we can take from this batch
+                    if ($item->stockable_type === Product::class) {
+                        // Products don't have remaining_quantity track, so we use full actual qty for FIFO logic calculation
+                        // (Ideally we'd have remaining_quantity, but for now we follow the existing model's constraints)
+                        $batchQty = $batch->actual_quantity - $batch->waste_quantity;
+                    } else {
+                        $batchQty = $batch->remaining_quantity;
+                    }
+
+                    $consume = min($batchQty, $remainingToDistribute);
+                    
+                    if ($consume > 0) {
+                        // Record a new item split for this batch
+                        $newItems[] = [
+                            'stock_transfer_id' => $stockTransfer->id,
+                            'stockable_type' => $item->stockable_type,
+                            'stockable_id' => $item->stockable_id,
+                            'quantity' => $consume,
+                            'batch_number' => $batch->batch_number,
+                            'expired_at' => $batch->expired_at,
+                        ];
+
+                        // Log Move OUT for this specific batch
+                        StockMovement::create([
+                            'outlet_id' => $stockTransfer->from_outlet_id,
+                            'stockable_type' => $item->stockable_type,
+                            'stockable_id' => $item->stockable_id,
+                            'type' => 'out',
+                            'quantity' => $consume,
+                            'quantity_before' => $stock->quantity + $remainingToDistribute, // Conceptual
+                            'quantity_after' => $stock->quantity + $remainingToDistribute - $consume, // Conceptual
+                            'reference_type' => StockTransfer::class,
+                            'reference_id' => $stockTransfer->id,
+                            'notes' => 'Transfer Keluar (Batch '.$batch->batch_number.') #'.$stockTransfer->transfer_number,
+                            'batch_number' => $batch->batch_number,
+                            'expired_at' => $batch->expired_at,
+                            'created_by' => auth()->id(),
+                        ]);
+
+                        // Decrement batch remaining quantity if applicable
+                        if ($item->stockable_type === RawMaterial::class) {
+                            $batch->decrement('remaining_quantity', $consume);
+                        }
+
+                        $remainingToDistribute -= $consume;
                     }
                 }
 
-                // Update item with batch info
-                $item->update([
-                    'batch_number' => $batchNumber,
-                    'expired_at' => $expiredAt
-                ]);
+                // 4. HANDLE REMAINDER (If stock batches not enough, or no batches found)
+                if ($remainingToDistribute > 0.00001) {
+                    // Create one item for the remainder without specific batch or using arbitrary data
+                    $newItems[] = [
+                        'stock_transfer_id' => $stockTransfer->id,
+                        'stockable_type' => $item->stockable_type,
+                        'stockable_id' => $item->stockable_id,
+                        'quantity' => $remainingToDistribute,
+                        'batch_number' => !empty($userSelectedBatches) ? $userSelectedBatches[0] : null,
+                        'expired_at' => null,
+                    ];
+                }
+            }
 
-                // Log Movement (OUT)
-                $quantityAfter = $stock->quantity;
-                $quantityBefore = $quantityAfter + $item->quantity;
-
-                StockMovement::create([
-                    'outlet_id' => $stockTransfer->from_outlet_id,
-                    'stockable_type' => $item->stockable_type,
-                    'stockable_id' => $item->stockable_id,
-                    'type' => 'out', // Outgoing transfer
-                    'quantity' => $item->quantity,
-                    'quantity_before' => $quantityBefore,
-                    'quantity_after' => $quantityAfter,
-                    'reference_type' => StockTransfer::class,
-                    'reference_id' => $stockTransfer->id,
-                    'notes' => 'Transfer Keluar #'.$stockTransfer->transfer_number,
-                    'batch_number' => $batchNumber,
-                    'expired_at' => $expiredAt,
-                    'created_by' => auth()->id(),
-                ]);
+            // Replace original items with split batch items
+            StockTransferItem::whereIn('id', $itemsToDelete)->delete();
+            foreach ($newItems as $finalItem) {
+                StockTransferItem::create($finalItem);
             }
 
             $stockTransfer->send(); // Logic in model
