@@ -11,9 +11,9 @@ class StockTransferItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['stock_transfer_id', 'stockable_type', 'stockable_id', 'quantity', 'received_quantity', 'notes'];
+    protected $fillable = ['stock_transfer_id', 'stockable_type', 'stockable_id', 'quantity', 'received_quantity', 'batch_number', 'expired_at', 'notes'];
 
-    protected $casts = ['quantity' => 'decimal:4', 'received_quantity' => 'decimal:4'];
+    protected $casts = ['quantity' => 'decimal:4', 'received_quantity' => 'decimal:4', 'expired_at' => 'date'];
 
     public function stockTransfer(): BelongsTo
     {
