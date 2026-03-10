@@ -15,6 +15,7 @@ return new class extends Migration
             $table->decimal('quantity', 15, 4);
             $table->decimal('received_quantity', 15, 4)->nullable();
             $table->text('notes')->nullable();
+            // todo: tambahkan batch dari pengirim supaya mengetahui kapan kadaluarsa nya.
             $table->timestamps();
         });
     }
