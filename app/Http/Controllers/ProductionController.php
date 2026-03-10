@@ -396,6 +396,7 @@ class ProductionController extends Controller
                 'status' => $status,
                 'notes' => $validated['notes'] ?? null,
                 'created_by' => auth()->id(),
+                'completed_by' => $status === 'completed' ? auth()->id() : null,
                 'completed_at' => $status === 'completed' ? now() : null, // Set completed time if completed
             ]);
 
@@ -508,7 +509,7 @@ class ProductionController extends Controller
                 }
             }
 
-            // $production->calculateCosts(); // Already calculated above manually to be safe
+            $production->calculateCosts();
 
             DB::commit();
 
@@ -748,6 +749,7 @@ class ProductionController extends Controller
             'status' => 'completed',
             'notes' => 'Masak Semua - '.$saleItem->sale->invoice_number,
             'created_by' => $userId,
+            'completed_by' => $userId,
             'completed_at' => now(),
         ]);
 
@@ -792,6 +794,8 @@ class ProductionController extends Controller
                 }
             }
         }
+
+        $production->calculateCosts();
 
         // Update Sale Item
         $saleItem->update([
@@ -855,6 +859,8 @@ class ProductionController extends Controller
                 'expired_at' => $expiredAt,
                 'notes' => $validated['notes'] ?? $production->notes,
             ]);
+
+            $production->calculateCosts();
 
             if ($netQuantity > 0) {
                 $stock = ProductStock::firstOrCreate(

@@ -291,7 +291,7 @@
                 </section>
                 @endif
 
-                @if($production->product->shelf_life_days && ($stats['expired_count'] > 0 || $stats['expiring_count'] > 0 || $stats['valid_count'] > 0))
+                @if($production->product->is_stock && $production->product->shelf_life_days && ($stats['expired_count'] > 0 || $stats['expiring_count'] > 0 || $stats['valid_count'] > 0))
                 <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
                     <div class="border-b border-gray-200 px-6 py-4">
                         <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
