@@ -104,7 +104,7 @@
                     
                     <div class="flex flex-wrap items-center gap-3">
                         {{-- Kategori Filter --}}
-                        <select id="categoryFilter" onchange="filterItems()" class="rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500 py-1.5 px-3">
+                        <select id="categoryFilter" onchange="filterItems()" class="rounded-lg border border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500 py-1.5 px-3">
                             <option value="">Semua Kategori</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}" data-type="{{ $cat->type }}">{{ $cat->name }}</option>
@@ -181,7 +181,7 @@
             {{-- 3. Notes --}}
             <div class="border-t border-gray-100 pt-6">
                 <label for="notes" class="block text-sm font-medium text-gray-700 mb-1 uppercase tracking-wide">3. Catatan (Opsional)</label>
-                <textarea id="notes" name="notes" rows="3" class="w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="Contoh: Opname bulanan periode Januari 2025"></textarea>
+                <textarea id="notes" name="notes" rows="3" class="w-full rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="Contoh: Opname bulanan periode Januari 2025"></textarea>
             </div>
 
             <div class="pt-4 border-t border-gray-100 flex justify-end">
