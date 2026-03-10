@@ -6,13 +6,23 @@ use Illuminate\Http\Request;
 
 class ResellerApplicationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (! auth()->user()->can('lihat reseller applications')) {
             abort(403);
         }
 
         $applications = \App\Models\ResellerApplication::with(['customer', 'outlet'])
+            ->when($request->search, function ($query, $search) {
+                $query->whereHas('customer', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->status, function ($query, $status) {
+                $query->where('status', $status);
+            })
             ->latest()
             ->paginate(10);
 

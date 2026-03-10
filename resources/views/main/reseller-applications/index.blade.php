@@ -55,8 +55,32 @@
 
         {{-- TABLE CONTENT --}}
         <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-            {{-- Toolbar can be added here if needed, keeping it simple for now as per Discount style --}}
+            {{-- Toolbar --}}
+            <form id="filter-form" action="{{ route('reseller-applications.index') }}" method="GET" class="border-b border-gray-200 px-4 md:px-6 py-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between gap-4">
+                <div class="w-full md:max-w-md">
+                    <label class="text-xs font-medium text-gray-500 mb-1 block">Cari Pelamar</label>
+                    <div class="relative">
+                        <input type="text" name="search" id="search-input" value="{{ request('search') }}" placeholder="Nama, Email, atau Telepon..."
+                               class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-shadow">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-3 w-full md:w-auto">
+                    <div class="w-full sm:w-40 md:w-44">
+                        <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
+                        <select name="status" id="status-select"
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                            <option value="">Semua Status</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Diterima</option>
+                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
             
+            <div id="table-container">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 border-b border-gray-200">
@@ -123,6 +147,7 @@
                     {{ $applications->links() }}
                 </div>
             @endif
+            </div>
         </section>
     </div>
 </main>
@@ -188,6 +213,76 @@
 
 @push('scripts')
 <script>
+    function updateURLParams(params) {
+        const url = new URL(window.location);
+        for (const [key, value] of Object.entries(params)) {
+            if (value) {
+                url.searchParams.set(key, value);
+            } else {
+                url.searchParams.delete(key);
+            }
+        }
+        window.history.replaceState({}, '', url);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        const form = document.getElementById('filter-form');
+        const searchInput = document.getElementById('search-input');
+        const statusSelect = document.getElementById('status-select');
+        const tableContainer = document.getElementById('table-container');
+
+        if(searchInput && urlParams.has('search')) searchInput.value = urlParams.get('search');
+        if(statusSelect && urlParams.has('status')) statusSelect.value = urlParams.get('status');
+
+        let timeout = null;
+
+        function fetchResults() {
+            if (!form) return;
+            
+            const url = new URL(form.action);
+            const formData = new FormData(form);
+            for (const [key, value] of formData.entries()) {
+                url.searchParams.append(key, value);
+            }
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'text/html'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTableContainer = doc.getElementById('table-container');
+                if (newTableContainer && tableContainer) {
+                    tableContainer.innerHTML = newTableContainer.innerHTML;
+                }
+                updateURLParams({ search: searchInput ? searchInput.value : '', status: statusSelect ? statusSelect.value : '' });
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                clearTimeout(timeout);
+                timeout = setTimeout(fetchResults, 300);
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        if (statusSelect) {
+            statusSelect.addEventListener('change', fetchResults);
+        }
+    });
+
     function openDetailModal(appData, applicantName, docUrl) {
         const modal = document.getElementById('applicationModal');
         document.getElementById('modalApplicantName').textContent = applicantName;
