@@ -8,6 +8,9 @@ use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\RawMaterial;
 use App\Models\RawMaterialStock;
+use App\Models\Production;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
 use App\Models\StockMovement;
 use App\Models\StockTransfer;
 use App\Models\StockTransferItem;
@@ -128,7 +131,11 @@ class StockTransferController extends Controller
 
         DB::transaction(function () use ($stockTransfer) {
             foreach ($stockTransfer->items as $item) {
-                // Determine stock model
+                // Find Batch Info
+                $batchNumber = null;
+                $expiredAt = null;
+
+                // Determine stock model and capture batch
                 if ($item->stockable_type === Product::class) {
                     $stock = ProductStock::firstOrCreate(
                         ['product_id' => $item->stockable_id, 'outlet_id' => $stockTransfer->from_outlet_id],
@@ -138,6 +145,20 @@ class StockTransferController extends Controller
                     // Check stock sufficiency
                     if (! $stock->reduceStock($item->quantity)) {
                         throw new \Exception('Stok tidak cukup untuk produk: '.$item->stockable->name.' (Tersedia: '.$stock->quantity.')');
+                    }
+
+                    // Get oldest batch info for tracking
+                    $batch = Production::where('product_id', $item->stockable_id)
+                        ->where('outlet_id', $stockTransfer->from_outlet_id)
+                        ->where('status', 'completed')
+                        ->where('is_disposed', false)
+                        ->orderByRaw('expired_at IS NULL, expired_at ASC')
+                        ->orderBy('completed_at', 'ASC')
+                        ->first();
+                    
+                    if ($batch) {
+                        $batchNumber = $batch->batch_number;
+                        $expiredAt = $batch->expired_at;
                     }
                 } else {
                     $stock = RawMaterialStock::firstOrCreate(
@@ -149,10 +170,34 @@ class StockTransferController extends Controller
                     if (! $stock->reduceStock($item->quantity)) {
                         throw new \Exception('Stok tidak cukup untuk bahan baku: '.$item->stockable->name.' (Tersedia: '.$stock->quantity.')');
                     }
+
+                    // Get oldest batch info for tracking (FIFO)
+                    $batch = PurchaseItem::where('raw_material_id', $item->stockable_id)
+                        ->whereHas('purchase', function($q) use ($stockTransfer) {
+                            $q->where('outlet_id', $stockTransfer->from_outlet_id);
+                        })
+                        ->where('remaining_quantity', '>', 0)
+                        ->orderByRaw('expired_at IS NULL, expired_at ASC')
+                        ->orderBy('created_at', 'ASC')
+                        ->first();
+                    
+                    if ($batch) {
+                        $batchNumber = $batch->batch_number;
+                        $expiredAt = $batch->expired_at;
+                        
+                        // Decrement batch remaining quantity in source
+                        $consume = min($batch->remaining_quantity, $item->quantity);
+                        $batch->decrement('remaining_quantity', $consume);
+                    }
                 }
 
+                // Update item with batch info
+                $item->update([
+                    'batch_number' => $batchNumber,
+                    'expired_at' => $expiredAt
+                ]);
+
                 // Log Movement (OUT)
-                // Note: reduceStock already reduced the quantity, so current quantity is AFTER reduction.
                 $quantityAfter = $stock->quantity;
                 $quantityBefore = $quantityAfter + $item->quantity;
 
@@ -167,6 +212,8 @@ class StockTransferController extends Controller
                     'reference_type' => StockTransfer::class,
                     'reference_id' => $stockTransfer->id,
                     'notes' => 'Transfer Keluar #'.$stockTransfer->transfer_number,
+                    'batch_number' => $batchNumber,
+                    'expired_at' => $expiredAt,
                     'created_by' => auth()->id(),
                 ]);
             }
@@ -226,6 +273,23 @@ class StockTransferController extends Controller
                     $stock->addStock($item->quantity);
                     $newQty = $stock->quantity;
 
+                    // Recreate Production Batch in destination
+                    Production::create([
+                        'outlet_id' => $stockTransfer->to_outlet_id,
+                        'product_id' => $targetStockableId,
+                        // Use original batch if available, else generate one. 
+                        // To avoid global uniqueness collision, we can append a suffix if needed.
+                        'batch_number' => $item->batch_number ? ($item->batch_number . '-T' . $stockTransfer->to_outlet_id) : ('PRD-TRF-' . $stockTransfer->transfer_number . '-' . $targetStockableId),
+                        'planned_quantity' => $item->quantity,
+                        'actual_quantity' => $item->quantity,
+                        'status' => 'completed',
+                        'completed_at' => now(),
+                        'expired_at' => $item->expired_at,
+                        'notes' => 'Diterima dari Transfer #'.$stockTransfer->transfer_number . ($item->batch_number ? ' (Asal: ' . $item->batch_number . ')' : ''),
+                        'created_by' => auth()->id(),
+                        'completed_by' => auth()->id(),
+                    ]);
+
                 } else {
                     $sourceRawMaterial = RawMaterial::find($item->stockable_id);
                     if ($sourceRawMaterial) {
@@ -257,6 +321,29 @@ class StockTransferController extends Controller
                     $oldQty = $stock->quantity;
                     $stock->addStock($item->quantity);
                     $newQty = $stock->quantity;
+
+                    // Recreate Purchase Batch in destination
+                    $dummyPurchase = Purchase::create([
+                        'purchase_number' => 'TRF-' . $stockTransfer->transfer_number . '-' . strtoupper(substr(uniqid(), -4)),
+                        'outlet_id' => $stockTransfer->to_outlet_id,
+                        'purchase_date' => today(),
+                        'status' => 'received',
+                        'received_date' => today(),
+                        'notes' => 'Diterima dari Transfer #' . $stockTransfer->transfer_number,
+                        'created_by' => auth()->id(),
+                    ]);
+
+                    PurchaseItem::create([
+                        'purchase_id' => $dummyPurchase->id,
+                        'raw_material_id' => $targetStockableId,
+                        'quantity' => $item->quantity,
+                        'received_quantity' => $item->quantity,
+                        'remaining_quantity' => $item->quantity,
+                        'unit_price' => 0,
+                        'subtotal' => 0,
+                        'batch_number' => $item->batch_number,
+                        'expired_at' => $item->expired_at,
+                    ]);
                 }
 
                 // Log Movement
@@ -271,6 +358,8 @@ class StockTransferController extends Controller
                     'reference_type' => StockTransfer::class,
                     'reference_id' => $stockTransfer->id,
                     'notes' => 'Transfer Masuk #'.$stockTransfer->transfer_number,
+                    'batch_number' => $item->batch_number,
+                    'expired_at' => $item->expired_at,
                     'created_by' => auth()->id(),
                 ]);
 
