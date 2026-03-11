@@ -3,15 +3,13 @@
 @section('title', 'Detail Opname ' . $stockOpname->opname_number . ' - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('stock-opname.index') }}" class="text-gray-500 hover:text-gray-700">Stock Opname</a>
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">{{ $stockOpname->opname_number }}</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('stock-opname.index') }}" class="text-gray-600 hover:text-gray-900 font-medium">Stock Opname</a>
+</li>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">{{ $stockOpname->opname_number }}</span>
 </li>
 @endsection
 
@@ -19,111 +17,98 @@
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        @if(session('success'))
-            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
-                <p class="text-green-800">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <p class="text-red-800">{{ session('error') }}</p>
-            </div>
-        @endif
-
-        {{-- HEADER HALAMAN (POLA SERAGAM) --}}
-        <section
-            class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <div class="flex items-center gap-3 mb-1">
-                    <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                         <span
-                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
-                            <i class="fas fa-clipboard-list text-sm"></i>
-                        </span>
-                        <span>{{ $stockOpname->opname_number }}</span>
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            <div class="space-y-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                        {{ $stockOpname->opname_number }}
                     </h1>
-                    @if($stockOpname->status == 'completed')
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            Selesai
-                        </span>
-                    @elseif($stockOpname->status == 'in_progress')
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                            Sedang Proses
-                        </span>
-                    @else
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                            Draft
-                        </span>
-                    @endif
+                    @php
+                        $statusClass = match($stockOpname->status) {
+                            'completed' => 'bg-cuan-green/10 text-cuan-green border-cuan-green/10',
+                            'in_progress' => 'bg-yellow-50 text-yellow-600 border-yellow-100',
+                            default => 'bg-gray-50 text-gray-400 border-gray-200'
+                        };
+                        $statusLabel = match($stockOpname->status) {
+                            'completed' => 'Selesai',
+                            'in_progress' => 'Proses',
+                            default => 'Draft'
+                        };
+                    @endphp
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border {{ $statusClass }}">
+                        {{ $statusLabel }}
+                    </span>
                 </div>
-                <div class="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500">
-                    <div class="flex items-center gap-1.5">
-                        <i class="fas fa-calendar-alt text-gray-400"></i>
-                        <span>Dibuat: {{ $stockOpname->created_at->format('d M Y H:i') }}</span>
+
+                <div class="flex flex-wrap items-center gap-x-8 gap-y-3">
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">Tanggal Buat</span>
+                        <span class="text-[11px] font-bold text-gray-700 mt-0.5">{{ $stockOpname->created_at->format('d M Y, H:i') }}</span>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                        <i class="fas fa-user text-gray-400"></i>
-                        <span>Oleh: {{ $stockOpname->createdBy->name ?? '-' }}</span>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">Penanggung Jawab</span>
+                        <span class="text-[11px] font-bold text-gray-700 mt-0.5 capitalize">{{ $stockOpname->createdBy->name ?? '-' }}</span>
                     </div>
                     @if($stockOpname->notes)
-                    <div class="flex items-center gap-1.5">
-                        <i class="fas fa-sticky-note text-gray-400"></i>
-                        <span>Note: {{ $stockOpname->notes }}</span>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">Catatan</span>
+                        <span class="text-[11px] font-bold text-gray-700 mt-0.5">{{ $stockOpname->notes }}</span>
                     </div>
                     @endif
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+            <div class="flex flex-wrap items-center gap-3">
                 @if($stockOpname->status == 'draft')
                     @can('edit stock opname')
                     <form action="{{ route('stock-opname.update', $stockOpname->id) }}" method="POST">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="start_opname" value="1">
-                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 shadow-sm transition-all">
-                            <i class="fas fa-play text-sm"></i>
-                            <span>Mulai Proses</span>
+                        <button type="submit" class="h-11 px-6 bg-cuan-green text-white rounded-xl text-sm font-black hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                            Mulai Proses
                         </button>
                     </form>
                     @endcan
                 @elseif($stockOpname->status == 'in_progress')
                     @can('finalisasi stock opname')
-                    <button type="button" onclick="document.getElementById('finalizeForm').submit()" class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 shadow-sm transition-all">
-                        <i class="fas fa-check-circle text-sm"></i>
-                        <span>Selesaikan Opname</span>
-                    </button>
+                    <form id="finalizeForm" action="{{ route('stock-opname.finalize', $stockOpname->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" 
+                                class="confirm-toggle h-11 px-6 bg-cuan-green text-white rounded-xl text-sm font-black hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20"
+                                data-title="Selesaikan Opname?"
+                                data-text="Aksi ini akan menyesuaikan stok di sistem berdasarkan hasil opname fisik. Pastikan semua data sudah benar.">
+                            Selesaikan Opname
+                        </button>
+                    </form>
                     @endcan
                 @endif
                 
                 <a href="{{ route('stock-opname.index') }}"
-                   class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm transition-all">
-                    <i class="fas fa-arrow-left text-sm"></i>
-                    <span>Kembali</span>
+                   class="inline-flex items-center justify-center h-11 px-6 bg-white text-gray-700 border border-gray-200 rounded-xl text-sm font-black hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                    Kembali
                 </a>
             </div>
         </section>
 
         {{-- ITEMS TABLE --}}
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                <h3 class="font-semibold text-gray-900">Daftar Item</h3>
-                @if($stockOpname->status != 'completed')
-                    @can('edit stock opname')
-                    <button type="button" onclick="document.getElementById('opnameForm').submit()" class="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-                        <i class="fas fa-save"></i> Simpan Draft
-                    </button>
-                    @endcan
-                @else
-                    <div class="text-sm">
-                        @php
-                            $diff = $stockOpname->getTotalDifference();
-                        @endphp
-                        <span class="text-green-600 font-semibold mr-3">Surplus: +{{ number_format($diff['positive']) }}</span>
-                        <span class="text-red-600 font-semibold">Defisit: -{{ number_format($diff['negative']) }}</span>
+        <x-card-container>
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Lembar Kerja Opname</h3>
+                @if($stockOpname->status == 'completed')
+                    @php
+                        $diff = $stockOpname->getTotalDifference();
+                    @endphp
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-end">
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Surplus</span>
+                            <span class="text-[11px] font-black text-cuan-green">+{{ number_format($diff['positive']) }}</span>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Defisit</span>
+                            <span class="text-[11px] font-black text-red-500">-{{ number_format($diff['negative']) }}</span>
+                        </div>
                     </div>
                 @endif
             </div>
@@ -133,70 +118,71 @@
                 @method('PUT')
                 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-gray-50 text-gray-500 uppercase font-semibold text-xs">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                             <tr>
-                                <th class="px-6 py-3">Produk</th>
-                                <th class="px-6 py-3 text-right">Stok Sistem</th>
-                                <th class="px-6 py-3 text-right w-40">Stok Fisik</th>
-                                <th class="px-6 py-3 text-right">Selisih</th>
-                                <th class="px-6 py-3">Catatan</th>
+                                <th class="px-6 py-4 text-left">Item</th>
+                                <th class="px-6 py-4 text-right">Stok Sistem</th>
+                                <th class="px-6 py-4 text-center w-40">Stok Fisik</th>
+                                <th class="px-6 py-4 text-right">Selisih</th>
+                                <th class="px-6 py-4 text-left">Catatan Khusus</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody class="divide-y divide-gray-100 bg-white">
                             @foreach($stockOpname->items as $index => $item)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-3">
-                                        <div class="font-medium text-gray-900">{{ $item->stockable->name ?? '-' }}</div>
-                                        <div class="text-xs text-gray-500">{{ $item->stockable->code ?? '' }}</div>
+                                <tr class="hover:bg-gray-50/50 transition-colors">
+                                    <td class="px-6 py-5 whitespace-nowrap">
+                                        <div class="text-[11px] font-bold text-gray-900 capitalize">{{ $item->stockable->name ?? '-' }}</div>
+                                        <div class="text-[9px] font-black uppercase tracking-widest text-gray-400 mt-0.5">SKU: {{ $item->stockable->code ?? '-' }}</div>
                                         <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
                                     </td>
-                                    <td class="px-6 py-3 text-right font-mono text-gray-600">
-                                        {{ number_format($item->system_quantity, 0) }}
+                                    <td class="px-6 py-5 whitespace-nowrap text-right">
+                                        <div class="text-[11px] font-black text-gray-900">{{ number_format($item->system_quantity, 0) }}</div>
+                                        <div class="text-[9px] font-black uppercase tracking-widest text-gray-400 mt-0.5 italic">Sistem</div>
                                     </td>
-                                    <td class="px-6 py-3">
+                                    <td class="px-6 py-5 whitespace-nowrap">
                                         @if($stockOpname->status == 'completed')
-                                            <div class="text-right font-bold text-gray-900">
+                                            <div class="text-center font-black text-gray-900 border-b-2 border-gray-100 pb-1">
                                                 {{ $item->physical_quantity !== null ? number_format($item->physical_quantity, 0) : '-' }}
                                             </div>
                                         @else
                                             @if($stockOpname->status == 'draft')
-                                            <div class="text-right text-gray-400 italic text-xs py-2">
-                                                Mulai dulu
-                                            </div>
-                                            <!-- Hidden input to preserve structure if needed, or just omit -->
+                                                <div class="text-center text-[10px] font-black text-gray-300 uppercase tracking-widest p-2 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                                    Klik Mulai
+                                                </div>
                                             @else
-                                            <input type="number" step="any" min="0" 
-                                                name="items[{{ $index }}][physical_quantity]" 
-                                                value="{{ old('items.' . $index . '.physical_quantity', $item->physical_quantity) }}"
-                                                class="w-full text-right rounded-md border-2 border-gray-400 bg-white text-gray-900 font-bold focus:bg-white focus:ring-emerald-500 focus:border-emerald-600 sm:text-sm py-2 px-3 shadow-sm physical-qty-input placeholder-gray-300" placeholder="0"
-                                                data-system-qty="{{ $item->system_quantity }}"
-                                                oninput="calculateDiff(this)">
+                                                <input type="number" step="any" min="0" 
+                                                    name="items[{{ $index }}][physical_quantity]" 
+                                                    value="{{ old('items.' . $index . '.physical_quantity', $item->physical_quantity) }}"
+                                                    class="w-full text-center rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-black text-gray-900 focus:ring-4 focus:ring-cuan-green/5 focus:border-cuan-green transition-all bg-white" 
+                                                    placeholder="0"
+                                                    data-system-qty="{{ $item->system_quantity }}"
+                                                    oninput="calculateDiff(this)">
                                             @endif
                                         @endif
                                     </td>
-                                    <td class="px-6 py-3 text-right font-bold">
+                                    <td class="px-6 py-5 whitespace-nowrap text-right">
                                         @php
                                             $diff = $item->difference;
-                                            $color = $diff > 0 ? 'text-green-600' : ($diff < 0 ? 'text-red-600' : 'text-gray-400');
+                                            $color = $diff > 0 ? 'text-cuan-green bg-cuan-green/10 border-cuan-green/10' : ($diff < 0 ? 'text-red-600 bg-red-50 border-red-100' : 'text-gray-400 bg-gray-50 border-gray-100');
                                             $display = $diff !== null ? ($diff > 0 ? "+".number_format($diff,0) : number_format($diff,0)) : '-';
                                         @endphp
-                                        <span class="diff-display {{ $color }}">
+                                        <span class="diff-display inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black border {{ $color }}">
                                             {{ $display }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-3">
+                                    <td class="px-6 py-5">
                                         @if($stockOpname->status == 'completed')
-                                            <span class="text-gray-500 italic">{{ $item->notes ?? '-' }}</span>
+                                            <span class="text-[11px] font-bold text-gray-500 italic">{{ $item->notes ?? '-' }}</span>
                                         @else
                                             @if($stockOpname->status == 'draft')
-                                                <span class="text-gray-300 text-xs italic">-</span>
+                                                <div class="h-2 w-8 bg-gray-100 rounded"></div>
                                             @else
                                                 <input type="text" 
                                                     name="items[{{ $index }}][notes]" 
                                                     value="{{ $item->notes }}"
-                                                    class="w-full rounded-md border-2 border-gray-300 bg-white text-gray-900 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm py-2 px-3 shadow-sm"
-                                                    placeholder="Ket.">
+                                                    class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-xs font-bold text-gray-900 focus:ring-4 focus:ring-cuan-green/5 focus:border-cuan-green transition-all bg-white"
+                                                    placeholder="Tambahkan catatan...">
                                             @endif
                                         @endif
                                     </td>
@@ -206,19 +192,16 @@
                     </table>
                 </div>
                 
-                @if($stockOpname->status != 'completed')
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
-                    <button type="submit" class="btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg shadow-sm">
+                @if($stockOpname->status == 'in_progress')
+                <div class="bg-gray-50/50 px-6 py-5 border-t border-gray-100 flex justify-between items-center gap-4">
+                    <p class="text-[11px] font-bold text-gray-500 max-w-sm">Perubahan akan disimpan sebagai draft sampai Anda mengklik Selesaikan Opname.</p>
+                    <button type="submit" class="h-10 px-6 bg-white text-gray-700 border border-gray-200 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm whitespace-nowrap">
                         Simpan Perubahan
                     </button>
                 </div>
                 @endif
             </form>
-
-            <form id="finalizeForm" action="{{ route('stock-opname.finalize', $stockOpname->id) }}" method="POST" class="hidden">
-                @csrf
-            </form>
-        </div>
+        </x-card-container>
     </div>
 </main>
 
@@ -232,20 +215,20 @@
 
         if (isNaN(physicalQty)) {
             diffDisplay.textContent = '-';
-            diffDisplay.className = 'diff-display text-gray-400';
+            diffDisplay.className = 'diff-display inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black border text-gray-400 bg-gray-50 border-gray-100';
             return;
         }
 
         const diff = physicalQty - systemQty;
         
-        diffDisplay.textContent = (diff > 0 ? '+' : '') + diff; // Simple format for JS, backend handles real format
+        diffDisplay.textContent = (diff > 0 ? '+' : '') + diff;
         
         if (diff > 0) {
-            diffDisplay.className = 'diff-display text-green-600';
+            diffDisplay.className = 'diff-display inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black border text-cuan-green bg-cuan-green/10 border-cuan-green/10';
         } else if (diff < 0) {
-            diffDisplay.className = 'diff-display text-red-600';
+            diffDisplay.className = 'diff-display inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black border text-red-600 bg-red-50 border-red-100';
         } else {
-            diffDisplay.className = 'diff-display text-gray-400';
+            diffDisplay.className = 'diff-display inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black border text-gray-400 bg-gray-50 border-gray-100';
         }
     }
 </script>

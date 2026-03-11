@@ -3,15 +3,13 @@
 @section('title', 'Mulai Stock Opname - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('stock-opname.index') }}" class="text-gray-500 hover:text-gray-700">Stock Opname</a>
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Baru</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('stock-opname.index') }}" class="text-gray-600 hover:text-gray-900 font-medium">Stock Opname</a>
+</li>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Baru</span>
 </li>
 @endsection
 
@@ -20,176 +18,181 @@
     <div class="max-w-7xl mx-auto space-y-6">
 
         {{-- HEADER HALAMAN --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
-                        <i class="fas fa-plus-circle text-sm"></i>
-                    </span>
-                    <span>Mulai Stock Opname Baru</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Mulai Sesi Opname
                 </h1>
-                <p class="mt-1 text-sm text-gray-500">
-                    Pilih tipe opname dan item yang ingin dicek. Sistem akan menyiapkan lembar kerja untuk Anda.
+                <p class="mt-1 text-sm text-gray-500 font-medium">
+                    Sistem akan menyiapkan lembar kerja berdasarkan tipe item yang Anda pilih.
                 </p>
             </div>
-            <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+            <div class="flex flex-wrap items-center gap-3">
                 <a href="{{ route('stock-opname.index') }}"
-                   class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm transition-all">
-                    <i class="fas fa-arrow-left text-sm"></i>
-                    <span>Kembali</span>
+                   class="inline-flex items-center justify-center h-11 px-6 bg-white text-gray-700 border border-gray-200 rounded-xl text-sm font-black hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                    Kembali
                 </a>
             </div>
         </section>
 
-        @if(session('error'))
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <p class="text-red-800">{{ session('error') }}</p>
-            </div>
-        @endif
-        
-        @if ($errors->any())
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm">
-                <ul class="list-disc pl-5 text-red-800">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form action="{{ route('stock-opname.store') }}" method="POST" class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-8">
+        <form action="{{ route('stock-opname.store') }}" method="POST" class="space-y-6">
             @csrf
 
-            {{-- 1. Pilihan Tipe --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">1. Pilih Tipe Opname</label>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <label class="relative flex items-start p-4 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 hover:border-emerald-500 transition-all group has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
-                        <div class="flex items-center h-5">
-                            <input type="radio" name="type" value="product" checked onchange="toggleItems('product')" class="focus:ring-emerald-500 h-4 w-4 text-emerald-600 border-gray-300">
-                        </div>
-                        <div class="ml-3 text-sm">
-                            <span class="block font-medium text-gray-900 group-hover:text-emerald-700">Produk Jadi</span>
-                            <span class="block text-gray-500">Opname stok produk penjualan.</span>
-                        </div>
-                    </label>
-                    
-                    <label class="relative flex items-start p-4 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 hover:border-emerald-500 transition-all group has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
-                        <div class="flex items-center h-5">
-                            <input type="radio" name="type" value="raw_material" onchange="toggleItems('raw_material')" class="focus:ring-emerald-500 h-4 w-4 text-emerald-600 border-gray-300">
-                        </div>
-                        <div class="ml-3 text-sm">
-                            <span class="block font-medium text-gray-900 group-hover:text-emerald-700">Bahan Baku</span>
-                            <span class="block text-gray-500">Opname stok bahan mentah.</span>
-                        </div>
-                    </label>
+            <x-card-container>
+                <div class="p-6 space-y-8">
+                    {{-- 1. Pilihan Tipe --}}
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">1. Pilih Tipe Opname</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <label class="relative flex items-start p-5 rounded-2xl border-2 border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-cuan-green/30 transition-all group has-[:checked]:border-cuan-green has-[:checked]:bg-cuan-green/5">
+                                <div class="flex items-center h-5">
+                                    <input type="radio" name="type" value="product" checked onchange="toggleItems('product')" class="w-5 h-5 text-cuan-green border-gray-200 focus:ring-cuan-green/20">
+                                </div>
+                                <div class="ml-4">
+                                    <span class="block text-sm font-black text-gray-900 group-hover:text-cuan-dark transition-colors">Produk Jadi</span>
+                                    <span class="block text-[11px] font-bold text-gray-400 mt-0.5">Opname stok produk siap jual.</span>
+                                </div>
+                            </label>
+                            
+                            <label class="relative flex items-start p-5 rounded-2xl border-2 border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-cuan-green/30 transition-all group has-[:checked]:border-cuan-green has-[:checked]:bg-cuan-green/5">
+                                <div class="flex items-center h-5">
+                                    <input type="radio" name="type" value="raw_material" onchange="toggleItems('raw_material')" class="w-5 h-5 text-cuan-green border-gray-200 focus:ring-cuan-green/20">
+                                </div>
+                                <div class="ml-4">
+                                    <span class="block text-sm font-black text-gray-900 group-hover:text-cuan-dark transition-colors">Bahan Baku</span>
+                                    <span class="block text-[11px] font-bold text-gray-400 mt-0.5">Opname stok bahan mentah.</span>
+                                </div>
+                            </label>
 
-                    <label class="relative flex items-start p-4 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 hover:border-emerald-500 transition-all group has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
-                        <div class="flex items-center h-5">
-                            <input type="radio" name="type" value="all" onchange="toggleItems('all')" class="focus:ring-emerald-500 h-4 w-4 text-emerald-600 border-gray-300">
+                            <label class="relative flex items-start p-5 rounded-2xl border-2 border-gray-100 cursor-pointer hover:bg-gray-50 hover:border-cuan-green/30 transition-all group has-[:checked]:border-cuan-green has-[:checked]:bg-cuan-green/5">
+                                <div class="flex items-center h-5">
+                                    <input type="radio" name="type" value="all" onchange="toggleItems('all')" class="w-5 h-5 text-cuan-green border-gray-200 focus:ring-cuan-green/20">
+                                </div>
+                                <div class="ml-4">
+                                    <span class="block text-sm font-black text-gray-900 group-hover:text-cuan-dark transition-colors">Semua Item</span>
+                                    <span class="block text-[11px] font-bold text-gray-400 mt-0.5">Gabungan produk & bahan baku.</span>
+                                </div>
+                            </label>
                         </div>
-                        <div class="ml-3 text-sm">
-                            <span class="block font-medium text-gray-900 group-hover:text-emerald-700">Semua Item</span>
-                            <span class="block text-gray-500">Gabungan produk & bahan baku.</span>
-                        </div>
-                    </label>
-                </div>
-            </div>
+                    </div>
 
-            {{-- 2. Daftar Item Selection --}}
-            <div id="itemsSelectionContainer" class="border-t border-gray-100 pt-6">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                    <label class="block text-sm font-medium text-gray-700 uppercase tracking-wide">2. Pilih Item yang akan dihitung</label>
-                    
-                    <div class="flex flex-wrap items-center gap-3">
-                        {{-- Kategori Filter --}}
-                        <select id="categoryFilter" onchange="filterItems()" class="rounded-lg border border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500 py-1.5 px-3">
-                            <option value="">Semua Kategori</option>
-                            @foreach($categories as $cat)
-                                <option value="{{ $cat->id }}" data-type="{{ $cat->type }}">{{ $cat->name }}</option>
-                            @endforeach
-                        </select>
-                        <button type="button" onclick="selectAll()" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                            <i class="fas fa-check-double mr-1"></i> Pilih Semua
-                        </button>
-                        <button type="button" onclick="deselectAll()" class="text-sm text-gray-500 hover:text-gray-700">
-                            Clear
+                    {{-- 2. Daftar Item Selection --}}
+                    <div id="itemsSelectionContainer" class="space-y-4">
+                        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">2. Pilih Item yang akan dihitung</label>
+                            
+                            <div class="flex flex-wrap items-center gap-3">
+                                <div class="relative w-full sm:w-48">
+                                    <select id="categoryFilter" onchange="filterItems()" class="w-full appearance-none rounded-xl border border-gray-200 pl-4 pr-10 py-2 text-[11px] font-black uppercase tracking-widest text-gray-900 focus:ring-4 focus:ring-cuan-green/5 focus:border-cuan-green transition-all bg-white">
+                                        <option value="">Semua Kategori</option>
+                                        @foreach($categories as $cat)
+                                            <option value="{{ $cat->id }}" data-type="{{ $cat->type }}">{{ $cat->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 text-[8px] pointer-events-none"></i>
+                                </div>
+                                <button type="button" onclick="selectAll()" class="text-[10px] font-black text-cuan-green uppercase tracking-widest hover:underline px-2">
+                                    Pilih Semua
+                                </button>
+                                <button type="button" onclick="deselectAll()" class="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:underline px-2">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rounded-2xl border border-gray-100 overflow-hidden">
+                            <div class="max-h-[400px] overflow-y-auto custom-scrollbar">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100 sticky top-0 z-10">
+                                        <tr>
+                                            <th class="px-6 py-4 w-12 text-center">
+                                                <input type="checkbox" id="masterCheckbox" onchange="toggleAllCheckboxes(this)" class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20">
+                                            </th>
+                                            <th class="px-6 py-4">Nama Item</th>
+                                            <th class="px-6 py-4">Kategori</th>
+                                            <th class="px-6 py-4">Kode/SKU</th>
+                                            <th class="px-6 py-4 text-right">Stok Sistem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itemsTableBody" class="divide-y divide-gray-100 bg-white">
+                                        {{-- Products --}}
+                                        @foreach($products as $product)
+                                            <tr class="item-row hover:bg-gray-50 transition-colors cursor-pointer" 
+                                                data-type="product" 
+                                                data-category="{{ $product->category_id }}" 
+                                                onclick="toggleRow(this)">
+                                                <td class="px-6 py-4 text-center">
+                                                    <input type="checkbox" name="items[]" value="product_{{ $product->id }}" class="item-checkbox w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20 pointer-events-none">
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-[11px] font-bold text-gray-900 capitalize">{{ $product->name }}</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $product->category->name ?? '-' }}</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="text-[10px] font-black font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">{{ $product->code ?? '-' }}</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                                    <div class="text-[11px] font-black text-gray-900">{{ number_format($product->getStockQuantity(auth()->user()->outlet_id), 0) }}</div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+
+                                        {{-- Raw Materials --}}
+                                        @foreach($rawMaterials as $material)
+                                            <tr class="item-row hover:bg-gray-50 transition-colors cursor-pointer" 
+                                                data-type="raw_material" 
+                                                data-category="{{ $material->category_id }}" 
+                                                onclick="toggleRow(this)">
+                                                <td class="px-6 py-4 text-center">
+                                                    <input type="checkbox" name="items[]" value="raw_material_{{ $material->id }}" class="item-checkbox w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20 pointer-events-none">
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-[11px] font-bold text-gray-900 capitalize">{{ $material->name }}</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $material->category->name ?? '-' }}</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="text-[10px] font-black font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">{{ $material->code ?? '-' }}</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                                    <div class="text-[11px] font-black text-gray-900">{{ number_format($material->getStockQuantity(auth()->user()->outlet_id), 0) }}</div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                
+                                {{-- Empty State --}}
+                                <div id="emptyState" class="hidden py-20 text-center">
+                                    <i class="fas fa-search text-gray-200 text-3xl mb-4"></i>
+                                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tidak Ada Item Ditemukan</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end pr-1">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                <span id="selectedCount" class="text-cuan-green">0</span> Item Terpilih
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- 3. Notes --}}
+                    <div class="space-y-2">
+                        <label for="notes" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">3. Catatan (Opsional)</label>
+                        <textarea id="notes" name="notes" rows="3" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-900 focus:ring-4 focus:ring-cuan-green/5 focus:border-cuan-green transition-all" placeholder="Contoh: Opname bulanan periode Maret 2026"></textarea>
+                    </div>
+
+                    <div class="pt-4 flex justify-end">
+                        <button type="submit" class="h-12 px-10 bg-cuan-green text-white rounded-xl text-sm font-black hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20 group">
+                            Buat Sesi Opname
+                            <i class="fas fa-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform"></i>
                         </button>
                     </div>
                 </div>
-
-                <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden max-h-[500px] overflow-y-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-gray-100 text-gray-600 uppercase font-semibold text-xs sticky top-0 z-10">
-                            <tr>
-                                <th class="px-4 py-3 w-10 text-center">
-                                    <input type="checkbox" id="masterCheckbox" onchange="toggleAllCheckboxes(this)" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
-                                </th>
-                                <th class="px-4 py-3">Nama Item</th>
-                                <th class="px-4 py-3">Kategori</th>
-                                <th class="px-4 py-3">Kode / SKU</th>
-                                <th class="px-4 py-3 text-right">Stok Saat Ini</th>
-                            </tr>
-                        </thead>
-                        <tbody id="itemsTableBody" class="divide-y divide-gray-200 bg-white">
-                            {{-- Products --}}
-                            @foreach($products as $product)
-                                <tr class="item-row hover:bg-gray-50 cursor-pointer" 
-                                    data-type="product" 
-                                    data-category="{{ $product->category_id }}" 
-                                    onclick="toggleRow(this)">
-                                    <td class="px-4 py-3 text-center">
-                                        <input type="checkbox" name="items[]" value="product_{{ $product->id }}" class="item-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 pointer-events-none"> {{-- Pointer events none to let row click handle it --}}
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-gray-900">{{ $product->name }}</td>
-                                    <td class="px-4 py-3 text-gray-500">{{ $product->category->name ?? '-' }}</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-gray-500">{{ $product->code ?? '-' }}</td>
-                                    <td class="px-4 py-3 text-right text-gray-600">{{ number_format($product->getStockQuantity(auth()->user()->outlet_id), 0) }}</td>
-                                </tr>
-                            @endforeach
-
-                            {{-- Raw Materials --}}
-                            @foreach($rawMaterials as $material)
-                                <tr class="item-row hover:bg-gray-50 cursor-pointer" 
-                                    data-type="raw_material" 
-                                    data-category="{{ $material->category_id }}" 
-                                    onclick="toggleRow(this)">
-                                    <td class="px-4 py-3 text-center">
-                                        <input type="checkbox" name="items[]" value="raw_material_{{ $material->id }}" class="item-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 pointer-events-none">
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-gray-900">{{ $material->name }}</td>
-                                    <td class="px-4 py-3 text-gray-500">{{ $material->category->name ?? '-' }}</td>
-                                    <td class="px-4 py-3 font-mono text-xs text-gray-500">{{ $material->code ?? '-' }}</td>
-                                    <td class="px-4 py-3 text-right text-gray-600">{{ number_format($material->getStockQuantity(auth()->user()->outlet_id), 0) }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    
-                    {{-- Empty State --}}
-                    <div id="emptyState" class="hidden p-8 text-center text-gray-500">
-                        <i class="fas fa-search text-2xl mb-2 text-gray-300"></i>
-                        <p>Tidak ada item yang sesuai dengan filter.</p>
-                    </div>
-                </div>
-                <p class="mt-2 text-xs text-gray-500 flex justify-end items-center gap-1">
-                    <span id="selectedCount">0</span> item terpilih
-                </p>
-            </div>
-
-            {{-- 3. Notes --}}
-            <div class="border-t border-gray-100 pt-6">
-                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1 uppercase tracking-wide">3. Catatan (Opsional)</label>
-                <textarea id="notes" name="notes" rows="3" class="w-full rounded-lg border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="Contoh: Opname bulanan periode Januari 2025"></textarea>
-            </div>
-
-            <div class="pt-4 border-t border-gray-100 flex justify-end">
-                <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 shadow-md transition-all">
-                    Buat Sesi Opname
-                    <i class="fas fa-arrow-right text-xs"></i>
-                </button>
-            </div>
+            </x-card-container>
         </form>
     </div>
 </main>
