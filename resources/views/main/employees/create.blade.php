@@ -3,17 +3,13 @@
 @section('title', 'Tambah Pegawai - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('employees.index') }}" class="text-gray-500 hover:text-gray-700">Kelola Pegawai</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('employees.index') }}" class="text-gray-500 hover:text-cuan-green transition-colors">Kelola Pegawai</a>
 </li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Tambah Pegawai</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Tambah Pegawai</span>
 </li>
 @endsection
 
@@ -59,45 +55,45 @@
             @csrf
 
             {{-- Header --}}
-            <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-teal-50 text-teal-500 border border-teal-100">
-                            <i class="fas fa-users text-sm"></i>
-                        </span>
-                        <span>Tambah Pegawai Baru</span>
+                    <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                        Tambah Pegawai
                     </h1>
                     <p class="mt-1 text-sm text-gray-500">
                         Lengkapi formulir di bawah untuk menambahkan pegawai baru ke outlet Anda.
                     </p>
                 </div>
-                <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+                <div class="flex flex-wrap items-center gap-3">
                     <a href="{{ route('employees.index') }}"
-                    class="inline-flex items-center gap-2 rounded-lg bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-1">
-                        <i class="fas fa-arrow-left text-sm"></i>
-                        <span>Kembali</span>
+                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+                        <span>Batal</span>
                     </a>
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 rounded-xl bg-cuan-green px-5 py-3 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                        <span>Simpan Pegawai</span>
+                    </button>
                 </div>
             </section>
 
             {{-- Informasi Pribadi --}}
-            <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-base font-semibold text-gray-900">Informasi Pribadi</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Data pribadi dan kontak pegawai</p>
+            <x-card-container>
+                <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                    <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Informasi Pribadi</h2>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Data pribadi dan kontak pegawai</p>
                 </div>
-                <div class="px-6 py-5 space-y-5">
+                <div class="px-8 py-8 space-y-8">
                     {{-- Avatar --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Foto Profil</label>
-                        <div class="flex items-start gap-4">
-                            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center border-2 border-gray-100" id="avatarPreview">
-                                <i class="fas fa-user text-white text-2xl"></i>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Foto Profil</label>
+                        <div class="flex items-center gap-6">
+                            <div class="w-24 h-24 rounded-3xl bg-gray-50 flex items-center justify-center border-2 border-dashed border-gray-200 overflow-hidden group hover:border-cuan-green transition-all" id="avatarPreview">
+                                <i class="fas fa-user text-gray-300 text-3xl group-hover:scale-110 transition-transform"></i>
                             </div>
                             <div class="flex-1">
                                 <input type="file" name="avatar" id="avatar" accept="image/*"
-                                       class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-400">
-                                <p class="mt-1 text-xs text-gray-500">PNG, JPG maksimal 2MB</p>
+                                       class="block w-full text-xs text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-cuan-green/10 file:text-cuan-green hover:file:bg-cuan-green/20">
+                                <p class="mt-2 text-[10px] text-gray-400 font-medium">Format: PNG, JPG (Maks. 2MB)</p>
                                 @error('avatar')
                                     <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
@@ -107,29 +103,28 @@
 
                     {{-- Nama --}}
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label for="name" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                             Nama Lengkap <span class="text-red-500">*</span>
                         </label>
                         <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                               class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 @error('name') border-red-300 @enderror"
+                               class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all @error('name') border-red-300 @enderror"
                                placeholder="Masukkan nama lengkap">
                         @error('name')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{-- Email --}}
                         <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label for="email" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Email <span class="text-red-500">*</span>
                             </label>
                             <input type="email" name="email" id="email" value="{{ old('email') }}" required
-                                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 @error('email') border-red-300 @enderror"
+                                   class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all @error('email') border-red-300 @enderror"
                                    placeholder="email@example.com">
-                            <p class="mt-1 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Email verifikasi akan dikirim otomatis setelah pegawai ditambahkan
+                            <p class="mt-2 text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                                Email verifikasi akan dikirim otomatis.
                             </p>
                             @error('email')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -138,11 +133,11 @@
 
                         {{-- Phone --}}
                         <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label for="phone" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 No. Telepon
                             </label>
                             <input type="text" name="phone" id="phone" value="{{ old('phone') }}"
-                                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 @error('phone') border-red-300 @enderror"
+                                   class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all @error('phone') border-red-300 @enderror"
                                    placeholder="08xxxxxxxxxx">
                             @error('phone')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -150,14 +145,14 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{-- Password --}}
                         <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label for="password" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Password <span class="text-red-500">*</span>
                             </label>
                             <input type="password" name="password" id="password" required
-                                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 @error('password') border-red-300 @enderror"
+                                   class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all @error('password') border-red-300 @enderror"
                                    placeholder="Minimal 8 karakter">
                             @error('password')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -166,62 +161,56 @@
 
                         {{-- Password Confirmation --}}
                         <div>
-                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label for="password_confirmation" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Konfirmasi Password <span class="text-red-500">*</span>
                             </label>
                             <input type="password" name="password_confirmation" id="password_confirmation" required
-                                   class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+                                   class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
                                    placeholder="Ulangi password">
                         </div>
                     </div>
                 </div>
-            </section>
+            </x-card-container>
 
             {{-- Role --}}
-            <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-base font-semibold text-gray-900">Pilih Role</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Pilih satu atau lebih role untuk pegawai. Permission akan otomatis terisi sesuai role.</p>
+            <x-card-container>
+                <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                    <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Pilih Role</h2>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Role menentukan set permission dasar pegawai.</p>
                 </div>
-                <div class="px-6 py-5">
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="px-8 py-8">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         @php
                             $roleConfig = [
                                 'supervisor' => [
                                     'icon' => 'fa-user-tie',
-                                    'color' => 'purple',
-                                    'bgGradient' => 'from-purple-500 to-indigo-500',
-                                    'description' => 'Pengawas operasional'
+                                    'color' => 'indigo',
+                                    'description' => 'Pengawas'
                                 ],
                                 'kasir' => [
                                     'icon' => 'fa-cash-register',
-                                    'color' => 'cyan',
-                                    'bgGradient' => 'from-cyan-500 to-blue-500',
-                                    'description' => 'Akses kasir & transaksi'
+                                    'color' => 'blue',
+                                    'description' => 'Akses Kasir'
                                 ],
                                 'produksi' => [
                                     'icon' => 'fa-flask',
-                                    'color' => 'teal',
-                                    'bgGradient' => 'from-teal-500 to-emerald-500',
-                                    'description' => 'Kelola produksi'
+                                    'color' => 'cuan-green',
+                                    'description' => 'Produksi'
                                 ],
                                 'inventaris' => [
                                     'icon' => 'fa-boxes-stacked',
                                     'color' => 'amber',
-                                    'bgGradient' => 'from-amber-500 to-orange-500',
-                                    'description' => 'Kelola stok & gudang'
+                                    'description' => 'Kelola Stok'
                                 ],
                                 'supplier' => [
                                     'icon' => 'fa-truck-field',
                                     'color' => 'orange',
-                                    'bgGradient' => 'from-orange-500 to-amber-600',
-                                    'description' => 'Akses pemasok / vendor'
+                                    'description' => 'Pemasok'
                                 ],
                                 'reseller' => [
                                     'icon' => 'fa-handshake',
                                     'color' => 'emerald',
-                                    'bgGradient' => 'from-emerald-500 to-teal-600',
-                                    'description' => 'Akses anggota reseller'
+                                    'description' => 'Reseller'
                                 ],
                             ];
                         @endphp
@@ -231,85 +220,72 @@
                                 $config = $roleConfig[$role->name] ?? [
                                     'icon' => 'fa-user-tag',
                                     'color' => 'gray',
-                                    'bgGradient' => 'from-gray-500 to-gray-600',
-                                    'description' => 'Role pegawai'
+                                    'description' => 'Role Pegawai'
                                 ];
+                                $colorHex = $config['color'] === 'cuan-green' ? '#658C58' : '';
                             @endphp
                             <label class="role-card relative cursor-pointer group" data-role="{{ $role->name }}">
                                 <input type="checkbox" name="roles[]" value="{{ $role->name }}" 
                                        class="peer sr-only role-checkbox"
                                        data-role-name="{{ $role->name }}"
                                        {{ in_array($role->name, old('roles', [])) ? 'checked' : '' }}>
-                                <div class="block p-4 border-2 border-gray-200 rounded-xl 
-                                            peer-checked:border-{{ $config['color'] }}-400 
-                                            peer-checked:bg-{{ $config['color'] }}-50 
-                                            hover:border-gray-300 transition-all">
-                                    <div class="flex flex-col items-center text-center gap-2">
-                                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br {{ $config['bgGradient'] }} flex items-center justify-center shadow-lg">
-                                            <i class="fas {{ $config['icon'] }} text-white text-lg"></i>
+                                <div class="block p-5 border border-gray-100 rounded-[2rem] bg-gray-50/50
+                                            peer-checked:border-cuan-green peer-checked:bg-cuan-green/5 
+                                            hover:bg-white hover:shadow-xl hover:shadow-gray-200 transition-all duration-300">
+                                    <div class="flex flex-col items-center text-center gap-3">
+                                        <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                                            <i class="fas {{ $config['icon'] }} 
+                                                {{ $config['color'] === 'cuan-green' ? 'text-cuan-green' : 'text-'.$config['color'].'-500' }} text-lg"></i>
                                         </div>
                                         <div>
-                                            <span class="font-semibold text-gray-900 block">{{ ucfirst($role->name) }}</span>
-                                            <span class="text-xs text-gray-500 hidden sm:block">{{ $config['description'] }}</span>
+                                            <span class="text-xs font-black text-gray-900 uppercase tracking-widest block">{{ $role->name }}</span>
+                                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest hidden sm:block mt-1">{{ $config['description'] }}</span>
                                         </div>
-                                    </div>
-                                    {{-- Checkmark --}}
-                                    <div class="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-gray-300 
-                                                peer-checked:border-{{ $config['color'] }}-500 peer-checked:bg-{{ $config['color'] }}-500 
-                                                flex items-center justify-center transition-all">
-                                        <i class="fas fa-check text-white text-xs opacity-0 peer-checked:opacity-100"></i>
                                     </div>
                                 </div>
                             </label>
                         @endforeach
                     </div>
                     @error('roles')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                        <p class="mt-4 text-[10px] font-black uppercase text-red-500 tracking-widest">{{ $message }}</p>
                     @enderror
                 </div>
-            </section>
+            </x-card-container>
 
             {{-- Permissions --}}
-            <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <x-card-container>
+                <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                            <h2 class="text-base font-semibold text-gray-900">Permission / Hak Akses</h2>
-                            <p class="text-xs text-gray-500 mt-0.5">Centang permission untuk mengatur akses pegawai</p>
+                            <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Permission / Hak Akses</h2>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Sesuaikan hak akses spesifik untuk pegawai ini.</p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             {{-- Search --}}
-                            <div class="relative">
-                                <input type="text" id="permissionSearch" placeholder="Cari permission..."
-                                       class="w-48 sm:w-64 pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
-                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                            </div>
+                            <input type="text" id="permissionSearch" placeholder="Cari hak akses..."
+                                   class="px-4 py-2 text-xs font-bold bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
                             {{-- Toggle All --}}
                             <button type="button" id="toggleAllPermissions" 
-                                    class="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
-                                <i class="fas fa-check-double mr-1"></i>
+                                    class="px-4 py-2 text-[10px] font-black uppercase bg-white border border-gray-200 text-gray-400 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
                                 Pilih Semua
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <div class="px-6 py-4 max-h-[500px] overflow-y-auto" id="permissionsContainer">
+                <div class="px-8 py-6 max-h-[500px] overflow-y-auto scrollbar-hide" id="permissionsContainer">
                     {{-- Stats Bar --}}
-                    <div class="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
-                        <div class="flex items-center gap-4 text-sm">
-                            <span class="text-gray-600">
-                                <i class="fas fa-check-circle text-teal-500 mr-1"></i>
-                                Terpilih: <strong id="selectedCount">0</strong>
+                    <div class="flex items-center justify-between mb-6 p-4 bg-cuan-green/5 border border-cuan-green/10 rounded-2xl">
+                        <div class="flex items-center gap-6">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-cuan-green">
+                                Terpilih: <span id="selectedCount" class="text-sm ml-1">0</span>
                             </span>
-                            <span class="text-gray-600">
-                                <i class="fas fa-list text-gray-400 mr-1"></i>
-                                Total: <strong>{{ $permissionCategories->sum(fn($c) => $c->permissions->count()) }}</strong>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                Total: <span class="text-sm ml-1 text-gray-900">{{ $permissionCategories->sum(fn($c) => $c->permissions->count()) }}</span>
                             </span>
                         </div>
                         <button type="button" id="clearAllPermissions" 
-                                class="text-xs text-red-500 hover:text-red-700 font-medium">
-                            <i class="fas fa-times mr-1"></i>
+                                class="text-[10px] font-black uppercase tracking-widest text-red-400 hover:text-red-500 transition-colors">
                             Hapus Semua
                         </button>
                     </div>
@@ -318,47 +294,51 @@
                     <div class="space-y-4" id="permissionsList">
                         @foreach($permissionCategories as $category)
                             @if($category->permissions->count() > 0)
-                                <div class="category-section border border-gray-200 rounded-lg overflow-hidden" data-category="{{ $category->slug }}">
+                                <div class="category-section border border-gray-100 rounded-[2rem] overflow-hidden" data-category="{{ $category->slug }}">
                                     {{-- Category Header --}}
-                                    <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200 cursor-pointer category-toggle"
+                                    <div class="flex items-center justify-between px-6 py-4 bg-gray-50 cursor-pointer category-toggle hover:bg-gray-100 transition-colors"
                                          data-category-id="{{ $category->id }}">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-lg flex items-center justify-center" 
-                                                 style="background-color: {{ $category->color }}20;">
-                                                <i class="{{ $category->icon }}" style="color: {{ $category->color }};"></i>
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                                <i class="{{ $category->icon }} text-sm" style="color: {{ $category->color }};"></i>
                                             </div>
                                             <div>
-                                                <span class="font-semibold text-gray-900 text-sm">{{ $category->name }}</span>
-                                                <span class="text-xs text-gray-500 ml-2">
+                                                <span class="text-xs font-black text-gray-900 uppercase tracking-widest">{{ $category->name }}</span>
+                                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-2">
                                                     (<span class="category-selected-count" data-category="{{ $category->id }}">0</span>/{{ $category->permissions->count() }})
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="flex items-center gap-2">
-                                            <button type="button" class="select-all-category px-2 py-1 text-xs font-medium text-teal-600 hover:bg-teal-50 rounded transition-colors"
+                                        <div class="flex items-center gap-3">
+                                            <button type="button" class="select-all-category text-[9px] font-black uppercase tracking-widest text-cuan-green hover:underline"
                                                     data-category="{{ $category->id }}">
                                                 Pilih Semua
                                             </button>
-                                            <i class="fas fa-chevron-down text-gray-400 text-xs transition-transform category-chevron"></i>
+                                            <i class="fas fa-chevron-down text-[10px] text-gray-300 transition-transform category-chevron"></i>
                                         </div>
                                     </div>
                                     
                                     {{-- Permissions Grid --}}
-                                    <div class="p-3 category-content" data-category-id="{{ $category->id }}">
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    <div class="p-6 bg-white border-t border-gray-100 category-content" data-category-id="{{ $category->id }}">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                             @foreach($category->permissions as $permission)
-                                                <label class="permission-item flex items-center gap-2.5 p-2.5 rounded-lg border border-transparent hover:border-gray-200 cursor-pointer transition-all"
+                                                <label class="permission-item relative flex items-center gap-3 p-4 rounded-2xl border border-gray-50 bg-gray-50/30 hover:bg-white hover:border-cuan-green/30 hover:shadow-sm cursor-pointer transition-all"
                                                        data-permission-name="{{ $permission->name }}">
                                                     <input type="checkbox" name="permissions[]" value="{{ $permission->name }}"
-                                                           class="permission-checkbox w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-offset-0"
+                                                           class="permission-checkbox peer sr-only"
                                                            data-category="{{ $category->id }}"
                                                            {{ in_array($permission->name, old('permissions', [])) ? 'checked' : '' }}>
+                                                    
+                                                    <div class="w-5 h-5 rounded-md border-2 border-gray-200 flex items-center justify-center bg-white peer-checked:bg-cuan-green peer-checked:border-cuan-green transition-all">
+                                                        <i class="fas fa-check text-[10px] text-white opacity-0 peer-checked:opacity-100"></i>
+                                                    </div>
+
                                                     <div class="flex-1 min-w-0">
-                                                        <span class="permission-label text-sm text-gray-700 block truncate">
-                                                            {{ ucfirst($permission->name) }}
+                                                        <span class="text-xs font-black uppercase tracking-widest text-gray-900 block truncate group-hover:text-cuan-green">
+                                                            {{ str_replace('-', ' ', $permission->name) }}
                                                         </span>
                                                         @if($permission->description)
-                                                            <span class="text-xs text-gray-400 block truncate">{{ $permission->description }}</span>
+                                                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest block truncate mt-1">{{ $permission->description }}</span>
                                                         @endif
                                                     </div>
                                                 </label>
@@ -369,8 +349,9 @@
                             @endif
                         @endforeach
                     </div>
-                    
-                    {{-- No Results --}}
+                </div>
+            </x-card-container>
+        {{-- No Results --}}
                     <div id="noSearchResults" class="hidden py-8 text-center text-gray-500">
                         <i class="fas fa-search text-3xl mb-2 text-gray-300"></i>
                         <p>Tidak ada permission yang ditemukan</p>
@@ -385,32 +366,33 @@
             </section>
 
             {{-- Status --}}
-            <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-base font-semibold text-gray-900">Status Akun</h2>
+            <x-card-container>
+                <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                    <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Status Akun</h2>
                 </div>
-                <div class="px-6 py-5">
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" name="is_active" value="1" class="w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-                               {{ old('is_active', true) ? 'checked' : '' }}>
+                <div class="px-8 py-8">
+                    <label class="flex items-center gap-4 cursor-pointer group">
+                        <div class="relative w-14 h-8 transition-all">
+                            <input type="checkbox" name="is_active" value="1" class="peer sr-only" {{ old('is_active', true) ? 'checked' : '' }}>
+                            <div class="w-full h-full bg-gray-200 rounded-full peer-checked:bg-cuan-green transition-all shadow-inner"></div>
+                            <div class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all peer-checked:left-7 shadow-sm"></div>
+                        </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-900">Aktifkan akun</span>
-                            <p class="text-xs text-gray-500">Pegawai dapat login dan mengakses sistem</p>
+                            <span class="text-xs font-black text-gray-900 uppercase tracking-widest">Aktifkan akun</span>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Pegawai dapat login dan mengakses sistem setelah verifikasi email.</p>
                         </div>
                     </label>
                 </div>
-            </section>
+            </x-card-container>
 
             {{-- Action Buttons --}}
-            <div class="flex items-center justify-end gap-3">
+            <div class="flex items-center justify-end gap-3 pt-4 pb-8">
                 <a href="{{ route('employees.index') }}"
-                   class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                    <i class="fas fa-times text-xs"></i>
+                   class="px-8 py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold text-sm hover:bg-gray-50 transition-all active:scale-95">
                     Batal
                 </a>
                 <button type="submit"
-                        class="inline-flex items-center gap-2 rounded-lg bg-teal-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-1">
-                    <i class="fas fa-save text-xs"></i>
+                        class="px-8 py-4 bg-cuan-green text-white rounded-2xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
                     Simpan Pegawai
                 </button>
             </div>
@@ -419,8 +401,39 @@
 </main>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Session Flash SweetAlert
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: "{{ session('success') }}",
+            confirmButtonColor: '#658C58',
+            iconColor: '#658C58',
+            customClass: {
+                popup: 'rounded-[1.5rem] border-0',
+                title: 'font-black tracking-tight',
+                confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest px-6 py-3'
+            }
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: "{{ session('error') }}",
+            confirmButtonColor: '#658C58',
+            customClass: {
+                popup: 'rounded-[1.5rem] border-0',
+                title: 'font-black tracking-tight',
+                confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest px-6 py-3'
+            }
+        });
+    @endif
+
     // Role permissions mapping from server
     const rolePermissions = @json($rolePermissions);
     
