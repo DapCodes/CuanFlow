@@ -35,7 +35,7 @@
         </section>
 
         {{-- FORM CARD --}}
-        <form action="{{ route('stock-transfers.store') }}" method="POST" x-data="stockTransferForm()" class="space-y-6">
+        <form action="{{ route('stock-transfers.store') }}" method="POST" x-data="stockTransferForm()" @submit.prevent="validateAndSubmit" class="space-y-6">
             @csrf
 
             {{-- Konfigurasi Dasar --}}
@@ -169,7 +169,7 @@
                                             </template>
                                         </div>
                                     </div>
-                                    <input type="hidden" :name="'items[' + index + '][id]'" :value="item.id" required>
+                                    <input type="hidden" :name="'items[' + index + '][id]'" :value="item.id">
                                 </div>
                             </div>
 
@@ -338,6 +338,63 @@
                 if (this.items.length > 1) {
                     this.items.splice(index, 1);
                 }
+            },
+
+            validateAndSubmit() {
+                if (!this.selectedOutletId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Outlet Belum Dipilih',
+                        text: 'Silakan pilih outlet tujuan terlebih dahulu.',
+                        confirmButtonColor: '#658C58',
+                        customClass: { popup: 'rounded-[1.5rem]' }
+                    });
+                    return;
+                }
+
+                if (this.items.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Item Masih Kosong',
+                        text: 'Silakan tambah minimal satu item untuk ditransfer.',
+                        confirmButtonColor: '#658C58',
+                        customClass: { popup: 'rounded-[1.5rem]' }
+                    });
+                    return;
+                }
+
+                let validItems = true;
+                let hasEmptyQuantity = false;
+                
+                this.items.forEach((item, idx) => {
+                    if (!item.id) validItems = false;
+                    if (!item.quantity || parseFloat(item.quantity) <= 0) hasEmptyQuantity = true;
+                });
+
+                if (!validItems) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Pilihan Barang Belum Lengkap',
+                        text: 'Ada item yang barangnya belum dipilih. Silakan lengkapi atau hapus baris tersebut.',
+                        confirmButtonColor: '#658C58',
+                        customClass: { popup: 'rounded-[1.5rem]' }
+                    });
+                    return;
+                }
+
+                if (hasEmptyQuantity) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Jumlah Belum Terisi',
+                        text: 'Pastikan semua item memiliki jumlah yang valid (lebih dari 0).',
+                        confirmButtonColor: '#658C58',
+                        customClass: { popup: 'rounded-[1.5rem]' }
+                    });
+                    return;
+                }
+
+                // If all good, submit form
+                this.$el.submit();
             }
         }
     }

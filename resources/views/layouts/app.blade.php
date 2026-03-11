@@ -807,6 +807,24 @@
                 });
             @endif
 
+            @if($errors->any())
+                @php
+                    $errorMsg = '';
+                    foreach($errors->all() as $error) { $errorMsg .= '• ' . $error . '<br>'; }
+                @endphp
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Kesalahan Input',
+                    html: "{!! $errorMsg !!}",
+                    confirmButtonColor: '#ef4444',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-none shadow-2xl',
+                        title: 'font-black text-gray-900',
+                        htmlContainer: 'text-left text-sm font-medium text-gray-500'
+                    }
+                });
+            @endif
+
             document.addEventListener('click', function(e) {
                 const deleteBtn = e.target.closest('.confirm-delete');
                 if (deleteBtn) {
