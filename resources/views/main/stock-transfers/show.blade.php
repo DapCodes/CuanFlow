@@ -60,19 +60,24 @@
                 @if(auth()->user()->outlet_id === $stockTransfer->from_outlet_id)
                     @if($stockTransfer->status === 'pending')
                          @can('batalkan stock transfer')
-                        <form action="{{ route('stock-transfers.destroy', $stockTransfer->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan transfer ini?');">
+                        <form action="{{ route('stock-transfers.destroy', $stockTransfer->id) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="h-11 px-6 bg-white text-red-600 border border-red-100 rounded-xl text-sm font-black hover:bg-red-50 transition-all active:scale-95 shadow-sm">
+                            <button type="submit" 
+                                class="confirm-delete h-11 px-6 bg-white text-red-600 border border-red-100 rounded-xl text-sm font-black hover:bg-red-50 transition-all active:scale-95 shadow-sm"
+                                data-name="Transfer #{{ $stockTransfer->transfer_number }}">
                                 Batalkan
                             </button>
                         </form>
                         @endcan
                         
                         @can('proses stock transfer')
-                        <form action="{{ route('stock-transfers.send', $stockTransfer->id) }}" method="POST" onsubmit="return confirm('Kirim sekarang? Stok akan dikurangi dari gudang Anda.');">
+                        <form action="{{ route('stock-transfers.send', $stockTransfer->id) }}" method="POST">
                             @csrf
-                            <button type="submit" class="h-11 px-8 bg-cuan-green text-white rounded-xl text-sm font-black hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                            <button type="submit" 
+                                class="confirm-toggle h-11 px-8 bg-cuan-green text-white rounded-xl text-sm font-black hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20"
+                                data-status="kirim"
+                                data-name="barang transfer ini sekarang">
                                 Kirim Sekarang
                             </button>
                         </form>
@@ -83,9 +88,12 @@
                 @if(auth()->user()->outlet_id === $stockTransfer->to_outlet_id)
                     @if($stockTransfer->status === 'in_transit')
                          @can('terima stock transfer')
-                        <form action="{{ route('stock-transfers.receive', $stockTransfer->id) }}" method="POST" onsubmit="return confirm('Pastikan barang fisik sudah diterima. Lanjutkan?');">
+                        <form action="{{ route('stock-transfers.receive', $stockTransfer->id) }}" method="POST">
                             @csrf
-                            <button type="submit" class="h-11 px-8 bg-blue-600 text-white rounded-xl text-sm font-black hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-500/20">
+                            <button type="submit" 
+                                class="confirm-toggle h-11 px-8 bg-blue-600 text-white rounded-xl text-sm font-black hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-500/20"
+                                data-status="konfirmasi penerimaan"
+                                data-name="barang ini">
                                 Terima Barang
                             </button>
                         </form>
