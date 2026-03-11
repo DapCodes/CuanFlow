@@ -3,17 +3,13 @@
 @section('title', 'Edit Outlet - CuanFlow')
 
 @section('breadcrumb')
+<li class="flex items-center text-gray-400 mx-2">/</li>
 <li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('outlets.index') }}" class="text-gray-600 hover:text-gray-900">Informasi Outlet</a>
+    <a href="{{ route('outlets.index') }}" class="text-gray-600 hover:text-gray-900 font-medium tracking-tight">Informasi Outlet</a>
 </li>
+<li class="flex items-center text-gray-400 mx-2">/</li>
 <li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Edit {{ $outlet->name }}</span>
+    <span class="text-gray-900 font-medium tracking-tight">Edit {{ $outlet->name }}</span>
 </li>
 @endsection
 
@@ -23,7 +19,7 @@
     #map {
         height: 400px;
         width: 100%;
-        border-radius: 0.5rem;
+        border-radius: 1.5rem;
         z-index: 1;
     }
     .leaflet-container img.leaflet-tile {
@@ -35,20 +31,20 @@
     }
     .logo-preview-container {
         position: relative;
-        width: 200px;
-        height: 200px;
-        border: 2px dashed #d1d5db;
-        border-radius: 0.5rem;
+        width: 100%;
+        aspect-ratio: 1/1;
+        border: 2px dashed #e5e7eb;
+        border-radius: 1.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        background: #f9fafb;
+        background: #fdfdfd;
         transition: all 0.3s ease;
     }
     .logo-preview-container:hover {
-        border-color: #3b82f6;
-        background: #eff6ff;
+        border-color: #658C58;
+        background: #f8faf7;
     }
     .logo-preview-container img {
         width: 100%;
@@ -61,12 +57,12 @@
     }
     .remove-logo-btn {
         position: absolute;
-        top: 8px;
-        right: 8px;
+        top: 12px;
+        right: 12px;
         background: #ef4444;
         color: white;
         border: none;
-        border-radius: 50%;
+        border-radius: 0.75rem;
         width: 32px;
         height: 32px;
         display: none;
@@ -75,36 +71,35 @@
         cursor: pointer;
         transition: all 0.2s;
         z-index: 10;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
     }
     .logo-preview-container:hover .remove-logo-btn {
         display: flex;
-    }
-    .remove-logo-btn:hover {
-        background: #dc2626;
-        transform: scale(1.1);
     }
     
     /* Toggle Switch Styles */
     .toggle-checkbox:checked {
         right: 0;
-        border-color: #f97316;
+        border-color: #658C58;
     }
     .toggle-checkbox:checked + .toggle-label {
-        background-color: #f97316;
+        background-color: #658C58;
     }
 
-    /* Current Logo Badge */
     .current-logo-badge {
         position: absolute;
-        top: 8px;
-        left: 8px;
-        background: #3b82f6;
+        top: 12px;
+        left: 12px;
+        background: #658C58;
         color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 0.75rem;
+        font-size: 9px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
         z-index: 10;
+        box-shadow: 0 4px 12px rgba(101, 140, 88, 0.2);
     }
 </style>
 @endpush
@@ -113,113 +108,98 @@
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        {{-- Alert error --}}
-        @if(session('error'))
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <p class="text-red-800">{{ session('error') }}</p>
-            </div>
-        @endif
-
         {{-- HEADER --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-yellow-50 text-yellow-500 border border-yellow-100">
-                        <i class="fas fa-edit text-sm"></i>
-                    </span>
-                    <span>Edit Outlet: {{ $outlet->name }}</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tight">
+                    Edit Outlet
                 </h1>
-                <p class="mt-1 text-sm text-gray-500">
-                    Perbarui informasi <span class="font-semibold">{{ $outlet->name }}</span> dengan mudah dan cepat.
+                <p class="mt-1 text-sm text-gray-500 font-medium">
+                    Perbarui informasi <span class="text-cuan-green font-black">{{ $outlet->name }}</span>.
                 </p>
             </div>
-            <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm">
-                <i class="fas fa-arrow-left mr-2 text-xs"></i>
+            <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center h-11 px-6 bg-white text-gray-700 border border-gray-200 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
                 Kembali
             </a>
         </section>
 
         {{-- FORM CARD --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-            <form action="{{ route('outlets.update', $outlet->id) }}" method="POST" enctype="multipart/form-data" class="px-4 md:px-6 py-6 space-y-8">
+        <x-card-container>
+            <form action="{{ route('outlets.update', $outlet->id) }}" method="POST" enctype="multipart/form-data" class="px-6 py-8 md:px-8 space-y-10">
                 @csrf
                 @method('PUT')
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     <!-- Left Column - Logo & Status -->
-                    <div class="lg:col-span-1 space-y-8">
+                    <div class="lg:col-span-1 space-y-10">
                         <!-- Logo Upload -->
                         <div>
-                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4">
+                            <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-4">
                                 Logo Outlet
                             </h3>
-                            <div class="bg-gray-50 rounded-xl p-6 border-2 border-dashed border-gray-300 flex flex-col items-center">
+                            <div class="space-y-4">
                                 <div class="logo-preview-container mb-4" id="logoPreviewContainer">
                                     @if($outlet->logo)
                                     <span class="current-logo-badge">Logo Saat Ini</span>
                                     @endif
                                     <button type="button" class="remove-logo-btn" id="removeLogo" title="Hapus Logo">
-                                        <i class="fas fa-times"></i>
+                                        <i class="fas fa-times text-xs"></i>
                                     </button>
                                     @if($outlet->logo)
-                                    <img id="logoPreview" src="{{ Storage::url($outlet->logo) }}" alt="Current Logo" class="rounded-lg shadow-sm">
+                                        <img id="logoPreview" src="{{ Storage::url($outlet->logo) }}" alt="Current Logo" class="rounded-2xl">
                                     @else
-                                    <div class="logo-preview-placeholder" id="logoPlaceholder">
-                                        <i class="fas fa-cloud-upload-alt text-5xl mb-2 text-gray-400"></i>
-                                        <p class="text-sm font-medium text-gray-500">Upload Logo</p>
-                                        <p class="text-xs text-gray-400 mt-1">JPG, PNG (Max 2MB)</p>
-                                    </div>
-                                    <img id="logoPreview" class="rounded-lg shadow-sm" style="display: none;">
+                                        <div class="logo-preview-placeholder" id="logoPlaceholder">
+                                            <i class="fas fa-cloud-upload-alt text-3xl mb-3 text-gray-300"></i>
+                                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Pilih Logo</p>
+                                        </div>
+                                        <img id="logoPreview" class="rounded-2xl" style="display: none;">
                                     @endif
                                 </div>
 
                                 <input type="file" name="logo" id="logoInput" accept="image/*" class="hidden">
                                 
-                                <button type="button" 
-                                        onclick="document.getElementById('logoInput').click()"
-                                        class="w-full px-4 py-2.5 bg-yellow-500 text-white rounded-lg text-sm font-semibold hover:bg-yellow-600 transition-colors shadow-sm mb-2">
-                                    <i class="fas fa-upload mr-2"></i>
-                                    Ubah Logo
-                                </button>
-
-                                @if($outlet->logo)
-                                <button type="button" id="resetLogo" class="w-full px-4 py-2 text-yellow-600 border border-yellow-200 bg-yellow-50 rounded-lg text-xs font-semibold hover:bg-yellow-100 transition-colors">
-                                    <i class="fas fa-undo mr-1"></i>
-                                    Reset ke Logo Lama
-                                </button>
-                                @endif
+                                <div class="grid grid-cols-1 gap-2">
+                                    <button type="button" 
+                                            onclick="document.getElementById('logoInput').click()"
+                                            class="w-full h-12 bg-cuan-green text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20">
+                                        Ganti Berkas
+                                    </button>
+                                    
+                                    @if($outlet->logo)
+                                    <button type="button" id="resetLogo" class="w-full h-10 bg-gray-50 text-gray-400 border border-gray-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-gray-100 transition-all">
+                                        Reset ke Semula
+                                    </button>
+                                    @endif
+                                </div>
                                 
                                 @error('logo')
-                                <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                                <p class="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-tight">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
 
                         <!-- Code Info -->
                         <div>
-                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4">
-                                Kode Outlet
+                            <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-4">
+                                Kode Sistem
                             </h3>
-                            <div class="bg-blue-50 rounded-xl p-5 border border-blue-100 text-center">
-                                <p class="text-xs text-blue-500 font-medium mb-1 uppercase tracking-wider">Identifikasi Sistem</p>
-                                <p class="text-2xl font-bold text-blue-700 font-mono tracking-widest">{{ $outlet->code }}</p>
-                                <p class="mt-2 text-[10px] text-blue-400">
-                                    <i class="fas fa-lock mr-1"></i> Kode ini bersifat permanen
-                                </p>
+                            <div class="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 flex flex-col items-center text-center">
+                                <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Permanent ID</p>
+                                <p class="text-3xl font-black text-blue-600 font-mono tracking-tighter">{{ $outlet->code }}</p>
+                                <p class="mt-4 text-[9px] font-bold text-blue-300 uppercase tracking-widest italic">ID ini tidak dapat diubah</p>
                             </div>
                         </div>
 
-                        <!-- Status Toggle -->
+                        <!-- Settings Toggle -->
                         <div>
-                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4">
-                                Pengaturan Outlet
+                            <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-4">
+                                Konfigurasi Outlet
                             </h3>
-                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200 space-y-6">
+                            <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 ring-1 ring-gray-100 space-y-6">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-sm font-medium text-gray-900">Produksi Otomatis</p>
-                                        <p class="text-xs text-gray-500 mt-1">Status produksi otomatis selesai</p>
+                                        <p class="text-xs font-black text-gray-900 uppercase tracking-tight">Produksi Otomatis</p>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-tight">Status produksi langsung selesai</p>
                                     </div>
                                     <div class="relative">
                                         <input type="checkbox" 
@@ -229,8 +209,8 @@
                                                {{ old('auto_production', $outlet->auto_production) ? 'checked' : '' }}
                                                class="sr-only toggle-checkbox">
                                         <label for="auto_production" class="block relative w-12 h-6 cursor-pointer">
-                                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 transition-colors duration-200"></div>
-                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200" id="auto_production_dot"></div>
+                                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 transition-colors duration-300"></div>
+                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300" id="auto_production_dot"></div>
                                         </label>
                                     </div>
                                 </div>
@@ -239,26 +219,26 @@
                     </div>
 
                     <!-- Right Column - Form Fields -->
-                    <div class="lg:col-span-2 space-y-8">
+                    <div class="lg:col-span-2 space-y-10">
                         <!-- Informasi Dasar -->
                         <div>
-                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <i class="fas fa-info-circle text-blue-500 text-sm"></i>
+                            <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <i class="fas fa-info-circle text-cuan-green text-sm"></i>
                                 Informasi Dasar
                             </h3>
-                            <div class="space-y-4">
+                            <div class="space-y-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">
                                         Nama Outlet <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" 
                                            name="name" 
                                            value="{{ old('name', $outlet->name) }}"
-                                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('name') border-red-500 @enderror"
-                                           placeholder="Contoh: Outlet Cabang Utama"
+                                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm @error('name') border-red-500 @enderror"
+                                           placeholder="Contoh: Outlet Utama Pusat"
                                            required>
                                     @error('name')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    <p class="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-tight">{{ $message }}</p>
                                     @enderror
                                 </div>
                             </div>
@@ -266,36 +246,36 @@
 
                         <!-- Informasi Kontak -->
                         <div>
-                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <i class="fas fa-address-book text-green-500 text-sm"></i>
-                                Informasi Kontak
+                            <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <i class="fas fa-phone text-blue-500 text-sm"></i>
+                                Kontak Detail
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">
                                         Nomor Telepon <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" 
                                            name="phone" 
                                            value="{{ old('phone', $outlet->phone) }}"
-                                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('phone') border-red-500 @enderror"
-                                           placeholder="08123456789"
+                                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm @error('phone') border-red-500 @enderror"
+                                           placeholder="0812XXXXXXXX"
                                            required>
                                     @error('phone')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    <p class="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-tight">{{ $message }}</p>
                                     @enderror
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Email <span class="text-gray-400 font-normal">(Opsional)</span>
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">
+                                        Email <span class="text-gray-300 font-bold lowercase italic">(opsional)</span>
                                     </label>
                                     <input type="email" 
                                            name="email" 
                                            value="{{ old('email', $outlet->email) }}"
-                                           class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('email') border-red-500 @enderror"
-                                           placeholder="outlet@example.com">
+                                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm @error('email') border-red-500 @enderror"
+                                           placeholder="outlet@bisnis.com">
                                     @error('email')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    <p class="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-tight">{{ $message }}</p>
                                     @enderror
                                 </div>
                             </div>
@@ -303,61 +283,54 @@
 
                         <!-- Lokasi -->
                         <div>
-                            <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
                                 <i class="fas fa-map-marked-alt text-red-500 text-sm"></i>
-                                Lokasi GPS
+                                Lokasi Geografis
                             </h3>
-                            <div class="space-y-6">
+                            <div class="space-y-8">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">
                                         Alamat Lengkap <span class="text-red-500">*</span>
                                     </label>
                                     <textarea name="address" 
                                               id="address"
                                               rows="3"
-                                              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('address') border-red-500 @enderror"
-                                              placeholder="Jl. Contoh No. 123, Kota, Provinsi"
+                                              class="w-full bg-white border border-gray-200 rounded-2xl px-4 py-4 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm @error('address') border-red-500 @enderror"
+                                              placeholder="Jl. Raya Bisnis No. 123, Kelurahan, Kecamatan..."
                                               required>{{ old('address', $outlet->address) }}</textarea>
                                     @error('address')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    <p class="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-tight">{{ $message }}</p>
                                     @enderror
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Pilih Lokasi di Peta
-                                    </label>
-                                    <div id="map" class="border border-gray-200 rounded-xl overflow-hidden shadow-inner"></div>
-                                    <p class="mt-2 text-xs text-gray-500">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Klik pada peta atau geser marker untuk menentukan lokasi yang tepat.
-                                    </p>
+                                    <div class="flex items-center justify-between mb-4">
+                                        <label class="text-[10px] font-black text-gray-900 uppercase tracking-widest block">
+                                            Pilih Titik Lokasi
+                                        </label>
+                                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest italic">Geser marker untuk akurasi</p>
+                                    </div>
+                                    <div id="map" class="border-4 border-white shadow-xl ring-1 ring-gray-100"></div>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50/50 border border-gray-100 rounded-2xl">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                            Latitude
-                                        </label>
+                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Latitude</label>
                                         <input type="text" 
                                                name="latitude" 
                                                id="latitude"
                                                value="{{ old('latitude', $outlet->latitude) }}"
-                                               class="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 rounded-lg text-sm text-gray-600 font-mono"
-                                               placeholder="-6.200000"
-                                               readonly>
+                                               class="w-full bg-white border border-gray-100 rounded-xl px-4 py-2.5 text-xs text-gray-500 font-mono font-bold shadow-inner"
+                                               readonly placeholder="-6.200000">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                            Longitude
-                                        </label>
+                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Longitude</label>
                                         <input type="text" 
                                                name="longitude" 
                                                id="longitude"
                                                value="{{ old('longitude', $outlet->longitude) }}"
-                                               class="w-full px-3 py-2.5 border border-gray-200 bg-gray-50 rounded-lg text-sm text-gray-600 font-mono"
-                                               placeholder="106.816666"
-                                               readonly>
+                                               class="w-full bg-white border border-gray-100 rounded-xl px-4 py-2.5 text-xs text-gray-500 font-mono font-bold shadow-inner"
+                                               readonly placeholder="106.816666">
                                     </div>
                                 </div>
                             </div>
@@ -365,23 +338,21 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons: mobile full width -->
-                <div class="pt-5 border-t border-gray-200">
+                <!-- Action Buttons -->
+                <div class="pt-8 border-t border-gray-100">
                     <div class="flex flex-col md:flex-row md:justify-end gap-3">
                         <a href="{{ route('outlets.index') }}" 
-                           class="w-full md:w-auto inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-times mr-2 text-xs"></i>
-                            <span>Batal</span>
+                           class="w-full md:w-auto h-12 inline-flex items-center justify-center px-8 border border-gray-200 text-[10px] font-black uppercase tracking-widest text-gray-400 rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                            Batal
                         </a>
                         <button type="submit" 
-                                class="w-full md:w-auto inline-flex items-center justify-center px-6 py-2.5 bg-yellow-500 text-sm font-semibold text-white rounded-lg hover:bg-yellow-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-1">
-                            <i class="fas fa-save mr-2 text-xs"></i>
-                            <span>Simpan Perubahan</span>
+                                class="w-full md:w-auto h-12 inline-flex items-center justify-center px-10 bg-cuan-green text-[10px] font-black uppercase tracking-widest text-white rounded-xl hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                            Simpan Perubahan
                         </button>
                     </div>
                 </div>
             </form>
-        </section>
+        </x-card-container>
     </div>
 </main>
 @endsection
@@ -402,165 +373,84 @@ document.addEventListener('DOMContentLoaded', function() {
     logoInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
-            // Validate file size (2MB)
             if (file.size > 2 * 1024 * 1024) {
-                alert('Ukuran file terlalu besar. Maksimal 2MB');
-                logoInput.value = '';
-                return;
+                Swal.fire({ icon: 'error', title: 'File Terlalu Besar', text: 'Maksimal 2MB', customClass: { popup: 'rounded-2xl' } });
+                logoInput.value = ''; return;
             }
-
-            // Validate file type
             if (!file.type.startsWith('image/')) {
-                alert('File harus berupa gambar');
-                logoInput.value = '';
-                return;
+                Swal.fire({ icon: 'error', title: 'Bukan Gambar', text: 'File harus berupa gambar', customClass: { popup: 'rounded-2xl' } });
+                logoInput.value = ''; return;
             }
-
             const reader = new FileReader();
-            reader.onload = function(e) {
-                logoPreview.src = e.target.result;
-                logoPreview.style.display = 'block';
+            reader.onload = e => { 
+                logoPreview.src = e.target.result; logoPreview.style.display = 'block'; 
                 if (logoPlaceholder) logoPlaceholder.style.display = 'none';
-                
-                // Remove "current logo" badge
                 const badge = document.querySelector('.current-logo-badge');
-                if (badge) badge.remove();
+                if (badge) badge.style.display = 'none';
             };
             reader.readAsDataURL(file);
         }
     });
 
-    removeLogo.addEventListener('click', function(e) {
-        e.stopPropagation();
-        logoInput.value = '';
-        logoPreview.src = '';
-        logoPreview.style.display = 'none';
+    removeLogo.addEventListener('click', e => { 
+        e.stopPropagation(); logoInput.value = ''; logoPreview.src = ''; logoPreview.style.display = 'none'; 
         if (logoPlaceholder) logoPlaceholder.style.display = 'block';
-        
-        // Remove badge
         const badge = document.querySelector('.current-logo-badge');
-        if (badge) badge.remove();
+        if (badge) badge.style.display = 'none';
     });
 
-    // Reset to original logo
     if (resetLogo) {
-        resetLogo.addEventListener('click', function() {
+        resetLogo.addEventListener('click', () => {
             logoInput.value = '';
             if (originalLogoUrl) {
-                logoPreview.src = originalLogoUrl;
-                logoPreview.style.display = 'block';
+                logoPreview.src = originalLogoUrl; logoPreview.style.display = 'block';
                 if (logoPlaceholder) logoPlaceholder.style.display = 'none';
-                
-                // Add back the badge if not exists
-                if (!document.querySelector('.current-logo-badge')) {
-                    const badge = document.createElement('span');
-                    badge.className = 'current-logo-badge';
-                    badge.textContent = 'Logo Saat Ini';
-                    document.getElementById('logoPreviewContainer').insertBefore(badge, document.getElementById('logoPreviewContainer').firstChild);
-                }
+                const badge = document.querySelector('.current-logo-badge');
+                if (badge) badge.style.display = 'block';
             }
         });
     }
 
-    // Toggle Switch Handler
-    function updateToggle(checkbox, dot) {
-        if (checkbox.checked) {
-            dot.style.transform = 'translateX(1.5rem)';
-        } else {
-            dot.style.transform = 'translateX(0)';
-        }
-    }
-
+    // Toggle Handler
     const autoProdCheckbox = document.getElementById('auto_production');
     const autoProdDot = document.getElementById('auto_production_dot');
-
+    const updateToggle = (box, dot) => dot.style.transform = box.checked ? 'translateX(1.5rem)' : 'translateX(0)';
     autoProdCheckbox.addEventListener('change', () => updateToggle(autoProdCheckbox, autoProdDot));
-    
-    updateToggle(autoProdCheckbox, autoProdDot); // Initial state
+    updateToggle(autoProdCheckbox, autoProdDot);
 
-    // Leaflet Map Handler
+    // Map Handler
     const currentLat = {{ $outlet->latitude ?? -6.2088 }};
     const currentLng = {{ $outlet->longitude ?? 106.8456 }};
     
-    // Initialize map with current location
-    const map = L.map('map').setView([currentLat, currentLng], 15);
+    const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([currentLat, currentLng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(map);
-
-    // Custom marker icon
-    const customIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
+    const customIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="w-8 h-8 rounded-full bg-cuan-green border-4 border-white shadow-xl flex items-center justify-center text-white"><i class="fas fa-store text-xs"></i></div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
     });
 
-    // Add marker at current location (draggable)
-    let marker = L.marker([currentLat, currentLng], {
-        icon: customIcon,
-        draggable: true
-    }).addTo(map);
+    let marker = L.marker([currentLat, currentLng], { icon: customIcon, draggable: true }).addTo(map);
 
-    marker.bindPopup('<b>Lokasi Outlet</b><br>Geser marker untuk mengubah posisi').openPopup();
-
-    // Update coordinates when marker is dragged
-    marker.on('dragend', function(e) {
-        const position = marker.getLatLng();
-        updateMarker(position.lat, position.lng, true);
-        marker.openPopup();
-    });
-
-    // Update marker position on map click
-    map.on('click', function(e) {
-        updateMarker(e.latlng.lat, e.latlng.lng, true);
-        marker.openPopup();
-    });
-
-    // Function to update marker position programmatically
-    function updateMarker(lat, lng, fetchNewAddress = false) {
+    function updateMarker(lat, lng, fetchAddress = false) {
         marker.setLatLng([lat, lng]);
         map.setView([lat, lng], 15);
         document.getElementById('latitude').value = lat.toFixed(6);
         document.getElementById('longitude').value = lng.toFixed(6);
-        
-        if (fetchNewAddress) {
+        if (fetchAddress) {
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.display_name) {
-                        document.getElementById('address').value = data.display_name;
-                    }
-                })
-                .catch(err => console.error("Error fetching address:", err));
+                .then(res => res.json()).then(data => { if (data?.display_name) document.getElementById('address').value = data.display_name; });
         }
     }
 
-    // Comprehensive map resize fix
-    const fixMapLayout = () => {
-        if (map) {
-            map.invalidateSize();
-            if (marker) {
-                map.setView(marker.getLatLng());
-            }
-        }
-    };
+    marker.on('dragend', () => updateMarker(marker.getLatLng().lat, marker.getLatLng().lng, true));
+    map.on('click', e => updateMarker(e.latlng.lat, e.latlng.lng, true));
 
-    // Fix map on window load and after a delay to account for layout shifts/transitions
+    const fixMapLayout = () => { if (map) map.invalidateSize(); if (marker) map.setView(marker.getLatLng()); };
     window.addEventListener('load', fixMapLayout);
-    
-    // Multiple timeouts to ensure map is fixed after any animations/loaders finish
-    [100, 500, 1000, 2000].forEach(delay => {
-        setTimeout(fixMapLayout, delay);
-    });
-
-    // Also fix when the tab/window gains focus
-    window.addEventListener('focus', fixMapLayout);
+    [100, 500, 1000].forEach(delay => setTimeout(fixMapLayout, delay));
 });
 </script>
 @endpush
