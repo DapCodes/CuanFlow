@@ -34,7 +34,7 @@ class ProductStockSeeder extends Seeder
             return;
         }
 
-        $this->command->info('Seeding product stock (1000 per product per outlet)...');
+        $this->command->info('Seeding product stock (0 per product per outlet)...');
 
         DB::transaction(function () use ($outlets, $products, $adminId) {
             foreach ($products as $product) {
@@ -45,7 +45,7 @@ class ProductStockSeeder extends Seeder
                     ]);
 
                     $qtyBefore = $stock->exists ? $stock->quantity : 0;
-                    $targetQty = 1000;
+                    $targetQty = 0;
                     $diff = $targetQty - $qtyBefore;
 
                     if ($diff == 0) {
@@ -65,7 +65,7 @@ class ProductStockSeeder extends Seeder
                         'quantity_before' => $qtyBefore,
                         'quantity_after' => $targetQty,
                         'unit_price' => $product->hpp,
-                        'notes' => 'Stock standardized to 1000 by Seeder',
+                        'notes' => 'Stock standardized to 0 by Seeder',
                         'created_by' => $adminId,
                     ]);
                 }

@@ -237,7 +237,7 @@ class ProductWithRecipeSeeder extends Seeder
             $productStock = ProductStock::create([
                 'product_id' => $product->id,
                 'outlet_id' => $targetOutletId,
-                'quantity' => 0, // Start from 0, will be filled by production
+                'quantity' => 0, // Explicitly set to 0 as requested
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -377,20 +377,20 @@ class ProductWithRecipeSeeder extends Seeder
                 // 3. Stock Movement In untuk Produk Jadi (Hanya jika COMPLETED, TIDAK DISPOSED, dan IS_STOCK TRUE)
                 if ($status === 'completed' && ! $isDisposed && ($productData['is_stock'] ?? true)) {
                     $qtyBeforeProd = $productStock->quantity;
-                    $productStock->increment('quantity', $actualQty);
+                    // $productStock->increment('quantity', $actualQty); // Stock increment disabled by user request to keep stock at 0
 
                     StockMovement::create([
                         'outlet_id' => $targetOutletId,
                         'stockable_type' => Product::class,
                         'stockable_id' => $product->id,
                         'type' => 'production',
-                        'quantity' => $actualQty,
+                        'quantity' => 0, // Changed from $actualQty to 0
                         'quantity_before' => $qtyBeforeProd,
-                        'quantity_after' => $qtyBeforeProd + $actualQty,
+                        'quantity_after' => $qtyBeforeProd, // No change
                         'unit_price' => round($production->total_cost / ($actualQty ?: 1), 2),
                         'reference_type' => Production::class,
                         'reference_id' => $production->id,
-                        'notes' => 'Production entry batch '.$production->batch_number,
+                        'notes' => 'Production entry batch '.$production->batch_number.' (Stock set to 0 by Seeder)',
                         'created_by' => $adminId,
                         'created_at' => $prodDate,
                     ]);
