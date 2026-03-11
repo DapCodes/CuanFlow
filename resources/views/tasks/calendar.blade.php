@@ -491,6 +491,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Render calendar
     calendar.render();
+
+    // Fix for calendar layout issue on initial load
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            calendar.updateSize();
+        }, 500);
+    });
     
     // Store calendar instance globally for potential external access
     window.taskCalendar = calendar;

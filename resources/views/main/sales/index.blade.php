@@ -839,6 +839,15 @@
     });
     calendar.render();
 
+    // Fix for calendar layout issue on initial load
+    // The container is hidden (display: none) by a FOUC mask in app.blade.php until window load.
+    // We must update size after the mask is removed.
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            calendar.updateSize();
+        }, 500); // 500ms to be safe and match the fade-in transition
+    });
+
     document.getElementById('btnToday').addEventListener('click', () => {
       const today = new Date().toISOString().slice(0,10);
       calendar.today();

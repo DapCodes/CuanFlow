@@ -519,6 +519,13 @@
 
     calendar.render();
 
+    // Fix for calendar layout issue on initial load
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            calendar.updateSize();
+        }, 500);
+    });
+
     btnToday.addEventListener('click', ()=>{
       const today = new Date().toISOString().slice(0,10);
       calendar.today();
