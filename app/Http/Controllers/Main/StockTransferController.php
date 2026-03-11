@@ -35,7 +35,7 @@ class StockTransferController extends Controller
 
         $stats = [
             'sent_pending' => StockTransfer::where('from_outlet_id', $outlet->id)->where('status', 'pending')->count(),
-            'sent_completed' => StockTransfer::where('from_outlet_id', $outlet->id)->where('status', 'received')->count(),
+            'sent_completed' => StockTransfer::where('from_outlet_id', $outlet->id)->whereIn('status', ['in_transit', 'received'])->count(),
             'received_pending' => StockTransfer::where('to_outlet_id', $outlet->id)->where('status', 'in_transit')->count(),
             'received_completed' => StockTransfer::where('to_outlet_id', $outlet->id)->where('status', 'received')->count(),
         ];
