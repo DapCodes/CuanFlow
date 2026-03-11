@@ -232,6 +232,58 @@
                         </p>
                     </div>
 
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            Jenis Produk <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Option 1: Produk Masak Langsung -->
+                            <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="direct">
+                                <input type="radio" name="product_type" value="direct" class="sr-only peer" {{ old('product_type', 'direct') == 'direct' ? 'checked' : '' }}>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="w-10 h-10 bg-green-100 text-cuan-green rounded-full flex items-center justify-center group-hover:bg-cuan-green group-hover:text-white transition-colors peer-checked:bg-cuan-green peer-checked:text-white">
+                                        <i class="fas fa-utensils"></i>
+                                    </div>
+                                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
+                                        <div class="w-2 h-2 bg-white rounded-full"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Masak Langsung</span>
+                                <p class="text-[10px] text-gray-500 mt-1">Masak saat pesanan datang, tanpa simpan stok.</p>
+                            </label>
+
+                            <!-- Option 2: Produk Stok Produksi -->
+                            <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="stock">
+                                <input type="radio" name="product_type" value="stock" class="sr-only peer" {{ old('product_type') == 'stock' ? 'checked' : '' }}>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors peer-checked:bg-blue-600 peer-checked:text-white">
+                                        <i class="fas fa-boxes"></i>
+                                    </div>
+                                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
+                                        <div class="w-2 h-2 bg-white rounded-full"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Stok Produksi</span>
+                                <p class="text-[10px] text-gray-500 mt-1">Produksi massal dan disimpan sebagai stok jadi.</p>
+                            </label>
+
+                            <!-- Option 3: Produk Siap Jual -->
+                            <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="ready">
+                                <input type="radio" name="product_type" value="ready" class="sr-only peer" {{ old('product_type') == 'ready' ? 'checked' : '' }}>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors peer-checked:bg-orange-600 peer-checked:text-white">
+                                        <i class="fas fa-store"></i>
+                                    </div>
+                                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
+                                        <div class="w-2 h-2 bg-white rounded-full"></div>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Siap Jual</span>
+                                <p class="text-[10px] text-gray-500 mt-1">Produk jadi dari supplier, tanpa perlu resep.</p>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{-- Kode Produk --}}
                         <div>
@@ -633,6 +685,41 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {{-- Input Stok Awal & HPP Manual (Hanya untuk Produk Siap Jual) --}}
+                        <div id="readyToSellFields" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg p-5 md:col-span-2 mb-4">
+                                <h4 class="text-sm font-bold text-orange-800 mb-2 flex items-center gap-2">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Khusus Produk Siap Jual</span>
+                                </h4>
+                                <p class="text-xs text-orange-700">
+                                    Karena produk ini tidak memiliki resep, harap masukkan modal (HPP) dan stok awal secara manual.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    HPP (Modal) per Unit <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" step="0.01" name="manual_hpp" id="manualHppInput"
+                                       value="{{ old('manual_hpp') }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       placeholder="Contoh: 5000">
+                                <p class="text-xs text-gray-500 mt-1">Harga beli dari supplier per unit.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Stok yang Tersedia Sekarang <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" step="0.01" name="initial_stock" id="initialStockInput"
+                                       value="{{ old('initial_stock', 0) }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       placeholder="Contoh: 50">
+                                <p class="text-xs text-gray-500 mt-1">Jumlah stok fisik yang ada di outlet saat ini.</p>
+                            </div>
+                        </div>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Harga Jual <span class="text-red-500">*</span>
@@ -1718,18 +1805,75 @@ document.addEventListener('DOMContentLoaded', function() {
         hideExitModal();
     });
     
+    const isStockCheckbox = document.querySelector('input[name="is_stock"]');
+    const isStockToggleContainer = isStockCheckbox ? isStockCheckbox.closest('.bg-blue-50') : null;
+    let currentProductType = $('input[name="product_type"]:checked').val() || 'direct';
+
+    // Event listener for product type change
+    $('input[name="product_type"]').on('change', function() {
+        currentProductType = $(this).val();
+        
+        const readyToSellFields = document.getElementById('readyToSellFields');
+        const hppSummarySection = document.querySelector('#step5 .bg-green-50'); // Final modal HPP summary
+        const marginHppRow = document.querySelector('#marginHpp').closest('div'); // HPP row in results calculation
+        
+        // Auto-set is_stock checkbox and hide the toggle container in step 2
+        if (currentProductType === 'direct') {
+            if (isStockCheckbox) isStockCheckbox.checked = false;
+            if (isStockToggleContainer) isStockToggleContainer.classList.add('hidden');
+        } else {
+            if (isStockCheckbox) isStockCheckbox.checked = true;
+            if (currentProductType === 'stock') {
+                if (isStockToggleContainer) isStockToggleContainer.classList.remove('hidden');
+            } else {
+                if (isStockToggleContainer) isStockToggleContainer.classList.add('hidden');
+            }
+        }
+
+        if (currentProductType === 'ready') {
+            if (readyToSellFields) readyToSellFields.classList.remove('hidden');
+            if (hppSummarySection) hppSummarySection.classList.add('hidden');
+            if (marginHppRow) marginHppRow.classList.add('hidden');
+            
+            // Set required attributes
+            document.getElementById('manualHppInput').setAttribute('required', 'required');
+            document.getElementById('initialStockInput').setAttribute('required', 'required');
+        } else {
+            if (readyToSellFields) readyToSellFields.classList.add('hidden');
+            if (hppSummarySection) hppSummarySection.classList.remove('hidden');
+            if (marginHppRow) marginHppRow.classList.remove('hidden');
+            
+            // Remove required attributes
+            if (document.getElementById('manualHppInput')) document.getElementById('manualHppInput').removeAttribute('required');
+            if (document.getElementById('initialStockInput')) document.getElementById('initialStockInput').removeAttribute('required');
+        }
+        
+        saveFormData();
+    });
+
+    // Trigger initial state
+    $('input[name="product_type"]:checked').trigger('change');
+
     showStep(currentStep);
     
     // Next button
     document.getElementById('nextBtn').addEventListener('click', function() {
         if (validateStep(currentStep)) {
-            if (currentStep === 3) {
+            let nextStep = currentStep + 1;
+            
+            // Skip steps if ready to sell
+            if (currentProductType === 'ready' && currentStep === 1) {
+                nextStep = 5;
+            }
+            
+            if (nextStep === 4) {
                 updateHppSummary();
             }
-            if (currentStep === 4) {
+            if (nextStep === 5) {
                 updateFinalPricing();
             }
-            currentStep++;
+            
+            currentStep = nextStep;
             showStep(currentStep);
             saveFormData(); // Auto-save on step change
         }
@@ -1737,7 +1881,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Previous button
     document.getElementById('prevBtn').addEventListener('click', function() {
-        currentStep--;
+        let prevStep = currentStep - 1;
+        
+        // Skip steps if ready to sell
+        if (currentProductType === 'ready' && currentStep === 5) {
+            prevStep = 1;
+        }
+        
+        currentStep = prevStep;
         showStep(currentStep);
     });
     
@@ -1906,15 +2057,26 @@ function showStep(step) {
     document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
     document.getElementById('step' + step).classList.remove('hidden');
     
+    const isReadyType = currentProductType === 'ready';
+    
     document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
-        const stepNum = index + 1;
+        const stepNum = parseInt(indicator.getAttribute('data-step'));
         const circle = indicator.querySelector('div');
         const icon = circle ? circle.querySelector('i') : null;
         const label = indicator.querySelector('p');
+        const isSkipped = isReadyType && [2, 3, 4].includes(stepNum);
         
         if (!circle) return;
 
-        // Base classes for circle (Responsive: w-8 h-8 on mobile, w-10 h-10 on desktop)
+        if (isSkipped) {
+            indicator.style.opacity = '0.3';
+            indicator.style.pointerEvents = 'none';
+        } else {
+            indicator.style.opacity = '1';
+            indicator.style.pointerEvents = 'auto';
+        }
+
+        // Base classes for circle
         const baseCircleClass = 'w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300';
         const defaultIcon = icon ? icon.getAttribute('data-default-icon') : '';
         
@@ -1941,8 +2103,13 @@ function showStep(step) {
             }
         }
     });
-    
-    const progressPercent = ((step - 1) / (totalSteps - 1)) * 100;
+
+    // Update progress line
+    let progressPercent = ((step - 1) / (totalSteps - 1)) * 100;
+    if (isReadyType) {
+        if (step === 5) progressPercent = 66.6;
+        if (step === 6) progressPercent = 100;
+    }
     document.getElementById('progressLine').style.width = progressPercent + '%';
     
     document.getElementById('prevBtn').style.display = step > 1 ? 'flex' : 'none';
@@ -1959,6 +2126,9 @@ function validateStep(step) {
     const requiredInputs = currentStepEl.querySelectorAll('[required]');
     
     for (let input of requiredInputs) {
+        // Skip hidden required inputs
+        if (input.closest('.hidden')) continue;
+        
         if (!input.value || input.value.trim() === '') {
             alert('Mohon lengkapi semua field yang wajib diisi (*)');
             input.focus();
@@ -1966,7 +2136,7 @@ function validateStep(step) {
         }
     }
     
-    if (step === 3) {
+    if (step === 3 && currentProductType !== 'ready') {
         const recipeItems = document.querySelectorAll('.recipe-item');
         if (recipeItems.length === 0) {
             alert('Minimal harus ada 1 bahan baku');
@@ -2142,7 +2312,14 @@ function updateFinalPricing() {
 
 function calculateMargin() {
     const sellingPrice = parseFloat(document.getElementById('sellingPriceInput').value || 0);
-    const hpp = window.hppPerUnitValue || 0;
+    const manualHpp = parseFloat(document.getElementById('manualHppInput').value || 0);
+    
+    let hpp = window.hppPerUnitValue || 0;
+    if (currentProductType === 'ready') {
+        hpp = manualHpp;
+        window.hppPerUnitValue = hpp; // Sync for target calculation
+    }
+    
     const profit = sellingPrice - hpp;
     const marginPercent = hpp > 0 ? ((profit / hpp) * 100) : 0;
     

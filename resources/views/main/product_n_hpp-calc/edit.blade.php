@@ -121,6 +121,69 @@
                             </p>
                         </div>
 
+                        @php
+                            $currentType = 'direct';
+                            if ($product->is_stock) {
+                                if ($product->defaultRecipe) {
+                                    $currentType = 'stock';
+                                } else {
+                                    $currentType = 'ready';
+                                }
+                            }
+                        @endphp
+
+                        <div class="mb-8">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">
+                                Jenis Produk <span class="text-red-500">*</span>
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Option 1: Produk Masak Langsung -->
+                                <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="direct">
+                                    <input type="radio" name="product_type" value="direct" class="sr-only peer" {{ old('product_type', $currentType) == 'direct' ? 'checked' : '' }}>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="w-10 h-10 bg-green-100 text-cuan-green rounded-full flex items-center justify-center group-hover:bg-cuan-green group-hover:text-white transition-colors peer-checked:bg-cuan-green peer-checked:text-white">
+                                            <i class="fas fa-utensils"></i>
+                                        </div>
+                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
+                                            <div class="w-2 h-2 bg-white rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Masak Langsung</span>
+                                    <p class="text-[10px] text-gray-500 mt-1">Masak saat pesanan datang, tanpa simpan stok.</p>
+                                </label>
+
+                                <!-- Option 2: Produk Stok Produksi -->
+                                <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="stock">
+                                    <input type="radio" name="product_type" value="stock" class="sr-only peer" {{ old('product_type', $currentType) == 'stock' ? 'checked' : '' }}>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors peer-checked:bg-blue-600 peer-checked:text-white">
+                                            <i class="fas fa-boxes"></i>
+                                        </div>
+                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
+                                            <div class="w-2 h-2 bg-white rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Stok Produksi</span>
+                                    <p class="text-[10px] text-gray-500 mt-1">Produksi massal dan disimpan sebagai stok jadi.</p>
+                                </label>
+
+                                <!-- Option 3: Produk Siap Jual -->
+                                <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="ready">
+                                    <input type="radio" name="product_type" value="ready" class="sr-only peer" {{ old('product_type', $currentType) == 'ready' ? 'checked' : '' }}>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors peer-checked:bg-orange-600 peer-checked:text-white">
+                                            <i class="fas fa-store"></i>
+                                        </div>
+                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
+                                            <div class="w-2 h-2 bg-white rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Siap Jual</span>
+                                    <p class="text-[10px] text-gray-500 mt-1">Produk jadi dari supplier, tanpa perlu resep.</p>
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {{-- Kode Produk --}}
                             <div>
@@ -629,6 +692,27 @@
                             </p>
                         </div>
 
+                        {{-- Input HPP Manual (Hanya untuk Produk Siap Jual) --}}
+                        <div id="readyToSellFields" class="bg-orange-50 border border-orange-200 rounded-lg p-5 mb-6 hidden">
+                            <h4 class="text-sm font-bold text-orange-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Khusus Produk Siap Jual</span>
+                            </h4>
+                            <p class="text-xs text-orange-700 mb-4">
+                                Karena produk ini tidak memiliki resep, harap masukkan modal (HPP) secara manual.
+                            </p>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    HPP (Modal) per Unit <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" step="0.01" name="manual_hpp" id="manualHppInput"
+                                       value="{{ old('manual_hpp', $product->hpp) }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       placeholder="Contoh: 5000">
+                                <p class="text-xs text-gray-500 mt-1">Harga beli dari supplier per unit.</p>
+                            </div>
+                        </div>
+
                         {{-- HPP per unit highlight --}}
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -798,6 +882,76 @@ const imageInput = document.getElementById('imageInput');
 const imagePreview = document.getElementById('imagePreview');
 const previewImg = document.getElementById('previewImg');
 const removeImageBtn = document.getElementById('removeImage');
+
+// Product Type Switching Logic
+$(document).ready(function() {
+    const isStockCheckbox = document.querySelector('input[name="is_stock"]');
+    const isStockToggleContainer = isStockCheckbox ? isStockCheckbox.closest('.bg-blue-50') : null;
+    
+    $('input[name="product_type"]').on('change', function() {
+        const type = $(this).val();
+        const recipeSection = document.getElementById('section-recipe');
+        const bahanSection = document.getElementById('section-bahan');
+        const biayaSection = document.getElementById('section-biaya');
+        const readyToSellFields = document.getElementById('readyToSellFields');
+        const finalHppSection = document.querySelector('#section-pricing .bg-green-50'); // Modal HPP highlight
+        const marginHppRow = document.querySelector('#marginHpp').closest('div');
+        
+        // Navigation links
+        const navLinks = document.querySelectorAll('nav a');
+
+        // Auto-set is_stock
+        if (type === 'direct') {
+            if (isStockCheckbox) isStockCheckbox.checked = false;
+            if (isStockToggleContainer) isStockToggleContainer.classList.add('hidden');
+        } else {
+            if (isStockCheckbox) isStockCheckbox.checked = true;
+            if (type === 'stock') {
+                if (isStockToggleContainer) isStockToggleContainer.classList.remove('hidden');
+            } else {
+                if (isStockToggleContainer) isStockToggleContainer.classList.add('hidden');
+            }
+        }
+
+        if (type === 'ready') {
+            if (recipeSection) recipeSection.classList.add('hidden');
+            if (bahanSection) bahanSection.classList.add('hidden');
+            if (biayaSection) biayaSection.classList.add('hidden');
+            if (readyToSellFields) readyToSellFields.classList.remove('hidden');
+            if (finalHppSection) finalHppSection.classList.add('hidden');
+            if (marginHppRow) marginHppRow.classList.add('hidden');
+            
+            navLinks.forEach(link => {
+                if (link.href.includes('recipe') || link.href.includes('bahan') || link.href.includes('biaya')) {
+                    link.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('manualHppInput').setAttribute('required', 'required');
+        } else {
+            if (recipeSection) recipeSection.classList.remove('hidden');
+            if (bahanSection) bahanSection.classList.remove('hidden');
+            if (biayaSection) biayaSection.classList.remove('hidden');
+            if (readyToSellFields) readyToSellFields.classList.add('hidden');
+            if (finalHppSection) finalHppSection.classList.remove('hidden');
+            if (marginHppRow) marginHppRow.classList.remove('hidden');
+
+            navLinks.forEach(link => {
+                link.classList.remove('hidden');
+            });
+
+            document.getElementById('manualHppInput').removeAttribute('required');
+        }
+        
+        calculateMargin();
+    });
+
+    // Trigger initial state
+    $('input[name="product_type"]:checked').trigger('change');
+    
+    // Manual HPP input listener
+    $('#manualHppInput').on('input', calculateMargin);
+});
 
 if (imageInput) {
     imageInput.addEventListener('change', function(e) {
@@ -1084,7 +1238,15 @@ function calculateMargin() {
     if (!sellingPriceInput) return;
 
     const sellingPrice = parseFloat(sellingPriceInput.value || 0);
-    const hpp = window.hppPerUnitValue || 0;
+    const manualHppInput = document.getElementById('manualHppInput');
+    const manualHpp = manualHppInput ? parseFloat(manualHppInput.value || 0) : 0;
+    const productType = $('input[name="product_type"]:checked').val();
+    
+    let hpp = window.hppPerUnitValue || 0;
+    if (productType === 'ready') {
+        hpp = manualHpp;
+    }
+    
     const profit = sellingPrice - hpp;
     const marginPercent = hpp > 0 ? ((profit / hpp) * 100) : 0;
 
@@ -1095,6 +1257,9 @@ function calculateMargin() {
 
     setText('marginSellingPrice', 'Rp ' + sellingPrice.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0}));
     setText('marginProfit', 'Rp ' + profit.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0}));
+    setText('marginHpp', 'Rp ' + hpp.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0}));
+    setText('summaryHppPerUnit', 'Rp ' + hpp.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0}));
+    setText('finalHppPerUnit', 'Rp ' + hpp.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0}));
 
     const marginEl = document.getElementById('marginPercent');
     if (marginEl) {

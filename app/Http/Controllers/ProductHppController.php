@@ -6,10 +6,12 @@ use App\Models\Category;
 use App\Models\HppCalculation;
 use App\Models\Product;
 use App\Models\ProductSalesTarget;
+use App\Models\ProductStock;
 use App\Models\RawMaterial;
 use App\Models\Recipe;
 use App\Models\RecipeItem;
 use App\Models\Sale;
+use App\Models\StockMovement;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,7 +71,7 @@ class ProductHppController extends Controller
             abort(403, 'Akses ditolak');
         }
 
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:30|unique:products,code',
             'barcode' => 'nullable|string|max:50',
@@ -77,15 +79,6 @@ class ProductHppController extends Controller
             'unit_id' => 'required|exists:units,id',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-            'recipe_name' => 'required|string|max:255',
-            'output_quantity' => 'required|numeric|min:0.01',
-            'estimated_time_minutes' => 'nullable|integer|min:1',
-            'instructions' => 'nullable|string',
-            'recipe_items' => 'required|array|min:1',
-            'recipe_items.*.raw_material_id' => 'required|exists:raw_materials,id',
-            'recipe_items.*.quantity' => 'required|numeric|min:0.01',
-            'recipe_items.*.notes' => 'nullable|string',
-            'additional_cost' => 'nullable|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'reseller_price' => 'nullable|numeric|min:0',
             'promo_price' => 'nullable|numeric|min:0',
@@ -99,7 +92,20 @@ class ProductHppController extends Controller
             'sales_pattern' => 'nullable|string',
             'target_start_date' => 'nullable|date',
             'is_stock' => 'nullable|boolean',
-        ]);
+            'product_type' => 'required|string|in:direct,stock,ready',
+            'manual_hpp' => 'required_if:product_type,ready|nullable|numeric|min:0',
+            'initial_stock' => 'required_if:product_type,ready|nullable|numeric|min:0',
+        ];
+
+        if ($request->product_type !== 'ready') {
+            $rules['recipe_name'] = 'required|string|max:255';
+            $rules['output_quantity'] = 'required|numeric|min:0.01';
+            $rules['recipe_items'] = 'required|array|min:1';
+            $rules['recipe_items.*.raw_material_id'] = 'required|exists:raw_materials,id';
+            $rules['recipe_items.*.quantity'] = 'required|numeric|min:0.01';
+        }
+
+        $validated = $request->validate($rules);
 
         DB::beginTransaction();
         try {
@@ -129,53 +135,95 @@ class ProductHppController extends Controller
                 'is_stock' => $request->boolean('is_stock'),
             ]);
 
-            $recipe = Recipe::create([
-                'product_id' => $product->id,
-                'name' => $validated['recipe_name'],
-                'output_quantity' => $validated['output_quantity'],
-                'estimated_time_minutes' => $validated['estimated_time_minutes'] ?? null,
-                'instructions' => $validated['instructions'] ?? null,
-                'is_active' => true,
-                'is_default' => true,
-            ]);
+            $hppPerUnit = 0;
 
-            $rawMaterialCost = 0;
-            foreach ($validated['recipe_items'] as $index => $item) {
-                $rawMaterial = RawMaterial::find($item['raw_material_id']);
+            if ($request->product_type === 'ready') {
+                $hppPerUnit = (float) $validated['manual_hpp'];
 
-                if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
-                    throw new \Exception('Bahan baku tidak valid untuk outlet ini.');
-                }
-
-                RecipeItem::create([
-                    'recipe_id' => $recipe->id,
-                    'raw_material_id' => $item['raw_material_id'],
-                    'quantity' => $item['quantity'],
-                    'notes' => $item['notes'] ?? null,
-                    'sort_order' => $index,
+                // Create a simple HPP calculation record
+                HppCalculation::create([
+                    'product_id' => $product->id,
+                    'raw_material_cost' => 0,
+                    'additional_cost' => 0,
+                    'total_hpp' => $hppPerUnit,
+                    'hpp_per_unit' => $hppPerUnit,
+                    'output_quantity' => 1,
+                    'calculation_details' => [
+                        'type' => 'ready_to_sell',
+                        'manual_hpp' => $hppPerUnit,
+                    ],
+                    'calculated_by' => Auth::id(),
                 ]);
 
-                $rawMaterialCost += ($item['quantity'] * $rawMaterial->purchase_price);
-            }
+                // Record initial stock if provided
+                if ($request->input('initial_stock') > 0) {
+                    ProductStock::updateOrCreate(
+                        ['product_id' => $product->id, 'outlet_id' => Auth::user()->outlet_id],
+                        ['quantity' => $validated['initial_stock']]
+                    );
 
-            $additionalCost = $validated['additional_cost'] ?? 0;
-            $totalHpp = $rawMaterialCost + $additionalCost;
-            $hppPerUnit = $totalHpp / $validated['output_quantity'];
+                    StockMovement::create([
+                        'outlet_id' => Auth::user()->outlet_id,
+                        'stockable_type' => Product::class,
+                        'stockable_id' => $product->id,
+                        'type' => 'in',
+                        'quantity' => $validated['initial_stock'],
+                        'quantity_before' => 0,
+                        'quantity_after' => $validated['initial_stock'],
+                        'unit_price' => $hppPerUnit,
+                        'notes' => 'Stok awal produk siap jual',
+                        'created_by' => Auth::id(),
+                    ]);
+                }
+            } else {
+                $recipe = Recipe::create([
+                    'product_id' => $product->id,
+                    'name' => $validated['recipe_name'],
+                    'output_quantity' => $validated['output_quantity'],
+                    'estimated_time_minutes' => $validated['estimated_time_minutes'] ?? null,
+                    'instructions' => $validated['instructions'] ?? null,
+                    'is_active' => true,
+                    'is_default' => true,
+                ]);
 
-            HppCalculation::create([
-                'product_id' => $product->id,
-                'recipe_id' => $recipe->id,
-                'raw_material_cost' => $rawMaterialCost,
-                'additional_cost' => $additionalCost,
-                'total_hpp' => $totalHpp,
-                'hpp_per_unit' => $hppPerUnit,
-                'output_quantity' => $validated['output_quantity'],
-                'calculation_details' => [
-                    'recipe_items' => $validated['recipe_items'],
+                $rawMaterialCost = 0;
+                foreach ($validated['recipe_items'] as $index => $item) {
+                    $rawMaterial = RawMaterial::find($item['raw_material_id']);
+
+                    if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+                        throw new \Exception('Bahan baku tidak valid untuk outlet ini.');
+                    }
+
+                    RecipeItem::create([
+                        'recipe_id' => $recipe->id,
+                        'raw_material_id' => $item['raw_material_id'],
+                        'quantity' => $item['quantity'],
+                        'notes' => $item['notes'] ?? null,
+                        'sort_order' => $index,
+                    ]);
+
+                    $rawMaterialCost += ($item['quantity'] * $rawMaterial->purchase_price);
+                }
+
+                $additionalCost = $validated['additional_cost'] ?? 0;
+                $totalHpp = $rawMaterialCost + $additionalCost;
+                $hppPerUnit = $totalHpp / $validated['output_quantity'];
+
+                HppCalculation::create([
+                    'product_id' => $product->id,
+                    'recipe_id' => $recipe->id,
+                    'raw_material_cost' => $rawMaterialCost,
                     'additional_cost' => $additionalCost,
-                ],
-                'calculated_by' => Auth::id(),
-            ]);
+                    'total_hpp' => $totalHpp,
+                    'hpp_per_unit' => $hppPerUnit,
+                    'output_quantity' => $validated['output_quantity'],
+                    'calculation_details' => [
+                        'recipe_items' => $validated['recipe_items'],
+                        'additional_cost' => $additionalCost,
+                    ],
+                    'calculated_by' => Auth::id(),
+                ]);
+            }
 
             $marginPercent = $hppPerUnit > 0
                 ? (($validated['selling_price'] - $hppPerUnit) / $hppPerUnit) * 100
@@ -289,7 +337,7 @@ class ProductHppController extends Controller
             abort(404);
         }
 
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:30|unique:products,code,'.$product->id,
             'barcode' => 'nullable|string|max:50',
@@ -297,22 +345,25 @@ class ProductHppController extends Controller
             'unit_id' => 'required|exists:units,id',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-            'recipe_name' => 'required|string|max:255',
-            'output_quantity' => 'required|numeric|min:0.01',
-            'estimated_time_minutes' => 'nullable|integer|min:1',
-            'instructions' => 'nullable|string',
-            'recipe_items' => 'required|array|min:1',
-            'recipe_items.*.raw_material_id' => 'required|exists:raw_materials,id',
-            'recipe_items.*.quantity' => 'required|numeric|min:0.01',
-            'recipe_items.*.notes' => 'nullable|string',
-            'additional_cost' => 'nullable|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
             'reseller_price' => 'nullable|numeric|min:0',
             'promo_price' => 'nullable|numeric|min:0',
             'min_stock' => 'nullable|numeric|min:0',
             'shelf_life_days' => 'nullable|integer|min:1',
             'is_stock' => 'nullable|boolean',
-        ]);
+            'product_type' => 'nullable|string|in:direct,stock,ready',
+            'manual_hpp' => 'required_if:product_type,ready|nullable|numeric|min:0',
+        ];
+
+        if ($request->product_type !== 'ready') {
+            $rules['recipe_name'] = 'required|string|max:255';
+            $rules['output_quantity'] = 'required|numeric|min:0.01';
+            $rules['recipe_items'] = 'required|array|min:1';
+            $rules['recipe_items.*.raw_material_id'] = 'required|exists:raw_materials,id';
+            $rules['recipe_items.*.quantity'] = 'required|numeric|min:0.01';
+        }
+
+        $validated = $request->validate($rules);
 
         DB::beginTransaction();
         try {
@@ -339,64 +390,85 @@ class ProductHppController extends Controller
                 'is_stock' => $request->boolean('is_stock'),
             ]);
 
-            $recipe = $product->defaultRecipe;
-            if ($recipe) {
-                $recipe->update([
-                    'name' => $validated['recipe_name'],
-                    'output_quantity' => $validated['output_quantity'],
-                    'estimated_time_minutes' => $validated['estimated_time_minutes'] ?? null,
-                    'instructions' => $validated['instructions'] ?? null,
-                ]);
-                $recipe->items()->delete();
-            } else {
-                $recipe = Recipe::create([
+            $hppPerUnit = 0;
+
+            if ($request->product_type === 'ready') {
+                $hppPerUnit = (float) $validated['manual_hpp'];
+
+                // Create a simple HPP calculation record
+                HppCalculation::create([
                     'product_id' => $product->id,
-                    'name' => $validated['recipe_name'],
-                    'output_quantity' => $validated['output_quantity'],
-                    'estimated_time_minutes' => $validated['estimated_time_minutes'] ?? null,
-                    'instructions' => $validated['instructions'] ?? null,
-                    'is_active' => true,
-                    'is_default' => true,
+                    'raw_material_cost' => 0,
+                    'additional_cost' => 0,
+                    'total_hpp' => $hppPerUnit,
+                    'hpp_per_unit' => $hppPerUnit,
+                    'output_quantity' => 1,
+                    'calculation_details' => [
+                        'type' => 'ready_to_sell',
+                        'manual_hpp' => $hppPerUnit,
+                    ],
+                    'calculated_by' => Auth::id(),
                 ]);
-            }
-
-            $rawMaterialCost = 0;
-            foreach ($validated['recipe_items'] as $index => $item) {
-                $rawMaterial = RawMaterial::find($item['raw_material_id']);
-
-                if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
-                    throw new \Exception('Bahan baku tidak valid untuk outlet ini.');
+            } else {
+                $recipe = $product->defaultRecipe;
+                if ($recipe) {
+                    $recipe->update([
+                        'name' => $validated['recipe_name'],
+                        'output_quantity' => $validated['output_quantity'],
+                        'estimated_time_minutes' => $validated['estimated_time_minutes'] ?? null,
+                        'instructions' => $validated['instructions'] ?? null,
+                    ]);
+                    $recipe->items()->delete();
+                } else {
+                    $recipe = Recipe::create([
+                        'product_id' => $product->id,
+                        'name' => $validated['recipe_name'],
+                        'output_quantity' => $validated['output_quantity'],
+                        'estimated_time_minutes' => $validated['estimated_time_minutes'] ?? null,
+                        'instructions' => $validated['instructions'] ?? null,
+                        'is_active' => true,
+                        'is_default' => true,
+                    ]);
                 }
 
-                RecipeItem::create([
+                $rawMaterialCost = 0;
+                foreach ($validated['recipe_items'] as $index => $item) {
+                    $rawMaterial = RawMaterial::find($item['raw_material_id']);
+
+                    if ($rawMaterial->outlet_id !== Auth::user()->outlet_id) {
+                        throw new \Exception('Bahan baku tidak valid untuk outlet ini.');
+                    }
+
+                    RecipeItem::create([
+                        'recipe_id' => $recipe->id,
+                        'raw_material_id' => $item['raw_material_id'],
+                        'quantity' => $item['quantity'],
+                        'notes' => $item['notes'] ?? null,
+                        'sort_order' => $index,
+                    ]);
+
+                    $rawMaterialCost += ($item['quantity'] * $rawMaterial->purchase_price);
+                }
+
+                $additionalCost = $validated['additional_cost'] ?? 0;
+                $totalHpp = $rawMaterialCost + $additionalCost;
+                $hppPerUnit = $totalHpp / $validated['output_quantity'];
+
+                HppCalculation::create([
+                    'product_id' => $product->id,
                     'recipe_id' => $recipe->id,
-                    'raw_material_id' => $item['raw_material_id'],
-                    'quantity' => $item['quantity'],
-                    'notes' => $item['notes'] ?? null,
-                    'sort_order' => $index,
-                ]);
-
-                $rawMaterialCost += ($item['quantity'] * $rawMaterial->purchase_price);
-            }
-
-            $additionalCost = $validated['additional_cost'] ?? 0;
-            $totalHpp = $rawMaterialCost + $additionalCost;
-            $hppPerUnit = $totalHpp / $validated['output_quantity'];
-
-            HppCalculation::create([
-                'product_id' => $product->id,
-                'recipe_id' => $recipe->id,
-                'raw_material_cost' => $rawMaterialCost,
-                'additional_cost' => $additionalCost,
-                'total_hpp' => $totalHpp,
-                'hpp_per_unit' => $hppPerUnit,
-                'output_quantity' => $validated['output_quantity'],
-                'calculation_details' => [
-                    'recipe_items' => $validated['recipe_items'],
+                    'raw_material_cost' => $rawMaterialCost,
                     'additional_cost' => $additionalCost,
-                ],
-                'calculated_by' => Auth::id(),
-            ]);
+                    'total_hpp' => $totalHpp,
+                    'hpp_per_unit' => $hppPerUnit,
+                    'output_quantity' => $validated['output_quantity'],
+                    'calculation_details' => [
+                        'recipe_items' => $validated['recipe_items'],
+                        'additional_cost' => $additionalCost,
+                    ],
+                    'calculated_by' => Auth::id(),
+                ]);
+            }
 
             $marginPercent = $hppPerUnit > 0
                 ? (($validated['selling_price'] - $hppPerUnit) / $hppPerUnit) * 100
