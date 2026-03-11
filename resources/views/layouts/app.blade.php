@@ -206,8 +206,8 @@
                 @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
                     @php
                         $userOutlets = auth()->user()->isOwner()
-                            ? auth()->user()->outletsOwned->sortBy('name')
-                            : collect([auth()->user()->outlet]);
+                            ? auth()->user()->outletsOwned->where('is_active', true)->sortBy('name')
+                            : collect([auth()->user()->outlet])->filter(fn($o) => $o && $o->is_active);
 
                         $hasMultipleOutlets = $userOutlets->count() > 1;
                     @endphp
@@ -578,8 +578,8 @@
             @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
                 @php
                     $userOutlets = auth()->user()->isOwner()
-                        ? auth()->user()->outletsOwned->sortBy('name')
-                        : collect([auth()->user()->outlet]);
+                        ? auth()->user()->outletsOwned->where('is_active', true)->sortBy('name')
+                        : collect([auth()->user()->outlet])->filter(fn($o) => $o && $o->is_active);
                     $hasMultipleOutlets = $userOutlets->count() > 1;
                 @endphp
 

@@ -160,7 +160,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 bg-white">
                         @forelse($outlets as $outlet)
-                            <tr class="hover:bg-gray-50 transition-colors outlet-row"
+                            <tr class="transition-colors outlet-row {{ $outlet->is_active ? 'hover:bg-gray-50' : 'bg-gray-100' }}"
                                 data-status="{{ $outlet->is_active ? 'active' : 'inactive' }}">
                                 {{-- Kode --}}
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -171,7 +171,7 @@
 
                                 {{-- Outlet + Tanggal --}}
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
+                                    <div class="flex items-center {{ !$outlet->is_active ? 'opacity-60 grayscale' : '' }}">
                                         @if($outlet->logo)
                                             <img src="{{ Storage::url($outlet->logo) }}" alt="{{ $outlet->name }}" class="h-12 w-12 rounded-lg object-cover mr-3 border-2 border-gray-200 shadow-sm">
                                         @else
@@ -237,16 +237,19 @@
                                             Aktif
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">
-                                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1.5"></span>
-                                            Nonaktif
-                                        </span>
+                                        <div class="flex flex-col gap-1 items-start">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">
+                                                <span class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1.5"></span>
+                                                Nonaktif
+                                            </span>
+                                            <span class="text-[11px] font-medium text-red-500">*Outlet dinonaktifkan oleh admin</span>
+                                        </div>
                                     @endif
                                 </td>
 
                                 {{-- Aksi --}}
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="inline-flex items-center gap-1.5">
+                                    <div class="inline-flex items-center gap-1.5 {{ !$outlet->is_active ? 'opacity-50 pointer-events-none' : '' }}">
                                         @can('lihat detail outlet')
                                         <a href="{{ route('outlets.show', $outlet->id) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
