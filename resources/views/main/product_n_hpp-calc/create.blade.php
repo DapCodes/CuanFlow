@@ -238,48 +238,51 @@
                         </label>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <!-- Option 1: Produk Masak Langsung -->
-                            <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="direct">
+                            <label class="relative flex flex-col p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="direct">
                                 <input type="radio" name="product_type" value="direct" class="sr-only peer" {{ old('product_type', 'direct') == 'direct' ? 'checked' : '' }}>
                                 <div class="flex items-center justify-between mb-2">
                                     <div class="w-10 h-10 bg-green-100 text-cuan-green rounded-full flex items-center justify-center group-hover:bg-cuan-green group-hover:text-white transition-colors peer-checked:bg-cuan-green peer-checked:text-white">
                                         <i class="fas fa-utensils"></i>
                                     </div>
-                                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
-                                        <div class="w-2 h-2 bg-white rounded-full"></div>
+                                    <div class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all shadow-sm">
+                                        <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
                                     </div>
                                 </div>
                                 <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Masak Langsung</span>
                                 <p class="text-[10px] text-gray-500 mt-1">Masak saat pesanan datang, tanpa simpan stok.</p>
+                                <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cuan-green rounded-xl pointer-events-none"></div>
                             </label>
 
                             <!-- Option 2: Produk Stok Produksi -->
-                            <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="stock">
+                            <label class="relative flex flex-col p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="stock">
                                 <input type="radio" name="product_type" value="stock" class="sr-only peer" {{ old('product_type') == 'stock' ? 'checked' : '' }}>
                                 <div class="flex items-center justify-between mb-2">
                                     <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors peer-checked:bg-blue-600 peer-checked:text-white">
                                         <i class="fas fa-boxes"></i>
                                     </div>
-                                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
-                                        <div class="w-2 h-2 bg-white rounded-full"></div>
+                                    <div class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all shadow-sm">
+                                        <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
                                     </div>
                                 </div>
                                 <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Stok Produksi</span>
                                 <p class="text-[10px] text-gray-500 mt-1">Produksi massal dan disimpan sebagai stok jadi.</p>
+                                <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cuan-green rounded-xl pointer-events-none"></div>
                             </label>
 
                             <!-- Option 3: Produk Siap Jual -->
-                            <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="ready">
+                            <label class="relative flex flex-col p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="ready">
                                 <input type="radio" name="product_type" value="ready" class="sr-only peer" {{ old('product_type') == 'ready' ? 'checked' : '' }}>
                                 <div class="flex items-center justify-between mb-2">
                                     <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors peer-checked:bg-orange-600 peer-checked:text-white">
                                         <i class="fas fa-store"></i>
                                     </div>
-                                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
-                                        <div class="w-2 h-2 bg-white rounded-full"></div>
+                                    <div class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all shadow-sm">
+                                        <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
                                     </div>
                                 </div>
                                 <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Siap Jual</span>
                                 <p class="text-[10px] text-gray-500 mt-1">Produk jadi dari supplier, tanpa perlu resep.</p>
+                                <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cuan-green rounded-xl pointer-events-none"></div>
                             </label>
                         </div>
                     </div>
@@ -1807,11 +1810,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const isStockCheckbox = document.querySelector('input[name="is_stock"]');
     const isStockToggleContainer = isStockCheckbox ? isStockCheckbox.closest('.bg-blue-50') : null;
-    let currentProductType = $('input[name="product_type"]:checked').val() || 'direct';
+    window.currentProductType = $('input[name="product_type"]:checked').val() || 'direct';
 
     // Event listener for product type change
     $('input[name="product_type"]').on('change', function() {
-        currentProductType = $(this).val();
+        window.currentProductType = $(this).val();
         
         const readyToSellFields = document.getElementById('readyToSellFields');
         const hppSummarySection = document.querySelector('#step5 .bg-green-50'); // Final modal HPP summary
@@ -1848,6 +1851,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (document.getElementById('initialStockInput')) document.getElementById('initialStockInput').removeAttribute('required');
         }
         
+        showStep(currentStep);
         saveFormData();
     });
 
@@ -1862,7 +1866,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let nextStep = currentStep + 1;
             
             // Skip steps if ready to sell
-            if (currentProductType === 'ready' && currentStep === 1) {
+            if (window.currentProductType === 'ready' && currentStep === 1) {
                 nextStep = 5;
             }
             
@@ -1884,7 +1888,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let prevStep = currentStep - 1;
         
         // Skip steps if ready to sell
-        if (currentProductType === 'ready' && currentStep === 5) {
+        if (window.currentProductType === 'ready' && currentStep === 5) {
             prevStep = 1;
         }
         
@@ -2057,7 +2061,7 @@ function showStep(step) {
     document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
     document.getElementById('step' + step).classList.remove('hidden');
     
-    const isReadyType = currentProductType === 'ready';
+    const isReadyType = window.currentProductType === 'ready';
     
     document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
         const stepNum = parseInt(indicator.getAttribute('data-step'));
@@ -2069,11 +2073,9 @@ function showStep(step) {
         if (!circle) return;
 
         if (isSkipped) {
-            indicator.style.opacity = '0.3';
-            indicator.style.pointerEvents = 'none';
+            indicator.style.display = 'none';
         } else {
-            indicator.style.opacity = '1';
-            indicator.style.pointerEvents = 'auto';
+            indicator.style.display = 'block';
         }
 
         // Base classes for circle
@@ -2107,9 +2109,26 @@ function showStep(step) {
     // Update progress line
     let progressPercent = ((step - 1) / (totalSteps - 1)) * 100;
     if (isReadyType) {
-        if (step === 5) progressPercent = 66.6;
-        if (step === 6) progressPercent = 100;
+        // Map available steps to progress percentage
+        const readySteps = [1, 5, 6];
+        const stepIndex = readySteps.indexOf(step);
+        if (stepIndex !== -1) {
+            progressPercent = (stepIndex / (readySteps.length - 1)) * 100;
+        }
     }
+    
+    // Completely hide skipped steps for "Ready" type instead of just lowering opacity
+    document.querySelectorAll('.step-indicator').forEach((indicator) => {
+        const stepNum = parseInt(indicator.getAttribute('data-step'));
+        const isSkipped = isReadyType && [2, 3, 4].includes(stepNum);
+        
+        if (isSkipped) {
+            indicator.style.display = 'none';
+        } else {
+            indicator.style.display = 'block';
+        }
+    });
+
     document.getElementById('progressLine').style.width = progressPercent + '%';
     
     document.getElementById('prevBtn').style.display = step > 1 ? 'flex' : 'none';

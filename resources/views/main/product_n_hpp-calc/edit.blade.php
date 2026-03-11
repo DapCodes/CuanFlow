@@ -138,48 +138,51 @@
                             </label>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <!-- Option 1: Produk Masak Langsung -->
-                                <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="direct">
+                                <label class="relative flex flex-col p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="direct">
                                     <input type="radio" name="product_type" value="direct" class="sr-only peer" {{ old('product_type', $currentType) == 'direct' ? 'checked' : '' }}>
                                     <div class="flex items-center justify-between mb-2">
                                         <div class="w-10 h-10 bg-green-100 text-cuan-green rounded-full flex items-center justify-center group-hover:bg-cuan-green group-hover:text-white transition-colors peer-checked:bg-cuan-green peer-checked:text-white">
                                             <i class="fas fa-utensils"></i>
                                         </div>
-                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
-                                            <div class="w-2 h-2 bg-white rounded-full"></div>
+                                        <div class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all shadow-sm">
+                                            <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
                                         </div>
                                     </div>
                                     <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Masak Langsung</span>
                                     <p class="text-[10px] text-gray-500 mt-1">Masak saat pesanan datang, tanpa simpan stok.</p>
+                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cuan-green rounded-xl pointer-events-none"></div>
                                 </label>
 
                                 <!-- Option 2: Produk Stok Produksi -->
-                                <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="stock">
+                                <label class="relative flex flex-col p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="stock">
                                     <input type="radio" name="product_type" value="stock" class="sr-only peer" {{ old('product_type', $currentType) == 'stock' ? 'checked' : '' }}>
                                     <div class="flex items-center justify-between mb-2">
                                         <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors peer-checked:bg-blue-600 peer-checked:text-white">
                                             <i class="fas fa-boxes"></i>
                                         </div>
-                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
-                                            <div class="w-2 h-2 bg-white rounded-full"></div>
+                                        <div class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all shadow-sm">
+                                            <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
                                         </div>
                                     </div>
                                     <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Stok Produksi</span>
                                     <p class="text-[10px] text-gray-500 mt-1">Produksi massal dan disimpan sebagai stok jadi.</p>
+                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cuan-green rounded-xl pointer-events-none"></div>
                                 </label>
 
                                 <!-- Option 3: Produk Siap Jual -->
-                                <label class="relative flex flex-col p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="ready">
+                                <label class="relative flex flex-col p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="ready">
                                     <input type="radio" name="product_type" value="ready" class="sr-only peer" {{ old('product_type', $currentType) == 'ready' ? 'checked' : '' }}>
                                     <div class="flex items-center justify-between mb-2">
                                         <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors peer-checked:bg-orange-600 peer-checked:text-white">
                                             <i class="fas fa-store"></i>
                                         </div>
-                                        <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all">
-                                            <div class="w-2 h-2 bg-white rounded-full"></div>
+                                        <div class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all shadow-sm">
+                                            <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
                                         </div>
                                     </div>
                                     <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Siap Jual</span>
                                     <p class="text-[10px] text-gray-500 mt-1">Produk jadi dari supplier, tanpa perlu resep.</p>
+                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cuan-green rounded-xl pointer-events-none"></div>
                                 </label>
                             </div>
                         </div>
