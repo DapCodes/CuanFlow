@@ -100,6 +100,13 @@
             border-radius: 1rem;
             z-index: 10;
         }
+        .leaflet-container img.leaflet-tile {
+            max-width: none !important;
+            max-height: none !important;
+        }
+        .leaflet-container {
+            font-family: inherit;
+        }
 
         /* Step Transitions */
         .step-content {
@@ -751,9 +758,7 @@
         // --- Map Logic (Leaflet) ---
         function initMap() {
             if (map) {
-                setTimeout(() => {
-                    map.invalidateSize();
-                }, 100);
+                fixMapLayout();
                 return; // Already initialized
             }
 
@@ -837,6 +842,23 @@
                 })
                 .catch(() => alert('Terjadi kesalahan saat mencari lokasi.'));
         }
+
+        const fixMapLayout = () => {
+            if (map) {
+                map.invalidateSize();
+                if (marker) {
+                    map.setView(marker.getLatLng());
+                }
+            }
+        };
+
+        window.addEventListener('load', fixMapLayout);
+        window.addEventListener('focus', fixMapLayout);
+        
+        // Multiple timeouts to ensure map is fixed after any animations/loaders finish
+        [500, 1000, 2000].forEach(delay => {
+            setTimeout(fixMapLayout, delay);
+        });
 
     </script>
 </body>

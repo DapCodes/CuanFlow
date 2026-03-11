@@ -225,7 +225,16 @@
 <style>
     #map {
         height: 300px;
+        width: 100%;
+        border-radius: 0.5rem;
         z-index: 1;
+    }
+    .leaflet-container img.leaflet-tile {
+        max-width: none !important;
+        max-height: none !important;
+    }
+    .leaflet-container {
+        font-family: inherit;
     }
 </style>
 @endpush
@@ -255,9 +264,25 @@ document.addEventListener('DOMContentLoaded', function() {
     L.marker([lat, lng], {icon: customIcon}).addTo(map)
         .bindPopup('<b>{{ $outlet->name }}</b><br>{{ $outlet->address }}').openPopup();
 
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 300);
+    // Comprehensive map resize fix
+    const fixMapLayout = () => {
+        if (map) {
+            map.invalidateSize();
+            const center = [{{ $outlet->latitude ?? -6.2088 }}, {{ $outlet->longitude ?? 106.8456 }}];
+            map.setView(center);
+        }
+    };
+
+    // Fix map on window load and after a delay to account for layout shifts/transitions
+    window.addEventListener('load', fixMapLayout);
+    
+    // Multiple timeouts to ensure map is fixed after any animations/loaders finish
+    [100, 500, 1000, 2000].forEach(delay => {
+        setTimeout(fixMapLayout, delay);
+    });
+
+    // Also fix when the tab/window gains focus
+    window.addEventListener('focus', fixMapLayout);
 });
 </script>
 @endpush

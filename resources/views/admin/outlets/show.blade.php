@@ -16,6 +16,77 @@
 
 @section('content')
 <div class="space-y-6">
+    <!-- Map Card -->
+    @if($outlet->latitude && $outlet->longitude)
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                <i class="fas fa-map-marked-alt text-red-500"></i>
+                Lokasi Outlet
+            </h3>
+            <a href="https://www.google.com/maps?q={{ $outlet->latitude }},{{ $outlet->longitude }}" target="_blank" class="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1">
+                <i class="fas fa-external-link-alt"></i> Google Maps
+            </a>
+        </div>
+        <div class="p-0">
+            <div id="map" style="height: 300px; width: 100%; z-index: 1;"></div>
+        </div>
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex gap-6 text-[10px] font-mono text-gray-500">
+            <span>Lat: {{ $outlet->latitude }}</span>
+            <span>Lng: {{ $outlet->longitude }}</span>
+        </div>
+    </div>
+
+    @push('styles')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .leaflet-container img.leaflet-tile {
+            max-width: none !important;
+            max-height: none !important;
+        }
+        .leaflet-container {
+            font-family: inherit;
+        }
+    </style>
+    @endpush
+
+    @push('scripts')
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lat = {{ $outlet->latitude }};
+            const lng = {{ $outlet->longitude }};
+            const map = L.map('map').setView([lat, lng], 15);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            const customIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            L.marker([lat, lng], {icon: customIcon}).addTo(map)
+                .bindPopup('<b>{{ $outlet->name }}</b>').openPopup();
+
+            const fixMapLayout = () => {
+                map.invalidateSize();
+                map.setView([lat, lng], 15);
+            };
+
+            [500, 1000, 2000].forEach(delay => setTimeout(fixMapLayout, delay));
+            window.addEventListener('load', fixMapLayout);
+            window.addEventListener('focus', fixMapLayout);
+        });
+    </script>
+    @endpush
+    @endif
+
     <!-- Header Card -->
     <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
         <div class="px-6 py-8 flex flex-col md:flex-row gap-8 items-start">
