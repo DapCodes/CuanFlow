@@ -100,7 +100,7 @@
                                     <i class="fas fa-times text-xs"></i>
                                 </button>
 
-                                {{-- Type Select --}}
+                                {{-- Type Select --}}  
                                 <div class="col-span-12 md:col-span-2">
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Tipe</label>
                                     <select x-model="item.type" :name="'items[' + index + '][type]'" @change="item.batch_number = ''; item.id = ''" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-white">
@@ -110,25 +110,48 @@
                                 </div>
 
                                 {{-- Item Select --}}
-                                <div class="col-span-12 md:col-span-4">
+                                <div class="col-span-12 md:col-span-4" x-data="{ open: false, search: '' }">
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Pilih Item</label>
                                     <div class="relative">
-                                        <select x-model="item.id" :name="'items[' + index + '][id]'" @change="item.batch_number = ''" required class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 bg-white">
-                                            <option value="">-- Pilih --</option>
-                                            <template x-if="item.type === 'product'">
-                                                <template x-for="p in products" :key="p.id">
-                                                    <option :value="p.id" x-text="p.name + ' (Stok: ' + (p.stock || 0) + ')'"></option>
+                                        {{-- Toggle Button --}}
+                                        <button type="button" @click="open = !open" 
+                                            class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white text-left flex justify-between items-center focus:ring-2 focus:ring-cyan-400 focus:outline-none"
+                                            :class="item.id ? 'border-cyan-300 ring-1 ring-cyan-100' : ''">
+                                            <span x-text="item.id ? (item.type === 'product' ? products.find(p => p.id == item.id)?.name : rawMaterials.find(rm => rm.id == item.id)?.name) : '-- Pilih --'"
+                                                class="truncate text-gray-700"></span>
+                                            <i class="fas fa-chevron-down text-[10px] text-gray-400"></i>
+                                        </button>
+
+                                        {{-- Dropdown List --}}
+                                        <div x-show="open" @click.away="open = false" 
+                                            class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden p-2 space-y-1 transition-all"
+                                            x-transition:enter="transition ease-out duration-200"
+                                            x-transition:enter-start="opacity-0 translate-y-2"
+                                            x-transition:enter-end="opacity-100 translate-y-0">
+                                            
+                                            {{-- Search Input --}}
+                                            <div class="px-2 py-1 mb-1">
+                                                <input type="text" x-model="search" placeholder="Cari item..." 
+                                                    class="w-full px-2 py-1.5 text-xs border border-gray-100 rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-400">
+                                            </div>
+
+                                            <div class="max-h-60 overflow-y-auto space-y-1 custom-scrollbar">
+                                                <template x-for="p in (item.type === 'product' ? products : rawMaterials).filter(i => i.name.toLowerCase().includes(search.toLowerCase()))" :key="p.id">
+                                                    <div @click="item.id = p.id; item.selected_batches = []; open = false; search = ''" 
+                                                        class="flex items-center justify-between p-2 hover:bg-cyan-50 rounded-lg cursor-pointer transition-colors group"
+                                                        :class="item.id == p.id ? 'bg-cyan-50 border-cyan-100' : ''">
+                                                        <div class="flex flex-col min-w-0">
+                                                            <span class="text-xs font-semibold text-gray-800" x-text="p.name"></span>
+                                                            <span class="text-[10px] text-gray-400" x-text="'Stok: ' + p.stock + ' ' + (p.unit_name || '')"></span>
+                                                        </div>
+                                                        <i class="fas fa-check text-cyan-500 text-[10px]" x-show="item.id == p.id"></i>
+                                                    </div>
                                                 </template>
-                                            </template>
-                                            <template x-if="item.type === 'raw_material'">
-                                                <template x-for="rm in rawMaterials" :key="rm.id">
-                                                    <option :value="rm.id" x-text="rm.name + ' (Stok: ' + (rm.stock || 0) + ' ' + (rm.unit_name || '') + ')'"></option>
-                                                </template>
-                                            </template>
-                                        </select>
-                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                            <i class="fas fa-chevron-down text-xs"></i>
+                                            </div>
                                         </div>
+
+                                        {{-- Hidden input for form --}}
+                                        <input type="hidden" :name="'items[' + index + '][id]'" :value="item.id" required>
                                     </div>
                                 </div>
 
