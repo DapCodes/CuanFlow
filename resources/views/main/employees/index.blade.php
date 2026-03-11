@@ -111,9 +111,9 @@
                                     <div class="flex items-center gap-4">
                                         @if($employee->avatar)
                                             <img src="{{ Storage::url($employee->avatar) }}" alt="{{ $employee->name }}"
-                                                 class="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm transition-transform hover:scale-110">
+                                                 class="w-12 h-12 rounded-lg object-cover border-2 border-white shadow-sm transition-transform hover:scale-110">
                                         @else
-                                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cuan-green to-cuan-dark flex items-center justify-center border-2 border-white shadow-sm">
+                                            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-cuan-green to-cuan-dark flex items-center justify-center border-2 border-white shadow-sm">
                                                 <span class="text-white font-black text-xs">
                                                     {{ strtoupper(substr($employee->name, 0, 2)) }}
                                                 </span>

@@ -387,10 +387,11 @@
                 </div>
                 <div class="px-8 py-8">
                     <label class="flex items-center gap-4 cursor-pointer group">
-                        <div class="relative w-14 h-8 transition-all">
-                            <input type="checkbox" name="is_active" value="1" class="peer sr-only" {{ old('is_active', $employee->is_active) ? 'checked' : '' }}>
-                            <div class="w-full h-full bg-gray-200 rounded-full peer-checked:bg-cuan-green transition-all shadow-inner"></div>
-                            <div class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all peer-checked:left-7 shadow-sm"></div>
+                        <div class="relative">
+                            <input type="checkbox" name="is_active" value="1" 
+                                   {{ old('is_active', $employee->is_active) ? 'checked' : '' }}
+                                   class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-green"></div>
                         </div>
                         <div>
                             <span class="text-xs font-black text-gray-900 uppercase tracking-widest">Aktifkan akun</span>
