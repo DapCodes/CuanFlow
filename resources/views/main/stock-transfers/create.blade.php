@@ -39,30 +39,59 @@
             @csrf
 
             {{-- Konfigurasi Dasar --}}
-            <x-card-container>
-                <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-visible">
+                <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/30 rounded-t-xl">
                     <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest">1. Konfigurasi Dasar</h3>
                 </div>
-                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    {{-- Custom Outlet Selection --}}
+                    <div x-data="{ open: false, search: '' }">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Outlet Tujuan <span class="text-red-500">*</span></label>
-                        <select name="to_outlet_id" required class="w-full px-4 py-3 rounded-xl border-gray-200 text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
-                            <option value="">-- Pilih Outlet --</option>
-                            @foreach($outlets as $outlet)
-                                <option value="{{ $outlet->id }}">{{ $outlet->name }}</option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <button type="button" @click="open = !open" 
+                                class="w-full h-[46px] px-4 rounded-xl border border-gray-200 text-sm font-bold bg-white text-left flex justify-between items-center focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
+                                <span x-text="selectedOutletId ? outletList.find(o => o.id == selectedOutletId)?.name : '-- Pilih Outlet --'"
+                                    :class="selectedOutletId ? 'text-gray-900' : 'text-gray-400'"></span>
+                                <i class="fas fa-chevron-down text-[10px] text-gray-300 transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                            </button>
+
+                            <div x-show="open" @click.away="open = false" 
+                                class="absolute z-[100] w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden p-2 space-y-1"
+                                style="display: none;"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 translate-y-2"
+                                x-transition:enter-end="opacity-100 translate-y-0">
+                                
+                                <div class="px-2 py-1 mb-1">
+                                    <input type="text" x-model="search" placeholder="Cari outlet..." 
+                                        class="w-full px-3 py-2 text-xs border-none bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-cuan-green/20 placeholder:text-gray-300">
+                                </div>
+
+                                <div class="max-h-60 overflow-y-auto space-y-0.5 custom-scrollbar">
+                                    <template x-for="o in outletList.filter(o => o.name.toLowerCase().includes(search.toLowerCase()))" :key="o.id">
+                                        <div @click="selectedOutletId = o.id; open = false; search = ''" 
+                                            class="flex items-center justify-between p-2.5 hover:bg-cuan-green/5 rounded-xl cursor-pointer transition-colors group"
+                                            :class="selectedOutletId == o.id ? 'bg-cuan-green/5' : ''">
+                                            <span class="text-xs font-black text-gray-800 capitalize" x-text="o.name"></span>
+                                            <i class="fas fa-check text-cuan-green text-[10px]" x-show="selectedOutletId == o.id"></i>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            <input type="hidden" name="to_outlet_id" :value="selectedOutletId" required>
+                        </div>
                     </div>
+
                     <div>
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Catatan (Opsional)</label>
-                        <input type="text" name="notes" class="w-full px-4 py-3 rounded-xl border-gray-200 text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all placeholder:text-gray-300 placeholder:font-medium" placeholder="Contoh: Stok tambahan weekend">
+                        <input type="text" name="notes" class="w-full h-[46px] px-4 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all placeholder:text-gray-300 placeholder:font-medium" placeholder="Contoh: Stok tambahan weekend">
                     </div>
                 </div>
-            </x-card-container>
+            </div>
 
             {{-- Item Transfer --}}
-            <x-card-container>
-                <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-visible">
+                <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/30 rounded-t-xl">
                     <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest">2. Item Transfer</h3>
                     <button type="button" @click="addItem()" class="inline-flex items-center gap-2 px-4 py-2 bg-cuan-green/10 text-cuan-green rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cuan-green/20 transition-all active:scale-95">
                         <i class="fas fa-plus"></i> Tambah Item
@@ -77,13 +106,30 @@
                                 <i class="fas fa-times text-xs"></i>
                             </button>
 
-                            {{-- Type Selection --}}  
-                            <div class="md:col-span-2">
+                            {{-- Custom Type Selection --}}  
+                            <div class="md:col-span-2" x-data="{ open: false }">
                                 <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Tipe</label>
-                                <select x-model="item.type" :name="'items[' + index + '][type]'" @change="item.batch_number = ''; item.id = ''" class="w-full px-3 py-2.5 rounded-xl border-gray-200 text-[11px] font-bold text-gray-900 focus:ring-4 focus:ring-cuan-green/5 focus:border-cuan-green bg-white transition-all">
-                                    <option value="product">Produk</option>
-                                    <option value="raw_material">Bahan Baku</option>
-                                </select>
+                                <div class="relative">
+                                    <button type="button" @click="open = !open" 
+                                        class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-[11px] font-bold bg-white text-left flex justify-between items-center focus:outline-none focus:ring-4 focus:ring-cuan-green/5 transition-all">
+                                        <span x-text="item.type === 'product' ? 'Produk' : 'Bahan Baku'" class="text-gray-900"></span>
+                                        <i class="fas fa-chevron-down text-[8px] text-gray-300"></i>
+                                    </button>
+                                    <div x-show="open" @click.away="open = false" 
+                                        class="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden p-1 space-y-0.5"
+                                        style="display: none;"
+                                        x-transition:enter="transition ease-out duration-200"
+                                        x-transition:enter-start="opacity-0 translate-y-2"
+                                        x-transition:enter-end="opacity-100 translate-y-0">
+                                        <div @click="item.type = 'product'; item.id = ''; item.selected_batches = []; open = false" 
+                                            class="p-2.5 hover:bg-cuan-green/5 rounded-xl cursor-pointer text-[10px] font-black uppercase tracking-widest transition-colors"
+                                            :class="item.type === 'product' ? 'text-cuan-green bg-cuan-green/5' : 'text-gray-600'">Produk</div>
+                                        <div @click="item.type = 'raw_material'; item.id = ''; item.selected_batches = []; open = false" 
+                                            class="p-2.5 hover:bg-cuan-green/5 rounded-xl cursor-pointer text-[10px] font-black uppercase tracking-widest transition-colors"
+                                            :class="item.type === 'raw_material' ? 'text-cuan-green bg-cuan-green/5' : 'text-gray-600'">Bahan Baku</div>
+                                    </div>
+                                    <input type="hidden" :name="'items[' + index + '][type]'" :value="item.type">
+                                </div>
                             </div>
 
                             {{-- Item Selection --}}
@@ -91,7 +137,7 @@
                                 <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Pilih Barang</label>
                                 <div class="relative">
                                     <button type="button" @click="open = !open" 
-                                        class="w-full px-4 py-2.5 rounded-xl border-gray-200 text-[11px] font-bold bg-white text-left flex justify-between items-center focus:ring-4 focus:ring-cuan-green/5 transition-all">
+                                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-[11px] font-bold bg-white text-left flex justify-between items-center focus:ring-4 focus:ring-cuan-green/5 transition-all">
                                         <span x-text="item.id ? (item.type === 'product' ? products.find(p => p.id == item.id)?.name : rawMaterials.find(rm => rm.id == item.id)?.name) : '-- Pilih --'"
                                             class="truncate text-gray-900"></span>
                                         <i class="fas fa-chevron-down text-[8px] text-gray-300"></i>
@@ -132,7 +178,7 @@
                                 <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Pilih Batch (Opsional)</label>
                                 <div class="relative">
                                     <button type="button" @click="open = !open" 
-                                        class="w-full px-4 py-2.5 rounded-xl border-gray-200 text-[11px] font-bold bg-white text-left flex justify-between items-center focus:ring-4 focus:ring-cuan-green/5 transition-all">
+                                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-[11px] font-bold bg-white text-left flex justify-between items-center focus:ring-4 focus:ring-cuan-green/5 transition-all">
                                         <span x-text="item.selected_batches && item.selected_batches.length > 0 
                                             ? item.selected_batches.length + ' Batch Terpilih' 
                                             : 'Otomatis (FIFO)'"
@@ -195,12 +241,12 @@
                             {{-- Quantity --}}
                             <div class="md:col-span-2">
                                 <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Jumlah</label>
-                                <input type="number" step="any" x-model="item.quantity" :name="'items[' + index + '][quantity]'" required min="0.0001" class="w-full px-3 py-2.5 rounded-xl border-gray-200 text-[11px] font-black text-gray-900 focus:ring-4 focus:ring-cuan-green/5 focus:border-cuan-green transition-all" placeholder="0">
+                                <input type="number" step="any" x-model="item.quantity" :name="'items[' + index + '][quantity]'" required min="0.0001" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-[11px] font-black text-gray-900 focus:ring-4 focus:ring-cuan-green/5 focus:border-cuan-green transition-all" placeholder="0">
                             </div>
                         </div>
                     </template>
                 </div>
-            </x-card-container>
+            </div>
 
             {{-- Footer Actions --}}
             <div class="pt-4">
@@ -223,6 +269,8 @@
 <script>
     function stockTransferForm() {
         return {
+            selectedOutletId: '',
+            outletList: {!! json_encode($outlets->map(fn($o) => ['id' => $o->id, 'name' => $o->name])) !!},
             items: [
                 { type: 'raw_material', id: '', selected_batches: [], quantity: '' }
             ],
