@@ -4,9 +4,7 @@
 
 @section('breadcrumb')
 <li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
+    <span class="text-gray-400 mx-2">/</span>
     <span class="text-gray-900 font-medium">Pelanggan & Piutang</span>
 </li>
 @endsection
@@ -14,7 +12,7 @@
 @push('styles')
 <style>
     .tab-btn {
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     /* Hide scrollbar for Chrome, Safari and Opera */
     .scrollbar-hide::-webkit-scrollbar {
@@ -27,19 +25,19 @@
         scrollbar-width: none;  /* Firefox */
     }
     .tab-btn.active {
-        background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
+        background-color: #658C58;
         color: white;
-        box-shadow: 0 4px 12px rgba(20, 184, 166, 0.35);
+        box-shadow: 0 4px 12px rgba(101, 140, 88, 0.25);
     }
     .tab-btn:not(.active):hover {
-        background-color: #f0fdfa;
-        color: #0d9488;
+        background-color: rgba(101, 140, 88, 0.05);
+        color: #658C58;
     }
     .debt-row.overdue {
-        background-color: #fef2f2;
+        background-color: #fff1f2;
     }
     .debt-row.overdue:hover {
-        background-color: #fee2e2;
+        background-color: #ffe4e6;
     }
     .payment-method-card {
         transition: all 0.2s ease;
@@ -50,9 +48,9 @@
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     }
     .payment-method-card.selected {
-        border-color: #14b8a6;
-        background-color: #f0fdfa;
-        box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+        border-color: #658C58;
+        background-color: rgba(101, 140, 88, 0.05);
+        box-shadow: 0 0 0 3px rgba(101, 140, 88, 0.1);
     }
 </style>
 @endpush
@@ -61,29 +59,11 @@
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        {{-- Alert / Notifikasi --}}
-        @if(session('success'))
-            <div class="rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-check-circle mt-0.5 text-teal-500"></i>
-                <p class="text-teal-800">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <p class="text-red-800">{{ session('error') }}</p>
-            </div>
-        @endif
-
         {{-- HEADER HALAMAN --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-teal-50 text-teal-500 border border-teal-100">
-                        <i class="fas fa-address-book text-sm"></i>
-                    </span>
-                    <span>Pelanggan & Piutang</span>
+                <h1 class="text-xl md:text-2xl font-bold text-gray-900">
+                    Pelanggan & Piutang
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
                     Kelola data pelanggan dan pantau tunggakan/piutang yang masih harus dibayar.
@@ -93,79 +73,48 @@
 
         {{-- RINGKASAN STATISTIK --}}
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Pelanggan</p>
-                        <p id="statTotalCustomers" class="mt-1 text-2xl font-semibold text-gray-900">{{ number_format($stats['total_customers'], 0, ',', '.') }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center border border-teal-100">
-                        <i class="fas fa-users text-teal-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-5 shadow-sm">
+                <p class="text-xs font-bold uppercase tracking-wider text-gray-400">Total Pelanggan</p>
+                <p id="statTotalCustomers" class="mt-2 text-2xl font-black text-gray-900">{{ number_format($stats['total_customers'], 0, ',', '.') }}</p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Reseller Aktif</p>
-                        <p id="statActiveResellers" class="mt-1 text-2xl font-semibold text-amber-600">{{ number_format($stats['active_resellers'], 0, ',', '.') }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100">
-                        <i class="fas fa-user-check text-amber-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-5 shadow-sm">
+                <p class="text-xs font-bold uppercase tracking-wider text-gray-400">Reseller Aktif</p>
+                <p id="statActiveResellers" class="mt-2 text-2xl font-black text-amber-600">{{ number_format($stats['active_resellers'], 0, ',', '.') }}</p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Piutang</p>
-                        <p id="statTotalDebt" class="mt-1 text-2xl font-semibold text-red-600">Rp {{ number_format($stats['total_debt'], 0, ',', '.') }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center border border-red-100">
-                        <i class="fas fa-money-bill-wave text-red-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-5 shadow-sm">
+                <p class="text-xs font-bold uppercase tracking-wider text-gray-400">Total Piutang</p>
+                <p id="statTotalDebt" class="mt-2 text-2xl font-black text-red-600">Rp {{ number_format($stats['total_debt'], 0, ',', '.') }}</p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Terbayar Bulan Ini</p>
-                        <p id="statPaidThisMonth" class="mt-1 text-2xl font-semibold text-emerald-600">Rp {{ number_format($stats['paid_this_month'], 0, ',', '.') }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                        <i class="fas fa-check-circle text-emerald-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-5 shadow-sm">
+                <p class="text-xs font-bold uppercase tracking-wider text-gray-400">Terbayar Bulan Ini</p>
+                <p id="statPaidThisMonth" class="mt-2 text-2xl font-black text-cuan-green">{{ number_format($stats['paid_this_month'], 0, ',', '.') }}</p>
             </div>
         </section>
 
         {{-- TAB NAVIGATION --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-            <div class="border-b border-gray-200 px-4 md:px-6 py-4">
-                <div class="flex gap-2 overflow-x-auto pb-2 -mb-2 scrollbar-hide snap-x">
+        <x-card-container>
+            <div class="border-b border-gray-100 px-6 py-4 bg-gray-50/50">
+                <div class="flex gap-3 overflow-x-auto pb-2 -mb-2 scrollbar-hide snap-x">
                     @can('lihat pelanggan')
                     <button type="button" id="tabCustomer" onclick="switchTab('customer')"
-                            class="tab-btn active px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 whitespace-nowrap snap-start shrink-0">
-                        <i class="fas fa-users"></i>
+                            class="tab-btn active px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 whitespace-nowrap snap-start shrink-0">
                         <span>Pelanggan</span>
                     </button>
                     @endcan
                     
                     @can('lihat piutang')
                     <button type="button" id="tabDebt" onclick="switchTab('debt')"
-                            class="tab-btn px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 text-gray-600 border border-gray-200 whitespace-nowrap snap-start shrink-0">
-                        <i class="fas fa-file-invoice-dollar"></i>
+                            class="tab-btn px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 text-gray-500 border border-gray-200 bg-white whitespace-nowrap snap-start shrink-0">
                         <span>Tunggakan</span>
                     </button>
                     @endcan
 
                     @can('lihat reseller applications')
                     <button type="button" id="tabSupplier" onclick="switchTab('supplier')"
-                            class="tab-btn px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 text-gray-600 border border-gray-200 whitespace-nowrap snap-start shrink-0">
-                        <i class="fas fa-truck-loading"></i>
+                            class="tab-btn px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 text-gray-500 border border-gray-200 bg-white whitespace-nowrap snap-start shrink-0">
                         <span>Daftar Reseller</span>
                     </button>
                     @endcan
@@ -173,31 +122,23 @@
             </div>
 
             {{-- TAB CONTENT: CUSTOMER --}}
-            <div id="contentCustomer" class="tab-content p-4 md:p-6">
+            <div id="contentCustomer" class="tab-content">
                 {{-- Toolbar --}}
-                <div class="flex flex-col md:flex-row md:items-end gap-4 mb-4">
-                    <div class="flex-1 max-w-md">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Cari pelanggan</label>
-                        <div class="relative">
-                            <input type="text" id="searchCustomer" placeholder="Cari nama, kode, atau telepon..."
-                                   class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
-                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                        </div>
+                <div class="px-6 py-5 border-b border-gray-100 bg-white space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
+                    <div class="flex-1">
+                        <input type="text" id="searchCustomer" placeholder="Cari nama, kode, atau telepon..."
+                               class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
                     </div>
-                    <div class="w-full sm:w-40">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Tipe</label>
+                    <div class="flex flex-wrap gap-3">
                         <select id="filterCustomerType"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
+                                class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
                             <option value="">Semua Tipe</option>
                             <option value="regular">Regular</option>
                             <option value="reseller">Reseller</option>
                             <option value="vip">VIP</option>
                         </select>
-                    </div>
-                    <div class="w-full sm:w-40">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
                         <select id="filterCustomerStatus"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
+                                class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
                             <option value="">Semua Status</option>
                             <option value="active">Aktif</option>
                             <option value="inactive">Tidak Aktif</option>
@@ -208,23 +149,25 @@
                 {{-- Table --}}
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b border-gray-200">
+                        <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Kode</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Nama</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Telepon</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipe</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Transaksi</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Belanja</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
+                                <th class="px-6 py-4 text-left">Kode</th>
+                                <th class="px-6 py-4 text-left">Pelanggan</th>
+                                <th class="px-6 py-4 text-left">Telepon</th>
+                                <th class="px-6 py-4 text-left">Tipe</th>
+                                <th class="px-6 py-4 text-left">Transaksi</th>
+                                <th class="px-6 py-4 text-left font-black">Total Belanja</th>
+                                <th class="px-6 py-4 text-left">Status</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="customerTableBody" class="divide-y divide-gray-100 bg-white">
+                        <tbody id="customerTableBody" class="divide-y divide-gray-50 bg-white">
                             <tr>
-                                <td colspan="8" class="px-4 py-8 text-center text-gray-500">
-                                    <i class="fas fa-spinner fa-spin text-2xl text-gray-300 mb-2"></i>
-                                    <p>Memuat data...</p>
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-12 h-12 rounded-full border-4 border-gray-100 border-t-cuan-green animate-spin mb-3"></div>
+                                        <p class="font-bold">Memuat data...</p>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -232,25 +175,20 @@
                 </div>
 
                 {{-- Pagination --}}
-                <div id="customerPagination" class="mt-4 flex items-center justify-between text-sm text-gray-500"></div>
+                <div id="customerPagination" class="px-6 py-4 border-t border-gray-50 bg-gray-50/30 flex items-center justify-between text-sm text-gray-500"></div>
             </div>
 
             {{-- TAB CONTENT: DEBT --}}
-            <div id="contentDebt" class="tab-content p-4 md:p-6 hidden">
+            <div id="contentDebt" class="tab-content hidden">
                 {{-- Toolbar --}}
-                <div class="flex flex-col md:flex-row md:items-end gap-4 mb-4">
-                    <div class="flex-1 max-w-md">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Cari tunggakan</label>
-                        <div class="relative">
-                            <input type="text" id="searchDebt" placeholder="Cari invoice atau nama pelanggan..."
-                                   class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
-                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                        </div>
+                <div class="px-6 py-5 border-b border-gray-100 bg-white space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
+                    <div class="flex-1">
+                        <input type="text" id="searchDebt" placeholder="Cari invoice atau nama pelanggan..."
+                               class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
                     </div>
-                    <div class="w-full sm:w-40">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
+                    <div class="w-full md:w-48">
                         <select id="filterDebtStatus"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
                             <option value="">Semua Status</option>
                             <option value="unpaid">Belum Bayar</option>
                             <option value="partial">Sebagian</option>
@@ -261,24 +199,26 @@
                 {{-- Table --}}
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b border-gray-200">
+                        <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Invoice</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Pelanggan</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Dibayar</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Sisa</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Jatuh Tempo</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
+                                <th class="px-6 py-4 text-left">Invoice</th>
+                                <th class="px-6 py-4 text-left">Pelanggan</th>
+                                <th class="px-6 py-4 text-left">Tanggal</th>
+                                <th class="px-6 py-4 text-left font-black">Total</th>
+                                <th class="px-6 py-4 text-left">Dibayar</th>
+                                <th class="px-6 py-4 text-left">Sisa</th>
+                                <th class="px-6 py-4 text-left">Jatuh Tempo</th>
+                                <th class="px-6 py-4 text-left">Status</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="debtTableBody" class="divide-y divide-gray-100 bg-white">
+                        <tbody id="debtTableBody" class="divide-y divide-gray-50 bg-white">
                             <tr>
-                                <td colspan="9" class="px-4 py-8 text-center text-gray-500">
-                                    <i class="fas fa-spinner fa-spin text-2xl text-gray-300 mb-2"></i>
-                                    <p>Memuat data...</p>
+                                <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-12 h-12 rounded-full border-4 border-gray-100 border-t-cuan-green animate-spin mb-3"></div>
+                                        <p class="font-bold">Memuat data...</p>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -286,40 +226,36 @@
                 </div>
 
                 {{-- Pagination --}}
-                <div id="debtPagination" class="mt-4 flex items-center justify-between text-sm text-gray-500"></div>
+                <div id="debtPagination" class="px-6 py-4 border-t border-gray-50 bg-gray-50/30 flex items-center justify-between text-sm text-gray-500"></div>
             </div>
 
             {{-- TAB CONTENT: SUPPLIER --}}
-            <div id="contentSupplier" class="tab-content p-4 md:p-6 hidden">
+            <div id="contentSupplier" class="tab-content hidden">
                 {{-- Toolbar --}}
-                <div class="flex flex-col md:flex-row md:items-end gap-4 mb-4">
-                    <div class="flex-1 max-w-md">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Cari supplier</label>
-                        <div class="relative">
-                            <input type="text" id="searchSupplier" placeholder="Cari nama atau telepon supplier..."
-                                   class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
-                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                        </div>
-                    </div>
+                <div class="px-6 py-5 border-b border-gray-100 bg-white">
+                    <input type="text" id="searchSupplier" placeholder="Cari nama atau telepon supplier..."
+                           class="w-full max-w-md px-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
                 </div>
 
                 {{-- Table --}}
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b border-gray-200">
+                        <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Supplier</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Kontak</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipe</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Diterima</th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
+                                <th class="px-6 py-4 text-left">Supplier</th>
+                                <th class="px-6 py-4 text-left">Kontak</th>
+                                <th class="px-6 py-4 text-left">Tipe</th>
+                                <th class="px-6 py-4 text-left">Diterima</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="supplierTableBody" class="divide-y divide-gray-100 bg-white">
+                        <tbody id="supplierTableBody" class="divide-y divide-gray-50 bg-white">
                             <tr>
-                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">
-                                    <i class="fas fa-spinner fa-spin text-2xl text-gray-300 mb-2"></i>
-                                    <p>Memuat data...</p>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-12 h-12 rounded-full border-4 border-gray-100 border-t-cuan-green animate-spin mb-3"></div>
+                                        <p class="font-bold">Memuat data...</p>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -327,156 +263,157 @@
                 </div>
 
                 {{-- Pagination --}}
-                <div id="supplierPagination" class="mt-4 flex items-center justify-between text-sm text-gray-500"></div>
+                <div id="supplierPagination" class="px-6 py-4 border-t border-gray-50 bg-gray-50/30 flex items-center justify-between text-sm text-gray-500"></div>
             </div>
-        </section>
+        </x-card-container>
     </div>
 </main>
 
 {{-- PAYMENT MODAL --}}
-<div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="backdrop-filter: blur(2px);">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+<div id="paymentModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(8px);">
+    <div class="bg-white rounded-[2rem] shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto transform transition-all scale-100 opacity-100 border border-gray-100">
         {{-- Header --}}
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-teal-500 to-cyan-500 rounded-t-2xl">
-            <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                <i class="fas fa-money-bill-wave"></i>
-                Pembayaran Utang
-            </h3>
-            <button onclick="closePaymentModal()" class="text-white/80 hover:text-white">
-                <i class="fas fa-times text-xl"></i>
+        <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <h3 class="text-xl font-black text-gray-900">
+                    Pembayaran Utang
+                </h3>
+                <p class="text-xs text-gray-400 mt-1">Selesaikan kewajiban pembayaran pelanggan.</p>
+            </div>
+            <button onclick="closePaymentModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all">
+                <i class="fas fa-times"></i>
             </button>
         </div>
 
         {{-- Body --}}
-        <div class="p-6">
+        <div class="p-8">
             {{-- Debt Info --}}
-            <div class="bg-gray-50 rounded-xl p-4 mb-6">
-                <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100/50">
+                <div class="grid grid-cols-2 gap-y-6 gap-x-4 text-sm">
                     <div>
-                        <p class="text-gray-500">Invoice</p>
-                        <p id="modalInvoice" class="font-semibold text-gray-900">-</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Invoice</p>
+                        <p id="modalInvoice" class="font-bold text-gray-900 mt-1">-</p>
                     </div>
                     <div>
-                        <p class="text-gray-500">Pelanggan</p>
-                        <p id="modalCustomer" class="font-semibold text-gray-900">-</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Pelanggan</p>
+                        <p id="modalCustomer" class="font-bold text-gray-900 mt-1">-</p>
                     </div>
                     <div>
-                        <p class="text-gray-500">Total Utang</p>
-                        <p id="modalTotal" class="font-semibold text-gray-900">-</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Utang</p>
+                        <p id="modalTotal" class="font-bold text-gray-900 mt-1">-</p>
                     </div>
                     <div>
-                        <p class="text-gray-500">Sisa Pembayaran</p>
-                        <p id="modalRemaining" class="font-bold text-red-600 text-lg">-</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-red-400">Sisa Pembayaran</p>
+                        <p id="modalRemaining" class="font-black text-red-600 text-lg mt-1">-</p>
                     </div>
                 </div>
             </div>
 
             {{-- Payment Amount --}}
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Pembayaran</label>
+            <div class="mb-8">
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Jumlah Pembayaran</label>
                 <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Rp</span>
                     <input type="number" id="paymentAmount" min="1"
-                           class="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-xl text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+                           class="w-full pl-12 pr-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-xl font-black text-gray-900 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
                            placeholder="0">
                 </div>
-                <div class="flex gap-2 mt-2">
-                    <button type="button" onclick="setPaymentAmount(0.5)" class="px-3 py-1.5 text-xs font-semibold bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100">50%</button>
-                    <button type="button" onclick="setPaymentAmount(1)" class="px-3 py-1.5 text-xs font-semibold bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100">Lunas</button>
+                <div class="flex gap-3 mt-4">
+                    <button type="button" onclick="setPaymentAmount(0.5)" class="flex-1 py-3 text-xs font-bold bg-gray-50 border border-gray-100 text-gray-600 rounded-xl hover:bg-gray-100 transition-all active:scale-95">50%</button>
+                    <button type="button" onclick="setPaymentAmount(1)" class="flex-1 py-3 text-xs font-bold bg-cuan-green/10 text-cuan-green rounded-xl hover:bg-cuan-green/20 transition-all active:scale-95">Lunas</button>
                 </div>
             </div>
 
             {{-- Payment Method --}}
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-3">Metode Pembayaran</label>
-                <div class="grid grid-cols-3 gap-3">
-                    <div onclick="selectPaymentMethod('cash')" class="payment-method-card selected border-2 border-gray-200 rounded-xl p-4 text-center" data-method="cash">
-                        <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-money-bill-wave text-white text-lg"></i>
+            <div class="mb-8">
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Metode Pembayaran</label>
+                <div class="grid grid-cols-3 gap-4">
+                    <div onclick="selectPaymentMethod('cash')" class="payment-method-card selected border border-gray-200 rounded-2xl p-5 text-center group" data-method="cash">
+                        <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-money-bill-wave text-cuan-green text-lg"></i>
                         </div>
-                        <p class="text-sm font-semibold text-gray-800">Tunai</p>
+                        <p class="text-xs font-bold text-gray-900 uppercase">Tunai</p>
                     </div>
-                    <div onclick="selectPaymentMethod('transfer')" class="payment-method-card border-2 border-gray-200 rounded-xl p-4 text-center" data-method="transfer">
-                        <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-university text-white text-lg"></i>
+                    <div onclick="selectPaymentMethod('transfer')" class="payment-method-card border border-gray-200 rounded-2xl p-5 text-center group" data-method="transfer">
+                        <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-university text-blue-500 text-lg"></i>
                         </div>
-                        <p class="text-sm font-semibold text-gray-800">Transfer</p>
+                        <p class="text-xs font-bold text-gray-900 uppercase">Transfer</p>
                     </div>
-                    <div onclick="selectPaymentMethod('qris')" class="payment-method-card border-2 border-gray-200 rounded-xl p-4 text-center" data-method="qris">
-                        <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-qrcode text-white text-lg"></i>
+                    <div onclick="selectPaymentMethod('qris')" class="payment-method-card border border-gray-200 rounded-2xl p-5 text-center group" data-method="qris">
+                        <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-qrcode text-amber-500 text-lg"></i>
                         </div>
-                        <p class="text-sm font-semibold text-gray-800">QRIS</p>
+                        <p class="text-xs font-bold text-gray-900 uppercase">QRIS</p>
                     </div>
                 </div>
             </div>
 
             {{-- Transfer Options --}}
-            <div id="transferOptions" class="mb-6 hidden">
-                <label class="block text-sm font-medium text-gray-700 mb-3">Pilih Rekening Tujuan:</label>
-                <div class="grid grid-cols-2 gap-3 mb-4">
+            <div id="transferOptions" class="mb-8 hidden animate-slideDown">
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Pilih Rekening Tujuan:</label>
+                <div class="grid grid-cols-2 gap-3 mb-6">
                     @forelse($outletPaymentLinks as $link)
                         <div onclick="selectTransferMethod(this, '{{ $link->id }}', '{{ $link->paymentMethod->name }}', '{{ $link->account_number }}', '{{ $link->account_name }}', '{{ $link->qr_image ? Storage::url($link->qr_image) : '' }}')" 
-                             class="transfer-method-card flex flex-col items-center justify-center p-3 border-2 border-gray-100 rounded-xl cursor-pointer hover:border-teal-200 hover:bg-teal-50 transition-all text-center group"
+                             class="transfer-method-card flex flex-col items-center justify-center p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all text-center group"
                              data-link-id="{{ $link->id }}">
-                            <div class="w-10 h-10 flex items-center justify-center mb-1">
+                            <div class="w-10 h-10 flex items-center justify-center mb-2">
                                 @if($link->paymentMethod->icon && Storage::disk('public')->exists($link->paymentMethod->icon))
-                                    <img src="{{ Storage::url($link->paymentMethod->icon) }}" class="w-full h-full object-contain filter group-hover:drop-shadow-sm">
+                                    <img src="{{ Storage::url($link->paymentMethod->icon) }}" class="w-full h-full object-contain filter group-hover:grayscale-0 grayscale transition-all">
                                 @else
-                                    <div class="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-white transition-colors">
+                                    <div class="w-full h-full rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-white transition-colors">
                                         <i class="fas fa-university text-sm"></i>
                                     </div>
                                 @endif
                             </div>
-                            <p class="text-[11px] font-bold text-gray-700 leading-tight">{{ $link->paymentMethod->name }}</p>
+                            <p class="text-[10px] font-black text-gray-900 leading-tight uppercase tracking-wider">{{ $link->paymentMethod->name }}</p>
                         </div>
                     @empty
-                        <div class="col-span-2 text-center py-4 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                        <div class="col-span-2 text-center py-6 text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                             <p class="text-xs">Belum ada metode transfer.</p>
                         </div>
                     @endforelse
                 </div>
                 
-                <div id="selectedTransferDetail" class="hidden mb-4 p-3 bg-teal-50 border border-teal-100 rounded-xl animate-fadeIn">
+                <div id="selectedTransferDetail" class="hidden mb-6 p-5 bg-cuan-green/5 border border-cuan-green/10 rounded-2xl animate-fadeIn">
                     <div class="flex flex-col items-center text-center">
-                        <p class="text-[10px] text-teal-600 font-bold uppercase tracking-wider mb-1" id="transferMethodLabel">-</p>
+                        <p class="text-[10px] text-cuan-green font-black uppercase tracking-widest mb-3" id="transferMethodLabel">-</p>
                         
                         <div id="transferAccInfoSection">
-                            <p class="text-sm font-mono font-bold text-gray-900 tracking-wider" id="transferAccNumber">-</p>
-                            <p class="text-[10px] text-gray-500 font-medium" id="transferAccName">-</p>
+                            <p class="text-lg font-black font-mono text-gray-900 tracking-wider mb-1" id="transferAccNumber">-</p>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest" id="transferAccName">-</p>
                         </div>
 
                         <div id="transferQrSection" class="hidden mt-2">
-                            <img id="transferQrImage" src="" class="w-40 h-40 object-contain rounded-lg border border-gray-200 bg-white p-2">
-                            <p class="text-[9px] text-teal-600 font-medium mt-1">Scan QR untuk membayar</p>
+                            <img id="transferQrImage" src="" class="w-48 h-48 object-contain rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                            <p class="text-[10px] text-cuan-green font-bold uppercase tracking-widest mt-4">Scan QR untuk membayar</p>
                         </div>
                     </div>
                 </div>
 
-                <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Referensi (Opsional)</label>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Nomor Referensi (Opsional)</label>
                 <input type="text" id="referenceNumber" 
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+                       class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
                        placeholder="Masukkan nomor referensi transfer">
             </div>
 
             <input type="hidden" id="selectedOutletPaymentLinkId" value="">
 
             {{-- Notes --}}
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional)</label>
+            <div class="mb-8">
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Catatan (Opsional)</label>
                 <textarea id="paymentNotes" rows="2"
-                          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+                          class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
                           placeholder="Tambahkan catatan pembayaran"></textarea>
             </div>
         </div>
 
         {{-- Footer --}}
-        <div class="px-6 py-4 border-t border-gray-200 flex gap-3">
-            <button onclick="closePaymentModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+        <div class="px-8 py-6 border-t border-gray-100 flex gap-4 bg-gray-50/50">
+            <button onclick="closePaymentModal()" class="flex-1 px-6 py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold text-sm hover:bg-gray-50 transition-all active:scale-95">
                 Batal
             </button>
-            <button onclick="processPayment()" id="btnProcessPayment" class="flex-1 px-4 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all shadow-md">
-                <i class="fas fa-check mr-2"></i>
+            <button onclick="processPayment()" id="btnProcessPayment" class="flex-1 px-6 py-4 bg-cuan-green text-white rounded-2xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
                 Bayar Sekarang
             </button>
         </div>
@@ -484,38 +421,37 @@
 </div>
 
 {{-- HISTORY MODAL --}}
-<div id="historyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="backdrop-filter: blur(2px);">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+<div id="historyModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(8px);">
+    <div class="bg-white rounded-[2rem] shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-100">
         {{-- Header --}}
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+        <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-history text-teal-500"></i>
+                <h3 class="text-xl font-black text-gray-900">
                     Riwayat Transaksi
                 </h3>
-                <p id="historyCustomerName" class="text-sm text-gray-500 mt-1">-</p>
+                <p id="historyCustomerName" class="text-xs text-gray-400 mt-1 uppercase tracking-widest font-bold">-</p>
             </div>
-            <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <button onclick="closeHistoryModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
 
         {{-- Body --}}
-        <div class="flex-1 overflow-y-auto p-6">
-            <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <div class="flex-1 overflow-y-auto p-8">
+            <div class="overflow-x-auto rounded-2xl border border-gray-100">
                 <table class="w-full text-sm">
-                    <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
+                    <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
                         <tr>
-                            <th class="px-4 py-3 text-left font-medium">Invoice</th>
-                            <th class="px-4 py-3 text-left font-medium">Tanggal</th>
-                            <th class="px-4 py-3 text-center font-medium">Item</th>
-                            <th class="px-4 py-3 text-left font-medium">Metode</th>
-                            <th class="px-4 py-3 text-left font-medium">Total</th>
-                            <th class="px-4 py-3 text-left font-medium">Tunggakan</th>
-                            <th class="px-4 py-3 text-center font-medium">Status</th>
+                            <th class="px-6 py-4 text-left">Invoice</th>
+                            <th class="px-6 py-4 text-left">Tanggal</th>
+                            <th class="px-6 py-4 text-center">Item</th>
+                            <th class="px-6 py-4 text-left">Metode</th>
+                            <th class="px-6 py-4 text-left font-black">Total</th>
+                            <th class="px-6 py-4 text-left">Tunggakan</th>
+                            <th class="px-6 py-4 text-center">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="historyTableBody" class="divide-y divide-gray-100">
+                    <tbody id="historyTableBody" class="divide-y divide-gray-100 bg-white">
                         {{-- Data injected here --}}
                     </tbody>
                 </table>
@@ -523,8 +459,8 @@
         </div>
 
         {{-- Footer --}}
-        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end">
-            <button onclick="closeHistoryModal()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+        <div class="px-8 py-6 border-t border-gray-100 bg-gray-50/50 flex justify-end">
+            <button onclick="closeHistoryModal()" class="px-8 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all active:scale-95">
                 Tutup
             </button>
         </div>
@@ -532,81 +468,85 @@
 </div>
 
 {{-- SUPPLIER DETAIL MODAL --}}
-<div id="supplierDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(4px);">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all">
-        {{-- Header with Gradient --}}
-        <div class="relative h-32 bg-gradient-to-br from-teal-500 to-cyan-600">
-            <button onclick="closeSupplierDetail()" class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 p-2 rounded-full backdrop-blur-md">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="absolute -bottom-12 left-8">
-                <div class="w-24 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center border-4 border-white overflow-hidden">
-                    <span id="modalSupplierInitial" class="text-3xl font-bold text-teal-600 uppercase">S</span>
+<div id="supplierDetailModal" class="hidden fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 transition-all duration-500" style="backdrop-filter: blur(8px);">
+    <div class="relative bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col transform transition-all border border-gray-100">
+        
+        {{-- Fixed Close Button --}}
+        <button onclick="closeSupplierDetail()" class="absolute top-5 right-5 w-10 h-10 flex items-center justify-center text-white bg-white/10 hover:bg-white/20 transition-all rounded-full backdrop-blur-md z-[70] border border-white/20">
+            <i class="fas fa-times"></i>
+        </button>
+
+        {{-- Header with Visual Decoration (Static) --}}
+        <div class="relative h-32 bg-gray-900 shrink-0 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-cuan-green/40 to-cuan-dark/40 mix-blend-overlay"></div>
+            <div class="absolute -bottom-10 left-10">
+                <div class="w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center border-4 border-white overflow-hidden">
+                    <span id="modalSupplierInitial" class="text-3xl font-black text-cuan-green uppercase leading-none">-</span>
                 </div>
             </div>
         </div>
 
-        {{-- Content --}}
-        <div class="pt-16 pb-8 px-8">
-            <div class="mb-6">
-                <h3 id="modalSupplierName" class="text-2xl font-bold text-gray-900 leading-tight">-</h3>
-                <div class="flex items-center gap-2 mt-1">
-                    <span id="modalSupplierCode" class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded">-</span>
-                    <span id="modalSupplierType" class="text-xs font-medium text-gray-500 uppercase tracking-wider">-</span>
+        {{-- Scrollable Content --}}
+        <div class="flex-1 overflow-y-auto scrollbar-hide">
+            <div class="pt-20 pb-12 px-10">
+                <div class="mb-8">
+                    <h3 id="modalSupplierName" class="text-2xl font-black text-gray-900 leading-tight">-</h3>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span id="modalSupplierCode" class="text-[10px] font-black font-mono text-cuan-green bg-cuan-green/10 px-3 py-1 rounded-full uppercase tracking-widest">-</span>
+                        <span id="modalSupplierType" class="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">-</span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 gap-6">
-                {{-- Contact Info --}}
                 <div class="space-y-4">
-                    <div class="flex items-start gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
-                        <div class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center shrink-0">
-                            <i class="fas fa-phone text-teal-500"></i>
+                    {{-- Contact Info cards --}}
+                    <div class="flex items-center gap-5 p-4 bg-gray-50 rounded-2xl group border border-transparent hover:border-gray-100 transition-all">
+                        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                            <i class="fas fa-phone text-emerald-500"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-medium text-gray-400">Telepon / WA</p>
-                            <p id="modalSupplierPhone" class="text-sm font-semibold text-gray-900">-</p>
+                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Telepon / WhatsApp</p>
+                            <p id="modalSupplierPhone" class="text-sm font-bold text-gray-900">-</p>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
-                        <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+                    <div class="flex items-center gap-5 p-4 bg-gray-50 rounded-2xl group border border-transparent hover:border-gray-100 transition-all">
+                        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
                             <i class="fas fa-envelope text-blue-500"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-medium text-gray-400">Email</p>
-                            <p id="modalSupplierEmail" class="text-sm font-semibold text-gray-900">-</p>
+                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Email</p>
+                            <p id="modalSupplierEmail" class="text-sm font-bold text-gray-900">-</p>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
-                        <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+                    <div class="flex items-start gap-5 p-4 bg-gray-50 rounded-2xl group border border-transparent hover:border-gray-100 transition-all">
+                        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform mt-1">
                             <i class="fas fa-map-marker-alt text-amber-500"></i>
                         </div>
-                        <div>
-                            <p class="text-xs font-medium text-gray-400">Alamat</p>
-                            <p id="modalSupplierAddress" class="text-sm font-semibold text-gray-900 leading-relaxed">-</p>
+                        <div class="flex-1">
+                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Alamat Lengkap</p>
+                            <p id="modalSupplierAddress" class="text-sm font-bold text-gray-900 leading-relaxed">-</p>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-dashed border-gray-200">
-                        <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shrink-0">
-                            <i class="fas fa-info-circle text-gray-400"></i>
-                        </div>
+                    <div class="p-4 rounded-2xl border border-dashed border-gray-200 flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-medium text-gray-400">Status Kontrak</p>
-                            <p class="text-sm font-semibold text-emerald-600">Aktif sejak <span id="modalSupplierAcceptedAt">-</span></p>
+                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Mitra Sejak</p>
+                            <p id="modalSupplierAcceptedAt" class="text-xs font-bold text-cuan-green uppercase">-</p>
                         </div>
+                        <span class="px-4 py-1.5 bg-cuan-green/10 text-cuan-green rounded-full text-[10px] font-black uppercase tracking-widest">
+                            Status Aktif
+                        </span>
                     </div>
                 </div>
-            </div>
 
-            {{-- CTA Button --}}
-            <div class="mt-8">
-                <a id="btnSupplierWa" href="#" target="_blank" class="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#20ba59] text-white py-4 rounded-2xl font-bold shadow-lg shadow-green-200 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                    <i class="fab fa-whatsapp text-xl"></i>
-                    Hubungi via WhatsApp
-                </a>
+                {{-- CTA --}}
+                <div class="mt-10">
+                    <a id="btnSupplierWa" href="#" target="_blank" class="flex items-center justify-center gap-3 w-full bg-[#1FAF38] hover:bg-[#199C31] text-white py-5 rounded-[1.5rem] font-black text-sm shadow-xl shadow-green-200 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        <i class="fab fa-whatsapp text-xl"></i>
+                        <span>Hubungi Reseller</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -615,68 +555,50 @@
 
 @section('modals')
 {{-- PAYMENT SUCCESS MODAL --}}
-<div id="paymentSuccessModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(4px);">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 lg:p-8 transform transition-all scale-95 opacity-0 duration-300">
-        <div class="flex justify-center mb-5">
-            <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center">
-                <svg class="w-10 h-10 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                </svg>
-            </div>
+<div id="paymentSuccessModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(12px);">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 text-center transform transition-all border border-gray-100">
+        <div class="w-24 h-24 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-cuan-green/20 animate-bounce">
+            <i class="fas fa-check text-4xl text-white"></i>
         </div>
-        <h3 class="text-xl font-bold text-gray-900 text-center mb-1.5">Pembayaran Berhasil!</h3>
-        <p class="text-gray-600 text-sm text-center mb-5">Transaksi tunggakan telah berhasil diproses</p>
         
-        <div class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-4 mb-5 border border-teal-100">
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-gray-500 font-medium font-mono text-xs uppercase tracking-wider">Invoice:</span>
-                    <span class="font-bold text-teal-700" id="successInvoiceNumber">-</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-500 font-medium font-mono text-xs uppercase tracking-wider">Tanggal:</span>
-                    <span class="text-gray-900 font-semibold" id="successDate">-</span>
-                </div>
-                <div class="flex justify-between" id="successCustomerRow">
-                    <span class="text-gray-500 font-medium font-mono text-xs uppercase tracking-wider">Pelanggan:</span>
-                    <span class="font-bold text-gray-900 underline decoration-teal-300 underline-offset-4" id="successCustomer">-</span>
-                </div>
-                <div class="flex justify-between text-base font-bold border-t border-teal-200/50 pt-2 mt-2">
-                    <span class="text-gray-600">Total Bayar:</span>
-                    <span class="text-teal-600" id="successTotal">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-sm pt-1" id="successDebtRow">
-                    <span class="text-gray-500">Sisa Utang:</span>
-                    <span class="font-bold text-red-500" id="successDebt">Rp 0</span>
-                </div>
+        <h3 class="text-2xl font-black text-gray-900 mb-2">Pembayaran Berhasil!</h3>
+        <p class="text-gray-400 text-sm mb-8">Terima kasih, pembayaran telah berhasil diproses dan dicatat ke dalam sistem.</p>
+        
+        <div class="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100/50 space-y-4 text-sm">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                <span class="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Invoice</span>
+                <span id="successInvoiceNumber" class="font-black text-gray-900 font-mono tracking-widest">-</span>
+            </div>
+            <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                <span class="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Pelanggan</span>
+                <span id="successCustomer" class="font-black text-gray-900">-</span>
+            </div>
+            <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-cuan-green">
+                <span class="font-bold uppercase tracking-widest text-[9px]">Jumlah Bayar</span>
+                <span id="successTotal" class="font-black text-lg">-</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Sisa Utang</span>
+                <span id="successDebt" class="font-black text-red-500">-</span>
             </div>
         </div>
-
-        <div class="space-y-3">
-            @can('cetak struk')
-            <button onclick="printReceipt()" class="group w-full flex items-center justify-center gap-2.5 px-4 py-3.5 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-2xl text-sm font-bold hover:from-teal-600 hover:to-cyan-600 transition-all shadow-lg shadow-teal-100 hover:scale-[1.01] active:scale-[0.99]">
-                <i class="fas fa-print text-teal-100 group-hover:text-white transition-colors"></i>
-                <span class="ml-1">Cetak Struk</span>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="printReceipt()" class="flex flex-col items-center justify-center gap-2 px-4 py-5 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold text-xs hover:bg-gray-50 transition-all hover:scale-105 active:scale-95">
+                <i class="fas fa-print text-xl text-gray-400"></i>
+                Cetak Struk
             </button>
-            @endcan
-            
-            @can('unduh struk')
-            <button onclick="downloadReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-teal-100 text-teal-600 rounded-2xl text-sm font-bold hover:bg-teal-50 hover:border-teal-200 transition-all active:scale-[0.99]">
-                <i class="fas fa-file-pdf mr-1"></i>
-                <span>Download Struk (PDF)</span>
+            <button onclick="handlePrintInvoice()" class="flex flex-col items-center justify-center gap-2 px-4 py-5 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold text-xs hover:bg-gray-50 transition-all hover:scale-105 active:scale-95">
+                <i class="fas fa-file-invoice text-xl text-gray-400"></i>
+                Cetak Invoice
             </button>
-            @endcan
-            
-            <button onclick="handlePrintInvoice()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-gray-100 text-gray-700 rounded-2xl text-sm font-bold hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-[0.99]">
-                <i class="fas fa-file-invoice text-gray-400 mr-1"></i>
-                <span>Cetak Surat Invoice</span>
+            <button onclick="downloadReceipt()" class="col-span-2 py-4 bg-cuan-green text-white rounded-2xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95 flex items-center justify-center gap-3">
+                <i class="fas fa-download"></i>
+                Download PDF
             </button>
-
-            <div class="pt-2">
-                <button onclick="closePaymentSuccessModal()" class="w-full px-4 py-3.5 bg-gray-900 text-white rounded-2xl text-sm font-bold hover:bg-black transition-all shadow-md active:scale-[0.99]">
-                    Selesai
-                </button>
-            </div>
+            <button onclick="closePaymentSuccessModal()" class="col-span-2 py-3 text-gray-400 font-bold text-xs hover:text-gray-600 transition-all uppercase tracking-widest">
+                Kembali ke Daftar
+            </button>
         </div>
     </div>
 </div>
@@ -684,79 +606,104 @@
 @push('scripts')
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 <script>
-// State
-let currentTab = @can('lihat pelanggan') 'customer' @else 'debt' @endcan;
-let currentDebt = null;
-let selectedPaymentMethod = 'cash';
-let customerPage = 1;
-let debtPage = 1;
-let supplierPage = 1;
-
-// Debounce helper
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Format currency
-function formatRupiah(amount) {
-    return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
-}
-
-// Switch tabs
-// URL Persistence Helpers
-function updateUrlParams(params) {
-    const url = new URL(window.location);
-    Object.keys(params).forEach(key => {
-        if (params[key] === null || params[key] === '') {
-            url.searchParams.delete(key);
-        } else {
-            url.searchParams.set(key, params[key]);
-        }
-    });
-    window.history.pushState({}, '', url);
-}
-
-function switchTab(tab) {
-    currentTab = tab;
-    
-    // Update Tab Buttons UI
-    const tabs = ['customer', 'debt', 'supplier'];
-    tabs.forEach(t => {
-        const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
-        const content = document.getElementById('content' + t.charAt(0).toUpperCase() + t.slice(1));
-        
-        if (btn) {
-            const isActive = t === tab;
-            btn.classList.toggle('active', isActive);
-            btn.classList.toggle('text-gray-600', !isActive);
-            btn.classList.toggle('border', !isActive);
-            btn.classList.toggle('border-gray-200', !isActive);
-            // If active, remove those classes
-            if (isActive) {
-                btn.classList.remove('text-gray-600', 'border', 'border-gray-200');
+    // Global SweetAlert2 notification handler
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            iconColor: '#658C58',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+                htmlContainer: 'text-sm font-medium text-gray-500'
             }
-        }
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: "{{ session('error') }}",
+            confirmButtonColor: '#ef4444',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+                htmlContainer: 'text-sm font-medium text-gray-500',
+                confirmButton: 'rounded-xl px-8 py-3 font-bold text-sm'
+            }
+        });
+    @endif
+
+    let currentTab = 'customer';
+    let customerPage = 1;
+    let debtPage = 1;
+    let supplierPage = 1;
+
+    let currentDebt = null;
+    let selectedPaymentMethod = 'cash';
+
+    // URL Persistence Helpers
+    function updateUrlParams(params) {
+        const url = new URL(window.location);
+        Object.keys(params).forEach(key => {
+            if (params[key] === null || params[key] === '') {
+                url.searchParams.delete(key);
+            } else {
+                url.searchParams.set(key, params[key]);
+            }
+        });
+        window.history.pushState({}, '', url);
+    }
+
+    // Format currency
+    function formatRupiah(amount) {
+        return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
+    }
+
+    // Debounce helper
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
         
-        if (content) {
-            content.classList.toggle('hidden', t !== tab);
-        }
-    });
-    
-    // Load Data
-    if (tab === 'customer') loadCustomers();
-    else if (tab === 'debt') loadDebts();
-    else if (tab === 'supplier') loadSuppliers();
-    
-    updateUrlParams({ tab: tab });
-}
+        // Update URL
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tab);
+        window.history.pushState({}, '', url);
+
+        // Update Buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.classList.add('text-gray-500', 'border-gray-200', 'bg-white');
+        });
+        const activeBtn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+        activeBtn.classList.add('active');
+        activeBtn.classList.remove('text-gray-500', 'border-gray-200', 'bg-white');
+
+        // Show Content
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+        document.getElementById('content' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+
+        // Load Data
+        if (tab === 'customer') loadCustomers();
+        else if (tab === 'debt') loadDebts();
+        else if (tab === 'supplier') loadSuppliers();
+    }
 
 function loadStats() {
     fetch('{{ url("customer-debts/stats") }}')
@@ -823,13 +770,13 @@ function renderCustomerTable(customers, pagination) {
     if (customers.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="px-4 py-12 text-center">
+                <td colspan="8" class="px-6 py-16 text-center">
                     <div class="flex flex-col items-center">
-                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                            <i class="fas fa-users text-2xl text-gray-300"></i>
+                        <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 transition-transform hover:scale-110">
+                            <i class="fas fa-users text-2xl text-gray-200"></i>
                         </div>
-                        <p class="text-gray-500 font-medium">Belum ada pelanggan</p>
-                        <p class="text-gray-400 text-sm">Pelanggan akan muncul setelah ada transaksi</p>
+                        <p class="text-gray-900 font-bold mb-1">Belum ada pelanggan</p>
+                        <p class="text-gray-400 text-xs">Pelanggan akan muncul setelah ada transaksi dalam sistem.</p>
                     </div>
                 </td>
             </tr>
@@ -838,37 +785,44 @@ function renderCustomerTable(customers, pagination) {
     }
     
     tbody.innerHTML = customers.map(c => `
-        <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-4 py-3">
-                <span class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-800 font-mono">
+        <tr class="hover:bg-gray-50/50 transition-colors group">
+            <td class="px-6 py-5">
+                <span class="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1.5 text-[10px] font-black text-gray-600 font-mono tracking-widest">
                     ${c.code || '-'}
                 </span>
             </td>
-            <td class="px-4 py-3">
-                <div class="font-semibold text-gray-900">${c.name}</div>
-                ${c.email ? `<div class="text-xs text-gray-500">${c.email}</div>` : ''}
+            <td class="px-6 py-5">
+                <div class="font-bold text-gray-900 group-hover:text-cuan-green transition-colors">${c.name}</div>
+                ${c.email ? `<div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">${c.email}</div>` : ''}
             </td>
-            <td class="px-4 py-3 text-gray-600">${c.phone || '-'}</td>
-            <td class="px-4 py-3">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getTypeBadgeClass(c.type)}">
+            <td class="px-6 py-5">
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-600 font-medium">${c.phone || '-'}</span>
+                </div>
+            </td>
+            <td class="px-6 py-5">
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getTypeBadgeClass(c.type)}">
                     ${getTypeLabel(c.type)}
                 </span>
             </td>
-            <td class="px-4 py-3">
-                <span class="font-semibold text-gray-900">${c.sales_count || 0}</span>
-                <span class="text-gray-400 text-xs">transaksi</span>
+            <td class="px-6 py-5">
+                <div class="flex flex-col">
+                    <span class="font-bold text-gray-900">${c.sales_count || 0}</span>
+                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Transaksi</span>
+                </div>
             </td>
-            <td class="px-4 py-3 font-semibold text-gray-900">${formatRupiah(c.sales_sum_grand_total || 0)}</td>
-            <td class="px-4 py-3">
+            <td class="px-6 py-5">
+                <div class="text-sm font-black text-gray-900">${formatRupiah(c.sales_sum_grand_total || 0)}</div>
+            </td>
+            <td class="px-6 py-5">
                 ${c.is_active 
-                    ? '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>Aktif</span>'
-                    : '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-600 border border-gray-200"><span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>Tidak Aktif</span>'
+                    ? '<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100/50">Aktif</span>'
+                    : '<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500">Nonaktif</span>'
                 }
             </td>
-            <td class="px-4 py-3 text-center">
+            <td class="px-6 py-5 text-center">
                 <button onclick="openHistoryModal(${c.id})" 
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors text-xs font-semibold border border-teal-100">
-                    <i class="fas fa-history"></i>
+                        class="px-4 py-2 rounded-xl bg-cuan-green/10 text-cuan-green hover:bg-cuan-green hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border border-cuan-green/10">
                     Riwayat
                 </button>
             </td>
@@ -927,13 +881,13 @@ function renderDebtTable(debts, pagination) {
     if (debts.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="px-4 py-12 text-center">
+                <td colspan="9" class="px-6 py-16 text-center">
                     <div class="flex flex-col items-center">
-                        <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
-                            <i class="fas fa-check-circle text-2xl text-emerald-500"></i>
+                        <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-4 transition-transform hover:scale-110">
+                            <i class="fas fa-check text-2xl text-emerald-500"></i>
                         </div>
-                        <p class="text-gray-700 font-medium">Tidak ada tunggakan</p>
-                        <p class="text-gray-400 text-sm">Semua piutang sudah terbayar lunas</p>
+                        <p class="text-gray-900 font-bold mb-1">Semua Terbayar Lunas</p>
+                        <p class="text-gray-400 text-xs">Tidak ada pituang yang menunggak saat ini.</p>
                     </div>
                 </td>
             </tr>
@@ -942,34 +896,33 @@ function renderDebtTable(debts, pagination) {
     }
     
     tbody.innerHTML = debts.map(d => `
-        <tr class="debt-row ${d.is_overdue ? 'overdue' : ''} hover:bg-gray-50 transition-colors">
-            <td class="px-4 py-3">
-                <span class="inline-flex items-center rounded-md bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 font-mono border border-teal-100">
+        <tr class="debt-row ${d.is_overdue ? 'overdue' : ''} hover:bg-gray-50/50 transition-colors group">
+            <td class="px-6 py-5">
+                <span class="inline-flex items-center rounded-lg bg-cuan-green/10 px-3 py-1.5 text-[10px] font-black text-cuan-green font-mono tracking-widest border border-cuan-green/10">
                     ${d.invoice_number}
                 </span>
             </td>
-            <td class="px-4 py-3">
-                <div class="font-semibold text-gray-900">${d.customer_name}</div>
-                <div class="text-xs text-gray-500">${d.customer_phone}</div>
+            <td class="px-6 py-5">
+                <div class="font-bold text-gray-900">${d.customer_name}</div>
+                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">${d.customer_phone || '-'}</div>
             </td>
-            <td class="px-4 py-3 text-gray-600 text-sm">${d.created_at}</td>
-            <td class="px-4 py-3 font-medium text-gray-900">${formatRupiah(d.amount)}</td>
-            <td class="px-4 py-3 text-emerald-600 font-medium">${formatRupiah(d.paid_amount)}</td>
-            <td class="px-4 py-3 font-bold text-red-600">${formatRupiah(d.remaining_amount)}</td>
-            <td class="px-4 py-3">
+            <td class="px-6 py-5 text-gray-600 text-xs font-medium">${d.created_at}</td>
+            <td class="px-6 py-5 font-black text-gray-900">${formatRupiah(d.amount)}</td>
+            <td class="px-6 py-5 text-cuan-green font-black">${formatRupiah(d.paid_amount)}</td>
+            <td class="px-6 py-5 font-black text-red-600">${formatRupiah(d.remaining_amount)}</td>
+            <td class="px-6 py-5">
                 ${d.due_date 
-                    ? `<span class="${d.is_overdue ? 'text-red-600 font-semibold' : 'text-gray-600'}">${d.due_date}${d.is_overdue ? ` <span class="text-xs">(${d.days_overdue} hari)</span>` : ''}</span>`
-                    : '<span class="text-gray-400">-</span>'
+                    ? `<div class="flex flex-col"><span class="${d.is_overdue ? 'text-red-600 font-black' : 'text-gray-600 font-bold'} text-xs">${d.due_date}</span>${d.is_overdue ? `<span class="text-[9px] font-black uppercase text-red-400 tracking-tighter mt-0.5">lewat ${d.days_overdue} hari</span>` : ''}</div>`
+                    : '<span class="text-gray-300">-</span>'
                 }
             </td>
-            <td class="px-4 py-3">
+            <td class="px-6 py-5">
                 ${getDebtStatusBadge(d.status, d.is_overdue)}
             </td>
-            <td class="px-4 py-3 text-center">
+            <td class="px-6 py-5 text-center">
                 @can('bayar piutang')
                 <button onclick="openPaymentModal(${JSON.stringify(d).replace(/"/g, '&quot;')})"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-xs font-semibold hover:from-teal-600 hover:to-cyan-600 transition-all shadow-sm">
-                    <i class="fas fa-credit-card"></i>
+                        class="px-6 py-2.5 rounded-xl bg-cuan-green text-white text-[10px] font-black uppercase tracking-widest hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/10 active:scale-95">
                     Bayar
                 </button>
                 @endcan
@@ -1027,13 +980,13 @@ function renderSupplierTable(suppliers, pagination) {
     if (suppliers.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="px-4 py-12 text-center">
+                <td colspan="5" class="px-6 py-16 text-center">
                     <div class="flex flex-col items-center">
-                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                            <i class="fas fa-truck-loading text-2xl text-gray-300"></i>
+                        <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 transition-transform hover:scale-110">
+                            <i class="fas fa-truck-loading text-2xl text-gray-200"></i>
                         </div>
-                        <p class="text-gray-500 font-medium">Belum ada supplier (reseller)</p>
-                        <p class="text-gray-400 text-sm">Supplier muncul dari lamaran reseller yang diterima</p>
+                        <p class="text-gray-900 font-bold mb-1">Belum ada Reseller</p>
+                        <p class="text-gray-400 text-xs">Supplier (Reseller) muncul setelah aplikasi diterima.</p>
                     </div>
                 </td>
             </tr>
@@ -1042,31 +995,29 @@ function renderSupplierTable(suppliers, pagination) {
     }
     
     tbody.innerHTML = suppliers.map(s => `
-        <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-4 py-3">
-                <div class="font-semibold text-gray-900">${s.name}</div>
-                <div class="text-xs text-gray-500">${s.code || '-'}</div>
+        <tr class="hover:bg-gray-50/50 transition-colors group">
+            <td class="px-6 py-5">
+                <div class="font-bold text-gray-900 group-hover:text-cuan-green transition-colors">${s.name}</div>
+                <div class="text-[10px] font-black font-mono text-gray-400 uppercase tracking-widest mt-1">${s.code || '-'}</div>
             </td>
-            <td class="px-4 py-3">
-                <div class="text-sm font-medium text-gray-900">${s.phone || '-'}</div>
-                <div class="text-xs text-gray-500">${s.email || '-'}</div>
+            <td class="px-6 py-5">
+                <div class="text-sm font-bold text-gray-900">${s.phone || '-'}</div>
+                <div class="text-[10px] font-black text-gray-400 tracking-widest mt-1 uppercase">${s.email || '-'}</div>
             </td>
-             <td class="px-4 py-3">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getTypeBadgeClass(s.type)}">
+             <td class="px-6 py-5">
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getTypeBadgeClass(s.type)}">
                     ${getTypeLabel(s.type)}
                 </span>
             </td>
-            <td class="px-4 py-3 text-gray-600 text-sm">${s.accepted_at}</td>
-            <td class="px-4 py-3 text-center">
+            <td class="px-6 py-5 text-gray-400 text-xs font-bold uppercase tracking-widest">${s.accepted_at}</td>
+            <td class="px-6 py-5 text-center">
                 <div class="flex items-center justify-center gap-2">
                     <button onclick='openSupplierDetail(${JSON.stringify(s).replace(/'/g, "&#39;")})'
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors text-xs font-semibold border border-teal-100 shadow-sm" title="Detail Supplier">
-                        <i class="fas fa-eye"></i>
+                            class="px-5 py-2.5 rounded-xl bg-cuan-green/10 text-cuan-green text-[10px] font-black uppercase tracking-widest hover:bg-cuan-green hover:text-white transition-all border border-cuan-green/10 shadow-sm" title="Detail Supplier">
                         Detail
                     </button>
                     <button onclick="cancelSupplierContract(${s.id}, '${s.name}')" 
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-xs font-semibold border border-red-100 shadow-sm" title="Batalkan Kontrak">
-                        <i class="fas fa-times-circle"></i>
+                            class="px-5 py-2.5 rounded-xl bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all border border-red-100 shadow-sm" title="Batalkan Kontrak">
                         Putus Mitra
                     </button>
                 </div>
@@ -1116,13 +1067,20 @@ function closeSupplierDetail() {
 function cancelSupplierContract(id, name) {
     Swal.fire({
         title: 'Batalkan Kontrak?',
-        text: `Apakah Anda yakin ingin menghentikan hubungan reseller dengan "${name}"? Status pelanggan akan kembali menjadi Regular.`,
+        text: `Apakah Anda yakin ingin menghentikan hubungan reseller dengan "${name}"? Status pelanggan akan kembali menjadi Reguler.`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#6b7280',
         confirmButtonText: 'Ya, Putuskan Mitra',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        customClass: {
+            popup: 'rounded-[2rem] border-none shadow-2xl',
+            title: 'font-black text-gray-900',
+            htmlContainer: 'text-sm font-medium text-gray-500',
+            confirmButton: 'rounded-xl px-6 py-3 font-bold text-sm',
+            cancelButton: 'rounded-xl px-6 py-3 font-bold text-sm'
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             Swal.fire({
@@ -1130,6 +1088,9 @@ function cancelSupplierContract(id, name) {
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
+                },
+                customClass: {
+                    popup: 'rounded-3xl border-none shadow-2xl'
                 }
             });
 
@@ -1143,10 +1104,28 @@ function cancelSupplierContract(id, name) {
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire('Berhasil', data.message, 'success');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 2000,
+                        iconColor: '#658C58',
+                        customClass: {
+                            popup: 'rounded-3xl border-none shadow-2xl'
+                        }
+                    });
                     loadSuppliers(supplierPage);
                 } else {
-                    Swal.fire('Gagal', data.message, 'error');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: data.message,
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            popup: 'rounded-3xl border-none shadow-2xl'
+                        }
+                    });
                 }
             })
             .catch(err => {
@@ -1162,31 +1141,36 @@ function renderPagination(containerId, pagination, loadFunction) {
     const container = document.getElementById(containerId);
     
     if (pagination.last_page <= 1) {
-        container.innerHTML = `<span>Menampilkan ${pagination.total} data</span>`;
+        container.innerHTML = `<span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total: ${pagination.total} Data</span>`;
         return;
     }
     
     let pagesHtml = '';
-    for (let i = 1; i <= pagination.last_page; i++) {
+    const startPage = Math.max(1, pagination.current_page - 2);
+    const endPage = Math.min(pagination.last_page, pagination.current_page + 2);
+
+    for (let i = startPage; i <= endPage; i++) {
         if (i === pagination.current_page) {
-            pagesHtml += `<button class="px-3 py-1.5 bg-teal-500 text-white rounded-lg font-semibold">${i}</button>`;
+            pagesHtml += `<button class="w-10 h-10 flex items-center justify-center bg-cuan-green text-white rounded-xl font-black shadow-lg shadow-cuan-green/20">${i}</button>`;
         } else {
-            pagesHtml += `<button onclick="${loadFunction.name}(${i})" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">${i}</button>`;
+            pagesHtml += `<button onclick="${loadFunction.name}(${i})" class="w-10 h-10 flex items-center justify-center bg-white border border-gray-100 text-gray-600 rounded-xl hover:bg-gray-50 transition-all font-bold">${i}</button>`;
         }
     }
     
     container.innerHTML = `
-        <span>Menampilkan ${(pagination.current_page - 1) * pagination.per_page + 1} - ${Math.min(pagination.current_page * pagination.per_page, pagination.total)} dari ${pagination.total}</span>
-        <div class="flex gap-1">${pagesHtml}</div>
+        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+            Halaman ${pagination.current_page} - ${pagination.last_page} (${pagination.total} Data)
+        </span>
+        <div class="flex gap-2">${pagesHtml}</div>
     `;
 }
 
 // Helper functions
 function getTypeBadgeClass(type) {
     switch (type) {
-        case 'vip': return 'bg-amber-50 text-amber-700 border border-amber-100';
-        case 'reseller': return 'bg-blue-50 text-blue-700 border border-blue-100';
-        default: return 'bg-gray-50 text-gray-700 border border-gray-200';
+        case 'vip': return 'bg-amber-50 text-amber-700 border border-amber-100/50';
+        case 'reseller': return 'bg-blue-50 text-blue-700 border border-blue-100/50';
+        default: return 'bg-gray-100 text-gray-400 border border-gray-200/50';
     }
 }
 
@@ -1194,19 +1178,19 @@ function getTypeLabel(type) {
     switch (type) {
         case 'vip': return 'VIP';
         case 'reseller': return 'Reseller';
-        default: return 'Regular';
+        default: return 'Reguler';
     }
 }
 
 function getDebtStatusBadge(status, isOverdue) {
     if (isOverdue) {
-        return '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100"><span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5 animate-pulse"></span>Terlambat</span>';
+        return '<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-700 border border-red-100/50">Terlambat</span>';
     }
     switch (status) {
         case 'partial':
-            return '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>Sebagian</span>';
+            return '<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 border border-amber-100/50">Sebagian</span>';
         default:
-            return '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100"><span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>Belum Bayar</span>';
+            return '<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-700 border border-red-100/50">Belum Bayar</span>';
     }
 }
 
@@ -1299,9 +1283,11 @@ function openHistoryModal(customerId) {
     nameEl.textContent = 'Memuat data...';
     tbody.innerHTML = `
         <tr>
-            <td colspan="6" class="px-4 py-8 text-center text-gray-500">
-                <i class="fas fa-spinner fa-spin text-xl mb-2"></i>
-                <p>Mengambil riwayat...</p>
+            <td colspan="7" class="px-6 py-16 text-center">
+                <div class="flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full border-4 border-gray-100 border-t-cuan-green animate-spin mb-3"></div>
+                    <p class="text-gray-400 font-bold">Mengambil riwayat...</p>
+                </div>
             </td>
         </tr>
     `;
@@ -1315,8 +1301,14 @@ function openHistoryModal(customerId) {
                  if (data.sales.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-gray-400">
-                                <p>Belum ada riwayat transaksi di outlet ini</p>
+                            <td colspan="7" class="px-6 py-16 text-center text-gray-400">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                        <i class="fas fa-history text-2xl text-gray-200"></i>
+                                    </div>
+                                    <p class="font-bold text-gray-900 mb-1">Belum ada riwayat</p>
+                                    <p class="text-xs text-gray-400">Belum ada transaksi tercatat untuk pelanggan ini.</p>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -1324,17 +1316,36 @@ function openHistoryModal(customerId) {
                 }
                 
                 tbody.innerHTML = data.sales.map(s => `
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 font-mono text-teal-600 font-semibold cursor-pointer hover:underline" onclick="window.location.href='{{ url('sales') }}/${s.id}'">${s.invoice_number}</td>
-                        <td class="px-4 py-3 text-gray-600">${s.date}</td>
-                        <td class="px-4 py-3 text-center text-gray-600">${s.items_count}</td>
-                        <td class="px-4 py-3 capitalize text-gray-800">${s.payment_method}</td>
-                        <td class="px-4 py-3 font-semibold text-gray-900">${formatRupiah(s.grand_total)}</td>
-                        <td class="px-4 py-3 font-semibold ${s.remaining_debt > 0 ? 'text-red-500' : 'text-emerald-500'}">
-                            ${s.remaining_debt > 0 ? formatRupiah(s.remaining_debt) : '-'}
+                    <tr class="hover:bg-gray-50/50 transition-colors group">
+                        <td class="px-6 py-5">
+                            <span class="inline-flex items-center rounded-lg bg-cuan-green/10 px-3 py-1.5 text-[10px] font-black text-cuan-green font-mono tracking-widest border border-cuan-green/10 cursor-pointer" onclick="window.location.href='{{ url('sales') }}/${s.id}'">
+                                ${s.invoice_number}
+                            </span>
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusBadgeClass(s.status)}">
+                        <td class="px-6 py-5">
+                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Tanggal</div>
+                            <div class="text-sm font-bold text-gray-900">${s.date}</div>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <div class="inline-flex flex-col items-center">
+                                <span class="font-black text-gray-900">${s.items_count}</span>
+                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Item</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="text-xs font-bold text-gray-600 uppercase tracking-wider">${s.payment_method}</span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="text-sm font-black text-gray-900">${formatRupiah(s.grand_total)}</div>
+                        </td>
+                        <td class="px-6 py-5">
+                            ${s.remaining_debt > 0 
+                                ? `<span class="text-xs font-black text-red-500">${formatRupiah(s.remaining_debt)}</span>`
+                                : '<span class="text-gray-300">-</span>'
+                            }
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusBadgeClass(s.status)}">
                                 ${getStatusLabel(s.status)}
                             </span>
                         </td>
@@ -1346,8 +1357,9 @@ function openHistoryModal(customerId) {
             console.error(err);
              tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-red-500">
-                        <p>Gagal memuat data</p>
+                    <td colspan="7" class="px-6 py-16 text-center text-red-500">
+                        <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                        <p class="font-bold">Gagal memuat data</p>
                     </td>
                 </tr>
             `;
@@ -1360,21 +1372,21 @@ function closeHistoryModal() {
 
 function getStatusBadgeClass(status) {
     switch (status) {
-        case 'completed': return 'bg-green-100 text-green-800';
-        case 'debt': return 'bg-amber-100 text-amber-800';
-        case 'pending': return 'bg-yellow-100 text-yellow-800';
-        case 'canceled': return 'bg-gray-100 text-gray-800';
-        case 'refunded': return 'bg-red-100 text-red-800';
-        default: return 'bg-gray-100 text-gray-800';
+        case 'completed': return 'bg-emerald-50 text-emerald-700 border border-emerald-100/50';
+        case 'debt': return 'bg-red-50 text-red-700 border border-red-100/50';
+        case 'pending': return 'bg-amber-50 text-amber-700 border border-amber-100/50';
+        case 'canceled': return 'bg-gray-100 text-gray-500 border border-gray-200/50';
+        case 'refunded': return 'bg-purple-50 text-purple-700 border border-purple-100/50';
+        default: return 'bg-gray-50 text-gray-400 border border-gray-200/50';
     }
 }
 
 function getStatusLabel(status) {
     switch (status) {
-        case 'completed': return 'Lunas / Selesai';
-        case 'debt': return 'Belum Lunas';
+        case 'completed': return 'Selesai';
+        case 'debt': return 'Pituang';
         case 'pending': return 'Pending';
-        case 'canceled': return 'Dibatalkan';
+        case 'canceled': return 'Batal';
         case 'refunded': return 'Refund';
         default: return status;
     }
@@ -1429,21 +1441,37 @@ function processCashTransferPayment(amount) {
     .then(response => {
         const btn = document.getElementById('btnProcessPayment');
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check mr-2"></i>Bayar Sekarang';
+        btn.innerHTML = 'Konfirmasi Pembayaran';
         
         if (response.success) {
             closePaymentModal();
             showPaymentSuccessModal(response.debt, amount);
         } else {
-            Swal.fire('Error', response.message || 'Gagal memproses pembayaran', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: response.message || 'Gagal memproses pembayaran',
+                confirmButtonColor: '#ef4444',
+                customClass: {
+                    popup: 'rounded-3xl border-none shadow-2xl'
+                }
+            });
         }
     })
     .catch(err => {
         console.error('Payment error:', err);
         const btn = document.getElementById('btnProcessPayment');
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check mr-2"></i>Bayar Sekarang';
-        Swal.fire('Error', 'Terjadi kesalahan saat memproses pembayaran', 'error');
+        btn.innerHTML = 'Konfirmasi Pembayaran';
+        Swal.fire({
+            icon: 'error',
+            title: 'Kesalahan Sistem',
+            text: 'Terjadi kesalahan saat memproses pembayaran',
+            confirmButtonColor: '#ef4444',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl'
+            }
+        });
     });
 }
 
@@ -1460,13 +1488,20 @@ function processMidtransPayment(amount) {
     .then(response => {
         const btn = document.getElementById('btnProcessPayment');
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check mr-2"></i>Bayar Sekarang';
+        btn.innerHTML = 'Bayar via QRIS';
         
         if (response.success) {
             closePaymentModal();
             snap.pay(response.snap_token, {
                 onSuccess: function(result) {
-                    // Record the payment
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
                     fetch(`/customer-debts/${currentDebt.id}/pay`, {
                         method: 'POST',
                         headers: {
@@ -1482,14 +1517,18 @@ function processMidtransPayment(amount) {
                     })
                     .then(r => r.json())
                     .then(payResp => {
+                        Swal.close();
                         if (payResp.success) {
                             showPaymentSuccessModal(payResp.debt, amount);
                         } else {
                             Swal.fire({
-                                icon: 'success',
+                                icon: 'warning',
                                 title: 'Pembayaran Berhasil',
-                                text: 'Pembayaran QRIS berhasil, namun pelaporan ke sistem gagal. Silakan hubungi admin.',
-                                confirmButtonColor: '#14b8a6',
+                                text: 'Pembayaran QRIS berhasil, namun sistem gagal mencatat. Silakan hubungi admin.',
+                                confirmButtonColor: '#658C58',
+                                customClass: {
+                                    popup: 'rounded-3xl border-none shadow-2xl'
+                                }
                             }).then(() => {
                                 window.location.reload();
                             });
@@ -1497,25 +1536,54 @@ function processMidtransPayment(amount) {
                     });
                 },
                 onPending: function(result) {
-                    Swal.fire('Menunggu', 'Menunggu konfirmasi pembayaran', 'info');
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Menunggu',
+                        text: 'Silakan selesaikan pembayaran QRIS Anda.',
+                        confirmButtonColor: '#658C58',
+                        customClass: {
+                            popup: 'rounded-3xl border-none shadow-2xl'
+                        }
+                    });
                 },
                 onError: function(result) {
-                    Swal.fire('Error', 'Pembayaran gagal', 'error');
-                },
-                onClose: function() {
-                    // User closed the popup
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Terjadi kesalahan saat memproses pembayaran.',
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            popup: 'rounded-3xl border-none shadow-2xl'
+                        }
+                    });
                 }
             });
         } else {
-            Swal.fire('Error', response.message || 'Gagal membuat token pembayaran', 'error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: response.message || 'Gagal membuat token pembayaran',
+                confirmButtonColor: '#ef4444',
+                customClass: {
+                    popup: 'rounded-3xl border-none shadow-2xl'
+                }
+            });
         }
     })
     .catch(err => {
         console.error('Midtrans error:', err);
         const btn = document.getElementById('btnProcessPayment');
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check mr-2"></i>Bayar Sekarang';
-        Swal.fire('Error', 'Gagal terhubung ke payment gateway', 'error');
+        btn.innerHTML = 'Bayar via QRIS';
+        Swal.fire({
+            icon: 'error',
+            title: 'Kesalahan Sistem',
+            text: 'Gagal terhubung ke payment gateway',
+            confirmButtonColor: '#ef4444',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl'
+            }
+        });
     });
 }
 
@@ -1524,7 +1592,6 @@ function showPaymentSuccessModal(debt, amountPaid) {
     const modal = document.getElementById('paymentSuccessModal');
     
     document.getElementById('successInvoiceNumber').textContent = currentDebt.invoice_number;
-    document.getElementById('successDate').textContent = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
     document.getElementById('successCustomer').textContent = currentDebt.customer_name;
     document.getElementById('successTotal').textContent = formatRupiah(amountPaid);
     document.getElementById('successDebt').textContent = formatRupiah(debt.remaining_amount);
