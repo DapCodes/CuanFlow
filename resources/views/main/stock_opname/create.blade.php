@@ -103,7 +103,7 @@
                         <div class="rounded-2xl border border-gray-100 overflow-hidden">
                             <div class="max-h-[400px] overflow-y-auto custom-scrollbar">
                                 <table class="w-full text-sm text-left">
-                                    <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100 sticky top-0 z-10">
+                                    <thead class="bg-gray-50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100 sticky top-0 z-10">
                                         <tr>
                                             <th class="px-6 py-4 w-12 text-center">
                                                 <input type="checkbox" id="masterCheckbox" onchange="toggleAllCheckboxes(this)" class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20">

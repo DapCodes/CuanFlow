@@ -119,7 +119,7 @@
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
+                        <thead class="bg-gray-50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                             <tr>
                                 <th class="px-6 py-4 text-left">Item</th>
                                 <th class="px-6 py-4 text-right">Stok Sistem</th>
