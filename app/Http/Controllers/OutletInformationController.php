@@ -91,6 +91,10 @@ class OutletInformationController extends Controller implements HasMiddleware
 
     public function show(Outlet $outlet)
     {
+        if (!$outlet->is_active) {
+            return redirect()->route('dashboard')->with('error', 'Akses ditolak: Outlet telah dinonaktifkan.');
+        }
+
         // Validasi akses berdasarkan role dan outlet_id
         $user = Auth::user();
 
@@ -120,6 +124,10 @@ class OutletInformationController extends Controller implements HasMiddleware
 
     public function edit(Outlet $outlet)
     {
+        if (!$outlet->is_active) {
+            return redirect()->route('dashboard')->with('error', 'Akses ditolak: Outlet telah dinonaktifkan.');
+        }
+
         // Validasi akses berdasarkan role dan outlet_id
         $user = Auth::user();
 
@@ -142,6 +150,10 @@ class OutletInformationController extends Controller implements HasMiddleware
 
     public function update(Request $request, Outlet $outlet)
     {
+        if (!$outlet->is_active) {
+            return redirect()->route('dashboard')->with('error', 'Akses ditolak: Outlet telah dinonaktifkan.');
+        }
+
         // Validasi akses berdasarkan role dan outlet_id
         $user = Auth::user();
 
@@ -186,6 +198,10 @@ class OutletInformationController extends Controller implements HasMiddleware
 
     public function destroy(Outlet $outlet)
     {
+        if (!$outlet->is_active) {
+            return redirect()->route('dashboard')->with('error', 'Akses ditolak: Outlet telah dinonaktifkan.');
+        }
+
         // Hanya owner yang bisa menghapus outlet miliknya
         $user = Auth::user();
 
