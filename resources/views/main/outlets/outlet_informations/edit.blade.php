@@ -305,6 +305,7 @@
                                         Alamat Lengkap <span class="text-red-500">*</span>
                                     </label>
                                     <textarea name="address" 
+                                              id="address"
                                               rows="3"
                                               class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('address') border-red-500 @enderror"
                                               placeholder="Jl. Contoh No. 123, Kota, Provinsi"
@@ -503,25 +504,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update coordinates when marker is dragged
     marker.on('dragend', function(e) {
         const position = marker.getLatLng();
-        document.getElementById('latitude').value = position.lat.toFixed(6);
-        document.getElementById('longitude').value = position.lng.toFixed(6);
+        updateMarker(position.lat, position.lng, true);
+        marker.openPopup();
     });
 
     // Update marker position on map click
     map.on('click', function(e) {
-        marker.setLatLng(e.latlng);
-        document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
-        document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
+        updateMarker(e.latlng.lat, e.latlng.lng, true);
         marker.openPopup();
     });
 
     // Function to update marker position programmatically
-    function updateMarker(lat, lng) {
+    function updateMarker(lat, lng, fetchNewAddress = false) {
         marker.setLatLng([lat, lng]);
         map.setView([lat, lng], 15);
         document.getElementById('latitude').value = lat.toFixed(6);
         document.getElementById('longitude').value = lng.toFixed(6);
+        
+        if (fetchNewAddress) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.display_name) {
+                        document.getElementById('address').value = data.display_name;
+                    }
+                })
+                .catch(err => console.error("Error fetching address:", err));
+        }
     }
+
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 300);
 });
 </script>
 @endpush

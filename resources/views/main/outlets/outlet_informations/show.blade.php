@@ -254,6 +254,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     L.marker([lat, lng], {icon: customIcon}).addTo(map)
         .bindPopup('<b>{{ $outlet->name }}</b><br>{{ $outlet->address }}').openPopup();
+
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 300);
 });
 </script>
 @endpush

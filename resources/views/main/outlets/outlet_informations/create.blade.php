@@ -262,6 +262,7 @@
                                         Alamat Lengkap <span class="text-red-500">*</span>
                                     </label>
                                     <textarea name="address" 
+                                              id="address"
                                               rows="3"
                                               class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 @error('address') border-red-500 @enderror"
                                               placeholder="Jl. Contoh No. 123, Kota, Provinsi"
@@ -421,64 +422,62 @@ document.addEventListener('DOMContentLoaded', function() {
     let marker = null;
 
     // Function to update marker position
-    function updateMarker(lat, lng) {
+    function updateMarker(lat, lng, fetchNewAddress = false) {
         if (marker) {
             marker.setLatLng([lat, lng]);
         } else {
-            marker = L.marker([lat, lng], {icon: customIcon}).addTo(map);
-            marker.bindPopup('<b>Lokasi Outlet</b><br>Geser marker untuk mengubah posisi').openPopup();
-        }
-        
-        // Update input fields
-        document.getElementById('latitude').value = lat.toFixed(6);
-        document.getElementById('longitude').value = lng.toFixed(6);
-    }
-
-    // Map click event
-    map.on('click', function(e) {
-        updateMarker(e.latlng.lat, e.latlng.lng);
-    });
-
-    // Make marker draggable if exists
-    map.on('click', function(e) {
-        if (marker) {
-            marker.setLatLng(e.latlng);
-            document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
-            document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
-        } else {
-            marker = L.marker(e.latlng, {
+            marker = L.marker([lat, lng], {
                 icon: customIcon,
                 draggable: true
             }).addTo(map);
-            
             marker.bindPopup('<b>Lokasi Outlet</b><br>Geser marker untuk mengubah posisi').openPopup();
             
             marker.on('dragend', function(e) {
                 const position = marker.getLatLng();
-                document.getElementById('latitude').value = position.lat.toFixed(6);
-                document.getElementById('longitude').value = position.lng.toFixed(6);
+                updateMarker(position.lat, position.lng, true);
             });
-            
-            updateMarker(e.latlng.lat, e.latlng.lng);
         }
+        
+        map.setView([lat, lng], 15);
+        
+        // Update input fields
+        document.getElementById('latitude').value = lat.toFixed(6);
+        document.getElementById('longitude').value = lng.toFixed(6);
+        
+        if (fetchNewAddress) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.display_name) {
+                        document.getElementById('address').value = data.display_name;
+                    }
+                })
+                .catch(err => console.error("Error fetching address:", err));
+        }
+    }
+
+    // Map click event
+    map.on('click', function(e) {
+        updateMarker(e.latlng.lat, e.latlng.lng, true);
     });
 
     // Get user's current location
-    if (navigator.geolocation) {
+    if (navigator.geolocation && !oldLat) {
         navigator.geolocation.getCurrentPosition(function(position) {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            map.setView([lat, lng], 15);
+            updateMarker(lat, lng, true);
         });
     }
 
     // Set initial marker if old values exist
-    const oldLat = document.getElementById('latitude').value;
-    const oldLng = document.getElementById('longitude').value;
     if (oldLat && oldLng) {
-        updateMarker(parseFloat(oldLat), parseFloat(oldLng));
-        map.setView([parseFloat(oldLat), parseFloat(oldLng)], 15);
+        updateMarker(parseFloat(oldLat), parseFloat(oldLng), false);
     }
+
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 300);
 });
 </script>
 @endpush
