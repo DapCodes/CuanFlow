@@ -3,9 +3,9 @@
 @section('title', 'Informasi Outlet - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
+<li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <span class="text-gray-900 font-medium tracking-tight">Informasi Outlet</span>
+    <span class="text-gray-900 font-medium">Informasi Outlet</span>
 </li>
 @endsection
 
@@ -16,7 +16,7 @@
         {{-- HEADER HALAMAN --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tight">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
                     Informasi Outlet
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
@@ -36,42 +36,30 @@
         {{-- RINGKASAN STATISTIK --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <x-card-container>
-                <div class="p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Outlet</p>
-                        <p class="mt-2 text-3xl font-black text-gray-900">{{ $outlets->total() }}</p>
-                    </div>
-                    <i class="fas fa-store text-gray-200 text-3xl"></i>
+                <div class="p-6">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Outlet</p>
+                    <p class="mt-2 text-3xl font-black text-gray-900">{{ $outlets->total() }}</p>
                 </div>
             </x-card-container>
 
             <x-card-container>
-                <div class="p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Outlet Aktif</p>
-                        <p class="mt-2 text-3xl font-black text-cuan-green">{{ $outlets->where('is_active', true)->count() }}</p>
-                    </div>
-                    <i class="fas fa-check-circle text-cuan-green/20 text-3xl"></i>
+                <div class="p-6">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Outlet Aktif</p>
+                    <p class="mt-2 text-3xl font-black text-cuan-green">{{ $outlets->where('is_active', true)->count() }}</p>
                 </div>
             </x-card-container>
 
             <x-card-container>
-                <div class="p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Outlet Nonaktif</p>
-                        <p class="mt-2 text-3xl font-black text-gray-400">{{ $outlets->where('is_active', false)->count() }}</p>
-                    </div>
-                    <i class="fas fa-times-circle text-gray-200 text-3xl"></i>
+                <div class="p-6">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Outlet Nonaktif</p>
+                    <p class="mt-2 text-3xl font-black text-gray-400">{{ $outlets->where('is_active', false)->count() }}</p>
                 </div>
             </x-card-container>
 
             <x-card-container>
-                <div class="p-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Owner</p>
-                        <p class="mt-2 text-3xl font-black text-orange-500">{{ $outlets->pluck('owner_id')->unique()->count() }}</p>
-                    </div>
-                    <i class="fas fa-user-tie text-orange-200 text-3xl"></i>
+                <div class="p-6">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Owner</p>
+                    <p class="mt-2 text-3xl font-black text-orange-500">{{ $outlets->pluck('owner_id')->unique()->count() }}</p>
                 </div>
             </x-card-container>
         </div>
@@ -79,17 +67,15 @@
         {{-- KONTEN UTAMA --}}
         <x-card-container>
             {{-- Toolbar: Search & Filter --}}
-            <div class="px-6 py-6 border-b border-gray-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Cari Outlet</label>
-                    <input type="text" id="searchInput" placeholder="Nama outlet..."
-                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
+            <div class="px-6 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center gap-4">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" placeholder="Cari nama outlet..."
+                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm placeholder:text-gray-400">
                 </div>
 
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Status Outlet</label>
+                <div class="w-full md:w-48">
                     <select id="statusFilter"
-                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
+                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
                         <option value="">Semua Status</option>
                         <option value="active">Aktif</option>
                         <option value="inactive">Nonaktif</option>
@@ -174,17 +160,17 @@
                                             </div>
                                         </div>
                                     @else
-                                        <span class="text-xs text-gray-400 italic">No Owner</span>
+                                        <span class="text-xs text-gray-400 italic font-medium">No Owner</span>
                                     @endif
                                 </td>
 
                                 <td class="px-6 py-5 whitespace-nowrap">
                                     @if($outlet->is_active)
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-cuan-green/10 text-cuan-green border border-cuan-green/10">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-cuan-green/10 text-cuan-green border border-cuan-green/10">
                                             Aktif
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-400 border border-gray-200">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-400 border border-gray-200">
                                             Nonaktif
                                         </span>
                                     @endif
@@ -228,8 +214,8 @@
                         @empty
                             <tr>
                                 <td colspan="7" class="px-6 py-20 text-center">
-                                    <div class="w-20 h-20 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                        <i class="fas fa-store-slash text-gray-200 text-3xl"></i>
+                                    <div class="w-16 h-16 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <i class="fas fa-store-slash text-gray-200 text-2xl"></i>
                                     </div>
                                     <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">Belum Ada Outlet</h3>
                                     <p class="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-2 max-w-xs mx-auto">Daftar outlet Anda masih kosong.</p>

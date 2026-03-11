@@ -3,12 +3,12 @@
 @section('title', 'Tambah Outlet - CuanFlow')
 
 @section('breadcrumb')
-<li class="flex items-center text-gray-400 mx-2">/</li>
-<li class="flex items-center">
-    <a href="{{ route('outlets.index') }}" class="text-gray-600 hover:text-gray-900 font-medium tracking-tight">Informasi Outlet</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('outlets.index') }}" class="text-gray-600 hover:text-gray-900 font-medium">Informasi Outlet</a>
 </li>
-<li class="flex items-center text-gray-400 mx-2">/</li>
-<li class="flex items-center">
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
     <span class="text-gray-900 font-medium tracking-tight">Tambah Outlet</span>
 </li>
 @endsection
@@ -95,14 +95,14 @@
         {{-- HEADER --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tight">
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
                     Tambah Outlet Baru
                 </h1>
                 <p class="mt-1 text-sm text-gray-500 font-medium">
                     Lengkapi informasi outlet untuk ditambahkan ke sistem.
                 </p>
             </div>
-            <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center h-11 px-6 bg-white text-gray-700 border border-gray-200 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+            <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center h-11 px-6 bg-white text-gray-700 border border-gray-200 rounded-xl text-sm font-black hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
                 Kembali
             </a>
         </section>
@@ -137,7 +137,7 @@
                                 <button type="button" 
                                         onclick="document.getElementById('logoInput').click()"
                                         class="w-full h-12 bg-cuan-green/10 text-cuan-green border border-cuan-green/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cuan-green hover:text-white transition-all shadow-sm">
-                                    Unggah Berkas
+                                    Pilih Berkas
                                 </button>
                                 
                                 @error('logo')
@@ -296,11 +296,11 @@
                 <div class="pt-8 border-t border-gray-100">
                     <div class="flex flex-col md:flex-row md:justify-end gap-3">
                         <a href="{{ route('outlets.index') }}" 
-                           class="w-full md:w-auto h-12 inline-flex items-center justify-center px-8 border border-gray-200 text-[10px] font-black uppercase tracking-widest text-gray-400 rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                           class="w-full md:w-auto h-12 inline-flex items-center justify-center px-8 border border-gray-200 text-sm font-black text-gray-400 rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
                             Batal
                         </a>
                         <button type="submit" 
-                                class="w-full md:w-auto h-12 inline-flex items-center justify-center px-10 bg-cuan-green text-[10px] font-black uppercase tracking-widest text-white rounded-xl hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                                class="w-full md:w-auto h-12 inline-flex items-center justify-center px-10 bg-cuan-green text-sm font-black text-white rounded-xl hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
                             Simpan Outlet
                         </button>
                     </div>

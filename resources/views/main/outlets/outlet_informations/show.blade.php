@@ -3,13 +3,13 @@
 @section('title', 'Detail Outlet - ' . $outlet->name)
 
 @section('breadcrumb')
-<li class="flex items-center text-gray-400 mx-2">/</li>
-<li class="flex items-center">
-    <a href="{{ route('outlets.index') }}" class="text-gray-600 hover:text-gray-900 font-medium tracking-tight">Informasi Outlet</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('outlets.index') }}" class="text-gray-600 hover:text-gray-900 font-medium">Informasi Outlet</a>
 </li>
-<li class="flex items-center text-gray-400 mx-2">/</li>
-<li class="flex items-center">
-    <span class="text-gray-900 font-medium tracking-tight">{{ $outlet->name }}</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium">{{ $outlet->name }}</span>
 </li>
 @endsection
 
@@ -29,7 +29,7 @@
                 @endif
                 <div>
                     <div class="flex flex-wrap items-center gap-3">
-                        <h1 class="text-2xl md:text-3xl font-black text-gray-900 uppercase tracking-tighter">{{ $outlet->name }}</h1>
+                        <h1 class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">{{ $outlet->name }}</h1>
                         @if($outlet->is_active)
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-cuan-green/10 text-cuan-green border border-cuan-green/10">
                                 Aktif
@@ -52,11 +52,11 @@
                     $hasMultiOutlet = app(\App\Services\FeatureAccessService::class)->checkAccess(auth()->user(), 'multi_outlet')['can_access'];
                 @endphp
                 @if($hasMultiOutlet)
-                <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center h-11 px-6 bg-white text-gray-700 border border-gray-200 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                <a href="{{ route('outlets.index') }}" class="inline-flex items-center justify-center h-11 px-6 bg-white text-gray-700 border border-gray-200 rounded-xl text-sm font-black hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
                     Kembali
                 </a>
                 @endif
-                <a href="{{ route('outlets.edit', $outlet->id) }}" class="inline-flex items-center justify-center h-11 px-6 bg-cuan-green text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                <a href="{{ route('outlets.edit', $outlet->id) }}" class="inline-flex items-center justify-center h-11 px-6 bg-cuan-green text-white rounded-xl text-sm font-black hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
                     Edit Outlet
                 </a>
             </div>
@@ -172,11 +172,11 @@
                         <div class="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl mx-auto mb-6 flex items-center justify-center border-4 border-white shadow-lg text-purple-600 text-2xl font-black">
                             {{ strtoupper(substr($outlet->owner->name ?? 'U', 0, 1)) }}
                         </div>
-                        <h4 class="font-black text-gray-900 text-lg uppercase tracking-tight">{{ $outlet->owner->name ?? '-' }}</h4>
+                        <h4 class="font-black text-gray-900 text-lg">{{ $outlet->owner->name ?? '-' }}</h4>
                         <p class="text-[11px] font-bold text-gray-400 mt-1">{{ $outlet->owner->email ?? '-' }}</p>
                         
                         <div class="mt-8 pt-6 border-t border-gray-50">
-                            <span class="px-4 py-2 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-wider rounded-xl border border-purple-100">
+                            <span class="px-4 py-2 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-xl border border-purple-100">
                                 {{ strtoupper($outlet->owner->role ?? 'OWNER') }}
                             </span>
                         </div>
@@ -192,7 +192,7 @@
                             <button type="submit" class="w-full h-14 group flex items-center justify-between px-5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all {{ $outlet->is_active ? 'bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-100' : 'bg-cuan-green/10 text-cuan-green hover:bg-cuan-green hover:text-white border border-cuan-green/10' }}">
                                 <span class="flex items-center gap-4">
                                     <i class="fas fa-power-off text-sm opacity-60"></i>
-                                    {{ $outlet->is_active ? 'Nonaktifkan' : 'Aktifkan Detail' }}
+                                    {{ $outlet->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                 </span>
                                 <i class="fas fa-chevron-right text-[10px] opacity-20 transform group-hover:translate-x-1 transition-transform"></i>
                             </button>
