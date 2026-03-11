@@ -1,13 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Landing Page - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
+@section('title', 'Landing Page - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
 <li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Landing Page</span>
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Landing Page</span>
 </li>
 @endsection
 
@@ -15,46 +13,26 @@
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        {{-- Alert / Notifikasi --}}
-        @if(session('success'))
-            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
-                <p class="text-green-800">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <p class="text-red-800">{{ session('error') }}</p>
-            </div>
-        @endif
-
-        {{-- HEADER HALAMAN (Match Discount Page) --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-500 border border-blue-100">
-                        <i class="fas fa-globe text-sm"></i>
-                    </span>
-                    <span>Landing Page Store</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Landing Page Store
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    Kelola halaman profil website outlet Anda untuk menjangkau lebih banyak pelanggan secara online.
+                    Kelola profil website outlet Anda untuk menjangkau lebih banyak pelanggan secara online.
                 </p>
             </div>
-            <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
+            <div class="flex flex-wrap items-center gap-3">
                 @if($outlet && $outlet->landingPage)
                     <a href="{{ route('landing-pages.show', [$outlet->id, Str::slug($outlet->name)]) }}" target="_blank"
-                       class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1">
-                        <i class="fas fa-external-link-alt text-sm"></i>
+                       class="inline-flex items-center gap-2 rounded-xl bg-white border border-gray-200 px-5 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
                         <span>Lihat Live</span>
                     </a>
                     
                     @can('edit landing page')
                     <a href="{{ route('landing-pages.edit', $outlet->id) }}" target="_blank"
-                       class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1">
-                        <i class="fas fa-pen-paintbrush text-sm"></i>
+                       class="inline-flex items-center gap-2 rounded-xl bg-cuan-green px-5 py-3 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
                         <span>Edit Tampilan</span>
                     </a>
                     @endcan
@@ -65,108 +43,103 @@
         {{-- ANALYTICS CHART SECTION --}}
         @if($outlet && $outlet->landingPage)
         @can('lihat analitik landing page')
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+        <x-card-container>
+            <div class="px-6 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 class="text-lg font-bold text-gray-900">Traffic Pengunjung</h2>
-                    <p class="text-sm text-gray-500">Statistik kunjungan halaman landing page Anda.</p>
+                    <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Traffic Pengunjung</h2>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Statistik kunjungan landing page</p>
                 </div>
                 
-                <div class="flex items-center bg-gray-100 rounded-lg p-1">
-                    <a href="{{ route('landing-pages.index') }}?period=7d" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $period === '7d' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">7 Hari</a>
-                    <a href="{{ route('landing-pages.index') }}?period=1m" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $period === '1m' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">1 Bulan</a>
-                    <a href="{{ route('landing-pages.index') }}?period=6m" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $period === '6m' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">6 Bulan</a>
-                    <a href="{{ route('landing-pages.index') }}?period=1y" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $period === '1y' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">1 Tahun</a>
+                <div class="flex items-center bg-gray-100/50 rounded-xl p-1 border border-gray-100">
+                    <a href="{{ route('landing-pages.index') }}?period=7d" class="px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all {{ $period === '7d' ? 'bg-white shadow-sm text-cuan-green' : 'text-gray-400 hover:text-gray-600' }}">7 Hari</a>
+                    <a href="{{ route('landing-pages.index') }}?period=1m" class="px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all {{ $period === '1m' ? 'bg-white shadow-sm text-cuan-green' : 'text-gray-400 hover:text-gray-600' }}">1 Bulan</a>
+                    <a href="{{ route('landing-pages.index') }}?period=6m" class="px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all {{ $period === '6m' ? 'bg-white shadow-sm text-cuan-green' : 'text-gray-400 hover:text-gray-600' }}">6 Bulan</a>
+                    <a href="{{ route('landing-pages.index') }}?period=1y" class="px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all {{ $period === '1y' ? 'bg-white shadow-sm text-cuan-green' : 'text-gray-400 hover:text-gray-600' }}">1 Tahun</a>
                 </div>
             </div>
 
-            <div class="relative h-72 w-full">
-                <canvas id="trafficChart"></canvas>
-            </div>
-            
-            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-blue-50 rounded-lg p-4">
-                    <p class="text-xs text-blue-600 font-semibold uppercase tracking-wide">Total Kunjungan</p>
-                    <h3 class="text-2xl font-bold text-blue-900 mt-1">{{ $totalVisits }}</h3>
+            <div class="p-6">
+                <div class="relative h-72 w-full">
+                    <canvas id="trafficChart"></canvas>
                 </div>
-                <!-- Additional stats can be added here -->
+                
+                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-gray-50/50 border border-gray-100 rounded-2xl p-5 transition-all hover:border-cuan-green/20">
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total Kunjungan</p>
+                        <h3 class="text-2xl font-black text-gray-900 mt-2">{{ number_format($totalVisits, 0, ',', '.') }}</h3>
+                    </div>
+                </div>
             </div>
-        </section>
+        </x-card-container>
         @endcan
         @endif
 
         {{-- KONTEN UTAMA --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <x-card-container>
             @if($outlet)
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b border-gray-200">
+                        <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Outlet Info</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">URL Halaman</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Terakhir Update</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status Publik</th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
+                                <th class="px-6 py-4 text-left">Outlet Info</th>
+                                <th class="px-6 py-4 text-left">URL Halaman</th>
+                                <th class="px-6 py-4 text-left">Status</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 bg-white">
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-4">
                                         @if($outlet->logo)
-                                            <img src="{{ Storage::url($outlet->logo) }}" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                            <img src="{{ Storage::url($outlet->logo) }}" class="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-sm">
                                         @else
-                                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                                                <i class="fas fa-store"></i>
+                                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cuan-green to-cuan-dark flex items-center justify-center border-2 border-white shadow-sm">
+                                                <span class="text-white font-black text-xs">{{ strtoupper(substr($outlet->name, 0, 1)) }}</span>
                                             </div>
                                         @endif
                                         <div>
-                                            <div class="font-semibold text-gray-900">{{ $outlet->name }}</div>
-                                            <div class="text-xs text-gray-500">{{ $outlet->address }}</div>
+                                            <div class="font-bold text-gray-900 leading-tight">{{ $outlet->name }}</div>
+                                            <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">
+                                                {{ $outlet->landingPage->updated_at->diffForHumans() }}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
                                 
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-2 max-w-xs">
                                         <input type="text" readonly value="{{ route('landing-pages.show', [$outlet->id, Str::slug($outlet->name)]) }}" 
-                                               class="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1 w-48 truncate">
-                                        <button onclick="navigator.clipboard.writeText('{{ route('landing-pages.show', [$outlet->id, Str::slug($outlet->name)]) }}')" 
-                                                class="text-blue-600 hover:text-blue-800" title="Copy URL">
-                                            <i class="fas fa-copy"></i>
+                                               class="text-[10px] font-bold text-gray-500 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 w-full truncate focus:ring-0 cursor-default">
+                                        <button onclick="navigator.clipboard.writeText('{{ route('landing-pages.show', [$outlet->id, Str::slug($outlet->name)]) }}'); Swal.fire({title: 'Copied!', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, iconColor: '#658C58'})" 
+                                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-cuan-green hover:bg-cuan-green/10 transition-all active:scale-95" title="Copy URL">
+                                            <i class="fas fa-copy text-xs"></i>
                                         </button>
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-4 text-gray-600">
-                                    {{ $outlet->landingPage->updated_at->diffForHumans() }}
-                                </td>
-
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-5 whitespace-nowrap">
                                     @if($outlet->landingPage->is_active)
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-cuan-green/10 text-cuan-green border border-cuan-green/10">
                                             Aktif
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></span>
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-50 text-gray-400 border border-gray-200">
                                             Nonaktif
                                         </span>
                                     @endif
                                 </td>
 
-                                <td class="px-6 py-4 text-center">
+                                <td class="px-6 py-5 whitespace-nowrap text-center text-sm font-medium">
                                     @can('aktifkan nonaktifkan landing page')
-                                    <form action="{{ route('landing-pages.toggle-status', $outlet->id) }}" method="POST">
+                                    <form action="{{ route('landing-pages.toggle-status', $outlet->id) }}" method="POST" class="inline confirm-toggle" 
+                                          data-name="{{ $outlet->name }}" data-status="{{ $outlet->landingPage->is_active ? 'nonaktifkan' : 'aktifkan' }}">
                                         @csrf
                                         <button type="submit" 
-                                                class="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border transition-colors
-                                                {{ $outlet->landingPage->is_active 
-                                                    ? 'border-red-200 text-red-600 hover:bg-red-50' 
-                                                    : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50' }}">
-                                            <i class="fas fa-power-off"></i>
-                                            {{ $outlet->landingPage->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                                class="w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95
+                                                {{ $outlet->landingPage->is_active ? 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white' : 'bg-cuan-green/10 text-cuan-green hover:bg-cuan-green hover:text-white' }}"
+                                                title="{{ $outlet->landingPage->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                            <i class="fas fa-power-off text-xs"></i>
                                         </button>
                                     </form>
                                     @endcan
@@ -176,48 +149,49 @@
                     </table>
                 </div>
 
-                {{-- Preview Section (Enhanced Mini Templates) --}}
-                <div class="p-6 bg-gray-50 border-t border-gray-200">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900">Preview Layout Saat Ini</h3>
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 border border-blue-200">
+                {{-- Preview Section --}}
+                <div class="p-8 bg-gray-50/30 border-t border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Layout Preview</h3>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Template yang sedang digunakan</p>
+                        </div>
+                        <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-cuan-green/10 text-cuan-green border border-cuan-green/10">
                             Template {{ $outlet->landingPage->template_id ?? 1 }}
                         </span>
                     </div>
 
-                    <div class="aspect-w-16 aspect-h-9 w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative group">
+                    <div class="aspect-video w-full max-w-3xl mx-auto bg-white rounded-[2rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden relative group transition-all hover:scale-[1.01]">
                         @php
                             $lp = $outlet->landingPage;
                             $heroImg = $lp->hero_image ? Storage::url($lp->hero_image) : "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?ixlib=rb-1.2.1";
                             $templateId = $lp->template_id ?? 1;
                         @endphp
 
-                        <div class="h-64 relative overflow-hidden bg-gray-100">
+                        <div class="h-full relative overflow-hidden bg-gray-50">
                             @switch($templateId)
                                 @case(1)
-                                    {{-- Template 1 Preview: Modern Overlay --}}
                                     <div class="absolute inset-0 bg-cover bg-center" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url('{{ $heroImg }}')"></div>
-                                    <div class="relative h-full flex flex-col items-center justify-center text-center px-6">
+                                    <div class="relative h-full flex flex-col items-center justify-center text-center px-10">
                                         @if($lp->tagline_text)
-                                            <span class="text-[8px] font-bold text-white/80 uppercase tracking-[0.2em] mb-2">{{ $lp->tagline_text }}</span>
+                                            <span class="text-[9px] font-black text-white/80 uppercase tracking-[0.3em] mb-3">{{ $lp->tagline_text }}</span>
                                         @endif
-                                        <h2 class="text-xl font-extrabold text-white leading-tight mb-2">{{ $lp->hero_title ?? 'Your Title' }}</h2>
-                                        <p class="text-[10px] text-white/90 max-w-xs mb-4 line-clamp-2">{{ $lp->hero_subtitle ?? 'Your Subtitle' }}</p>
-                                        <div class="px-4 py-1.5 bg-white text-gray-900 rounded-full text-[9px] font-bold">{{ $lp->cta_button_text ?? 'Shop Now' }}</div>
+                                        <h2 class="text-2xl font-black text-white leading-tight mb-4">{{ $lp->hero_title ?? 'Your Title' }}</h2>
+                                        <p class="text-xs text-white/90 max-w-md mb-6 line-clamp-2 leading-relaxed">{{ $lp->hero_subtitle ?? 'Your Subtitle' }}</p>
+                                        <div class="px-8 py-3 bg-white text-gray-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl">{{ $lp->cta_button_text ?? 'Shop Now' }}</div>
                                     </div>
                                     @break
 
                                 @case(2)
-                                    {{-- Template 2 Preview: Minimalist Split --}}
                                     <div class="flex h-full">
-                                        <div class="w-1/2 bg-white flex flex-col justify-center p-6 space-y-2">
+                                        <div class="w-1/2 bg-white flex flex-col justify-center p-10 space-y-4">
                                             @if($lp->tagline_text)
-                                                <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{{ $lp->tagline_text }}</span>
+                                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">{{ $lp->tagline_text }}</span>
                                             @endif
-                                            <h2 class="text-lg font-black text-gray-900 tracking-tighter leading-tight">{{ $lp->hero_title ?? 'Your Title' }}</h2>
-                                            <p class="text-[9px] text-gray-500 line-clamp-2">{{ $lp->hero_subtitle ?? 'Your Subtitle' }}</p>
-                                            <div class="pt-2">
-                                                <div class="inline-block px-4 py-1.5 bg-black text-white text-[8px] font-bold uppercase tracking-widest">{{ $lp->cta_button_text ?? 'Shop Now' }}</div>
+                                            <h2 class="text-2xl font-black text-gray-900 tracking-tighter leading-tight">{{ $lp->hero_title ?? 'Your Title' }}</h2>
+                                            <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">{{ $lp->hero_subtitle ?? 'Your Subtitle' }}</p>
+                                            <div class="pt-4">
+                                                <div class="inline-block px-8 py-3 bg-gray-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg">{{ $lp->cta_button_text ?? 'Shop Now' }}</div>
                                             </div>
                                         </div>
                                         <div class="w-1/2 bg-cover bg-center" style="background-image: url('{{ $heroImg }}')"></div>
@@ -225,63 +199,32 @@
                                     @break
 
                                 @case(3)
-                                    {{-- Template 3 Preview: Dark Mode Bold --}}
                                     <div class="absolute inset-0 bg-gray-900">
                                         <div class="absolute inset-0 opacity-40 bg-cover bg-center" style="background-image: url('{{ $heroImg }}')"></div>
-                                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"></div>
+                                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
                                     </div>
-                                    <div class="relative h-full flex items-center p-8">
-                                        <div class="max-w-[70%] border-l-4 border-blue-500 pl-4">
+                                    <div class="relative h-full flex items-center p-12">
+                                        <div class="max-w-[70%] border-l-4 border-cuan-green pl-6">
                                             @if($lp->tagline_text)
-                                                <span class="inline-block px-2 py-0.5 border border-blue-500 text-blue-500 text-[7px] font-bold uppercase mb-2 rounded-full">{{ $lp->tagline_text }}</span>
+                                                <span class="inline-block px-3 py-1 border border-cuan-green/50 text-cuan-green text-[8px] font-black uppercase mb-4 rounded-lg bg-cuan-green/5">{{ $lp->tagline_text }}</span>
                                             @endif
-                                            <h2 class="text-2xl font-black text-white leading-none tracking-tighter mb-2">{{ $lp->hero_title ?? 'Your Title' }}</h2>
-                                            <p class="text-[9px] text-gray-400 mb-4 line-clamp-2 italic">{{ $lp->hero_subtitle ?? 'Your Subtitle' }}</p>
-                                            <div class="inline-block px-5 py-2 bg-blue-600 text-white text-[9px] font-bold uppercase tracking-widest">{{ $lp->cta_button_text ?? 'Explore' }}</div>
+                                            <h2 class="text-3xl font-black text-white leading-none tracking-tighter mb-4">{{ $lp->hero_title ?? 'Your Title' }}</h2>
+                                            <p class="text-xs text-gray-400 mb-6 line-clamp-2 italic leading-relaxed">{{ $lp->hero_subtitle ?? 'Your Subtitle' }}</p>
+                                            <div class="inline-block px-8 py-3 bg-cuan-green text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-cuan-green/20">{{ $lp->cta_button_text ?? 'Explore' }}</div>
                                         </div>
                                     </div>
                                     @break
 
-                                @case(4)
-                                    {{-- Template 4 Preview: Playful Creative --}}
-                                    <div class="bg-[#FFF8F0] h-full relative overflow-hidden p-6 flex items-center">
-                                        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-xl animate-pulse"></div>
-                                        <div class="absolute bottom-0 left-0 w-40 h-40 bg-yellow-500/10 rounded-full blur-xl"></div>
-                                        <div class="grid grid-cols-2 gap-4 items-center relative z-10 w-full">
-                                            <div>
-                                                <span class="inline-block bg-white shadow-sm border border-gray-100 rounded-full px-2 py-0.5 text-[7px] font-bold text-blue-600 mb-2">👋 {{ $lp->tagline_text ?? 'Hello!' }}</span>
-                                                <h2 class="text-xl font-black text-gray-900 leading-tight mb-2 tracking-tight">{{ $lp->hero_title ?? 'Your Title' }}</h2>
-                                                <div class="inline-block bg-gray-900 text-white px-4 py-1.5 rounded-full text-[8px] font-bold">{{ $lp->cta_button_text ?? 'Start' }}</div>
-                                            </div>
-                                            <div class="bg-white p-2 rounded-[2rem] shadow-xl rotate-3">
-                                                <img src="{{ $heroImg }}" class="rounded-[1.5rem] w-full aspect-square object-cover">
-                                            </div>
-                                        </div>
+                                @default
+                                    <div class="flex items-center justify-center h-full bg-white">
+                                        <p class="text-sm font-bold text-gray-400 tracking-widest uppercase">Preview Template {{ $templateId }}</p>
                                     </div>
-                                    @break
-
-                                @case(5)
-                                    {{-- Template 5 Preview: Elegant Luxury --}}
-                                    <div class="bg-stone-50 h-full flex flex-col items-center justify-center p-6 text-center font-serif">
-                                        @if($lp->tagline_text)
-                                            <span class="text-[7px] font-sans font-bold uppercase tracking-[0.3em] text-stone-400 mb-2">{{ $lp->tagline_text }}</span>
-                                        @endif
-                                        <h2 class="text-xl font-light italic text-stone-900 mb-3 leading-tight">{{ $lp->hero_title ?? 'Your Title' }}</h2>
-                                        <div class="w-full aspect-[21/9] overflow-hidden mb-3 border border-stone-200">
-                                            <img src="{{ $heroImg }}" class="w-full h-full object-cover grayscale">
-                                        </div>
-                                        <div class="border-b border-stone-800 pb-0.5">
-                                            <span class="text-[9px] font-sans font-bold uppercase tracking-widest text-stone-800">{{ $lp->cta_button_text ?? 'Discover' }}</span>
-                                        </div>
-                                    </div>
-                                    @break
                             @endswitch
 
-                            <!-- Overlay Button -->
-                            <div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                            <div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-50 backdrop-blur-[2px]">
                                 @can('edit landing page')
-                                <a href="{{ route('landing-pages.edit', $outlet->id) }}" target="_blank" class="bg-white/90 backdrop-blur text-gray-900 px-5 py-2 rounded-full text-xs font-bold shadow-2xl transform scale-90 group-hover:scale-100 transition-all hover:bg-white">
-                                    <i class="fas fa-magic mr-2 text-blue-600"></i> Kustomisasi Penuh
+                                <a href="{{ route('landing-pages.edit', $outlet->id) }}" target="_blank" class="bg-white text-gray-900 px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-2xl transform scale-90 group-hover:scale-100 transition-all hover:bg-cuan-green hover:text-white">
+                                    Edit Tampilan
                                 </a>
                                 @endcan
                             </div>
@@ -290,89 +233,100 @@
                 </div>
 
             @else
-                <div class="p-12 text-center">
-                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-store-slash text-gray-400 text-2xl"></i>
+                <div class="p-20 text-center">
+                    <div class="w-20 h-20 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-store-slash text-gray-200 text-3xl"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900">Outlet Tidak Ditemukan</h3>
-                    <p class="text-gray-500 mt-1">Anda belum terhubung dengan outlet manapun.</p>
+                    <h3 class="text-lg font-black text-gray-900 uppercase tracking-widest">Outlet Tidak Ditemukan</h3>
+                    <p class="text-sm text-gray-500 mt-2 max-w-sm mx-auto">Anda belum terhubung dengan outlet manapun untuk mengelola landing page.</p>
                 </div>
             @endif
-        </section>
+        </x-card-container>
     </div>
 </main>
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('trafficChart').getContext('2d');
-        
-        // Data injected from Controller
-        const labels = @json($chartLabels);
-        const data = @json($chartData);
+        // CHART LOGIC
+        const trafficCanvas = document.getElementById('trafficChart');
+        if (trafficCanvas) {
+            const ctx = trafficCanvas.getContext('2d');
+            const labels = @json($chartLabels);
+            const data = @json($chartData);
 
-        // Gradient Fill
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.2)');
-        gradient.addColorStop(1, 'rgba(79, 70, 229, 0)');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(101, 140, 88, 0.2)');
+            gradient.addColorStop(1, 'rgba(101, 140, 88, 0)');
 
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Kunjungan',
-                    data: data,
-                    borderColor: '#4F46E5',
-                    backgroundColor: gradient,
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 3,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        titleColor: '#1F2937',
-                        bodyColor: '#4B5563',
-                        borderColor: '#E5E7EB',
-                        borderWidth: 1,
-                        padding: 10,
-                        displayColors: false
-                    }
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Kunjungan',
+                        data: data,
+                        borderColor: '#658C58',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#658C58',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#658C58',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
+                    }]
                 },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: { font: { size: 11 } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'white',
+                            titleColor: '#111827',
+                            titleFont: { weight: 'bold', family: 'Satoshi' },
+                            bodyColor: '#374151',
+                            bodyFont: { family: 'Satoshi' },
+                            borderColor: '#E5E7EB',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            cornerRadius: 12
+                        }
                     },
-                    y: {
-                        beginAtZero: true,
-                        border: { display: false },
-                        grid: { color: '#F3F4F6' },
-                        ticks: { 
-                            stepSize: 1,
-                            precision: 0
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { 
+                                font: { size: 10, weight: 'bold', family: 'Satoshi' },
+                                color: '#9CA3AF'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            border: { display: false },
+                            grid: { color: '#F3F4F6' },
+                            ticks: { 
+                                font: { size: 10, weight: 'bold', family: 'Satoshi' },
+                                color: '#9CA3AF',
+                                stepSize: 1,
+                                precision: 0
+                            }
                         }
                     }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
                 }
-            }
-        });
+            });
+        }
+
+        }
     });
 </script>
 @endpush

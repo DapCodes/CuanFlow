@@ -776,22 +776,105 @@
     </script>
     
     <script>
-        function markAllStockAsRead() {
-            if (!confirm('Tandai semua pemberitahuan stok sebagai dibaca?')) return;
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: "{{ session('success') }}",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    iconColor: '#658C58',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-none shadow-2xl',
+                        title: 'font-black text-gray-900',
+                        htmlContainer: 'text-sm font-medium text-gray-500'
+                    }
+                });
+            @endif
 
-            fetch('/stock-notifications/read-all', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: "{{ session('error') }}",
+                    confirmButtonColor: '#ef4444',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-none shadow-2xl',
+                        title: 'font-black text-gray-900',
+                        htmlContainer: 'text-sm font-medium text-gray-500'
+                    }
+                });
+            @endif
+
+            document.addEventListener('click', function(e) {
+                const deleteBtn = e.target.closest('.confirm-delete');
+                if (deleteBtn) {
+                    e.preventDefault();
+                    const form = deleteBtn.closest('form');
+                    const name = deleteBtn.dataset.name || 'data ini';
+                    Swal.fire({
+                        title: 'Hapus Data?',
+                        text: `Apakah Anda yakin ingin menghapus "${name}"?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#9ca3af',
+                        confirmButtonText: 'Ya, Hapus',
+                        cancelButtonText: 'Batal',
+                        customClass: {
+                            popup: 'rounded-[2rem] border-none shadow-2xl'
+                        }
+                    }).then((result) => { if (result.isConfirmed && form) form.submit(); });
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Refresh is usually fine for "mark all", but let's be consistent
-                    window.location.reload();
+
+                const toggleBtn = e.target.closest('.confirm-toggle');
+                if (toggleBtn) {
+                    e.preventDefault();
+                    const form = toggleBtn.closest('form');
+                    const name = toggleBtn.dataset.name || 'ini';
+                    const status = toggleBtn.dataset.status || 'ubah';
+                    Swal.fire({
+                        title: `${status.charAt(0).toUpperCase() + status.slice(1)}?`,
+                        text: `Apakah Anda yakin ingin ${status} "${name}"?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#658C58',
+                        cancelButtonColor: '#9ca3af',
+                        confirmButtonText: 'Ya, Lanjutkan',
+                        cancelButtonText: 'Batal',
+                        customClass: {
+                            popup: 'rounded-[2rem] border-none shadow-2xl'
+                        }
+                    }).then((result) => { if (result.isConfirmed && form) form.submit(); });
+                }
+            });
+        });
+
+        function markAllStockAsRead() {
+            Swal.fire({
+                title: 'Baca Semua?',
+                text: 'Tandai semua pemberitahuan stok sebagai dibaca?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#658C58',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'Ya, Tandai',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    popup: 'rounded-[1.5rem] border-none shadow-xl'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/stock-notifications/read-all', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => { if (data.success) window.location.reload(); });
                 }
             });
         }

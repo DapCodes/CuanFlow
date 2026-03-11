@@ -1,13 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Testimoni - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
+@section('title', 'Testimoni Pelanggan - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
 <li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Testimoni</span>
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Testimoni</span>
 </li>
 @endsection
 
@@ -15,20 +13,11 @@
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        @if(session('success'))
-            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
-                <p class="text-green-800">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-500 border border-blue-100">
-                        <i class="fas fa-comment-alt text-sm"></i>
-                    </span>
-                    <span>Testimoni Pelanggan</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Testimoni Pelanggan
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
                     Kelola ulasan dan testimoni yang masuk dari halaman landing page Anda.
@@ -36,12 +25,12 @@
             </div>
         </section>
 
-        <section class="bg-gray-100/50 border border-gray-200 rounded-2xl p-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                {{-- Filter Produk --}}
-                <div>
-                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">Pilih Produk</label>
-                    <select id="filterProduct" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-blue-50 focus:border-blue-400 transition-all font-semibold text-gray-700 shadow-sm border-gray-200">
+        {{-- FILTER SECTION --}}
+        <x-card-container>
+            <div class="px-6 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Pilih Produk</label>
+                    <select id="filterProduct" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
                         <option value="">Semua Produk (Layanan Umum)</option>
                         @foreach($products as $product)
                             <option value="{{ $product->id }}" {{ $selectedProduct == $product->id ? 'selected' : '' }}>
@@ -51,21 +40,26 @@
                     </select>
                 </div>
                 
-                <div class="flex items-center gap-2 pb-1">
-                    <div id="filterLoading" class="hidden">
-                        <i class="fas fa-circle-notch fa-spin text-blue-500"></i>
-                        <span class="text-[11px] font-bold text-gray-400 uppercase ml-2">Memasifikasi...</span>
+                <div class="flex items-center gap-3 pb-3">
+                    <div id="filterLoading" class="hidden flex items-center gap-2">
+                        <div class="w-4 h-4 border-2 border-cuan-green border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Memuat...</span>
                     </div>
                 </div>
             </div>
-        </section>
+        </x-card-container>
 
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" id="testimonialTableContainer">
-            @include('testimonials._table')
-        </section>
+        {{-- TABLE SECTION --}}
+        <x-card-container>
+            <div id="testimonialTableContainer">
+                @include('testimonials._table')
+            </div>
+        </x-card-container>
     </div>
 </main>
+@endsection
 
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const filterProduct = document.getElementById('filterProduct');
@@ -116,4 +110,4 @@
         bindPagination();
     });
 </script>
-@endsection
+@endpush
