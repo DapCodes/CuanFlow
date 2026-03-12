@@ -25,19 +25,41 @@ class OutletInformationController extends Controller implements HasMiddleware
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
         if ($user->hasRole('owner')) {
+            $query = Outlet::where('owner_id', $user->id);
+            
+            // Global stats before filtering
+            $stats = [
+                'total' => (clone $query)->count(),
+                'active' => (clone $query)->where('is_active', true)->count(),
+                'inactive' => (clone $query)->where('is_active', false)->count(),
+                'owners' => (clone $query)->distinct('owner_id')->count(),
+            ];
 
-            $outlets = Outlet::with('owner')
-                ->where('owner_id', $user->id)
+            $outlets = $query->with('owner')
+                ->when($request->search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('code', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    });
+                })
+                ->when($request->status, function ($query, $status) {
+                    if ($status === 'active') {
+                        $query->where('is_active', true);
+                    } elseif ($status === 'inactive') {
+                        $query->where('is_active', false);
+                    }
+                })
                 ->latest()
                 ->paginate(10);
 
-            return view('main.outlets.outlet_informations.index', compact('outlets'));
-
+            return view('main.outlets.outlet_informations.index', compact('outlets', 'stats'));
         } else {
 
             if ($user->outlet_id) {

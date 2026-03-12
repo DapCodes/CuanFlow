@@ -38,28 +38,28 @@
             <x-card-container>
                 <div class="p-6">
                     <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Outlet</p>
-                    <p class="mt-2 text-3xl font-black text-gray-900">{{ $outlets->total() }}</p>
+                    <p class="mt-2 text-3xl font-black text-gray-900">{{ number_format($stats['total'], 0, ',', '.') }}</p>
                 </div>
             </x-card-container>
 
             <x-card-container>
                 <div class="p-6">
                     <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Outlet Aktif</p>
-                    <p class="mt-2 text-3xl font-black text-cuan-green">{{ $outlets->where('is_active', true)->count() }}</p>
+                    <p class="mt-2 text-3xl font-black text-cuan-green">{{ number_format($stats['active'], 0, ',', '.') }}</p>
                 </div>
             </x-card-container>
 
             <x-card-container>
                 <div class="p-6">
                     <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Outlet Nonaktif</p>
-                    <p class="mt-2 text-3xl font-black text-gray-400">{{ $outlets->where('is_active', false)->count() }}</p>
+                    <p class="mt-2 text-3xl font-black text-gray-400">{{ number_format($stats['inactive'], 0, ',', '.') }}</p>
                 </div>
             </x-card-container>
 
             <x-card-container>
                 <div class="p-6">
                     <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Owner</p>
-                    <p class="mt-2 text-3xl font-black text-orange-500">{{ $outlets->pluck('owner_id')->unique()->count() }}</p>
+                    <p class="mt-2 text-3xl font-black text-orange-500">{{ number_format($stats['owners'], 0, ',', '.') }}</p>
                 </div>
             </x-card-container>
         </div>
@@ -84,7 +84,8 @@
             </div>
 
             {{-- Tabel --}}
-            <div class="overflow-x-auto">
+            <div id="outlet-table-container">
+                <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                         <tr>
@@ -232,6 +233,7 @@
                     {{ $outlets->links() }}
                 </div>
             @endif
+            </div>
         </x-card-container>
     </div>
 </main>
@@ -276,7 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let timeout = null;
 
     function refreshTable() {
-        // Need to reconstruct URL with current filters
         const url = new URL(window.location.href);
         const search = searchInput.value;
         const status = statusFilter.value;
@@ -287,8 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (status) url.searchParams.set('status', status);
         else url.searchParams.delete('status');
 
-        // Target the specific section that contains the table for swapping
-        const target = document.querySelector('table').closest('div').parentElement;
+        const target = document.getElementById('outlet-table-container');
         target.style.opacity = '0.5';
 
         fetch(url, {
@@ -298,12 +298,11 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(html => {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            const newContent = doc.querySelector('table').closest('div').parentElement;
+            const newContent = doc.getElementById('outlet-table-container');
             
             if (newContent) {
                 target.innerHTML = newContent.innerHTML;
                 window.history.replaceState({}, '', url);
-                // Re-init delete listeners as content replaced
                 initDeleteListeners();
             }
         })
@@ -355,10 +354,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle pagination clicks for AJAX too
     document.addEventListener('click', function(e) {
         const link = e.target.closest('.pagination a');
-        if (link && document.querySelector('table').contains(e.target.closest('table'))) {
+        if (link && document.getElementById('outlet-table-container').contains(e.target.closest('#outlet-table-container'))) {
             e.preventDefault();
             const url = new URL(link.href);
-            const target = document.querySelector('table').closest('div').parentElement;
+            const target = document.getElementById('outlet-table-container');
             
             target.style.opacity = '0.5';
             fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
@@ -366,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(html => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                const newContent = doc.querySelector('table').closest('div').parentElement;
+                const newContent = doc.getElementById('outlet-table-container');
                 if (newContent) {
                     target.innerHTML = newContent.innerHTML;
                     window.history.pushState({}, '', url);
