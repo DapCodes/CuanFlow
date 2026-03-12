@@ -12,7 +12,17 @@ class ResellerApplicationController extends Controller
             abort(403);
         }
 
-        $applications = \App\Models\ResellerApplication::with(['customer', 'outlet'])
+        $query = \App\Models\ResellerApplication::query();
+        
+        // Stats
+        $stats = [
+            'total' => (clone $query)->count(),
+            'pending' => (clone $query)->where('status', 'pending')->count(),
+            'approved' => (clone $query)->where('status', 'approved')->count(),
+            'rejected' => (clone $query)->where('status', 'rejected')->count(),
+        ];
+
+        $applications = $query->with(['customer', 'outlet'])
             ->when($request->search, function ($query, $search) {
                 $query->whereHas('customer', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -26,7 +36,7 @@ class ResellerApplicationController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('main.reseller-applications.index', compact('applications'));
+        return view('main.reseller-applications.index', compact('applications', 'stats'));
     }
 
     public function store(Request $request)

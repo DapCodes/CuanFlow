@@ -1,13 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Lamaran Reseller')
+@section('title', 'Kelola Lamaran Reseller - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Kelola Lamaran Reseller</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Lamaran Reseller</span>
 </li>
 @endsection
 
@@ -15,201 +13,237 @@
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        {{-- Alert / Notification --}}
-        @if(session('success'))
-            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
-                <p class="text-green-800">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        {{-- HEADER --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-orange-50 text-orange-500 border border-orange-100">
-                        <i class="fas fa-handshake text-sm"></i>
-                    </span>
-                    <span>Kelola Lamaran Reseller</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Lamaran Reseller
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
                     Review dan kelola permohonan reseller yang masuk ke outlet Anda.
                 </p>
             </div>
             
-            @if(auth()->user()->outlet)
-            <div class="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-xl border border-gray-200">
-                <div class="flex flex-col">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Status Penerimaan</span>
-                    <span id="acceptance-text" class="text-sm font-semibold {{ auth()->user()->outlet->accepts_reseller ? 'text-green-600' : 'text-red-500' }}">
-                        {{ auth()->user()->outlet->accepts_reseller ? 'Menerima Lamaran' : 'Tutup Pendaftaran' }}
-                    </span>
+            <div class="flex flex-wrap items-center gap-3">
+                @if(auth()->user()->outlet)
+                <div class="flex items-center gap-3 bg-white px-5 py-3 rounded-xl border border-gray-200 shadow-sm transition-all hover:bg-gray-50">
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Status Penerimaan</span>
+                        <span id="acceptance-text" class="text-xs font-black uppercase tracking-tight {{ auth()->user()->outlet->accepts_reseller ? 'text-cuan-green' : 'text-red-500' }}">
+                            {{ auth()->user()->outlet->accepts_reseller ? 'Menerima Lamaran' : 'Tutup Pendaftaran' }}
+                        </span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-acceptance" class="sr-only peer" {{ auth()->user()->outlet->accepts_reseller ? 'checked' : '' }}>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-green"></div>
+                    </label>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="toggle-acceptance" class="sr-only peer" {{ auth()->user()->outlet->accepts_reseller ? 'checked' : '' }}>
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-dark"></div>
-                </label>
+                @endif
             </div>
-            @endif
         </section>
 
-        {{-- TABLE CONTENT --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+        {{-- RINGKASAN STATISTIK --}}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Lamaran</p>
+                <p class="mt-2 text-2xl font-black text-gray-900">{{ number_format($stats['total'], 0, ',', '.') }}</p>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm transition-all hover:translate-y-[-2px]">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Pending</p>
+                <p class="mt-2 text-2xl font-black text-amber-500">{{ number_format($stats['pending'], 0, ',', '.') }}</p>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Diterima</p>
+                <p class="mt-2 text-2xl font-black text-cuan-green">{{ number_format($stats['approved'], 0, ',', '.') }}</p>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Ditolak</p>
+                <p class="mt-2 text-2xl font-black text-red-600">{{ number_format($stats['rejected'], 0, ',', '.') }}</p>
+            </div>
+        </section>
+
+        {{-- KONTEN UTAMA: TOOLBAR + TABEL --}}
+        <x-card-container>
             {{-- Toolbar --}}
-            <form id="filter-form" action="{{ route('reseller-applications.index') }}" method="GET" class="border-b border-gray-200 px-4 md:px-6 py-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between gap-4">
-                <div class="w-full md:max-w-md">
-                    <label class="text-xs font-medium text-gray-500 mb-1 block">Cari Pelamar</label>
-                    <div class="relative">
-                        <input type="text" name="search" id="search-input" value="{{ request('search') }}" placeholder="Nama, Email, atau Telepon..."
-                               class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-shadow">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    </div>
+            <form id="filter-form" action="{{ route('reseller-applications.index') }}" method="GET" class="px-6 py-5 border-b border-gray-100 bg-white space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
+                <div class="flex-1 relative">
+                    <input type="text" name="search" id="search-input" value="{{ request('search') }}" placeholder="Cari nama, email, atau telepon..."
+                           class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                 </div>
 
-                <div class="flex flex-wrap gap-3 w-full md:w-auto">
-                    <div class="w-full sm:w-40 md:w-44">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
-                        <select name="status" id="status-select"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                            <option value="">Semua Status</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Diterima</option>
-                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
-                        </select>
-                    </div>
+                <div class="flex flex-wrap gap-3">
+                    <select name="status" id="status-select" onchange="this.form.submit()"
+                            class="rounded-xl border border-gray-300 px-4 py-2.5 text-xs font-black uppercase tracking-widest focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all bg-white min-w-[160px]">
+                        <option value="">Semua Status</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Diterima</option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                    </select>
                 </div>
             </form>
             
             <div id="table-container">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Pelamar</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Outlet Tujuan</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Waktu</th>
-                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 bg-white">
-                        @forelse($applications as $app)
-                        <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="openDetailModal({{ json_encode($app) }}, '{{ $app->customer->name ?? 'Unknown' }}', '{{ $app->document_path ? asset('storage/'.$app->document_path) : '' }}')">
-                            <td class="px-6 py-3">
-                                <div class="font-semibold text-gray-900">{{ $app->customer->name ?? 'Unknown Customer' }}</div>
-                                <div class="text-xs text-gray-500">{{ $app->customer->email ?? $app->customer->phone ?? '-' }}</div>
-                            </td>
-                            <td class="px-6 py-3 text-gray-600">
-                                {{ $app->outlet->name ?? 'Unknown' }}
-                            </td>
-                            <td class="px-6 py-3">
-                                @if($app->status === 'approved')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span> Diterima
-                                    </span>
-                                @elseif($app->status === 'rejected')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span> Ditolak
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-100">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 mr-1.5"></span> Pending
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-3 text-gray-500 text-xs">
-                                {{ $app->created_at->diffForHumans() }}
-                            </td>
-                            <td class="px-6 py-3 text-center">
-                                <button class="text-orange-600 hover:text-orange-800 font-medium text-xs">
-                                    Lihat Detail
-                                </button>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-gray-500">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                                        <i class="fas fa-inbox text-2xl text-gray-300"></i>
+                {{-- Tabel --}}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
+                            <tr>
+                                <th class="px-6 py-4 text-left">Pelamar</th>
+                                <th class="px-6 py-4 text-left">Outlet</th>
+                                <th class="px-6 py-4 text-left">Status</th>
+                                <th class="px-6 py-4 text-left">Waktu</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 bg-white">
+                            @forelse($applications as $app)
+                            <tr class="hover:bg-gray-50 transition-colors group">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-cuan-green group-hover:text-white transition-all">
+                                            <i class="fas fa-user text-xs"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-black text-gray-900 leading-tight">{{ $app->customer->name ?? 'Unknown' }}</div>
+                                            <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">
+                                                {{ $app->customer->email ?? $app->customer->phone ?? '-' }}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p>Belum ada aplikasi yang masuk.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-             {{-- Pagination --}}
-            @if($applications->hasPages())
-                <div class="px-4 md:px-6 py-3 border-t border-gray-200">
-                    {{ $applications->links() }}
+                                </td>
+                                <td class="px-6 py-5">
+                                    <div class="text-[11px] font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg border border-gray-100 w-fit">
+                                        {{ $app->outlet->name ?? 'Unknown' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5">
+                                    @if($app->status === 'approved')
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-cuan-green/10 text-cuan-green border border-cuan-green/20">
+                                            Diterima
+                                        </span>
+                                    @elseif($app->status === 'rejected')
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100">
+                                            Ditolak
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100">
+                                            Pending
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-5">
+                                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                        {{ $app->created_at->diffForHumans() }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-5 text-center">
+                                    <button type="button" 
+                                            onclick="openDetailModal({{ json_encode($app) }}, '{{ $app->customer->name ?? 'Unknown' }}', '{{ $app->document_path ? asset('storage/'.$app->document_path) : '' }}')"
+                                            class="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all active:scale-95 shadow-sm border border-gray-100 mx-auto">
+                                        <i class="fas fa-eye text-xs"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-16 text-center">
+                                    <div class="w-16 h-16 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-inbox text-gray-200 text-xl"></i>
+                                    </div>
+                                    <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Belum ada lamaran</h3>
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2 max-w-xs mx-auto">Daftar lamaran reseller masih kosong.</p>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-            @endif
+
+                {{-- Pagination --}}
+                @if($applications->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/20">
+                        {{ $applications->links() }}
+                    </div>
+                @endif
             </div>
-        </section>
+        </x-card-container>
     </div>
 </main>
 
 {{-- Detail Modal --}}
 <div id="applicationModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-modal="true" role="dialog">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailModal()"></div>
+    <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeDetailModal()"></div>
 
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
-                        <i class="fas fa-file-invoice text-orange-600"></i>
-                    </div>
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">
-                            Detail Aplikasi
-                        </h3>
-                        <div class="mt-2 space-y-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 uppercase">Pelamar</label>
-                                <p class="text-sm font-bold text-gray-800" id="modalApplicantName">-</p>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 uppercase">Deskripsi</label>
-                                <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg mt-1" id="modalDescription">-</p>
-                            </div>
-                            
-                            <div id="modalDocumentSection" class="hidden">
-                                <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Dokumen CV / Pendukung</label>
-                                <a href="#" id="modalDocumentLink" target="_blank" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
-                                    <i class="fas fa-download mr-2 text-gray-400"></i> Unduh Dokumen
-                                </a>
-                            </div>
+        <div class="inline-block align-bottom bg-white rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100">
+            <!-- Modal Header -->
+            <div class="relative px-8 pt-8 pb-6 border-b border-gray-50 bg-gray-50/50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-black text-gray-900 tracking-tight" id="modalTitle">Detail Aplikasi</h3>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span id="modalApplicantName" class="text-[10px] font-black uppercase tracking-widest text-gray-400">-</span>
                         </div>
+                    </div>
+                    <button onclick="closeDetailModal()" class="w-10 h-10 rounded-2xl bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-all shadow-sm border border-gray-100 transition-all active:scale-95">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-8">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Deskripsi Diri</label>
+                        <div class="p-5 bg-gray-50 border border-gray-100 rounded-3xl text-sm font-bold text-gray-700 leading-relaxed shadow-inner" id="modalDescription">
+                            -
+                        </div>
+                    </div>
+                    
+                    <div id="modalDocumentSection" class="hidden">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Dokumen CV / Pendukung</label>
+                        <a href="#" id="modalDocumentLink" target="_blank" 
+                           class="inline-flex items-center justify-center gap-3 w-full px-6 py-4 bg-white border border-gray-200 text-gray-700 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                            <i class="fas fa-file-pdf text-red-500"></i>
+                            Unduh Dokumen CV Pelamar
+                        </a>
                     </div>
                 </div>
             </div>
             
-            <form id="actionForm" method="POST" class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                @csrf
-                @method('PATCH')
-                
-                {{-- Approved/Rejected buttons will be shown if status is pending --}}
-                <div id="actionButtons" class="flex flex-row-reverse gap-2 w-full">
-                    <button type="submit" name="status" value="approved" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                        Terima
+            <!-- Modal Footer -->
+            <div class="px-8 pb-8">
+                <form id="actionForm" method="POST" class="flex flex-col sm:flex-row gap-3">
+                    @csrf
+                    @method('PATCH')
+                    
+                    <div id="actionButtons" class="contents">
+                        <button type="submit" name="status" value="rejected" 
+                                class="flex-1 px-6 py-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-95 border border-red-100">
+                            Tolak Lamaran
+                        </button>
+                        <button type="submit" name="status" value="approved" 
+                                class="flex-1 px-6 py-4 bg-cuan-green text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                            Terima Reseller
+                        </button>
+                    </div>
+                    
+                    <button type="button" onclick="closeDetailModal()" id="closeModalBtn" class="hidden w-full px-6 py-4 bg-gray-100 text-gray-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95">
+                        Tutup Window
                     </button>
-                    <button type="submit" name="status" value="rejected" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                        Tolak
-                    </button>
-                    <button type="button" onclick="closeDetailModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                        Tutup
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
@@ -226,61 +260,120 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        const form = document.getElementById('filter-form');
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 3000,
+                iconColor: '#658C58',
+                customClass: {
+                    popup: 'rounded-3xl border-none shadow-2xl',
+                    title: 'font-black text-gray-900',
+                }
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: "{{ session('error') }}",
+                confirmButtonColor: '#658C58',
+                customClass: {
+                    popup: 'rounded-3xl border-none shadow-2xl',
+                    title: 'font-black text-gray-900',
+                }
+            });
+        @endif
+
+        const filterForm = document.getElementById('filter-form');
         const searchInput = document.getElementById('search-input');
         const statusSelect = document.getElementById('status-select');
         const tableContainer = document.getElementById('table-container');
-
-        if(searchInput && urlParams.has('search')) searchInput.value = urlParams.get('search');
-        if(statusSelect && urlParams.has('status')) statusSelect.value = urlParams.get('status');
-
         let timeout = null;
 
-        function fetchResults() {
-            if (!form) return;
+        function refreshTable() {
+            const url = new URL(filterForm.action);
+            const formData = new FormData(filterForm);
             
-            const url = new URL(form.action);
-            const formData = new FormData(form);
-            for (const [key, value] of formData.entries()) {
-                url.searchParams.append(key, value);
+            // Add params to URL for consistent history
+            for (let [key, value] of formData.entries()) {
+                if (value) url.searchParams.set(key, value);
+                else url.searchParams.delete(key);
             }
 
+            // Show subtle loading state
+            tableContainer.style.opacity = '0.5';
+            tableContainer.style.transition = 'opacity 0.2s ease-in-out';
+
             fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html'
-                }
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(response => response.text())
             .then(html => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                const newTableContainer = doc.getElementById('table-container');
-                if (newTableContainer && tableContainer) {
-                    tableContainer.innerHTML = newTableContainer.innerHTML;
+                const newContent = doc.getElementById('table-container');
+                
+                if (newContent) {
+                    tableContainer.innerHTML = newContent.innerHTML;
+                    // Update URL without reload
+                    window.history.replaceState({}, '', url);
                 }
-                updateURLParams({ search: searchInput ? searchInput.value : '', status: statusSelect ? statusSelect.value : '' });
+            })
+            .catch(err => console.error('Table refresh failed:', err))
+            .finally(() => {
+                tableContainer.style.opacity = '1';
             });
         }
 
         if (searchInput) {
             searchInput.addEventListener('input', function () {
                 clearTimeout(timeout);
-                timeout = setTimeout(fetchResults, 300);
+                timeout = setTimeout(refreshTable, 500);
             });
-
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                }
-            });
+            // Prevent enter key from reloading
+            searchInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') e.preventDefault(); });
         }
 
         if (statusSelect) {
-            statusSelect.addEventListener('change', fetchResults);
+            statusSelect.addEventListener('change', refreshTable);
         }
+
+        // Handle pagination clicks
+        document.addEventListener('click', function(e) {
+            const paginationLink = e.target.closest('#table-container .pagination a');
+            if (paginationLink) {
+                e.preventDefault();
+                const url = new URL(paginationLink.href);
+                // Keep existing filters
+                const formData = new FormData(filterForm);
+                for (let [key, value] of formData.entries()) {
+                    if (value && !url.searchParams.has(key)) url.searchParams.set(key, value);
+                }
+                
+                tableContainer.style.opacity = '0.5';
+                fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('table-container');
+                    if (newContent) {
+                        tableContainer.innerHTML = newContent.innerHTML;
+                        window.history.pushState({}, '', url);
+                        window.scrollTo({ top: tableContainer.offsetTop - 100, behavior: 'smooth' });
+                    }
+                })
+                .finally(() => {
+                    tableContainer.style.opacity = '1';
+                });
+            }
+        });
     });
 
     function openDetailModal(appData, applicantName, docUrl) {
@@ -288,7 +381,6 @@
         document.getElementById('modalApplicantName').textContent = applicantName;
         document.getElementById('modalDescription').textContent = appData.description;
         
-        // Handle Document
         const docSection = document.getElementById('modalDocumentSection');
         const docLink = document.getElementById('modalDocumentLink');
         if (appData.document_path) {
@@ -298,29 +390,28 @@
             docSection.classList.add('hidden');
         }
 
-        // Handle Form Action & Buttons
         const form = document.getElementById('actionForm');
-        // Use Blade to get base URL, then append ID.
-        // Note: route('reseller-applications.index') gives .../reseller-applications
-        // We need .../reseller-applications/{id}
         const baseUrl = "{{ route('reseller-applications.index') }}";
         form.action = `${baseUrl}/${appData.id}`;
         
         const actionButtons = document.getElementById('actionButtons');
-        // Only show approve/reject if pending
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
         if (appData.status !== 'pending') {
-             // Hide action buttons except close (which involves restructuring html slightly or JS manipulation)
-             // Simplified: Re-render buttons or hide submit buttons
-             Array.from(actionButtons.querySelectorAll('button[type="submit"]')).forEach(btn => btn.classList.add('hidden'));
+             actionButtons.classList.add('hidden');
+             closeModalBtn.classList.remove('hidden');
         } else {
-             Array.from(actionButtons.querySelectorAll('button[type="submit"]')).forEach(btn => btn.classList.remove('hidden'));
+             actionButtons.classList.remove('hidden');
+             closeModalBtn.classList.add('hidden');
         }
 
         modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
     }
 
     function closeDetailModal() {
         document.getElementById('applicationModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
     }
 
     // Ajax Toggle Acceptance
@@ -328,23 +419,20 @@
         const isChecked = this.checked;
         const textEl = document.getElementById('acceptance-text');
         
-        // Show loading state if desired, but for now just send
         fetch("{{ route('reseller-applications.toggle-acceptance') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({})
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update Text
                 textEl.textContent = data.accepts_reseller ? 'Menerima Lamaran' : 'Tutup Pendaftaran';
-                textEl.className = `text-sm font-semibold ${data.accepts_reseller ? 'text-green-600' : 'text-red-500'}`;
+                textEl.className = `text-xs font-black uppercase tracking-tight ${data.accepts_reseller ? 'text-cuan-green' : 'text-red-500'}`;
                 
-                // Toast success
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil',
@@ -353,15 +441,17 @@
                     position: 'top-end',
                     showConfirmButton: false,
                     timer: 3000,
-                    timerProgressBar: true
+                    timerProgressBar: true,
+                    background: '#f0fdf4',
+                    iconColor: '#22c55e',
                 });
             } else {
-                // Revert toggle on failure
                 this.checked = !isChecked;
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal',
-                    text: data.message || 'Terjadi kesalahan saat mengubah status.'
+                    text: data.message || 'Terjadi kesalahan saat mengubah status.',
+                    iconColor: '#ef4444',
                 });
             }
         })
@@ -371,11 +461,9 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Terjadi kesalahan sistem.'
+                text: 'Terjadi kesalahan sistem.',
             });
         });
     });
 </script>
 @endpush
-
-@endsection
