@@ -1,625 +1,476 @@
 @extends('layouts.app')
 
-@section('title', 'Buat Produksi Baru - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
+@section('title', 'Mulai Produksi - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('production.index') }}" class="text-gray-500 hover:text-gray-700">Produksi</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('production.index') }}" class="text-gray-500 hover:text-cuan-green transition-colors font-medium">Produksi</a>
 </li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Buat Produksi</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-black tracking-tight">Mulai Produksi</span>
 </li>
 @endsection
 
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<style>
-    .select2-container--default .select2-selection--single {
-        height: 46px;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.625rem 1rem;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 30px;
-        color: #374151;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 44px;
-        right: 10px;
-    }
-    .select2-container--default.select2-container--focus .select2-selection--single {
-        border-color: #3b82f6;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-    }
-</style>
-@endpush
-
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-7xl mx-auto space-y-6">
-
-        @if($errors->any())
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <div class="flex-1">
-                    <h3 class="font-semibold text-red-800 mb-2">Terjadi kesalahan!</h3>
-                    <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
-                        @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+    <div class="max-w-5xl mx-auto">
+        
+        {{-- HEADER --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Produksi Baru
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Rencanakan batch produksi baru dengan memvalidasi bahan baku.
+                </p>
             </div>
-        @endif
-
-        @if(session('insufficient_materials'))
-            <div class="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-triangle mt-0.5 text-yellow-500"></i>
-                <div class="flex-1">
-                    <h3 class="font-semibold text-yellow-800 mb-2">Stok Bahan Baku Tidak Mencukupi!</h3>
-                    <ul class="list-disc list-inside text-sm text-yellow-700 space-y-1">
-                        @foreach(session('insufficient_materials') as $material)
-                        <li>
-                            <strong>{{ $material['name'] }}</strong>: 
-                            Dibutuhkan {{ number_format($material['required'], 2) }}, 
-                            Tersedia {{ number_format($material['available'], 2) }}, 
-                            Kurang {{ number_format($material['shortage'], 2) }}
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('production.index') }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+                    <span>Batal</span>
+                </a>
             </div>
-        @endif
-
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-            <div class="border-b border-gray-200 px-6 py-5">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-500 border border-blue-100">
-                                <i class="fas fa-plus-circle text-sm"></i>
-                            </span>
-                            <span>Buat Produksi Baru</span>
-                        </h1>
-                        <p class="mt-1 text-sm text-gray-500">
-                            Ikuti langkah-langkah untuk membuat rencana produksi baru
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <a href="{{ route('production.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                            <i class="fas fa-arrow-left text-sm"></i>
-                            <span>Kembali</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="border-b border-gray-200 px-6 py-5 bg-gray-50">
-                <div class="flex justify-between items-center relative">
-                    <div class="absolute top-5 left-0 right-0 h-0.5 bg-gray-200" style="z-index: 0;">
-                        <div id="progressLine" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%;"></div>
-                    </div>
-
-                    <div class="flex-1 text-center step-indicator active relative z-10" data-step="1">
-                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2 shadow-md">
-                            <i class="fas fa-box text-white text-sm"></i>
-                        </div>
-                        <p class="text-xs font-medium text-gray-600 hidden sm:block">Pilih Produk</p>
-                    </div>
-
-                    <div class="flex-1 text-center step-indicator relative z-10" data-step="2">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-list-ul text-gray-400 text-sm"></i>
-                        </div>
-                        <p class="text-xs font-medium text-gray-400 hidden sm:block">Bahan Baku</p>
-                    </div>
-
-                    <div class="flex-1 text-center step-indicator relative z-10" data-step="3">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-calculator text-gray-400 text-sm"></i>
-                        </div>
-                        <p class="text-xs font-medium text-gray-400 hidden sm:block">Detail</p>
-                    </div>
-
-                    <div class="flex-1 text-center step-indicator relative z-10" data-step="4">
-                        <div class="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
-                            <i class="fas fa-check-circle text-gray-400 text-sm"></i>
-                        </div>
-                        <p class="text-xs font-medium text-gray-400 hidden sm:block">Konfirmasi</p>
-                    </div>
-                </div>
-            </div>
-
-            <form action="{{ route('production.store') }}" method="POST" id="productionForm">
-                @csrf
-
-                <div class="step-content p-6" id="step1">
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-box text-blue-500"></i>
-                            <span>Pilih Produk</span>
-                        </h3>
-                        <p class="text-sm text-gray-500 mt-1">Pilih produk yang akan diproduksi</p>
-                    </div>
-                    
-                    <div class="max-w-2xl">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Produk <span class="text-red-500">*</span>
-                        </label>
-                        <select name="product_id" id="productSelect" class="select2-product w-full" required>
-                            <option value="">- Pilih Produk -</option>
-                            @foreach($products as $product)
-                            <option value="{{ $product->id }}" 
-                                data-recipe-id="{{ $product->defaultRecipe?->id }}"
-                                {{ old('product_id', $selectedProduct?->id) == $product->id ? 'selected' : '' }}>
-                                {{ $product->name }} ({{ $product->unit->name ?? '' }})
-                            </option>
-                            @endforeach
-                        </select>
-                        <p class="text-xs text-gray-500 mt-2">Hanya produk yang memiliki resep yang dapat diproduksi</p>
-                    </div>
-
-                    <div id="productInfo" class="mt-6 hidden">
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
-                            <h4 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                <i class="fas fa-info-circle text-blue-500"></i>
-                                Informasi Produk
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <p class="text-xs font-medium text-gray-500 mb-1">Nama Resep</p>
-                                    <p class="text-sm font-semibold text-gray-900" id="recipeName">-</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-medium text-gray-500 mb-1">Output Per Batch</p>
-                                    <p class="text-sm font-semibold text-gray-900" id="outputQuantity">-</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-medium text-gray-500 mb-1">Satuan Output</p>
-                                    <p class="text-sm font-semibold text-gray-900" id="outputUnit">-</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="step-content p-6 hidden" id="step2">
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-list-ul text-blue-500"></i>
-                            <span>Bahan Baku yang Dibutuhkan</span>
-                        </h3>
-                        <p class="text-sm text-gray-500 mt-1">Periksa ketersediaan bahan baku untuk produksi</p>
-                    </div>
-
-                    <input type="hidden" name="recipe_id" id="recipeIdInput">
-                    
-                    <div id="materialsContainer" class="space-y-4">
-                    </div>
-
-                    <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div class="flex items-start gap-2">
-                            <i class="fas fa-info-circle text-yellow-600 mt-0.5 flex-shrink-0"></i>
-                            <p class="text-sm text-yellow-800">
-                                Pastikan semua bahan baku tersedia dalam jumlah yang cukup. 
-                                Stok bahan baku akan otomatis berkurang setelah produksi dimulai.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="step-content p-6 hidden" id="step3">
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-calculator text-blue-500"></i>
-                            <span>Detail Produksi</span>
-                        </h3>
-                        <p class="text-sm text-gray-500 mt-1">Tentukan jumlah yang akan diproduksi</p>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Jumlah Produksi <span class="text-red-500">*</span>
-                            </label>
-                            <input type="number" step="0.01" name="planned_quantity" id="plannedQuantity" 
-                                value="{{ old('planned_quantity', 1) }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                placeholder="1" required min="0.01">
-                            <p class="text-xs text-gray-500 mt-1">Jumlah produk yang akan dihasilkan</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Multiplier
-                            </label>
-                            <input type="text" id="multiplierDisplay" readonly
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600" 
-                                value="1x">
-                            <p class="text-xs text-gray-500 mt-1">Pengali dari resep standar</p>
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Catatan
-                            </label>
-                            <textarea name="notes" rows="3" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                                placeholder="Catatan tambahan untuk produksi ini (opsional)">{{ old('notes') }}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <i class="fas fa-clipboard-list text-blue-500"></i>
-                            Kebutuhan Bahan Baku
-                        </h4>
-                        <div id="materialRequirements" class="space-y-3">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="step-content p-6 hidden" id="step4">
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-check-circle text-blue-500"></i>
-                            <span>Konfirmasi Produksi</span>
-                        </h3>
-                        <p class="text-sm text-gray-500 mt-1">Periksa kembali detail produksi sebelum menyimpan</p>
-                    </div>
-
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <p class="text-xs font-medium text-gray-500 mb-1">Produk</p>
-                                <p class="text-sm font-semibold text-gray-900" id="confirmProduct">-</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <p class="text-xs font-medium text-gray-500 mb-1">Resep</p>
-                                <p class="text-sm font-semibold text-gray-900" id="confirmRecipe">-</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <p class="text-xs font-medium text-gray-500 mb-1">Jumlah Produksi</p>
-                                <p class="text-xl font-bold text-green-600" id="confirmQuantity">-</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <p class="text-xs font-medium text-gray-500 mb-1">Estimasi Biaya</p>
-                                <p class="text-xl font-bold text-blue-600" id="confirmCost">Rp 0</p>
-                            </div>
-                        </div>
-
-                        <div class="mt-6 bg-white rounded-lg p-4 border border-gray-200">
-                            <h5 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                <i class="fas fa-list text-blue-500"></i>
-                                Bahan yang Akan Digunakan
-                            </h5>
-                            <div id="confirmMaterials" class="space-y-2">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="px-6 py-5 bg-gray-50 border-t border-gray-200 rounded-b-xl">
-                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-                        <button type="button" id="prevBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm" style="display: none;">
-                            <i class="fas fa-arrow-left"></i>
-                            <span>Sebelumnya</span>
-                        </button>
-                        <div class="hidden sm:block"></div>
-                        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                            <button type="button" id="nextBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold text-sm shadow-sm">
-                                <span>Selanjutnya</span>
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
-                            <button type="submit" id="submitBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold text-sm shadow-sm" style="display: none;">
-                                <i class="fas fa-save"></i>
-                                <span>Buat Produksi</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            </form>
-
         </section>
 
+        {{-- STEP INDICATOR --}}
+        <div class="mb-10 px-4">
+            <div class="flex items-center justify-between relative">
+                <div class="absolute top-1/2 left-0 w-full h-0.5 bg-gray-100 -translate-y-1/2 z-0"></div>
+                
+                @foreach(['Produk', 'Bahan Baku', 'Detail', 'Konfirmasi'] as $index => $step)
+                <div class="relative z-10 flex flex-col items-center group">
+                    <div id="circle-step-{{ $index + 1 }}" class="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-xs transition-all duration-300 border-4 border-gray-50 {{ $index === 0 ? 'bg-cuan-green text-white shadow-lg shadow-cuan-green/20' : 'bg-white text-gray-300' }}">
+                        {{ $index + 1 }}
+                    </div>
+                    <span id="label-step-{{ $index + 1 }}" class="mt-3 text-[10px] font-black uppercase tracking-widest {{ $index === 0 ? 'text-gray-900' : 'text-gray-400' }} transition-colors">
+                        {{ $step }}
+                    </span>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- FORM --}}
+        <form action="{{ route('production.store') }}" method="POST" id="production-form">
+            @csrf
+            
+            <x-card-container id="step-container" class="overflow-hidden">
+                
+                <!-- STEP 1: PILIH PRODUK -->
+                <div id="content-step-1" class="step-content p-8 md:p-12">
+                    <div class="max-w-2xl mx-auto space-y-8">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-xl font-black text-gray-900 tracking-tight">Pilih Produk</h2>
+                            <p class="text-xs font-medium text-gray-400 uppercase tracking-widest">Tentukan produk yang akan Anda produksi hari ini</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Daftar Produk Produksi</label>
+                            <select name="product_id" id="product_id" required
+                                class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all select2-basic">
+                                <option value="">Cari Produk...</option>
+                                @foreach($products as $product)
+                                <option value="{{ $product->id }}" {{ request('product_id') == $product->id ? 'selected' : '' }}>
+                                    {{ $product->name }} ({{ $product->code }})
+                                </option>
+                                @endforeach
+                            </select>
+                            
+                            <div id="recipe-preview" class="hidden mt-6 p-6 rounded-[2rem] bg-gray-50 border border-gray-100 flex items-center gap-6 animate-fade-in">
+                                <div class="w-16 h-16 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 shadow-sm flex-shrink-0">
+                                    <i class="fas fa-utensils text-xl"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 id="recipe-name" class="font-black text-gray-900 text-base truncate"></h4>
+                                    <div class="flex items-center gap-4 mt-1.5">
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-cuan-green">Output per batch: <span id="recipe-output"></span></span>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400 border-l border-gray-200 pl-4">Durasi: <span id="recipe-time">--</span> Menit</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: BAHAN BAKU -->
+                <div id="content-step-2" class="step-content hidden p-8 md:p-12">
+                    <div class="space-y-8">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-xl font-black text-gray-900 tracking-tight">Kebutuhan Bahan Baku</h2>
+                            <p class="text-xs font-medium text-gray-400 uppercase tracking-widest">Validasi ketersediaan bahan di dapur sebelum memulai</p>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-[2rem] border border-gray-100 shadow-sm">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left">Bahan Baku</th>
+                                        <th class="px-6 py-4 text-center">Kebutuhan per Batch</th>
+                                        <th class="px-6 py-4 text-right">Stok Tersedia</th>
+                                        <th class="px-6 py-4 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="material-list-body" class="divide-y divide-gray-50">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: DETAIL -->
+                <div id="content-step-3" class="step-content hidden p-8 md:p-12">
+                     <div class="max-w-2xl mx-auto space-y-8">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-xl font-black text-gray-900 tracking-tight">Detail Produksi</h2>
+                            <p class="text-xs font-medium text-gray-400 uppercase tracking-widest">Tentukan jumlah produksi dan tambahkan catatan</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-4">
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Jumlah Produksi</label>
+                                <div class="relative">
+                                    <input type="number" name="planned_quantity" id="planned_quantity" step="0.01" required
+                                        class="w-full pl-6 pr-20 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-2xl font-black text-gray-900 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
+                                        placeholder="0.00">
+                                    <span id="unit-label" class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black uppercase tracking-widest text-gray-400">Pcs</span>
+                                </div>
+                                <div class="flex items-center justify-between px-2">
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">Kelipatan Batch:</span>
+                                    <span id="batch-multiplier" class="text-[10px] font-black text-cuan-green">x 0.0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Catatan Produksi</label>
+                                <textarea name="notes" rows="4" 
+                                    class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-sm font-bold text-gray-900 placeholder:text-gray-300 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
+                                    placeholder="Instruksi khusus untuk batch ini..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="p-8 rounded-[2rem] bg-gray-900 text-white space-y-6">
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-400">Ringkasan Estimasi</h4>
+                            <div class="grid grid-cols-2 gap-6 border-b border-gray-800 pb-6">
+                                <div>
+                                    <p class="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-1">Total Kebutuhan Bahan</p>
+                                    <p id="summary-material-count" class="text-base font-black">-- Item</p>
+                                </div>
+                                @if(Auth::user()->can('lihat hpp'))
+                                <div>
+                                    <p class="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-1">Estimasi Biaya Bahan (HPP)</p>
+                                    <p id="summary-cost" class="text-base font-black text-cuan-green">Rp --</p>
+                                </div>
+                                @endif
+                            </div>
+                            <p class="text-[9px] font-bold text-gray-500 italic">* Estimasi biaya didasarkan pada harga beli terakhir bahan baku.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: KONFIRMASI -->
+                <div id="content-step-4" class="step-content hidden p-8 md:p-12">
+                    <div class="max-w-2xl mx-auto space-y-8">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-xl font-black text-gray-900 tracking-tight">Konfirmasi Batch</h2>
+                            <p class="text-xs font-medium text-gray-400 uppercase tracking-widest">Tinjau kembali rencana produksi Anda</p>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-[2.5rem] border border-gray-100 p-8 space-y-8 shadow-inner">
+                            <div class="flex items-center justify-between border-b border-gray-200 pb-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-gray-900 border border-gray-100 shadow-sm">
+                                        <i class="fas fa-boxes-stacked text-base"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Produk Utama</p>
+                                        <h4 id="confirm-product" class="text-base font-black text-gray-900 leading-tight">--</h4>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Target Produksi</p>
+                                    <h4 id="confirm-qty" class="text-base font-black text-cuan-green leading-tight">--</h4>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-8">
+                                <div>
+                                    <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Kelipatan Resep</p>
+                                    <span id="confirm-multiplier" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-white border border-gray-100 text-[10px] font-black text-gray-900 shadow-sm">
+                                        --
+                                    </span>
+                                </div>
+                                @if(Auth::user()->can('lihat hpp'))
+                                <div class="text-right">
+                                    <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Total Estimasi Biaya</p>
+                                    <span id="confirm-cost" class="text-base font-black text-gray-900">
+                                        --
+                                    </span>
+                                </div>
+                                @endif
+                            </div>
+
+                            <div class="pt-6 border-t border-gray-200">
+                                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-4">Catatan</p>
+                                <p id="confirm-notes" class="text-xs font-bold text-gray-600 italic">-- tidak ada catatan --</p>
+                            </div>
+                        </div>
+
+                         <div class="bg-amber-50 border border-amber-100 rounded-3xl p-6 flex gap-4">
+                            <i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i>
+                            <div>
+                                <h5 class="text-[10px] font-black uppercase tracking-widest text-amber-800 mb-1">Peringatan Stok</h5>
+                                <p class="text-[10px] font-bold text-amber-600 leading-relaxed">Pastikan Anda telah memeriksa ketersediaan fisik bahan baku. Memulai produksi akan memotong stok bahan baku secara sistem.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- FOOTER NAVIGATION --}}
+                <div class="px-8 py-8 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                    <button type="button" id="prev-btn" class="hidden px-8 py-4 bg-white border border-gray-200 text-gray-400 rounded-2xl font-bold text-sm hover:bg-gray-100 active:scale-95 transition-all">
+                        Kembali
+                    </button>
+                    <div class="flex-1"></div>
+                    <button type="button" id="next-btn" class="px-8 py-4 bg-cuan-green text-white rounded-2xl font-black text-sm hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                        Lanjut ke Bahan Baku
+                    </button>
+                    <button type="submit" id="submit-btn" class="hidden px-8 py-4 bg-cuan-green text-white rounded-2xl font-black text-sm hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                        Konfirmasi & Mulai
+                    </button>
+                </div>
+
+            </x-card-container>
+        </form>
     </div>
 </main>
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 <script>
-let currentStep = 1;
-const totalSteps = 4;
-let recipeData = null;
-let materialsData = [];
-let outputQuantityPerBatch = 1;
+    document.addEventListener('DOMContentLoaded', function() {
+        let currentStep = 1;
+        const totalSteps = 4;
+        let recipeData = null;
 
-document.addEventListener('DOMContentLoaded', function() {
-    $('.select2-product').select2({
-        theme: 'default',
-        width: '100%',
-        placeholder: '- Pilih Produk -'
-    });
-    
-    showStep(currentStep);
-    
-    $('#productSelect').on('change', function() {
-        const productId = $(this).val();
-        const recipeId = $(this).find(':selected').data('recipe-id');
-        
-        if (productId && recipeId) {
-            loadRecipeDetails(productId);
-        } else {
-            $('#productInfo').addClass('hidden');
-        }
-    });
+        const productSelect = $('#product_id');
+        const plannedQtyInput = document.getElementById('planned_quantity');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const submitBtn = document.getElementById('submit-btn');
 
-    $('#plannedQuantity').on('input', function() {
-        updateMultiplier();
-        calculateMaterialRequirements();
-    });
-    
-    $('#nextBtn').on('click', function() {
-        if (validateStep(currentStep)) {
-            currentStep++;
-            showStep(currentStep);
-        }
-    });
-    
-    $('#prevBtn').on('click', function() {
-        currentStep--;
-        showStep(currentStep);
-    });
-
-    @if($selectedProduct && $recipe)
-        loadRecipeDetails({{ $selectedProduct->id }});
-    @endif
-});
-
-function loadRecipeDetails(productId) {
-    fetch(`/production/api/recipe-details/${productId}`)
-        .then(response => response.json())
-        .then(data => {
-            recipeData = data;
-            materialsData = data.materials;
-            outputQuantityPerBatch = data.output_quantity;
-            
-            $('#recipeIdInput').val(data.recipe_id);
-            $('#recipeName').text(data.recipe_name);
-            $('#outputQuantity').text(data.output_quantity);
-            $('#outputUnit').text(data.output_unit);
-            $('#productInfo').removeClass('hidden');
-            
-            displayMaterials();
-            updateMultiplier();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Gagal memuat data resep');
+        // Initialize Select2
+        productSelect.select2({
+            placeholder: 'Cari Produk...',
+            width: '100%',
+            theme: 'classic'
         });
-}
 
-function displayMaterials() {
-    const container = $('#materialsContainer');
-    container.empty();
-    
-    materialsData.forEach(material => {
-        const isSufficient = material.is_sufficient;
-        const statusClass = isSufficient ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
-        const statusIcon = isSufficient ? 'fa-check-circle text-green-600' : 'fa-exclamation-circle text-red-600';
-        
-        const html = `
-            <div class="border ${statusClass} rounded-lg p-4">
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100">
-                                <i class="fas fa-box text-orange-500 text-xs"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-sm font-semibold text-gray-900">${material.name}</h4>
-                            </div>
-                            <i class="fas ${statusIcon}"></i>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">Dibutuhkan</p>
-                                <p class="text-sm font-semibold text-gray-900">${material.required_quantity} ${material.unit}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">Stok Saat Ini</p>
-                                <p class="text-sm font-semibold ${isSufficient ? 'text-green-600' : 'text-red-600'}">
-                                    ${material.current_stock} ${material.unit}
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">Harga Satuan</p>
-                                <p class="text-sm font-semibold text-gray-900">Rp ${formatNumber(material.unit_price)}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.append(html);
-    });
-}
-
-function updateMultiplier() {
-    const plannedQty = parseFloat($('#plannedQuantity').val()) || 0;
-    const multiplier = outputQuantityPerBatch > 0 ? (plannedQty / outputQuantityPerBatch) : 1;
-    $('#multiplierDisplay').val(multiplier.toFixed(2) + 'x');
-}
-
-function calculateMaterialRequirements() {
-    const plannedQty = parseFloat($('#plannedQuantity').val()) || 0;
-    const multiplier = outputQuantityPerBatch > 0 ? (plannedQty / outputQuantityPerBatch) : 1;
-    
-    const container = $('#materialRequirements');
-    container.empty();
-    
-    let totalCost = 0;
-    
-    materialsData.forEach(material => {
-        const requiredQty = material.required_quantity * multiplier;
-        const cost = requiredQty * material.unit_price;
-        totalCost += cost;
-        
-        const isSufficient = material.current_stock >= requiredQty;
-        const statusIcon = isSufficient ? 'fa-check-circle text-green-600' : 'fa-times-circle text-red-600';
-        
-        const html = `
-            <div class="flex justify-between items-center py-2 border-b border-blue-100">
-                <div class="flex items-center gap-2">
-                    <i class="fas ${statusIcon} text-xs"></i>
-                    <span class="text-sm font-medium text-gray-900">${material.name}</span>
-                </div>
-                <div class="text-right">
-                    <p class="text-sm font-semibold text-gray-900">${requiredQty.toFixed(2)} ${material.unit}</p>
-                    <p class="text-xs text-gray-600">Rp ${formatNumber(cost)}</p>
-                </div>
-            </div>
-        `;
-        container.append(html);
-    });
-    
-    container.append(`
-        <div class="flex justify-between items-center pt-3 mt-3 border-t-2 border-blue-300">
-            <span class="text-sm font-bold text-gray-900">Total Estimasi Biaya:</span>
-            <span class="text-lg font-bold text-green-600">Rp ${formatNumber(totalCost)}</span>
-        </div>
-    `);
-    
-    return totalCost;
-}
-
-function showConfirmation() {
-    const productName = $('#productSelect option:selected').text();
-    const recipeName = $('#recipeName').text();
-    const quantity = $('#plannedQuantity').val();
-    const unit = $('#outputUnit').text();
-    const totalCost = calculateMaterialRequirements();
-    
-    $('#confirmProduct').text(productName);
-    $('#confirmRecipe').text(recipeName);
-    $('#confirmQuantity').text(`${quantity} ${unit}`);
-    $('#confirmCost').text(`Rp ${formatNumber(totalCost)}`);
-    
-    const multiplier = outputQuantityPerBatch > 0 ? (parseFloat(quantity) / outputQuantityPerBatch) : 1;
-    const confirmContainer = $('#confirmMaterials');
-    confirmContainer.empty();
-    
-    materialsData.forEach(material => {
-        const requiredQty = material.required_quantity * multiplier;
-        const html = `
-            <div class="flex justify-between items-center text-sm py-2 border-b border-gray-100">
-                <span class="text-gray-700">${material.name}</span>
-                <span class="font-semibold text-gray-900">${requiredQty.toFixed(2)} ${material.unit}</span>
-            </div>
-        `;
-        confirmContainer.append(html);
-    });
-}
-
-function validateStep(step) {
-    switch(step) {
-        case 1:
-            if (!$('#productSelect').val()) {
-                alert('Silakan pilih produk terlebih dahulu');
-                return false;
+        // Event for Product Selection
+        productSelect.on('change', function() {
+            const productId = this.value;
+            if(!productId) {
+                document.getElementById('recipe-preview').classList.add('hidden');
+                return;
             }
-            if (!recipeData) {
-                alert('Data resep belum dimuat. Silakan pilih produk yang valid.');
-                return false;
+
+            // Fetch Recipe Data
+            fetch(`{{ url('production/get-recipe') }}/${productId}`)
+                .then(r => r.json())
+                .then(res => {
+                    if(res.success) {
+                        recipeData = res.recipe;
+                        document.getElementById('recipe-preview').classList.remove('hidden');
+                        document.getElementById('recipe-name').textContent = recipeData.name;
+                        document.getElementById('recipe-output').textContent = `${recipeData.output_quantity} ${res.unit_name}`;
+                        document.getElementById('recipe-time').textContent = recipeData.estimated_time_minutes || '--';
+                        document.getElementById('unit-label').textContent = res.unit_name;
+                        
+                        // Prep Step 2 Table
+                        updateMaterialTable(res.materials, res.unit_name);
+                    } else {
+                        Swal.fire('Gagal', res.message || 'Produk belum memiliki resep aktif.', 'error');
+                        productSelect.val('').trigger('change');
+                    }
+                });
+        });
+
+        function updateMaterialTable(materials, productUnit) {
+            const tbody = document.getElementById('material-list-body');
+            tbody.innerHTML = '';
+            
+            materials.forEach(m => {
+                const isSuff = m.is_sufficient;
+                const row = `
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-6 py-5 whitespace-nowrap">
+                            <div class="text-sm font-black text-gray-900">${m.name}</div>
+                            <div class="text-[9px] font-black uppercase text-gray-300 font-mono tracking-tighter mt-1">#${m.code}</div>
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-center">
+                            <span class="text-xs font-black text-gray-700">${parseFloat(m.amount).toFixed(2)} ${m.unit}</span>
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-right">
+                            <span class="text-xs font-black ${isSuff ? 'text-cuan-green' : 'text-red-500'}">${parseFloat(m.available).toFixed(2)}</span>
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">${m.unit}</span>
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-center">
+                            <i class="fas ${isSuff ? 'fa-check-circle text-cuan-green' : 'fa-times-circle text-red-400'} text-base"></i>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        // Stepper Logic
+        nextBtn.addEventListener('click', () => {
+            if(currentStep === 1 && !productSelect.val()) return alertStep('Pilih produk terlebih dahulu.');
+            if(currentStep === 3 && !plannedQtyInput.value) return alertStep('Masukkan jumlah produksi.');
+            
+            if(currentStep < totalSteps) {
+                goToStep(currentStep + 1);
             }
-            return true;
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if(currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        });
+
+        function goToStep(step) {
+            // Hide current
+            document.getElementById(`content-step-${currentStep}`).classList.add('hidden');
             
-        case 2:
-            const plannedQty = parseFloat($('#plannedQuantity').val()) || 1;
-            const multiplier = outputQuantityPerBatch > 0 ? (plannedQty / outputQuantityPerBatch) : 1;
+            // Show new
+            document.getElementById(`content-step-${step}`).classList.remove('hidden');
             
-            let hasInsufficientMaterial = false;
-            materialsData.forEach(material => {
-                const requiredQty = material.required_quantity * multiplier;
-                if (material.current_stock < requiredQty) {
-                    hasInsufficientMaterial = true;
+            // Update indicator
+            document.getElementById(`circle-step-${currentStep}`).classList.remove('bg-cuan-green', 'text-white', 'shadow-lg', 'shadow-cuan-green/20');
+            document.getElementById(`circle-step-${currentStep}`).classList.add('bg-white', 'text-gray-300');
+            document.getElementById(`label-step-${currentStep}`).classList.remove('text-gray-900');
+            document.getElementById(`label-step-${currentStep}`).classList.add('text-gray-400');
+
+            document.getElementById(`circle-step-${step}`).classList.remove('bg-white', 'text-gray-300');
+            document.getElementById(`circle-step-${step}`).classList.add('bg-cuan-green', 'text-white', 'shadow-lg', 'shadow-cuan-green/20');
+            document.getElementById(`label-step-${step}`).classList.remove('text-gray-400');
+            document.getElementById(`label-step-${step}`).classList.add('text-gray-900');
+
+            currentStep = step;
+
+            // Buttons visibility
+            prevBtn.classList.toggle('hidden', currentStep === 1);
+            nextBtn.classList.toggle('hidden', currentStep === totalSteps);
+            submitBtn.classList.toggle('hidden', currentStep !== totalSteps);
+
+            // Update label
+            if(currentStep === 1) nextBtn.textContent = 'Lanjut ke Bahan Baku';
+            if(currentStep === 2) nextBtn.textContent = 'Lanjut ke Detail';
+            if(currentStep === 3) {
+                nextBtn.textContent = 'Lanjut ke Konfirmasi';
+                updateSummary();
+            }
+            if(currentStep === 4) prepareConfirmation();
+        }
+
+        function alertStep(msg) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian',
+                text: msg,
+                confirmButtonColor: '#658C58',
+                customClass: { popup: 'rounded-[3rem]' }
+            });
+        }
+
+        function updateSummary() {
+            const qty = parseFloat(plannedQtyInput.value) || 0;
+            if(!recipeData) return;
+
+            const multiplier = qty / recipeData.output_quantity;
+            document.getElementById('batch-multiplier').textContent = `x ${multiplier.toFixed(2)}`;
+            
+            // Re-fetch dynamic summary data if needed or calculate here
+            // For now just multiplier logic
+            let totalCost = 0;
+            let matCount = 0;
+            
+            if(recipeData.materials) {
+                matCount = recipeData.materials.length;
+                recipeData.materials.forEach(m => {
+                    const costPerUnit = m.raw_material ? (parseFloat(m.raw_material.purchase_price) || 0) : 0;
+                    totalCost += (parseFloat(m.amount) * multiplier) * costPerUnit;
+                });
+            }
+
+            document.getElementById('summary-material-count').textContent = `${matCount} Item Bahan`;
+            document.getElementById('summary-cost').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(totalCost)}`;
+        }
+
+        function prepareConfirmation() {
+            const qty = parseFloat(plannedQtyInput.value) || 0;
+            const unit = document.getElementById('unit-label').textContent;
+            
+            document.getElementById('confirm-product').textContent = recipeData.name;
+            document.getElementById('confirm-qty').textContent = `${qty} ${unit}`;
+            document.getElementById('confirm-multiplier').textContent = document.getElementById('batch-multiplier').textContent;
+            document.getElementById('confirm-cost').textContent = document.getElementById('summary-cost').textContent;
+            
+            const notes = document.querySelector('textarea[name="notes"]').value;
+            document.getElementById('confirm-notes').textContent = notes || '-- tidak ada catatan --';
+        }
+
+        // Form Submission Validation
+        document.getElementById('production-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                title: 'Konfirmasi Akhir',
+                text: 'Apakah Anda yakin ingin memulai produksi batch ini?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Mulai!',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#658C58',
+                cancelButtonColor: '#ef4444',
+                customClass: {
+                    popup: 'rounded-[3rem]',
+                    confirmButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest',
+                    cancelButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest'
+                }
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    this.submit();
                 }
             });
-            
-            if (hasInsufficientMaterial) {
-                if (!confirm('Ada bahan baku yang tidak mencukupi. Apakah Anda yakin ingin melanjutkan?')) {
-                    return false;
-                }
-            }
-            return true;
-            
-        case 3:
-            const qty = parseFloat($('#plannedQuantity').val());
-            if (!qty || qty <= 0) {
-                alert('Jumlah produksi harus lebih dari 0');
-                $('#plannedQuantity').focus();
-                return false;
-            }
-            return true;
-            
-        default:
-            return true;
-    }
-}
-
-function showStep(step) {
-    $('.step-content').addClass('hidden');
-    $(`#step${step}`).removeClass('hidden');
-    
-    $('.step-indicator').each(function(index) {
-        const stepNum = index + 1;
-        const circle = $(this).find('div').first();
-        const icon = circle.find('i');
-        const label = $(this).find('p');
-        
-        if (stepNum < step) {
-            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-blue-500 shadow-sm');
-            icon.removeClass('text-gray-400').addClass('text-white');
-            label.removeClass('text-gray-400').addClass('text-gray-600');
-        } else if (stepNum === step) {
-            circle.removeClass('bg-white border-2 border-gray-300').addClass('bg-blue-500 shadow-md ring-4 ring-blue-200');
-            icon.removeClass('text-gray-400').addClass('text-white');
-            label.removeClass('text-gray-400').addClass('text-blue-600 font-semibold');
-        } else {
-            circle.removeClass('bg-blue-500 shadow-md ring-4 ring-blue-200 shadow-sm').addClass('bg-white border-2 border-gray-300');
-            icon.removeClass('text-white').addClass('text-gray-400');
-            label.removeClass('text-blue-600 font-semibold text-gray-600').addClass('text-gray-400');
-        }
+        });
     });
-    
-    const progressPercent = ((step - 1) / (totalSteps - 1)) * 100;
-    $('#progressLine').css('width', progressPercent + '%');
-    
-    $('#prevBtn').toggle(step > 1);
-    $('#nextBtn').toggle(step < totalSteps);
-    $('#submitBtn').toggle(step === totalSteps);
-    
-    if (step === 4) {
-        showConfirmation();
-    }
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function formatNumber(num) {
-    return new Intl.NumberFormat('id-ID').format(Math.round(num));
-}
 </script>
+
+<style>
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeInUp 0.4s ease-out; }
+    
+    .select2-container--classic .select2-selection--single {
+        height: 60px !important;
+        padding-top: 15px !important;
+        border-radius: 1.5rem !important;
+        border: 1px solid #e5e7eb !important;
+        background-color: #f9fafb !important;
+        font-weight: 700 !important;
+    }
+    .select2-container--classic .select2-selection--single .select2-selection__arrow {
+        top: 15px !important;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+</style>
 @endpush
 @endsection

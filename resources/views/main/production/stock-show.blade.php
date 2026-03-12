@@ -1,469 +1,317 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Stok - ' . $product->name)
+@section('title', 'Detail Stok Produk - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('production.index') }}" class="text-gray-500 hover:text-gray-700">Produksi</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('production.index') }}" class="text-gray-500 hover:text-cuan-green transition-colors font-medium">Produksi</a>
 </li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Detail Stok</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-black tracking-tight">Detail Stok Produk</span>
 </li>
 @endsection
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-7xl mx-auto space-y-6">
-
-        @if(session('success'))
-            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
-                <p class="text-green-800">{{ session('success') }}</p>
+    <div class="max-w-7xl mx-auto space-y-8">
+        
+        {{-- HEADER --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div class="flex items-center gap-6">
+                 @if($product->image)
+                    <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" 
+                        class="h-16 w-16 rounded-[1.5rem] object-cover border-4 border-white shadow-xl shadow-gray-200/50">
+                @else
+                    <div class="h-16 w-16 rounded-[1.5rem] bg-gradient-to-br from-cuan-green to-cuan-dark flex items-center justify-center border-4 border-white shadow-xl shadow-cuan-green/20">
+                        <i class="fas fa-flask text-white text-xl"></i>
+                    </div>
+                @endif
+                <div>
+                     <h1 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
+                        {{ $product->name }}
+                        <span class="ml-2 px-3 py-1 bg-gray-100 text-gray-500 rounded-xl text-[10px] font-black uppercase tracking-widest border border-gray-200 align-middle">
+                            #{{ $product->code }}
+                        </span>
+                    </h1>
+                    <div class="flex items-center gap-4 mt-1.5">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-cuan-green bg-cuan-green/10 px-2.5 py-1 rounded-lg border border-cuan-green/20">
+                            Stok Outlet: {{ number_format($outletStock, 2) }} {{ $product->unit->name }}
+                        </span>
+                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Kadaluarsa: {{ number_format($expiredStock, 0) }}</span>
+                    </div>
+                </div>
             </div>
-        @endif
 
-        @if(session('error'))
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <p class="text-red-800">{{ session('error') }}</p>
-            </div>
-        @endif
-
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-500 border border-blue-100">
-                        <i class="fas fa-chart-line text-sm"></i>
-                    </span>
-                    <span>Detail Stok - {{ $product->name }}</span>
-                </h1>
-                <p class="mt-1 text-sm text-gray-500">
-                    Informasi lengkap stok produk dan status kadaluarsa
-                </p>
-            </div>
-            <div class="flex items-center gap-3">
-                <a href="{{ route('production.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                    <i class="fas fa-arrow-left text-sm"></i>
-                    <span>Kembali</span>
+            <div class="flex flex-wrap items-center gap-3">
+                 @can('buat produksi')
+                 <a href="{{ route('production.create', ['product_id' => $product->id]) }}" 
+                        class="inline-flex items-center gap-2 rounded-2xl bg-cuan-green px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                    <i class="fas fa-plus"></i>
+                    Mulai Produksi Baru
+                </a>
+                @endcan
+                <a href="{{ route('production.index') }}"
+                   class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                    Kembali
                 </a>
             </div>
         </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <div class="lg:col-span-2 space-y-6">
+        {{-- STATUS CARDS --}}
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <x-card-container class="p-6 border-l-4 border-l-blue-500 flex flex-col justify-center">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Total Stok Tersedia</p>
+                <h4 class="text-2xl font-black text-gray-900 leading-none">
+                    {{ number_format($outletStock, 2) }}
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{{ $product->unit->name }}</span>
+                </h4>
+            </x-card-container>
 
-                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-                    <div class="border-b border-gray-200 px-6 py-4">
-                        <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-info-circle text-blue-500"></i>
-                            <span>Informasi Produk</span>
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">Kode Produk</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ $product->code }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">Nama Produk</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ $product->name }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">Satuan</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ $product->unit->name ?? '-' }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">Total Stok</p>
-                                <p class="text-lg font-bold text-green-600">{{ number_format($totalStock, 2) }} {{ $product->unit->name ?? '' }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">Minimum Stok</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ number_format($product->min_stock, 2) }} {{ $product->unit->name ?? '' }}</p>
-                            </div>
-                            @if($product->shelf_life_days)
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1">Masa Simpan</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ $product->shelf_life_days }} hari</p>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                </section>
+            <x-card-container class="p-6 border-l-4 border-l-amber-500 flex flex-col justify-center">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Stok Segera Kadaluarsa</p>
+                <h4 class="text-2xl font-black text-amber-600 leading-none">
+                     {{ number_format($nearExpiryStock ?? 0, 2) }}
+                     <span class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{{ $product->unit->name }}</span>
+                </h4>
+            </x-card-container>
 
-                @if($product->shelf_life_days)
-                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-                    <div class="border-b border-gray-200 px-6 py-4">
-                        <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-calendar-times text-blue-500"></i>
-                            <span>Status Kadaluarsa Produk</span>
-                        </h2>
-                    </div>
+            <x-card-container class="p-6 border-l-4 border-l-red-500 flex flex-col justify-center">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Stok Kadaluarsa</p>
+                <h4 class="text-2xl font-black text-red-600 leading-none">
+                     {{ number_format($expiredStock, 2) }}
+                     <span class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{{ $product->unit->name }}</span>
+                </h4>
+            </x-card-container>
 
-                    <div class="p-6 space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-xs font-medium uppercase tracking-wide text-red-600">Kadaluarsa</p>
-                                        <p class="mt-1 text-xl font-bold text-red-700">{{ $stats['expired_count'] }}</p>
-                                        <p class="text-xs text-red-600 mt-0.5">{{ number_format($stats['expired_quantity'], 2) }} unit</p>
-                                    </div>
-                                    <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center border border-red-200">
-                                        <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
-                                    </div>
-                                </div>
-                            </div>
+             <x-card-container class="p-6 border-l-4 border-l-cuan-green flex flex-col justify-center">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Produksi Terakhir</p>
+                <h4 class="text-sm font-black text-gray-900 leading-none">
+                    {{ $productions->where('status', 'completed')->first()->updated_at->format('d M Y') ?? '--' }}
+                </h4>
+                <p class="text-[9px] font-bold text-gray-300 italic mt-2">{{ $productions->where('status', 'completed')->first()->updated_at->diffForHumans() ?? '--' }}</p>
+            </x-card-container>
+        </section>
 
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-xs font-medium uppercase tracking-wide text-yellow-600">Segera Kadaluarsa</p>
-                                        <p class="mt-1 text-xl font-bold text-yellow-700">{{ $stats['expiring_count'] }}</p>
-                                        <p class="text-xs text-yellow-600 mt-0.5">{{ number_format($stats['expiring_quantity'], 2) }} unit</p>
-                                    </div>
-                                    <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center border border-yellow-200">
-                                        <i class="fas fa-clock text-yellow-600 text-lg"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-3">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-xs font-medium uppercase tracking-wide text-green-600">Masih Valid</p>
-                                        <p class="mt-1 text-xl font-bold text-green-700">{{ $stats['valid_count'] }}</p>
-                                        <p class="text-xs text-green-600 mt-0.5">{{ number_format($stats['valid_quantity'], 2) }} unit</p>
-                                    </div>
-                                    <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center border border-green-200">
-                                        <i class="fas fa-check-circle text-green-600 text-lg"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        @if(count($expiredStocks) > 0)
-                        <div class="border border-red-200 rounded-lg overflow-hidden">
-                            <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex items-center justify-between">
-                                <h3 class="text-sm font-semibold text-red-800 flex items-center gap-2">
-                                    @can('hapus produk kadaluarsa')
-                                    <input type="checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 text-red-600 border-gray-300 rounded mr-1" title="Pilih Semua">
-                                    @endcan
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <span>Stok Kadaluarsa ({{ count($expiredStocks) }})</span>
-                                </h3>
-                                @can('hapus produk kadaluarsa')
-                                <button onclick="openRemoveExpiredModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">
-                                    <i class="fas fa-trash"></i>
-                                    <span>Hapus Baris Terpilih</span>
-                                </button>
-                                @endcan
-                            </div>
-                            <div class="divide-y divide-red-100">
-                                @foreach($expiredStocks as $stock)
-                                <div class="px-4 py-3 bg-white hover:bg-red-50 transition-colors">
-                                    <div class="flex items-center justify-between flex-wrap gap-3">
-                                        <div class="flex items-center gap-3 flex-1 min-w-0">
-                                            @can('hapus produk kadaluarsa')
-                                            <input type="checkbox" class="expired-checkbox w-4 h-4 text-red-600 border-gray-300 rounded flex-shrink-0" value="{{ $stock['batch_number'] }}">
+        {{-- BATCH TABLES --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {{-- AKTIF BATCH --}}
+            <x-card-container>
+                <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                     <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Batch Stok Aktif</h3>
+                     <span class="bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border border-blue-100">
+                         {{ $productions->where('status', 'completed')->where('is_disposed', false)->count() }} Batch
+                     </span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                         <thead class="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
+                            <tr>
+                                <th class="px-8 py-4 text-left">Batch #</th>
+                                <th class="px-8 py-4 text-right">Stok</th>
+                                <th class="px-8 py-4 text-center">Kadaluarsa</th>
+                                <th class="px-8 py-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            @forelse($productions->where('status', 'completed')->where('is_disposed', false) as $prod)
+                                @php
+                                    $isExpired = $prod->expiry_date && $prod->expiry_date->isPast();
+                                @endphp
+                                <tr class="hover:bg-gray-50/50 transition-colors {{ $isExpired ? 'bg-red-50/20' : '' }}">
+                                    <td class="px-8 py-5">
+                                        <div class="text-sm font-black text-gray-900">{{ $prod->batch_number }}</div>
+                                        <div class="text-[9px] font-black uppercase text-gray-300 tracking-tighter mt-1">{{ $prod->updated_at->format('d M Y') }}</div>
+                                    </td>
+                                    <td class="px-8 py-5 text-right whitespace-nowrap">
+                                        <span class="text-sm font-black text-gray-900">{{ number_format($prod->actual_quantity, 2) }}</span>
+                                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{{ $product->unit->name }}</span>
+                                    </td>
+                                    <td class="px-8 py-5 text-center">
+                                         @if($prod->expiry_date)
+                                            <span class="text-[10px] font-black uppercase tracking-widest {{ $isExpired ? 'text-red-500 animate-pulse' : 'text-gray-500' }}">
+                                                {{ $prod->expiry_date->format('d M Y') }}
+                                            </span>
+                                         @else
+                                            <span class="text-[10px] font-black text-gray-300 uppercase tracking-widest italic line-through">NONE</span>
+                                         @endif
+                                    </td>
+                                    <td class="px-8 py-5 text-center">
+                                         <div class="inline-flex items-center gap-2">
+                                            <a href="{{ route('production.show', $prod->id) }}" 
+                                                class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all active:scale-95 shadow-sm">
+                                                <i class="fas fa-eye text-xs"></i>
+                                            </a>
+                                            @can('buang stok produksi')
+                                             <button type="button" onclick="confirmDispose('{{ $prod->id }}', '{{ $prod->batch_number }}')"
+                                                class="w-10 h-10 flex items-center justify-center rounded-xl bg-amber-50 text-amber-500 hover:bg-amber-100 transition-all active:scale-95 border border-amber-100">
+                                                <i class="fas fa-trash-alt text-xs"></i>
+                                            </button>
                                             @endcan
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-semibold text-gray-900 truncate">Batch #{{ $stock['batch_number'] }}</p>
-                                                <div class="flex items-center gap-3 mt-1 flex-wrap text-xs">
-                                                    <span class="text-gray-600">
-                                                        <i class="fas fa-cubes mr-1"></i>
-                                                        {{ number_format($stock['quantity'], 2) }} {{ $product->unit->name ?? '' }}
-                                                    </span>
-                                                    <span class="text-gray-500">
-                                                        <i class="fas fa-calendar mr-1"></i>
-                                                        Produksi: {{ $stock['completed_at']->format('d M Y') }}
-                                                    </span>
-                                                    <span class="text-red-600 font-semibold">
-                                                        <i class="fas fa-calendar-times mr-1"></i>
-                                                        Kadaluarsa: {{ $stock['expired_at']->format('d M Y') }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200 flex-shrink-0">
-                                            {{ $stock['expired_at']->diffForHumans() }}
-                                        </span>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
+                                         </div>
+                                    </td>
+                                </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="px-8 py-10 text-center text-gray-400 font-bold uppercase tracking-widest text-[9px]">
+                                    Belum ada batch stok aktif.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </x-card-container>
 
-                        @if(count($expiringStocks) > 0)
-                        <div class="border border-yellow-200 rounded-lg overflow-hidden">
-                            <div class="bg-yellow-50 px-4 py-3 border-b border-yellow-200">
-                                <h3 class="text-sm font-semibold text-yellow-800 flex items-center gap-2">
-                                    <i class="fas fa-clock"></i>
-                                    <span>Segera Kadaluarsa ({{ count($expiringStocks) }})</span>
-                                </h3>
-                            </div>
-                            <div class="divide-y divide-yellow-100">
-                                @foreach($expiringStocks as $stock)
-                                <div class="px-4 py-3 bg-white hover:bg-yellow-50 transition-colors">
-                                    <div class="flex items-center justify-between flex-wrap gap-3">
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-semibold text-gray-900 truncate">Batch #{{ $stock['batch_number'] }}</p>
-                                            <div class="flex items-center gap-3 mt-1 flex-wrap text-xs">
-                                                <span class="text-gray-600">
-                                                    <i class="fas fa-cubes mr-1"></i>
-                                                    {{ number_format($stock['quantity'], 2) }} {{ $product->unit->name ?? '' }}
-                                                </span>
-                                                <span class="text-gray-500">
-                                                    <i class="fas fa-calendar mr-1"></i>
-                                                    Produksi: {{ $stock['completed_at']->format('d M Y') }}
-                                                </span>
-                                                <span class="text-yellow-600 font-semibold">
-                                                    <i class="fas fa-calendar-times mr-1"></i>
-                                                    Kadaluarsa: {{ $stock['expired_at']->format('d M Y') }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200 flex-shrink-0">
-                                            {{ $stock['expired_at']->diffForHumans() }}
-                                        </span>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-
-                        @if(count($validStocks) > 0)
-                        <div class="border border-green-200 rounded-lg overflow-hidden">
-                            <div class="bg-green-50 px-4 py-3 border-b border-green-200">
-                                <h3 class="text-sm font-semibold text-green-800 flex items-center gap-2">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Stok Valid ({{ count($validStocks) }})</span>
-                                </h3>
-                            </div>
-                            <div class="divide-y divide-green-100 max-h-64 overflow-y-auto">
-                                @foreach($validStocks as $stock)
-                                <div class="px-4 py-3 bg-white hover:bg-green-50 transition-colors">
-                                    <div class="flex items-center justify-between flex-wrap gap-3">
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-semibold text-gray-900 truncate">Batch #{{ $stock['batch_number'] }}</p>
-                                            <div class="flex items-center gap-3 mt-1 flex-wrap text-xs">
-                                                <span class="text-gray-600">
-                                                    <i class="fas fa-cubes mr-1"></i>
-                                                    {{ number_format($stock['quantity'], 2) }} {{ $product->unit->name ?? '' }}
-                                                </span>
-                                                <span class="text-gray-500">
-                                                    <i class="fas fa-calendar mr-1"></i>
-                                                    Produksi: {{ $stock['completed_at']->format('d M Y') }}
-                                                </span>
-                                                <span class="text-green-600">
-                                                    <i class="fas fa-calendar-check mr-1"></i>
-                                                    Kadaluarsa: {{ $stock['expired_at']->format('d M Y') }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200 flex-shrink-0">
-                                            {{ $stock['days_until_expiry'] }} hari lagi
-                                        </span>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-
-                        @if(count($expiredStocks) == 0 && count($expiringStocks) == 0 && count($validStocks) == 0)
-                        <div class="text-center py-8">
-                            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                                <i class="fas fa-box-open text-2xl text-gray-300"></i>
-                            </div>
-                            <p class="text-sm text-gray-500">Belum ada data stok produksi</p>
-                        </div>
-                        @endif
-                    </div>
-                </section>
-                @endif
-
-            </div>
-
-            <div class="space-y-6">
-                
-                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-                    <div class="border-b border-gray-200 px-6 py-4">
-                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-chart-pie text-blue-500"></i>
-                            <span>Ringkasan Stok</span>
-                        </h3>
-                    </div>
-
-                    <div class="p-6 space-y-4">
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <p class="text-xs font-medium text-blue-600 mb-1">Total Stok Saat Ini</p>
-                            <p class="text-2xl font-bold text-blue-700">
-                                {{ number_format($totalStock, 2) }}
-                            </p>
-                            <p class="text-xs text-blue-600 mt-1">{{ $product->unit->name ?? '' }}</p>
-                        </div>
-
-                        @if($product->shelf_life_days)
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <p class="text-xs font-medium text-green-600 mb-1">Stok Valid</p>
-                            <p class="text-2xl font-bold text-green-700">
-                                {{ number_format($stats['valid_quantity'], 2) }}
-                            </p>
-                            <p class="text-xs text-green-600 mt-1">{{ $stats['valid_count'] }} batch</p>
-                        </div>
-
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <p class="text-xs font-medium text-yellow-600 mb-1">Segera Kadaluarsa</p>
-                            <p class="text-2xl font-bold text-yellow-700">
-                                {{ number_format($stats['expiring_quantity'], 2) }}
-                            </p>
-                            <p class="text-xs text-yellow-600 mt-1">{{ $stats['expiring_count'] }} batch</p>
-                        </div>
-
-                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <p class="text-xs font-medium text-red-600 mb-1">Sudah Kadaluarsa</p>
-                            <p class="text-2xl font-bold text-red-700">
-                                {{ number_format($stats['expired_quantity'], 2) }}
-                            </p>
-                            <p class="text-xs text-red-600 mt-1">{{ $stats['expired_count'] }} batch</p>
-                        </div>
-                        @endif
-                    </div>
-                </section>
-
-            </div>
-
+             {{-- BATCH SEJARAH / DISPOSED --}}
+            <x-card-container>
+                <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                     <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Riwayat Keluar & Disposal</h3>
+                     <span class="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border border-gray-100">
+                         RECENT LOG
+                     </span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                         <thead class="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
+                            <tr>
+                                <th class="px-8 py-4 text-left">Batch #</th>
+                                <th class="px-8 py-4 text-right">Kuantitas</th>
+                                <th class="px-8 py-4 text-center">Status</th>
+                                <th class="px-8 py-4 text-center">Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            @forelse($productions->whereIn('status', ['cancelled'])->union($productions->where('is_disposed', true))->sortByDesc('updated_at')->take(10) as $prod)
+                                <tr class="hover:bg-gray-50/50 transition-colors opacity-80">
+                                    <td class="px-8 py-5">
+                                        <div class="text-[11px] font-black text-gray-700">{{ $prod->batch_number }}</div>
+                                    </td>
+                                    <td class="px-8 py-5 text-right whitespace-nowrap">
+                                        <span class="text-xs font-black text-gray-500">{{ number_format($prod->actual_quantity ?? $prod->planned_quantity, 2) }}</span>
+                                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">{{ $product->unit->name }}</span>
+                                    </td>
+                                    <td class="px-8 py-5 text-center">
+                                         @if($prod->is_disposed)
+                                         <span class="inline-flex items-center px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-[8px] font-black uppercase tracking-widest border border-amber-100">DISPOSED</span>
+                                         @else
+                                         <span class="inline-flex items-center px-2 py-1 bg-red-50 text-red-500 rounded-lg text-[8px] font-black uppercase tracking-widest border border-red-100">CANCELLED</span>
+                                         @endif
+                                    </td>
+                                    <td class="px-8 py-5 text-center whitespace-nowrap">
+                                        <span class="text-[10px] font-bold text-gray-400">{{ $prod->updated_at->format('d M, H:i') }}</span>
+                                    </td>
+                                </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="px-8 py-10 text-center text-gray-400 font-bold uppercase tracking-widest text-[9px]">
+                                    Belum ada data riwayat.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </x-card-container>
         </div>
 
     </div>
 </main>
 
-<div id="removeExpiredModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
-        <div class="bg-red-500 p-4 md:p-6 rounded-t-xl">
-            <h3 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
-                <i class="fas fa-trash"></i>
-                <span>Hapus Stok Kadaluarsa</span>
-            </h3>
-        </div>
-        
-        <form action="{{ route('production.stock.remove-expired', $product->id) }}" method="POST" id="removeExpiredForm">
-            @csrf
-            <div class="p-4 md:p-6 space-y-4">
-                <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
-                    <div class="flex items-start gap-2">
-                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-0.5 flex-shrink-0"></i>
-                        <p class="text-sm text-yellow-800">
-                            Stok yang dipilih akan dihapus dari sistem dan tidak dapat dikembalikan.
+{{-- DISPOSE MODAL (Reuse from show or trigger via JS) --}}
+@can('buang stok produksi')
+<div id="modal-dispose-stock" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeDisposeModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100 animate-fade-in">
+            <form id="dispose-form-dynamic" method="POST">
+                @csrf @method('PUT')
+                <div class="px-10 pt-10 pb-6 border-b border-gray-50 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-black text-gray-900 tracking-tight">Buang Stok <span id="dispose-batch-label"></span></h3>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Hapus sisa stok dari batch ini dari inventaris</p>
+                    </div>
+                    <button type="button" onclick="closeDisposeModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                         <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+                
+                <div class="p-10 space-y-6">
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Jumlah di-Dispose</label>
+                        <div class="relative">
+                            <input type="number" name="quantity" id="dispose-qty-input" step="0.01" required
+                                class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-xl font-black text-gray-900 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all">
+                            <span class="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-gray-400">{{ $product->unit->name }}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Alasan Pembuangan</label>
+                        <textarea name="reason" rows="3" required
+                            class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all"
+                            placeholder="Contoh: Kadaluarsa, rusak, terjatuh..."></textarea>
+                    </div>
+                    <div class="p-5 bg-red-50 border border-red-100 rounded-[1.5rem] flex items-center gap-4">
+                        <i class="fas fa-exclamation-triangle text-red-500"></i>
+                        <p class="text-[9px] font-black uppercase text-red-700 tracking-widest leading-relaxed">
+                            Aksi ini akan mengurangi stok di sistem secara permanen dan dicatat sebagai kerugian.
                         </p>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 rounded-lg p-3 md:p-4 text-sm">
-                    <p class="text-gray-700">
-                        <span class="font-semibold" id="selectedCount">0</span> batch dipilih untuk dihapus
-                    </p>
+                <div class="px-10 pb-10 flex gap-4">
+                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-[1.5rem] px-6 py-5 text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+                        Konfirmasi Pembuangan
+                    </button>
                 </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 p-4 md:p-6 bg-gray-50 rounded-b-xl border-t border-gray-200">
-                <button type="button" onclick="closeRemoveExpiredModal()" 
-                    class="w-full sm:flex-1 px-4 py-2 md:py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm md:text-base">
-                    Batal
-                </button>
-                <button type="submit" 
-                    class="w-full sm:flex-1 px-4 py-2 md:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm md:text-base">
-                    <i class="fas fa-trash mr-2"></i>
-                    Hapus Sekarang
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
+@endcan
 
 @push('scripts')
 <script>
-    function toggleSelectAll(checkbox) {
-        document.querySelectorAll('.expired-checkbox').forEach(cb => {
-            cb.checked = checkbox.checked;
-        });
-        updateSelectedCount();
+    function confirmDispose(id, batch) {
+        const modal = document.getElementById('modal-dispose-stock');
+        const form = document.getElementById('dispose-form-dynamic');
+        const label = document.getElementById('dispose-batch-label');
+        
+        label.textContent = `#${batch}`;
+        form.action = `{{ url('production/dispose') }}/${id}`;
+        
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
     }
 
-    function updateSelectedCount() {
-        const count = document.querySelectorAll('.expired-checkbox:checked').length;
-        document.getElementById('selectedCount').textContent = count;
+    function closeDisposeModal() {
+        document.getElementById('modal-dispose-stock').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
     }
 
-    // Add event listeners for checkboxes
-    document.querySelectorAll('.expired-checkbox').forEach(cb => {
-        cb.addEventListener('change', updateSelectedCount);
-    });
-
-    function openRemoveExpiredModal() {
-        const checkboxes = document.querySelectorAll('.expired-checkbox:checked');
-        if (checkboxes.length === 0) {
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('success'))
             Swal.fire({
-                icon: 'warning',
-                title: 'Pilih Batch',
-                text: 'Silakan pilih minimal satu batch untuk dihapus.',
-                confirmButtonColor: '#EF4444'
+                icon: 'success',
+                title: 'Berhasil',
+                text: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 3000,
+                iconColor: '#658C58',
+                customClass: { popup: 'rounded-[3rem]' }
             });
-            return;
-        }
-        
-        const form = document.getElementById('removeExpiredForm');
-        // Clear existing hidden inputs
-        form.querySelectorAll('input[name="batch_numbers[]"]').forEach(el => el.remove());
-        
-        checkboxes.forEach(checkbox => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'batch_numbers[]';
-            input.value = checkbox.value;
-            form.appendChild(input);
-        });
-        
-        updateSelectedCount();
-        document.getElementById('removeExpiredModal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeRemoveExpiredModal() {
-        document.getElementById('removeExpiredModal').classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-
-    document.getElementById('removeExpiredModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeRemoveExpiredModal();
+        @endif
     });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeRemoveExpiredModal();
-        }
-    });
-
-    // setTimeout(function() {
-    //     const alerts = document.querySelectorAll('.border-green-200, .border-red-200');
-    //     alerts.forEach(function(alert) {
-    //         alert.style.transition = 'opacity 0.5s ease-out';
-    //         alert.style.opacity = '0';
-    //         setTimeout(function() {
-    //             alert.remove();
-    //         }, 500);
-    //     });
-    // }, 5000);
 </script>
+<style>
+     @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeInUp 0.4s ease-out; }
+</style>
 @endpush
 @endsection
