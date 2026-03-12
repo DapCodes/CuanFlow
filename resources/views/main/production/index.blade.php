@@ -41,7 +41,7 @@
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
                 <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Antrian Pesanan</p>
-                <p class="mt-2 text-2xl font-black text-gray-900">{{ number_format($pendingSales->count(), 0) }}</p>
+                <p class="mt-2 text-2xl font-black text-gray-900" id="stat-queue-count">{{ number_format($pendingSales->count(), 0) }}</p>
             </div>
             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
                 <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Stok Menipis</p>
@@ -74,9 +74,7 @@
                     class="tab-btn active-tab border-cuan-green text-cuan-green whitespace-nowrap py-4 px-1 border-b-2 font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all"
                     onclick="switchTab('queue')">
                     Antrian Pesanan
-                    @if($pendingSales->count() > 0)
-                    <span class="bg-red-500 text-white py-0.5 px-2 rounded-lg text-[10px] font-black leading-none">{{ $pendingSales->count() }}</span>
-                    @endif
+                    <span id="tab-queue-badge" class="{{ $pendingSales->count() > 0 ? '' : 'hidden' }} bg-red-500 text-white py-0.5 px-2 rounded-lg text-[10px] font-black leading-none">{{ $pendingSales->count() }}</span>
                 </button>
                 <button type="button" 
                     id="tab-stock"
@@ -655,7 +653,13 @@
                 .then(r => r.json())
                 .then(res => {
                     if (res.success) {
-                        Swal.fire({ icon: 'success', title: 'Berhasil', text: res.message, customClass: { popup: 'rounded-[1.5rem]' } }).then(() => { location.reload(); });
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: res.message, customClass: { popup: 'rounded-[1.5rem]' } }).then(() => { 
+                            if (typeof refreshQueue === 'function') {
+                                refreshQueue();
+                            } else {
+                                location.reload();
+                            }
+                        });
                     } else {
                         Swal.fire('Gagal', res.message, 'error');
                     }
@@ -733,38 +737,133 @@
         const pusher = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER, forceTLS: true });
         const channel = pusher.subscribe('production.outlet.' + OUTLET_ID);
 
+        // Sound Notification
+        const notificationSound = new Audio("{{ asset('assets/sounds/ting.mp3') }}");
+        function playNotificationSound() {
+            notificationSound.play().catch(err => console.log('Autoplay blocked or audio error:', err));
+        }
+
+        window.refreshQueue = function() {
+            fetch(window.location.href, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // 1. Update Stats
+                const newStat = doc.getElementById('stat-queue-count');
+                const currStat = document.getElementById('stat-queue-count');
+                if (newStat && currStat) currStat.innerText = newStat.innerText;
+                
+                // 2. Update Badge
+                const newBadge = doc.getElementById('tab-queue-badge');
+                const currBadge = document.getElementById('tab-queue-badge');
+                if (newBadge && currBadge) {
+                    currBadge.innerText = newBadge.innerText;
+                    if (parseInt(newBadge.innerText) > 0) {
+                        currBadge.classList.remove('hidden');
+                    } else {
+                        currBadge.classList.add('hidden');
+                    }
+                }
+
+                // 3. Update Grid
+                const newGrid = doc.getElementById('production-grid');
+                const currGrid = document.getElementById('production-grid');
+                if (newGrid && currGrid) {
+                    const isNewEmpty = newGrid.querySelector('#no-orders-empty-state');
+                    const isCurrEmpty = currGrid.querySelector('#no-orders-empty-state');
+                    
+                    if (isNewEmpty || isCurrEmpty) {
+                        currGrid.innerHTML = newGrid.innerHTML;
+                    } else {
+                        const newItems = newGrid.querySelectorAll('.production-card-wrapper');
+                        const currItems = currGrid.querySelectorAll('.production-card-wrapper');
+                        
+                        const newItemIds = Array.from(newItems).map(el => {
+                            const card = el.querySelector('[id^="card-sale-"]');
+                            return card ? card.id : null;
+                        }).filter(id => id);
+                        
+                        const currItemIds = Array.from(currItems).map(el => {
+                            const card = el.querySelector('[id^="card-sale-"]');
+                            return card ? card.id : null;
+                        }).filter(id => id);
+
+                        // Remove items not in new list (if modal hidden)
+                        currItems.forEach(item => {
+                            const card = item.querySelector('[id^="card-sale-"]');
+                            if (!card) return;
+                            if (!newItemIds.includes(card.id)) {
+                                const saleId = card.id.replace('card-sale-', '');
+                                const modal = document.getElementById('modal-sale-' + saleId);
+                                if (!modal || modal.classList.contains('hidden')) {
+                                    item.remove();
+                                }
+                            }
+                        });
+
+                        // Add new items
+                        newItems.forEach(item => {
+                            const card = item.querySelector('[id^="card-sale-"]');
+                            if (!card) return;
+                            if (!currItemIds.includes(card.id)) {
+                                currGrid.appendChild(item);
+                            }
+                        });
+                    }
+                    if (typeof sortProductionCards === 'function') sortProductionCards();
+                }
+            })
+            .catch(err => console.error('Error refreshing queue:', err));
+        };
+
         channel.bind('new-order', function(data) {
              Swal.fire({
-                title: 'Pesanan Baru',
-                text: 'Invoice: ' + data.orderData.invoice_number,
                 toast: true,
                 position: 'top-end',
+                icon: 'success',
+                html: `
+                    <div class="text-left">
+                        <p class="text-sm font-black text-gray-900">Pesanan Baru</p>
+                        <p class="text-[11px] font-bold text-gray-500">Invoice: ${data.orderData.invoice_number} masuk antrian</p>
+                    </div>
+                `,
                 showConfirmButton: false,
-                timer: 4000,
-                background: '#658C58',
-                color: '#fff',
-                icon: 'info',
+                timer: 5000,
+                timerProgressBar: true,
+                background: '#f0fdf4',
+                iconColor: '#22c55e',
             });
-            setTimeout(() => location.reload(), 2000);
+            playNotificationSound();
+            refreshQueue();
         });
 
         channel.bind('kitchen-bell', function(data) {
              Swal.fire({
-                title: 'Permintaan Dapur',
-                text: 'Produksi segera: ' + data.orderData.invoice_number,
                 toast: true,
                 position: 'top-end',
-                showConfirmButton: false,
-                timer: 4000,
-                background: '#f97316',
-                color: '#fff',
                 icon: 'warning',
+                html: `
+                    <div class="text-left">
+                        <p class="text-sm font-black text-gray-900">Permintaan Dapur</p>
+                        <p class="text-[11px] font-bold text-gray-500">Prioritas Produksi: ${data.orderData.invoice_number}</p>
+                    </div>
+                `,
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true,
+                background: '#fff7ed',
+                iconColor: '#f97316',
             });
-             setTimeout(() => location.reload(), 2000);
+            playNotificationSound();
+            refreshQueue();
         });
 
         channel.bind('order-refunded', function(data) {
-            location.reload();
+            refreshQueue();
         });
     })();
 </script>

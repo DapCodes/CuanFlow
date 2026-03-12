@@ -7594,32 +7594,35 @@ function closeSaleDetailModal() {
         console.error('[POS Realtime] ❌ Subscription error for channel:', channelName, err);
     });
 
+    // Sound Notification
+    const notificationSound = new Audio("{{ asset('assets/sounds/ting.mp3') }}");
+    notificationSound.volume = 0.8;
+
+    function playNotificationSound() {
+        notificationSound.play().catch(function(e) {
+            console.warn('[POS Realtime] Audio play blocked (autoplay policy):', e.message);
+        });
+    }
+
     // Listen for production-completed event
     channel.bind('production-completed', function(data) {
         console.log('[POS Realtime] 🔔 Production completed event received:', data);
 
         const invoice = data.orderData ? data.orderData.invoice_number : (data.invoice_number || 'Unknown');
 
-        // Play ting.mp3 notification sound
-        try {
-            const audio = new Audio('{{ asset("assets/sounds/ting.mp3") }}');
-            audio.volume = 0.8;
-            audio.play().catch(function(e) {
-                console.warn('[POS Realtime] Audio play blocked (autoplay policy):', e.message);
-            });
-        } catch(err) {
-            console.warn('[POS Realtime] Audio error:', err);
-        }
+        playNotificationSound();
 
         // Show SweetAlert2 Toast
         Swal.fire({
             toast: true,
             position: 'top-end',
             icon: 'success',
-            html: '<div style="line-height:1.4">' +
-                      '<strong>Pesanan ' + invoice + ' sudah selesai di masak</strong>' +
-                      '<br><small style="color:#6b7280">Siap di sajikan pada pelanggan</small>' +
-                  '</div>',
+            html: `
+                <div class="text-left">
+                    <p class="text-sm font-black text-gray-900">Pesanan Selesai</p>
+                    <p class="text-[11px] font-bold text-gray-500">Invoice: ${invoice} siap disajikan</p>
+                </div>
+            `,
             showConfirmButton: false,
             timer: 8000,
             timerProgressBar: true,
@@ -7631,7 +7634,23 @@ function closeSaleDetailModal() {
             }
         });
 
+        // Trigger update to the pending production list if modal is open or for silent refresh
+        if (typeof refreshPendingProduction === 'function') {
+            refreshPendingProduction();
+        }
+
         console.log('[POS Realtime] ✅ Toast notification displayed for:', invoice);
+    });
+
+    // Listen for order-refunded event
+    channel.bind('order-refunded', function(data) {
+        if (typeof refreshPendingProduction === 'function') {
+            refreshPendingProduction();
+        }
+    });
+
+    channel.bind('kitchen-bell', function(data) {
+        playNotificationSound();
     });
 
     console.log('[POS Realtime] 🎧 Listening for production-completed on channel:', channelName);
