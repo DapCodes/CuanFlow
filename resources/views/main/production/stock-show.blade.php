@@ -9,99 +9,83 @@
 </li>
 <li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <span class="text-gray-900 font-black tracking-tight">Detail Stok Produk</span>
+    <span class="text-gray-900 font-medium tracking-tight">Detail Stok Produk</span>
 </li>
 @endsection
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-7xl mx-auto space-y-8">
+    <div class="max-w-7xl mx-auto space-y-6">
         
-        {{-- HEADER --}}
+        {{-- HEADER (Strictly matched employees/show.blade.php) --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div class="flex items-center gap-6">
                  @if($product->image)
                     <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" 
-                        class="h-16 w-16 rounded-[1.5rem] object-cover border-4 border-white shadow-xl shadow-gray-200/50">
+                        class="w-20 h-20 rounded-[2rem] object-cover border-4 border-white shadow-xl shadow-gray-200/50">
                 @else
-                    <div class="h-16 w-16 rounded-[1.5rem] bg-gradient-to-br from-cuan-green to-cuan-dark flex items-center justify-center border-4 border-white shadow-xl shadow-cuan-green/20">
-                        <i class="fas fa-flask text-white text-xl"></i>
+                    <div class="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-cuan-green to-cuan-dark flex items-center justify-center border-4 border-white shadow-xl shadow-cuan-green/20">
+                         <span class="text-white font-black text-2xl">
+                            {{ strtoupper(substr($product->name, 0, 2)) }}
+                        </span>
                     </div>
                 @endif
                 <div>
-                     <h1 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
-                        {{ $product->name }}
-                        <span class="ml-2 px-3 py-1 bg-gray-100 text-gray-500 rounded-xl text-[10px] font-black uppercase tracking-widest border border-gray-200 align-middle">
-                            #{{ $product->code }}
+                     <h1 class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">{{ $product->name }}</h1>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">#{{ $product->code }}</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-cuan-green/10 text-cuan-green border border-cuan-green/20">
+                            Stok: {{ number_format($outletStock, 2) }} {{ $product->unit->name }}
                         </span>
-                    </h1>
-                    <div class="flex items-center gap-4 mt-1.5">
-                        <span class="text-[9px] font-black uppercase tracking-widest text-cuan-green bg-cuan-green/10 px-2.5 py-1 rounded-lg border border-cuan-green/20">
-                            Stok Outlet: {{ number_format($outletStock, 2) }} {{ $product->unit->name }}
-                        </span>
-                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Kadaluarsa: {{ number_format($expiredStock, 0) }}</span>
                     </div>
                 </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
-                 @can('buat produksi')
-                 <a href="{{ route('production.create', ['product_id' => $product->id]) }}" 
-                        class="inline-flex items-center gap-2 rounded-2xl bg-cuan-green px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
-                    <i class="fas fa-plus"></i>
-                    Mulai Produksi Baru
-                </a>
-                @endcan
-                <a href="{{ route('production.index') }}"
-                   class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                 <a href="{{ route('production.index') }}"
+                   class="px-5 py-3 border border-gray-200 bg-white text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
                     Kembali
                 </a>
+                @can('buat produksi')
+                 <a href="{{ route('production.create', ['product_id' => $product->id]) }}" 
+                    class="px-5 py-3 bg-cuan-green text-white rounded-xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                    Produksi Baru
+                </a>
+                @endcan
             </div>
         </section>
 
-        {{-- STATUS CARDS --}}
-        <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <x-card-container class="p-6 border-l-4 border-l-blue-500 flex flex-col justify-center">
-                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Total Stok Tersedia</p>
-                <h4 class="text-2xl font-black text-gray-900 leading-none">
-                    {{ number_format($outletStock, 2) }}
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{{ $product->unit->name }}</span>
-                </h4>
-            </x-card-container>
-
-            <x-card-container class="p-6 border-l-4 border-l-amber-500 flex flex-col justify-center">
-                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Stok Segera Kadaluarsa</p>
-                <h4 class="text-2xl font-black text-amber-600 leading-none">
-                     {{ number_format($nearExpiryStock ?? 0, 2) }}
-                     <span class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{{ $product->unit->name }}</span>
-                </h4>
-            </x-card-container>
-
-            <x-card-container class="p-6 border-l-4 border-l-red-500 flex flex-col justify-center">
-                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Stok Kadaluarsa</p>
-                <h4 class="text-2xl font-black text-red-600 leading-none">
-                     {{ number_format($expiredStock, 2) }}
-                     <span class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{{ $product->unit->name }}</span>
-                </h4>
-            </x-card-container>
-
-             <x-card-container class="p-6 border-l-4 border-l-cuan-green flex flex-col justify-center">
-                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Produksi Terakhir</p>
-                <h4 class="text-sm font-black text-gray-900 leading-none">
-                    {{ $productions->where('status', 'completed')->first()->updated_at->format('d M Y') ?? '--' }}
-                </h4>
-                <p class="text-[9px] font-bold text-gray-300 italic mt-2">{{ $productions->where('status', 'completed')->first()->updated_at->diffForHumans() ?? '--' }}</p>
-            </x-card-container>
+        {{-- RINGKASAN STATISTIK (Simple style like employees index) --}}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Stok Tersedia</p>
+                <p class="mt-2 text-2xl font-black text-gray-900">{{ number_format($outletStock, 2) }}</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm border-l-4 border-l-amber-500">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Segera Kadaluarsa</p>
+                <p class="mt-2 text-2xl font-black text-amber-600">{{ number_format($nearExpiryStock ?? 0, 2) }}</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm border-l-4 border-l-red-500">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Kadaluarsa (Expired)</p>
+                <p class="mt-2 text-2xl font-black text-red-600">{{ number_format($expiredStock, 2) }}</p>
+            </div>
+             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Produksi Terakhir</p>
+                 @php
+                    $lastProd = $productions->where('status', 'completed')->first();
+                @endphp
+                <p class="mt-2 text-sm font-black text-gray-900">{{ $lastProd ? $lastProd->updated_at->format('d M Y') : '--' }}</p>
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{{ $lastProd ? $lastProd->updated_at->diffForHumans() : '-' }}</p>
+            </div>
         </section>
 
         {{-- BATCH TABLES --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {{-- AKTIF BATCH --}}
             <x-card-container>
-                <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
-                     <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Batch Stok Aktif</h3>
-                     <span class="bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border border-blue-100">
+                <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                     <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Batch Stok Aktif</h2>
+                     <span class="px-3 py-1 bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest text-gray-400 rounded-lg shadow-sm">
                          {{ $productions->where('status', 'completed')->where('is_disposed', false)->count() }} Batch
                      </span>
                 </div>
@@ -120,9 +104,9 @@
                                 @php
                                     $isExpired = $prod->expiry_date && $prod->expiry_date->isPast();
                                 @endphp
-                                <tr class="hover:bg-gray-50/50 transition-colors {{ $isExpired ? 'bg-red-50/20' : '' }}">
+                                <tr class="hover:bg-gray-50 transition-colors {{ $isExpired ? 'bg-red-50/20' : '' }}">
                                     <td class="px-8 py-5">
-                                        <div class="text-sm font-black text-gray-900">{{ $prod->batch_number }}</div>
+                                        <div class="text-sm font-black text-gray-900 leading-none">{{ $prod->batch_number }}</div>
                                         <div class="text-[9px] font-black uppercase text-gray-300 tracking-tighter mt-1">{{ $prod->updated_at->format('d M Y') }}</div>
                                     </td>
                                     <td class="px-8 py-5 text-right whitespace-nowrap">
@@ -165,12 +149,12 @@
                 </div>
             </x-card-container>
 
-             {{-- BATCH SEJARAH / DISPOSED --}}
+             {{-- BATCH RIWAYAT --}}
             <x-card-container>
-                <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
-                     <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Riwayat Keluar & Disposal</h3>
-                     <span class="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border border-gray-100">
-                         RECENT LOG
+                <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                     <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Riwayat Keluar & Disposal</h2>
+                     <span class="px-3 py-1 bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest text-gray-400 rounded-lg shadow-sm">
+                         LOG
                      </span>
                 </div>
                 <div class="overflow-x-auto">
@@ -185,7 +169,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-50">
                             @forelse($productions->whereIn('status', ['cancelled'])->union($productions->where('is_disposed', true))->sortByDesc('updated_at')->take(10) as $prod)
-                                <tr class="hover:bg-gray-50/50 transition-colors opacity-80">
+                                <tr class="hover:bg-gray-50 transition-colors opacity-80">
                                     <td class="px-8 py-5">
                                         <div class="text-[11px] font-black text-gray-700">{{ $prod->batch_number }}</div>
                                     </td>
@@ -220,7 +204,6 @@
     </div>
 </main>
 
-{{-- DISPOSE MODAL (Reuse from show or trigger via JS) --}}
 @can('buang stok produksi')
 <div id="modal-dispose-stock" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
@@ -231,17 +214,17 @@
                 @csrf @method('PUT')
                 <div class="px-10 pt-10 pb-6 border-b border-gray-50 flex items-center justify-between">
                     <div>
-                        <h3 class="text-xl font-black text-gray-900 tracking-tight">Buang Stok <span id="dispose-batch-label"></span></h3>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Hapus sisa stok dari batch ini dari inventaris</p>
+                        <h3 class="text-xl font-black text-gray-900 tracking-tight">Dispose Batch <span id="dispose-batch-label"></span></h3>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Hapus sisa stok dari inventaris secara resmi</p>
                     </div>
                     <button type="button" onclick="closeDisposeModal()" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400">
                          <i class="fas fa-times text-xs"></i>
                     </button>
                 </div>
                 
-                <div class="p-10 space-y-6">
+                <div class="p-10 space-y-8">
                     <div class="space-y-4">
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Jumlah di-Dispose</label>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Kuantitas di-Dispose</label>
                         <div class="relative">
                             <input type="number" name="quantity" id="dispose-qty-input" step="0.01" required
                                 class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-xl font-black text-gray-900 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all">
@@ -252,19 +235,19 @@
                         <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Alasan Pembuangan</label>
                         <textarea name="reason" rows="3" required
                             class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all"
-                            placeholder="Contoh: Kadaluarsa, rusak, terjatuh..."></textarea>
+                            placeholder="Wajib diisi..."></textarea>
                     </div>
                     <div class="p-5 bg-red-50 border border-red-100 rounded-[1.5rem] flex items-center gap-4">
                         <i class="fas fa-exclamation-triangle text-red-500"></i>
                         <p class="text-[9px] font-black uppercase text-red-700 tracking-widest leading-relaxed">
-                            Aksi ini akan mengurangi stok di sistem secara permanen dan dicatat sebagai kerugian.
+                            Aksi ini permanen dan akan diverifikasi oleh auditor sistem.
                         </p>
                     </div>
                 </div>
 
                 <div class="px-10 pb-10 flex gap-4">
                     <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-[1.5rem] px-6 py-5 text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-amber-500/20 active:scale-95">
-                        Konfirmasi Pembuangan
+                        Konfirmasi Disposal
                     </button>
                 </div>
             </form>
@@ -276,14 +259,9 @@
 @push('scripts')
 <script>
     function confirmDispose(id, batch) {
-        const modal = document.getElementById('modal-dispose-stock');
-        const form = document.getElementById('dispose-form-dynamic');
-        const label = document.getElementById('dispose-batch-label');
-        
-        label.textContent = `#${batch}`;
-        form.action = `{{ url('production/dispose') }}/${id}`;
-        
-        modal.classList.remove('hidden');
+        document.getElementById('dispose-batch-label').textContent = `#${batch}`;
+        document.getElementById('dispose-form-dynamic').action = `{{ url('production/dispose') }}/${id}`;
+        document.getElementById('modal-dispose-stock').classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
     }
 
@@ -301,7 +279,7 @@
                 showConfirmButton: false,
                 timer: 3000,
                 iconColor: '#658C58',
-                customClass: { popup: 'rounded-[3rem]' }
+                customClass: { popup: 'rounded-[1.5rem]' }
             });
         @endif
     });

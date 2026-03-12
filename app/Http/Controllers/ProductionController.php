@@ -1110,8 +1110,21 @@ class ProductionController extends Controller
             'valid_quantity' => collect($validStocks)->sum('quantity'),
         ];
 
+        $productions = Production::where('product_id', $product->id)
+            ->where('outlet_id', $outletId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $outletStock = $totalStock;
+        $expiredStock = $stats['expired_quantity'];
+        $nearExpiryStock = $stats['expiring_quantity'];
+
         return view('main.production.stock-show', compact(
             'product',
+            'productions',
+            'outletStock',
+            'expiredStock',
+            'nearExpiryStock',
             'totalStock',
             'expiredStocks',
             'expiringStocks',

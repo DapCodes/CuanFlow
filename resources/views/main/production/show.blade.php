@@ -9,144 +9,171 @@
 </li>
 <li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <span class="text-gray-900 font-black tracking-tight">Detail Batch</span>
+    <span class="text-gray-900 font-medium tracking-tight">Detail Batch</span>
 </li>
 @endsection
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-5xl mx-auto space-y-8">
-        
-        {{-- HEADER --}}
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        {{-- HEADER (Strictly matched employees/show.blade.php) --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div class="flex items-center gap-6">
-                 <div class="hidden sm:flex w-14 h-14 rounded-2xl bg-white border border-gray-100 items-center justify-center text-gray-400 shadow-sm">
-                    <i class="fas fa-boxes-stacked text-xl"></i>
-                </div>
-                <div>
-                     <h1 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
-                        {{ $production->product->name }}
-                        <span class="ml-2 px-3 py-1 bg-gray-100 text-gray-500 rounded-xl text-[10px] font-black uppercase tracking-widest border border-gray-200 align-middle">
-                            {{ $production->batch_number }}
+                @if($production->product->image)
+                    <img src="{{ Storage::url($production->product->image) }}" alt="{{ $production->product->name }}"
+                         class="w-20 h-20 rounded-[2rem] object-cover border-4 border-white shadow-xl shadow-gray-200/50">
+                @else
+                    <div class="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-cuan-green to-cuan-dark flex items-center justify-center border-4 border-white shadow-xl shadow-cuan-green/20">
+                         <span class="text-white font-black text-2xl">
+                            {{ strtoupper(substr($production->product->name, 0, 2)) }}
                         </span>
-                    </h1>
-                    <div class="flex items-center gap-4 mt-1.5">
-                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">{{ $production->created_at->format('d M Y, H:i') }}</span>
-                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">Oleh {{ $production->creator->name ?? 'Sistem' }}</span>
+                    </div>
+                @endif
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Batch #{{ $production->batch_number }}</h1>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $production->product->name }}</span>
+                        @php
+                            $statusClasses = [
+                                'planned' => 'bg-gray-100 text-gray-500 border-gray-200',
+                                'in_progress' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                'completed' => 'bg-cuan-green/10 text-cuan-green border-cuan-green/20'
+                            ];
+                            $statusLabels = ['planned' => 'Direncanakan', 'in_progress' => 'Sedang Proses', 'completed' => 'Selesai'];
+                            $currentStatus = $production->status;
+                            if ($production->is_disposed) {
+                                $currentStatus = 'disposed';
+                                $statusClasses['disposed'] = 'bg-amber-50 text-amber-600 border-amber-100';
+                                $statusLabels['disposed'] = 'Dibuang/Disposed';
+                            }
+                        @endphp
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {{ $statusClasses[$currentStatus] ?? 'bg-gray-100 text-gray-400 border-gray-200' }} border">
+                            {{ $statusLabels[$currentStatus] ?? $production->status }}
+                        </span>
                     </div>
                 </div>
             </div>
-
             <div class="flex flex-wrap items-center gap-3">
-                @if($production->status == 'planned' || $production->status == 'in_progress')
-                    @can('selesai produksi')
-                    <button type="button" onclick="confirmComplete()"
-                            class="inline-flex items-center gap-2 rounded-2xl bg-cuan-green px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
-                        Selesaikan Produksi
+                <a href="{{ route('production.index') }}"
+                   class="px-5 py-3 border border-gray-200 bg-white text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                    Kembali
+                </a>
+                
+                @if($production->status === 'planned')
+                <form action="{{ route('production.start', $production->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="px-5 py-3 bg-cuan-green text-white rounded-xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                        Mulai Masak
                     </button>
-                    @endcan
-                    @can('batal produksi')
-                    <button type="button" onclick="confirmCancel()"
-                            class="inline-flex items-center gap-2 rounded-2xl bg-white border border-red-100 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50 transition-all active:scale-95 shadow-sm">
-                        Batalkan
-                    </button>
-                    @endcan
+                </form>
+                @elseif($production->status === 'in_progress')
+                 <button type="button" onclick="openCompleteModal()" 
+                    class="px-5 py-3 bg-cuan-green text-white rounded-xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                    Selesaikan Produksi
+                </button>
                 @endif
             </div>
         </section>
 
-        {{-- STATUS & INFO CARDS --}}
-        <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <x-card-container class="p-6 col-span-1 md:col-span-1 flex flex-col justify-center items-center text-center space-y-4">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Status Saat Ini</p>
-                @php
-                    $statusConfig = [
-                        'planned' => ['class' => 'bg-gray-100 text-gray-500 border-gray-200', 'text' => 'DIRENCANAKAN'],
-                        'in_progress' => ['class' => 'bg-blue-50 text-blue-600 border-blue-200', 'text' => 'DIPROSES'],
-                        'completed' => ['class' => 'bg-cuan-green/10 text-cuan-green border-cuan-green/20', 'text' => 'SELESAI'],
-                        'cancelled' => ['class' => 'bg-red-50 text-red-600 border-red-200', 'text' => 'DIBATALKAN'],
-                    ];
-                    $config = $statusConfig[$production->status] ?? $statusConfig['planned'];
-                    if ($production->is_disposed) {
-                        $config = ['class' => 'bg-amber-50 text-amber-600 border-amber-200', 'text' => 'DIBUANG'];
-                    }
-                @endphp
-                <span class="inline-flex items-center px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest border-2 {{ $config['class'] }}">
-                    {{ $config['text'] }}
-                </span>
-                <p class="text-[9px] font-bold text-gray-300 italic">Terakhir diupdate {{ $production->updated_at->diffForHumans() }}</p>
-            </x-card-container>
-
-            <x-card-container class="p-6 col-span-1 md:col-span-3">
-                <div class="grid grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div>
-                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Informasi Produk</p>
-                        <h4 class="text-sm font-black text-gray-900 truncate">{{ $production->product->name }}</h4>
-                        <p class="text-[10px] font-bold text-gray-400 uppercase mt-1">{{ $production->product->code }}</p>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {{-- KOLOM KIRI (Info Utama) --}}
+            <div class="lg:col-span-8 space-y-6">
+                
+                {{-- Detail Produksi --}}
+                <x-card-container>
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Informasi Produksi</h2>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Status dan detail kuantitas</p>
                     </div>
-                    <div>
-                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Kuantitas Output</p>
-                        <h4 class="text-sm font-black text-gray-900">
-                             {{ number_format($production->actual_quantity ?? $production->planned_quantity, 2) }} 
-                             <span class="text-[10px] text-gray-400 uppercase ml-1">{{ $production->product->unit->name }}</span>
-                        </h4>
-                        @if($production->planned_quantity != $production->actual_quantity && $production->actual_quantity)
-                        <p class="text-[9px] font-bold text-amber-600 uppercase mt-1 italic">Target: {{ number_format($production->planned_quantity, 2) }}</p>
+                    <div class="px-8 py-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100">
+                                <i class="fas fa-calendar-alt text-cuan-green text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Direncanakan</p>
+                                <p class="text-sm font-bold text-gray-900">{{ $production->created_at->format('d M Y, H:i') }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100">
+                                <i class="fas fa-boxes text-blue-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Rencana Kuantitas</p>
+                                <p class="text-sm font-bold text-gray-900">
+                                    {{ number_format($production->planned_quantity, 2) }} 
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase ml-0.5">{{ $production->product->unit->name }}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                         <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100">
+                                <i class="fas fa-user-edit text-amber-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Oleh</p>
+                                <p class="text-sm font-bold text-gray-900">{{ $production->creator->name ?? '-' }}</p>
+                            </div>
+                        </div>
+
+                        @if($production->status === 'completed')
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100">
+                                <i class="fas fa-check-circle text-cuan-green text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Hasil Produksi (Net)</p>
+                                <p class="text-sm font-bold text-gray-900">
+                                    {{ number_format($production->actual_quantity - $production->waste_quantity, 2) }} 
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase ml-0.5">{{ $production->product->unit->name }}</span>
+                                </p>
+                            </div>
+                        </div>
                         @endif
                     </div>
-                    <div class="hidden lg:block">
-                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Catatan Produksi</p>
-                        <p class="text-[10px] font-bold text-gray-600 italic leading-relaxed">{{ $production->notes ?? '-- tidak ada catatan --' }}</p>
-                    </div>
-                </div>
-            </x-card-container>
-        </section>
+                </x-card-container>
 
-        {{-- MAIN DETAILS --}}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {{-- LEFT: BATCH DETAILS & MATERIALS --}}
-            <div class="lg:col-span-2 space-y-8">
-                 <x-card-container>
-                    <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
-                        <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Kebutuhan Bahan Baku</h3>
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-black bg-gray-50 text-gray-400 border border-gray-100 uppercase tracking-widest">
-                            {{ $production->materialUsages->count() }} Bahan
-                        </span>
+                {{-- Material Usage Table --}}
+                <x-card-container>
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Bahan Baku Digunakan</h2>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Detail konsumsi inventaris dapur</p>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
-                            <thead class="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
+                            <thead class="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100 text-center">
                                 <tr>
-                                    <th class="px-8 py-4 text-left">Item</th>
-                                    <th class="px-8 py-4 text-right">Kuantitas</th>
-                                    @can('lihat hpp')
-                                    <th class="px-8 py-4 text-right">Total Biaya</th>
-                                    @endcan
+                                    <th class="px-8 py-4 text-left">Bahan Baku</th>
+                                    <th class="px-8 py-4 text-right">Qty Pokok</th>
+                                    <th class="px-8 py-4 text-right">Harga Unit</th>
+                                    <th class="px-8 py-4 text-right">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50 bg-white">
-                                @forelse($production->materialUsages as $usage)
-                                <tr class="hover:bg-gray-50/50 transition-colors">
+                                @forelse($production->items as $item)
+                                <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="px-8 py-5">
-                                        <div class="text-sm font-black text-gray-900">{{ $usage->rawMaterial->name }}</div>
-                                        <div class="text-[9px] font-black uppercase text-gray-300 font-mono tracking-tighter mt-1">#{{ $usage->rawMaterial->code }}</div>
+                                        <div class="text-sm font-black text-gray-900 leading-none">{{ $item->rawMaterial->name }}</div>
+                                        <div class="text-[9px] font-black uppercase text-gray-300 font-mono tracking-tighter mt-1.5">UNIT: {{ $item->rawMaterial->unit->name }}</div>
                                     </td>
-                                    <td class="px-8 py-5 text-right">
-                                        <span class="text-sm font-black text-gray-700">{{ number_format($usage->quantity, 2) }}</span>
-                                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{{ $usage->rawMaterial->unit->name }}</span>
+                                    <td class="px-8 py-5 text-right whitespace-nowrap">
+                                        <span class="text-sm font-black text-gray-900">{{ number_format($item->actual_quantity ?? $item->planned_quantity, 2) }}</span>
                                     </td>
-                                    @can('lihat hpp')
+                                    <td class="px-8 py-5 text-right text-gray-500 font-bold">
+                                        Rp {{ number_format($item->unit_price, 0, ',', '.') }}
+                                    </td>
                                     <td class="px-8 py-5 text-right font-black text-gray-900">
-                                        Rp {{ number_format($usage->total_cost, 0, ',', '.') }}
+                                        Rp {{ number_format($item->total_price, 0, ',', '.') }}
                                     </td>
-                                    @endcan
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="3" class="px-8 py-10 text-center text-gray-400 font-bold uppercase tracking-widest text-[9px]">
-                                        Tidak ada data bahan baku digunakan.
-                                    </td>
+                                    <td colspan="4" class="px-8 py-10 text-center text-gray-400 font-bold uppercase tracking-widest text-[9px]">Tanpa penggunaan bahan baku (Non-Recipe).</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -154,268 +181,247 @@
                     </div>
                 </x-card-container>
 
-                @if($production->status == 'completed' && !$production->is_disposed)
-                <x-card-container class="p-8 border-l-4 border-l-cuan-green space-y-6">
-                    <div class="flex items-center justify-between">
-                         <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest">Ringkasan Selesai</h3>
-                         <span class="text-[10px] font-black uppercase tracking-widest text-cuan-green">{{ $production->updated_at->format('d M Y, H:i') }}</span>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
-                        <div>
-                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Total Output</p>
-                             <h4 class="text-lg font-black text-gray-900">
-                                {{ number_format($production->actual_quantity, 2) }} 
-                                <span class="text-xs text-gray-400 uppercase ml-1">{{ $production->product->unit->name }}</span>
-                            </h4>
+                {{-- Status Selesai Detail --}}
+                @if($production->status === 'completed')
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <x-card-container>
+                        <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                            <h2 class="text-base font-black text-gray-900 uppercase tracking-widest text-red-500">Waste & Kerugian</h2>
                         </div>
-                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Kualitas Batch</p>
-                            <span class="inline-flex items-center px-3 py-1 bg-cuan-green/10 text-cuan-green rounded-xl text-[10px] font-black uppercase tracking-widest border border-cuan-green/20">
-                                TERVERIFIKASI
-                            </span>
+                        <div class="px-8 py-8 space-y-6">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Jumlah Terbuang (Waste)</span>
+                                <span class="text-sm font-black text-red-600">{{ number_format($production->waste_quantity, 2) }} {{ $production->product->unit->name }}</span>
+                            </div>
+                            <div class="p-4 bg-red-50 border border-red-100 rounded-2xl">
+                                <p class="text-[9px] font-black text-red-700 uppercase tracking-widest mb-1">Alasan / Catatan</p>
+                                <p class="text-xs font-bold text-red-600 leading-relaxed italic">{{ $production->notes ?: 'Tidak ada catatan.' }}</p>
+                            </div>
                         </div>
-                    </div>
-                </x-card-container>
-                @endif
-            </div>
+                    </x-card-container>
 
-            {{-- RIGHT: SUMMARY & ACTIONS --}}
-            <div class="space-y-8">
-                {{-- HP SUMMRY --}}
-                @can('lihat hpp')
-                <x-card-container class="bg-gray-900 text-white p-8 space-y-6 overflow-hidden relative">
-                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-cuan-green/10 rounded-full blur-2xl"></div>
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-500 relative z-10">Ringkasan Biaya</h3>
-                    <div class="space-y-4 relative z-10">
-                        <div class="flex items-center justify-between border-b border-gray-800 pb-4">
-                            <span class="text-xs font-bold text-gray-400">Total Biaya Bahan</span>
-                            <span class="text-sm font-black">Rp {{ number_format($production->total_cost, 0, ',', '.') }}</span>
+                    <x-card-container>
+                         <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                            <h2 class="text-base font-black text-gray-900 uppercase tracking-widest text-blue-500">Masa Laku</h2>
                         </div>
-                        <div class="flex items-center justify-between pt-2">
-                             <div class="space-y-1">
-                                <span class="text-[9px] font-black uppercase tracking-widest text-gray-500">HPP / Unit</span>
-                                <h4 class="text-xl font-black text-cuan-green">
-                                    Rp {{ number_format($production->actual_quantity && $production->actual_quantity > 0 ? $production->total_cost / $production->actual_quantity : ($production->planned_quantity > 0 ? $production->total_cost / $production->planned_quantity : 0), 0, ',', '.') }}
-                                </h4>
-                             </div>
-                             <div class="h-10 w-10 bg-gray-800 rounded-xl flex items-center justify-center text-gray-400">
-                                <i class="fas fa-tag text-xs"></i>
-                             </div>
-                        </div>
-                    </div>
-                </x-card-container>
-                @endcan
-
-                {{-- EXPIRATION / DISPOSAL --}}
-                @if($production->status == 'completed' && !$production->is_disposed)
-                <x-card-container class="p-8 space-y-6 border-l-4 border-l-amber-400">
-                     <div class="flex items-center justify-between">
-                         <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-none">Kadaluarsa Batch</h3>
-                         <div class="h-8 w-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
-                             <i class="fas fa-calendar-times text-xs"></i>
+                         <div class="px-8 py-8 space-y-6 text-center">
+                             @if($production->expiry_date)
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tanggal Kadaluarsa</p>
+                                <h3 class="text-xl font-black text-gray-900">{{ $production->expiry_date->format('d M Y') }}</h3>
+                                @php $isExp = $production->expiry_date->isPast(); @endphp
+                                <div class="mt-4 px-4 py-2 rounded-xl {{ $isExp ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500' }} border border-transparent font-black text-[9px] uppercase tracking-widest inline-block">
+                                   {{ $isExp ? 'KADALUARSA' : $production->expiry_date->diffForHumans() }}
+                                </div>
+                             @else
+                                <div class="py-10 flex flex-col items-center justify-center opacity-40">
+                                    <i class="fas fa-infinity text-3xl text-gray-300 mb-2"></i>
+                                    <span class="text-[10px] font-black uppercase text-gray-400">Tanpa Batas Kadaluarsa</span>
+                                </div>
+                             @endif
                          </div>
+                    </x-card-container>
+                </div>
+                @endif
+            </div>
+
+            {{-- KOLOM KANAN (Aksi & Summary) --}}
+            <div class="lg:col-span-4 space-y-6">
+                
+                {{-- SUMMARY CARD (Replacing flashy one) --}}
+                <x-card-container>
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Ringkasan Biaya</h2>
                     </div>
-
-                    @php
-                        $isExpired = $production->expiry_date && $production->expiry_date->isPast();
-                        $expiryDays = $production->expiry_date ? $production->expiry_date->diffInDays(now(), false) : null;
-                    @endphp
-
-                    @if($production->expiry_date)
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-bold text-gray-400">Tgl. Kadaluarsa</span>
-                            <span class="text-xs font-black text-gray-900 uppercase tracking-widest">{{ $production->expiry_date->format('d M Y') }}</span>
+                    <div class="px-8 py-8 space-y-6">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                <span>Total Biaya Bahan</span>
+                                <span class="text-gray-900">Rp {{ number_format($production->items->sum('total_price'), 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs font-black text-gray-900 uppercase tracking-widest pt-4 border-t border-gray-100">
+                                <span>Estimasi HPP / Unit</span>
+                                @php
+                                    $netActual = $production->actual_quantity - $production->waste_quantity;
+                                    $costPerUnit = $netActual > 0 ? ($production->items->sum('total_price') / $netActual) : 0;
+                                @endphp
+                                <span class="text-cuan-green text-lg tracking-tighter">Rp {{ number_format($costPerUnit, 2, ',', '.') }}</span>
+                            </div>
                         </div>
-                        @if($isExpired)
-                        <div class="p-3 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center justify-center gap-2 animate-pulse">
-                            <i class="fas fa-exclamation-triangle text-xs"></i>
-                            <span class="text-[9px] font-black uppercase tracking-widest">TELAH KADALUARSA</span>
+                        <div class="p-5 bg-blue-50 border border-blue-100 rounded-3xl">
+                            <p class="text-[9px] font-bold text-blue-600 leading-relaxed italic">
+                                * HPP ini dihitung secara realtime berdasarkan penggunaan bahan baku aktual dibagi dengan hasil bersih produksi.
+                            </p>
                         </div>
-                        @elseif($expiryDays !== null && $expiryDays <= 0 && $expiryDays > -3)
-                        <div class="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 flex items-center justify-center gap-2">
-                            <i class="fas fa-history text-xs"></i>
-                            <span class="text-[9px] font-black uppercase tracking-widest">Segera Kadaluarsa ({{ abs($expiryDays) }} hari)</span>
-                        </div>
-                        @endif
                     </div>
-                    @else
-                    <p class="text-[10px] font-bold text-gray-400 italic">Tanggal kadaluarsa belum diset.</p>
-                    @endif
+                </x-card-container>
 
-                    @can('buang stok produksi')
-                    <button type="button" onclick="confirmDispose()"
-                        class="w-full px-5 py-4 bg-amber-100 text-amber-700 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-200 transition-all active:scale-95 border border-amber-200 shadow-sm">
-                        Buang Sisa Stok
-                    </button>
-                    @endcan
+                @if($production->status !== 'completed' && $production->status !== 'cancelled')
+                <x-card-container>
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-base font-black text-gray-900 uppercase tracking-widest text-amber-600">Admin Actions</h2>
+                    </div>
+                    <div class="px-8 py-8 flex flex-col gap-3">
+                         <button type="button" onclick="confirmCancel()" class="w-full px-5 py-4 border border-red-200 text-red-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all active:scale-95 shadow-sm">
+                            <i class="fas fa-times-circle mr-2"></i>Batalkan Batch
+                        </button>
+                    </div>
+                </x-card-container>
+                @endif
+                
+                @if($production->status === 'completed' && !$production->is_disposed)
+                <x-card-container>
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-base font-black text-gray-900 uppercase tracking-widest text-amber-600">Disposal</h2>
+                    </div>
+                    <div class="px-8 py-8">
+                         @can('buang stok produksi')
+                         <button type="button" onclick="openDisposeModal()" class="w-full px-5 py-4 bg-amber-50 text-amber-600 border border-amber-100 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-amber-100 transition-all active:scale-95">
+                            <i class="fas fa-trash-alt mr-2"></i>Buang Sisa Stok
+                        </button>
+                        @endcan
+                    </div>
                 </x-card-container>
                 @endif
             </div>
+
         </div>
 
     </div>
 </main>
 
-{{-- MODAL COMPLETION --}}
-<div id="modal-complete" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
+{{-- MODALS --}}
+@if($production->status === 'in_progress')
+<div id="modal-complete-production" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal('complete')"></div>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeCompleteModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100">
+        <div class="inline-block align-bottom bg-white rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100 animate-fade-in">
             <form action="{{ route('production.complete', $production->id) }}" method="POST">
-                @csrf @method('PUT')
-                <div class="px-10 pt-10 pb-6 border-b border-gray-50 flex items-center justify-between">
+                @csrf
+                <div class="px-10 pt-10 pb-6 border-b border-gray-50 bg-gray-50/50 flex items-center justify-between">
                     <div>
-                        <h3 class="text-xl font-black text-gray-900 tracking-tight">Selesaikan Batch</h3>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Update hasil produksi nyata untuk batch ini</p>
+                        <h3 class="text-xl font-black text-gray-900 tracking-tight">Selesaikan Produksi</h3>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Input hasil akhir timbangan/jumlah aktual</p>
                     </div>
-                    <button type="button" onclick="closeModal('complete')" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                    <button type="button" onclick="closeCompleteModal()" class="w-10 h-10 rounded-2xl bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400">
                          <i class="fas fa-times text-xs"></i>
                     </button>
                 </div>
                 
                 <div class="p-10 space-y-8">
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-4">
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Kuantitas Aktual</label>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Jumlah Aktual (Bruto)</label>
                             <div class="relative">
-                                <input type="number" name="actual_quantity" step="0.01" value="{{ $production->planned_quantity }}" required
+                                <input type="number" name="actual_quantity" step="0.01" required value="{{ $production->planned_quantity }}"
                                     class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-xl font-black text-gray-900 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
                                 <span class="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-gray-400">{{ $production->product->unit->name }}</span>
                             </div>
-                             <p class="text-[9px] font-bold text-gray-400 italic mt-1">Estimasi awal: {{ $production->planned_quantity }} {{ $production->product->unit->name }}</p>
                         </div>
                         <div class="space-y-4">
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Tgl. Kadaluarsa</label>
-                            <input type="date" name="expiry_date" 
-                                value="{{ $production->product->shelf_life_days ? now()->addDays($production->product->shelf_life_days)->format('Y-m-d') : '' }}"
-                                class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
-                             <p class="text-[9px] font-bold text-gray-400 mt-1 uppercase tracking-tighter">Shelf life: {{ $production->product->shelf_life_days ?? '--' }} hari</p>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Jumlah Waste (Rusak)</label>
+                            <div class="relative">
+                                <input type="number" name="waste_quantity" step="0.01" required value="0"
+                                    class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-xl font-black text-red-500 focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all">
+                                <span class="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-gray-400">{{ $production->product->unit->name }}</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="p-6 bg-blue-50 border border-blue-100 rounded-3xl flex gap-4">
-                        <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
-                        <p class="text-[10px] font-medium text-blue-700 leading-relaxed uppercase tracking-widest">
-                            Menyelesaikan batch akan menambah stok produk jadi dan melakukan pemotongan stok bahan baku secara final.
-                        </p>
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Catatan/Alasan Waste</label>
+                        <textarea name="notes" rows="3" class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all" placeholder="Ada keterangan tambahan?"></textarea>
                     </div>
                 </div>
 
                 <div class="px-10 pb-10 flex gap-4">
-                     <button type="submit" class="flex-1 bg-cuan-green hover:bg-cuan-dark text-white rounded-[1.5rem] px-6 py-5 text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
-                        Konfirmasi Selesai
+                    <button type="submit" class="flex-1 bg-cuan-green hover:bg-cuan-dark text-white rounded-[1.5rem] px-6 py-5 text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                        Konfirmasi & Selesai
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-{{-- MODAL DISPOSE --}}
-<div id="modal-dispose" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
-    <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal('dispose')"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100">
-            <form action="{{ route('production.dispose', $production->id) }}" method="POST">
-                @csrf @method('PUT')
-                <div class="px-10 pt-10 pb-6 border-b border-gray-50 flex items-center justify-between">
-                    <div>
-                        <h3 class="text-xl font-black text-gray-900 tracking-tight">Buang Stok</h3>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Hapus sisa stok dari batch ini dari inventaris</p>
-                    </div>
-                    <button type="button" onclick="closeModal('dispose')" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400">
-                         <i class="fas fa-times text-xs"></i>
-                    </button>
-                </div>
-                
-                <div class="p-10 space-y-6">
-                    <div class="space-y-4">
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Jumlah di-Dispose</label>
-                        <div class="relative">
-                            <input type="number" name="quantity" step="0.01" required
-                                class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-xl font-black text-gray-900 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all">
-                            <span class="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-gray-400">{{ $production->product->unit->name }}</span>
-                        </div>
-                    </div>
-                    <div class="space-y-4">
-                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400">Alasan Pembuangan</label>
-                        <textarea name="reason" rows="3" required
-                            class="w-full px-6 py-5 bg-gray-50 border border-gray-200 rounded-3xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all"
-                            placeholder="Contoh: Melewati masa kadaluarsa, rusak, terjatuh..."></textarea>
-                    </div>
-                </div>
-
-                <div class="px-10 pb-10 flex gap-4">
-                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-[1.5rem] px-6 py-5 text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-amber-500/20 active:scale-95">
-                        Konfirmasi Buang
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+@endif
 
 @push('scripts')
 <script>
-    function confirmComplete() {
-        document.getElementById('modal-complete').classList.remove('hidden');
+    function openCompleteModal() {
+        document.getElementById('modal-complete-production').classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
     }
 
-    function confirmDispose() {
-         document.getElementById('modal-dispose').classList.remove('hidden');
-         document.body.classList.add('overflow-hidden');
-    }
-
-    function closeModal(type) {
-        document.getElementById('modal-' + type).classList.add('hidden');
+    function closeCompleteModal() {
+        document.getElementById('modal-complete-production').classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
     }
 
     function confirmCancel() {
         Swal.fire({
             title: 'Batalkan Batch?',
-            text: 'Membatalkan batch akan mengembalikan rencana pemotongan stok bahan baku.',
+            text: "Status akan menjadi dibatalkan dan rencana pemotongan stok bahan baku (jika ada) akan dihapus.",
             icon: 'warning',
-            iconColor: '#ef4444',
             showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#9ca3af',
             confirmButtonText: 'Ya, Batalkan!',
-            cancelButtonText: 'Kembali',
-            customClass: {
-                popup: 'rounded-[3rem] border-none shadow-2xl',
-                confirmButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest bg-red-600 text-white hover:bg-red-700 transition-all mx-2',
-                cancelButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest bg-gray-50 border border-gray-100 text-gray-400 hover:bg-gray-100 transition-all mx-2',
-            },
-            buttonsStyling: false,
-            reverseButtons: true
-        }).then((res) => {
-            if(res.isConfirmed) {
-                const form = document.createElement('form');
-                form.action = '{{ route("production.cancel", $production->id) }}';
-                form.method = 'POST';
-                form.innerHTML = `@csrf @method('PUT')`;
-                document.body.appendChild(form);
-                form.submit();
+            cancelButtonText: 'Tutup',
+            reverseButtons: true,
+            customClass: { popup: 'rounded-[1.5rem]', confirmButton: 'rounded-xl', cancelButton: 'rounded-xl' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const f = document.createElement('form');
+                f.method = 'POST'; f.action = '{{ route("production.cancel", $production->id) }}';
+                const s = document.createElement('input'); 
+                s.type = 'hidden'; s.name = '_token'; s.value = '{{ csrf_token() }}';
+                f.appendChild(s); document.body.appendChild(f); f.submit();
             }
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: "{{ session('success') }}",
-                showConfirmButton: false,
-                timer: 3000,
-                iconColor: '#658C58',
-                customClass: { popup: 'rounded-[3rem]' }
-            });
+    function openDisposeModal() {
+        @if($production->status === 'completed')
+        Swal.fire({
+            title: 'Dispose Sisa Stok?',
+            html: `
+                <div class="text-left mt-4 space-y-4">
+                    <p class="text-xs font-bold text-gray-500 leading-relaxed uppercase tracking-widest">Aksi ini akan membuang sisa stok batch ini dari inventaris.</p>
+                    <input type="number" id="swal-dispose-qty" class="swal2-input !rounded-[1.5rem] !bg-gray-50 !border-gray-200" placeholder="Kuantitas yang dibuang..." value="{{ $production->actual_quantity - $production->waste_quantity }}">
+                    <textarea id="swal-dispose-reason" class="swal2-textarea !rounded-[1.5rem] !bg-gray-50 !border-gray-200" placeholder="Alasan pembuangan (Wajib)..."></textarea>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Konfirmasi Buang',
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#9ca3af',
+            reverseButtons: true,
+            customClass: { popup: 'rounded-[1.5rem]' },
+            preConfirm: () => {
+                const qty = document.getElementById('swal-dispose-qty').value;
+                const reason = document.getElementById('swal-dispose-reason').value;
+                if (!qty || qty <= 0 || !reason) { Swal.showValidationMessage('Mohon isi kuantitas dan alasan!'); return false; }
+                return { qty, reason };
+            }
+        }).then((res) => {
+            if (res.isConfirmed) {
+                const f = document.createElement('form');
+                f.method = 'POST'; f.action = '{{ url("production/dispose/" . $production->id) }}';
+                f.innerHTML = `@csrf @method('PUT')
+                    <input type="hidden" name="quantity" value="${res.value.qty}">
+                    <input type="hidden" name="reason" value="${res.value.reason}">`;
+                document.body.appendChild(f); f.submit();
+            }
+        });
         @endif
-    });
+    }
 </script>
+<style>
+     @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeInUp 0.4s ease-out; }
+</style>
 @endpush
 @endsection

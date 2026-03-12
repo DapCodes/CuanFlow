@@ -33,6 +33,35 @@
             </div>
         </section>
 
+        {{-- RINGKASAN STATISTIK (Simple style like employees index) --}}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Antrian Pesanan</p>
+                <p class="mt-2 text-2xl font-black text-gray-900">{{ number_format($pendingSales->count(), 0) }}</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Stok Menipis</p>
+                @php
+                    $lowStockCount = collect($stockProducts)->where('is_low_stock', true)->count();
+                @endphp
+                <p class="mt-2 text-2xl font-black text-amber-600">{{ number_format($lowStockCount, 0) }}</p>
+            </div>
+             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Stok Kadaluarsa</p>
+                @php
+                    $expiredCount = collect($stockProducts)->sum('total_expired_qty');
+                @endphp
+                <p class="mt-2 text-2xl font-black text-red-600">{{ number_format($expiredCount, 0) }}</p>
+            </div>
+             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Tersedia</p>
+                @php
+                    $availCount = collect($stockProducts)->where('stock', '>', 0)->count();
+                @endphp
+                <p class="mt-2 text-2xl font-black text-cuan-green">{{ number_format($availCount, 0) }}</p>
+            </div>
+        </section>
+
         <!-- Tabs & Sort Navigation -->
         <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 gap-4">
             <nav class="-mb-px flex space-x-8 overflow-x-auto no-scrollbar" aria-label="Tabs" id="productionTabs">
@@ -41,11 +70,8 @@
                     class="tab-btn active-tab border-cuan-green text-cuan-green whitespace-nowrap py-4 px-1 border-b-2 font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all"
                     onclick="switchTab('queue')">
                     Antrian Pesanan
-                    @php
-                        $totalPending = $pendingSales->count();
-                    @endphp
-                    @if($totalPending > 0)
-                    <span class="bg-red-500 text-white py-0.5 px-2 rounded-lg text-[10px] font-black leading-none">{{ $totalPending }}</span>
+                    @if($pendingSales->count() > 0)
+                    <span class="bg-red-500 text-white py-0.5 px-2 rounded-lg text-[10px] font-black leading-none">{{ $pendingSales->count() }}</span>
                     @endif
                 </button>
                 <button type="button" 
@@ -132,7 +158,7 @@
                             
                             <div class="inline-block align-bottom bg-white rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100">
                                 <!-- Modal Header -->
-                                <div class="relative px-8 pt-8 pb-6 border-b border-gray-50">
+                                <div class="relative px-8 pt-8 pb-6 border-b border-gray-50 bg-gray-50/50">
                                     <div class="flex items-center justify-between">
                                         <div>
                                             <h3 class="text-xl font-black text-gray-900 tracking-tight">{{ $sale->invoice_number }}</h3>
@@ -142,7 +168,7 @@
                                                 <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $sale->created_at->format('d M, H:i') }}</span>
                                             </div>
                                         </div>
-                                        <button onclick="closeSaleModal('{{ $sale->id }}')" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-all">
+                                        <button onclick="closeSaleModal('{{ $sale->id }}')" class="w-10 h-10 rounded-2xl bg-white hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-all shadow-sm border border-gray-100">
                                             <i class="fas fa-times text-xs"></i>
                                         </button>
                                     </div>
@@ -216,9 +242,6 @@
                                         </button>
                                     </form>
                                     @endif
-                                    <div class="flex items-center gap-2 text-gray-400">
-                                        <p class="text-[9px] font-black uppercase tracking-widest leading-relaxed text-center opacity-60">Pilih "Masak" untuk memproses item pesanan secara efisien.</p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -284,10 +307,10 @@
                                     <div class="flex items-center gap-4">
                                         @if($product['image'])
                                             <img src="{{ Storage::url($product['image']) }}" alt="{{ $product['name'] }}" 
-                                                class="h-14 w-14 rounded-2xl object-cover border-2 border-white shadow-lg shadow-gray-200/50">
+                                                class="h-12 w-12 rounded-xl object-cover border border-gray-200">
                                         @else
-                                            <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-cuan-green to-cuan-dark flex items-center justify-center border-2 border-white shadow-lg shadow-cuan-green/20">
-                                                <i class="fas fa-flask text-white text-sm"></i>
+                                            <div class="h-12 w-12 rounded-xl bg-gray-100 flex items-center justify-center border border-gray-200">
+                                                <i class="fas fa-flask text-gray-400 text-xs"></i>
                                             </div>
                                         @endif
                                         <div>
@@ -327,11 +350,11 @@
                                 <td class="px-6 py-5 whitespace-nowrap">
                                     <div class="flex flex-col gap-1.5 align-middle">
                                         @if($product['stock'] == 0)
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-200 w-fit">
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 w-fit">
                                             Kosong
                                         </span>
                                         @elseif($product['is_low_stock'])
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-200 w-fit">
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100 w-fit">
                                             Menipis
                                         </span>
                                         @else
@@ -352,16 +375,16 @@
                                     <div class="inline-flex items-center gap-2">
                                         @can('lihat stok produksi')
                                         <a href="{{ route('production.stock.show', $product['id']) }}" 
-                                           class="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all active:scale-95 shadow-sm"
+                                           class="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all active:scale-95 shadow-sm"
                                            title="Detail Stok">
-                                            <i class="fas fa-chart-line text-xs"></i>
+                                            <i class="fas fa-eye text-xs"></i>
                                         </a>
                                         @endcan
                                         
                                         @if($product['has_recipe'])
                                             @can('buat produksi')
                                             <a href="{{ route('production.create', ['product_id' => $product['id']]) }}" 
-                                               class="px-4 py-2 bg-cuan-green/10 text-cuan-green hover:bg-cuan-green hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm">
+                                               class="px-3 py-2 bg-cuan-green/10 text-cuan-green hover:bg-cuan-green hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 border border-cuan-green/20 shadow-sm">
                                                 Produksi
                                             </a>
                                             @endcan
@@ -388,7 +411,7 @@
             <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Riwayat Terbaru</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @foreach($recentProductions as $production)
-                <div class="p-5 bg-white border border-gray-100 rounded-3xl hover:shadow-xl hover:shadow-gray-200/50 transition-all flex items-center justify-between gap-4">
+                <div class="p-5 bg-white border border-gray-200 rounded-3xl hover:shadow-xl hover:shadow-gray-200/50 transition-all flex items-center justify-between gap-4">
                     <div class="flex items-center gap-4 flex-1 min-w-0">
                         <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center flex-shrink-0 text-gray-400 border border-gray-100 shadow-sm">
                             <i class="fas fa-flask text-sm"></i>
@@ -396,7 +419,7 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <h4 class="text-sm font-black text-gray-900 truncate">{{ $production->product->name }}</h4>
-                                <span class="px-2 py-0.5 rounded-lg text-[8px] font-black font-mono bg-gray-100 text-gray-500 border border-gray-200">{{ $production->batch_number }}</span>
+                                <span class="px-2 py-0.5 rounded-lg text-[8px] font-black font-mono bg-gray-100 text-gray-500 border border-gray-200">#{{ $production->batch_number }}</span>
                             </div>
                             <div class="flex items-center gap-3 mt-1.5 flex-wrap">
                                 <span class="text-[9px] font-black uppercase tracking-widest text-cuan-green">
@@ -411,12 +434,10 @@
                     <div class="flex items-center gap-3 flex-shrink-0">
                         @php
                             $statusKey = $production->status;
-                            if ($production->is_disposed) {
-                                $statusKey = 'disposed';
-                            }
+                            if ($production->is_disposed) $statusKey = 'disposed';
                             
                             $statusConfig = [
-                                'planned' => ['class' => 'bg-gray-50 text-gray-400 border-gray-100', 'text' => 'Direncanakan'],
+                                'planned' => ['class' => 'bg-gray-50 text-gray-400 border-gray-200', 'text' => 'Direncanakan'],
                                 'in_progress' => ['class' => 'bg-blue-50 text-blue-600 border-blue-100', 'text' => 'Diproses'],
                                 'completed' => ['class' => 'bg-cuan-green/10 text-cuan-green border-cuan-green/20', 'text' => 'Selesai'],
                                 'cancelled' => ['class' => 'bg-red-50 text-red-500 border-red-100', 'text' => 'Batal'],
@@ -427,13 +448,11 @@
                         <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border {{ $config['class'] }}">
                             {{ $config['text'] }}
                         </span>
-                        @can('lihat produksi')
                          <a href="{{ route('production.show', $production->id) }}" 
-                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all active:scale-95 shadow-sm"
+                            class="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all active:scale-95 shadow-sm border border-gray-100"
                             title="Detail">
                             <i class="fas fa-eye text-xs"></i>
                         </a>
-                        @endcan
                     </div>
                 </div>
                 @endforeach
@@ -459,7 +478,6 @@
     }
 
     function switchTab(tabId) {
-        // Update Buttons
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active-tab', 'border-cuan-green', 'text-cuan-green');
             btn.classList.add('border-transparent', 'text-gray-400');
@@ -471,7 +489,6 @@
             activeBtn.classList.add('active-tab', 'border-cuan-green', 'text-cuan-green');
         }
 
-        // Update Content
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.add('hidden');
         });
@@ -491,7 +508,6 @@
         document.body.classList.remove('overflow-hidden');
     }
 
-    // SweetAlert2 notification handler
     document.addEventListener('DOMContentLoaded', function() {
         @if(session('success'))
             Swal.fire({
@@ -502,23 +518,20 @@
                 timer: 3000,
                 iconColor: '#658C58',
                 customClass: {
-                    popup: 'rounded-[3rem] border-none shadow-2xl',
+                    popup: 'rounded-[1.5rem] border-none shadow-2xl',
                     title: 'font-black text-gray-900',
-                    htmlContainer: 'text-sm font-medium text-gray-500'
                 }
             });
         @endif
-
+        
         @if(session('error'))
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal',
                 text: "{{ session('error') }}",
-                confirmButtonColor: '#ef4444',
+                confirmButtonColor: '#658C58',
                 customClass: {
-                    popup: 'rounded-[3rem] border-none shadow-2xl',
-                    title: 'font-black text-gray-900',
-                    htmlContainer: 'text-sm font-medium text-gray-500'
+                    popup: 'rounded-[1.5rem] border-none shadow-2xl',
                 }
             });
         @endif
@@ -536,19 +549,12 @@
             const data = {};
             formData.forEach((value, key) => data[key] = value);
 
-            // Show loading
             Swal.fire({
-                title: 'Validasi Stok...',
-                text: 'Memeriksa ketersediaan bahan baku antar-ruang.',
+                title: 'Memproses...',
+                text: 'Memeriksa ketersediaan bahan baku.',
                 allowOutsideClick: false,
-                customClass: {
-                    popup: 'rounded-[3rem] border-none shadow-2xl',
-                    title: 'font-black text-gray-900',
-                    htmlContainer: 'text-sm font-medium text-gray-500'
-                },
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                customClass: { popup: 'rounded-[1.5rem]' },
+                didOpen: () => { Swal.showLoading(); }
             });
 
             fetch('{{ route("production.check-materials") }}', {
@@ -575,26 +581,26 @@
                     Swal.fire({
                         title: 'Stok Tidak Cukup',
                         html: `
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Beberapa bahan baku tidak tersedia di dapur.</p>
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">Beberapa bahan baku tidak tersedia di dapur.</p>
                             ${materialList}
                              <div class="mt-8 p-4 bg-gray-50 border border-gray-100 rounded-[1.5rem] text-left">
                                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
-                                    Pilih <b>Masak Tetap</b> untuk melanjutkan dengan stok yang ada, atau <b>Refund</b> untuk me-refund transaksi ini.
+                                    Pilih <b>Masak Tetap</b> untuk melanjutkan, atau <b>Refund</b> untuk membatalkan transaksi.
                                 </p>
                             </div>
                         `,
                         icon: 'warning',
-                        iconColor: '#f97316',
                         showCancelButton: true,
                         confirmButtonText: 'Masak Tetap',
                         cancelButtonText: 'Refund Pesanan',
+                        confirmButtonColor: '#658C58',
+                        cancelButtonColor: '#ef4444',
                         customClass: {
-                            popup: 'rounded-[3rem] border-none shadow-2xl',
-                            confirmButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest bg-cuan-green text-white hover:bg-cuan-dark transition-all mx-2',
-                            cancelButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 hover:bg-red-500 hover:text-white transition-all mx-2',
-                            actions: 'mt-8',
+                            popup: 'rounded-[1.5rem] border-none shadow-2xl',
+                            confirmButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest mx-2',
+                            cancelButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest mx-2',
                         },
-                        buttonsStyling: false,
+                        buttonsStyling: true,
                         reverseButtons: true,
                         allowOutsideClick: false
                     }).then((result) => {
@@ -607,25 +613,7 @@
                             form.dataset.validated = 'true';
                             form.submit();
                         } else if (result.dismiss === Swal.DismissReason.cancel) {
-                            Swal.fire({
-                                title: 'Konfirmasi Refund',
-                                text: 'Pesanan akan dibatalkan otomatis dan stok bahan tidak akan dipotong bila Anda men-refund sekarang.',
-                                icon: 'question',
-                                showCancelButton: true,
-                                confirmButtonText: 'Ya, Refund',
-                                cancelButtonText: 'Nanti',
-                                customClass: {
-                                    popup: 'rounded-[3rem] border-none shadow-2xl shadow-red-200/50',
-                                    confirmButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest bg-red-600 text-white hover:bg-red-700 transition-all mx-2',
-                                    cancelButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest bg-gray-50 border border-gray-100 text-gray-400 hover:bg-gray-100 transition-all mx-2',
-                                },
-                                buttonsStyling: false,
-                                reverseButtons: true
-                            }).then((refundRes) => {
-                                if (refundRes.isConfirmed) {
-                                    refundSale(data.sale_id || null, data.sale_item_id || null);
-                                }
-                            });
+                            refundSale(data.sale_id || null, data.sale_item_id || null);
                         }
                     });
                 } else {
@@ -635,7 +623,6 @@
             })
             .catch(err => {
                 Swal.close();
-                console.error(err);
                 Swal.fire('Error', 'Gagal memvalidasi bahan baku', 'error');
             });
         }
@@ -643,90 +630,64 @@
 
     function refundSale(saleId, saleItemId) {
         Swal.fire({
-            title: 'Memproses Refund...',
-            allowOutsideClick: false,
-            customClass: { popup: 'rounded-[3rem] border-none shadow-2xl' },
-            didOpen: () => { Swal.showLoading(); }
-        });
-
-        fetch('{{ route("production.refund-sale") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ sale_id: saleId, sale_item_id: saleItemId })
-        })
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: res.message,
-                    confirmButtonText: 'Tutup',
-                    customClass: {
-                        popup: 'rounded-[3rem] border-none shadow-2xl',
-                        confirmButton: 'rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest bg-cuan-green text-white hover:bg-cuan-dark transition-all'
-                    },
-                    buttonsStyling: false
-                }).then(() => { location.reload(); });
-            } else {
-                Swal.fire('Gagal', res.message, 'error');
+            title: 'Konfirmasi Refund',
+            text: 'Pesanan akan dibatalkan otomatis dan stok tidak akan dipotong.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Refund',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#9ca3af',
+            customClass: { popup: 'rounded-[1.5rem]' },
+            reverseButtons: true
+        }).then((refundRes) => {
+            if (refundRes.isConfirmed) {
+                Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                fetch('{{ route("production.refund-sale") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ sale_id: saleId, sale_item_id: saleItemId })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: res.message, customClass: { popup: 'rounded-[1.5rem]' } }).then(() => { location.reload(); });
+                    } else {
+                        Swal.fire('Gagal', res.message, 'error');
+                    }
+                });
             }
-        })
-        .catch(() => {
-            Swal.fire('Error', 'Gagal memproses refund', 'error');
         });
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // Initial Tab State (Queue by default)
-        const initialTab = urlParams.get('tab') || 'queue';
-        switchTab(initialTab);
-        
-        // Initial Sort State
-        const initialSort = urlParams.get('sort') || 'oldest';
-        if (typeof setSortMode === 'function') {
-            setSortMode(initialSort);
-        }
+        switchTab(urlParams.get('tab') || 'queue');
         
         const searchInput = document.getElementById('searchProduct');
         const filterStock = document.getElementById('filterStock');
-        
-        if(searchInput && filterStock) {
-            const productRows = document.querySelectorAll('.product-row');
+        const productRows = document.querySelectorAll('.product-row');
 
+        if(searchInput && filterStock) {
             function filterProducts() {
                 const searchTerm = (searchInput.value || '').toLowerCase();
                 const stockFilter = filterStock.value;
 
                 productRows.forEach(row => {
-                    const productName = row.dataset.name || '';
-                    const stockStatus = row.dataset.stockStatus || '';
-
-                    const matchesSearch = !searchTerm || productName.includes(searchTerm);
-                    const matchesFilter = !stockFilter || stockStatus === stockFilter;
-
+                    const matchesSearch = !searchTerm || row.dataset.name.includes(searchTerm);
+                    const matchesFilter = !stockFilter || row.dataset.stockStatus === stockFilter;
                     row.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
                 });
-                
                 updateURLParams({ search: searchInput.value, stock: filterStock.value });
             }
-
             searchInput.addEventListener('input', filterProducts);
             filterStock.addEventListener('change', filterProducts);
-            
             filterProducts();
         }
     });
 
     window.setSortMode = function(mode) {
-        const currentMode = document.getElementById('sort-mode');
-        if(currentMode) currentMode.value = mode;
-
+        document.getElementById('sort-mode').value = mode;
         const btnOldest = document.getElementById('btn-sort-oldest');
         const btnNewest = document.getElementById('btn-sort-newest');
 
@@ -737,7 +698,6 @@
             btnOldest.className = 'px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg text-gray-400 hover:text-gray-600 transition-all border border-transparent whitespace-nowrap';
             btnNewest.className = 'px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm bg-white text-cuan-green transition-all border border-transparent whitespace-nowrap';
         }
-
         updateURLParams({ sort: mode });
         sortProductionCards();
     };
@@ -745,23 +705,18 @@
     window.sortProductionCards = function() {
         const grid = document.getElementById('production-grid');
         if (!grid) return;
-        
         const sortMode = document.getElementById('sort-mode').value;
         const wrappers = Array.from(grid.querySelectorAll('.production-card-wrapper'));
-
-        if (wrappers.length === 0) return;
-
         wrappers.sort((a, b) => {
             const tsA = parseInt(a.dataset.timestamp) || 0;
             const tsB = parseInt(b.dataset.timestamp) || 0;
             return sortMode === 'newest' ? tsB - tsA : tsA - tsB;
         });
-
         wrappers.forEach(w => grid.appendChild(w));
     };
 </script>
 
-<!-- Pusher Realtime for Production Queue -->
+<!-- Pusher Realtime Placeholder -->
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
     (function() {
@@ -769,242 +724,45 @@
         const PUSHER_CLUSTER = @json(config('broadcasting.connections.pusher.options.cluster'));
         const OUTLET_ID = @json(auth()->user()->outlet_id);
 
-        if (!PUSHER_KEY || PUSHER_KEY === 'your-app-key') {
-            console.warn('[Production] Pusher key not configured. Realtime disabled.');
-            return;
-        }
+        if (!PUSHER_KEY || PUSHER_KEY === 'your-app-key') return;
 
-        const pusher = new Pusher(PUSHER_KEY, {
-            cluster: PUSHER_CLUSTER,
-            forceTLS: true
-        });
-
+        const pusher = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER, forceTLS: true });
         const channel = pusher.subscribe('production.outlet.' + OUTLET_ID);
 
-        window.handleIncomingOrder = function(order) {
-            if (!order || !order.items || order.items.length === 0) return;
-
-            if (document.getElementById('card-sale-' + order.sale_id)) {
-                return order.sale_id;
-            }
-
-            const emptyState = document.querySelector('#content-queue #no-orders-empty-state');
-            if (emptyState) emptyState.remove();
-
-            const grid = document.getElementById('production-grid');
-            if (!grid) return;
-
-            // Simple HTML build for pusher
-            let itemsHtml = '';
-            order.items.forEach(function(item) {
-                const notesHtml = item.notes 
-                    ? `<span class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-amber-50 border border-amber-100 text-amber-600">${escapeHtml(item.notes)}</span>` 
-                    : '';
-
-                const actionHtml = item.has_recipe
-                    ? `<div class="flex items-center gap-2">
-                           <a href="/production/preparation/${item.id}" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm">Detail</a>
-                           <form action="/production" method="POST">
-                               <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]')?.content || ''}">
-                               <input type="hidden" name="product_id" value="${item.product_id}">
-                               <input type="hidden" name="planned_quantity" value="${item.quantity}">
-                               <input type="hidden" name="sale_item_id" value="${item.id}">
-                               <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-cuan-green text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cuan-dark transition-all shadow-md shadow-cuan-green/20">Masak</button>
-                           </form>
-                       </div>`
-                    : `<div class="w-full flex items-center justify-center px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-100 text-[9px] font-black uppercase tracking-widest opacity-60">Tanpa Resep</div>`;
-
-                itemsHtml += `
-                    <div class="p-5 bg-gray-50 border border-gray-100 rounded-3xl hover:bg-white hover:border-cuan-green/20 hover:shadow-xl hover:shadow-gray-200/50 transition-all">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div class="flex items-center gap-4">
-                                <div class="h-12 w-12 rounded-2xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-gray-100">
-                                    <i class="fas fa-utensils text-gray-400"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <h4 class="text-sm font-black text-gray-900 truncate pr-4">${escapeHtml(item.product_name)}</h4>
-                                    <div class="flex flex-wrap items-center gap-2 mt-2">
-                                        <span class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white border border-gray-100 text-gray-600 shadow-sm">${item.quantity} ${escapeHtml(item.unit)}</span>
-                                        ${notesHtml}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-shrink-0">${actionHtml}</div>
-                        </div>
-                    </div>`;
-            });
-
-            const tableHtml = order.table_name 
-                ? `<div class="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 border border-transparent group-hover:border-gray-100 group-hover:bg-white transition-all">
-                       <div class="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
-                           <i class="fas fa-chair text-[10px]"></i>
-                       </div>
-                       <span class="text-xs font-bold text-gray-700">Meja: ${escapeHtml(order.table_name)}</span>
-                   </div>` 
-                : '';
-
-            const cardHtml = `
-                <div class="production-card-wrapper" data-timestamp="${order.timestamp}">
-                    <div class="group bg-white border border-gray-200 rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full relative animate-fade-in" id="card-sale-${order.sale_id}">
-                        <div class="p-6 flex-1 flex flex-col">
-                            <div class="flex items-start justify-between gap-3 mb-6">
-                                <div class="space-y-1">
-                                    <h3 class="font-black text-gray-900 text-lg tracking-tight">${escapeHtml(order.invoice_number)}</h3>
-                                    <div class="flex flex-wrap items-center gap-2 pt-1">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100">${order.created_at}</span>
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100">${order.items_count} Item</span>
-                                    </div>
-                                </div>
-                                <div class="h-10 w-10 rounded-2xl bg-gray-50 flex items-center justify-center flex-shrink-0 text-gray-400 group-hover:bg-cuan-green group-hover:text-white transition-all duration-300">
-                                    <i class="fas fa-receipt text-sm"></i>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3 mb-8">
-                                <div class="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 border border-transparent group-hover:border-gray-100 group-hover:bg-white transition-all">
-                                    <div class="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
-                                        <i class="fas fa-user text-[10px]"></i>
-                                    </div>
-                                    <span class="text-xs font-bold text-gray-700 truncate capitalize">${escapeHtml(order.customer_name)}</span>
-                                </div>
-                                ${tableHtml}
-                            </div>
-
-                            <div class="mt-auto pt-4">
-                                <button type="button" onclick="openSaleModal('${order.sale_id}')"
-                                    class="w-full bg-cuan-green hover:bg-cuan-dark text-white rounded-2xl px-5 py-4 text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
-                                    Buka Pesanan
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Realtime Modal Wrapper Placeholder -->
-                    <div id="modal-sale-${order.sale_id}" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
-                        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
-                            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeSaleModal('${order.sale_id}')"></div>
-                            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                            <div class="inline-block align-bottom bg-white rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100">
-                                <div class="relative px-8 pt-8 pb-6 border-b border-gray-50">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <h3 class="text-xl font-black text-gray-900 tracking-tight">${escapeHtml(order.invoice_number)}</h3>
-                                            <div class="flex items-center gap-2 mt-2">
-                                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">${escapeHtml(order.customer_name)}</span>
-                                                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">${order.created_at}</span>
-                                            </div>
-                                        </div>
-                                        <button onclick="closeSaleModal('${order.sale_id}')" class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-all">
-                                            <i class="fas fa-times text-xs"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="p-8">
-                                    <div class="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar no-scrollbar">${itemsHtml}</div>
-                                </div>
-                                <div class="px-8 pb-8 flex flex-col items-center gap-4">
-                                     ${order.items.length > 1 ? `
-                                        <form action="/production/store-all" method="POST" class="w-full">
-                                            <input type="hidden" name="_token" value="${document.querySelector('meta[name=csrf-token]')?.content || ''}">
-                                            <input type="hidden" name="sale_id" value="${order.sale_id}">
-                                            <button type="submit" class="w-full bg-cuan-green hover:bg-cuan-dark text-white rounded-[1.5rem] px-5 py-4 text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
-                                                Masak Semua (${order.items.length} Item)
-                                            </button>
-                                        </form>
-                                     ` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-
-            grid.insertAdjacentHTML('afterbegin', cardHtml);
-            sortProductionCards();
-            return order.sale_id;
-        };
-
-        const playNotificationSound = function() {
-            try {
-                const audio = new Audio('{{ asset("assets/sounds/ting.mp3") }}');
-                audio.play().catch(e => console.warn('[Production] Audio play failed:', e));
-            } catch (e) {}
-        };
-
-        const showRealtimeToast = function(message) {
+        channel.bind('new-order', function(data) {
              Swal.fire({
                 title: 'Pesanan Baru',
-                text: message,
+                text: 'Invoice: ' + data.orderData.invoice_number,
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 4000,
-                timerProgressBar: true,
                 background: '#658C58',
                 color: '#fff',
                 icon: 'info',
-                iconColor: '#fff',
-                customClass: {
-                    popup: 'rounded-2xl',
-                    title: 'font-black',
-                }
             });
-        };
-
-        channel.bind('new-order', function(data) {
-            const saleId = handleIncomingOrder(data.orderData);
-            playNotificationSound();
-            showRealtimeToast('Invoise: ' + data.orderData.invoice_number);
+            setTimeout(() => location.reload(), 2000);
         });
 
         channel.bind('kitchen-bell', function(data) {
-            const saleId = handleIncomingOrder(data.orderData);
-            if (saleId) {
-                const card = document.getElementById('card-sale-' + saleId);
-                if (card) {
-                    card.classList.add('ring-4', 'ring-amber-400', 'ring-opacity-50');
-                    setTimeout(() => card.classList.remove('ring-4', 'ring-amber-400', 'ring-opacity-50'), 10000);
-                }
-            }
-            playNotificationSound();
-            showRealtimeToast('Permintaan Produksi: ' + data.orderData.invoice_number);
+             Swal.fire({
+                title: 'Permintaan Dapur',
+                text: 'Produksi segera: ' + data.orderData.invoice_number,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                background: '#f97316',
+                color: '#fff',
+                icon: 'warning',
+            });
+             setTimeout(() => location.reload(), 2000);
         });
 
         channel.bind('order-refunded', function(data) {
-            const saleId = data.orderData.sale_id;
-            const card = document.getElementById('card-sale-' + saleId);
-            if (card) {
-                const wrapper = card.closest('.production-card-wrapper');
-                if (wrapper) {
-                    wrapper.style.transition = 'all 0.5s ease';
-                    wrapper.style.opacity = '0';
-                    wrapper.style.transform = 'scale(0.9)';
-                    setTimeout(() => {
-                        wrapper.remove();
-                        const grid = document.getElementById('production-grid');
-                        if (grid && grid.querySelectorAll('.production-card-wrapper').length === 0) {
-                            grid.innerHTML = `<div id="no-orders-empty-state" class="col-span-full py-20 bg-white rounded-[3rem] border border-gray-100 shadow-sm text-center"><div class="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-6"><i class="fas fa-check-double text-gray-300 text-3xl"></i></div><h3 class="text-xl font-black text-gray-900 mb-2 tracking-tight">Dapur Bersih!</h3><p class="text-xs font-medium text-gray-400 max-w-xs mx-auto uppercase tracking-widest">Tidak ada antrian pesanan saat ini.</p></div>`;
-                        }
-                    }, 500);
-                }
-            }
+            location.reload();
         });
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return String(text).replace(/[&<>"']/g, m => map[m]);
-        }
     })();
 </script>
-
-<style>
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in { animation: fadeInUp 0.5s ease-out; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
 @endpush
 @endsection
