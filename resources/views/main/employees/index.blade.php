@@ -3,9 +3,9 @@
 @section('title', 'Kelola Pegawai - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
+<li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <span class="text-gray-900 font-medium">Kelola Pegawai</span>
+    <span class="text-gray-900 font-medium tracking-tight">Kelola Pegawai</span>
 </li>
 @endsection
 
@@ -60,9 +60,10 @@
         <x-card-container>
             {{-- Toolbar: Search & Filter --}}
             <form action="{{ route('employees.index') }}" method="GET" id="filterForm" class="px-6 py-5 border-b border-gray-100 bg-white space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
-                <div class="flex-1">
+                <div class="flex-1 relative">
                     <input type="text" name="search" id="searchEmployee" value="{{ request('search') }}" placeholder="Cari nama atau email..."
-                           class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
+                           class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                 </div>
 
                 <div class="flex flex-wrap gap-3">
