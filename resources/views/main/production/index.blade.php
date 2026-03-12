@@ -24,9 +24,13 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('production.history') }}"
+                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+                    <span>Riwayat Produksi</span>
+                </a>
                 @can('buat produk')
                 <a href="{{ route('products-hpp.create') }}"
-                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+                   class="inline-flex items-center gap-2 rounded-xl bg-cuan-green px-5 py-3 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
                     <span>Tambah Produk</span>
                 </a>
                 @endcan

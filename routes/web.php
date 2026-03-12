@@ -227,6 +227,7 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
     // Production
     Route::prefix('production')->name('production.')->middleware('feature.access:production')->group(function () {
         Route::get('/', [ProductionController::class, 'index'])->name('index');
+        Route::get('/history', [ProductionController::class, 'history'])->name('history');
         Route::get('/create', [ProductionController::class, 'create'])->name('create');
         Route::post('/', [ProductionController::class, 'store'])->name('store');
         Route::post('/store-all', [ProductionController::class, 'storeAll'])->name('store-all'); // NEW ROUTE

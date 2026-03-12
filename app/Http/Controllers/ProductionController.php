@@ -126,6 +126,28 @@ class ProductionController extends Controller
         return view('main.production.index', compact('stockProducts', 'pendingSales', 'recentProductions'));
     }
 
+    public function history(Request $request)
+    {
+        if (! auth()->user()->can('lihat produksi')) {
+            abort(403);
+        }
+
+        $outletId = auth()->user()->outlet_id;
+        $status = $request->get('status');
+
+        $query = Production::where('outlet_id', $outletId)
+            ->with(['product.unit', 'createdBy'])
+            ->latest();
+
+        if ($status && in_array($status, ['planned', 'completed', 'cancelled', 'in_progress'])) {
+            $query->where('status', $status);
+        }
+
+        $productions = $query->paginate(20);
+
+        return view('main.production.history', compact('productions', 'status'));
+    }
+
     public function create(Request $request)
     {
         if (! auth()->user()->can('buat produksi')) {
