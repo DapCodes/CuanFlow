@@ -77,7 +77,7 @@ class Production extends Model
 
     public function calculateCosts(): void
     {
-        $mat = $this->items->sum('total_price');
+        $mat = $this->items()->sum('total_price');
         $add = 0;
         if ($this->recipe) {
             foreach ($this->recipe->additionalCosts as $c) {

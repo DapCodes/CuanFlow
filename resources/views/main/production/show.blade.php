@@ -117,7 +117,7 @@
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Oleh</p>
-                                <p class="text-sm font-bold text-gray-900">{{ $production->creator->name ?? '-' }}</p>
+                                <p class="text-sm font-bold text-gray-900">{{ $production->createdBy->name ?? '-' }}</p>
                             </div>
                         </div>
 
@@ -162,7 +162,7 @@
                                         <div class="text-[9px] font-black uppercase text-gray-300 font-mono tracking-tighter mt-1.5">UNIT: {{ $item->rawMaterial->unit->name }}</div>
                                     </td>
                                     <td class="px-8 py-5 text-right whitespace-nowrap">
-                                        <span class="text-sm font-black text-gray-900">{{ number_format($item->actual_quantity ?? $item->planned_quantity, 2) }}</span>
+                                        <span class="text-sm font-black text-gray-900">{{ number_format($item->actual_quantity > 0 ? $item->actual_quantity : $item->planned_quantity, 2) }}</span>
                                     </td>
                                     <td class="px-8 py-5 text-right text-gray-500 font-bold">
                                         Rp {{ number_format($item->unit_price, 0, ',', '.') }}
@@ -241,7 +241,7 @@
                             <div class="flex justify-between items-center text-xs font-black text-gray-900 uppercase tracking-widest pt-4 border-t border-gray-100">
                                 <span>Estimasi HPP / Unit</span>
                                 @php
-                                    $netActual = $production->actual_quantity - $production->waste_quantity;
+                                    $netActual = ($production->actual_quantity > 0 ? $production->actual_quantity : $production->planned_quantity) - $production->waste_quantity;
                                     $costPerUnit = $netActual > 0 ? ($production->items->sum('total_price') / $netActual) : 0;
                                 @endphp
                                 <span class="text-cuan-green text-lg tracking-tighter">Rp {{ number_format($costPerUnit, 2, ',', '.') }}</span>
