@@ -240,32 +240,142 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    {{-- Session Notifications --}}
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 3000,
+            iconColor: '#658C58',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+            }
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: "{{ session('error') }}",
+            confirmButtonColor: '#ef4444',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+            }
+        });
+    @endif
+
+    {{-- AJAX Filter Logic --}}
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
-    const rows = document.querySelectorAll('.outlet-row');
+    const tableContainer = document.querySelector('x-card-container'); // Assuming container has table
+    let timeout = null;
 
-    function filterTable() {
-        const searchTerm = (searchInput.value || '').toLowerCase();
-        const statusValue = statusFilter.value;
+    function refreshTable() {
+        // Need to reconstruct URL with current filters
+        const url = new URL(window.location.href);
+        const search = searchInput.value;
+        const status = statusFilter.value;
 
-        rows.forEach(row => {
-            const nameEl = row.querySelector('.outlet-name');
-            const name = nameEl ? nameEl.textContent.toLowerCase() : '';
-            const status = row.dataset.status;
+        if (search) url.searchParams.set('search', search);
+        else url.searchParams.delete('search');
 
-            const matchesSearch = !searchTerm || name.includes(searchTerm);
-            const matchesStatus = !statusValue || status === statusValue;
+        if (status) url.searchParams.set('status', status);
+        else url.searchParams.delete('status');
 
-            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-        });
+        // Target the specific section that contains the table for swapping
+        const target = document.querySelector('table').closest('div').parentElement;
+        target.style.opacity = '0.5';
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.querySelector('table').closest('div').parentElement;
+            
+            if (newContent) {
+                target.innerHTML = newContent.innerHTML;
+                window.history.replaceState({}, '', url);
+                // Re-init delete listeners as content replaced
+                initDeleteListeners();
+            }
+        })
+        .finally(() => { target.style.opacity = '1'; });
     }
 
     if (searchInput) {
-        searchInput.addEventListener('input', filterTable);
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(refreshTable, 500);
+        });
+        searchInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') e.preventDefault(); });
     }
-    if (statusFilter) {
-        statusFilter.addEventListener('change', filterTable);
+    if (statusFilter) statusFilter.addEventListener('change', refreshTable);
+
+    {{-- Delete Confirmation --}}
+    function initDeleteListeners() {
+        document.querySelectorAll('.confirm-delete').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = this.dataset.name;
+                
+                Swal.fire({
+                    title: 'Hapus Outlet?',
+                    text: `Apakah Anda yakin ingin menghapus "${name}"? Data terkait outlet akan ikut terhapus.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Hapus',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'rounded-[2rem] border-none shadow-2xl',
+                        title: 'font-black text-gray-900',
+                        confirmButton: 'rounded-xl px-6 py-3 font-bold text-sm',
+                        cancelButton: 'rounded-xl px-6 py-3 font-bold text-sm'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.submit();
+                    }
+                });
+            });
+        });
     }
+
+    initDeleteListeners();
+
+    // Handle pagination clicks for AJAX too
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.pagination a');
+        if (link && document.querySelector('table').contains(e.target.closest('table'))) {
+            e.preventDefault();
+            const url = new URL(link.href);
+            const target = document.querySelector('table').closest('div').parentElement;
+            
+            target.style.opacity = '0.5';
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.querySelector('table').closest('div').parentElement;
+                if (newContent) {
+                    target.innerHTML = newContent.innerHTML;
+                    window.history.pushState({}, '', url);
+                    initDeleteListeners();
+                }
+            })
+            .finally(() => { target.style.opacity = '1'; });
+        }
+    });
 });
 </script>
 @endpush

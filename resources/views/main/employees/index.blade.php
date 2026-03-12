@@ -67,16 +67,16 @@
                 </div>
 
                 <div class="flex flex-wrap gap-3">
-                    <select name="role" id="filterRole" onchange="this.form.submit()"
-                            class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
+                    <select name="role" id="filterRole"
+                            class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all bg-white">
                         <option value="">Semua Role</option>
                         @foreach($availableRoles as $role)
                             <option value="{{ $role->name }}" {{ request('role') == $role->name ? 'selected' : '' }}>{{ ucfirst($role->name) }}</option>
                         @endforeach
                     </select>
 
-                    <select name="status" id="filterStatus" onchange="this.form.submit()"
-                            class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all">
+                    <select name="status" id="filterStatus"
+                            class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all bg-white">
                         <option value="">Semua Status</option>
                         <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
                         <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
@@ -314,14 +314,79 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchEmployee');
+    const filterRole = document.getElementById('filterRole');
+    const filterStatus = document.getElementById('filterStatus');
     const filterForm = document.getElementById('filterForm');
+    const tableContainer = document.querySelector('x-card-container'); // Need to target the actual container
+    
     let timeout = null;
 
-    searchInput.addEventListener('keyup', function () {
-        clearTimeout(timeout);
-        timeout = setTimeout(function () {
-            filterForm.submit();
-        }, 700);
+    function refreshTable() {
+        const url = new URL(filterForm.action);
+        const formData = new FormData(filterForm);
+        
+        for (let [key, value] of formData.entries()) {
+            if (value) url.searchParams.set(key, value);
+            else url.searchParams.delete(key);
+        }
+
+        const tableBody = document.getElementById('employeeTableBody').closest('.overflow-x-auto').parentElement;
+        tableBody.style.opacity = '0.5';
+        tableBody.style.transition = 'opacity 0.2s';
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.querySelector('#employeeTableBody').closest('.overflow-x-auto').parentElement;
+            
+            if (newContent) {
+                tableBody.innerHTML = newContent.innerHTML;
+                window.history.replaceState({}, '', url);
+            }
+        })
+        .finally(() => {
+            tableBody.style.opacity = '1';
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(refreshTable, 500);
+        });
+        searchInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') e.preventDefault(); });
+    }
+
+    if (filterRole) filterRole.addEventListener('change', refreshTable);
+    if (filterStatus) filterStatus.addEventListener('change', refreshTable);
+
+    // Pagination
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('.pagination a');
+        if (link && document.getElementById('employeeTableBody').contains(e.target.closest('table'))) {
+            e.preventDefault();
+            const url = new URL(link.href);
+            const tableBody = document.getElementById('employeeTableBody').closest('.overflow-x-auto').parentElement;
+            
+            tableBody.style.opacity = '0.5';
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.querySelector('#employeeTableBody').closest('.overflow-x-auto').parentElement;
+                if (newContent) {
+                    tableBody.innerHTML = newContent.innerHTML;
+                    window.history.pushState({}, '', url);
+                    window.scrollTo({ top: tableBody.offsetTop - 100, behavior: 'smooth' });
+                }
+            })
+            .finally(() => { tableBody.style.opacity = '1'; });
+        }
     });
 
     // Global SweetAlert2 notification handler
