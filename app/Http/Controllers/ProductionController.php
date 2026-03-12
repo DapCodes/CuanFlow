@@ -138,6 +138,7 @@ class ProductionController extends Controller
         $products = Product::with(['unit', 'defaultRecipe'])
             ->where('outlet_id', $outletId)
             ->where('is_active', true)
+            ->where('is_stock', true)
             ->whereHas('defaultRecipe')
             ->get();
 
@@ -380,6 +381,7 @@ class ProductionController extends Controller
 
         DB::beginTransaction();
         try {
+            $pendingItems = collect();
             // Determine Status: Planned (for stock) or Completed (for KDS/Direct Serve)
             // If the product is NOT a stock product (is_stock = false), we assume immediate production/service
             // User requested: "Produce now" button -> means immediate deduction and completion

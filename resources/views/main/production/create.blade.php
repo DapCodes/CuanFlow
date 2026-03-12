@@ -297,7 +297,7 @@
             const qty = $('#planned_quantity').val();
             $('#materials-tbody').html('<tr><td colspan="4" class="px-8 py-10 text-center"><i class="fas fa-spinner fa-spin text-cuan-green"></i></td></tr>');
 
-            $.get(`{{ url('production/recipe-details') }}/${productId}`)
+            $.get(`{{ route('production.recipe-details', ':id') }}`.replace(':id', productId))
                 .done(function(res) {
                     if (res.materials && res.materials.length > 0) {
                         let html = '';
