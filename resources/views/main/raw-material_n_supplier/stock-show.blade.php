@@ -3,17 +3,11 @@
 @section('title', 'Detail Stok - ' . $rawMaterial->name)
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('raw-materials.index') }}" class="text-gray-500 hover:text-red-600 transition-colors">Bahan Baku</a>
-</li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Detail Stok</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('raw-materials.index') }}" class="text-gray-500 hover:text-cuan-green transition-colors">Bahan Baku</a>
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Status Persediaan Detil</span>
 </li>
 @endsection
 
@@ -21,43 +15,28 @@
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        @if(session('success'))
-            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
-                <p class="text-green-800">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <p class="text-red-800">{{ session('error') }}</p>
-            </div>
-        @endif
-
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-500 border border-red-100">
-                        <i class="fas fa-chart-line text-sm"></i>
-                    </span>
-                    <span>Detail Stok - {{ $rawMaterial->name }}</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 leading-tight">
+                    Batch & Kondisi Stok
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    Informasi lengkap stok bahan baku dan status kadaluarsa per batch
+                    Rincian batch kadaluarsa untuk <span class="text-cuan-green font-bold tracking-tight">{{ $rawMaterial->name }}</span>
                 </p>
             </div>
             <div class="flex items-center gap-3">
-                @can('kelola stok bahan baku')
-                <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all">
-                    <i class="fas fa-boxes text-sm text-red-500"></i>
-                    <span>Manage Transaksi</span>
-                </a>
-                @endcan
-                <a href="{{ route('raw-materials.index') }}" class="inline-flex items-center gap-2 rounded-lg bg-white border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all">
-                    <i class="fas fa-arrow-left text-sm"></i>
+                 <a href="{{ route('raw-materials.index') }}" 
+                   class="inline-flex items-center gap-2 rounded-xl bg-white border border-gray-200 px-5 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95">
                     <span>Kembali</span>
                 </a>
+                @can('kelola stok bahan baku')
+                <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}"
+                   class="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-3 text-sm font-black text-white hover:bg-black transition-all shadow-lg active:scale-95">
+                    <i class="fas fa-boxes shadow-sm opacity-50"></i>
+                    <span>Manage Mutasi</span>
+                </a>
+                @endcan
             </div>
         </section>
 
@@ -65,174 +44,104 @@
             
             <div class="lg:col-span-2 space-y-6">
 
-                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-                    <div class="border-b border-gray-200 px-6 py-4">
-                        <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-info-circle text-red-500"></i>
-                            <span>Informasi Bahan Baku</span>
-                        </h2>
+                {{-- INFO PRODUK RINGKAS --}}
+                <div class="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div class="space-y-1">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Kode Bahan</p>
+                        <p class="text-sm font-black text-gray-900 font-mono tracking-tighter">{{ $rawMaterial->code }}</p>
                     </div>
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1 scale-90 origin-left uppercase tracking-wider">Kode</p>
-                                <p class="text-sm font-semibold text-gray-900 font-mono">{{ $rawMaterial->code }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1 scale-90 origin-left uppercase tracking-wider">Nama</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ $rawMaterial->name }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1 scale-90 origin-left uppercase tracking-wider">Satuan</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ $rawMaterial->unit->name ?? '-' }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1 scale-90 origin-left uppercase tracking-wider">Total Stok</p>
-                                <p class="text-lg font-bold text-emerald-600">{{ number_format($currentStock, 2) }} {{ $rawMaterial->unit->abbreviation ?? '' }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1 scale-90 origin-left uppercase tracking-wider">Minimum Stok</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ number_format($rawMaterial->min_stock, 2) }} {{ $rawMaterial->unit->abbreviation ?? '' }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-medium text-gray-500 mb-1 scale-90 origin-left uppercase tracking-wider">Kategori</p>
-                                <p class="text-sm font-semibold text-gray-900">{{ $rawMaterial->category->name ?? '-' }}</p>
-                            </div>
-                        </div>
+                    <div class="space-y-1">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Total Fisik</p>
+                        <p class="text-sm font-black text-emerald-600 tracking-tight">{{ number_format($currentStock, 2) }} {{ $rawMaterial->unit->abbreviation }}</p>
                     </div>
-                </section>
-
-                <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-                    <div class="border-b border-gray-200 px-6 py-4">
-                        <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-calendar-times text-red-500"></i>
-                            <span>Status Kadaluarsa per Batch</span>
-                        </h2>
+                    <div class="space-y-1">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Batas Minimum</p>
+                        <p class="text-sm font-black text-gray-900 tracking-tight">{{ number_format($rawMaterial->min_stock, 2) }} {{ $rawMaterial->unit->abbreviation }}</p>
                     </div>
+                    <div class="space-y-1">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Kategori</p>
+                        <p class="text-sm font-black text-cuan-green">{{ $rawMaterial->category->name ?? 'N/A' }}</p>
+                    </div>
+                </div>
 
-                    <div class="p-6 space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-[10px] font-bold uppercase tracking-wide text-red-600">Kadaluarsa</p>
-                                        <p class="mt-1 text-xl font-bold text-red-700">{{ $stats['expired_count'] }}</p>
-                                        <p class="text-xs text-red-600 mt-0.5 font-medium">{{ number_format($stats['expired_quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}</p>
-                                    </div>
-                                    <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center border border-red-200 shadow-sm">
-                                        <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
-                                    </div>
-                                </div>
+                <x-card-container title="Pemantauan Batch Kadaluarsa">
+                    <div class="p-8 space-y-8">
+                        {{-- Stats Row --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                            <div class="p-6 rounded-[2rem] bg-red-50/50 border border-red-100 group">
+                                <p class="text-[9px] font-black text-red-400 uppercase tracking-widest">Kadaluarsa</p>
+                                <p class="text-3xl font-black text-red-600 mt-2 tracking-tighter">{{ $stats['expired_count'] }} <span class="text-[10px] opacity-50 font-bold uppercase ml-1">Batch</span></p>
+                                <p class="text-[10px] font-black text-red-400 mt-2 uppercase tracking-widest">{{ number_format($stats['expired_quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}</p>
                             </div>
 
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-[10px] font-bold uppercase tracking-wide text-yellow-600">Segera Kadaluarsa</p>
-                                        <p class="mt-1 text-xl font-bold text-yellow-700">{{ $stats['expiring_count'] }}</p>
-                                        <p class="text-xs text-yellow-600 mt-0.5 font-medium">{{ number_format($stats['expiring_quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}</p>
-                                    </div>
-                                    <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center border border-yellow-200 shadow-sm">
-                                        <i class="fas fa-clock text-yellow-600 text-lg"></i>
-                                    </div>
-                                </div>
+                            <div class="p-6 rounded-[2rem] bg-yellow-50/50 border border-yellow-100 group">
+                                <p class="text-[9px] font-black text-yellow-500 uppercase tracking-widest">Segera Exp.</p>
+                                <p class="text-3xl font-black text-yellow-600 mt-2 tracking-tighter">{{ $stats['expiring_count'] }} <span class="text-[10px] opacity-50 font-bold uppercase ml-1">Batch</span></p>
+                                <p class="text-[10px] font-black text-yellow-500 mt-2 uppercase tracking-widest">{{ number_format($stats['expiring_quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}</p>
                             </div>
 
-                            <div class="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-[10px] font-bold uppercase tracking-wide text-emerald-600">Masih Valid</p>
-                                        <p class="mt-1 text-xl font-bold text-emerald-700">{{ $stats['valid_count'] }}</p>
-                                        <p class="text-xs text-emerald-600 mt-0.5 font-medium">{{ number_format($stats['valid_quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}</p>
-                                    </div>
-                                    <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center border border-emerald-200 shadow-sm">
-                                        <i class="fas fa-check-circle text-emerald-600 text-lg"></i>
-                                    </div>
-                                </div>
+                            <div class="p-6 rounded-[2rem] bg-emerald-50/50 border border-emerald-100 group">
+                                <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Kondisi Aman</p>
+                                <p class="text-3xl font-black text-emerald-600 mt-2 tracking-tighter">{{ $stats['valid_count'] }} <span class="text-[10px] opacity-50 font-bold uppercase ml-1">Batch</span></p>
+                                <p class="text-[10px] font-black text-emerald-500 mt-2 uppercase tracking-widest">{{ number_format($stats['valid_quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}</p>
                             </div>
                         </div>
 
-                        {{-- Batch Lists --}}
-                        <div class="space-y-6 mt-8">
-                            {{-- Expired Section --}}
+                        {{-- BATCH LISTS --}}
+                        <div class="space-y-8 mt-12">
+                            {{-- EXPIRED LIST --}}
                             @if(count($expiredStocks) > 0)
-                            <div class="border border-red-200 rounded-lg overflow-hidden shadow-sm">
-                                <div class="bg-red-50 px-4 py-3 border-b border-red-200 flex items-center justify-between">
-                                    <h3 class="text-sm font-bold text-red-800 flex items-center gap-2">
-                                        @can('update stok bahan baku')
-                                        <input type="checkbox" onchange="toggleSelectAll(this)" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500" title="Pilih Semua">
-                                        @endcan
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between px-2">
+                                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 flex items-center gap-3">
                                         <i class="fas fa-exclamation-triangle"></i>
-                                        <span>Stok Kadaluarsa ({{ count($expiredStocks) }})</span>
+                                        Varian Kadaluarsa
                                     </h3>
                                     @can('update stok bahan baku')
-                                    <button onclick="openRemoveExpiredModal()" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 shadow-sm transition-all">
-                                        <i class="fas fa-trash"></i>
-                                        <span>BUANG STOK TERPILIH</span>
-                                    </button>
+                                    <button onclick="openRemoveExpiredModal()" class="text-[10px] font-black uppercase text-red-600 hover:underline">Hapus Otomatis Terpilih</button>
                                     @endcan
                                 </div>
-                                <div class="divide-y divide-red-100">
+                                <div class="grid grid-cols-1 gap-3">
                                     @foreach($expiredStocks as $stock)
-                                    <div class="px-4 py-3 bg-white hover:bg-red-50 transition-colors">
-                                        <div class="flex items-center justify-between flex-wrap gap-3">
-                                            <div class="flex items-center gap-3 flex-1 min-w-0">
-                                                @can('update stok bahan baku')
-                                                <input type="checkbox" class="expired-checkbox w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500" value="{{ $stock['id'] }}">
-                                                @endcan
-                                                <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-bold text-gray-900 truncate">Batch #{{ $stock['batch_number'] }}</p>
-                                                    <div class="flex items-center gap-3 mt-1 flex-wrap text-[10px]">
-                                                        <span class="text-gray-600">
-                                                            <i class="fas fa-cubes mr-1 text-gray-400"></i>
-                                                            {{ number_format($stock['quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}
-                                                        </span>
-                                                        <span class="text-red-600 font-bold bg-red-50 px-1.5 py-0.5 rounded">
-                                                            <i class="fas fa-calendar-times mr-1"></i>
-                                                            KADALUARSA: {{ $stock['expired_at']->format('d M Y') }}
-                                                        </span>
-                                                    </div>
+                                    <div class="p-6 rounded-[1.5rem] bg-white border border-red-100 shadow-sm flex items-center justify-between group hover:border-red-300 transition-all">
+                                        <div class="flex items-center gap-6">
+                                            @can('update stok bahan baku')
+                                            <input type="checkbox" class="expired-checkbox w-5 h-5 rounded-lg border-red-200 text-red-600 focus:ring-red-500 cursor-pointer" value="{{ $stock['id'] }}">
+                                            @endcan
+                                            <div>
+                                                <p class="text-sm font-black text-gray-900 tracking-tight">Batch #{{ $stock['batch_number'] ?: 'N/A' }}</p>
+                                                <div class="flex items-center gap-4 mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                                    <span>{{ number_format($stock['quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}</span>
+                                                    <span class="text-red-500 bg-red-50 px-2 py-0.5 rounded-lg border border-red-100 shadow-sm">Kadal. {{ $stock['expired_at']->format('d M Y') }}</span>
                                                 </div>
                                             </div>
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
-                                                {{ $stock['expired_at']->diffForHumans() }}
-                                            </span>
                                         </div>
+                                        <span class="text-[10px] font-black text-red-400 uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">{{ $stock['expired_at']->diffForHumans() }}</span>
                                     </div>
                                     @endforeach
                                 </div>
                             </div>
                             @endif
 
-                            {{-- Expiring Section --}}
+                            {{-- EXPIRING LIST --}}
                             @if(count($expiringStocks) > 0)
-                            <div class="border border-yellow-200 rounded-lg overflow-hidden shadow-sm">
-                                <div class="bg-yellow-50 px-4 py-3 border-b border-yellow-200">
-                                    <h3 class="text-sm font-bold text-yellow-800 flex items-center gap-2">
-                                        <i class="fas fa-clock"></i>
-                                        <span>Segera Kadaluarsa ({{ count($expiringStocks) }})</span>
-                                    </h3>
-                                </div>
-                                <div class="divide-y divide-yellow-100">
+                            <div class="space-y-4">
+                                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-600 flex items-center gap-3 px-2">
+                                    <i class="fas fa-hourglass-start"></i>
+                                    Mendekati Kadaluarsa
+                                </h3>
+                                <div class="grid grid-cols-1 gap-3">
                                     @foreach($expiringStocks as $stock)
-                                    <div class="px-4 py-3 bg-white hover:bg-yellow-50 transition-colors">
-                                        <div class="flex items-center justify-between flex-wrap gap-3">
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-bold text-gray-900 truncate">Batch #{{ $stock['batch_number'] }}</p>
-                                                <div class="flex items-center gap-3 mt-1 flex-wrap text-[10px]">
-                                                    <span class="text-gray-600">
-                                                        <i class="fas fa-cubes mr-1 text-gray-400"></i>
-                                                        {{ number_format($stock['quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}
-                                                    </span>
-                                                    <span class="text-yellow-600 font-bold bg-yellow-50 px-1.5 py-0.5 rounded">
-                                                        <i class="fas fa-calendar-times mr-1"></i>
-                                                        KADALUARSA: {{ $stock['expired_at']->format('d M Y') }}
-                                                    </span>
-                                                </div>
+                                    <div class="p-6 rounded-[1.5rem] bg-white border border-yellow-100 shadow-sm flex items-center justify-between hover:border-yellow-300 transition-all">
+                                        <div>
+                                            <p class="text-sm font-black text-gray-900 tracking-tight">Batch #{{ $stock['batch_number'] ?: 'N/A' }}</p>
+                                            <div class="flex items-center gap-4 mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                                <span>{{ number_format($stock['quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}</span>
+                                                <span class="text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-lg border border-yellow-100 shadow-sm">Kadal. {{ $stock['expired_at']->format('d M Y') }}</span>
                                             </div>
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">
-                                                {{ $stock['days_until_expiry'] }} hari lagi
-                                            </span>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="text-[10px] font-black text-yellow-500 uppercase tracking-widest bg-yellow-400/10 px-3 py-1.5 rounded-xl border border-yellow-100">{{ $stock['days_until_expiry'] }} Hari Lagi</span>
                                         </div>
                                     </div>
                                     @endforeach
@@ -240,43 +149,30 @@
                             </div>
                             @endif
 
-                            {{-- Valid Section --}}
+                            {{-- VALID LIST --}}
                             @if(count($validStocks) > 0)
-                            <div class="border border-emerald-200 rounded-lg overflow-hidden shadow-sm">
-                                <div class="bg-emerald-50 px-4 py-3 border-b border-emerald-200">
-                                    <h3 class="text-sm font-bold text-emerald-800 flex items-center gap-2">
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Stok Valid / Aman ({{ count($validStocks) }})</span>
-                                    </h3>
-                                </div>
-                                <div class="divide-y divide-emerald-100 max-h-96 overflow-y-auto">
+                            <div class="space-y-4">
+                                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-3 px-2">
+                                    <i class="fas fa-check-double"></i>
+                                    Batch Masih Valid
+                                </h3>
+                                <div class="grid grid-cols-1 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                                     @foreach($validStocks as $stock)
-                                    <div class="px-4 py-3 bg-white hover:bg-emerald-50 transition-colors">
-                                        <div class="flex items-center justify-between flex-wrap gap-3">
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-bold text-gray-900 truncate">Batch #{{ $stock['batch_number'] }}</p>
-                                                <div class="flex items-center gap-3 mt-1 flex-wrap text-[10px]">
-                                                    <span class="text-gray-600">
-                                                        <i class="fas fa-cubes mr-1 text-gray-400"></i>
-                                                        {{ number_format($stock['quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}
-                                                    </span>
-                                                    @if($stock['expired_at'])
-                                                    <span class="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
-                                                        <i class="fas fa-calendar-check mr-1"></i>
-                                                        KADALUARSA: {{ $stock['expired_at']->format('d M Y') }}
-                                                    </span>
-                                                    @else
-                                                    <span class="text-gray-500 font-bold bg-gray-50 px-1.5 py-0.5 rounded">
-                                                        <i class="fas fa-infinity mr-1"></i>
-                                                        TIDAK ADA KADALUARSA
-                                                    </span>
-                                                    @endif
-                                                </div>
+                                    <div class="p-6 rounded-[1.5rem] bg-white border border-gray-50 shadow-sm flex items-center justify-between hover:shadow-md transition-all">
+                                        <div>
+                                            <p class="text-sm font-black text-gray-900 tracking-tight">Batch #{{ $stock['batch_number'] ?: 'N/A' }}</p>
+                                            <div class="flex items-center gap-4 mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                                <span>{{ number_format($stock['quantity'], 2) }} {{ $rawMaterial->unit->abbreviation }}</span>
+                                                @if($stock['expired_at'])
+                                                    <span>Tgl. Kadal. {{ $stock['expired_at']->format('d M Y') }}</span>
+                                                @else
+                                                    <span class="text-gray-300 tracking-tighter opacity-70 italic">Tanpa Tgl Kadaluarsa</span>
+                                                @endif
                                             </div>
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
-                                                {{ $stock['expired_at'] ? $stock['days_until_expiry'] . ' hari lagi' : 'AMAN' }}
-                                            </span>
                                         </div>
+                                        @if($stock['expired_at'])
+                                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ $stock['days_until_expiry'] }} Hari</span>
+                                        @endif
                                     </div>
                                     @endforeach
                                 </div>
@@ -284,153 +180,124 @@
                             @endif
 
                             @if(count($expiredStocks) == 0 && count($expiringStocks) == 0 && count($validStocks) == 0)
-                            <div class="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                                    <i class="fas fa-box-open text-2xl text-gray-300"></i>
-                                </div>
-                                <p class="text-sm text-gray-500 font-medium">Belum ada data stok bahan baku per batch</p>
+                            <div class="py-20 text-center flex flex-col items-center gap-4">
+                                <i class="fas fa-box-open text-5xl text-gray-100"></i>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-gray-300">Belum ada catatan inventaris per batch</p>
                             </div>
                             @endif
                         </div>
                     </div>
-                </section>
+                </x-card-container>
             </div>
 
-            <div class="space-y-6">
-                
-                <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                    <div class="border-b border-gray-200 px-6 py-4 bg-gray-50/50">
-                        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <i class="fas fa-chart-pie text-red-500"></i>
-                            <span>Ringkasan Stok</span>
-                        </h3>
-                    </div>
-
-                    <div class="p-6 space-y-4">
-                        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 shadow-sm">
-                            <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Total Stok Tersedia</p>
-                            <div class="flex items-baseline gap-2">
-                                <p class="text-3xl font-black text-emerald-700">
-                                    {{ number_format($currentStock, 2) }}
+            <div class="lg:col-span-1 space-y-6">
+                <x-card-container title="Kalkulasi Valuasi">
+                    <div class="p-8 space-y-6">
+                        <div class="p-6 rounded-[1.5rem] bg-gray-900 text-white shadow-xl relative overflow-hidden">
+                            <div class="relative z-10">
+                                <p class="text-[9px] font-black uppercase tracking-widest opacity-40">Nilai Inventaris Fisik</p>
+                                <p class="text-3xl font-black mt-3 tracking-tighter">
+                                    <span class="text-[10px] opacity-40 uppercase mr-1">RP</span> {{ number_format($currentStock * $rawMaterial->purchase_price, 0, ',', '.') }}
                                 </p>
-                                <p class="text-sm font-bold text-emerald-600">{{ $rawMaterial->unit->abbreviation ?? '' }}</p>
+                            </div>
+                            <div class="absolute -right-4 -bottom-4 opacity-5 rotate-12 scale-150">
+                                <i class="fas fa-coins text-7xl"></i>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-3">
-                            <div class="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
-                                <div>
-                                    <p class="text-[10px] font-bold text-gray-500 uppercase">Stok Aman</p>
-                                    <p class="text-lg font-bold text-emerald-600">{{ number_format($stats['valid_quantity'], 2) }}</p>
-                                </div>
-                                <div class="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                    <i class="fas fa-check-circle text-sm"></i>
-                                </div>
-                            </div>
-
-                            <div class="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
-                                <div>
-                                    <p class="text-[10px] font-bold text-gray-500 uppercase">Hampir Kadaluarsa</p>
-                                    <p class="text-lg font-bold text-yellow-600">{{ number_format($stats['expiring_quantity'], 2) }}</p>
-                                </div>
-                                <div class="w-8 h-8 rounded bg-yellow-50 flex items-center justify-center text-yellow-600">
-                                    <i class="fas fa-hourglass-half text-sm"></i>
-                                </div>
-                            </div>
-
-                            <div class="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
-                                <div>
-                                    <p class="text-[10px] font-bold text-gray-500 uppercase">Sudah Kadaluarsa</p>
-                                    <p class="text-lg font-bold text-red-600">{{ number_format($stats['expired_quantity'], 2) }}</p>
-                                </div>
-                                <div class="w-8 h-8 rounded bg-red-50 flex items-center justify-center text-red-600">
-                                    <i class="fas fa-calendar-times text-sm"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 pt-4 border-t border-gray-100">
-                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Quick Actions</h4>
-                            <div class="grid grid-cols-1 gap-2">
-                                @can('lihat riwayat stok bahan baku')
-                                <a href="{{ route('raw-materials.stock-history', $rawMaterial) }}" class="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all border border-gray-200">
-                                    <i class="fas fa-history text-gray-400"></i>
-                                    Lihat Riwayat Stok
-                                </a>
-                                @endcan
-                                @can('kelola stok bahan baku')
-                                <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" class="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all border border-gray-200">
-                                    <i class="fas fa-plus-circle text-gray-400"></i>
-                                    Update Persediaan
-                                </a>
-                                @endcan
-                            </div>
+                        <div class="space-y-4 pt-2">
+                             @can('lihat riwayat stok bahan baku')
+                            <a href="{{ route('raw-materials.stock-history', $rawMaterial) }}" 
+                               class="flex items-center gap-4 w-full p-4 rounded-2xl bg-white border border-gray-100 text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-all font-bold text-xs uppercase tracking-widest group shadow-sm">
+                                <i class="fas fa-history text-lg opacity-40 group-hover:opacity-100 transition-opacity"></i>
+                                <span>Aliran Stok</span>
+                            </a>
+                            @endcan
+                            @can('kelola stok bahan baku')
+                            <a href="{{ route('raw-materials.manage-stock', $rawMaterial) }}" 
+                               class="flex items-center gap-4 w-full p-4 rounded-2xl bg-white border border-gray-100 text-gray-500 hover:border-cuan-green hover:text-cuan-green transition-all font-bold text-xs uppercase tracking-widest group shadow-sm">
+                                <i class="fas fa-pencil-alt text-lg opacity-40 group-hover:opacity-100 transition-opacity"></i>
+                                <span>Update Batch</span>
+                            </a>
+                            @endcan
                         </div>
                     </div>
-                </section>
+                </x-card-container>
+
+                <div class="p-8 rounded-[2rem] bg-white border border-gray-100 shadow-sm">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-6">Distribusi Batch</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-gray-700">Valid</span>
+                            <span class="text-xs font-black text-gray-900 tracking-tight">{{ number_format($stats['valid_count']) }}</span>
+                        </div>
+                        <div class="w-full bg-gray-50 rounded-full h-1.5 border border-gray-100">
+                             @php $totalBatches = max($stats['valid_count'] + $stats['expiring_count'] + $stats['expired_count'], 1); @endphp
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: {{ ($stats['valid_count'] / $totalBatches) * 100 }}%"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2">
+                            <span class="text-xs font-bold text-gray-700">Kadaluarsa</span>
+                            <span class="text-xs font-black text-red-600 tracking-tight">{{ number_format($stats['expired_count']) }}</span>
+                        </div>
+                        <div class="w-full bg-gray-50 rounded-full h-1.5 border border-gray-100">
+                            <div class="bg-red-500 h-full rounded-full" style="width: {{ ($stats['expired_count'] / $totalBatches) * 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </main>
 
-{{-- Remove Expired Modal --}}
-<div id="removeExpiredModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div class="bg-red-600 p-6 flex flex-col items-center">
-            <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-trash-alt text-3xl text-white"></i>
+{{-- MODAL BUANG STOK --}}
+<div id="removeExpiredModal" class="hidden fixed inset-0 bg-gray-900/80 z-[60] backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full overflow-hidden scale-in">
+        <div class="bg-red-500 p-10 flex flex-col items-center">
+            <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-6">
+                <i class="fas fa-trash-alt text-4xl text-white"></i>
             </div>
-            <h3 class="text-xl font-black text-white text-center">Buang Stok Kadaluarsa?</h3>
+            <h3 class="text-2xl font-black text-white text-center leading-tight">Buang Stok Kadaluarsa?</h3>
+            <p class="text-white/60 text-[10px] font-black uppercase tracking-[0.2em] mt-4">Tindakan Tidak Dapat Dibatalkan</p>
         </div>
         
         <form action="{{ route('raw-materials.remove-expired', $rawMaterial) }}" method="POST" id="removeExpiredForm">
             @csrf
-            <div class="p-6 space-y-4">
-                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex gap-3">
-                    <i class="fas fa-exclamation-triangle text-yellow-600 mt-1"></i>
-                    <p class="text-sm text-yellow-800 leading-relaxed font-medium">
-                        Tindakan ini akan menghapus stok batch terpilih dari sistem secara permanen dan mencatatnya sebagai penyesuaian stok keluar.
-                    </p>
+            <div class="p-10 space-y-6">
+                <div class="bg-gray-50 rounded-2xl p-6 text-center border border-gray-100">
+                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Batch Terpilih</p>
+                    <p class="text-4xl font-black text-gray-900 tracking-tighter" id="selectedCountText">0</p>
                 </div>
-
-                <div class="bg-gray-50 rounded-xl p-4 text-center">
-                    <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1">Batch Terpilih</p>
-                    <p class="text-3xl font-black text-gray-800">
-                        <span id="selectedCountText">0</span>
-                    </p>
-                </div>
+                <p class="text-xs font-bold text-gray-500 text-center leading-relaxed">Seluruh batch terpilih akan dicatat sebagai penyesuaian stok rusak/habis di riwayat keuangan & pergerakan barang.</p>
             </div>
 
-            <div class="flex gap-3 p-6 pt-0">
+            <div class="flex gap-4 p-10 pt-0">
                 <button type="button" onclick="closeRemoveExpiredModal()" 
-                    class="flex-1 px-4 py-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-all font-bold text-sm tracking-wide">
-                    BATAL
-                </button>
+                    class="flex-1 py-4 text-[10px] font-black uppercase text-gray-400 tracking-widest hover:text-gray-900 transition-all">BATAL</button>
                 <button type="submit" 
-                    class="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-bold text-sm tracking-wide shadow-lg shadow-red-200">
-                    HAPUS SEKARANG
-                </button>
+                    class="flex-1 py-4 bg-red-600 text-[10px] font-black uppercase text-white tracking-widest rounded-2xl hover:bg-black transition-all shadow-lg active:scale-95">KONFIRMASI</button>
             </div>
         </form>
     </div>
 </div>
+@endsection
+
+@push('styles')
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+    .scale-in { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+</style>
+@endpush
 
 @push('scripts')
 <script>
-    function toggleSelectAll(checkbox) {
-        document.querySelectorAll('.expired-checkbox').forEach(cb => {
-            cb.checked = checkbox.checked;
-        });
-        updateSelectedCount();
-    }
-
     function updateSelectedCount() {
         const count = document.querySelectorAll('.expired-checkbox:checked').length;
-        const textElement = document.getElementById('selectedCountText');
-        if(textElement) textElement.textContent = count;
+        document.getElementById('selectedCountText').textContent = count;
     }
 
-    // Add event listeners for checkboxes
     document.querySelectorAll('.expired-checkbox').forEach(cb => {
         cb.addEventListener('change', updateSelectedCount);
     });
@@ -439,18 +306,17 @@
         const checkboxes = document.querySelectorAll('.expired-checkbox:checked');
         if (checkboxes.length === 0) {
             Swal.fire({
-                icon: 'warning',
-                title: 'Opps!',
-                text: 'Silakan pilih minimal satu batch untuk dibuang.',
-                confirmButtonColor: '#EF4444'
+                icon: 'info',
+                title: 'Pilih Batch',
+                text: 'Centang minimal satu batch untuk dihapus.',
+                confirmButtonColor: '#111827',
+                customClass: { popup: 'rounded-[2rem] border-none shadow-2xl', title: 'font-black' }
             });
             return;
         }
         
         const form = document.getElementById('removeExpiredForm');
-        // Clear existing hidden inputs
         form.querySelectorAll('input[name="batch_ids[]"]').forEach(el => el.remove());
-        
         checkboxes.forEach(checkbox => {
             const input = document.createElement('input');
             input.type = 'hidden';
@@ -460,24 +326,15 @@
         });
         
         updateSelectedCount();
-        document.getElementById('removeExpiredModal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        $('#removeExpiredModal').removeClass('hidden');
     }
 
     function closeRemoveExpiredModal() {
-        document.getElementById('removeExpiredModal').classList.add('hidden');
-        document.body.style.overflow = 'auto';
+        $('#removeExpiredModal').addClass('hidden');
     }
 
-    document.getElementById('removeExpiredModal')?.addEventListener('click', function(e) {
+    $('#removeExpiredModal').on('click', function(e) {
         if (e.target === this) closeRemoveExpiredModal();
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeRemoveExpiredModal();
-        }
     });
 </script>
 @endpush
-@endsection
