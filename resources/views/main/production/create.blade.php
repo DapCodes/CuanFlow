@@ -299,32 +299,32 @@
 
             $.get(`{{ url('production/recipe-details') }}/${productId}`)
                 .done(function(res) {
-                    if (res.items && res.items.length > 0) {
+                    if (res.materials && res.materials.length > 0) {
                         let html = '';
                         let totalEst = 0;
-                        const mul = qty / res.output_quantity;
+                        const mul = qty / (res.output_quantity || 1);
                         
-                        res.items.forEach(item => {
-                            const req = item.quantity * mul;
-                            const price = item.raw_material.purchase_price || 0;
+                        res.materials.forEach(item => {
+                            const req = item.required_quantity * mul;
+                            const price = item.unit_price || 0;
                             totalEst += req * price;
-                            const status = item.stock >= req;
+                            const isSufficient = item.current_stock >= req;
 
                             html += `
                                 <tr class="hover:bg-gray-50/50 transition-colors">
                                     <td class="px-8 py-5">
-                                        <div class="text-sm font-black text-gray-900">${item.raw_material.name}</div>
-                                        <div class="text-[9px] font-black uppercase text-gray-300 font-mono tracking-tighter mt-1">#${item.raw_material.code}</div>
+                                        <div class="text-sm font-black text-gray-900">${item.name}</div>
+                                        <div class="text-[9px] font-black uppercase text-gray-300 font-mono tracking-tighter mt-1">RAW MATERIAL</div>
                                     </td>
                                     <td class="px-8 py-5 text-right whitespace-nowrap">
                                         <span class="text-sm font-black text-gray-900">${req.toFixed(2)}</span>
-                                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">${item.raw_material.unit.name}</span>
+                                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">${item.unit}</span>
                                     </td>
                                     <td class="px-8 py-5 text-right whitespace-nowrap">
-                                        <span class="text-sm font-bold ${status ? 'text-gray-900' : 'text-red-500'}">${parseFloat(item.stock).toFixed(2)}</span>
+                                        <span class="text-sm font-bold ${isSufficient ? 'text-gray-900' : 'text-red-500'}">${parseFloat(item.current_stock).toFixed(2)}</span>
                                     </td>
                                     <td class="px-8 py-5 text-center align-middle">
-                                        ${status 
+                                        ${isSufficient 
                                             ? '<span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-cuan-green/10 text-cuan-green border border-cuan-green/20"><i class="fas fa-check text-[10px]"></i></span>' 
                                             : '<span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-red-50 text-red-500 border border-red-100"><i class="fas fa-exclamation text-[10px]"></i></span>'}
                                     </td>
@@ -355,4 +355,3 @@
     });
 </script>
 @endpush
-@endsection

@@ -102,7 +102,7 @@
                         <tbody class="divide-y divide-gray-50">
                             @forelse($productions->where('status', 'completed')->where('is_disposed', false) as $prod)
                                 @php
-                                    $isExpired = $prod->expiry_date && $prod->expiry_date->isPast();
+                                    $isExpired = $prod->expired_at && $prod->expired_at->isPast();
                                 @endphp
                                 <tr class="hover:bg-gray-50 transition-colors {{ $isExpired ? 'bg-red-50/20' : '' }}">
                                     <td class="px-8 py-5">
@@ -114,9 +114,9 @@
                                         <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{{ $product->unit->name }}</span>
                                     </td>
                                     <td class="px-8 py-5 text-center">
-                                         @if($prod->expiry_date)
+                                         @if($prod->expired_at)
                                             <span class="text-[10px] font-black uppercase tracking-widest {{ $isExpired ? 'text-red-500 animate-pulse' : 'text-gray-500' }}">
-                                                {{ $prod->expiry_date->format('d M Y') }}
+                                                {{ $prod->expired_at->format('d M Y') }}
                                             </span>
                                          @else
                                             <span class="text-[10px] font-black text-gray-300 uppercase tracking-widest italic line-through">NONE</span>

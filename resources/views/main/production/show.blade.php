@@ -205,12 +205,12 @@
                             <h2 class="text-base font-black text-gray-900 uppercase tracking-widest text-blue-500">Masa Laku</h2>
                         </div>
                          <div class="px-8 py-8 space-y-6 text-center">
-                             @if($production->expiry_date)
+                             @if($production->expired_at)
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tanggal Kadaluarsa</p>
-                                <h3 class="text-xl font-black text-gray-900">{{ $production->expiry_date->format('d M Y') }}</h3>
-                                @php $isExp = $production->expiry_date->isPast(); @endphp
+                                <h3 class="text-xl font-black text-gray-900">{{ $production->expired_at->format('d M Y') }}</h3>
+                                @php $isExp = $production->expired_at->isPast(); @endphp
                                 <div class="mt-4 px-4 py-2 rounded-xl {{ $isExp ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500' }} border border-transparent font-black text-[9px] uppercase tracking-widest inline-block">
-                                   {{ $isExp ? 'KADALUARSA' : $production->expiry_date->diffForHumans() }}
+                                   {{ $isExp ? 'KADALUARSA' : $production->expired_at->diffForHumans() }}
                                 </div>
                              @else
                                 <div class="py-10 flex flex-col items-center justify-center opacity-40">
