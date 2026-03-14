@@ -20,27 +20,108 @@
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
+    /* Select2 Container Styling */
     .select2-container--default .select2-selection--single {
-        height: 52px;
-        border: 2px solid #f3f4f6;
-        border-radius: 0.75rem;
-        padding: 0.75rem 1rem;
-        transition: all 0.2s;
-        background-color: #f9fafb;
+        height: 56px !important;
+        border: 2px solid #f3f4f6 !important;
+        border-radius: 1rem !important;
+        padding: 0.75rem 1.25rem !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background-color: #f9fafb !important;
+        display: flex !important;
+        align-items: center !important;
+        outline: none !important;
     }
+
+    /* Text inside selection */
     .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 24px;
-        color: #111827;
-        font-weight: 600;
+        line-height: normal !important;
+        color: #111827 !important;
+        font-weight: 700 !important;
+        font-size: 0.875rem !important;
+        padding-left: 0 !important;
+        padding-right: 20px !important;
     }
+
+    /* Arrow Styling */
     .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 50px;
-        right: 12px;
+        height: 100% !important;
+        right: 15px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
-    .select2-container--default.select2-container--focus .select2-selection--single {
-        border-color: #658C58;
-        background-color: white;
-        box-shadow: 0 0 0 4px rgba(101, 140, 88, 0.1);
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow b {
+        border-color: #9ca3af transparent transparent transparent !important;
+        border-width: 6px 5px 0 5px !important;
+        margin-left: -5px !important;
+        transition: transform 0.3s !important;
+    }
+
+    .select2-container--active .select2-selection--single .select2-selection__arrow b {
+        transform: rotate(180deg) !important;
+        border-color: #658C58 transparent transparent transparent !important;
+    }
+
+    /* Focus & Open States */
+    .select2-container--default.select2-container--focus .select2-selection--single,
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #658C58 !important;
+        background-color: white !important;
+        box-shadow: 0 0 0 4px rgba(101, 140, 88, 0.1) !important;
+    }
+
+    /* Dropdown Styling */
+    .select2-dropdown {
+        border: 2px solid #f3f4f6 !important;
+        border-radius: 1.25rem !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        margin-top: 8px !important;
+        overflow: hidden !important;
+        z-index: 9999 !important;
+        padding: 5px !important;
+        background: white !important;
+    }
+
+    .select2-results__option {
+        padding: 12px 16px !important;
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+        color: #374151 !important;
+        border-radius: 0.75rem !important;
+        margin-bottom: 2px !important;
+        transition: all 0.2s !important;
+    }
+
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: #658C58 !important;
+        color: white !important;
+    }
+
+    .select2-results__option[aria-selected="true"] {
+        background-color: #f3f4f6 !important;
+        color: #658C58 !important;
+    }
+
+    /* Search inside dropdown */
+    .select2-search--dropdown {
+        padding: 8px 8px 12px !important;
+    }
+
+    .select2-search--dropdown .select2-search__field {
+        border: 2px solid #f3f4f6 !important;
+        border-radius: 0.75rem !important;
+        padding: 10px 14px !important;
+        font-weight: 600 !important;
+        font-size: 0.875rem !important;
+        outline: none !important;
+        transition: all 0.2s !important;
+    }
+
+    .select2-search--dropdown .select2-search__field:focus {
+        border-color: #658C58 !important;
+        background-color: #f9fafb !important;
     }
 </style>
 @endpush
@@ -210,7 +291,7 @@
 
                                 <div class="space-y-4">
                                     <label for="category_id" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Kategori</label>
-                                    <select name="category_id" class="select2-category w-full">
+                                    <select name="category_id" class="select2-init w-full">
                                         <option value="">- Pilih Kategori -</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->id }}" {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
@@ -831,23 +912,19 @@ if (removeImageBtn) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Select2
-    $('.select2-category').select2({
+    // Global Select2 initialization for standard selects
+    $('.select2-init').select2({
         theme: 'default',
         width: '100%',
-        placeholder: '- Pilih Kategori -'
+        minimumResultsForSearch: 10
     });
 
-    $('.select2-unit').select2({
-        theme: 'default',
-        width: '100%',
-        placeholder: '- Pilih Satuan -'
-    });
-
+    // Ingredient selection with search
     $('.raw-material-select').select2({
         theme: 'default',
         width: '100%',
-        placeholder: '- Pilih Bahan -'
+        placeholder: '- Pilih Bahan -',
+        dropdownParent: $('#section-bahan')
     });
 
     // Hitung awal
