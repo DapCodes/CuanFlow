@@ -3,11 +3,10 @@
 @section('title', 'Keuangan - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Keuangan</span>
+<li class="flex items-center text-sm">
+    <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-gray-900 transition-colors">Dashboard</a>
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Keuangan</span>
 </li>
 @endsection
 
@@ -24,30 +23,25 @@
         @endif
 
         {{-- HEADER HALAMAN --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-6 mb-6">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-                        <i class="fas fa-wallet text-sm"></i>
-                    </span>
-                    <span>Ringkasan Keuangan</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 leading-tight">
+                    Ringkasan Keuangan
                 </h1>
-                <p class="mt-1 text-sm text-gray-500">
-                    Pantau arus kas, pendapatan, dan pengeluaran outlet Anda secara real-time.
+                <p class="mt-1 text-sm text-gray-500 font-medium">
+                    Pantau arus kas, pendapatan, dan pengeluaran outlet secara real-time.
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 @can('buat pengeluaran')
                 <a href="{{ route('expenses.index', ['type' => 'expense']) }}"
-                   class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-sm font-semibold hover:bg-red-100 transition-all">
-                    <i class="fas fa-arrow-down text-xs"></i>
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-600/20">
                     <span>Catat Pengeluaran</span>
                 </a>
                 @endcan
                 @can('buat pemasukan')
                 <a href="{{ route('expenses.index', ['type' => 'income']) }}"
-                   class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-all">
-                    <i class="fas fa-arrow-up text-xs"></i>
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-cuan-green text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cuan-dark transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
                     <span>Catat Pemasukan</span>
                 </a>
                 @endcan
@@ -59,12 +53,10 @@
             
             {{-- Carousel Saldo Kas Bersih (Kiri - 5 Kolom) --}}
             <div class="lg:col-span-5 h-full">
-                <div class="relative bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden h-full">
+                <x-card-container class="relative overflow-hidden h-full p-0 flex flex-col">
                     {{-- Carousel Container --}}
-                    <div id="balanceCarousel" class="relative h-full transition-transform duration-500 ease-in-out flex" style="width: 300%;">
-                        
-                        {{-- SLIDE 1: TOTAL SEMUA --}}
-                        <div class="w-1/3 p-8 flex flex-col justify-between bg-gradient-to-br from-blue-600 to-blue-700 text-white relative h-full">
+                    <div id="balanceCarousel" class="relative flex-grow transition-transform duration-500 ease-in-out flex" style="width: 300%;">
+<div class="w-1/3 p-8 flex flex-col justify-between bg-gradient-to-br from-blue-600 to-blue-700 text-white relative h-full">
                             <div class="absolute top-0 right-0 opacity-10 p-4">
                                 <i class="fas fa-globe text-9xl"></i>
                             </div>
@@ -149,10 +141,10 @@
 
                     {{-- Navigation Controls --}}
                     <div class="absolute top-6 right-8 flex items-center gap-1.5 z-20">
-                        <button onclick="moveCarousel(-1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all backdrop-blur-sm border border-white/10">
+                        <button onclick="moveCarousel(-1)" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95">
                             <i class="fas fa-chevron-left text-[10px]"></i>
                         </button>
-                        <button onclick="moveCarousel(1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all backdrop-blur-sm border border-white/10">
+                        <button onclick="moveCarousel(1)" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/50 active:scale-95">
                             <i class="fas fa-chevron-right text-[10px]"></i>
                         </button>
                     </div>
@@ -160,89 +152,89 @@
                     {{-- Indicators --}}
                     <div class="absolute top-6 left-8 flex items-center gap-1.5 z-20">
                         <div class="carousel-dot w-6 h-1.5 rounded-full bg-white transition-all duration-300"></div>
-                        <div class="carousel-dot w-2 h-1.5 rounded-full bg-white/30 transition-all duration-300"></div>
-                        <div class="carousel-dot w-2 h-1.5 rounded-full bg-white/30 transition-all duration-300"></div>
+                        <div class="carousel-dot w-1.5 h-1.5 rounded-full bg-white/30 transition-all duration-300"></div>
+                        <div class="carousel-dot w-1.5 h-1.5 rounded-full bg-white/30 transition-all duration-300"></div>
                     </div>
-                </div>
+                </x-card-container>
             </div>
 
             {{-- Secondary Stats (Kanan - 7 Kolom) --}}
             <div class="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {{-- Income Stats --}}
-                <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+                <x-card-container class="p-6 space-y-6 flex flex-col justify-between">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold uppercase text-gray-400 tracking-wider">Pendapatan Terakhir</span>
-                        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center border border-emerald-100">
+                        <span class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Pendapatan Terakhir</span>
+                        <div class="w-8 h-8 rounded-xl bg-cuan-green/10 text-cuan-green flex items-center justify-center">
                             <i class="fas fa-arrow-up text-xs"></i>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <p class="text-[10px] text-gray-500 mb-1 uppercase">Bulan Ini</p>
-                            <p class="text-lg font-bold text-gray-900 leading-tight">Rp {{ number_format($monthlyRevenue, 0, ',', '.') }}</p>
+                            <p class="text-[9px] font-bold text-gray-400 mb-1 uppercase tracking-widest">Bulan Ini</p>
+                            <p class="text-xl font-black text-gray-900 leading-tight">Rp {{ number_format($monthlyRevenue, 0, ',', '.') }}</p>
                         </div>
                         <div>
-                            <p class="text-[10px] text-gray-500 mb-1 uppercase">Minggu Ini</p>
-                            <p class="text-lg font-bold text-gray-800 leading-tight">Rp {{ number_format($weeklyRevenue, 0, ',', '.') }}</p>
+                            <p class="text-[9px] font-bold text-gray-400 mb-1 uppercase tracking-widest">Minggu Ini</p>
+                            <p class="text-xl font-black text-gray-900 leading-tight">Rp {{ number_format($weeklyRevenue, 0, ',', '.') }}</p>
                         </div>
                     </div>
-                    <div class="pt-3 border-t border-gray-50">
-                         <p class="text-[10px] text-gray-400">Total kotor s/d hari ini: <span class="font-semibold text-gray-600">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</span></p>
+                    <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+                         <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total kotor s/d hari ini</p>
+                         <span class="font-black text-xs text-cuan-dark">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</span>
                     </div>
-                </div>
+                </x-card-container>
 
                 {{-- Expense Stats --}}
-                <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+                <x-card-container class="p-6 space-y-6 flex flex-col justify-between">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold uppercase text-gray-400 tracking-wider">Pengeluaran Terakhir</span>
-                        <div class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center border border-red-100">
+                        <span class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Pengeluaran Terakhir</span>
+                        <div class="w-8 h-8 rounded-xl bg-red-50 text-red-500 flex items-center justify-center">
                             <i class="fas fa-arrow-down text-xs"></i>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <p class="text-[10px] text-gray-500 mb-1 uppercase">Bulan Ini</p>
-                            <p class="text-lg font-bold text-gray-900 leading-tight">Rp {{ number_format($monthlyExpenses, 0, ',', '.') }}</p>
+                            <p class="text-[9px] font-bold text-gray-400 mb-1 uppercase tracking-widest">Bulan Ini</p>
+                            <p class="text-xl font-black text-gray-900 leading-tight">Rp {{ number_format($monthlyExpenses, 0, ',', '.') }}</p>
                         </div>
                         <div>
-                            <p class="text-[10px] text-gray-500 mb-1 uppercase">Minggu Ini</p>
-                            <p class="text-lg font-bold text-gray-800 leading-tight">Rp {{ number_format($weeklyExpenses, 0, ',', '.') }}</p>
+                            <p class="text-[9px] font-bold text-gray-400 mb-1 uppercase tracking-widest">Minggu Ini</p>
+                            <p class="text-xl font-black text-gray-900 leading-tight">Rp {{ number_format($weeklyExpenses, 0, ',', '.') }}</p>
                         </div>
                     </div>
-                    <div class="pt-3 border-t border-gray-50">
-                         <p class="text-[10px] text-gray-400">Total biaya s/d hari ini: <span class="font-semibold text-gray-600">Rp {{ number_format($allTimeExpenses, 0, ',', '.') }}</span></p>
+                    <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+                         <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total biaya s/d hari ini</p>
+                         <span class="font-black text-xs text-red-500">Rp {{ number_format($allTimeExpenses, 0, ',', '.') }}</span>
                     </div>
-                </div>
+                </x-card-container>
 
                 {{-- Daily Summary Card --}}
-                <div class="md:col-span-2 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400">
-                                <i class="far fa-calendar-alt text-2xl"></i>
-                            </div>
-                            <div>
-                                <h5 class="text-sm font-bold text-gray-900">Performa Hari Ini</h5>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <input type="date" id="dailyDateFilter" value="{{ $selectedDate }}" 
-                                           class="text-[10px] border-none bg-gray-100 rounded px-2 py-1 focus:ring-0 cursor-pointer text-gray-600 font-semibold">
-                                    <span id="dailyDateFormatted" class="text-xs text-gray-500 hidden sm:inline">{{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('d F Y') }}</span>
-                                </div>
-                            </div>
+                <x-card-container class="md:col-span-2 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-[1.25rem] bg-gray-50 flex items-center justify-center text-gray-400">
+                            <i class="far fa-calendar-alt text-2xl"></i>
                         </div>
-                        <div class="flex items-center gap-8 pr-4" id="dailySummaryContainer">
-                            <div>
-                                <p class="text-[10px] text-gray-400 uppercase font-bold text-right">Revenue</p>
-                                <p class="text-xl font-black text-emerald-600" id="dailyRevenueVal">Rp {{ number_format($dailyRevenue, 0, ',', '.') }}</p>
-                            </div>
-                            <div class="w-px h-10 bg-gray-100"></div>
-                            <div>
-                                <p class="text-[10px] text-gray-400 uppercase font-bold text-right">Profit Bersih</p>
-                                <p class="text-xl font-black text-blue-600" id="dailyNetIncomeVal">Rp {{ number_format($dailyNetIncome, 0, ',', '.') }}</p>
+                        <div>
+                            <h5 class="text-sm font-black text-gray-900 uppercase tracking-widest">Performa Hari Ini</h5>
+                            <div class="flex items-center gap-2 mt-1">
+                                <input type="date" id="dailyDateFilter" value="{{ $selectedDate }}" 
+                                       class="text-[10px] uppercase tracking-widest font-black border-none bg-gray-100 rounded-md px-2 py-1 focus:ring-0 cursor-pointer text-gray-500">
+                                <span id="dailyDateFormatted" class="text-[10px] font-bold uppercase tracking-widest text-gray-400 hidden sm:inline">{{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('d M Y') }}</span>
                             </div>
                         </div>
                     </div>
-                </div>
+                    <div class="flex items-center gap-8 md:pr-4" id="dailySummaryContainer">
+                        <div class="text-right">
+                            <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Revenue</p>
+                            <p class="text-xl font-black text-cuan-green" id="dailyRevenueVal">Rp {{ number_format($dailyRevenue, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="w-px h-10 bg-gray-200"></div>
+                        <div class="text-left">
+                            <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Profit Bersih</p>
+                            <p class="text-xl font-black text-gray-900" id="dailyNetIncomeVal">Rp {{ number_format($dailyNetIncome, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </x-card-container>
             </div>
         </div>
 
@@ -252,24 +244,21 @@
             {{-- Penjualan Terakhir (Kiri - 2 Kolom) --}}
             <div class="xl:col-span-2 space-y-6">
 {{-- Transaksi Terbaru --}}
-<div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-    <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<x-card-container class="overflow-hidden p-0">
+    <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center text-xs">
-                <i class="fas fa-history"></i>
-            </div>
             <div>
-                <h3 class="text-sm font-bold text-gray-900">Riwayat Penjualan</h3>
-                <p class="text-[11px] text-gray-500">Transaksi yang tercatat bulan ini</p>
+                <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest">Riwayat Penjualan</h3>
+                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Transaksi tercatat</p>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <select id="yearFilter" class="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 font-semibold">
+            <select id="yearFilter" class="text-[10px] font-bold px-3 py-2 border-none bg-white rounded-lg focus:ring-2 focus:ring-cuan-green/20 uppercase tracking-widest text-gray-600 shadow-sm cursor-pointer border-gray-200 border">
                 @for($y = date('Y'); $y >= date('Y') - 2; $y--)
                     <option value="{{ $y }}" {{ $y == $filterYear ? 'selected' : '' }}>{{ $y }}</option>
                 @endfor
             </select>
-            <select id="monthFilter" class="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 font-semibold">
+            <select id="monthFilter" class="text-[10px] font-bold px-3 py-2 border-none bg-white rounded-lg focus:ring-2 focus:ring-cuan-green/20 uppercase tracking-widest text-gray-600 shadow-sm cursor-pointer border-gray-200 border">
                 @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $i => $month)
                     <option value="{{ $i + 1 }}" {{ ($i + 1) == $filterMonth ? 'selected' : '' }}>{{ $month }}</option>
                 @endforeach
@@ -278,14 +267,14 @@
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm text-left">
-            <thead class="bg-gray-50 border-b border-gray-100">
+            <thead class="bg-white border-b border-gray-100">
                 <tr>
-                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">No. Invoice</th>
-                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kasir / Pelanggan</th>
-                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Metode Bayar</th>
-                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Total Tagihan</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">No. Invoice</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Kasir / Pelanggan</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Metode Bayar</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Total Tagihan</th>
                     @if(auth()->user()->can('lihat detail penjualan') || auth()->user()->can('cetak struk penjualan'))
-                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center w-24">Aksi</th>
                     @endif
                 </tr>
             </thead>
@@ -298,25 +287,22 @@
             </tbody>
         </table>
     </div>
-    <div id="salesPagination">
+    <div id="salesPagination" class="bg-gray-50/50">
         @include('main.finance.partials.pagination', ['items' => $salesList, 'type' => 'sales'])
     </div>
-</div>
+</x-card-container>
 
 {{-- Pengeluaran Terakhir --}}
-<div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-    <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<x-card-container class="overflow-hidden p-0">
+    <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center text-xs">
-                <i class="fas fa-receipt"></i>
-            </div>
             <div>
-                <h3 class="text-sm font-bold text-gray-900">Pengeluaran & Pemasukan</h3>
-                <p class="text-[11px] text-gray-500">Data keuangan selain transaksi penjualan</p>
+                <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest">Pengeluaran & Pemasukan</h3>
+                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Data selain penjualan</p>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <select id="expensePeriodFilter" class="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50 font-semibold">
+            <select id="expensePeriodFilter" class="text-[10px] font-bold px-3 py-2 border-none bg-white rounded-lg focus:ring-2 focus:ring-cuan-green/20 uppercase tracking-widest text-gray-600 shadow-sm cursor-pointer border border-gray-200">
                 <option value="today">Hari Ini</option>
                 <option value="week">Minggu Ini</option>
                 <option value="month" selected>Bulan Ini</option>
@@ -327,12 +313,12 @@
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm text-left">
-            <thead class="bg-gray-50 border-b border-gray-100">
+            <thead class="bg-white border-b border-gray-100">
                 <tr>
-                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Keterangan / Kategori</th>
-                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Metode Bayar</th>
-                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Nominal</th>
-                    <th class="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Keterangan / Kategori</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Metode Bayar</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Nominal</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center w-24">Aksi</th>
                 </tr>
             </thead>
             <tbody id="expensesTableBody">
@@ -340,19 +326,19 @@
             </tbody>
         </table>
     </div>
-    <div id="expensesPagination">
+    <div id="expensesPagination" class="bg-gray-50/50">
         @include('main.finance.partials.pagination', ['items' => $expenses, 'type' => 'expenses'])
     </div>
-</div>
+</x-card-container>
             </div>
 
             {{-- Charts (Kanan - 1 Kolom) --}}
             <div class="space-y-6">
                 {{-- Chart Revenue --}}
-                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 overflow-hidden">
+                <x-card-container class="p-6 overflow-hidden">
                     <div class="flex items-center justify-between mb-6">
-                         <h3 class="text-sm font-bold text-gray-900 uppercase tracking-tight">Top Produk (Revenue)</h3>
-                         <select id="revenueChartPeriod" class="text-[10px] font-bold border-none bg-gray-50 rounded-md focus:ring-0">
+                         <h3 class="text-[10px] font-black text-gray-900 uppercase tracking-widest">Top Produk</h3>
+                         <select id="revenueChartPeriod" class="text-[9px] font-bold border-none bg-gray-50 rounded-md focus:ring-0 uppercase tracking-widest cursor-pointer text-gray-500">
                             <option value="week">WEEKS</option>
                             <option value="month" selected>MONTHS</option>
                             <option value="year">YEARS</option>
@@ -361,18 +347,18 @@
                     <div class="h-56 flex items-center justify-center relative">
                         <canvas id="revenueChart"></canvas>
                         <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
-                             <p class="text-[10px] text-gray-400 font-bold uppercase">Total</p>
-                             <p class="text-xs font-black text-gray-700 mt-0.5">Pendapatan</p>
+                             <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Total</p>
+                             <p class="text-[10px] font-black text-gray-700 mt-0.5 uppercase tracking-widest">Pendapatan</p>
                         </div>
                     </div>
-                    <div id="revenueLegend" class="mt-6 grid grid-cols-1 gap-2 border-t border-gray-50 pt-4"></div>
-                </div>
+                    <div id="revenueLegend" class="mt-6 grid grid-cols-1 gap-3 border-t border-gray-100 pt-5"></div>
+                </x-card-container>
 
                 {{-- Chart Expense --}}
-                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 overflow-hidden">
+                <x-card-container class="p-6 overflow-hidden">
                      <div class="flex items-center justify-between mb-6">
-                         <h3 class="text-sm font-bold text-gray-900 uppercase tracking-tight">Beban Kategori</h3>
-                         <select id="expenseChartPeriod" class="text-[10px] font-bold border-none bg-gray-50 rounded-md focus:ring-0">
+                         <h3 class="text-[10px] font-black text-gray-900 uppercase tracking-widest">Beban Kategori</h3>
+                         <select id="expenseChartPeriod" class="text-[9px] font-bold border-none bg-gray-50 rounded-md focus:ring-0 uppercase tracking-widest cursor-pointer text-gray-500">
                             <option value="week">WEEKS</option>
                             <option value="month" selected>MONTHS</option>
                             <option value="year">YEARS</option>
@@ -381,8 +367,8 @@
                     <div class="h-56 flex items-center justify-center">
                         <canvas id="expenseChart"></canvas>
                     </div>
-                    <div id="expenseLegend" class="mt-6 grid grid-cols-1 gap-2 border-t border-gray-50 pt-4"></div>
-                </div>
+                    <div id="expenseLegend" class="mt-6 grid grid-cols-1 gap-3 border-t border-gray-100 pt-5"></div>
+                </x-card-container>
             </div>
 
         </div>

@@ -49,12 +49,11 @@
         <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
             @php
                 $editPermission = $expense->amount < 0 ? 'edit pemasukan' : 'edit pengeluaran';
-                $editRoute = $expense->amount < 0 ? route('finance.income.edit', $expense->id) : route('finance.expense.edit', $expense->id);
                 $deletePermission = $expense->amount < 0 ? 'hapus pemasukan' : 'hapus pengeluaran';
             @endphp
             
             @can($editPermission)
-            <a href="{{ $editRoute }}" 
+            <a href="{{ route('expenses.edit', $expense->id) }}" 
                class="inline-flex items-center justify-center w-7 h-7 bg-white border border-gray-200 text-gray-500 hover:text-amber-600 hover:border-amber-300 hover:bg-amber-50 rounded-lg shadow-sm transition-all duration-200" 
                title="Edit">
                <i class="fas fa-edit text-[10px]"></i>
