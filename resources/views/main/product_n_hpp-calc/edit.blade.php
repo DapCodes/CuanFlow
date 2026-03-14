@@ -3,17 +3,17 @@
 @section('title', 'Edit Produk & Resep - ' . $product->name)
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('products-hpp.index') }}" class="text-gray-500 hover:text-gray-700">Produk & Resep</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('products-hpp.index') }}" class="text-gray-400 hover:text-cuan-green transition-colors font-medium tracking-tight">Produk & Resep</a>
 </li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Edit Produk</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('products-hpp.show', $product->id) }}" class="text-gray-400 hover:text-cuan-green font-medium tracking-tight truncate max-w-[140px] md:max-w-xs">{{ $product->name }}</a>
+</li>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Edit</span>
 </li>
 @endsection
 
@@ -21,47 +21,46 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .select2-container--default .select2-selection--single {
-        height: 46px;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.625rem 1rem;
+        height: 52px;
+        border: 2px solid #f3f4f6;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s;
+        background-color: #f9fafb;
     }
     .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 30px;
-        color: #374151;
+        line-height: 24px;
+        color: #111827;
+        font-weight: 600;
     }
     .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 44px;
-        right: 10px;
+        height: 50px;
+        right: 12px;
     }
     .select2-container--default.select2-container--focus .select2-selection--single {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    .select2-dropdown {
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-    }
-    .select2-container--default .select2-results__option--highlighted[aria-selected] {
-        background-color: #3b82f6;
+        border-color: #658C58;
+        background-color: white;
+        box-shadow: 0 0 0 4px rgba(101, 140, 88, 0.1);
     }
 </style>
 @endpush
 
 @section('content')
-<main class="flex-grow py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+<main class="flex-grow py-10 px-4 md:px-8">
+    <div class="max-w-7xl mx-auto space-y-8">
 
         {{-- ALERT ERROR --}}
         @if($errors->any())
-            <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg" role="alert">
-                <div class="flex items-start">
-                    <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
+            <div class="mb-8 bg-red-50 border-2 border-red-100 p-6 rounded-[2rem] animate-pulse-subtle" role="alert">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-red-500 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-red-500/20">
+                        <i class="fas fa-exclamation-triangle text-white"></i>
+                    </div>
                     <div class="flex-1">
-                        <h3 class="font-semibold text-red-800 mb-2">Ada data yang belum benar</h3>
-                        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                        <h3 class="font-black text-red-900 uppercase tracking-widest text-sm mb-2">Peringatan Input</h3>
+                        <ul class="space-y-1">
                             @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
+                                <li class="text-sm text-red-700 font-medium">· {{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
@@ -69,803 +68,643 @@
             </div>
         @endif
 
-        {{-- HEADER HALAMAN (seragam dengan create) --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 text-cuan-green border border-green-100">
-                        <i class="fas fa-edit text-sm"></i>
-                    </span>
-                    <span>Edit Produk: {{ $product->name }}</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Edit Produk & Resep
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    Perbarui informasi produk, resep, bahan baku, dan harga jual di sini.
+                    Perbarui informasi resep, harga jual, dan strategi margin untuk memaksimalkan keuntungan produk Anda.
                 </p>
             </div>
             
-            <nav class="flex flex-wrap gap-2 text-xs md:text-sm">
-                <a href="#section-basic" class="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors flex items-center">
-                    <i class="fas fa-info-circle mr-1.5 text-cuan-green"></i> Data Produk
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('products-hpp.show', $product->id) }}" class="inline-flex items-center gap-2 rounded-xl bg-white border-2 border-gray-100 px-5 py-3 text-sm font-black text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+                    <i class="fas fa-eye text-xs"></i> <span>Lihat Detail</span>
                 </a>
-                <a href="#section-recipe" class="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors flex items-center">
-                    <i class="fas fa-book-open mr-1.5 text-cuan-green"></i> Resep
-                </a>
-                <a href="#section-bahan" class="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors flex items-center">
-                    <i class="fas fa-shopping-basket mr-1.5 text-cuan-green"></i> Bahan
-                </a>
-                <a href="#section-biaya" class="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors flex items-center">
-                    <i class="fas fa-coins mr-1.5 text-cuan-green"></i> Biaya
-                </a>
-                <a href="#section-pricing" class="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors flex items-center">
-                    <i class="fas fa-tags mr-1.5 text-cuan-green"></i> Harga
-                </a>
-            </nav>
+            </div>
         </section>
 
-        <x-card-container>
+        {{-- QUICK NAV --}}
+        <nav class="flex flex-wrap gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <a href="#section-basic" class="px-6 py-3 rounded-xl bg-white border-2 border-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-cuan-green hover:border-cuan-green/20 transition-all flex items-center shrink-0 shadow-sm">
+                Data Dasar
+            </a>
+            <a href="#section-recipe" class="px-6 py-3 rounded-xl bg-white border-2 border-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-cuan-green hover:border-cuan-green/20 transition-all flex items-center shrink-0 shadow-sm">
+                Resep & Produksi
+            </a>
+            <a href="#section-biaya" class="px-6 py-3 rounded-xl bg-white border-2 border-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-cuan-green hover:border-cuan-green/20 transition-all flex items-center shrink-0 shadow-sm">
+                Biaya & Margin
+            </a>
+            <a href="#section-pricing" class="px-6 py-3 rounded-xl bg-white border-2 border-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-cuan-green hover:border-cuan-green/20 transition-all flex items-center shrink-0 shadow-sm">
+                Price Strategy
+            </a>
+        </nav>
 
-            <form action="{{ route('products-hpp.update', $product->id) }}" method="POST" enctype="multipart/form-data" id="productForm">
-                @csrf
-                @method('PUT')
-
-                <div class="p-6 space-y-10">
+        <form action="{{ route('products-hpp.update', $product->id) }}" 
+              method="POST" 
+              enctype="multipart/form-data"
+              id="productForm">
+            @csrf
+            @method('PUT')
+            <div class="space-y-10">
 
                     {{-- SECTION 1: DATA PRODUK --}}
-                    <section id="section-basic" class="scroll-mt-24 bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
-                        <div class="mb-6">
-                            <h2 class="text-lg md:text-xl font-bold text-gray-900 flex items-center">
-                                Data Produk
-                            </h2>
-                            <p class="text-sm text-gray-500 mt-1">
-                                Lengkapi atau perbarui informasi dasar produk yang Anda jual.
-                            </p>
+                    <x-card-container id="section-basic" class="scroll-mt-24">
+                        <div class="p-8 border-b border-gray-50">
+                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-cuan-green mb-2 block">Identity</span>
+                            <h2 class="text-xl font-black text-gray-900 tracking-tight">Data <span class="text-gray-400">Dasar Produk</span></h2>
                         </div>
 
-                        @php
-                            $currentType = 'direct';
-                            if ($product->is_stock) {
-                                if ($product->defaultRecipe) {
-                                    $currentType = 'stock';
-                                } else {
-                                    $currentType = 'ready';
+                        <div class="p-8 space-y-8">
+                            @php
+                                $currentType = 'direct';
+                                if ($product->is_stock) {
+                                    if ($product->defaultRecipe) {
+                                        $currentType = 'stock';
+                                    } else {
+                                        $currentType = 'ready';
+                                    }
                                 }
-                            }
-                        @endphp
+                            @endphp
 
-                        <div class="mb-8">
-                            <label class="block text-sm font-medium text-gray-700 mb-3">
-                                Jenis Produk <span class="text-red-500">*</span>
-                            </label>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <!-- Option 1: Produk Masak Langsung -->
-                                <label class="relative flex flex-col p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="direct">
-                                    <input type="radio" name="product_type" value="direct" class="sr-only peer" {{ old('product_type', $currentType) == 'direct' ? 'checked' : '' }}>
-                                    <div class="flex items-center justify-between mb-2">
-                                        <div class="w-10 h-10 bg-green-100 text-cuan-green rounded-full flex items-center justify-center group-hover:bg-cuan-green group-hover:text-white transition-colors peer-checked:bg-cuan-green peer-checked:text-white">
-                                            <i class="fas fa-utensils"></i>
+                            <div class="space-y-4">
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Jenis / Tipe Unit Produk</label>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <!-- Option 1: Produk Masak Langsung -->
+                                    <label class="group relative flex flex-col p-6 rounded-[2rem] border-2 transition-all cursor-pointer bg-gray-50/50 border-gray-100 hover:border-cuan-green/20 peer-checked:border-cuan-green {{ old('product_type', $currentType) == 'direct' ? 'border-cuan-green bg-cuan-green/[0.02]' : '' }} product-type-option" data-type="direct">
+                                        <input type="radio" name="product_type" value="direct" class="sr-only" {{ old('product_type', $currentType) == 'direct' ? 'checked' : '' }}>
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div class="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-cuan-green transition-colors {{ old('product_type', $currentType) == 'direct' ? 'text-cuan-green border-cuan-green/20 shadow-lg shadow-cuan-green/10' : '' }}">
+                                                <i class="fas fa-utensils"></i>
+                                            </div>
+                                            <div class="radio-indicator w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center {{ old('product_type', $currentType) == 'direct' ? 'border-cuan-green bg-cuan-green' : '' }}">
+                                                <div class="w-2 h-2 rounded-full bg-white"></div>
+                                            </div>
                                         </div>
-                                        <div class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all shadow-sm">
-                                            <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
+                                        <span class="font-black text-gray-900 tracking-tight mb-1">Masak Langsung</span>
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide leading-relaxed">Produk disajikan segar saat dipesan pembeli.</span>
+                                    </label>
+
+                                    <!-- Option 2: Produk Stok Produksi -->
+                                    <label class="group relative flex flex-col p-6 rounded-[2rem] border-2 transition-all cursor-pointer bg-gray-50/50 border-gray-100 hover:border-cuan-green/20 product-type-option {{ old('product_type', $currentType) == 'stock' ? 'border-cuan-green bg-cuan-green/[0.02]' : '' }}" data-type="stock">
+                                        <input type="radio" name="product_type" value="stock" class="sr-only" {{ old('product_type', $currentType) == 'stock' ? 'checked' : '' }}>
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div class="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-cuan-green transition-colors {{ old('product_type', $currentType) == 'stock' ? 'text-cuan-green border-cuan-green/20 shadow-lg shadow-cuan-green/10' : '' }}">
+                                                <i class="fas fa-boxes"></i>
+                                            </div>
+                                            <div class="radio-indicator w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center {{ old('product_type', $currentType) == 'stock' ? 'border-cuan-green bg-cuan-green' : '' }}">
+                                                <div class="w-2 h-2 rounded-full bg-white"></div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Masak Langsung</span>
-                                    <p class="text-[10px] text-gray-500 mt-1">Masak saat pesanan datang, tanpa simpan stok.</p>
-                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cuan-green rounded-xl pointer-events-none"></div>
-                                </label>
+                                        <span class="font-black text-gray-900 tracking-tight mb-1">Stok Produksi</span>
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide leading-relaxed">Produksi massal dan disimpan sebagai stok jadi.</span>
+                                    </label>
 
-                                <!-- Option 2: Produk Stok Produksi -->
-                                <label class="relative flex flex-col p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="stock">
-                                    <input type="radio" name="product_type" value="stock" class="sr-only peer" {{ old('product_type', $currentType) == 'stock' ? 'checked' : '' }}>
-                                    <div class="flex items-center justify-between mb-2">
-                                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors peer-checked:bg-blue-600 peer-checked:text-white">
-                                            <i class="fas fa-boxes"></i>
+                                    <!-- Option 3: Produk Siap Jual -->
+                                    <label class="group relative flex flex-col p-6 rounded-[2rem] border-2 transition-all cursor-pointer bg-gray-50/50 border-gray-100 hover:border-cuan-green/20 product-type-option {{ old('product_type', $currentType) == 'ready' ? 'border-cuan-green bg-cuan-green/[0.02]' : '' }}" data-type="ready">
+                                        <input type="radio" name="product_type" value="ready" class="sr-only" {{ old('product_type', $currentType) == 'ready' ? 'checked' : '' }}>
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div class="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-cuan-green transition-colors {{ old('product_type', $currentType) == 'ready' ? 'text-cuan-green border-cuan-green/20 shadow-lg shadow-cuan-green/10' : '' }}">
+                                                <i class="fas fa-store"></i>
+                                            </div>
+                                            <div class="radio-indicator w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center {{ old('product_type', $currentType) == 'ready' ? 'border-cuan-green bg-cuan-green' : '' }}">
+                                                <div class="w-2 h-2 rounded-full bg-white"></div>
+                                            </div>
                                         </div>
-                                        <div class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all shadow-sm">
-                                            <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
-                                        </div>
-                                    </div>
-                                    <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Stok Produksi</span>
-                                    <p class="text-[10px] text-gray-500 mt-1">Produksi massal dan disimpan sebagai stok jadi.</p>
-                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cuan-green rounded-xl pointer-events-none"></div>
-                                </label>
-
-                                <!-- Option 3: Produk Siap Jual -->
-                                <label class="relative flex flex-col p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green hover:bg-green-50 transition-all group product-type-option" data-type="ready">
-                                    <input type="radio" name="product_type" value="ready" class="sr-only peer" {{ old('product_type', $currentType) == 'ready' ? 'checked' : '' }}>
-                                    <div class="flex items-center justify-between mb-2">
-                                        <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors peer-checked:bg-orange-600 peer-checked:text-white">
-                                            <i class="fas fa-store"></i>
-                                        </div>
-                                        <div class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-cuan-green peer-checked:bg-cuan-green transition-all shadow-sm">
-                                            <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
-                                        </div>
-                                    </div>
-                                    <span class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors peer-checked:text-cuan-green">Produk Siap Jual</span>
-                                    <p class="text-[10px] text-gray-500 mt-1">Produk jadi dari supplier, tanpa perlu resep.</p>
-                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-cuan-green rounded-xl pointer-events-none"></div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {{-- Kode Produk --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Kode Produk <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" name="code" id="productCode"
-                                       value="{{ old('code', $product->code) }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors"
-                                       placeholder="Contoh: PRD001" required>
-                                <p class="text-xs text-gray-400 mt-1">
-                                    Kode bebas, yang penting mudah diingat oleh tim Anda.
-                                </p>
-                            </div>
-
-                            {{-- Nama Produk --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nama Produk <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" name="name"
-                                       value="{{ old('name', $product->name) }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors"
-                                       placeholder="Nama yang tampil di aplikasi / struk" required>
-                            </div>
-
-                            {{-- Barcode --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Barcode
-                                </label>
-                                <div class="flex gap-2">
-                                    <input type="text" name="barcode" id="productBarcode"
-                                           value="{{ old('barcode', $product->barcode) }}"
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                                  focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors"
-                                           placeholder="Opsional, isi jika produk pakai barcode">
-                                    <button type="button" id="startScan"
-                                            class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
-                                            title="Scan Barcode">
-                                        <i class="fas fa-qrcode"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {{-- Kategori --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Kategori
-                                </label>
-                                <select name="category_id" class="select2-category w-full">
-                                    <option value="">- Pilih Kategori -</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}"
-                                            {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <p class="text-xs text-gray-400 mt-1">
-                                    Contoh: Minuman, Makanan, Snack, dll.
-                                </p>
-                            </div>
-
-                            {{-- Satuan --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Satuan <span class="text-red-500">*</span>
-                                </label>
-                                <select name="unit_id" class="select2-unit w-full" required>
-                                    <option value="">- Pilih Satuan -</option>
-                                    @foreach($units as $unit)
-                                        <option value="{{ $unit->id }}"
-                                            {{ old('unit_id', $product->unit_id) == $unit->id ? 'selected' : '' }}>
-                                            {{ $unit->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <p class="text-xs text-gray-400 mt-1">
-                                    Contoh: Cup, Pcs, Box, Botol, dll.
-                                </p>
-                            </div>
-
-                            {{-- Foto Produk --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Foto Produk
-                                </label>
-                                <input type="file" name="image" id="imageInput" accept="image/*"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors
-                                              file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
-                                              file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Maksimal 2MB (JPG, JPEG, PNG). Foto yang jelas membantu kasir & pelanggan.
-                                </p>
-
-                                {{-- Preview foto --}}
-                                <div id="imagePreview" class="mt-3 {{ $product->image ? '' : 'hidden' }}">
-                                    <div class="relative inline-block">
-                                        <img id="previewImg"
-                                             src="{{ $product->image ? asset('storage/' . $product->image) : '' }}"
-                                             alt="Preview"
-                                             class="w-28 h-28 md:w-32 md:h-32 object-cover rounded-lg border-2 border-gray-200 shadow-sm">
-                                        <button type="button" id="removeImage"
-                                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6
-                                                       flex items-center justify-center hover:bg-red-600 transition-colors">
-                                            <i class="fas fa-times text-xs"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Deskripsi --}}
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Deskripsi Produk
-                                </label>
-                                <textarea name="description" rows="3"
-                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                                 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors"
-                                          placeholder="Tuliskan keterangan singkat, misalnya rasa, ukuran, atau catatan lain. (Opsional)">{{ old('description', $product->description) }}</textarea>
-                            </div>
-                        </div>
-                    </section>
-
-                    {{-- SECTION 2: RESEP PRODUK --}}
-                    <section id="section-recipe" class="scroll-mt-24 bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
-                        <div class="mb-6">
-                            <h2 class="text-lg md:text-xl font-bold text-gray-900 flex items-center">
-                                Resep Produksi
-                            </h2>
-                            <p class="text-sm text-gray-500 mt-1">
-                                Catat nama resep, hasil produksi per 1 resep, dan langkah pembuatan.
-                            </p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {{-- Nama Resep --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nama Resep <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" name="recipe_name"
-                                       value="{{ old('recipe_name', $product->defaultRecipe->name ?? '') }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors"
-                                       placeholder="Contoh: Resep Kue Original" required>
-                            </div>
-
-                            {{-- Output --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Hasil per 1 Resep <span class="text-red-500">*</span>
-                                </label>
-                                <input type="number" step="0.01" name="output_quantity"
-                                       value="{{ old('output_quantity', $product->defaultRecipe->output_quantity ?? 1) }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors"
-                                       placeholder="Contoh: 10 (berarti 1 resep menghasilkan 10 produk)" required>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Berapa banyak produk jadi dari satu kali resep.
-                                </p>
-                            </div>
-
-                            {{-- Waktu --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Estimasi Waktu (menit)
-                                </label>
-                                <input type="number" name="estimated_time_minutes"
-                                       value="{{ old('estimated_time_minutes', $product->defaultRecipe->estimated_time_minutes ?? '') }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors"
-                                       placeholder="Contoh: 30">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Opsional, isi untuk membantu mengatur waktu produksi.
-                                </p>
-                            </div>
-
-                            {{-- Toggle Produk Bisa Stok --}}
-                            <div class="md:col-span-2">
-                                <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-boxes"></i>
-                                        </div>
-                                        <div>
-                                            <h4 class="text-sm font-bold text-gray-900">Produk Bisa Di-stok?</h4>
-                                            <p class="text-xs text-gray-500">Aktifkan jika produk ini bisa diproduksi masal & disimpan (Contoh: minuman botol, sambal kemasan).</p>
-                                        </div>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" name="is_stock" value="1" class="sr-only peer" {{ old('is_stock', $product->is_stock) ? 'checked' : '' }}>
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        <span class="font-black text-gray-900 tracking-tight mb-1">Siap Jual</span>
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide leading-relaxed">Produk jadi dari supplier tanpa perlu resep.</span>
                                     </label>
                                 </div>
                             </div>
 
-                            {{-- Instruksi --}}
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Langkah / Cara Membuat
-                                </label>
-                                <textarea name="instructions" rows="6"
-                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                                 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors"
-                                          placeholder="1. Siapkan bahan...
-2. Campur dan olah...
-3. Panggang / masak...
-4. Penyajian / pengemasan...">{{ old('instructions', $product->defaultRecipe->instructions ?? '') }}</textarea>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Tulis langkah yang mudah diikuti oleh karyawan atau tim produksi.
-                                </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="space-y-4">
+                                    <label for="productCode" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Kode Produk</label>
+                                    <input type="text" name="code" id="productCode" value="{{ old('code', $product->code) }}" 
+                                           class="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold placeholder:text-gray-300"
+                                           placeholder="Contoh: PRD001" required>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <label for="name" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Nama Produk</label>
+                                    <input type="text" name="name" id="name" value="{{ old('name', $product->name) }}" 
+                                           class="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold placeholder:text-gray-300"
+                                           placeholder="Nama yang tampil di aplikasi / struk" required>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="space-y-4">
+                                    <label for="productBarcode" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Barcode</label>
+                                    <div class="relative">
+                                        <input type="text" name="barcode" id="productBarcode" value="{{ old('barcode', $product->barcode) }}" 
+                                               class="w-full pl-6 pr-14 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold placeholder:text-gray-300"
+                                               placeholder="Kosongkan jika tidak ada">
+                                        <button type="button" id="startScan" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-gray-400 group-hover:text-cuan-green transition-all shadow-sm active:scale-95">
+                                            <i class="fas fa-barcode text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <label for="category_id" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Kategori</label>
+                                    <select name="category_id" class="select2-category w-full">
+                                        <option value="">- Pilih Kategori -</option>
+                                        @foreach($categories as $category)
+                                            <option value="{{ $category->id }}" {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="space-y-4">
+                                    <label for="unit_id" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Satuan Jual (Unit)</label>
+                                    <select name="unit_id" id="unit_id" class="select2-init w-full" required>
+                                        <option value="">- Pilih Satuan -</option>
+                                        @foreach($units as $unit)
+                                            <option value="{{ $unit->id }}" {{ old('unit_id', $product->unit_id) == $unit->id ? 'selected' : '' }}>
+                                                {{ $unit->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <label for="imageInput" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Foto Produk</label>
+                                    <input type="file" name="image" id="imageInput" accept="image/*"
+                                           class="w-full px-6 py-3 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white transition-all font-bold text-sm
+                                                  file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0
+                                                  file:text-xs file:font-black file:uppercase file:tracking-widest file:bg-cuan-green file:text-white hover:file:bg-cuan-olive">
+                                    
+                                    {{-- Preview foto --}}
+                                    <div id="imagePreview" class="mt-4 {{ $product->image ? '' : 'hidden' }}">
+                                        <div class="relative inline-block group">
+                                            <img id="previewImg"
+                                                 src="{{ $product->image ? asset('storage/' . $product->image) : '' }}"
+                                                 alt="Preview"
+                                                 class="w-32 h-32 object-cover rounded-[2rem] border-4 border-white shadow-xl group-hover:scale-105 transition-transform duration-500">
+                                            <button type="button" id="removeImage"
+                                                    class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8
+                                                           flex items-center justify-center hover:bg-red-600 transition-all shadow-lg active:scale-90">
+                                                <i class="fas fa-times text-xs"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <label for="description" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Deskripsi Produk (Opsional)</label>
+                                <textarea name="description" id="description" rows="3" 
+                                          class="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold placeholder:text-gray-300 resize-none"
+                                          placeholder="Tuliskan keterangan singkat, misalnya rasa, ukuran, atau catatan lain.">{{ old('description', $product->description) }}</textarea>
                             </div>
                         </div>
-                    </section>
+                    </x-card-container>
+
+                    {{-- SECTION 2: RESEP PRODUK --}}
+                    <x-card-container id="section-recipe" class="scroll-mt-24 section-recipe-container">
+                        <div class="p-8 border-b border-gray-50">
+                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-2 block">Culinaries</span>
+                            <h2 class="text-xl font-black text-gray-900 tracking-tight">Detail <span class="text-gray-400">Resep Produksi</span></h2>
+                        </div>
+
+                        <div class="p-8 space-y-8">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="space-y-4">
+                                    <label for="recipe_name" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Nama Resep</label>
+                                    <input type="text" name="recipe_name" id="recipe_name" 
+                                           value="{{ old('recipe_name', $product->defaultRecipe->name ?? '') }}" 
+                                           class="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-gray-300"
+                                           placeholder="Contoh: Resep Kue Original" required>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <label for="output_quantity" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Hasil per 1 Resep</label>
+                                    <div class="relative">
+                                        <input type="number" step="0.01" name="output_quantity" id="output_quantity" 
+                                               value="{{ old('output_quantity', $product->defaultRecipe->output_quantity ?? 1) }}" 
+                                               class="w-full pl-6 pr-16 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-gray-300"
+                                               placeholder="1" required>
+                                        <span class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase select-none yield-unit-label">{{ $product->unit->abbreviation }}</span>
+                                    </div>
+                                    <p class="text-xs font-bold text-gray-400 tracking-wide uppercase italic">Jumlah produk jadi dari satu kali resep.</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                <div class="space-y-4">
+                                    <label for="estimated_time_minutes" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Estimasi Waktu Produksi</label>
+                                    <div class="relative">
+                                        <input type="number" name="estimated_time_minutes" id="estimated_time_minutes" 
+                                               value="{{ old('estimated_time_minutes', $product->defaultRecipe->estimated_time_minutes ?? '') }}" 
+                                               class="w-full pl-6 pr-16 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-gray-300"
+                                               placeholder="30">
+                                        <span class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase select-none">Menit</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-blue-50/50 border-2 border-blue-100/50 rounded-[2rem] p-6 flex items-center justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 bg-white rounded-2xl shadow-sm flex items-center justify-center text-blue-500">
+                                            <i class="fas fa-boxes"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-black text-gray-900 uppercase tracking-wider">Produk Bisa Di-stok?</h4>
+                                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Aktifkan jika produk ini disimpan.</p>
+                                        </div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="is_stock" value="1" class="sr-only peer" {{ old('is_stock', $product->is_stock) ? 'checked' : '' }}>
+                                        <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-500"></div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <label for="instructions" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Langkah / Cara Membuat</label>
+                                <textarea name="instructions" id="instructions" rows="6" 
+                                          class="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder:text-gray-300 resize-none"
+                                          placeholder="1. Siapkan bahan...
+2. Campur dan olah...
+3. Panggang / masak...">{{ old('instructions', $product->defaultRecipe->instructions ?? '') }}</textarea>
+                            </div>
+                        </div>
+                    </x-card-container>
 
                     {{-- SECTION 3: BAHAN BAKU --}}
-                    <section id="section-bahan" class="scroll-mt-24 bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
-                        <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    {{-- SECTION 3: BAHAN BAKU --}}
+                    <x-card-container id="section-bahan" class="scroll-mt-24">
+                        <div class="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                             <div>
-                                <h2 class="text-lg md:text-xl font-bold text-gray-900 flex items-center">
-                                    Bahan Baku Resep
-                                </h2>
-                                <p class="text-sm text-gray-500 mt-1">
-                                    Pilih bahan baku dan jumlah yang dipakai untuk 1 kali resep.
-                                </p>
+                                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-cuan-green mb-2 block">Ingredients</span>
+                                <h2 class="text-xl font-black text-gray-900 tracking-tight">Komposisi <span class="text-gray-400">Bahan Baku</span></h2>
                             </div>
                             <button type="button" id="addRecipeItem"
-                                    class="px-5 py-2.5 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive
-                                           transition-colors flex items-center text-sm font-medium">
-                                <i class="fas fa-plus mr-2"></i>
-                                Tambah Bahan Baku
+                                    class="inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-cuan-olive transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                                <i class="fas fa-plus mr-2"></i> Tambah Bahan
                             </button>
                         </div>
 
-                        @php
-                            $existingItems = old('recipe_items', $product->defaultRecipe->items ?? collect());
-                            $itemCount = is_array($existingItems) ? count($existingItems) : $existingItems->count();
-                        @endphp
+                        <div class="p-8 space-y-6">
+                            @php
+                                $existingItems = old('recipe_items', $product->defaultRecipe->items ?? collect());
+                                $itemCount = is_array($existingItems) ? count($existingItems) : $existingItems->count();
+                            @endphp
 
-                        <div id="recipeItemsContainer" class="space-y-4">
-                            @if($itemCount > 0)
-                                @foreach($existingItems as $index => $item)
-                                    @php
-                                        $rawMaterialId = is_array($item) ? $item['raw_material_id'] : $item->raw_material_id;
-                                        $quantity = is_array($item) ? $item['quantity'] : $item->quantity;
-                                        $notes = is_array($item) ? ($item['notes'] ?? '') : $item->notes;
-                                        $rawMaterial = \App\Models\RawMaterial::find($rawMaterialId);
-                                    @endphp
-                                    <div class="recipe-item border border-gray-200 rounded-lg p-5 bg-gray-50">
-                                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                                            {{-- Bahan --}}
-                                            <div class="md:col-span-5">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                    Bahan Baku <span class="text-red-500">*</span>
-                                                </label>
-                                                <select name="recipe_items[{{ $index }}][raw_material_id]"
-                                                        class="raw-material-select w-full" required>
+                            <div id="recipeItemsContainer" class="space-y-6">
+                                @if($itemCount > 0)
+                                    @foreach($existingItems as $index => $item)
+                                        @php
+                                            $rawMaterialId = is_array($item) ? $item['raw_material_id'] : $item->raw_material_id;
+                                            $quantity = is_array($item) ? $item['quantity'] : $item->quantity;
+                                            $notes = is_array($item) ? ($item['notes'] ?? '') : $item->notes;
+                                            $rawMaterial = \App\Models\RawMaterial::find($rawMaterialId);
+                                        @endphp
+                                        <div class="recipe-item group bg-gray-50/50 border-2 border-gray-100/50 rounded-[2rem] p-8 transition-all hover:bg-white hover:border-cuan-green/20">
+                                            <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                                <div class="md:col-span-12 lg:col-span-5 space-y-4">
+                                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Bahan Baku</label>
+                                                    <select name="recipe_items[{{ $index }}][raw_material_id]" class="raw-material-select w-full" required>
+                                                        <option value="">- Pilih Bahan -</option>
+                                                        @foreach($rawMaterials as $rm)
+                                                            <option value="{{ $rm->id }}"
+                                                                data-price="{{ $rm->purchase_price }}"
+                                                                data-unit="{{ $rm->unit->name ?? '' }}"
+                                                                {{ $rawMaterialId == $rm->id ? 'selected' : '' }}>
+                                                                {{ $rm->name }} ({{ $rm->unit->name ?? '' }}) - Rp {{ number_format($rm->purchase_price, 0, ',', '.') }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <div class="md:col-span-6 lg:col-span-2 space-y-4">
+                                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Jumlah</label>
+                                                    <input type="number" step="0.01" name="recipe_items[{{ $index }}][quantity]" value="{{ $quantity }}"
+                                                           class="quantity-input w-full px-6 py-4 rounded-2xl bg-white border-2 border-gray-100 focus:border-cuan-green focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold placeholder:text-gray-300"
+                                                           placeholder="0" required>
+                                                </div>
+
+                                                <div class="md:col-span-6 lg:col-span-2 space-y-4">
+                                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Satuan</label>
+                                                    <input type="text" class="unit-display w-full px-6 py-4 rounded-2xl bg-gray-100/50 border-2 border-gray-100 text-gray-500 font-bold text-sm"
+                                                           readonly placeholder="-" value="{{ $rawMaterial->unit->name ?? '' }}">
+                                                </div>
+
+                                                <div class="md:col-span-6 lg:col-span-2 space-y-4">
+                                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Estimasi Biaya</label>
+                                                    <input type="text" class="cost-display w-full px-6 py-4 rounded-2xl bg-cuan-green/[0.03] border-2 border-cuan-green/10 text-cuan-green font-black text-sm"
+                                                           readonly value="Rp {{ number_format(($rawMaterial->purchase_price ?? 0) * $quantity, 0, ',', '.') }}">
+                                                </div>
+
+                                                <div class="md:col-span-1 flex items-end">
+                                                    <button type="button" class="remove-item w-14 h-14 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all active:scale-90 flex items-center justify-center shadow-sm"
+                                                            style="display: {{ $index == 0 && $itemCount == 1 ? 'none' : 'flex' }};">
+                                                        <i class="fas fa-trash-alt text-lg"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-6 space-y-4">
+                                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Catatan Khusus (Opsional)</label>
+                                                <input type="text" name="recipe_items[{{ $index }}][notes]" value="{{ $notes }}"
+                                                       class="w-full px-6 py-4 rounded-2xl bg-white border-2 border-gray-100 focus:border-cuan-green focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold text-sm placeholder:text-gray-300"
+                                                       placeholder="Contoh: Takaran pas, jangan dikurangi...">
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="recipe-item group bg-gray-50/50 border-2 border-gray-100/50 rounded-[2rem] p-8 transition-all hover:bg-white hover:border-cuan-green/20">
+                                        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                            <div class="md:col-span-12 lg:col-span-5 space-y-4">
+                                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Bahan Baku</label>
+                                                <select name="recipe_items[0][raw_material_id]" class="raw-material-select w-full" required>
                                                     <option value="">- Pilih Bahan -</option>
                                                     @foreach($rawMaterials as $rm)
-                                                        <option value="{{ $rm->id }}"
-                                                            data-price="{{ $rm->purchase_price }}"
-                                                            data-unit="{{ $rm->unit->name ?? '' }}"
-                                                            {{ $rawMaterialId == $rm->id ? 'selected' : '' }}>
+                                                        <option value="{{ $rm->id }}" data-price="{{ $rm->purchase_price }}" data-unit="{{ $rm->unit->name ?? '' }}">
                                                             {{ $rm->name }} ({{ $rm->unit->name ?? '' }}) - Rp {{ number_format($rm->purchase_price, 0, ',', '.') }}
                                                         </option>
                                                     @endforeach
                                                 </select>
                                             </div>
-
-                                            {{-- Jumlah --}}
-                                            <div class="md:col-span-2">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                    Jumlah <span class="text-red-500">*</span>
-                                                </label>
-                                                <input type="number" step="0.01"
-                                                       name="recipe_items[{{ $index }}][quantity]"
-                                                       value="{{ $quantity }}"
-                                                       class="quantity-input w-full px-4 py-3 border border-gray-300 rounded-lg
-                                                              focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors"
+                                            <div class="md:col-span-6 lg:col-span-2 space-y-4">
+                                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Jumlah</label>
+                                                <input type="number" step="0.01" name="recipe_items[0][quantity]"
+                                                       class="quantity-input w-full px-6 py-4 rounded-2xl bg-white border-2 border-gray-100 focus:border-cuan-green focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold placeholder:text-gray-300"
                                                        placeholder="0" required>
                                             </div>
-
-                                            {{-- Satuan --}}
-                                            <div class="md:col-span-2">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                    Satuan
-                                                </label>
-                                                <input type="text"
-                                                       class="unit-display w-full px-4 py-3 border border-gray-300 rounded-lg
-                                                              bg-gray-100 text-gray-600 text-sm"
-                                                       readonly placeholder="-"
-                                                       value="{{ $rawMaterial->unit->name ?? '' }}">
+                                            <div class="md:col-span-6 lg:col-span-2 space-y-4">
+                                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Satuan</label>
+                                                <input type="text" class="unit-display w-full px-6 py-4 rounded-2xl bg-gray-100/50 border-2 border-gray-100 text-gray-500 font-bold text-sm"
+                                                       readonly placeholder="-">
                                             </div>
-
-                                            {{-- Biaya --}}
-                                            <div class="md:col-span-2">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                    Perkiraan Biaya
-                                                </label>
-                                                <input type="text"
-                                                       class="cost-display w-full px-4 py-3 border border-gray-300 rounded-lg
-                                                              bg-blue-50 font-semibold text-blue-700 text-sm"
-                                                       readonly
-                                                       value="Rp {{ number_format(($rawMaterial->purchase_price ?? 0) * $quantity, 0, ',', '.') }}">
+                                            <div class="md:col-span-6 lg:col-span-2 space-y-4">
+                                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Estimasi Biaya</label>
+                                                <input type="text" class="cost-display w-full px-6 py-4 rounded-2xl bg-cuan-green/[0.03] border-2 border-cuan-green/10 text-cuan-green font-black text-sm"
+                                                       readonly value="Rp 0">
                                             </div>
-
-                                            {{-- Hapus --}}
                                             <div class="md:col-span-1 flex items-end">
-                                                <button type="button"
-                                                        class="remove-item w-full px-4 py-3 bg-red-500 text-white rounded-lg
-                                                               hover:bg-red-600 transition-colors text-sm"
-                                                        style="display: {{ $index == 0 && $itemCount == 1 ? 'none' : 'block' }};">
-                                                    <i class="fas fa-trash"></i>
+                                                <button type="button" class="remove-item w-14 h-14 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all active:scale-90 flex items-center justify-center shadow-sm" style="display: none;">
+                                                    <i class="fas fa-trash-alt text-lg"></i>
                                                 </button>
                                             </div>
                                         </div>
-
-                                        {{-- Catatan --}}
-                                        <div class="mt-3">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                Catatan Bahan (opsional)
-                                            </label>
-                                            <input type="text" name="recipe_items[{{ $index }}][notes]"
-                                                   value="{{ $notes }}"
-                                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                                          focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors"
-                                                   placeholder="Contoh: gunakan susu full cream, tepung merek tertentu, dll.">
+                                        <div class="mt-6 space-y-4">
+                                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Catatan Khusus (Opsional)</label>
+                                            <input type="text" name="recipe_items[0][notes]"
+                                                   class="w-full px-6 py-4 rounded-2xl bg-white border-2 border-gray-100 focus:border-cuan-green focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold text-sm placeholder:text-gray-300"
+                                                   placeholder="Contoh: Kualitas ekspektasi...">
                                         </div>
                                     </div>
-                                @endforeach
-                            @else
-                                {{-- Jika belum ada data, buat 1 baris kosong --}}
-                                <div class="recipe-item border border-gray-200 rounded-lg p-5 bg-gray-50">
-                                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                                        <div class="md:col-span-5">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                Bahan Baku <span class="text-red-500">*</span>
-                                            </label>
-                                            <select name="recipe_items[0][raw_material_id]" class="raw-material-select w-full" required>
-                                                <option value="">- Pilih Bahan -</option>
-                                                @foreach($rawMaterials as $rm)
-                                                    <option value="{{ $rm->id }}"
-                                                            data-price="{{ $rm->purchase_price }}"
-                                                            data-unit="{{ $rm->unit->name ?? '' }}">
-                                                        {{ $rm->name }} ({{ $rm->unit->name ?? '' }}) - Rp {{ number_format($rm->purchase_price, 0, ',', '.') }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                Jumlah <span class="text-red-500">*</span>
-                                            </label>
-                                            <input type="number" step="0.01" name="recipe_items[0][quantity]"
-                                                   class="quantity-input w-full px-4 py-3 border border-gray-300 rounded-lg
-                                                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors"
-                                                   placeholder="0" required>
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                Satuan
-                                            </label>
-                                            <input type="text"
-                                                   class="unit-display w-full px-4 py-3 border border-gray-300 rounded-lg
-                                                          bg-gray-100 text-gray-600 text-sm"
-                                                   readonly placeholder="-">
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                Perkiraan Biaya
-                                            </label>
-                                            <input type="text"
-                                                   class="cost-display w-full px-4 py-3 border border-gray-300 rounded-lg
-                                                          bg-blue-50 font-semibold text-blue-700 text-sm"
-                                                   readonly value="Rp 0">
-                                        </div>
-                                        <div class="md:col-span-1 flex items-end">
-                                            <button type="button"
-                                                    class="remove-item w-full px-4 py-3 bg-red-500 text-white rounded-lg
-                                                           hover:bg-red-600 transition-colors text-sm"
-                                                    style="display: none;">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Catatan Bahan (opsional)
-                                        </label>
-                                        <input type="text" name="recipe_items[0][notes]"
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                                      focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors"
-                                               placeholder="Contoh: kualitas tertentu, merk tertentu, dll.">
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Total Biaya Bahan --}}
-                        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-5">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <div class="flex items-center text-sm font-semibold text-gray-700">
-                                    <span>Total biaya bahan baku (untuk 1 resep):</span>
-                                </div>
-                                <span id="totalMaterialCost" class="text-xl font-bold text-cuan-green">
-                                    Rp 0
-                                </span>
+                                @endif
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">
-                                Nilai ini otomatis dihitung dari bahan yang Anda pilih di atas.
-                            </p>
+
+                            <div class="mt-8 bg-cuan-green/[0.02] border-2 border-cuan-green/10 rounded-[2rem] p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-cuan-green shadow-sm border border-cuan-green/10">
+                                        <i class="fas fa-calculator text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Total Biaya Bahan Baku</h3>
+                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Akumulasi otomatis dari resep di atas.</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span id="totalMaterialCost" class="text-3xl font-black text-cuan-green tracking-tight">Rp 0</span>
+                                </div>
+                            </div>
                         </div>
-                    </section>
+                    </x-card-container>
 
                     {{-- SECTION 4: BIAYA LAINNYA & RINGKASAN HPP --}}
-                    <section id="section-biaya" class="scroll-mt-24 bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
-                        <div class="mb-6">
-                            <h2 class="text-lg md:text-xl font-bold text-gray-900 flex items-center">
-                                Biaya Lainnya & Ringkasan HPP
-                            </h2>
-                            <p class="text-sm text-gray-500 mt-1">
-                                Masukkan biaya selain bahan baku, lalu lihat total HPP dan HPP per 1 produk.
-                            </p>
+                    <x-card-container id="section-biaya" class="scroll-mt-24">
+                        <div class="p-8 border-b border-gray-50 space-y-1">
+                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 mb-2 block">Overhead & Summary</span>
+                            <h2 class="text-xl font-black text-gray-900 tracking-tight">Kalkulasi <span class="text-gray-400">Total HPP</span></h2>
                         </div>
 
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                            <div class="flex items-start">
-                                <i class="fas fa-info-circle text-cuan-green mt-0.5 mr-3"></i>
-                                <p class="text-sm text-blue-800">
-                                    Biaya lainnya bisa berupa listrik, gas, sewa, gaji pegawai, kemasan, dan biaya kecil lain
-                                    yang ingin Anda masukkan ke HPP.
-                                </p>
-                            </div>
-                        </div>
-
-                        @php
-                            $latestHpp = $product->latestHppCalculation;
-                            $additionalCostValue = old('additional_cost', $latestHpp->additional_cost ?? 0);
-                        @endphp
-
-                        <div class="grid md:grid-cols-3 gap-6 items-start">
-                            {{-- Input Biaya Tambahan --}}
-                            <div class="md:col-span-1">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Biaya Lainnya (Rp)
-                                </label>
-                                <input type="number" step="0.01" name="additional_cost" id="additionalCostInput"
-                                       value="{{ $additionalCostValue }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base transition-colors"
-                                       placeholder="0">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Masukkan total biaya tambahan. Jika tidak dihitung, isi 0.
+                        <div class="p-8 space-y-8">
+                            <div class="bg-gray-50/80 border-2 border-gray-100 rounded-[2rem] p-6 flex items-start gap-4">
+                                <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-gray-400 shadow-sm border border-gray-100 shrink-0">
+                                    <i class="fas fa-info-circle text-xs"></i>
+                                </div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wide leading-relaxed">
+                                    Biaya tambahan mencakup gas, listrik, kemasan porsi, gaji proporsional, atau biaya variabel lainnya per satu resep.
                                 </p>
                             </div>
 
-                            {{-- Ringkasan HPP --}}
-                            <div class="md:col-span-2">
-                                <div class="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
-                                    <h3 class="text-base font-bold text-gray-900 mb-4 flex items-center">
-                                        Ringkasan HPP (Harga Pokok Produksi)
-                                    </h3>
-                                    <div class="space-y-3">
-                                        <div class="flex justify-between items-center py-1.5">
-                                            <span class="text-sm text-gray-700">Total biaya bahan baku:</span>
-                                            <span id="summaryMaterialCost" class="font-semibold text-gray-900">Rp 0</span>
-                                        </div>
-                                        <div class="flex justify-between items-center py-1.5">
-                                            <span class="text-sm text-gray-700">Biaya lainnya:</span>
-                                            <span id="summaryAdditionalCost" class="font-semibold text-gray-900">Rp 0</span>
-                                        </div>
-                                        <div class="border-t border-gray-300 pt-3 flex justify-between items-center">
-                                            <span class="font-bold text-gray-900">Total HPP (1 resep):</span>
-                                            <span id="summaryTotalHpp" class="text-xl font-bold text-green-600">Rp 0</span>
-                                        </div>
-                                        <div class="flex justify-between items-center py-1.5">
-                                            <span class="text-sm text-gray-700">Hasil produk per 1 resep:</span>
-                                            <span id="summaryOutputQty" class="font-semibold text-gray-900">1</span>
-                                        </div>
-                                        <div class="bg-white rounded-lg p-4 flex justify-between items-center shadow-sm">
-                                            <span class="font-bold text-gray-900">HPP per 1 produk:</span>
-                                            <span id="summaryHppPerUnit" class="text-2xl font-bold text-cuan-green">Rp 0</span>
+                            @php
+                                $latestHpp = $product->latestHppCalculation;
+                                $additionalCostValue = old('additional_cost', $latestHpp->additional_cost ?? 0);
+                            @endphp
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <div class="space-y-6">
+                                    <div class="space-y-4">
+                                        <label for="additionalCostInput" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Biaya Operasional Tambahan (Rp)</label>
+                                        <div class="relative">
+                                            <input type="number" step="0.01" name="additional_cost" id="additionalCostInput" value="{{ $additionalCostValue }}"
+                                                   class="w-full pl-6 pr-14 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-black text-lg placeholder:text-gray-300"
+                                                   placeholder="0">
+                                            <div class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase select-none">IDR</div>
                                         </div>
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-3">
-                                        HPP per produk ini akan dipakai sebagai dasar untuk menghitung margin keuntungan.
-                                    </p>
+                                </div>
+
+                                <div class="bg-gradient-to-br from-cuan-green/10 to-transparent border-2 border-cuan-green/10 rounded-[2.5rem] p-8 space-y-6">
+                                    <h3 class="text-xs font-black text-gray-900 uppercase tracking-[0.2em] mb-4">Ringkasan Kalkulasi HPP</h3>
+                                    <div class="space-y-4">
+                                        <div class="flex justify-between items-center group">
+                                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Biaya Bahan Baku</span>
+                                            <span id="summaryMaterialCost" class="text-sm font-black text-gray-700 tracking-tight">Rp 0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center group">
+                                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Biaya Tambahan</span>
+                                            <span id="summaryAdditionalCost" class="text-sm font-black text-gray-700 tracking-tight">Rp 0</span>
+                                        </div>
+                                        <div class="h-px bg-gray-100"></div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-[10px] font-black text-gray-900 uppercase tracking-widest">Total HPP per Batch</span>
+                                            <span id="summaryTotalHpp" class="text-xl font-black text-cuan-green tracking-tight">Rp 0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Output per Batch</span>
+                                            <span id="summaryOutputQty" class="text-sm font-black text-gray-700 tracking-tight">1</span>
+                                        </div>
+                                        
+                                        <div class="mt-4 pt-4 border-t-2 border-cuan-green/10 flex justify-between items-center">
+                                            <div class="space-y-1">
+                                                <span class="text-[10px] font-black text-cuan-green uppercase tracking-widest block">HPP per Unit</span>
+                                                <p class="text-[8px] font-bold text-gray-400 uppercase">Dasar perhitungan margin</p>
+                                            </div>
+                                            <span id="summaryHppPerUnit" class="text-3xl font-black text-cuan-green tracking-tighter">Rp 0</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </section>
+                    </x-card-container>
 
                     {{-- SECTION 5: HARGA JUAL & STOK --}}
-                    <section id="section-pricing" class="scroll-mt-24 bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
-                        <div class="mb-6">
-                            <h2 class="text-lg md:text-xl font-bold text-gray-900 flex items-center">
-                                Harga Jual & Stok
-                            </h2>
-                            <p class="text-sm text-gray-500 mt-1">
-                                Atur harga jual, harga khusus, stok minimum, dan lihat margin keuntungan.
-                            </p>
+                    <x-card-container id="section-pricing" class="scroll-mt-24">
+                        <div class="p-8 border-b border-gray-50 space-y-1">
+                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-cuan-green mb-2 block">Commercials</span>
+                            <h2 class="text-xl font-black text-gray-900 tracking-tight">Penentuan <span class="text-gray-400">Harga & Margin</span></h2>
                         </div>
 
-                        {{-- Input HPP Manual (Hanya untuk Produk Siap Jual) --}}
-                        <div id="readyToSellFields" class="bg-orange-50 border border-orange-200 rounded-lg p-5 mb-6 hidden">
-                            <h4 class="text-sm font-bold text-orange-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-info-circle"></i>
-                                <span>Khusus Produk Siap Jual</span>
-                            </h4>
-                            <p class="text-xs text-orange-700 mb-4">
-                                Karena produk ini tidak memiliki resep, harap masukkan modal (HPP) secara manual.
-                            </p>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    HPP (Modal) per Unit <span class="text-red-500">*</span>
-                                </label>
-                                <input type="number" step="0.01" name="manual_hpp" id="manualHppInput"
-                                       value="{{ old('manual_hpp', $product->hpp) }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                       placeholder="Contoh: 5000">
-                                <p class="text-xs text-gray-500 mt-1">Harga beli dari supplier per unit.</p>
-                            </div>
-                        </div>
-
-                        {{-- HPP per unit highlight --}}
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                <span class="text-sm font-semibold text-gray-700 flex items-center">
-                                    HPP per 1 produk:
-                                </span>
-                                <span id="finalHppPerUnit" class="text-xl font-bold text-green-600">Rp 0</span>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1">
-                                Usahakan harga jual lebih tinggi dari HPP agar usaha tetap untung.
-                            </p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {{-- Harga jual --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Harga Jual <span class="text-red-500">*</span>
-                                </label>
-                                <input type="number" step="0.01" name="selling_price" id="sellingPriceInput"
-                                       value="{{ old('selling_price', $product->selling_price) }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-transparent text-sm md:text-base" required>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Harga normal yang dibayar pelanggan.
-                                </p>
-                            </div>
-
-                            {{-- Harga reseller --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Harga Reseller
-                                </label>
-                                <input type="number" step="0.01" name="reseller_price"
-                                       value="{{ old('reseller_price', $product->reseller_price) }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-transparent text-sm md:text-base">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Opsional, isi jika Anda punya harga khusus untuk reseller / agen.
-                                </p>
-                            </div>
-
-                            {{-- Harga promo --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Harga Promo
-                                </label>
-                                <input type="number" step="0.01" name="promo_price"
-                                       value="{{ old('promo_price', $product->promo_price) }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-transparent text-sm md:text-base">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Opsional, digunakan jika ada diskon / promo.
-                                </p>
-                            </div>
-
-                            {{-- Stok minimum --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Stok Minimum
-                                </label>
-                                <input type="number" step="0.01" name="min_stock"
-                                       value="{{ old('min_stock', $product->min_stock) }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-transparent text-sm md:text-base">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Sistem bisa memberi peringatan jika stok di bawah angka ini.
-                                </p>
-                            </div>
-
-                            {{-- Masa simpan --}}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Masa Simpan (hari)
-                                </label>
-                                <input type="number" name="shelf_life_days"
-                                       value="{{ old('shelf_life_days', $product->shelf_life_days) }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
-                                              focus:ring-blue-500 focus:border-transparent text-sm md:text-base">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Opsional, isi jika produk punya kadaluarsa / masa simpan tertentu.
-                                </p>
-                            </div>
-                        </div>
-
-                        {{-- Analisis margin --}}
-                        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                                Analisis Margin Keuntungan
-                            </h3>
-                            <div class="space-y-3">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-700 text-sm">HPP per produk:</span>
-                                    <span id="marginHpp" class="font-semibold text-gray-900 text-sm">Rp 0</span>
+                        <div class="p-8 space-y-8">
+                            {{-- Input HPP Manual (Hanya untuk Produk Siap Jual) --}}
+                            <div id="readyToSellFields" class="bg-orange-50/50 border-2 border-orange-100 rounded-[2rem] p-8 hidden">
+                                <div class="flex items-start gap-4 mb-6">
+                                    <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-orange-500 shadow-sm border border-orange-100 shrink-0">
+                                        <i class="fas fa-layer-group text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-black text-orange-800 uppercase tracking-widest mb-1">Produk Siap Jual</h4>
+                                        <p class="text-[10px] font-bold text-orange-600/70 uppercase">Masukkan modal beli per unit karena tanpa resep produksi.</p>
+                                    </div>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-700 text-sm">Harga jual:</span>
-                                    <span id="marginSellingPrice" class="font-semibold text-gray-900 text-sm">Rp 0</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-700 text-sm">Keuntungan per produk:</span>
-                                    <span id="marginProfit" class="font-semibold text-gray-900 text-sm">Rp 0</span>
-                                </div>
-                                <div class="bg-white rounded-lg p-4 flex justify-between items-center border-2 border-blue-200">
-                                    <span class="text-base md:text-lg font-bold text-gray-800 flex items-center">
-                                        Margin:
-                                    </span>
-                                    <span id="marginPercent" class="text-xl md:text-2xl font-bold text-green-600">
-                                        0%
-                                    </span>
+                                <div class="space-y-4">
+                                    <label for="manualHppInput" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">HPP (Modal) per Unit <span class="text-red-500">*</span></label>
+                                    <div class="relative">
+                                        <input type="number" step="0.01" name="manual_hpp" id="manualHppInput" value="{{ old('manual_hpp', $product->hpp) }}"
+                                               class="w-full pl-6 pr-14 py-4 rounded-2xl bg-white border-2 border-orange-100 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all font-black text-lg placeholder:text-gray-300"
+                                               placeholder="0">
+                                        <div class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-orange-300 uppercase select-none">IDR</div>
+                                    </div>
                                 </div>
                             </div>
-                            <p class="text-xs text-gray-500 mt-3">
-                                Sebagai gambaran, banyak pelaku usaha menargetkan margin kotor minimal 30%.
-                                Anda bisa menyesuaikan dengan kondisi usaha masing-masing.
-                            </p>
+
+                            {{-- HPP per unit highlight --}}
+                            <div class="bg-cuan-green/[0.03] border-2 border-cuan-green/10 rounded-[2rem] p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-cuan-green border border-cuan-green/10 shadow-sm">
+                                        <i class="fas fa-tag text-xs"></i>
+                                    </div>
+                                    <span class="text-xs font-black text-gray-500 uppercase tracking-widest">HPP Real-time per Unit</span>
+                                </div>
+                                <span id="finalHppPerUnit" class="text-2xl font-black text-cuan-green tracking-tighter">Rp 0</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {{-- Harga jual --}}
+                                <div class="space-y-4">
+                                    <label for="sellingPriceInput" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Harga Jual Normal <span class="text-red-500">*</span></label>
+                                    <div class="relative">
+                                        <input type="number" step="0.01" name="selling_price" id="sellingPriceInput" value="{{ old('selling_price', $product->selling_price) }}"
+                                               class="w-full pl-6 pr-14 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-black text-lg placeholder:text-gray-300" required>
+                                        <div class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">IDR</div>
+                                    </div>
+                                </div>
+
+                                {{-- Harga reseller --}}
+                                <div class="space-y-4">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Harga Reseller</label>
+                                    <div class="relative">
+                                        <input type="number" step="0.01" name="reseller_price" value="{{ old('reseller_price', $product->reseller_price) }}"
+                                               class="w-full pl-6 pr-14 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-black text-lg placeholder:text-gray-300">
+                                        <div class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">IDR</div>
+                                    </div>
+                                </div>
+
+                                {{-- Harga promo --}}
+                                <div class="space-y-4">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Harga Promo</label>
+                                    <div class="relative">
+                                        <input type="number" step="0.01" name="promo_price" value="{{ old('promo_price', $product->promo_price) }}"
+                                               class="w-full pl-6 pr-14 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-black text-lg placeholder:text-gray-300">
+                                        <div class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase">IDR</div>
+                                    </div>
+                                </div>
+
+                                {{-- Stok minimum --}}
+                                <div class="space-y-4">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Stok Minimum</label>
+                                    <input type="number" step="0.01" name="min_stock" value="{{ old('min_stock', $product->min_stock) }}"
+                                           class="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold placeholder:text-gray-300">
+                                </div>
+
+                                {{-- Masa simpan --}}
+                                <div class="space-y-4">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Masa Simpan (Hari)</label>
+                                    <input type="number" name="shelf_life_days" value="{{ old('shelf_life_days', $product->shelf_life_days) }}"
+                                           class="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-cuan-green focus:bg-white focus:ring-4 focus:ring-cuan-green/10 transition-all font-bold placeholder:text-gray-300">
+                                </div>
+                            </div>
+
+                            {{-- Analisis margin --}}
+                            <div class="bg-gray-900 border-2 border-gray-800 rounded-[2.5rem] p-8 space-y-8 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 p-8 opacity-10">
+                                    <i class="fas fa-chart-line text-8xl text-white"></i>
+                                </div>
+                                <div class="relative z-10">
+                                    <h3 class="text-xs font-black text-white uppercase tracking-[0.2em] mb-8">Analisis Margin & Keuntungan</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <div class="space-y-2">
+                                            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest block">HPP Satuan</span>
+                                            <p id="marginHpp" class="text-xl font-black text-white tracking-tight">Rp 0</p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Harga Jual</span>
+                                            <p id="marginSellingPrice" class="text-xl font-black text-white tracking-tight">Rp 0</p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Laba Kotor</span>
+                                            <p id="marginProfit" class="text-xl font-black text-cuan-green tracking-tight">Rp 0</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-8 pt-8 border-t border-gray-800 flex items-center justify-between">
+                                        <div class="space-y-1">
+                                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Persentase Margin</span>
+                                            <p class="text-[8px] font-bold text-gray-600 uppercase">Efisiensi keuntungan produk ini</p>
+                                        </div>
+                                        <span id="marginPercent" class="text-5xl font-black text-cuan-green tracking-tighter">0%</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </section>
+                    </x-card-container>
 
                 </div>
 
                 {{-- FOOTER: TOMBOL AKSI --}}
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="px-8 py-8 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <a href="{{ route('products-hpp.index') }}"
-                       class="inline-flex items-center justify-center px-5 py-2.5 border border-gray-300 rounded-lg
-                              text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Kembali ke daftar produk
+                       class="inline-flex items-center justify-center px-8 py-4 border-2 border-gray-200 rounded-xl text-xs font-black text-gray-400 uppercase tracking-widest hover:bg-white hover:border-gray-300 hover:text-gray-600 transition-all active:scale-95">
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali
                     </a>
                     <button type="submit"
-                            class="inline-flex items-center justify-center px-6 py-2.5 bg-cuan-green text-white rounded-lg
-                                   hover:bg-cuan-olive transition-all font-semibold shadow-md hover:shadow-lg text-sm">
-                        <i class="fas fa-save mr-2"></i>
-                        Simpan perubahan produk
+                            class="inline-flex items-center justify-center px-10 py-4 bg-cuan-green text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-cuan-olive transition-all active:scale-95 shadow-lg shadow-cuan-green/20">
+                        <i class="fas fa-check-circle mr-2 text-base"></i> Simpan Perubahan
                     </button>
                 </div>
             </form>
-        </x-card-container>
 
-    </div>
+        </div>
 
     {{-- Modal Scanner --}}
-    <div id="scannerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 hidden">
-        <div class="bg-white rounded-lg p-5 w-full max-w-md mx-4 relative">
-            <button type="button" id="closeScanner" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 z-10">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-            <h3 class="text-lg font-bold mb-4 text-center">Scan Barcode</h3>
-            <div id="reader" class="w-full bg-gray-100 rounded-lg overflow-hidden"></div>
-            <p class="text-xs text-gray-500 mt-3 text-center">Arahkan kamera ke barcode produk</p>
+    <div id="scannerModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/90 backdrop-blur-sm hidden overflow-y-auto overflow-x-hidden transition-all duration-300">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg mx-4 relative overflow-hidden border border-gray-100">
+            <div class="p-8 border-b border-gray-50 text-center relative">
+                <button type="button" id="closeScanner" class="absolute right-8 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-2xl bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all active:scale-90">
+                    <i class="fas fa-times"></i>
+                </button>
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-cuan-green mb-1 block">Smart Scan</span>
+                <h3 class="text-xl font-black text-gray-900 tracking-tight">Scan <span class="text-gray-400">Barcode Produk</span></h3>
+            </div>
+            <div class="p-8">
+                <div id="reader" class="w-full bg-gray-900 rounded-[2rem] overflow-hidden aspect-video shadow-inner"></div>
+                <div class="mt-6 flex flex-col items-center gap-2">
+                    <div class="w-12 h-1.5 bg-gray-100 rounded-full mb-2"></div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center leading-relaxed">Posisikan barcode di dalam area kamera untuk deteksi otomatis</p>
+                </div>
+            </div>
         </div>
     </div>
 </main>

@@ -3,17 +3,13 @@
 @section('title', 'Tambah Produk & Resep - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('products-hpp.index') }}" class="text-gray-500 hover:text-gray-700">Produk & Resep</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('products-hpp.index') }}" class="text-gray-400 hover:text-cuan-green font-medium tracking-tight">Produk & Resep</a>
 </li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Tambah Produk</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Tambah Produk</span>
 </li>
 @endsection
 
@@ -131,29 +127,21 @@
             </div>
         @endif
 
-        {{-- HEADER HALAMAN (seragam dengan index) --}}
-        <section
-            class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span
-                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 text-cuan-green border border-green-100">
-                        <i class="fas fa-utensils text-sm"></i>
-                    </span>
-                    <span>Tambah Produk & Resep</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Tambah Produk & Resep
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
                     Isi data produk langkah demi langkah. Tenang, semua data masih bisa diubah setelah disimpan.
                 </p>
             </div>
-            <div class="flex flex-col items-start md:items-end gap-1 text-sm">
-                <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">
-                    <i class="fas fa-list-ol mr-2 text-xs"></i>
-                    Form bertahap: 6 langkah
-                </span>
-                <p class="text-xs text-gray-500">
-                    Form ini otomatis menyimpan <span class="font-semibold">draft</span> supaya data tidak mudah hilang.
-                </p>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('products-hpp.index') }}" class="inline-flex items-center gap-2 rounded-xl bg-white border-2 border-gray-100 px-5 py-3 text-sm font-black text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+                    <i class="fas fa-arrow-left text-xs"></i> <span>Kembali</span>
+                </a>
             </div>
         </section>
 

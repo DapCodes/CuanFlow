@@ -295,9 +295,12 @@ class ProductHppController extends Controller
             abort(404);
         }
 
-        $product->load(['category', 'unit', 'recipes.items.rawMaterial.unit', 'hppCalculations.calculatedBy']);
+        $product->load(['category', 'unit', 'recipes.items.rawMaterial.unit', 'hppCalculations.calculatedBy', 'activeSalesTarget']);
+        
+        $salesTarget = $product->activeSalesTarget;
+        $hasTarget = (bool) $salesTarget;
 
-        return view('main.product_n_hpp-calc.show', compact('product'));
+        return view('main.product_n_hpp-calc.show', compact('product', 'salesTarget', 'hasTarget'));
     }
 
     public function edit(Product $product)
