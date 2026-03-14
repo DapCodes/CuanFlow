@@ -84,6 +84,53 @@
     .kanban-card:hover .drag-handle {
         opacity: 1;
     }
+
+    /* Form Enhancements for Clear Borders */
+    .choices__inner, 
+    input[type="text"], 
+    input[type="datetime-local"], 
+    textarea, 
+    select {
+        border: 1px solid #d1d5db !important; /* border-gray-300 */
+        border-radius: 0.5rem !important; /* rounded-lg */
+        background-color: #ffffff !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .choices__inner:hover,
+    input:hover, 
+    textarea:hover, 
+    select:hover {
+        border-color: #9ca3af !important; /* border-gray-400 */
+    }
+
+    .choices__inner:focus-within,
+    input:focus, 
+    textarea:focus, 
+    select:focus {
+        border-color: #00A884 !important; /* cuan-green */
+        box-shadow: 0 0 0 4px rgba(0, 168, 132, 0.1) !important;
+        outline: none !important;
+    }
+
+    /* Choices.js Specific Fixes */
+    .choices__list--multiple .choices__item {
+        background-color: #00A884 !important;
+        border: 1px solid #00A884 !important;
+        font-weight: 800 !important;
+        font-size: 10px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        border-radius: 4px !important;
+    }
+
+    .choices__inner {
+        padding: 4px 8px !important;
+        min-height: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
     
     /* Mobile Responsive */
     @media (max-width: 768px) {

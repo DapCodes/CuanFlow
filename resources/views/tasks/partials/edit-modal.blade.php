@@ -17,13 +17,13 @@
                     <div>
                         <label for="edit_title" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Judul Task</label>
                         <input type="text" name="title" id="edit_title" required 
-                               class="mt-1 focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green block w-full shadow-sm text-sm border-gray-300 rounded-lg py-2.5 transition-all outline-none">
+                               class="mt-1 block w-full border-gray-300 rounded-lg py-2.5 px-4 text-sm shadow-sm focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green transition-all outline-none">
                     </div>
 
                     <div>
                         <label for="edit_description" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Deskripsi</label>
                         <textarea name="description" id="edit_description" rows="3" 
-                                  class="mt-1 focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green block w-full shadow-sm text-sm border-gray-300 rounded-lg py-2.5 transition-all outline-none"></textarea>
+                                  class="mt-1 block w-full border-gray-300 rounded-lg py-2.5 px-4 text-sm shadow-sm focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green transition-all outline-none"></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -74,7 +74,7 @@
                     <div>
                         <label for="edit_deadline" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Deadline</label>
                         <input type="datetime-local" name="deadline" id="edit_deadline" 
-                               class="mt-1 focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green block w-full shadow-sm text-sm border-gray-300 rounded-lg py-2.5 transition-all outline-none">
+                                class="mt-1 block w-full border-gray-300 rounded-lg py-2.5 px-4 text-sm shadow-sm focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green transition-all outline-none">
                     </div>
                 </form>
             </div>

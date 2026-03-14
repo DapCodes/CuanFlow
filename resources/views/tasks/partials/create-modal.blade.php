@@ -20,13 +20,13 @@
                                 <!-- Title -->
                                 <div>
                                     <label for="title" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Judul Task <span class="text-red-500">*</span></label>
-                                    <input type="text" name="title" id="title" required class="mt-1 focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green block w-full shadow-sm text-sm border-gray-300 rounded-lg py-2.5 transition-all outline-none" placeholder="Contoh: Perbaiki bug login">
+                                    <input type="text" name="title" id="title" required class="mt-1 block w-full border-gray-300 rounded-lg py-2.5 px-4 text-sm shadow-sm focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green transition-all outline-none" placeholder="Contoh: Perbaiki bug login">
                                 </div>
  
                                 <!-- Description -->
                                 <div>
                                     <label for="description" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Deskripsi</label>
-                                    <textarea name="description" id="description" rows="3" class="mt-1 focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green block w-full shadow-sm text-sm border-gray-300 rounded-lg py-2.5 transition-all outline-none"></textarea>
+                                    <textarea name="description" id="description" rows="3" class="mt-1 block w-full border-gray-300 rounded-lg py-2.5 px-4 text-sm shadow-sm focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green transition-all outline-none"></textarea>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4">
@@ -83,7 +83,7 @@
                                 <div>
                                     <label for="deadline" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Deadline</label>
                                     <input type="datetime-local" name="deadline" id="deadline" 
-                                           class="mt-1 focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green block w-full shadow-sm text-sm border-gray-300 rounded-lg py-2.5 transition-all">
+                                           class="mt-1 block w-full border-gray-300 rounded-lg py-2.5 px-4 text-sm shadow-sm focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green transition-all outline-none">
                                 </div>
                             </form>
                         </div>
