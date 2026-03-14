@@ -3,11 +3,9 @@
 @section('title', 'Dashboard & Statistik - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Dashboard & Statistik</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Dashboard & Statistik</span>
 </li>
 @endsection
 
@@ -18,63 +16,60 @@
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
-<main class="flex-grow py-6 px-4 bg-gray-50" x-data="statisticsApp()" x-init="init()">
-    <div class="max-w-7xl mx-auto space-y-5">
+<main class="flex-grow py-8 px-4 bg-gray-50" x-data="statisticsApp()" x-init="init()">
+    <div class="max-w-7xl mx-auto space-y-6">
 
-        {{-- HEADER & FILTERS --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
-                            <i class="fas fa-chart-bar text-sm"></i>
-                        </span>
-                        <span>Dashboard & Statistik</span>
-                    </h1>
-                    <p class="mt-1 text-sm text-gray-500">
-                        Analisis performa bisnis outlet <span class="font-semibold text-indigo-600">{{ auth()->user()->outlet->name ?? 'CuanFlow' }}</span>
-                    </p>
-                </div>
-                
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Dashboard & Statistik
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Analisis performa bisnis outlet <span class="font-semibold text-cuan-green">{{ auth()->user()->outlet->name ?? 'CuanFlow' }}</span>
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
                 {{-- Period Selector --}}
-                <div class="flex flex-wrap items-center gap-2">
-                    <div class="flex items-center gap-1.5 bg-gray-50 p-1 rounded-lg border border-gray-200 overflow-x-auto hide-scrollbar">
-                        <template x-for="(label, key) in periods" :key="key">
-                            <button type="button" 
-                                @click="setPeriod(key)"
-                                :class="period === key ? 'bg-indigo-600 text-white shadow-sm font-semibold' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'"
-                                class="px-3 py-1.5 text-xs rounded-md transition-all whitespace-nowrap"
-                                x-text="label">
-                            </button>
-                        </template>
-                    </div>
+                <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar">
+                    <template x-for="(label, key) in periods" :key="key">
+                        <button type="button" 
+                            @click="setPeriod(key)"
+                            :class="period === key ? 'bg-cuan-green text-white shadow-md shadow-cuan-green/20' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-100'"
+                            class="px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all whitespace-nowrap active:scale-95"
+                            x-text="label">
+                        </button>
+                    </template>
                 </div>
             </div>
+        </section>
 
-            {{-- Custom Date Picker --}}
-            <template x-if="period === 'custom'">
-                <div x-transition class="border-t border-gray-100 mt-5 pt-5">
-                    <div class="flex flex-wrap items-end gap-3">
-                        <div class="w-full sm:w-44">
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Dari</label>
-                            <input type="date" x-model="startDate" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
-                        </div>
-                        <div class="w-full sm:w-44">
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Hingga</label>
-                            <input type="date" x-model="endDate" class="w-full text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
-                        </div>
-                        <button @click="loadData()" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 shadow-sm transition-all flex items-center gap-2">
-                            <i class="fas fa-sync-alt" :class="loading ? 'animate-spin' : ''"></i> Terapkan
-                        </button>
-                    </div>
+        {{-- FILTER PERIODE (BOX) --}}
+        <section x-show="period === 'custom'" x-cloak 
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5">
+            <div class="flex flex-col sm:flex-row items-end sm:items-center gap-4">
+                <div class="w-full sm:w-auto">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Dari Tanggal</label>
+                    <input type="date" x-model="startDate" class="w-full text-sm border-gray-300 rounded-lg focus:ring-cuan-green/20 focus:border-cuan-green shadow-sm">
                 </div>
-            </template>
+                <div class="w-full sm:w-auto">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Sampai Tanggal</label>
+                    <input type="date" x-model="endDate" class="w-full text-sm border-gray-300 rounded-lg focus:ring-cuan-green/20 focus:border-cuan-green shadow-sm">
+                </div>
+                <button @click="loadData()" class="w-full sm:w-auto px-6 py-3 bg-cuan-green text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-cuan-dark shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-sync-alt" :class="loading ? 'animate-spin' : ''"></i>
+                    <span>Terapkan Filter</span>
+                </button>
+            </div>
         </section>
 
         {{-- LOADING SPINNER --}}
         <div x-show="loading" x-cloak class="flex flex-col items-center justify-center py-20 bg-white border border-gray-200 rounded-xl shadow-sm">
-            <div class="animate-spin rounded-full h-10 w-10 border-4 border-gray-100 border-t-indigo-600 mb-4"></div>
-            <p class="text-gray-500 font-semibold text-sm">Menghitung statistik...</p>
+            <div class="animate-spin rounded-full h-10 w-10 border-4 border-gray-100 border-t-cuan-green mb-4"></div>
+            <p class="mt-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Sedang memuat data...</p>
         </div>
 
         {{-- MAIN CONTENT --}}
@@ -82,65 +77,39 @@
             
             {{-- SUMMARY CARDS --}}
             <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pendapatan</p>
-                            <p class="text-xl font-extrabold text-gray-900 mt-1" x-text="formatRupiah(summaryData.total_revenue)"></p>
-                            <p class="text-[10px] text-emerald-600 font-bold mt-1">
-                                <span x-text="formatRupiah(summaryData.avg_revenue_per_day)"></span>/hari
-                            </p>
-                        </div>
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-                            <i class="fas fa-coins"></i>
-                        </div>
+                <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Pendapatan</p>
+                    <p class="mt-2 text-2xl font-black text-gray-900" x-text="formatRupiah(summaryData.total_revenue)"></p>
+                    <div class="mt-2 flex items-center gap-1.5">
+                        <span class="text-[10px] text-emerald-600 font-black uppercase tracking-widest" x-text="formatRupiah(summaryData.avg_revenue_per_day) + ' /hari'"></span>
                     </div>
                 </div>
 
-                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Laba Bersih</p>
-                            <p class="text-xl font-extrabold mt-1" 
-                               :class="summaryData.net_profit >= 0 ? 'text-indigo-600' : 'text-rose-600'" 
-                               x-text="formatRupiah(summaryData.net_profit)"></p>
-                            <p class="text-[10px] font-bold mt-1" 
-                               :class="summaryData.net_profit >= 0 ? 'text-indigo-600' : 'text-rose-600'"
-                               x-text="summaryData.net_profit >= 0 ? 'Surplus' : 'Defisit'"></p>
-                        </div>
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-                            <i class="fas fa-wallet"></i>
-                        </div>
+                <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Laba Bersih</p>
+                    <p class="mt-2 text-2xl font-black" 
+                       :class="summaryData.net_profit >= 0 ? 'text-cuan-green' : 'text-rose-600'" 
+                       x-text="formatRupiah(summaryData.net_profit)"></p>
+                    <div class="mt-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest" 
+                              :class="summaryData.net_profit >= 0 ? 'text-cuan-green' : 'text-rose-600'"
+                              x-text="summaryData.net_profit >= 0 ? 'Surplus Operasional' : 'Defisit Operasional'"></span>
                     </div>
                 </div>
 
-                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Transaksi</p>
-                            <p class="text-xl font-extrabold text-gray-900 mt-1" x-text="formatNumber(summaryData.total_transactions)"></p>
-                            <p class="text-[10px] text-blue-600 font-bold mt-1">
-                                <span x-text="summaryData.avg_transactions_per_day"></span> tx/hari
-                            </p>
-                        </div>
-                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-                            <i class="fas fa-receipt"></i>
-                        </div>
+                <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Transaksi</p>
+                    <p class="mt-2 text-2xl font-black text-gray-900" x-text="formatNumber(summaryData.total_transactions)"></p>
+                    <div class="mt-2">
+                        <span class="text-[10px] text-blue-600 font-black uppercase tracking-widest" x-text="summaryData.avg_transactions_per_day + ' Tx /hari'"></span>
                     </div>
                 </div>
 
-                <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Item Terjual</p>
-                            <p class="text-xl font-extrabold text-gray-900 mt-1" x-text="formatNumber(summaryData.total_products_sold)"></p>
-                            <p class="text-[10px] text-amber-600 font-bold mt-1">
-                                <span x-text="summaryData.total_customers"></span> pelanggan
-                            </p>
-                        </div>
-                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
-                            <i class="fas fa-box"></i>
-                        </div>
+                <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Item Terjual</p>
+                    <p class="mt-2 text-2xl font-black text-gray-900" x-text="formatNumber(summaryData.total_products_sold)"></p>
+                    <div class="mt-2">
+                        <span class="text-[10px] text-amber-600 font-black uppercase tracking-widest" x-text="summaryData.total_customers + ' Pelanggan'"></span>
                     </div>
                 </div>
             </section>
@@ -148,28 +117,28 @@
             {{-- SUB-STATS --}}
             <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div class="bg-white border border-gray-200 p-3 rounded-xl shadow-sm">
-                    <p class="text-[9px] font-bold text-gray-400 uppercase">Laba Kotor</p>
-                    <p class="text-xs font-bold text-blue-600" x-text="formatRupiah(summaryData.gross_profit)"></p>
+                    <p class="text-[9px] font-black text-gray-400 uppercase">Laba Kotor</p>
+                    <p class="text-xs font-black text-blue-600" x-text="formatRupiah(summaryData.gross_profit)"></p>
                 </div>
                 <div class="bg-white border border-gray-200 p-3 rounded-xl shadow-sm">
-                    <p class="text-[9px] font-bold text-gray-400 uppercase">Pengeluaran</p>
-                    <p class="text-xs font-bold text-rose-500" x-text="formatRupiah(summaryData.total_expenses)"></p>
+                    <p class="text-[9px] font-black text-gray-400 uppercase">Pengeluaran</p>
+                    <p class="text-xs font-black text-rose-500" x-text="formatRupiah(summaryData.total_expenses)"></p>
                 </div>
                 <div class="bg-white border border-gray-200 p-3 rounded-xl shadow-sm">
-                    <p class="text-[9px] font-bold text-gray-400 uppercase">Pend. Lain</p>
-                    <p class="text-xs font-bold text-emerald-600" x-text="formatRupiah(summaryData.extra_income)"></p>
+                    <p class="text-[9px] font-black text-gray-400 uppercase">Pend. Lain</p>
+                    <p class="text-xs font-black text-emerald-600" x-text="formatRupiah(summaryData.extra_income)"></p>
                 </div>
                 <div class="bg-white border border-gray-200 p-3 rounded-xl shadow-sm">
-                    <p class="text-[9px] font-bold text-gray-400 uppercase">Piutang</p>
-                    <p class="text-xs font-bold text-amber-600" x-text="formatRupiah(summaryData.total_piutang)"></p>
+                    <p class="text-[9px] font-black text-gray-400 uppercase">Piutang</p>
+                    <p class="text-xs font-black text-amber-600" x-text="formatRupiah(summaryData.total_piutang)"></p>
                 </div>
                 <div class="bg-white border border-gray-200 p-3 rounded-xl shadow-sm">
-                    <p class="text-[9px] font-bold text-gray-400 uppercase">Diskon</p>
-                    <p class="text-xs font-bold text-orange-500" x-text="formatRupiah(summaryData.total_discounts)"></p>
+                    <p class="text-[9px] font-black text-gray-400 uppercase">Diskon</p>
+                    <p class="text-xs font-black text-orange-500" x-text="formatRupiah(summaryData.total_discounts)"></p>
                 </div>
                 <div class="bg-white border border-gray-200 p-3 rounded-xl shadow-sm">
-                    <p class="text-[9px] font-bold text-gray-400 uppercase">Pajak</p>
-                    <p class="text-xs font-bold text-gray-700" x-text="formatRupiah(summaryData.total_tax)"></p>
+                    <p class="text-[9px] font-black text-gray-400 uppercase">Pajak</p>
+                    <p class="text-xs font-black text-gray-700" x-text="formatRupiah(summaryData.total_tax)"></p>
                 </div>
             </section>
 
@@ -177,152 +146,182 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 
                 {{-- Sales Trend --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 lg:col-span-2">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-chart-line text-indigo-500"></i> Tren Pendapatan Harian
-                    </h3>
-                    <div class="relative h-64">
-                        <canvas x-ref="salesChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden lg:col-span-2">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Tren Pendapatan Harian</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-64">
+                            <canvas x-ref="salesChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Payment Methods --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-wallet text-indigo-500"></i> Metode Pembayaran
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="paymentChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Metode Pembayaran</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="paymentChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Transaction Trend --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-receipt text-blue-500"></i> Volume Transaksi
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="transactionChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Volume Transaksi</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="transactionChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Top Products --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 lg:col-span-2">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-trophy text-amber-500"></i> 10 Produk Terlaris
-                    </h3>
-                    <div class="relative h-64">
-                        <canvas x-ref="topProductsChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden lg:col-span-2">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">10 Produk Terlaris</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-64">
+                            <canvas x-ref="topProductsChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Categories --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-tags text-indigo-500"></i> Kategori Produk
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="categoryChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Kategori Produk</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="categoryChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Discount Usage --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-tag text-orange-500"></i> Penggunaan Diskon
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="discountChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Penggunaan Diskon</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="discountChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Revenue vs Expense --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-balance-scale text-emerald-500"></i> Revenue vs Expense
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="expenseChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Revenue vs Expense</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="expenseChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Expense Category --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-pie-chart text-rose-500"></i> Kategori Pengeluaran
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="expenseCategoryChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Kategori Pengeluaran</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="expenseCategoryChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Profit Trend --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 lg:col-span-2">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-chart-area text-indigo-500"></i> Tren Profitabilitas
-                    </h3>
-                    <div class="relative h-64">
-                        <canvas x-ref="profitChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden lg:col-span-2">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Tren Profitabilitas</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-64">
+                            <canvas x-ref="profitChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Hourly Sales --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-clock text-sky-500"></i> Jam Sibuk
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="hourlyChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Jam Sibuk</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="hourlyChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Weekly Pattern --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-calendar-week text-violet-500"></i> Pola Mingguan
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="weeklyChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Pola Mingguan</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="weeklyChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Cashier Performance --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-users text-indigo-500"></i> Performa Kasir
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="cashierChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Performa Kasir</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="cashierChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Top Customers --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-crown text-amber-500"></i> Pelanggan Loyal
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="customerChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Pelanggan Loyal</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="customerChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Stock Movement --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-exchange-alt text-emerald-500"></i> Pergerakan Stok
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="stockMovementChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Pergerakan Stok</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="stockMovementChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Purchase Trend --}}
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-truck text-violet-500"></i> Tren Pembelian
-                    </h3>
-                    <div class="relative h-56">
-                        <canvas x-ref="purchaseChart"></canvas>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Tren Pembelian</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-56">
+                            <canvas x-ref="purchaseChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -331,11 +330,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 {{-- Low Stock --}}
                 <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                    <div class="px-5 py-3.5 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                        <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                            <i class="fas fa-box-open text-rose-500"></i> Stok Menipis
-                        </h3>
-                        <a href="{{ route('products-hpp.index') }}" class="text-[10px] font-bold text-indigo-600 uppercase hover:underline">Kelola</a>
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Stok Menipis</h3>
+                        <a href="{{ route('products-hpp.index') }}" class="text-[10px] font-black text-cuan-green uppercase hover:underline tracking-widest">Kelola</a>
                     </div>
                     <div class="divide-y divide-gray-100">
                         @forelse($lowStockProducts as $product)
@@ -349,8 +346,8 @@
                                         @endif
                                     </div>
                                     <div>
-                                        <p class="text-sm font-bold text-gray-900">{{ $product->name }}</p>
-                                        <p class="text-[10px] text-gray-400 font-bold uppercase">Min: {{ $product->min_stock }}</p>
+                                        <p class="text-sm font-black text-gray-900">{{ $product->name }}</p>
+                                        <p class="text-[10px] text-gray-400 font-black uppercase">Min: {{ $product->min_stock }}</p>
                                     </div>
                                 </div>
                                 <span class="px-3 py-1 text-xs font-black rounded-full {{ ($product->stocks->first()->quantity ?? 0) <= 0 ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600' }}">
@@ -360,7 +357,7 @@
                         @empty
                             <div class="py-12 text-center">
                                 <i class="fas fa-check-double text-emerald-400 text-3xl mb-3 opacity-20"></i>
-                                <p class="text-sm text-gray-400 font-bold">Semua stok aman</p>
+                                <p class="text-sm text-gray-400 font-black">Semua stok aman</p>
                             </div>
                         @endforelse
                     </div>
@@ -368,30 +365,28 @@
 
                 {{-- Recent Sales --}}
                 <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                    <div class="px-5 py-3.5 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                        <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                            <i class="fas fa-history text-indigo-500"></i> Transaksi Terakhir
-                        </h3>
-                        <a href="{{ route('sales.index') }}" class="text-[10px] font-bold text-indigo-600 uppercase hover:underline">Semua</a>
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-900">Transaksi Terakhir</h3>
+                        <a href="{{ route('sales.index') }}" class="text-[10px] font-black text-cuan-green uppercase hover:underline tracking-widest">Semua</a>
                     </div>
                     <div class="divide-y divide-gray-100">
                         @forelse($recentSales as $sale)
                             <div class="flex items-center justify-between p-4 hover:bg-gray-50 transition-all">
                                 <div>
-                                    <p class="text-sm font-bold text-gray-900">{{ $sale->invoice_number }}</p>
-                                    <p class="text-[10px] text-gray-400 font-bold uppercase">
+                                    <p class="text-sm font-black text-gray-900">{{ $sale->invoice_number }}</p>
+                                    <p class="text-[10px] text-gray-400 font-black uppercase">
                                         {{ $sale->created_at->diffForHumans() }} • {{ $sale->cashier->name ?? 'Kasir' }}
                                     </p>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-sm font-black text-gray-900">{{ 'Rp ' . number_format($sale->grand_total, 0, ',', '.') }}</p>
-                                    <p class="text-[9px] text-gray-400 font-bold uppercase">{{ $sale->payment_method }}</p>
+                                    <p class="text-[9px] text-gray-400 font-black uppercase">{{ $sale->payment_method }}</p>
                                 </div>
                             </div>
                         @empty
                             <div class="py-12 text-center text-gray-400">
                                 <i class="fas fa-inbox text-3xl mb-3 opacity-20"></i>
-                                <p class="text-sm font-bold">Belum ada transaksi</p>
+                                <p class="text-sm font-black">Belum ada transaksi</p>
                             </div>
                         @endforelse
                     </div>
@@ -575,7 +570,7 @@ function statisticsApp() {
                 overlay.className = 'no-data-overlay absolute inset-0 flex flex-col items-center justify-center bg-gray-50/50 rounded-lg border border-dashed border-gray-200';
                 overlay.innerHTML = `
                     <i class="fas fa-inbox text-gray-300 text-xl mb-2"></i>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Belum ada data</p>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-tight">Belum ada data</p>
                 `;
                 container.appendChild(overlay);
                 return;
