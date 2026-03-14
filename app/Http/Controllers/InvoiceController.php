@@ -27,34 +27,65 @@ class InvoiceController extends Controller implements HasMiddleware
     public function index()
     {
         $outletId = auth()->user()->outlet_id;
+        $search = request('search');
 
         $recentSales = Sale::where('outlet_id', $outletId)
+            ->when($search, function($query) use ($search) {
+                $query->where('invoice_number', 'like', "%{$search}%")
+                      ->orWhereHas('customer', function($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      });
+            })
             ->latest()
-            ->paginate(5, ['*'], 'sales_page');
+            ->paginate(5, ['*'], 'sales_page')
+            ->withQueryString();
 
         $recentIncomes = Expense::where('outlet_id', $outletId)
             ->where('type', 'income')
             ->where('status', 'approved')
+            ->when($search, function($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('expense_number', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
+            })
             ->latest()
-            ->paginate(5, ['*'], 'income_page');
+            ->paginate(5, ['*'], 'income_page')
+            ->withQueryString();
 
         $recentExpenses = Expense::where('outlet_id', $outletId)
             ->where('type', 'expense')
             ->where('status', 'approved')
+            ->when($search, function($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('expense_number', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
+            })
             ->latest()
-            ->paginate(5, ['*'], 'expense_page');
+            ->paginate(5, ['*'], 'expense_page')
+            ->withQueryString();
 
         $recentDebts = CustomerDebt::with(['customer', 'sale'])
             ->where('outlet_id', $outletId)
             ->whereIn('status', ['pending', 'partial'])
+            ->when($search, function($query) use ($search) {
+                $query->whereHas('customer', function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                })->orWhereHas('sale', function($q) use ($search) {
+                    $q->where('invoice_number', 'like', "%{$search}%");
+                });
+            })
             ->latest()
-            ->paginate(5, ['*'], 'debt_page');
+            ->paginate(5, ['*'], 'debt_page')
+            ->withQueryString();
 
         return view('main.invoice.index', compact(
             'recentSales',
             'recentIncomes',
             'recentExpenses',
-            'recentDebts'
+            'recentDebts',
+            'search'
         ));
     }
 

@@ -13,8 +13,8 @@
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-8">
 
-        {{-- HEADER HALAMAN --}}
-        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN & PENCARIAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
                 <h1 class="text-xl md:text-2xl font-black text-gray-900 leading-tight">
                     Ringkasan Invoice & Transaksi
@@ -23,12 +23,30 @@
                     Pantau ringkasan penjualan, pemasukan, pengeluaran, dan piutang terbaru dalam satu halaman.
                 </p>
             </div>
+            <div class="w-full md:w-72">
+                <form id="searchForm" class="relative group" action="{{ route('invoices.index') }}" method="GET" onsubmit="event.preventDefault(); triggerSearch();">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-cuan-green transition-colors">
+                        <i class="fas fa-search text-sm w-4 h-4 flex items-center justify-center"></i>
+                    </div>
+                    <input type="text" name="search" id="searchInput" value="{{ $search ?? '' }}"
+                           class="block w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all shadow-sm" 
+                           placeholder="Cari referensi atau pelanggan...">
+                    @if($search)
+                    <button type="button" onclick="clearSearch()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-red-500 transition-colors">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                    @endif
+                </form>
+            </div>
         </section>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {{-- TABEL PENJUALAN --}}
-            <x-card-container class="flex flex-col flex-grow">
+            <x-card-container class="flex flex-col flex-grow relative" id="sales-container">
+                <div id="sales-overlay" class="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center hidden rounded-[2rem]">
+                    <i class="fas fa-spinner fa-spin text-cuan-green text-3xl"></i>
+                </div>
                 <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Penjualan Terbaru</h2>
@@ -88,15 +106,17 @@
                                     <i class="fas fa-chevron-left text-[10px]"></i>
                                 </span>
                             @else
-                                <a href="{{ $recentSales->appends(['income_page' => $recentIncomes->currentPage(), 'expense_page' => $recentExpenses->currentPage(), 'debt_page' => $recentDebts->currentPage()])->previousPageUrl() }}" 
-                                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95">
+                                <a href="{{ $recentSales->previousPageUrl() }}" 
+                                   class="ajax-pagination w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95"
+                                   data-target="sales-container">
                                     <i class="fas fa-chevron-left text-[10px]"></i>
                                 </a>
                             @endif
 
                             @if ($recentSales->hasMorePages())
-                                <a href="{{ $recentSales->appends(['income_page' => $recentIncomes->currentPage(), 'expense_page' => $recentExpenses->currentPage(), 'debt_page' => $recentDebts->currentPage()])->nextPageUrl() }}" 
-                                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95">
+                                <a href="{{ $recentSales->nextPageUrl() }}" 
+                                   class="ajax-pagination w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95"
+                                   data-target="sales-container">
                                     <i class="fas fa-chevron-right text-[10px]"></i>
                                 </a>
                             @else
@@ -110,7 +130,10 @@
             </x-card-container>
 
             {{-- TABEL PEMASUKAN --}}
-            <x-card-container class="flex flex-col flex-grow">
+            <x-card-container class="flex flex-col flex-grow relative" id="incomes-container">
+                <div id="incomes-overlay" class="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center hidden rounded-[2rem]">
+                    <i class="fas fa-spinner fa-spin text-cuan-green text-3xl"></i>
+                </div>
                 <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Pemasukan Lain</h2>
@@ -165,15 +188,17 @@
                                     <i class="fas fa-chevron-left text-[10px]"></i>
                                 </span>
                             @else
-                                <a href="{{ $recentIncomes->appends(['sales_page' => $recentSales->currentPage(), 'expense_page' => $recentExpenses->currentPage(), 'debt_page' => $recentDebts->currentPage()])->previousPageUrl() }}" 
-                                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95">
+                                <a href="{{ $recentIncomes->previousPageUrl() }}" 
+                                   class="ajax-pagination w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95"
+                                   data-target="incomes-container">
                                     <i class="fas fa-chevron-left text-[10px]"></i>
                                 </a>
                             @endif
 
                             @if ($recentIncomes->hasMorePages())
-                                <a href="{{ $recentIncomes->appends(['sales_page' => $recentSales->currentPage(), 'expense_page' => $recentExpenses->currentPage(), 'debt_page' => $recentDebts->currentPage()])->nextPageUrl() }}" 
-                                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95">
+                                <a href="{{ $recentIncomes->nextPageUrl() }}" 
+                                   class="ajax-pagination w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95"
+                                   data-target="incomes-container">
                                     <i class="fas fa-chevron-right text-[10px]"></i>
                                 </a>
                             @else
@@ -187,7 +212,10 @@
             </x-card-container>
 
             {{-- TABEL PENGELUARAN --}}
-            <x-card-container class="flex flex-col flex-grow">
+            <x-card-container class="flex flex-col flex-grow relative" id="expenses-container">
+                <div id="expenses-overlay" class="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center hidden rounded-[2rem]">
+                    <i class="fas fa-spinner fa-spin text-cuan-green text-3xl"></i>
+                </div>
                 <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Pengeluaran</h2>
@@ -242,15 +270,17 @@
                                     <i class="fas fa-chevron-left text-[10px]"></i>
                                 </span>
                             @else
-                                <a href="{{ $recentExpenses->appends(['sales_page' => $recentSales->currentPage(), 'income_page' => $recentIncomes->currentPage(), 'debt_page' => $recentDebts->currentPage()])->previousPageUrl() }}" 
-                                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95">
+                                <a href="{{ $recentExpenses->previousPageUrl() }}" 
+                                   class="ajax-pagination w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95"
+                                   data-target="expenses-container">
                                     <i class="fas fa-chevron-left text-[10px]"></i>
                                 </a>
                             @endif
 
                             @if ($recentExpenses->hasMorePages())
-                                <a href="{{ $recentExpenses->appends(['sales_page' => $recentSales->currentPage(), 'income_page' => $recentIncomes->currentPage(), 'debt_page' => $recentDebts->currentPage()])->nextPageUrl() }}" 
-                                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95">
+                                <a href="{{ $recentExpenses->nextPageUrl() }}" 
+                                   class="ajax-pagination w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95"
+                                   data-target="expenses-container">
                                     <i class="fas fa-chevron-right text-[10px]"></i>
                                 </a>
                             @else
@@ -264,7 +294,10 @@
             </x-card-container>
 
             {{-- TABEL PIUTANG --}}
-            <x-card-container class="flex flex-col flex-grow">
+            <x-card-container class="flex flex-col flex-grow relative" id="debts-container">
+                <div id="debts-overlay" class="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center hidden rounded-[2rem]">
+                    <i class="fas fa-spinner fa-spin text-cuan-green text-3xl"></i>
+                </div>
                 <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                     <div>
                         <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Piutang Pelanggan</h2>
@@ -326,15 +359,17 @@
                                     <i class="fas fa-chevron-left text-[10px]"></i>
                                 </span>
                             @else
-                                <a href="{{ $recentDebts->appends(['sales_page' => $recentSales->currentPage(), 'income_page' => $recentIncomes->currentPage(), 'expense_page' => $recentExpenses->currentPage()])->previousPageUrl() }}" 
-                                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95">
+                                <a href="{{ $recentDebts->previousPageUrl() }}" 
+                                   class="ajax-pagination w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95"
+                                   data-target="debts-container">
                                     <i class="fas fa-chevron-left text-[10px]"></i>
                                 </a>
                             @endif
 
                             @if ($recentDebts->hasMorePages())
-                                <a href="{{ $recentDebts->appends(['sales_page' => $recentSales->currentPage(), 'income_page' => $recentIncomes->currentPage(), 'expense_page' => $recentExpenses->currentPage()])->nextPageUrl() }}" 
-                                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95">
+                                <a href="{{ $recentDebts->nextPageUrl() }}" 
+                                   class="ajax-pagination w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-cuan-green transition-all shadow-sm active:scale-95"
+                                   data-target="debts-container">
                                     <i class="fas fa-chevron-right text-[10px]"></i>
                                 </a>
                             @else
@@ -435,6 +470,116 @@
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closePrintModal();
     });
+
+    // --- AJAX NO REFRESH LOGIC ---
+    let debounceTimer;
+    const searchInput = document.getElementById('searchInput');
+
+    function toggleOverlays(show, targetId = null) {
+        const ids = targetId ? [targetId] : ['sales', 'incomes', 'expenses', 'debts'];
+        ids.forEach(id => {
+            const containerName = id.replace('-container', '');
+            const overlay = document.getElementById(containerName + '-overlay');
+            if(overlay) {
+                if(show) overlay.classList.remove('hidden');
+                else overlay.classList.add('hidden');
+            }
+        });
+    }
+
+    // Dynamic fetch and replace DOM
+    async function fetchAndUpdate(url, targetId = null) {
+        toggleOverlays(true, targetId);
+        
+        try {
+            const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) throw new Error('Network error');
+            const html = await response.text();
+            
+            // Parse new DOM
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // If a single table target is clicked via pagination
+            if (targetId) {
+                const newContent = doc.getElementById(targetId);
+                const oldContent = document.getElementById(targetId);
+                if(newContent && oldContent) {
+                    oldContent.innerHTML = newContent.innerHTML;
+                }
+            } else {
+                // If it's a global search, update all 4 tables
+                ['sales-container', 'incomes-container', 'expenses-container', 'debts-container'].forEach(id => {
+                    const newContent = doc.getElementById(id);
+                    const oldContent = document.getElementById(id);
+                    if(newContent && oldContent) {
+                        oldContent.innerHTML = newContent.innerHTML;
+                    }
+                });
+                
+                // Update URL history for global search
+                window.history.pushState({}, '', url);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            window.location.href = url; // Fallback
+        } finally {
+            toggleOverlays(false, targetId);
+            bindPaginationLinks(); // Rebind events to new DOM elements
+        }
+    }
+
+    function triggerSearch() {
+        const query = searchInput.value;
+        const url = new URL(window.location.href);
+        if (query) {
+            url.searchParams.set('search', query);
+        } else {
+            url.searchParams.delete('search');
+        }
+        
+        // Reset all paginations to page 1 for search
+        ['sales_page', 'income_page', 'expense_page', 'debt_page'].forEach(param => {
+            url.searchParams.delete(param);
+        });
+
+        fetchAndUpdate(url.toString());
+    }
+
+    function clearSearch() {
+        searchInput.value = '';
+        triggerSearch();
+        
+        // remove clear button if exists
+        const btn = searchInput.nextElementSibling;
+        if(btn && btn.tagName === 'BUTTON') {
+            btn.remove();
+        }
+    }
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            triggerSearch();
+        }, 500); // 500ms debounce
+    });
+
+    function bindPaginationLinks() {
+        document.querySelectorAll('.ajax-pagination').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                const target = this.getAttribute('data-target');
+                if (url) {
+                    fetchAndUpdate(url, target);
+                }
+            });
+        });
+    }
+
+    // Initial binding
+    document.addEventListener('DOMContentLoaded', bindPaginationLinks);
+
 </script>
 @endpush
 @endsection
