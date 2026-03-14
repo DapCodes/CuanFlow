@@ -24,17 +24,31 @@ class ExpenseController extends Controller
             $permission = 'buat pengeluaran';
         }
 
-        // Search logic if needed (e.g. by description or status)
-        if ($request->has('status')) {
+        // Search & Filter logic
+        $query->when($request->search, function ($q) use ($request) {
+            $q->where(function ($sq) use ($request) {
+                $sq->where('description', 'like', "%{$request->search}%")
+                   ->orWhere('expense_number', 'like', "%{$request->search}%")
+                   ->orWhere('reference_number', 'like', "%{$request->search}%");
+            });
+        });
+
+        if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
+        if ($request->has('category_id') && $request->category_id != '') {
+            $query->where('expense_category_id', $request->category_id);
+        }
+
         $expenses = $query->with(['category', 'creator', 'approvedBy'])
-            ->latest() // Order by created_at desc
+            ->latest()
             ->paginate(15)
             ->withQueryString();
 
-        return view('main.expenses.index', compact('expenses', 'type', 'title'));
+        $categories = ExpenseCategory::where('is_active', true)->get();
+
+        return view('main.expenses.index', compact('expenses', 'type', 'title', 'categories'));
     }
 
     public function create(Request $request)

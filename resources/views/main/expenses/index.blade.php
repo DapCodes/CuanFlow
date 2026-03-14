@@ -4,6 +4,7 @@
 
 @section('breadcrumb')
 <li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
     <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-gray-900 transition-colors">Dashboard</a>
     <span class="text-gray-400 mx-2">/</span>
     <span class="text-gray-900 font-medium tracking-tight">{{ $title }}</span>
@@ -47,29 +48,49 @@
         </section>
 
         {{-- KONTEN UTAMA: TOOLBAR + TABEL --}}
-        <x-card-container>
+        <x-card-container class="relative overflow-hidden" id="expenses-container">
+            {{-- Loading Overlay --}}
+            <div id="loading-overlay" class="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="w-12 h-12 border-4 border-cuan-green/20 border-t-cuan-green rounded-full animate-spin"></div>
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest animate-pulse">Memuat Data...</span>
+                </div>
+            </div>
             {{-- Toolbar: Search & Filter --}}
-            <div class="border-b border-gray-100 px-6 py-6 space-y-4 md:space-y-0 md:flex md:items-end md:justify-between gap-6">
-                <div class="w-full md:max-w-md">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block pl-1">Cari {{ strtolower($title) }}</label>
+            <div class="border-b border-gray-100 px-6 py-6 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div class="flex-grow max-w-xl">
+                    <label for="searchInput" class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block pl-1">Cari {{ strtolower($title) }}</label>
                     <div class="relative group">
-                         <form method="GET" action="{{ route('expenses.index') }}">
-                            <input type="hidden" name="type" value="{{ $type }}">
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari deskripsi atau nomor..."
-                                class="w-full pl-6 pr-6 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green focus:bg-white transition-all">
-                         </form>
+                        <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-gray-300 group-focus-within:text-cuan-green transition-colors">
+                            <i class="fas fa-search text-xs"></i>
+                        </div>
+                        <input type="text" id="searchInput" value="{{ request('search') }}" placeholder="Cari deskripsi atau nomor..."
+                            class="w-full pl-14 pr-6 py-4 bg-gray-50 border-2 border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green focus:bg-white transition-all shadow-sm">
                     </div>
                 </div>
 
-                <div class="flex flex-wrap gap-4 w-full md:w-auto">
+                <div class="flex flex-wrap items-center gap-4">
+                    {{-- Filter Kategori --}}
                     <div class="w-full sm:w-56">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block pl-1">Filter Status</label>
-                        <select onchange="window.location.href=this.value"
-                                class="w-full px-5 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green focus:bg-white transition-all appearance-none cursor-pointer">
-                            <option value="{{ route('expenses.index', ['type' => $type]) }}">Semua Status</option>
-                            <option value="{{ route('expenses.index', ['type' => $type, 'status' => 'pending']) }}" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="{{ route('expenses.index', ['type' => $type, 'status' => 'approved']) }}" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
-                            <option value="{{ route('expenses.index', ['type' => $type, 'status' => 'rejected']) }}" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                        <label for="categoryFilter" class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block pl-1">Filter Kategori</label>
+                        <select id="categoryFilter"
+                                class="w-full px-5 py-4 bg-gray-50 border-2 border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green focus:bg-white transition-all appearance-none cursor-pointer">
+                            <option value="">Semua Kategori</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Filter Status --}}
+                    <div class="w-full sm:w-56">
+                        <label for="statusFilter" class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block pl-1">Filter Status</label>
+                        <select id="statusFilter"
+                                class="w-full px-5 py-4 bg-gray-50 border-2 border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green focus:bg-white transition-all appearance-none cursor-pointer">
+                            <option value="">Semua Status</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
+                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
                         </select>
                     </div>
                 </div>
@@ -249,4 +270,107 @@
 
     </div>
 </main>
+@push('scripts')
+<script>
+    const container = document.getElementById('expenses-container');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    let debounceTimer;
+
+    function toggleLoading(show) {
+        if (loadingOverlay) {
+            if (show) loadingOverlay.classList.remove('hidden');
+            else loadingOverlay.classList.add('hidden');
+        }
+    }
+
+    async function fetchData(url) {
+        toggleLoading(true);
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!response.ok) throw new Error('Network response was not ok');
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.getElementById('expenses-container');
+            
+            if (newContent && container) {
+                container.innerHTML = newContent.innerHTML;
+                bindEvents();
+                window.history.pushState({}, '', url);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            toggleLoading(false);
+        }
+    }
+
+    function triggerUpdate(urlObj = null) {
+        const url = urlObj || new URL(window.location.href);
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const statusFilter = document.getElementById('statusFilter');
+
+        // Maintain type
+        url.searchParams.set('type', '{{ $type }}');
+
+        if (searchInput && searchInput.value) {
+            url.searchParams.set('search', searchInput.value);
+        } else {
+            url.searchParams.delete('search');
+        }
+
+        if (categoryFilter && categoryFilter.value) {
+            url.searchParams.set('category_id', categoryFilter.value);
+        } else {
+            url.searchParams.delete('category_id');
+        }
+
+        if (statusFilter && statusFilter.value) {
+            url.searchParams.set('status', statusFilter.value);
+        } else {
+            url.searchParams.delete('status');
+        }
+
+        if (!urlObj) {
+            url.searchParams.delete('page');
+        }
+
+        fetchData(url.toString());
+    }
+
+    function bindEvents() {
+        const currentSearchInput = document.getElementById('searchInput');
+        if (currentSearchInput) {
+            currentSearchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => triggerUpdate(), 500);
+            });
+        }
+
+        const currentCategoryFilter = document.getElementById('categoryFilter');
+        if (currentCategoryFilter) {
+            currentCategoryFilter.addEventListener('change', () => triggerUpdate());
+        }
+
+        const currentStatusFilter = document.getElementById('statusFilter');
+        if (currentStatusFilter) {
+            currentStatusFilter.addEventListener('change', () => triggerUpdate());
+        }
+
+        document.querySelectorAll('.pagination a, a.ajax-pagination').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                fetchData(link.getAttribute('href'));
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', bindEvents);
+</script>
+@endpush
 @endsection
