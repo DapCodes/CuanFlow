@@ -429,6 +429,10 @@
     pointer-events: auto;
   }
 
+  body.modal-open {
+    overflow: hidden !important;
+  }
+
   /* Floating Done button */
   .edit-mode-done-btn {
     position: fixed;
@@ -502,8 +506,9 @@
 
   .insights-modal-content {
     animation: modalSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    max-height: 90vh;
-    overflow-y: auto;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
   }
 
   .insights-modal-exit .insights-modal-content {
@@ -544,20 +549,31 @@
   }
 
   .insight-type-icon {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 0.75rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    flex-shrink: 0;
+    border-radius: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+    transition: all 0.3s ease;
   }
 
-  .type-sales_trend { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-  .type-stock_prediction { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-  .type-product_recommendation { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
-  .type-anomaly { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-  .type-general { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+  @media (max-width: 640px) {
+    .insight-type-icon {
+      width: 3rem;
+      height: 3rem;
+      font-size: 1.5rem;
+      border-radius: 1rem;
+    }
+  }
+
+  .type-sales_trend { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 16px -4px rgba(16, 185, 129, 0.25); }
+  .type-stock_prediction { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 16px -4px rgba(245, 158, 11, 0.25); }
+  .type-product_recommendation { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); box-shadow: 0 8px 16px -4px rgba(139, 92, 246, 0.25); }
+  .type-anomaly { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 8px 16px -4px rgba(239, 68, 68, 0.25); }
+  .type-general { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.25); }
 
   .insight-card {
     background: white;
@@ -626,7 +642,7 @@
   @media (max-width: 640px) {
     .insights-modal-content {
       max-width: 95vw;
-      padding: 1rem;
+      max-height: 75vh;
     }
     .carousel-btn.prev { left: 0.5rem; }
     .carousel-btn.next { right: 0.5rem; }
@@ -1436,75 +1452,81 @@
 <div id="insightsModal" class="hidden insights-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
   <div class="absolute inset-0 bg-gray-900 bg-opacity-70"></div>
   
-  <div class="insights-modal-content relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full mx-4 p-6">
+  <div class="insights-modal-content relative bg-white rounded-3xl shadow-2xl max-w-xl w-full mx-4">
     <!-- Header -->
-    <div class="flex items-start justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center">
-          <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-2" alt="">
+    <div class="p-6 md:p-8 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100 rounded-t-3xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-cuan-green to-cuan-dark rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-cuan-green/20">
+            <img src="{{ asset('assets/image/clara-ai.png') }}" class="w-10 h-10 md:w-12 md:h-12 object-contain" alt="">
+          </div>
+          <div>
+            <h2 class="text-xl md:text-2xl font-black text-gray-900 leading-tight">Insight Baru dari Clara AI</h2>
+            <p class="text-xs md:text-sm font-bold text-gray-500 uppercase tracking-widest mt-0.5">{{ $unreadInsights->count() }} insight untuk Anda</p>
+          </div>
         </div>
-        <div>
-          <h2 class="text-2xl font-bold text-gray-900">Insight Baru dari Clara AI</h2>
-          <p class="text-sm text-gray-500">{{ $unreadInsights->count() }} insight untuk Anda</p>
-        </div>
+        <button onclick="closeInsightsModal()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-900">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
       </div>
-      <button onclick="closeInsightsModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-        <i class="fa-solid fa-times text-2xl"></i>
-      </button>
     </div>
 
-    <!-- Carousel Container -->
-    <div class="relative mb-6">
-      <div id="insightsCarousel" class="overflow-hidden">
+    <div class="px-3 md:px-6 pb-6 overflow-y-auto overflow-x-hidden flex-grow">
+      <!-- Carousel Container -->
+      <div class="relative mt-2">
+      <div id="insightsCarousel" class="overflow-hidden pb-2">
         <div id="carouselTrack" class="flex transition-transform duration-300 ease-in-out">
           @foreach($unreadInsights as $index => $insight)
-          <div class="carousel-slide w-full flex-shrink-0 px-2" data-insight-id="{{ $insight->id }}">
-            <div class="insight-card">
-              <!-- Header Card -->
-              <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-3">
-                  <div class="insight-type-icon type-{{ $insight->type }}">
-                    <i class="fa-solid fa-{{ $insight->type === 'sales_trend' ? 'chart-line' : 
-                      ($insight->type === 'stock_prediction' ? 'boxes-stacked' : 
-                      ($insight->type === 'product_recommendation' ? 'star' : 
-                      ($insight->type === 'anomaly' ? 'exclamation-triangle' : 'lightbulb'))) }} text-white"></i>
+          <div class="carousel-slide w-full flex-shrink-0 px-2 flex" data-insight-id="{{ $insight->id }}">
+            <div class="border border-gray-100 rounded-[1.5rem] flex flex-col w-full bg-white shadow-sm p-0 mb-2">
+              <div class="p-5 md:p-8 flex-grow flex flex-col">
+                <!-- Header Card -->
+                <div class="flex items-start justify-between mb-4 md:mb-6">
+                  <div class="flex items-center gap-4">
+                    <div class="insight-type-icon type-{{ $insight->type }} flex-shrink-0 !rounded-2xl">
+                      <i class="fa-solid fa-{{ $insight->type === 'sales_trend' ? 'chart-line' : 
+                        ($insight->type === 'stock_prediction' ? 'boxes-stacked' : 
+                        ($insight->type === 'product_recommendation' ? 'star' : 
+                        ($insight->type === 'anomaly' ? 'exclamation-triangle' : 'lightbulb'))) }} text-white"></i>
+                    </div>
+                    <div>
+                      <h3 class="font-black text-base md:text-lg text-gray-900 leading-snug">{{ $insight->title }}</h3>
+                      <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">{{ $insight->insight_date->format('d M Y') }}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 class="font-bold text-lg text-gray-900">{{ $insight->title }}</h3>
-                    <p class="text-xs text-gray-500">{{ $insight->insight_date->format('d M Y') }}</p>
+                  <span class="severity-badge severity-{{ $insight->severity }} shadow-sm flex-shrink-0">
+                    @if($insight->severity === 'critical')
+                      <i class="fa-solid fa-circle-exclamation text-[10px]"></i>
+                    @elseif($insight->severity === 'warning')
+                      <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
+                    @else
+                      <i class="fa-solid fa-circle-info text-[10px]"></i>
+                    @endif
+                    <span class="hidden sm:inline">{{ ucfirst($insight->severity) }}</span>
+                  </span>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-grow mb-5 md:mb-6">
+                  <div class="text-gray-600 leading-relaxed text-[13px] md:text-sm bg-gray-50/80 rounded-2xl p-4 md:p-5 border border-gray-100 italic" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                    {!! nl2br(e($insight->content)) !!}
                   </div>
                 </div>
-                <span class="severity-badge severity-{{ $insight->severity }}">
-                  @if($insight->severity === 'critical')
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                  @elseif($insight->severity === 'warning')
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                  @else
-                    <i class="fa-solid fa-circle-info"></i>
-                  @endif
-                  {{ ucfirst($insight->severity) }}
-                </span>
-              </div>
 
-              <!-- Content -->
-              <div class="flex-grow mb-4">
-                <div class="text-gray-700 leading-relaxed prose prose-sm max-w-none" style="max-height: 200px; overflow-y: auto;">
-                  {!! nl2br(e($insight->content)) !!}
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-5 md:pt-6 border-t border-gray-100 mt-auto">
+                  <button onclick="markAsRead({{ $insight->id }})" 
+                      class="flex-1 bg-cuan-green hover:bg-cuan-dark text-white font-black text-[10px] md:text-xs uppercase tracking-widest py-3.5 px-6 rounded-2xl transition-all duration-200 shadow-lg shadow-cuan-green/20 active:scale-95 flex items-center justify-center relative overflow-hidden group">
+                    <span class="absolute inset-0 w-full h-full bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+                    <i class="fa-solid fa-check mr-2"></i>
+                    Selesai
+                  </button>
+                  <a href="{{ route('ai-insights.index') }}" 
+                      class="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 font-black text-[10px] md:text-xs uppercase tracking-widest py-3.5 px-6 rounded-2xl border border-gray-200 hover:border-gray-300 transition-all duration-200 text-center flex items-center justify-center active:scale-95">
+                    <i class="fa-solid fa-arrow-right-long mr-2 text-gray-400 group-hover:text-gray-700 transition-colors pointer-events-none"></i>
+                    Lihat Detail
+                  </a>
                 </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="flex gap-2 pt-4 border-t border-gray-100">
-                <button onclick="markAsRead({{ $insight->id }})" 
-                    class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200">
-                  <i class="fa-solid fa-check mr-2"></i>
-                  Tandai Sudah Baca
-                </button>
-                <button onclick="dismissInsight({{ $insight->id }})" 
-                    class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-all duration-200">
-                  <i class="fa-solid fa-eye-slash mr-2"></i>
-                  Dismiss
-                </button>
               </div>
             </div>
           </div>
@@ -1514,10 +1536,10 @@
 
       <!-- Navigation Buttons -->
       @if($unreadInsights->count() > 1)
-      <button onclick="prevSlide()" class="carousel-btn prev">
+      <button onclick="prevSlide()" class="carousel-btn prev !left-0 md:!-left-4">
         <i class="fa-solid fa-chevron-left text-gray-600"></i>
       </button>
-      <button onclick="nextSlide()" class="carousel-btn next">
+      <button onclick="nextSlide()" class="carousel-btn next !right-0 md:!-right-4">
         <i class="fa-solid fa-chevron-right text-gray-600"></i>
       </button>
       @endif
@@ -1532,16 +1554,20 @@
     </div>
     @endif
 
+    </div>
+ 
     <!-- Footer -->
-    <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
-      <a href="{{ route('ai-insights.index') }}" class="text-emerald-600 hover:text-emerald-700 font-semibold text-sm">
-        <i class="fa-solid fa-list mr-1"></i>
-        Lihat Semua Insight
-      </a>
-      <button onclick="markAllAsRead()" class="text-gray-600 hover:text-gray-800 font-semibold text-sm">
-        <i class="fa-solid fa-check-double mr-1"></i>
-        Tandai Semua Sudah Baca
-      </button>
+    <div class="px-6 md:px-8 pb-6 md:pb-8">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100">
+        <a href="{{ route('ai-insights.index') }}" class="inline-flex items-center text-cuan-green hover:text-cuan-dark font-black text-xs uppercase tracking-widest transition-colors">
+          <i class="fa-solid fa-list mr-2 text-sm"></i>
+          Lihat Semua Insight
+        </a>
+        <button onclick="markAllAsRead()" class="inline-flex items-center text-gray-500 hover:text-gray-900 font-black text-xs uppercase tracking-widest transition-colors">
+          <i class="fa-solid fa-check-double mr-2 text-sm"></i>
+          Tandai Semua Sudah Baca
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -1961,12 +1987,30 @@ window.closeInsightsModal = function() {
   const insightsModal = document.getElementById('insightsModal');
   if (insightsModal) {
     insightsModal.classList.add('insights-modal-exit');
+    document.body.classList.remove('modal-open');
     setTimeout(() => {
       insightsModal.classList.add('hidden');
       insightsModal.classList.remove('insights-modal-exit');
     }, 300);
   }
-};
+}
+
+function openInsightsModal() {
+  const insightsModal = document.getElementById('insightsModal');
+  if (insightsModal) {
+    insightsModal.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+  }
+}
+
+// Update the initial appearance logic if any, but since it's unread list based:
+document.addEventListener('DOMContentLoaded', function() {
+  const insightsModal = document.getElementById('insightsModal');
+  if (insightsModal && !insightsModal.classList.contains('hidden')) {
+    document.body.classList.add('modal-open');
+  }
+});
+;
 
 // MARK AS READ
 window.markAsRead = function(insightId) {
