@@ -16,7 +16,7 @@
         {{-- HEADER HALAMAN --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-                <h1 class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+                <h1 class="text-2xl md:text-2xl font-black text-gray-900 tracking-tight">
                     Kelola Meja
                 </h1>
                 <p class="mt-1 text-sm text-gray-500 font-medium">

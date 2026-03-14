@@ -5,7 +5,7 @@
 @section('breadcrumb')
 <li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <a href="{{ route('products-hpp.index') }}" class="text-gray-400 hover:text-cuan-green font-medium tracking-tight">Produk & Resep</a>
+    <a href="{{ route('products-hpp.index') }}" class="text-gray-500 hover:text-cuan-green transition-colors">Produk & Resep</a>
 </li>
 <li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
@@ -31,15 +31,15 @@
         right: 10px;
     }
     .select2-container--default.select2-container--focus .select2-selection--single {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #658C58;
+        box-shadow: 0 0 0 3px rgba(101, 140, 88, 0.1);
     }
     .select2-dropdown {
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
     }
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
-        background-color: #3b82f6;
+        background-color: #658C58;
     }
 
     /* Modal Animation Styles */
@@ -106,26 +106,10 @@
 @endpush
 
 @section('content')
-<main class="flex-grow py-8 px-4 bg-gray-50">
+<main class="flex-grow py-2 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        {{-- VALIDATION ERROR --}}
-        @if($errors->any())
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm" role="alert">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <div class="flex-1">
-                    <p class="font-semibold text-red-800 mb-1">Ada data yang belum benar.</p>
-                    <ul class="list-disc list-inside text-red-700 space-y-1">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <p class="mt-2 text-xs text-red-600">
-                        Periksa kembali isian yang bertanda <span class="font-semibold">*</span>.
-                    </p>
-                </div>
-            </div>
-        @endif
+        {{-- Validation errors & session flash handled by SweetAlert2 in scripts --}}
 
         {{-- HEADER HALAMAN --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -139,17 +123,17 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3">
-                <a href="{{ route('products-hpp.index') }}" class="inline-flex items-center gap-2 rounded-xl bg-white border-2 border-gray-100 px-5 py-3 text-sm font-black text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
-                    <i class="fas fa-arrow-left text-xs"></i> <span>Kembali</span>
+                <a href="{{ route('products-hpp.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+                    <span>Kembali</span>
                 </a>
             </div>
         </section>
 
         {{-- CARD FORM BERTAHAP --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <x-card-container>
 
-            {{-- Progress Steps (tetap pakai ID & class lama untuk JS) --}}
-            <div class="bg-gradient-to-r from-green-50 to-blue-50 px-2 md:px-6 py-4 md:py-5 border-b border-gray-200">
+            {{-- Progress Steps --}}
+            <div class="bg-gray-50/50 px-2 md:px-6 py-4 md:py-5 border-b border-gray-100">
                 <div class="flex justify-between items-center relative max-w-3xl mx-auto">
                     {{-- Garis Progress --}}
                     <div class="absolute top-4 md:top-5 left-0 right-0 h-0.5 bg-gray-200" style="z-index: 0;">
@@ -159,7 +143,7 @@
                     {{-- Langkah 1 --}}
                     <div class="flex-1 text-center step-indicator active relative z-10 cursor-default" data-step="1" title="Info Produk">
                         <div class="w-8 h-8 md:w-10 md:h-10 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-2 shadow-md transition-all duration-300">
-                            <i class="fas fa-info-circle text-white text-xs md:text-sm" data-default-icon="fas fa-info-circle"></i>
+                            <span class="text-white text-xs md:text-sm font-black" data-default-icon="step-number">1</span>
                         </div>
                         <p class="hidden md:block text-[11px] font-medium text-gray-900 transition-colors duration-300">Info Produk</p>
                     </div>
@@ -167,7 +151,7 @@
                     {{-- Langkah 2 --}}
                     <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="2" title="Resep">
                         <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
-                            <i class="fas fa-book-open text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-book-open"></i>
+                            <span class="text-gray-400 text-xs md:text-sm font-black" data-default-icon="step-number">2</span>
                         </div>
                         <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Resep</p>
                     </div>
@@ -175,7 +159,7 @@
                     {{-- Langkah 3 --}}
                     <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="3" title="Bahan Baku">
                         <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
-                            <i class="fas fa-shopping-basket text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-shopping-basket"></i>
+                            <span class="text-gray-400 text-xs md:text-sm font-black" data-default-icon="step-number">3</span>
                         </div>
                         <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Bahan Baku</p>
                     </div>
@@ -183,7 +167,7 @@
                     {{-- Langkah 4 --}}
                     <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="4" title="Biaya Lain">
                         <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
-                            <i class="fas fa-coins text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-coins"></i>
+                            <span class="text-gray-400 text-xs md:text-sm font-black" data-default-icon="step-number">4</span>
                         </div>
                         <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Biaya Lain</p>
                     </div>
@@ -191,7 +175,7 @@
                     {{-- Langkah 5 --}}
                     <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="5" title="Harga & Stok">
                         <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
-                            <i class="fas fa-tags text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-tags"></i>
+                            <span class="text-gray-400 text-xs md:text-sm font-black" data-default-icon="step-number">5</span>
                         </div>
                         <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Harga & Stok</p>
                     </div>
@@ -199,7 +183,7 @@
                     {{-- Langkah 6 --}}
                     <div class="flex-1 text-center step-indicator relative z-10 cursor-default" data-step="6" title="Target Jual">
                         <div class="w-8 h-8 md:w-10 md:h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300">
-                            <i class="fas fa-chart-line text-gray-400 text-xs md:text-sm" data-default-icon="fas fa-chart-line"></i>
+                            <span class="text-gray-400 text-xs md:text-sm font-black" data-default-icon="step-number">6</span>
                         </div>
                         <p class="hidden md:block text-[11px] font-medium text-gray-600 transition-colors duration-300">Target Jual</p>
                     </div>
@@ -210,18 +194,18 @@
                 @csrf
 
                 {{-- STEP 1: INFO DASAR --}}
-                <div class="step-content px-4 md:px-6 py-6" id="step1">
+                <div class="step-content px-6 md:px-8 py-6" id="step1">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <span>Info Produk</span>
+                        <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">
+                            Info Produk
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
                             Masukkan nama, kode, dan keterangan singkat produk yang ingin dijual.
                         </p>
                     </div>
 
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
                             Jenis Produk <span class="text-red-500">*</span>
                         </label>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -278,67 +262,65 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{-- Kode Produk --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Kode Produk <span class="text-red-500">*</span>
                             </label>
                             <div class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" name="code" id="productCode" value="{{ old('code') }}"
-                                       class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       class="flex-1 px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
                                        placeholder="Contoh: PRD001" required>
                                 @can('generate kode produk')
                                 <button type="button" id="generateCode"
-                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-semibold">
-                                    <i class="fas fa-magic mr-2"></i>
+                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-cuan-green text-white rounded-xl hover:bg-cuan-dark transition-colors whitespace-nowrap text-sm font-bold">
                                     Buat Otomatis
                                 </button>
                                 @endcan
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p class="mt-2 text-[10px] text-gray-400 font-medium">
                                 Kode bebas, yang penting mudah dibaca tim Anda.
                             </p>
                         </div>
 
                         {{-- Nama Produk --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Nama Produk <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="name" value="{{ old('name') }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
                                    placeholder="Contoh: Donat Cokelat Isi" required>
                         </div>
 
                         {{-- Barcode --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Barcode
                             </label>
                             <div class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" name="barcode" id="productBarcode" value="{{ old('barcode') }}"
-                                       class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       class="flex-1 px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
                                        placeholder="Opsional">
                                 <button type="button" id="startScan"
-                                        class="w-full sm:w-auto px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center font-semibold"
+                                        class="w-full sm:w-auto px-4 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center font-bold text-sm"
                                         title="Scan Barcode">
                                     <i class="fas fa-qrcode mr-2 sm:mr-0"></i>
                                     <span class="sm:hidden">Scan</span>
                                 </button>
                                 @can('generate barcode produk')
                                 <button type="button" id="generateBarcode"
-                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap text-sm font-semibold">
-                                    <i class="fas fa-magic mr-2"></i>
+                                        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 bg-cuan-green text-white rounded-xl hover:bg-cuan-dark transition-colors whitespace-nowrap text-sm font-bold">
                                     Buat Otomatis
                                 </button>
                                 @endcan
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p class="mt-2 text-[10px] text-gray-400 font-medium">
                                 Jika belum pakai barcode, bisa dikosongkan dulu.
                             </p>
                         </div>
 
                         {{-- Kategori --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Kategori
                             </label>
                             <select name="category_id" class="select2-category w-full">
@@ -349,14 +331,14 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p class="mt-2 text-[10px] text-gray-400 font-medium">
                                 Contoh: Minuman, Snack, Kue, Lauk, dll.
                             </p>
                         </div>
 
                         {{-- Satuan --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Satuan <span class="text-red-500">*</span>
                             </label>
                             <select name="unit_id" class="select2-unit w-full" required>
@@ -367,19 +349,19 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p class="mt-2 text-[10px] text-gray-400 font-medium">
                                 Contoh: pcs, cup, box, bungkus, dll.
                             </p>
                         </div>
 
                         {{-- Foto Produk --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Foto Produk
                             </label>
                             <input type="file" name="image" id="imageInput" accept="image/*"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                            <p class="text-xs text-gray-500 mt-1">Maksimal 2MB (JPG, JPEG, PNG). Foto membantu kasir lebih yakin.</p>
+                                   class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-cuan-green/10 file:text-cuan-green hover:file:bg-cuan-green/20">
+                            <p class="text-[10px] text-gray-400 font-medium mt-2">Maksimal 2MB (JPG, JPEG, PNG).</p>
 
                             {{-- Preview Foto --}}
                             <div id="imagePreview" class="mt-3 hidden">
@@ -396,23 +378,23 @@
 
                         {{-- Deskripsi --}}
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Deskripsi
                             </label>
                             <textarea name="description" rows="3"
-                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                      class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all"
                                       placeholder="Tuliskan deskripsi singkat produk (rasa, ukuran, keunggulan, dll)">{{ old('description') }}</textarea>
                         </div>
                     </div>
                 </div>
 
                 {{-- STEP 2: RESEP --}}
-                <div class="step-content px-4 md:px-6 py-6 hidden" id="step2">
+                <div class="step-content px-6 md:px-8 py-6 hidden" id="step2">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <span>Resep Produk</span>
+                        <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">
+                            Resep Produk
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
                             Tuliskan nama resep, hasil produksi, dan cara membuat produk ini.
                         </p>
                     </div>
@@ -482,13 +464,13 @@
                 </div>
 
                 {{-- STEP 3: BAHAN BAKU --}}
-                <div class="step-content px-4 md:px-6 py-6 hidden" id="step3">
+                <div class="step-content px-6 md:px-8 py-6 hidden" id="step3">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <span>Bahan Baku</span>
+                        <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">
+                            Bahan Baku
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">
-                            Tambahkan bahan baku yang dipakai untuk sekali resep. Bisa isi manual atau pakai bantuan AI.
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+                            Tambahkan bahan baku yang dipakai untuk sekali resep.
                         </p>
 
                         {{-- Card AI --}}
@@ -593,24 +575,21 @@
                 </div>
 
                 {{-- STEP 4: BIAYA TAMBAHAN --}}
-                <div class="step-content px-4 md:px-6 py-6 hidden" id="step4">
+                <div class="step-content px-6 md:px-8 py-6 hidden" id="step4">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <span>Biaya Lain-lain</span>
+                        <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">
+                            Biaya Lain-lain
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
                             Masukkan biaya di luar bahan baku, misalnya listrik, gas, kemasan, dan tenaga kerja.
                         </p>
                     </div>
 
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                        <div class="flex items-start gap-3">
-                            <i class="fas fa-info-circle text-cuan-green mt-0.5"></i>
-                            <p class="text-sm text-blue-800">
-                                Biaya tambahan ini membantu HPP lebih realistis. Kalau bingung, bisa isi perkiraan
-                                per resep atau isi 0 dulu, nanti bisa disesuaikan lagi.
-                            </p>
-                        </div>
+                    <div class="bg-cuan-green/5 border border-cuan-green/10 rounded-2xl p-4 mb-6">
+                        <p class="text-sm text-gray-600">
+                            Biaya tambahan ini membantu HPP lebih realistis. Kalau bingung, bisa isi perkiraan
+                            per resep atau isi 0 dulu, nanti bisa disesuaikan lagi.
+                        </p>
                     </div>
 
                     <div class="max-w-md">
@@ -627,8 +606,8 @@
                     </div>
 
                     <div class="mt-8 bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
-                        <h4 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <span>Ringkasan HPP (Harga Pokok Produksi)</span>
+                        <h4 class="text-base font-bold text-gray-900 mb-4">
+                            Ringkasan HPP (Harga Pokok Produksi)
                         </h4>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center py-2">
@@ -656,12 +635,12 @@
                 </div>
 
                 {{-- STEP 5: HARGA & STOK --}}
-                <div class="step-content px-4 md:px-6 py-6 hidden" id="step5">
+                <div class="step-content px-6 md:px-8 py-6 hidden" id="step5">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <span>Harga Jual & Stok</span>
+                        <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">
+                            Harga Jual & Stok
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
                             Atur harga jual, harga reseller (jika ada), dan batas stok minimum.
                         </p>
                     </div>
@@ -679,9 +658,8 @@
                         {{-- Input Stok Awal & HPP Manual (Hanya untuk Produk Siap Jual) --}}
                         <div id="readyToSellFields" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
                             <div class="bg-orange-50 border border-orange-200 rounded-lg p-5 md:col-span-2 mb-4">
-                                <h4 class="text-sm font-bold text-orange-800 mb-2 flex items-center gap-2">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span>Khusus Produk Siap Jual</span>
+                                <h4 class="text-sm font-bold text-orange-800 mb-2">
+                                    Khusus Produk Siap Jual
                                 </h4>
                                 <p class="text-xs text-orange-700">
                                     Karena produk ini tidak memiliki resep, harap masukkan modal (HPP) dan stok awal secara manual.
@@ -774,8 +752,8 @@
                     </div>
 
                     <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <span>Perkiraan Laba per Unit</span>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                            Perkiraan Laba per Unit
                         </h4>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center">
@@ -801,12 +779,12 @@
                 </div>
 
                 {{-- STEP 6: TARGET PENJUALAN --}}
-                <div class="step-content px-4 md:px-6 py-6 hidden" id="step6">
+                <div class="step-content px-6 md:px-8 py-6 hidden" id="step6">
                     <div class="mb-6">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <span>Target Penjualan</span>
+                        <h3 class="text-base font-black text-gray-900 uppercase tracking-widest">
+                            Target Penjualan
                         </h3>
-                        <p class="text-sm text-gray-500 mt-1">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
                             Atur target omzet per bulan dan lihat kira-kira harus jual berapa pcs per hari.
                         </p>
                     </div>
@@ -828,9 +806,8 @@
                     <div id="salesTargetContent" class="hidden">
                         {{-- Analisis historis --}}
                         <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 mb-6 border border-purple-200">
-                            <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <i class="fas fa-history text-purple-600"></i>
-                                <span>Ringkasan Penjualan 30 Hari Terakhir</span>
+                            <h4 class="text-lg font-bold text-gray-800 mb-4">
+                                Ringkasan Penjualan 30 Hari Terakhir
                             </h4>
 
                             <div id="historicalDataLoading" class="text-center py-8">
@@ -856,17 +833,15 @@
 
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <div class="bg-white rounded-lg p-5 shadow-sm">
-                                        <h5 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                            <i class="fas fa-chart-bar text-blue-500"></i>
-                                            <span>Tren penjualan per minggu</span>
+                                        <h5 class="font-semibold text-gray-800 mb-3">
+                                            Tren penjualan per minggu
                                         </h5>
                                         <canvas id="weeklyTrendChart" height="250"></canvas>
                                     </div>
 
                                     <div class="bg-white rounded-lg p-5 shadow-sm">
-                                        <h5 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                            <i class="fas fa-calendar-week text-purple-500"></i>
-                                            <span>Pola penjualan per hari</span>
+                                        <h5 class="font-semibold text-gray-800 mb-3">
+                                            Pola penjualan per hari
                                         </h5>
                                         <canvas id="dailyPatternChart" height="250"></canvas>
                                     </div>
@@ -886,7 +861,6 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    <i class="fas fa-money-bill-wave text-gray-400 mr-1"></i>
                                     Target omzet per bulan (Rp) <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" step="0.01" name="monthly_target_revenue" id="monthlyTargetRevenue"
@@ -899,7 +873,6 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    <i class="fas fa-calendar-alt text-gray-400 mr-1"></i>
                                     Tanggal mulai hitung target
                                 </label>
                                 <input type="date" name="target_start_date" id="targetStartDate" value="{{ date('Y-m-d') }}"
@@ -913,10 +886,9 @@
                         {{-- Hasil perhitungan --}}
                         <div id="targetCalculationResult" class="hidden">
                             <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-300 mb-6">
-                                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <i class="fas fa-calculator text-green-600"></i>
-                                    <span>Perhitungan Target Penjualan</span>
-                                </h4>
+                                <h4 class="text-lg font-bold text-gray-800 mb-4">
+                                Perhitungan Target Penjualan
+                            </h4>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                     <div class="bg-white rounded-lg p-4 shadow-sm">
@@ -957,9 +929,8 @@
 
                             {{-- Grafik proyeksi --}}
                             <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-                                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <i class="fas fa-chart-area text-indigo-600"></i>
-                                    <span>Proyeksi Pencapaian Target</span>
+                                <h4 class="text-lg font-bold text-gray-800 mb-4">
+                                    Proyeksi Pencapaian Target
                                 </h4>
                                 <div style="position: relative; height: 250px; width: 100%;">
                                     <canvas id="projectionChart"></canvas>
@@ -994,12 +965,11 @@
                 </div>
 
                 {{-- NAV BUTTONS --}}
-                <div class="px-4 md:px-6 py-5 bg-gray-50 border-t border-gray-200">
+                <div class="px-6 md:px-8 py-5 bg-gray-50/50 border-t border-gray-100">
                     <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                         <button type="button" id="prevBtn"
-                                class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                                class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold text-sm hover:bg-gray-50 transition-all active:scale-95"
                                 style="display: none;">
-                            <i class="fas fa-arrow-left mr-2"></i>
                             Sebelumnya
                         </button>
 
@@ -1007,14 +977,12 @@
 
                         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                             <button type="button" id="nextBtn"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-cuan-olive transition-all font-semibold shadow-md hover:shadow-lg order-2 sm:order-1">
+                                    class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-cuan-green text-white rounded-2xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95 order-2 sm:order-1">
                                 Lanjut
-                                <i class="fas fa-arrow-right ml-2"></i>
                             </button>
                             <button type="submit" id="submitBtn"
-                                    class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-lg hover:bg-green-700 transition-all font-semibold shadow-md hover:shadow-lg order-1 sm:order-2"
+                                    class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-cuan-green text-white rounded-2xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95 order-1 sm:order-2"
                                     style="display: none;">
-                                <i class="fas fa-save mr-2"></i>
                                 Simpan Produk
                             </button>
                         </div>
@@ -1022,7 +990,7 @@
                 </div>
 
             </form>
-        </section>
+        </x-card-container>
     </div>
 
     {{-- Modal Scanner --}}
@@ -1171,13 +1139,13 @@ if (imageInput) {
         
         if (file) {
             if (file.size > 2 * 1024 * 1024) {
-                alert('Ukuran file terlalu besar! Maksimal 2MB');
+                Swal.fire({ icon: 'warning', title: 'File Terlalu Besar', text: 'Ukuran file maksimal 2MB.', confirmButtonColor: '#658C58', customClass: { popup: 'rounded-3xl', confirmButton: 'rounded-xl font-bold text-sm' } });
                 imageInput.value = '';
                 return;
             }
             
             if (!file.type.match('image.*')) {
-                alert('File harus berupa gambar (JPG, JPEG, PNG)');
+                Swal.fire({ icon: 'warning', title: 'Format Salah', text: 'File harus berupa gambar (JPG, JPEG, PNG).', confirmButtonColor: '#658C58', customClass: { popup: 'rounded-3xl', confirmButton: 'rounded-xl font-bold text-sm' } });
                 imageInput.value = '';
                 return;
             }
@@ -1498,7 +1466,7 @@ document.getElementById('generateRecipeAI').addEventListener('click', async func
     const outputQtyInput = document.querySelector('input[name="output_quantity"]');
     
     if (!productNameInput || !outputQtyInput) {
-        alert('ERROR: Input tidak ditemukan');
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Input tidak ditemukan.', confirmButtonColor: '#658C58', customClass: { popup: 'rounded-3xl', confirmButton: 'rounded-xl font-bold text-sm' } });
         return;
     }
     
@@ -1506,18 +1474,25 @@ document.getElementById('generateRecipeAI').addEventListener('click', async func
     const outputQty = outputQtyInput.value;
 
     if (!productName || !outputQty) {
-        alert('Mohon isi Nama Produk (Step 1) dan Jumlah Output (Step 2) terlebih dahulu');
+        Swal.fire({ icon: 'warning', title: 'Data Belum Lengkap', text: 'Mohon isi Nama Produk (Step 1) dan Jumlah Output (Step 2) terlebih dahulu.', confirmButtonColor: '#658C58', customClass: { popup: 'rounded-3xl', confirmButton: 'rounded-xl font-bold text-sm' } });
         return;
     }
 
     // Konfirmasi jika sudah ada recipe items
     const existingItems = document.querySelectorAll('.recipe-item').length;
     if (existingItems > 0) {
-        const confirm = window.confirm(
-            'Anda sudah memiliki ' + existingItems + ' bahan baku. ' +
-            'Generate AI akan mengganti semua bahan yang ada. Lanjutkan?'
-        );
-        if (!confirm) return;
+        const result = await Swal.fire({
+            icon: 'question',
+            title: 'Ganti Bahan Baku?',
+            text: 'Anda sudah memiliki ' + existingItems + ' bahan baku. Generate AI akan mengganti semua bahan yang ada.',
+            showCancelButton: true,
+            confirmButtonColor: '#658C58',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Lanjutkan',
+            cancelButtonText: 'Batal',
+            customClass: { popup: 'rounded-3xl', confirmButton: 'rounded-xl font-bold text-sm', cancelButton: 'rounded-xl font-bold text-sm' }
+        });
+        if (!result.isConfirmed) return;
     }
 
     // Loading state
@@ -1611,7 +1586,6 @@ document.getElementById('generateRecipeAI').addEventListener('click', async func
                 </div>
                 <div class="mt-3">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-sticky-note text-gray-400 mr-1"></i>
                         Catatan
                     </label>
                     <input type="text" name="recipe_items[${recipeItemIndex}][notes]" 
@@ -1719,19 +1693,19 @@ function showAIAssumptions(assumptions, missingIngredients) {
 }
 
 function showSuccessMessage(message) {
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
-    toast.innerHTML = `
-        <i class="fas fa-check-circle"></i>
-        <span>${message}</span>
-    `;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: message,
+        showConfirmButton: false,
+        timer: 3000,
+        iconColor: '#658C58',
+        customClass: {
+            popup: 'rounded-3xl border-none shadow-2xl',
+            title: 'font-black text-gray-900',
+            htmlContainer: 'text-sm font-medium text-gray-500'
+        }
+    });
 }
 
 // ============================================
@@ -1739,6 +1713,55 @@ function showSuccessMessage(message) {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', function() {
+    // ============================================
+    // SWEETALERT2 SESSION & VALIDATION HANDLERS
+    // ============================================
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 3000,
+            iconColor: '#658C58',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+                htmlContainer: 'text-sm font-medium text-gray-500'
+            }
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: "{{ session('error') }}",
+            confirmButtonColor: '#658C58',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+                htmlContainer: 'text-sm font-medium text-gray-500',
+                confirmButton: 'rounded-xl px-6 py-3 font-bold text-sm'
+            }
+        });
+    @endif
+
+    @if($errors->any())
+        Swal.fire({
+            icon: 'error',
+            title: 'Ada data yang belum benar',
+            html: `<ul class="text-left text-sm space-y-1 mt-2">@foreach($errors->all() as $error)<li>• {{ $error }}</li>@endforeach</ul><p class="text-xs text-gray-400 mt-3">Periksa kembali isian yang bertanda <strong>*</strong>.</p>`,
+            confirmButtonColor: '#658C58',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl',
+                title: 'font-black text-gray-900 text-lg',
+                htmlContainer: 'text-sm font-medium text-gray-500',
+                confirmButton: 'rounded-xl px-6 py-3 font-bold text-sm'
+            }
+        });
+    @endif
+
     // Initialize Select2
     $('.select2-category').select2({
         theme: 'default',
@@ -2054,7 +2077,7 @@ function showStep(step) {
     document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
         const stepNum = parseInt(indicator.getAttribute('data-step'));
         const circle = indicator.querySelector('div');
-        const icon = circle ? circle.querySelector('i') : null;
+        const stepEl = circle ? circle.querySelector('span, i') : null;
         const label = indicator.querySelector('p');
         const isSkipped = isReadyType && [2, 3, 4].includes(stepNum);
         
@@ -2068,26 +2091,41 @@ function showStep(step) {
 
         // Base classes for circle
         const baseCircleClass = 'w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300';
-        const defaultIcon = icon ? icon.getAttribute('data-default-icon') : '';
         
         if (stepNum < step) {
-            // Completed Step
+            // Completed Step - show checkmark
             circle.className = baseCircleClass + ' bg-cuan-green shadow-md';
-            if (icon) icon.className = 'fas fa-check text-white text-xs md:text-sm';
+            if (stepEl) {
+                const checkIcon = document.createElement('i');
+                checkIcon.className = 'fas fa-check text-white text-xs md:text-sm';
+                stepEl.replaceWith(checkIcon);
+            }
             if (label) {
                 label.className = 'hidden md:block text-[11px] font-medium text-cuan-green transition-colors duration-300';
             }
         } else if (stepNum === step) {
-            // Active Step
+            // Active Step - show step number
             circle.className = baseCircleClass + ' bg-cuan-green shadow-md ring-4 ring-green-200 transform scale-110';
-            if (icon && defaultIcon) icon.className = defaultIcon + ' text-white text-xs md:text-sm';
+            if (stepEl) {
+                const numSpan = document.createElement('span');
+                numSpan.className = 'text-white text-xs md:text-sm font-black';
+                numSpan.setAttribute('data-default-icon', 'step-number');
+                numSpan.textContent = stepNum;
+                stepEl.replaceWith(numSpan);
+            }
             if (label) {
                 label.className = 'hidden md:block text-[11px] font-bold text-gray-900 transition-colors duration-300';
             }
         } else {
-            // Inactive Step
+            // Inactive Step - show step number
             circle.className = baseCircleClass + ' bg-white border-2 border-gray-300';
-            if (icon && defaultIcon) icon.className = defaultIcon + ' text-gray-400 text-xs md:text-sm';
+            if (stepEl) {
+                const numSpan = document.createElement('span');
+                numSpan.className = 'text-gray-400 text-xs md:text-sm font-black';
+                numSpan.setAttribute('data-default-icon', 'step-number');
+                numSpan.textContent = stepNum;
+                stepEl.replaceWith(numSpan);
+            }
             if (label) {
                 label.className = 'hidden md:block text-[11px] font-medium text-gray-400 transition-colors duration-300';
             }
@@ -2137,7 +2175,7 @@ function validateStep(step) {
         if (input.closest('.hidden')) continue;
         
         if (!input.value || input.value.trim() === '') {
-            alert('Mohon lengkapi semua field yang wajib diisi (*)');
+            Swal.fire({ icon: 'warning', title: 'Data Belum Lengkap', text: 'Mohon lengkapi semua field yang wajib diisi (*).', confirmButtonColor: '#658C58', customClass: { popup: 'rounded-3xl', confirmButton: 'rounded-xl font-bold text-sm' } });
             input.focus();
             return false;
         }
@@ -2146,7 +2184,7 @@ function validateStep(step) {
     if (step === 3 && currentProductType !== 'ready') {
         const recipeItems = document.querySelectorAll('.recipe-item');
         if (recipeItems.length === 0) {
-            alert('Minimal harus ada 1 bahan baku');
+            Swal.fire({ icon: 'warning', title: 'Data Belum Lengkap', text: 'Minimal harus ada 1 bahan baku.', confirmButtonColor: '#658C58', customClass: { popup: 'rounded-3xl', confirmButton: 'rounded-xl font-bold text-sm' } });
             return false;
         }
     }
@@ -2203,7 +2241,6 @@ function addRecipeItem() {
         </div>
         <div class="mt-3">
             <label class="block text-sm font-medium text-gray-700 mb-2">
-                <i class="fas fa-sticky-note text-gray-400 mr-1"></i>
                 Catatan
             </label>
             <input type="text" name="recipe_items[${recipeItemIndex}][notes]" 
@@ -2432,7 +2469,7 @@ function calculateSalesTarget() {
 
         document.getElementById('targetCalculationResult').classList.remove('hidden');
     } else if (targetRevenue > 0 && sellingPrice <= 0) {
-        alert('Mohon isi "Harga Jual" di Step 5 terlebih dahulu untuk menghitung target penjualan.');
+        Swal.fire({ icon: 'info', title: 'Harga Jual Belum Diisi', text: 'Mohon isi "Harga Jual" di Step 5 terlebih dahulu untuk menghitung target.', confirmButtonColor: '#658C58', customClass: { popup: 'rounded-3xl', confirmButton: 'rounded-xl font-bold text-sm' } });
         document.getElementById('targetCalculationResult').classList.add('hidden');
     } else {
         document.getElementById('targetCalculationResult').classList.add('hidden');
