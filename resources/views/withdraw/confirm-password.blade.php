@@ -3,15 +3,11 @@
 @section('title', 'Verifikasi Password')
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Riwayat Penarikan</span>
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Verifikasi</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-500 font-medium">Riwayat Penarikan</span>
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Verifikasi Akses</span>
 </li>
 @endsection
 
@@ -19,18 +15,18 @@
 <main class="flex-grow flex items-center justify-center py-12 px-4 bg-gray-50">
     <div class="max-w-md w-full">
         {{-- CARD CONTAINER --}}
-        <div class="bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-white border text-center border-gray-200 rounded-[2rem] shadow-xl overflow-hidden">
             {{-- TOP ACCENT --}}
-            <div class="h-2 bg-gradient-to-r from-teal-500 to-teal-600"></div>
+            <div class="h-2 bg-gradient-to-r from-cuan-green to-cuan-dark"></div>
             
             <div class="p-8">
                 <div class="text-center space-y-4 mb-8">
-                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-teal-50 text-teal-600 border border-teal-100 shadow-inner">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-[1.5rem] bg-cuan-green/10 text-cuan-green border border-cuan-green/20 shadow-inner">
                         <i class="fas fa-shield-halved text-3xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-black text-gray-900 tracking-tight">Verifikasi Keamanan</h2>
-                        <p class="mt-2 text-sm text-gray-500">
+                        <h2 class="text-xl font-black text-gray-900 tracking-tight">Verifikasi Keamanan</h2>
+                        <p class="mt-2 text-sm text-gray-500 font-medium">
                             Masukkan password akun Anda untuk mengonfirmasi akses penarikan saldo.
                         </p>
                     </div>
@@ -84,27 +80,24 @@
                         </div>
                         @endif
 
-                        <div class="space-y-2">
-                            <label for="password" class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Password Konfirmasi</label>
-                            <div class="relative group">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-teal-500 transition-colors">
-                                    <i class="fas fa-key"></i>
-                                </span>
+                        <div class="space-y-3 text-left">
+                            <label for="password" class="block text-[10px] font-black text-gray-500 uppercase tracking-widest pl-2">Password Konfirmasi</label>
+                            <div class="relative">
                                 <input type="password" 
                                        name="password" 
                                        id="password" 
                                        required
                                        autofocus
-                                       class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 focus:bg-white transition-all outline-none font-medium @error('password') border-red-300 @enderror"
+                                       class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green focus:bg-white transition-all outline-none font-bold text-sm @error('password') border-red-300 @enderror"
                                        placeholder="••••••••">
                                 <button type="button" 
                                         onclick="togglePassword()"
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-all">
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-cuan-green hover:bg-gray-100/50 rounded-xl transition-all">
                                     <i class="fas fa-eye text-xs" id="toggleIcon"></i>
                                 </button>
                             </div>
                             @error('password')
-                            <p class="mt-2 text-[11px] text-red-600 font-medium flex items-center gap-1">
+                            <p class="mt-2 text-[10px] uppercase tracking-widest pl-2 text-red-500 font-bold flex items-center gap-1.5">
                                 <i class="fas fa-circle-exclamation"></i>
                                 {{ $message }}
                             </p>
@@ -112,8 +105,8 @@
                         </div>
 
                         <button type="submit" 
-                                class="w-full py-4 bg-gray-900 text-white font-bold rounded-xl shadow-lg shadow-gray-200 hover:bg-teal-600 hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all text-sm flex items-center justify-center gap-3">
-                            <i class="fas fa-unlock text-xs"></i>
+                                class="w-full py-4 bg-black text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-gray-200 hover:bg-cuan-green hover:-translate-y-0.5 active:scale-95 transition-all text-[10px] flex items-center justify-center gap-3">
+                            <i class="fas fa-unlock text-[10px]"></i>
                             Buka Akses Penarikan
                         </button>
                     </div>
