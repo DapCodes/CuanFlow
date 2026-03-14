@@ -739,7 +739,7 @@ function reportApp() {
             {key: 'cashier', label: 'Performa Kasir'},
             {key: 'hourly', label: 'Analisis Waktu (Peak Hours)'},
             {key: 'expenses', label: 'Pengeluaran Operasional'},
-            {key: 'charts', label: 'Grafik & Visualisasi (PDF Only)'}
+            // {key: 'charts', label: 'Grafik & Visualisasi (PDF Only)'}
         ],
 
         data: {
