@@ -6,216 +6,211 @@
 @section('title', 'Edit Metode Pembayaran - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('outlet-payment-links.index') }}" class="text-gray-500 hover:text-gray-700">Metode Pembayaran QRIS</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('outlet-payment-links.index') }}" class="text-gray-500 hover:text-cuan-green transition-colors">Metode Pembayaran QRIS</a>
 </li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Edit Metode</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Edit Metode</span>
 </li>
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4 bg-gray-50">
+<main class="flex-grow py-2 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
-        {{-- HEADER --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-yellow-50 text-yellow-500 border border-yellow-100">
-                        <i class="fas fa-edit text-sm"></i>
-                    </span>
-                    <span>Edit Metode Pembayaran</span>
-                </h1>
-                <p class="mt-1 text-sm text-gray-500">
-                    Perbarui informasi metode pembayaran {{ $outletPaymentLink->paymentMethod->name }}
-                </p>
-            </div>
-        </section>
+        <form action="{{ route('outlet-payment-links.update', $outletPaymentLink->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+            @csrf
+            @method('PUT')
 
-        {{-- FORM CARD UTAMA --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-            @if ($errors->any())
-                <div class="mx-4 md:mx-6 mt-6 p-3 rounded bg-red-50 border border-red-200 text-sm text-red-700">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form action="{{ route('outlet-payment-links.update', $outletPaymentLink->id) }}" method="POST" enctype="multipart/form-data" class="px-4 md:px-6 py-6 space-y-8">
-                @csrf
-                @method('PUT')
-
-                {{-- Metode Pembayaran (Read Only) --}}
+            {{-- HEADER HALAMAN --}}
+            <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <span>Metode Pembayaran</span>
-                        </h3>
+                    <h1 class="text-xl md:text-2xl font-black text-gray-900 leading-tight">
+                        Edit Metode Pembayaran
+                    </h1>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Perbarui informasi metode pembayaran untuk outlet Anda.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <a href="{{ route('outlet-payment-links.index') }}"
+                       class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+                        <span>Batal</span>
+                    </a>
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 rounded-xl bg-cuan-green px-5 py-3 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                        <span>Simpan Perubahan</span>
+                    </button>
+                </div>
+            </section>
+
+
+
+                {{-- Informasi Utama --}}
+                <x-card-container>
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Informasi Utama</h2>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Penyedia layanan pembayaran</p>
                     </div>
-                    <div class="p-4 bg-gradient-to-r from-pink-50 to-red-50 rounded-lg border border-pink-100">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center border border-pink-200 shadow-sm">
-                                <i class="fas fa-building text-pink-500 text-lg"></i>
+                    <div class="px-8 py-8">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                            Metode Pembayaran
+                        </label>
+                        <div class="flex items-center gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-200">
+                            <div class="w-12 h-12 rounded-xl bg-cuan-green/10 flex items-center justify-center border border-cuan-green/20">
+                                <i class="fas fa-wallet text-cuan-green text-lg"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-semibold text-gray-900">{{ $outletPaymentLink->paymentMethod->name }}</p>
-                                <p class="text-xs text-gray-600 mt-0.5">
-                                    <i class="fas fa-info-circle mr-1"></i>
+                                <p class="text-sm font-black text-gray-900 uppercase tracking-widest leading-none">{{ $outletPaymentLink->paymentMethod->name }}</p>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2 flex items-center">
+                                    <i class="fas fa-info-circle mr-1.5 text-cuan-green"></i>
                                     Metode pembayaran tidak dapat diubah
                                 </p>
                             </div>
                         </div>
                     </div>
-                </div>
+                </x-card-container>
 
                 {{-- Informasi Rekening --}}
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <span>Informasi Rekening / Akun</span>
-                        </h3>
+                <x-card-container>
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Informasi Akun</h2>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Detail identitas pembayaran</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {{-- Nomor Rekening / HP --}}
-                        <div>
-                            <label for="account_number" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Nomor Rekening / Nomor HP
-                            </label>
-                            <input type="text" 
-                                   name="account_number" 
-                                   id="account_number"
-                                   value="{{ old('account_number', $outletPaymentLink->account_number) }}"
-                                   placeholder="Contoh: 1234567890"
-                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 @error('account_number') border-red-500 @enderror">
-                            @error('account_number')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <div class="px-8 py-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Nomor Rekening / HP --}}
+                            <div>
+                                <label for="account_number" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                                    Nomor Rekening / Nomor HP
+                                </label>
+                                <input type="text" 
+                                       name="account_number" 
+                                       id="account_number"
+                                       value="{{ old('account_number', $outletPaymentLink->account_number) }}"
+                                       placeholder="Contoh: 1234567890"
+                                       class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all @error('account_number') border-red-300 @enderror">
+                                @error('account_number')
+                                    <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                        {{-- Nama Pemilik --}}
-                        <div>
-                            <label for="account_name" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Nama Pemilik Rekening / Akun
-                            </label>
-                            <input type="text" 
-                                   name="account_name" 
-                                   id="account_name"
-                                   value="{{ old('account_name', $outletPaymentLink->account_name) }}"
-                                   placeholder="Contoh: PT. Toko Sejahtera"
-                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 @error('account_name') border-red-500 @enderror">
-                            @error('account_name')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Upload QR Code --}}
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <span>Upload QR Code</span>
-                        </h3>
-                    </div>
-                    
-                    @if($outletPaymentLink->qr_image)
-                        <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">QR Code Saat Ini:</p>
-                            <div class="inline-block">
-                                <img src="{{ asset('storage/' . $outletPaymentLink->qr_image) }}" 
-                                     alt="Current QR" 
-                                     class="max-h-32 rounded-lg border border-gray-300 shadow-sm">
+                            {{-- Nama Pemilik --}}
+                            <div>
+                                <label for="account_name" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                                    Nama Pemilik
+                                </label>
+                                <input type="text" 
+                                       name="account_name" 
+                                       id="account_name"
+                                       value="{{ old('account_name', $outletPaymentLink->account_name) }}"
+                                       placeholder="Contoh: PT. Toko Sejahtera"
+                                       class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all @error('account_name') border-red-300 @enderror">
+                                @error('account_name')
+                                    <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
-                    @endif
+                    </div>
+                </x-card-container>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                            Upload QR Code Baru <span class="text-gray-400">(Opsional)</span>
-                        </label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-pink-400 transition-colors">
-                            <input type="file" name="qr_image" id="qrImage" accept="image/*" 
-                                   class="hidden" onchange="previewImage(this)">
-                            <label for="qrImage" class="cursor-pointer">
-                                <div id="imagePreview" class="mb-3 hidden">
-                                    <img src="" alt="Preview" class="mx-auto max-h-48 rounded-lg border border-gray-200">
+                {{-- File & Catatan --}}
+                <x-card-container>
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                        <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">QR Code & Catatan</h2>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Lampiran visual dan keterangan tambahan</p>
+                    </div>
+                    <div class="px-8 py-8 space-y-8">
+                        {{-- QR Code --}}
+                        <div>
+                            @if($outletPaymentLink->qr_image)
+                                <div class="mb-6 p-6 bg-gray-50 rounded-2xl border border-gray-200">
+                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">QR Code Saat Ini</p>
+                                    <div class="inline-block relative group">
+                                        <img src="{{ asset('storage/' . $outletPaymentLink->qr_image) }}" 
+                                             alt="Current QR" 
+                                             class="max-h-40 rounded-2xl border border-gray-100 shadow-xl group-hover:scale-[1.02] transition-transform">
+                                        <div class="absolute inset-0 bg-black/40 rounded-2xl opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <span class="text-white font-black text-[10px] uppercase tracking-widest">QR Aktif</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div id="uploadPlaceholder">
-                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
-                                    <p class="text-sm font-medium text-gray-700 mb-1">Klik untuk upload QR Code baru</p>
-                                    <p class="text-xs text-gray-500">Format: JPG, PNG (Max 2MB) • Kosongkan jika tidak ingin mengubah</p>
-                                </div>
+                            @endif
+
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">
+                                {{ $outletPaymentLink->qr_image ? 'Update QR Code' : 'Upload QR Code' }}
+                                <span class="text-gray-400 lowercase">(opsional)</span>
                             </label>
+                            
+                            <div class="border-2 border-dashed border-gray-200 rounded-[2rem] p-8 text-center hover:border-cuan-green hover:bg-cuan-green/5 transition-all group">
+                                <input type="file" name="qr_image" id="qrImage" accept="image/*" 
+                                       class="hidden" onchange="previewImage(this)">
+                                <label for="qrImage" class="cursor-pointer block">
+                                    <div id="imagePreview" class="mb-4 hidden">
+                                        <img src="" alt="Preview" class="mx-auto max-h-48 rounded-2xl border border-gray-100 shadow-xl">
+                                    </div>
+                                    <div id="uploadPlaceholder">
+                                        <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                            <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 group-hover:text-cuan-green"></i>
+                                        </div>
+                                        <p class="text-sm font-black text-gray-900 uppercase tracking-widest tracking-widest">Klik untuk upload file baru</p>
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Format: JPG, PNG (Max 2MB)</p>
+                                    </div>
+                                </label>
+                            </div>
+                            @error('qr_image')
+                                <p class="mt-2 text-xs text-red-600 font-medium">{{ $message }}</p>
+                            @enderror
                         </div>
-                        @error('qr_image')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
 
-                {{-- Catatan --}}
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <span>Catatan Tambahan</span>
-                        </h3>
+                        {{-- Catatan --}}
+                        <div>
+                            <label for="notes" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                                Catatan Tambahan <span class="text-gray-400 lowercase">(opsional)</span>
+                            </label>
+                            <textarea name="notes" 
+                                      id="notes" 
+                                      rows="4"
+                                      placeholder="Tambahkan catatan atau instruksi khusus..."
+                                      class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all @error('notes') border-red-300 @enderror">{{ old('notes', $outletPaymentLink->notes) }}</textarea>
+                            @error('notes')
+                                <p class="mt-1 text-xs text-red-600 font-medium">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
-                    <div>
-                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1.5">
-                            Catatan <span class="text-gray-400">(Opsional)</span>
-                        </label>
-                        <textarea name="notes" 
-                                  id="notes" 
-                                  rows="3"
-                                  placeholder="Tambahkan catatan atau instruksi khusus untuk metode pembayaran ini..."
-                                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 @error('notes') border-red-500 @enderror">{{ old('notes', $outletPaymentLink->notes) }}</textarea>
-                        @error('notes')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
+                </x-card-container>
 
                 {{-- Status Aktif --}}
-                <div>
-                    <div class="flex items-center gap-6">
-                        <div class="flex items-center">
-                            <input type="checkbox"
-                                   name="is_active"
-                                   id="is_active"
-                                   value="1"
-                                   {{ old('is_active', $outletPaymentLink->is_active) ? 'checked' : '' }}
-                                   class="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500">
-                            <label for="is_active" class="ml-3 text-sm font-medium text-gray-700">
-                                Aktifkan metode pembayaran ini
-                            </label>
-                        </div>
+                <x-card-container>
+                    <div class="px-8 py-8">
+                        <label class="flex items-center gap-4 cursor-pointer group">
+                            <div class="relative">
+                                <input type="checkbox" name="is_active" value="1" 
+                                       id="is_active"
+                                       {{ old('is_active', $outletPaymentLink->is_active) ? 'checked' : '' }}
+                                       class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-green transition-all"></div>
+                            </div>
+                            <div>
+                                <span class="text-xs font-black text-gray-900 uppercase tracking-widest">Status Keaktifan</span>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Tentukan apakah metode ini dapat digunakan oleh pelanggan.</p>
+                            </div>
+                        </label>
                     </div>
-                </div>
+                </x-card-container>
 
                 {{-- Action Buttons --}}
-                <div class="pt-5 border-t border-gray-200">
-                    <div class="flex flex-col md:flex-row md:justify-end gap-3">
-                        <a href="{{ route('outlet-payment-links.index') }}"
-                           class="w-full md:w-auto inline-flex items-center justify-center px-4 md:px-6 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-times mr-2 text-xs"></i>
-                            <span>Batal</span>
-                        </a>
-                        <button type="submit"
-                                class="w-full md:w-auto inline-flex items-center justify-center px-4 md:px-6 py-2.5 bg-pink-500 text-sm font-semibold text-white rounded-lg hover:bg-pink-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-1">
-                            <i class="fas fa-save mr-2 text-xs"></i>
-                            <span>Update Metode</span>
-                        </button>
-                    </div>
+                <div class="flex items-center justify-end gap-3 pt-4 pb-8">
+                    <a href="{{ route('outlet-payment-links.index') }}"
+                       class="px-8 py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold text-sm hover:bg-gray-50 transition-all active:scale-95">
+                        Batal
+                    </a>
+                    <button type="submit"
+                            class="px-8 py-4 bg-cuan-green text-white rounded-2xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                        Simpan Perubahan
+                    </button>
                 </div>
             </form>
         </section>
@@ -224,7 +219,40 @@
 </main>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Session Flash SweetAlert
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: "{{ session('success') }}",
+            confirmButtonColor: '#658C58',
+            iconColor: '#658C58',
+            customClass: {
+                popup: 'rounded-[1.5rem] border-0',
+                title: 'font-black tracking-tight',
+                confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest px-6 py-3'
+            }
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: "{{ session('error') }}",
+            confirmButtonColor: '#ef4444',
+            customClass: {
+                popup: 'rounded-[1.5rem] border-0',
+                title: 'font-black tracking-tight',
+                confirmButton: 'rounded-xl font-black uppercase text-xs tracking-widest px-6 py-3'
+            }
+        });
+    @endif
+});
+
 function previewImage(input) {
     const preview = document.getElementById('imagePreview');
     const placeholder = document.getElementById('uploadPlaceholder');
@@ -240,6 +268,9 @@ function previewImage(input) {
         };
 
         reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.classList.add('hidden');
+        placeholder.classList.remove('hidden');
     }
 }
 </script>
