@@ -221,18 +221,14 @@
 
             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
                 <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Menunggu</p>
-                <p class="mt-2 text-2xl font-black text-amber-600">{{ $stats['pending'] }}</p>
-                <div class="mt-2">
-                    <span class="text-[10px] text-amber-600 font-black uppercase tracking-widest">Status Pending</span>
-                </div>
+                <p class="mt-2 text-2xl font-black text-gray-900">{{ $stats['pending'] }}</p>
+                <div class="mt-2 text-[10px] text-gray-400 font-black uppercase tracking-widest">Status Pending</div>
             </div>
 
             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
                 <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Berlangsung</p>
-                <p class="mt-2 text-2xl font-black text-blue-600">{{ $stats['in_progress'] }}</p>
-                <div class="mt-2">
-                    <span class="text-[10px] text-blue-600 font-black uppercase tracking-widest">Sedang Dikerjakan</span>
-                </div>
+                <p class="mt-2 text-2xl font-black text-gray-900">{{ $stats['in_progress'] }}</p>
+                <div class="mt-2 text-[10px] text-gray-400 font-black uppercase tracking-widest">Sedang Dikerjakan</div>
             </div>
 
             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
