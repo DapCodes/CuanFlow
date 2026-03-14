@@ -31,12 +31,12 @@
             <div class="flex flex-wrap items-center gap-3">
                 <a href="{{ route('outlet-payment-links.index') }}"
                    class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
-                    <i class="fas fa-arrow-left text-xs"></i>
+                    <!-- <i class="fas fa-arrow-left text-xs"></i> -->
                     <span>Kembali</span>
                 </a>
                 <a href="{{ route('outlet-payment-links.edit', $outletPaymentLink->id) }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-cuan-green px-5 py-3 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
-                    <i class="fas fa-edit text-xs"></i>
+                    <!-- <i class="fas fa-edit text-xs"></i> -->
                     <span>Edit Metode</span>
                 </a>
             </div>
@@ -156,9 +156,6 @@
                                 <img src="{{ asset('storage/' . $outletPaymentLink->qr_image) }}" 
                                      alt="QR Code" 
                                      class="max-h-64 rounded-3xl border-4 border-white shadow-2xl group-hover:scale-[1.05] transition-transform duration-500">
-                                <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white rounded-full shadow-lg border border-gray-100">
-                                    <span class="text-[10px] font-black uppercase tracking-widest text-cuan-green">Layar Pelanggan</span>
-                                </div>
                             </div>
                         @else
                             <div class="py-12 flex flex-col items-center">
@@ -170,10 +167,20 @@
                         @endif
                     </div>
                     <div class="px-8 py-6 bg-gray-50/30 border-t border-gray-50">
-                        <button onclick="window.print()" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gray-900 text-white font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-lg shadow-gray-900/10">
-                            <i class="fas fa-print text-xs"></i>
-                            Cetak QR Code
-                        </button>
+                        @if($outletPaymentLink->qr_image)
+                            <a href="{{ asset('storage/' . $outletPaymentLink->qr_image) }}" 
+                               download="QR_{{ Str::slug($outletPaymentLink->paymentMethod->name) }}_{{ Str::slug($outletPaymentLink->account_name) }}.png"
+                               class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gray-900 text-white font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-lg shadow-gray-900/10">
+                                <i class="fas fa-download text-xs"></i>
+                                Unduh QR Code
+                            </a>
+                        @else
+                            <button disabled 
+                                    class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gray-100 text-gray-400 font-black text-[10px] uppercase tracking-widest cursor-not-allowed border border-gray-200">
+                                <i class="fas fa-download text-xs"></i>
+                                Unduh QR Code
+                            </button>
+                        @endif
                     </div>
                 </x-card-container>
 
