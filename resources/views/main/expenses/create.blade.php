@@ -4,6 +4,7 @@
 
 @section('breadcrumb')
 <li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
     <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-gray-900 transition-colors">Dashboard</a>
     <span class="text-gray-400 mx-2">/</span>
     <a href="{{ route('expenses.index', ['type' => $type]) }}" class="text-gray-400 hover:text-gray-900 transition-colors">{{ $type == 'income' ? 'Pemasukan' : 'Pengeluaran' }}</a>
