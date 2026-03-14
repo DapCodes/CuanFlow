@@ -106,13 +106,13 @@
 @endpush
 
 @section('content')
-<main class="flex-grow py-2 px-4 bg-gray-50">
+<main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
 
         {{-- Validation errors & session flash handled by SweetAlert2 in scripts --}}
 
         {{-- HEADER HALAMAN --}}
-        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
                 <h1 class="text-xl md:text-2xl font-black text-gray-900">
                     Tambah Produk & Resep
