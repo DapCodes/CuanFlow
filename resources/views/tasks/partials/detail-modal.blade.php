@@ -4,20 +4,20 @@
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full">
+            <div class="bg-white px-6 pt-6 pb-4 sm:p-8">
                 <!-- Header -->
                 <div class="flex flex-col sm:flex-row justify-between items-start border-b border-gray-100 pb-6 mb-6 gap-4">
                     <div class="space-y-2">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span id="detail_status_badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Status</span>
-                            <span id="detail_priority_badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Priority</span>
+                            <span id="detail_status_badge" class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest">Status</span>
+                            <span id="detail_priority_badge" class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest">Priority</span>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 tracking-tight" id="detail_title">Task Title</h3>
+                        <h3 class="text-2xl font-black text-gray-900 tracking-tight" id="detail_title">Task Title</h3>
                     </div>
                     @can('tasks.update')
-                    <button onclick="switchToEditMode()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all text-xs font-semibold">
-                        <i class="fa-solid fa-pen-to-square"></i>
+                    <button onclick="switchToEditMode()" class="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-500 hover:text-cuan-green hover:bg-cuan-green/5 hover:border-cuan-green transition-all text-xs font-black uppercase tracking-widest">
+                        <i class="fa-solid fa-pen-to-square text-[10px]"></i>
                         <span>Edit Tugas</span>
                     </button>
                     @endcan
@@ -27,12 +27,12 @@
                     <!-- Main Content (Description & Activity) -->
                     <div class="flex-grow space-y-8 order-2 lg:order-1">
                         <div>
-                            <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Deskripsi</h4>
-                            <div id="detail_description" class="text-[13px] text-gray-600 leading-relaxed whitespace-pre-wrap selection:bg-purple-100"></div>
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Deskripsi</h4>
+                            <div id="detail_description" class="text-[13px] text-gray-600 leading-relaxed whitespace-pre-wrap selection:bg-cuan-green/20"></div>
                         </div>
 
                         <div>
-                            <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6">Aktivitas & Riwayat</h4>
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Aktivitas & Riwayat</h4>
                             <div class="flow-root">
                                 <ul role="list" class="-mb-8" id="detail_activities">
                                     <!-- Log Activity Items injected via JS -->
@@ -45,29 +45,29 @@
                     <div class="w-full lg:w-56 space-y-6 order-1 lg:order-2 shrink-0 border-b lg:border-b-0 lg:border-l border-gray-100 pb-6 lg:pb-0 lg:pl-6">
                         @can('tasks.assign')
                         <div>
-                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Assignees</h4>
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Assignees</h4>
                             <div id="detail_assignees" class="flex flex-wrap gap-1.5"></div>
                         </div>
                         @endcan
                         @can('task-labels.manage')
                         <div>
-                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Labels</h4>
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Labels</h4>
                             <div id="detail_labels" class="flex flex-wrap gap-1.5"></div>
                         </div>
                         @endcan
                         <div>
-                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Deadline</h4>
-                            <p id="detail_deadline" class="text-[12px] font-semibold text-gray-700"></p>
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Deadline</h4>
+                            <p id="detail_deadline" class="text-[12px] font-black text-gray-700"></p>
                         </div>
                         <div>
-                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Dibuat Oleh</h4>
-                            <p id="detail_creator" class="text-[12px] font-medium text-gray-500"></p>
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Dibuat Oleh</h4>
+                            <p id="detail_creator" class="text-[12px] font-black text-gray-500"></p>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button type="button" onclick="closeDetailModal()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">
+            <div class="bg-gray-50/50 px-6 py-4 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="closeDetailModal()" class="w-full sm:w-auto inline-flex justify-center rounded-lg border border-gray-200 shadow-sm px-5 py-2.5 bg-white text-sm font-black text-gray-700 hover:bg-gray-50 focus:outline-none transition-all active:scale-95">
                     Tutup
                 </button>
             </div>
@@ -110,9 +110,9 @@
                 if(task.assignees.length > 0) {
                     task.assignees.forEach(u => {
                         assigneesContainer.innerHTML += `
-                            <div class="flex items-center gap-1.5 bg-gray-100 rounded-full px-2 py-1">
-                                <span class="bg-purple-200 text-purple-700 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">${u.name.substring(0,2).toUpperCase()}</span>
-                                <span class="text-xs text-gray-700">${u.name}</span>
+                            <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-full px-2 py-1">
+                                <span class="bg-cuan-green/10 text-cuan-green text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">${u.name.substring(0,2).toUpperCase()}</span>
+                                <span class="text-[11px] font-black text-gray-700">${u.name}</span>
                             </div>`;
                     });
                 } else {
@@ -125,7 +125,7 @@
                 if(task.labels.length > 0) {
                     task.labels.forEach(l => {
                         labelsContainer.innerHTML += `
-                            <span class="text-xs px-2 py-1 rounded-md text-white" style="background-color: ${l.color}">${l.name}</span>`;
+                            <span class="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md text-white" style="background-color: ${l.color}">${l.name}</span>`;
                     });
                 } else {
                     labelsContainer.innerHTML = '<span class="text-xs text-gray-500 italic">-</span>';
@@ -156,9 +156,9 @@
                                         </div>
                                         <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                                             <div>
-                                                <p class="text-sm text-gray-500">${activity.description}</p>
+                                                <p class="text-[13px] text-gray-600 font-medium">${activity.description}</p>
                                             </div>
-                                            <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                            <div class="text-right text-[11px] font-black uppercase tracking-widest whitespace-nowrap text-gray-400">
                                                 <time datetime="${activity.created_at}">${date}</time>
                                             </div>
                                         </div>
