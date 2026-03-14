@@ -3,11 +3,9 @@
 @section('title', 'Manajemen Tugas - Table View - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Manajemen Tugas</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Project Board</span>
 </li>
 @endsection
 
@@ -17,7 +15,7 @@
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-[1600px] mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-6">
 
         {{-- Alert / Notifikasi --}}
         @if(session('success'))
@@ -34,36 +32,33 @@
             </div>
         @endif
 
-        {{-- HEADER HALAMAN (KONSISTEN) --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-purple-50 text-purple-500 border border-purple-100">
-                        <i class="fas fa-table-list text-sm"></i>
-                    </span>
-                    <span>Database Tugas</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Database Tugas
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    Kelola ribuan tugas dengan mudah menggunakan tampilan tabel yang terorganisir dan efisien.
+                    Kelola ribuan tugas dengan mudah menggunakan <span class="font-semibold text-cuan-green">{{ auth()->user()->outlet->name ?? 'CuanFlow' }}</span> tampilan tabel.
                 </p>
             </div>
             
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
                 {{-- View Switcher --}}
                 <div class="inline-flex items-center p-1 bg-gray-50 border border-gray-200 rounded-lg">
-                    <a href="{{ route('tasks.index') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
+                    <a href="{{ route('tasks.index') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-black text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
                         <i class="fa-solid fa-columns mr-1.5"></i>Board
                     </a>
-                    <a href="{{ route('tasks.table') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-white text-gray-900 shadow-sm border border-gray-100">
-                        <i class="fa-solid fa-table mr-1.5 text-purple-500"></i>Table
+                    <a href="{{ route('tasks.table') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-black transition-all bg-cuan-green text-white shadow-sm shadow-cuan-green/20">
+                        <i class="fa-solid fa-table mr-1.5"></i>Table
                     </a>
-                    <a href="{{ route('tasks.calendar') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
+                    <a href="{{ route('tasks.calendar') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-black text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
                         <i class="fa-solid fa-calendar mr-1.5"></i>Calendar
                     </a>
                 </div>
 
                 @can('tasks.create')
-                <button onclick="openCreateModal()" class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1">
+                <button onclick="openCreateModal()" class="inline-flex items-center gap-2 rounded-lg bg-cuan-green px-4 py-2.5 text-sm font-black text-white hover:bg-cuan-dark transition-all active:scale-95 shadow-sm">
                     <i class="fas fa-plus-circle text-sm"></i>
                     <span>Tugas Baru</span>
                 </button>
@@ -71,54 +66,30 @@
             </div>
         </section>
 
-        {{-- RINGKASAN STATISTIK (KONSISTEN) --}}
+        {{-- RINGKASAN STATISTIK --}}
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Tugas</p>
-                        <p class="mt-1 text-2xl font-semibold text-gray-900">{{ $stats['total'] }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
-                        <i class="fas fa-tasks text-gray-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Tugas</p>
+                <p class="mt-2 text-2xl font-black text-gray-900">{{ $stats['total'] }}</p>
+                <div class="mt-2 text-[10px] text-gray-500 font-black uppercase tracking-widest">Akumulasi Project</div>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Menunggu</p>
-                        <p class="mt-1 text-2xl font-semibold text-amber-600">{{ $stats['pending'] }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100">
-                        <i class="fas fa-circle-dot text-amber-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Menunggu</p>
+                <p class="mt-2 text-2xl font-black text-amber-600">{{ $stats['pending'] }}</p>
+                <div class="mt-2 text-[10px] text-amber-600 font-black uppercase tracking-widest">Status Pending</div>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Berlangsung</p>
-                        <p class="mt-1 text-2xl font-semibold text-blue-600">{{ $stats['in_progress'] }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100">
-                        <i class="fas fa-spinner text-blue-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Berlangsung</p>
+                <p class="mt-2 text-2xl font-black text-blue-600">{{ $stats['in_progress'] }}</p>
+                <div class="mt-2 text-[10px] text-blue-600 font-black uppercase tracking-widest">Sedang Dikerjakan</div>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Selesai</p>
-                        <p class="mt-1 text-2xl font-semibold text-emerald-600">{{ $stats['completed'] }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                        <i class="fas fa-check-double text-emerald-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Selesai</p>
+                <p class="mt-2 text-2xl font-black text-cuan-green">{{ $stats['completed'] }}</p>
+                <div class="mt-2 text-[10px] text-cuan-green font-black uppercase tracking-widest">Tugas Rampung</div>
             </div>
         </section>
 
@@ -127,19 +98,19 @@
             {{-- Toolbar: Search & Filter --}}
             <div class="border-b border-gray-200 px-4 md:px-6 py-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between gap-4">
                 <div class="w-full md:max-w-md">
-                    <label class="text-xs font-medium text-gray-500 mb-1 block">Cari tugas</label>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Cari tugas</label>
                     <div class="relative">
                         <input type="text" id="searchTask" placeholder="Cari berdasarkan judul tugas..."
-                               class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400">
+                               class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                     </div>
                 </div>
 
                 <form action="{{ route('tasks.table') }}" method="GET" class="flex flex-wrap gap-3 w-full md:w-auto">
                     <div class="w-full sm:w-40 md:w-44">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Status</label>
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Status</label>
                         <select name="status_id" onchange="this.form.submit()"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400">
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green">
                             <option value="">Semua Status</option>
                             @foreach($statuses as $status)
                                 <option value="{{ $status->id }}" {{ request('status_id') == $status->id ? 'selected' : '' }}>
@@ -150,9 +121,9 @@
                     </div>
 
                     <div class="w-full sm:w-40 md:w-44">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Prioritas</label>
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Prioritas</label>
                         <select name="priority" onchange="this.form.submit()"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400">
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green">
                             <option value="">Semua Prioritas</option>
                             <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>Tinggi</option>
                             <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Sedang</option>
@@ -161,9 +132,9 @@
                     </div>
 
                     <div class="w-full sm:w-40 md:w-44">
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">Assignee</label>
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Assignee</label>
                         <select name="assignee" onchange="this.form.submit()"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400">
+                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green">
                             <option value="">Semua Assignee</option>
                             @foreach($assignableUsers as $user)
                                 <option value="{{ $user->id }}" {{ request('assignee') == $user->id ? 'selected' : '' }}>
@@ -175,7 +146,7 @@
 
                     @if(request()->hasAny(['priority', 'assignee', 'status_id']))
                     <div class="flex items-end">
-                        <a href="{{ route('tasks.table') }}" class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold">
+                        <a href="{{ route('tasks.table') }}" class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-black">
                             <i class="fas fa-times-circle"></i>
                             Reset Filter
                         </a>
@@ -187,24 +158,24 @@
             {{-- Tabel --}}
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b border-gray-200">
+                    <thead class="bg-gray-50/50 border-b border-gray-200">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 Nama Tugas
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 Status
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 Prioritas
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 Assignee
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 Deadline
                             </th>
-                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            <th class="px-6 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 Aksi
                             </th>
                         </tr>
@@ -350,7 +321,7 @@
                                         </p>
                                         @can('tasks.create')
                                         <button onclick="openCreateModal()"
-                                               class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-600">
+                                               class="inline-flex items-center gap-2 rounded-lg bg-cuan-green px-4 py-2.5 text-sm font-black text-white hover:bg-cuan-dark transition-all">
                                             <i class="fas fa-plus-circle text-xs"></i>
                                             Tambah Tugas
                                         </button>

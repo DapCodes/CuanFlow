@@ -3,11 +3,9 @@
 @section('title', 'Manajemen Tugas - Calendar View - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Manajemen Tugas</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Project Board</span>
 </li>
 @endsection
 
@@ -24,12 +22,14 @@
         --fc-button-hover-border-color: #9ca3af;
         --fc-button-active-bg-color: #e5e7eb;
         --fc-button-text-color: #374151;
-        --fc-today-bg-color: #f9fafb;
+        --fc-today-bg-color: rgba(0, 168, 132, 0.05);
     }
     
     .fc .fc-toolbar-title {
         font-size: 1.125rem;
-        font-weight: 600;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
         color: #111827;
     }
 
@@ -50,9 +50,9 @@
 
     .fc .fc-button-primary:not(:disabled).fc-button-active, 
     .fc .fc-button-primary:not(:disabled):active {
-        background-color: #6366f1;
+        background-color: #00A884;
         color: white;
-        border-color: #6366f1;
+        border-color: #00A884;
     }
     
     .fc-event {
@@ -84,7 +84,7 @@
     }
 
     .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-        background-color: #6366f1;
+        background-color: #00A884;
         color: white;
         border-radius: 50%;
         width: 28px;
@@ -194,7 +194,7 @@
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-[1600px] mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-6">
 
         {{-- Alert / Notifikasi --}}
         @if(session('success'))
@@ -211,36 +211,33 @@
             </div>
         @endif
 
-        {{-- HEADER HALAMAN (KONSISTEN) --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-purple-50 text-purple-500 border border-purple-100">
-                        <i class="fas fa-calendar-alt text-sm"></i>
-                    </span>
-                    <span>Timeline Kalender</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Timeline Kalender
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    Pantau target deadline tim Anda dalam tampilan kalender yang intuitif dan mudah dipahami.
+                    Pantau target deadline tim Anda dalam tampilan <span class="font-semibold text-cuan-green">{{ auth()->user()->outlet->name ?? 'CuanFlow' }}</span> kalender yang intuitif.
                 </p>
             </div>
             
             <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
                 {{-- View Switcher --}}
                 <div class="inline-flex items-center p-1 bg-gray-50 border border-gray-200 rounded-lg">
-                    <a href="{{ route('tasks.index') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
+                    <a href="{{ route('tasks.index') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-black text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
                         <i class="fa-solid fa-columns mr-1.5"></i>Board
                     </a>
-                    <a href="{{ route('tasks.table') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
+                    <a href="{{ route('tasks.table') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-black text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
                         <i class="fa-solid fa-table mr-1.5"></i>Table
                     </a>
-                    <a href="{{ route('tasks.calendar') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-white text-gray-900 shadow-sm border border-gray-100">
-                        <i class="fa-solid fa-calendar mr-1.5 text-purple-500"></i>Calendar
+                    <a href="{{ route('tasks.calendar') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-black transition-all bg-cuan-green text-white shadow-sm shadow-cuan-green/20">
+                        <i class="fa-solid fa-calendar mr-1.5"></i>Calendar
                     </a>
                 </div>
 
                 @can('tasks.create')
-                <button onclick="openCreateModal()" class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1">
+                <button onclick="openCreateModal()" class="inline-flex items-center gap-2 rounded-lg bg-cuan-green px-4 py-2.5 text-sm font-black text-white hover:bg-cuan-dark transition-all active:scale-95 shadow-sm">
                     <i class="fas fa-plus-circle text-sm"></i>
                     <span>Tugas Baru</span>
                 </button>
@@ -248,54 +245,30 @@
             </div>
         </section>
 
-        {{-- RINGKASAN STATISTIK (KONSISTEN) --}}
+        {{-- RINGKASAN STATISTIK --}}
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Tugas</p>
-                        <p class="mt-1 text-2xl font-semibold text-gray-900">{{ $stats['total'] }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
-                        <i class="fas fa-tasks text-gray-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Tugas</p>
+                <p class="mt-2 text-2xl font-black text-gray-900">{{ $stats['total'] }}</p>
+                <div class="mt-2 text-[10px] text-gray-500 font-black uppercase tracking-widest">Akumulasi Project</div>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Menunggu</p>
-                        <p class="mt-1 text-2xl font-semibold text-amber-600">{{ $stats['pending'] }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100">
-                        <i class="fas fa-circle-dot text-amber-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Menunggu</p>
+                <p class="mt-2 text-2xl font-black text-amber-600">{{ $stats['pending'] }}</p>
+                <div class="mt-2 text-[10px] text-amber-600 font-black uppercase tracking-widest">Status Pending</div>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Berlangsung</p>
-                        <p class="mt-1 text-2xl font-semibold text-blue-600">{{ $stats['in_progress'] }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100">
-                        <i class="fas fa-spinner text-blue-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Berlangsung</p>
+                <p class="mt-2 text-2xl font-black text-blue-600">{{ $stats['in_progress'] }}</p>
+                <div class="mt-2 text-[10px] text-blue-600 font-black uppercase tracking-widest">Sedang Dikerjakan</div>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Selesai</p>
-                        <p class="mt-1 text-2xl font-semibold text-emerald-600">{{ $stats['completed'] }}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                        <i class="fas fa-check-double text-emerald-500 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Selesai</p>
+                <p class="mt-2 text-2xl font-black text-cuan-green">{{ $stats['completed'] }}</p>
+                <div class="mt-2 text-[10px] text-cuan-green font-black uppercase tracking-widest">Tugas Rampung</div>
             </div>
         </section>
 
@@ -306,15 +279,15 @@
                 <div class="calendar-legend">
                     <div class="legend-item">
                         <div class="legend-dot" style="background-color: #ef4444;"></div>
-                        <span class="text-gray-700 font-medium">Overdue</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-500">Overdue</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-dot" style="background-color: #10b981;"></div>
-                        <span class="text-gray-700 font-medium">Dengan Deadline</span>
+                        <div class="legend-dot" style="background-color: #00A884;"></div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-500">Dengan Deadline</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-dot bg-gray-300"></div>
-                        <span class="text-gray-700 font-medium">Tanpa Deadline (Tanggal Dibuat)</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-500">Tanpa Deadline</span>
                     </div>
                 </div>
             </div>
