@@ -802,7 +802,7 @@ function reportApp() {
                 this.activeTab = tabParam;
             }
 
-            this.initChart();
+            // Initial chart init will be handled by watcher or loadData
             
             // Watch for tab changes to reinit chart and update URL
             this.$watch('activeTab', (value) => {
@@ -874,7 +874,11 @@ function reportApp() {
             
             if (this.chart) {
                 this.chart.destroy();
+                this.chart = null;
             }
+
+            // Explicitly clear canvas to prevent ghosting
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             const hours = Array.from({length: 24}, (_, i) => i);
             const revenues = new Array(24).fill(0);
@@ -891,37 +895,75 @@ function reportApp() {
                     labels: hours.map(h => `${String(h).padStart(2, '0')}:00`),
                     datasets: [
                         {
-                            label: 'Pendapatan (Rp)',
+                            label: 'Pendapatan',
                             data: revenues,
-                            backgroundColor: 'rgba(0, 182, 155, 0.1)',
+                            backgroundColor: 'rgba(0, 182, 155, 0.08)',
                             borderColor: '#00b69b',
                             borderWidth: 2,
                             yAxisID: 'y',
-                            borderRadius: 6,
+                            borderRadius: 4,
+                            order: 2,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
                         },
                         {
                             label: 'Transaksi',
                             data: transactions,
                             type: 'line',
-                            borderColor: '#111827',
-                            borderWidth: 2,
-                            pointBackgroundColor: '#111827',
-                            pointRadius: 3,
+                            borderColor: '#1f2937',
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#1f2937',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
                             yAxisID: 'y1',
-                            tension: 0.3
+                            tension: 0.4,
+                            order: 1
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    clip: false,
                     interaction: {
                         mode: 'index',
                         intersect: false,
                     },
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 6,
+                                padding: 20,
+                                font: {
+                                    size: 11,
+                                    weight: '700'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#111827',
+                            padding: 12,
+                            titleFont: { size: 12, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: (context) => {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.datasetIndex === 0) {
+                                        label += this.formatRupiah(context.parsed.y);
+                                    } else {
+                                        label += context.parsed.y + ' Transaksi';
+                                    }
+                                    return label;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -929,23 +971,49 @@ function reportApp() {
                             type: 'linear',
                             display: true,
                             position: 'left',
-                            title: { display: true, text: 'Pendapatan' },
+                            beginAtZero: true,
                             grid: {
-                                borderDash: [2, 4]
+                                borderDash: [4, 4],
+                                color: '#f3f4f6',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: { size: 10, weight: '600' },
+                                color: '#9ca3af',
+                                callback: (value) => {
+                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(1) + 'jt';
+                                    if (value >= 1000) return 'Rp ' + (value / 1000) + 'rb';
+                                    return 'Rp ' + value;
+                                },
+                                padding: 10
                             }
                         },
                         y1: {
                             type: 'linear',
                             display: true,
                             position: 'right',
+                            beginAtZero: true,
                             grid: {
                                 drawOnChartArea: false,
+                                drawBorder: false
                             },
-                            title: { display: true, text: 'Jumlah Transaksi' }
+                            ticks: {
+                                font: { size: 10, weight: '600' },
+                                color: '#9ca3af',
+                                padding: 10
+                            }
                         },
                         x: {
                             grid: {
-                                display: false
+                                display: false,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: { size: 10, weight: '600' },
+                                color: '#9ca3af',
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 12
                             }
                         }
                     }
