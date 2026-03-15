@@ -863,6 +863,23 @@
         });
 
         channel.bind('order-refunded', function(data) {
+             Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                html: `
+                    <div class="text-left">
+                        <p class="text-sm font-black text-gray-900">Pesanan Di-refund</p>
+                        <p class="text-[11px] font-bold text-gray-500">Invoice: ${data.orderData.invoice_number} telah dibatalkan.</p>
+                    </div>
+                `,
+                showConfirmButton: false,
+                timer: 6000,
+                timerProgressBar: true,
+                background: '#fef2f2',
+                iconColor: '#ef4444',
+            });
+            playNotificationSound();
             refreshQueue();
         });
     })();
