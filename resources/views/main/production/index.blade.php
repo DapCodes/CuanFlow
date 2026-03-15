@@ -129,7 +129,7 @@
                                     <div class="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm">
                                         <i class="fas fa-user text-[10px]"></i>
                                     </div>
-                                    <span class="text-xs font-bold text-gray-700 truncate capitalize">{{ $sale->customer->name ?? 'Pelanggan Umum' }}</span>
+                                    <span class="text-xs font-bold text-gray-700 truncate capitalize">{{ $sale->customer_name ?? ($sale->customer?->name ?? 'Pelanggan Umum') }}</span>
                                 </div>
                                 
                                 @if($sale->table)
@@ -165,7 +165,7 @@
                                         <div>
                                             <h3 class="text-xl font-black text-gray-900 tracking-tight">{{ $sale->invoice_number }}</h3>
                                             <div class="flex items-center gap-2 mt-2">
-                                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $sale->customer->name ?? 'Pelanggan Umum' }}</span>
+                                                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $sale->customer_name ?? ($sale->customer?->name ?? 'Pelanggan Umum') }}</span>
                                                 <span class="w-1 h-1 rounded-full bg-gray-300"></span>
                                                 <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $sale->created_at->format('d M, H:i') }}</span>
                                             </div>

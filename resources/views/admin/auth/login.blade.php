@@ -110,9 +110,6 @@
 
                 <!-- Title Section -->
                 <div class="mb-10 text-center lg:text-left">
-                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gray-50 text-gray-900 mb-4 border border-gray-100">
-                        <i class="fas fa-shield-alt text-xl"></i>
-                    </div>
                     <h2 class="text-3xl font-bold text-gray-900 mb-2">Masuk Admin!</h2>
                     <p class="text-gray-500 text-sm xl:text-base">
                         Silakan masuk untuk mengakses Dashboard Admin.
