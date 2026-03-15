@@ -32,6 +32,16 @@
                         <span class="w-1 h-1 rounded-full bg-gray-300"></span>
                         <span class="text-[10px] font-black uppercase tracking-widest text-cuan-green">Order Qty: {{ (int)$saleItem->quantity }} {{ $saleItem->product->unit->name }}</span>
                     </div>
+                    
+                    @if($saleItem->notes)
+                    <div class="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
+                        <i class="fas fa-sticky-note text-amber-400 mt-1"></i>
+                        <div class="flex-1">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">Catatan Pesanan:</p>
+                            <p class="text-xs font-bold text-gray-700 leading-relaxed italic whitespace-pre-line">{{ $saleItem->notes }}</p>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
 

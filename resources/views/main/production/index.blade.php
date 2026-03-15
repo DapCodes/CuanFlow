@@ -191,19 +191,25 @@
                                                     <div class="h-12 w-12 rounded-2xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-gray-100">
                                                         <i class="fas fa-utensils text-gray-400"></i>
                                                     </div>
-                                                    <div class="min-w-0">
+                                                    <div class="min-w-0 flex-1">
                                                         <h4 class="text-sm font-black text-gray-900 truncate pr-4">{{ $item->product->name }}</h4>
-                                                        <div class="flex flex-wrap items-center gap-2 mt-2">
-                                                            <span class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white border border-gray-100 text-gray-600 shadow-sm">
+                                                        <div class="mt-1">
+                                                            <span class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white border border-gray-100 text-gray-600 shadow-sm">
                                                                 {{ (int)$item->quantity }} {{ $item->product->unit->name ?? 'Pcs' }}
                                                             </span>
-                                                            @if($item->notes)
-                                                            <span class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-amber-50 border border-amber-100 text-amber-600">
-                                                                {{ $item->notes }}
-                                                            </span>
-                                                            @endif
                                                         </div>
+                                                        @if($item->notes)
+                                                        <div class="mt-3 p-3 bg-white border border-amber-100 rounded-2xl shadow-sm">
+                                                            <div class="flex items-start gap-2">
+                                                                <i class="fas fa-sticky-note text-[10px] text-amber-400 mt-1"></i>
+                                                                <div class="text-[10px] font-bold text-gray-600 leading-relaxed italic whitespace-pre-line">
+                                                                    {{ $item->notes }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        @endif
                                                     </div>
+                                                </div>
                                                 </div>
                                                 
                                                 <div class="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
