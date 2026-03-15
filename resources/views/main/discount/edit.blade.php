@@ -3,17 +3,12 @@
 @section('title', 'Edit Diskon - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('discounts.index') }}" class="text-gray-500 hover:text-gray-700">Kelola Diskon</a>
-</li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Edit Diskon</span>
+<li class="flex items-center text-sm">
+    <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-gray-900 transition-colors">Dashboard</a>
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('discounts.index') }}" class="text-gray-400 hover:text-gray-900 transition-colors">Kelola Diskon</a>
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Edit Diskon</span>
 </li>
 @endsection
 
@@ -29,25 +24,20 @@
             </div>
         @endif
 
-        {{-- HEADER (seragam dengan index/create) --}}
-        <section
-            class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-6 mb-6">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span
-                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-500 border border-red-100">
-                        <i class="fas fa-edit text-sm"></i>
-                    </span>
-                    <span>Edit Diskon</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 leading-tight">
+                    Edit Diskon
                 </h1>
-                <p class="mt-1 text-sm text-gray-500">
-                    Perbarui detail diskon <span class="font-semibold">{{ $discount->name }}</span> dengan tampilan yang rapi dan mudah dipahami.
+                <p class="mt-1 text-sm text-gray-500 font-medium">
+                    Perbarui detail diskon <span class="font-bold text-gray-900">{{ $discount->name }}</span>.
                 </p>
             </div>
         </section>
 
         {{-- FORM CARD --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+        <x-card-container class="p-0 overflow-hidden">
             <form action="{{ route('discounts.update', $discount->id) }}" method="POST"
                   class="px-4 md:px-6 py-6 space-y-8"
                   x-data="{ isVoucher: {{ old('is_voucher', $discount->is_voucher) ? 'true' : 'false' }} }">
@@ -57,7 +47,7 @@
                 {{-- Informasi Dasar --}}
                 <div>
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900">
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">
                             Informasi Dasar
                         </h3>
                     </div>
@@ -108,7 +98,7 @@
                 {{-- Tipe Diskon (card simple, tanpa icon besar) --}}
                 <div>
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900">
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">
                             Tipe Diskon <span class="text-red-500">*</span>
                         </h3>
                     </div>
@@ -173,8 +163,8 @@
                 <div id="dynamicFields" class="space-y-8">
                     {{-- Percentage/Fixed Fields --}}
                     <div id="percentageFixedFields" style="display:none;">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-base md:text-lg font-semibold text-gray-900">
+                        <div class="flex items-center justify-between mb-4 border-t border-gray-100 pt-8 mt-4">
+                            <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">
                                 Detail Diskon
                             </h3>
                         </div>
@@ -261,8 +251,8 @@
 
                     {{-- Buy X Get Y Fields --}}
                     <div id="buyXGetYFields" style="display:none;">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-base md:text-lg font-semibold text-gray-900">
+                        <div class="flex items-center justify-between mb-4 border-t border-gray-100 pt-8 mt-4">
+                            <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">
                                 Detail Promo
                             </h3>
                         </div>
@@ -330,10 +320,10 @@
                 </div>
 
                 {{-- Periode & Batasan --}}
-                <div>
+                <div class="border-t border-gray-100 pt-8">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base md:text-lg font-semibold text-gray-900">
-                            Periode & Batasan
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                            <span>Periode & Batasan</span>
                         </h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -446,23 +436,21 @@
                     </div>
                 @endif
 
-                {{-- Action Buttons: mobile full width --}}
-                <div class="pt-5 border-t border-gray-200">
+                {{-- Action Buttons --}}
+                <div class="pt-6 border-t border-gray-100 bg-gray-50/50 -mx-4 -mb-6 px-4 py-5 md:px-6 md:py-6 rounded-b-3xl">
                     <div class="flex flex-col md:flex-row md:justify-end gap-3">
                         <a href="{{ route('discounts.show', $discount->id) }}"
-                           class="w-full md:w-auto inline-flex items-center justify-center px-4 md:px-6 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-times mr-2 text-xs"></i>
+                           class="w-full md:w-auto inline-flex items-center justify-center px-6 py-3 border-2 border-gray-200 text-xs font-black uppercase tracking-widest text-gray-600 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all">
                             <span>Batal</span>
                         </a>
                         <button type="submit"
-                                class="w-full md:w-auto inline-flex items-center justify-center px-4 md:px-6 py-2.5 bg-red-500 text-sm font-semibold text-white rounded-lg hover:bg-red-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1">
-                            <i class="fas fa-save mr-2 text-xs"></i>
+                                class="w-full md:w-auto inline-flex items-center justify-center px-6 py-3 bg-red-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-700 shadow-lg shadow-red-600/20 active:scale-95 transition-all">
                             <span>Simpan Perubahan</span>
                         </button>
                     </div>
                 </div>
             </form>
-        </section>
+        </x-card-container>
     </div>
 </main>
 
