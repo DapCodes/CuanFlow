@@ -17,37 +17,48 @@
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-5xl mx-auto space-y-6">
         
-        {{-- HEADER (Strictly matched employees/show/index) --}}
-        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div class="flex items-center gap-6">
-                 <div class="w-20 h-20 rounded-[2rem] bg-white border border-gray-100 flex items-center justify-center text-gray-400 shadow-xl shadow-gray-200/50">
-                    <i class="fas fa-utensils text-3xl"></i>
+        {{-- PREMIUM HEADER --}}
+        <section class="relative overflow-hidden p-8 bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <!-- Background Decorative Element -->
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-cuan-green/5 rounded-full blur-3xl"></div>
+            
+            <div class="relative flex items-center gap-8">
+                <div class="w-24 h-24 rounded-[2rem] bg-gray-50 flex items-center justify-center text-gray-200 border border-gray-100 shadow-inner group transition-all">
+                    <i class="fas fa-utensils text-4xl group-hover:scale-110 transition-transform"></i>
                 </div>
-                <div>
-                     <h1 class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
-                        {{ $saleItem->product->name }}
-                    </h1>
-                    <div class="flex items-center gap-3 mt-2">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ $saleItem->sale->invoice_number }}</span>
-                        <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-cuan-green">Order Qty: {{ (int)$saleItem->quantity }} {{ $saleItem->product->unit->name }}</span>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="px-3 py-1 bg-gray-100 text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-gray-200">
+                                {{ $saleItem->sale->invoice_number }}
+                            </span>
+                            <span class="text-[10px] font-black uppercase text-gray-300">{{ $saleItem->sale->created_at->format('d M, H:i') }}</span>
+                        </div>
+                        <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-none">
+                            {{ $saleItem->product->name }}
+                        </h1>
                     </div>
                     
-                    @if($saleItem->notes)
-                    <div class="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
-                        <i class="fas fa-sticky-note text-amber-400 mt-1"></i>
-                        <div class="flex-1">
-                            <p class="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">Catatan Pesanan:</p>
-                            <p class="text-xs font-bold text-gray-700 leading-relaxed italic whitespace-pre-line">{{ $saleItem->notes }}</p>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="px-4 py-2 bg-cuan-green text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-cuan-green/20">
+                            Pesanan: {{ (int)$saleItem->quantity }} {{ $saleItem->product->unit->name }}
                         </div>
+                        
+                        @if($saleItem->notes)
+                        <div class="flex items-center gap-3 px-4 py-2 bg-amber-50 border border-amber-100 rounded-xl animate-pulse-subtle">
+                            <i class="fas fa-sticky-note text-amber-400 text-xs"></i>
+                            <div class="text-[11px] font-bold text-amber-700 italic">
+                                "{{ $saleItem->notes }}"
+                            </div>
+                        </div>
+                        @endif
                     </div>
-                    @endif
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="relative flex items-center gap-3">
                  <a href="{{ route('production.index') }}"
-                   class="px-5 py-3 border border-gray-200 bg-white text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                   class="px-6 py-3.5 border border-gray-200 bg-white text-gray-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
                     Kembali
                 </a>
                 <form action="{{ route('production.store') }}" method="POST">
@@ -55,7 +66,8 @@
                     <input type="hidden" name="product_id" value="{{ $saleItem->product_id }}">
                     <input type="hidden" name="planned_quantity" value="{{ $saleItem->quantity }}">
                     <input type="hidden" name="sale_item_id" value="{{ $saleItem->id }}">
-                    <button type="submit" class="px-5 py-3 bg-cuan-green text-white rounded-xl font-black text-sm hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                    <button type="submit" class="px-8 py-3.5 bg-cuan-green text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-cuan-dark transition-all shadow-xl shadow-cuan-green/20 active:scale-95 flex items-center gap-2">
+                        <i class="fas fa-fire-alt"></i>
                         Mulai Masak
                     </button>
                 </form>

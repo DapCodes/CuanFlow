@@ -185,55 +185,57 @@
                                             });
                                         @endphp
                                         @foreach($saleItems as $item)
-                                        <div class="p-5 bg-gray-50 border border-gray-100 rounded-3xl hover:bg-white hover:border-cuan-green/20 hover:shadow-xl hover:shadow-gray-200/50 transition-all">
-                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                                <div class="flex items-center gap-4">
-                                                    <div class="h-12 w-12 rounded-2xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-gray-100">
-                                                        <i class="fas fa-utensils text-gray-400"></i>
+                                        <div class="p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:bg-white hover:border-cuan-green/20 hover:shadow-xl hover:shadow-gray-200/50 transition-all">
+                                            <!-- Top: Product Info & Buttons -->
+                                            <div class="flex items-center justify-between gap-4">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <div class="h-10 w-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-gray-100 text-gray-400">
+                                                        <i class="fas fa-utensils text-xs"></i>
                                                     </div>
-                                                    <div class="min-w-0 flex-1">
-                                                        <h4 class="text-sm font-black text-gray-900 truncate pr-4">{{ $item->product->name }}</h4>
-                                                        <div class="mt-1">
+                                                    <div class="min-w-0">
+                                                        <h4 class="text-sm font-black text-gray-900 truncate">{{ $item->product->name }}</h4>
+                                                        <div class="mt-1 flex items-center gap-2">
                                                             <span class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white border border-gray-100 text-gray-600 shadow-sm">
                                                                 {{ (int)$item->quantity }} {{ $item->product->unit->name ?? 'Pcs' }}
                                                             </span>
                                                         </div>
-                                                        @if($item->notes)
-                                                        <div class="mt-3 p-3 bg-white border border-amber-100 rounded-2xl shadow-sm">
-                                                            <div class="flex items-start gap-2">
-                                                                <i class="fas fa-sticky-note text-[10px] text-amber-400 mt-1"></i>
-                                                                <div class="text-[10px] font-bold text-gray-600 leading-relaxed italic whitespace-pre-line">
-                                                                    {{ $item->notes }}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        @endif
                                                     </div>
                                                 </div>
-                                                </div>
-                                                
-                                                <div class="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
+
+                                                <div class="flex items-center gap-2 flex-shrink-0">
                                                     @if($item->product->defaultRecipe)
                                                     <a href="{{ route('production.preparation', $item->id) }}" 
-                                                       class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
+                                                       class="inline-flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
                                                         Detail
                                                     </a>
-                                                    <form action="{{ route('production.store') }}" method="POST" class="flex-1 sm:flex-none">
+                                                    <form action="{{ route('production.store') }}" method="POST">
                                                         @csrf
                                                         <input type="hidden" name="product_id" value="{{ $item->product_id }}">
                                                         <input type="hidden" name="planned_quantity" value="{{ $item->quantity }}">
                                                         <input type="hidden" name="sale_item_id" value="{{ $item->id }}">
-                                                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-cuan-green text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-cuan-dark transition-all active:scale-95 shadow-md shadow-cuan-green/20">
+                                                        <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-cuan-green text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-cuan-dark transition-all active:scale-95 shadow-md shadow-cuan-green/10">
                                                             Masak
                                                         </button>
                                                     </form>
                                                     @else
-                                                    <div class="w-full flex items-center justify-center px-4 py-2 bg-red-50 text-red-600 rounded-xl border border-red-100 text-[9px] font-black uppercase tracking-widest opacity-60">
+                                                    <span class="text-[8px] font-black uppercase tracking-widest text-red-400 bg-red-50 px-2 py-1 rounded-lg border border-red-100">
                                                         Tanpa Resep
-                                                    </div>
+                                                    </span>
                                                     @endif
                                                 </div>
                                             </div>
+
+                                            <!-- Bottom: Notes -->
+                                            @if($item->notes)
+                                            <div class="mt-3 p-3 bg-white border border-amber-100 rounded-xl shadow-sm">
+                                                <div class="flex items-start gap-2">
+                                                    <div class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></div>
+                                                    <div class="text-[10px] font-bold text-gray-600 leading-relaxed italic whitespace-pre-line">
+                                                        {{ $item->notes }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @endif
                                         </div>
                                         @endforeach
                                     </div>
