@@ -3,323 +3,220 @@
 @section('title', 'Penjualan - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Penjualan</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Penjualan</span>
 </li>
 @endsection
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-6">
-        
-        {{-- Alert / Notifikasi (diseragamkan gaya-nya dengan halaman diskon) --}}
-        @if(session('success'))
-            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
-                <p class="text-green-800">{{ session('success') }}</p>
-            </div>
-        @endif
 
-        @if(session('error'))
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 text-sm">
-                <i class="fas fa-exclamation-circle mt-0.5 text-red-500"></i>
-                <p class="text-red-800">{{ session('error') }}</p>
-            </div>
-        @endif
-
-        {{-- HEADER HALAMAN (diseragamkan dengan pola di discounts.index) --}}
-        <section
-            class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span
-                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50 text-red-500 border border-red-100">
-                        <i class="fas fa-shopping-cart text-sm"></i>
-                    </span>
-                    <span>Manajemen Penjualan</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Manajemen Penjualan
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    Pantau dan kelola transaksi penjualan harian dengan tampilan yang rapi dan konsisten.
+                    Pantau dan kelola transaksi penjualan harian outlet Anda.
                 </p>
             </div>
-            <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
-                <a href="{{ route('withdraw.confirm-password') }}"
-                   class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all">
-                    <i class="fas fa-wallet mr-2"></i>
-                    Tarik Saldo
-                </a>
-                <div class="text-right border-l pl-3 border-gray-200">
-                    <p class="text-xs text-gray-500 font-medium mb-1">Tanggal terpilih</p>
-                    <p class="text-sm font-semibold text-gray-900">
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="text-right">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Tanggal Dipilih</p>
+                    <p id="headerDateText" class="text-sm font-black text-gray-900 mt-0.5">
                         {{ \Carbon\Carbon::parse($selectedDate)->isoFormat('D MMMM Y') }}
                     </p>
                 </div>
+                <a href="{{ route('withdraw.confirm-password') }}"
+                   class="inline-flex items-center gap-2 rounded-xl bg-cuan-green px-5 py-3 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                    <i class="fas fa-wallet text-xs"></i>
+                    <span>Tarik Saldo</span>
+                </a>
             </div>
         </section>
 
-        {{-- RINGKASAN STATISTIK HARIAN (layout mengikuti diskon, isi tetap seperti semula) --}}
-        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Penjualan</p>
-                        <p id="summaryRevenue" class="mt-1 text-2xl font-semibold text-green-600">
-                            Rp {{ number_format($totalRevenue, 0, ',', '.') }}
-                        </p>
-                        <p id="summaryDate1" class="text-xs text-gray-400 mt-1">
-                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
-                        </p>
-                    </div>
-                    <div
-                        class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center border border-green-200">
-                        <i class="fas fa-shopping-cart text-green-600 text-lg"></i>
-                    </div>
-                </div>
+        {{-- RINGKASAN STATISTIK HARIAN --}}
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Penjualan</p>
+                <p id="summaryRevenue" class="mt-2 text-2xl font-black text-cuan-green">
+                    Rp {{ number_format($totalRevenue, 0, ',', '.') }}
+                </p>
+                <p id="summaryDate1" class="mt-1 text-[10px] font-bold text-gray-400">
+                    {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
+                </p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Transaksi</p>
-                        <p id="summaryTransactions" class="mt-1 text-2xl font-semibold text-blue-600">
-                            {{ $totalTransactions }}
-                        </p>
-                        <p id="summaryDate2" class="text-xs text-gray-400 mt-1">
-                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
-                        </p>
-                    </div>
-                    <div
-                        class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center border border-blue-200">
-                        <i class="fas fa-receipt text-blue-600 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Transaksi</p>
+                <p id="summaryTransactions" class="mt-2 text-2xl font-black text-blue-600">
+                    {{ $totalTransactions }}
+                </p>
+                <p id="summaryDate2" class="mt-1 text-[10px] font-bold text-gray-400">
+                    {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
+                </p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Laba Kotor</p>
-                        <p id="summaryProfit" class="mt-1 text-2xl font-semibold text-purple-600">
-                            Rp {{ number_format($dailyProfit, 0, ',', '.') }}
-                        </p>
-                        <p id="summaryDate3" class="text-xs text-gray-400 mt-1">
-                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
-                        </p>
-                    </div>
-                    <div
-                        class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center border border-purple-200">
-                        <i class="fas fa-chart-line text-purple-600 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Laba Kotor</p>
+                <p id="summaryProfit" class="mt-2 text-2xl font-black text-purple-600">
+                    Rp {{ number_format($dailyProfit, 0, ',', '.') }}
+                </p>
+                <p id="summaryDate3" class="mt-1 text-[10px] font-bold text-gray-400">
+                    {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
+                </p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Refund</p>
-                        <p id="summaryRefunds" class="mt-1 text-2xl font-semibold text-red-600">
-                            Rp {{ number_format($totalRefunds, 0, ',', '.') }}
-                        </p>
-                        <p id="summaryDate4" class="text-xs text-gray-400 mt-1">
-                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
-                        </p>
-                    </div>
-                    <div
-                        class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center border border-red-200">
-                        <i class="fas fa-undo text-red-600 text-lg"></i>
-                    </div>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Refund</p>
+                <p id="summaryRefunds" class="mt-2 text-2xl font-black text-red-500">
+                    Rp {{ number_format($totalRefunds, 0, ',', '.') }}
+                </p>
+                <p id="summaryDate4" class="mt-1 text-[10px] font-bold text-gray-400">
+                    {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
+                </p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm" hidden>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total Diskon</p>
-                        <p id="summaryDiscount" class="mt-1 text-2xl font-semibold text-orange-600">
-                            Rp {{ number_format($dailyTotalDiscount ?? 0, 0, ',', '.') }}
-                        </p>
-                        <p id="summaryDate5" class="text-xs text-gray-400 mt-1">
-                            {{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}
-                        </p>
-                    </div>
-                    <div
-                        class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center border border-orange-200">
-                        <i class="fas fa-tags text-orange-600 text-lg"></i>
-                    </div>
-                </div>
-            </div>
+            {{-- summary discount (tersembunyi, hanya untuk JS) --}}
+            <p id="summaryDate5" class="hidden">{{ \Carbon\Carbon::parse($selectedDate)->format('d M Y') }}</p>
+            <p id="summaryDiscount" class="hidden">Rp {{ number_format($dailyTotalDiscount ?? 0, 0, ',', '.') }}</p>
         </section>
 
-        {{-- KONTEN UTAMA: KALENDER + TABEL TRANSAKSI (layout & padding seragam dengan diskon) --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
-            {{-- Header / Toolbar kecil --}}
-            <div class="border-b border-gray-200 px-4 md:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div class="flex items-center gap-2">
-                    <span
-                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-500 border border-red-100">
-                        <i class="fas fa-calendar-alt text-xs"></i>
-                    </span>
+        {{-- KONTEN UTAMA: KALENDER + TABEL --}}
+        <x-card-container>
+
+            {{-- Toolbar --}}
+            <div class="px-6 py-5 border-b border-gray-100 bg-white">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h2 class="text-sm font-semibold text-gray-900 sm:text-base">
-                            Transaksi Penjualan
-                        </h2>
-                        <p class="text-xs text-gray-500">
-                            Pilih tanggal pada kalender untuk melihat transaksi penjualan.
+                        <h2 class="text-base font-black text-gray-900 uppercase tracking-widest">Transaksi Penjualan</h2>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+                            Pilih tanggal pada kalender untuk melihat transaksi.
                         </p>
                     </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                        <input type="text" id="searchInvoice" placeholder="Cari invoice..." 
-                               class="pl-8 pr-4 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 w-48">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="text"
+                                   id="searchInvoice"
+                                   placeholder="Cari invoice..."
+                                   class="pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold w-48">
+                        </div>
+                        <button id="btnToday"
+                                class="inline-flex items-center gap-2 rounded-xl bg-cuan-green/10 text-cuan-green border border-cuan-green/20 px-4 py-2.5 text-sm font-black hover:bg-cuan-green hover:text-white transition-all active:scale-95">
+                            <i class="fas fa-calendar-day text-xs"></i>
+                            <span>Hari Ini</span>
+                        </button>
                     </div>
-                    <button id="btnToday"
-                        class="inline-flex items-center justify-center rounded-lg bg-red-500 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1">
-                        <i class="fas fa-calendar-day mr-1 text-[11px]"></i>
-                        Hari Ini
-                    </button>
                 </div>
             </div>
 
             {{-- Grid Kalender + Tabel --}}
-            <div class="px-4 md:px-6 py-5">
+            <div class="p-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    {{-- Calendar Section --}}
+
+                    {{-- Kalender --}}
                     <div class="lg:col-span-5">
-                        <div class="border border-gray-200 rounded-xl bg-white">
-                            <div class="px-4 pt-4 pb-2 flex items-center justify-between">
-                                <h4 class="font-semibold text-gray-700 text-sm">Pilih Tanggal</h4>
-                            </div>
-
-                            <div id="calendar"
-                                 class="fc-theme-standard rounded-xl border-t border-gray-200"></div>
-
-                            <div class="mt-0 px-4 pb-4 pt-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-                                <div class="text-xs text-gray-500 mb-1 font-medium">Tanggal Dipilih</div>
-                                <div id="selectedDateText" class="text-base font-semibold text-gray-900">
+                        <div class="border border-gray-200 rounded-2xl overflow-hidden bg-white">
+                            <div id="calendar" class="fc-theme-standard"></div>
+                            <div class="px-5 py-4 border-t border-gray-100 bg-gray-50/50">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Tanggal Dipilih</p>
+                                <p id="selectedDateText" class="text-base font-black text-gray-900">
                                     {{ \Carbon\Carbon::parse($selectedDate)->isoFormat('D MMMM Y') }}
-                                </div>
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Transaction Table --}}
-                    <div class="lg:col-span-7">
-                        <div
-                            class="border border-gray-200 rounded-xl overflow-hidden bg-white mb-4 shadow-sm">
-                            <div class="overflow-x-auto" style="max-height: 500px; overflow-y: auto;">
+                    {{-- Tabel transaksi & ringkasan metode --}}
+                    <div class="lg:col-span-7 flex flex-col gap-4">
+
+                        {{-- Tabel --}}
+                        <div class="border border-gray-200 rounded-2xl overflow-hidden">
+                            <div class="overflow-x-auto" style="max-height: 440px; overflow-y: auto;">
                                 <table class="w-full text-sm">
-                                    <thead class="bg-gray-50 sticky top-0 border-b border-gray-200">
+                                    <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100 sticky top-0">
                                         <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                                Invoice
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                                Waktu
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                                Kasir
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                                Metode
-                                            </th>
-                                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                                Diskon
-                                            </th>
-                                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                                Total
-                                            </th>
-                                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                                Status
-                                            </th>
+                                            <th class="px-4 py-3 text-left">Invoice</th>
+                                            <th class="px-4 py-3 text-left">Waktu</th>
+                                            <th class="px-4 py-3 text-left">Kasir</th>
+                                            <th class="px-4 py-3 text-left">Metode</th>
+                                            <th class="px-4 py-3 text-right">Diskon</th>
+                                            <th class="px-4 py-3 text-right">Total</th>
+                                            <th class="px-4 py-3 text-center">Status</th>
                                             @if(auth()->user()->can('lihat detail penjualan') || auth()->user()->can('refund penjualan'))
-                                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide w-32">
-                                                Aksi
-                                            </th>
+                                            <th class="px-4 py-3 text-center">Aksi</th>
                                             @endif
                                         </tr>
                                     </thead>
-
                                     <tbody id="salesTableBody" class="bg-white divide-y divide-gray-100">
                                         @forelse($sales as $sale)
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-4 py-4 font-bold text-gray-900 whitespace-nowrap">
                                                     {{ $sale->invoice_number }}
                                                 </td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">
+                                                <td class="px-4 py-4 text-gray-500 whitespace-nowrap">
                                                     {{ $sale->created_at->format('H:i') }}
                                                 </td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">
+                                                <td class="px-4 py-4 text-gray-700 whitespace-nowrap">
                                                     {{ $sale->cashier->name }}
                                                 </td>
-                                                <td class="px-4 py-3">
+                                                <td class="px-4 py-4 whitespace-nowrap">
                                                     @if($sale->payment_method == 'cash')
-                                                        <span
-                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                            <i class="fas fa-money-bill-wave mr-1"></i> Cash
+                                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100">
+                                                            Cash
                                                         </span>
                                                     @elseif($sale->payment_method == 'qris')
-                                                        <span
-                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                            <i class="fas fa-qrcode mr-1"></i> QRIS
+                                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-cuan-green/10 text-cuan-green border border-cuan-green/20">
+                                                            QRIS
                                                         </span>
                                                     @else
-                                                        <span
-                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                            <i class="fas fa-exchange-alt mr-1"></i> Transfer
+                                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-purple-50 text-purple-600 border border-purple-100">
+                                                            Transfer
                                                         </span>
                                                     @endif
                                                 </td>
-                                                <td class="px-4 py-3 text-sm text-right font-medium text-orange-600">
+                                                <td class="px-4 py-4 text-right font-bold text-orange-500 whitespace-nowrap">
                                                     Rp {{ number_format($sale->discount_amount, 0, ',', '.') }}
                                                 </td>
-                                                <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
+                                                <td class="px-4 py-4 text-right font-black text-gray-900 whitespace-nowrap">
                                                     Rp {{ number_format($sale->grand_total, 0, ',', '.') }}
                                                 </td>
-                                                <td class="px-4 py-3 text-center">
+                                                <td class="px-4 py-4 text-center whitespace-nowrap">
                                                     @if($sale->status == 'completed')
-                                                        <span
-                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                                            <span
-                                                                class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-cuan-green/10 text-cuan-green border border-cuan-green/10">
                                                             Selesai
                                                         </span>
                                                     @elseif($sale->status == 'refunded')
-                                                        <span
-                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                                            <span
-                                                                class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
-                                                            Dikembalikan
+                                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-500 border border-red-100">
+                                                            Refund
                                                         </span>
                                                     @else
-                                                        <span
-                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                                                            <span
-                                                                class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></span>
+                                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-yellow-50 text-yellow-600 border border-yellow-100">
                                                             {{ ucfirst($sale->status) }}
                                                         </span>
                                                     @endif
                                                 </td>
                                                 @if(auth()->user()->can('lihat detail penjualan') || auth()->user()->can('refund penjualan'))
-                                                <td class="px-4 py-3 text-center">
-                                                    <div class="flex items-center justify-center gap-2">
+                                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                                    <div class="inline-flex items-center gap-2">
                                                         @can('lihat detail penjualan')
                                                         <a href="{{ route('sales.show', $sale->id) }}"
-                                                           class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-medium transition-colors">
-                                                            <i class="fas fa-eye mr-1"></i>Detail
+                                                           class="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all active:scale-95"
+                                                           title="Detail">
+                                                            <i class="fas fa-eye text-xs"></i>
                                                         </a>
                                                         @endcan
                                                         @if($sale->status == 'completed' && in_array($sale->payment_method, ['cash', 'transfer']))
                                                             @can('refund penjualan')
                                                             <button
                                                                 onclick="confirmRefund('{{ $sale->id }}', '{{ $sale->invoice_number }}', {{ $sale->grand_total }})"
-                                                                class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-xs font-medium transition-colors">
-                                                                <i class="fas fa-undo mr-1"></i>
-                                                                Refund
+                                                                class="w-8 h-8 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95"
+                                                                title="Refund">
+                                                                <i class="fas fa-undo text-xs"></i>
                                                             </button>
                                                             @endcan
                                                         @endif
@@ -329,12 +226,13 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                            <tr>
-                                                <td colspan="8"
-                                                    class="px-4 py-12 text-center text-gray-500">
-                                                    <div class="flex flex-col items-center justify-center">
-                                                        <i class="fas fa-inbox text-4xl mb-2 block text-gray-300"></i>
-                                                        <p class="text-sm">Tidak ada transaksi pada tanggal ini</p>
+                                                <td colspan="8" class="px-4 py-16 text-center">
+                                                    <div class="flex flex-col items-center">
+                                                        <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                                            <i class="fas fa-receipt text-2xl text-gray-300"></i>
+                                                        </div>
+                                                        <p class="text-sm font-bold text-gray-900">Tidak ada transaksi</p>
+                                                        <p class="text-xs text-gray-400 mt-1">Pilih tanggal lain untuk melihat transaksi.</p>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -344,94 +242,43 @@
                             </div>
                         </div>
 
-                        {{-- Payment method cards (diseragamkan gaya card-nya) --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3">
-                            <div
-                                class="flex items-center justify-between px-3 py-3 bg-blue-50 rounded-xl border border-blue-100">
-                                <div class="flex items-center">
-                                    <i class="fas fa-money-bill-wave text-blue-600 mr-2"></i>
-                                </div>
-                                <span id="cashTotalText"
-                                      class="text-sm font-bold text-blue-600">
+                        {{-- Ringkasan metode pembayaran --}}
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-1">Cash</p>
+                                <p id="cashTotalText" class="text-sm font-black text-blue-700">
                                     Rp {{ number_format($cashTotal, 0, ',', '.') }}
-                                </span>
+                                </p>
                             </div>
-                            <div
-                                class="flex items-center justify-between px-3 py-3 bg-green-50 rounded-xl border border-green-100">
-                                <div class="flex items-center">
-                                    <i class="fas fa-qrcode text-green-600 mr-2"></i>
-                                </div>
-                                <span id="qrisTotalText"
-                                      class="text-sm font-bold text-green-600">
+                            <div class="bg-cuan-green/5 border border-cuan-green/20 rounded-xl px-4 py-3">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-cuan-green/70 mb-1">QRIS</p>
+                                <p id="qrisTotalText" class="text-sm font-black text-cuan-green">
                                     Rp {{ number_format($qrisTotal, 0, ',', '.') }}
-                                </span>
+                                </p>
                             </div>
-                            <div
-                                class="flex items-center justify-between px-3 py-3 bg-purple-50 rounded-xl border border-purple-100">
-                                <div class="flex items-center">
-                                    <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
-                                </div>
-                                <span id="transferTotalText"
-                                      class="text-sm font-bold text-purple-600">
+                            <div class="bg-purple-50 border border-purple-100 rounded-xl px-4 py-3">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-purple-400 mb-1">Transfer</p>
+                                <p id="transferTotalText" class="text-sm font-black text-purple-700">
                                     Rp {{ number_format($transferTotal, 0, ',', '.') }}
-                                </span>
+                                </p>
                             </div>
-                            <div
-                                class="flex items-center justify-between px-3 py-3 bg-gray-100 rounded-xl border-2 border-gray-300 gap-1">
-                                <span class="text-sm font-bold text-gray-900">Total</span>
-                                <span id="revenueTotalText"
-                                      class="text-sm font-bold text-gray-900">
+                            <div class="bg-gray-900 border border-gray-700 rounded-xl px-4 py-3">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total</p>
+                                <p id="revenueTotalText" class="text-sm font-black text-white">
                                     Rp {{ number_format($totalRevenue, 0, ',', '.') }}
-                                </span>
+                                </p>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
-        </section>
+        </x-card-container>
+
     </div>
 </main>
 
-{{-- Refund Confirmation Modal (kelas sedikit dirapikan, fungsi tetap sama) --}}
-<div id="refundModal"
-     class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 w-full max-w-md">
-        <div class="border shadow-lg rounded-xl bg-white px-5 py-6">
-            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full">
-                <i class="fas fa-undo text-red-600 text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-gray-900 text-center mt-4">Konfirmasi Refund</h3>
-            <div class="mt-4 text-sm text-gray-600">
-                <p class="text-center">Apakah Anda yakin ingin melakukan refund untuk:</p>
-                <div class="bg-gray-50 rounded-lg p-3 mt-3">
-                    <p class="font-medium text-gray-900">
-                        Invoice: <span id="refundInvoice"></span>
-                    </p>
-                    <p class="font-bold text-red-600 text-lg mt-1">
-                        Total: <span id="refundAmount"></span>
-                    </p>
-                </div>
-                <p class="text-center mt-3 text-red-600 font-medium">
-                    Stok produk akan dikembalikan dan uang akan dikembalikan ke kasir.
-                </p>
-            </div>
-            <div class="flex gap-3 mt-5">
-                <button onclick="closeRefundModal()"
-                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium">
-                    Batal
-                </button>
-                <form id="refundForm" method="POST" class="flex-1">
-                    @csrf
-                    <button type="submit"
-                            class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
-                        Ya, Refund
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
+{{-- SweetAlert2 Refund Confirmation (menggantikan modal HTML lama) --}}
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <style>
@@ -439,7 +286,7 @@
   #calendar {
     --fc-border-color: #e5e7eb;
     --fc-neutral-bg-color: #fafafa;
-    --fc-today-bg-color: #FEE2E2;
+    --fc-today-bg-color: rgba(101, 140, 88, 0.12);
   }
 
   /* Toolbar */
@@ -452,46 +299,31 @@
     padding: 0.75rem 1rem;
     background: #ffffff;
     border-bottom: 1px solid #e5e7eb;
-    border-radius: 0.75rem 0.75rem 0 0;
   }
-  
+
   .fc .fc-toolbar-chunk {
     display: flex;
     align-items: center;
   }
 
-  /* Center title with buttons on sides */
-  .fc .fc-toolbar-chunk:nth-child(1) {
-    order: 1;
-  }
-  
-  .fc .fc-toolbar-chunk:nth-child(2) {
-    order: 2;
-    flex: 1;
-    justify-content: center;
-  }
-  
-  .fc .fc-toolbar-chunk:nth-child(3) {
-    order: 3;
-  }
-  
+  .fc .fc-toolbar-chunk:nth-child(1) { order: 1; }
+  .fc .fc-toolbar-chunk:nth-child(2) { order: 2; flex: 1; justify-content: center; }
+  .fc .fc-toolbar-chunk:nth-child(3) { order: 3; }
+
   .fc .fc-toolbar-title {
-    font-size: 0.875rem;
-    font-weight: 700;
+    font-size: 0.8125rem;
+    font-weight: 900;
     color: #111827;
-    text-align: center;
     text-transform: uppercase;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.1em;
     white-space: nowrap;
   }
 
-  .fc .fc-today-button {
-    display: none !important;
-  }
+  .fc .fc-today-button { display: none !important; }
 
-  /* Navigation Buttons */
+  /* Nav Buttons */
   .fc .fc-button {
-    border-radius: 0.375rem;
+    border-radius: 0.625rem;
     border: 1px solid #e5e7eb;
     background: #fff;
     color: #6b7280;
@@ -505,13 +337,13 @@
     align-items: center;
     justify-content: center;
   }
-  
+
   .fc .fc-button:hover {
     background: #f3f4f6;
-    border-color: #d1d5db;
-    color: #111827;
+    border-color: #658C58;
+    color: #658C58;
   }
-  
+
   .fc .fc-button-primary:not(:disabled).fc-button-active,
   .fc .fc-button-primary:focus {
     box-shadow: none;
@@ -519,147 +351,61 @@
   }
 
   /* Calendar Grid */
-  .fc .fc-scrollgrid {
-    border-radius: 0 0 0.75rem 0.75rem;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
-  }
+  .fc .fc-scrollgrid { border: none; }
 
   /* Day Numbers */
   .fc .fc-daygrid-day-number {
-    font-weight: 600;
+    font-weight: 700;
     padding: 0.375rem;
     font-size: 0.8125rem;
     text-align: center;
     width: 100%;
-  }
-  
-  /* Today styling */
-  .fc .fc-day-today {
-    background: #fca5a5ad !important;
+    color: #374151;
   }
 
-  .fc .fc-day-today .fc-daygrid-day-number {
-    color: #ffffff !important;
-    font-weight: 700;
-  }
-  
-  /* Hover effect */
-  .fc .fc-daygrid-day:hover {
-    background: #fee2e2;
-    cursor: pointer;
-  }
-  
-  /* Day cell height - compact */
-  .fc .fc-daygrid-day-frame {
-    min-height: 45px;
-  }
+  /* Today */
+  .fc .fc-day-today { background: rgba(101,140,88,0.10) !important; }
+  .fc .fc-day-today .fc-daygrid-day-number { color: #658C58 !important; font-weight: 900; }
+
+  /* Hover */
+  .fc .fc-daygrid-day:hover { background: rgba(101,140,88,0.05); cursor: pointer; }
+
+  /* Day cell height */
+  .fc .fc-daygrid-day-frame { min-height: 45px; }
 
   /* Selected day */
-  .fc .fc-daygrid-day.fc-selected {
-    background: #fecaca !important;
-  }
-
-  .fc .fc-daygrid-day.fc-selected .fc-daygrid-day-number {
-    color: #991b1b;
-    font-weight: 700;
-  }
+  .fc .fc-daygrid-day.fc-selected { background: rgba(101,140,88,0.15) !important; }
+  .fc .fc-daygrid-day.fc-selected .fc-daygrid-day-number { color: #3d6233; font-weight: 900; }
 
   /* Day headers */
   .fc .fc-col-header-cell {
     padding: 0.5rem 0.25rem;
-    font-weight: 600;
-    font-size: 0.6875rem;
+    font-weight: 900;
+    font-size: 0.625rem;
     text-transform: uppercase;
-    color: #6b7280;
+    color: #9ca3af;
     background: #f9fafb;
     border-color: #e5e7eb;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.1em;
   }
 
-  /* Remove extra spacing */
-  .fc .fc-daygrid-day-top {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+  .fc .fc-daygrid-day-top { display: flex; justify-content: center; align-items: center; }
+  .fc .fc-daygrid-day-events { display: none; }
 
-  .fc .fc-daygrid-day-events {
-    display: none;
-  }
-
-  /* Responsive Design */
+  /* Responsive */
   @media (max-width: 1024px) {
-    .fc .fc-toolbar {
-      padding: 0.625rem 0.75rem;
-    }
-
-    .fc .fc-toolbar-title {
-      font-size: 0.8125rem;
-    }
-
-    .fc .fc-daygrid-day-frame {
-      min-height: 40px;
-    }
-
-    .fc .fc-daygrid-day-number {
-      font-size: 0.75rem;
-      padding: 0.25rem;
-    }
+    .fc .fc-toolbar { padding: 0.625rem 0.75rem; }
+    .fc .fc-toolbar-title { font-size: 0.75rem; }
+    .fc .fc-daygrid-day-frame { min-height: 40px; }
+    .fc .fc-daygrid-day-number { font-size: 0.75rem; padding: 0.25rem; }
   }
-
   @media (max-width: 640px) {
-    .fc .fc-toolbar {
-      padding: 0.5rem 0.625rem;
-      gap: 0.5rem;
-    }
-
-    .fc .fc-toolbar-title {
-      font-size: 0.75rem;
-    }
-    
-    .fc .fc-button {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.75rem;
-      min-width: 28px;
-      height: 28px;
-    }
-    
-    .fc .fc-daygrid-day-frame {
-      min-height: 36px;
-    }
-    
-    .fc .fc-daygrid-day-number {
-      font-size: 0.6875rem;
-      padding: 0.25rem;
-    }
-    
-    .fc .fc-col-header-cell {
-      font-size: 0.625rem;
-      padding: 0.375rem 0.125rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .fc .fc-toolbar-title {
-      font-size: 0.6875rem;
-    }
-
-    .fc .fc-button {
-      padding: 0.25rem 0.375rem;
-      min-width: 24px;
-      height: 24px;
-      font-size: 0.6875rem;
-    }
-
-    .fc .fc-daygrid-day-frame {
-      min-height: 32px;
-    }
-
-    .fc .fc-daygrid-day-number {
-      font-size: 0.625rem;
-      padding: 0.125rem;
-    }
+    .fc .fc-toolbar { padding: 0.5rem 0.625rem; gap: 0.5rem; }
+    .fc .fc-toolbar-title { font-size: 0.6875rem; }
+    .fc .fc-button { padding: 0.25rem 0.5rem; min-width: 28px; height: 28px; }
+    .fc .fc-daygrid-day-frame { min-height: 36px; }
+    .fc .fc-daygrid-day-number { font-size: 0.6875rem; padding: 0.25rem; }
+    .fc .fc-col-header-cell { font-size: 0.5625rem; padding: 0.375rem 0.125rem; }
   }
 </style>
 @endpush
@@ -676,40 +422,120 @@
   const rupiah = (n) => new Intl.NumberFormat('id-ID', {style:'currency', currency:'IDR', maximumFractionDigits:0}).format(n);
 
   function methodBadge(method) {
-    if (method === 'cash')    return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><i class="fas fa-money-bill-wave mr-1"></i>Cash</span>`;
-    if (method === 'qris')    return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"><i class="fas fa-qrcode mr-1"></i>QRIS</span>`;
-    return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800"><i class="fas fa-exchange-alt mr-1"></i>Transfer</span>`;
+    if (method === 'cash')
+      return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100">Cash</span>`;
+    if (method === 'qris')
+      return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-50 text-green-600 border border-green-100" style="color:#658C58;background:rgba(101,140,88,.08);border-color:rgba(101,140,88,.2)">QRIS</span>`;
+    return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-purple-50 text-purple-600 border border-purple-100">Transfer</span>`;
   }
 
   function statusBadge(status) {
-    if (status === 'completed') return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800"><span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>Selesai</span>`;
-    if (status === 'refunded') return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800"><span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>Dikembalikan</span>`;
-    return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800"><span class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></span>${status}</span>`;
+    if (status === 'completed')
+      return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest" style="background:rgba(101,140,88,.1);color:#658C58;border:1px solid rgba(101,140,88,.1)">Selesai</span>`;
+    if (status === 'refunded')
+      return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-500 border border-red-100">Refund</span>`;
+    return `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-yellow-50 text-yellow-600 border border-yellow-100">${status}</span>`;
   }
+
+  // Refund menggunakan SweetAlert2 (tidak ada modal HTML)
+  let pendingRefundId = null;
+  let pendingRefundToken = null;
 
   function confirmRefund(saleId, invoiceNumber, amount) {
-    document.getElementById('refundInvoice').innerText = invoiceNumber;
-    document.getElementById('refundAmount').innerText = rupiah(amount);
-    document.getElementById('refundForm').action = `/sales/${saleId}/refund`;
-    document.getElementById('refundModal').classList.remove('hidden');
-  }
-
-  function closeRefundModal() {
-    document.getElementById('refundModal').classList.add('hidden');
+    Swal.fire({
+        title: 'Konfirmasi Refund',
+        html: `
+            <div class="text-left space-y-3">
+                <p class="text-sm text-gray-600 text-center">Apakah Anda yakin ingin melakukan refund untuk:</p>
+                <div class="bg-gray-50 rounded-2xl p-4 mt-3 border border-gray-200">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Invoice</p>
+                    <p class="font-black text-gray-900">${invoiceNumber}</p>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-3 mb-1">Total</p>
+                    <p class="text-xl font-black text-red-600">${rupiah(amount)}</p>
+                </div>
+                <p class="text-xs text-center text-red-500 font-bold mt-2">
+                    Stok produk akan dikembalikan dan uang akan dikembalikan ke kasir.
+                </p>
+            </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Refund',
+        cancelButtonText: 'Batal',
+        showLoaderOnConfirm: true,
+        customClass: {
+            popup: 'rounded-[2rem] border-none shadow-2xl',
+            title: 'font-black text-gray-900',
+            htmlContainer: 'text-sm font-medium text-gray-500',
+            confirmButton: 'rounded-xl px-6 py-3 font-bold text-sm',
+            cancelButton: 'rounded-xl px-6 py-3 font-bold text-sm'
+        },
+        preConfirm: () => {
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                       || '{{ csrf_token() }}';
+            return fetch(`/sales/${saleId}/refund`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            }).then(res => {
+                if (!res.ok) throw new Error('Gagal melakukan refund.');
+                return res.json();
+            }).catch(err => {
+                Swal.showValidationMessage(err.message || 'Terjadi kesalahan.');
+            });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed && result.value?.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Refund Berhasil',
+                text: result.value.message || 'Refund telah diproses.',
+                showConfirmButton: false,
+                timer: 2500,
+                iconColor: '#658C58',
+                customClass: {
+                    popup: 'rounded-3xl border-none shadow-2xl',
+                    title: 'font-black text-gray-900',
+                }
+            }).then(() => {
+                loadDaily(currentSelectedDate);
+            });
+        } else if (result.isConfirmed && result.value && !result.value.success) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: result.value.message || 'Gagal melakukan refund.',
+                confirmButtonColor: '#ef4444',
+                customClass: { popup: 'rounded-3xl border-none shadow-2xl', title: 'font-black text-gray-900' }
+            });
+        }
+    });
   }
 
   function setLoading(isLoading) {
     const tbody = document.getElementById('salesTableBody');
     if (isLoading) {
-      tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-gray-500"><i class="fas fa-circle-notch fa-spin text-xl mr-2"></i> Memuat data...</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="px-4 py-16 text-center">
+            <div class="flex flex-col items-center gap-3">
+              <i class="fas fa-circle-notch fa-spin text-2xl text-cuan-green"></i>
+              <p class="text-sm font-bold text-gray-400">Memuat data...</p>
+            </div>
+          </td>
+        </tr>`;
     }
   }
 
-  // Declare calendar variable in wider scope accessed by multiple functions
   let calendar;
 
   function refreshUI(payload) {
-    // If dates mismatch, update calendar view
     if (payload.selectedDate !== currentSelectedDate) {
         currentSelectedDate = payload.selectedDate;
         if (calendar) {
@@ -720,61 +546,76 @@
 
     const dateLabel = new Date(payload.selectedDate + 'T00:00:00');
     const dateText = dateLabel.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+    const dateShort = dateLabel.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+
     document.getElementById('selectedDateText').innerText = dateText;
-    
-    ['summaryDate1','summaryDate2','summaryDate3','summaryDate4', 'summaryDate5'].forEach(id => {
-      document.getElementById(id).innerText = dateLabel.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+    document.getElementById('headerDateText').innerText = dateText;
+    ['summaryDate1','summaryDate2','summaryDate3','summaryDate4','summaryDate5'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = dateShort;
     });
 
     const tbody = document.getElementById('salesTableBody');
     if (!payload.sales.length) {
-      tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-12 text-center text-gray-500"><i class="fas fa-inbox text-4xl mb-2 block"></i><p>Tidak ada transaksi pada tanggal ini</p></td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="px-4 py-16 text-center">
+            <div class="flex flex-col items-center">
+              <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <i class="fas fa-receipt text-2xl text-gray-300"></i>
+              </div>
+              <p class="text-sm font-bold text-gray-900">Tidak ada transaksi</p>
+              <p class="text-xs text-gray-400 mt-1">Pilih tanggal lain untuk melihat transaksi.</p>
+            </div>
+          </td>
+        </tr>`;
     } else {
       const showAksi = window.permissions.lihatDetail || window.permissions.refundPenjualan;
       tbody.innerHTML = payload.sales.map(s => {
         let actionColumn = '';
         if (showAksi) {
           actionColumn = `
-            <td class="px-4 py-3 text-center">
-              <div class="flex items-center justify-center gap-2">
+            <td class="px-4 py-4 text-center whitespace-nowrap">
+              <div class="inline-flex items-center gap-2">
                 ${window.permissions.lihatDetail ? `
-                <a href="/sales/${s.id}" class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-medium transition-colors">
-                  <i class="fas fa-eye mr-1"></i>Detail
+                <a href="/sales/${s.id}"
+                   class="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 transition-all"
+                   title="Detail">
+                  <i class="fas fa-eye text-xs"></i>
                 </a>` : ''}
-                ${(window.permissions.refundPenjualan && s.status === 'completed' && ['cash', 'transfer'].includes(s.payment_method))
-                  ? `<button onclick="confirmRefund('${s.id}', '${s.invoice_number}', ${s.grand_total})" class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-xs font-medium transition-colors"><i class="fas fa-undo mr-1"></i>Refund</button>`
-                  : ''
-                }
+                ${(window.permissions.refundPenjualan && s.status === 'completed' && ['cash','transfer'].includes(s.payment_method)) ? `
+                <button onclick="confirmRefund('${s.id}', '${s.invoice_number}', ${s.grand_total})"
+                        class="w-8 h-8 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                        title="Refund">
+                  <i class="fas fa-undo text-xs"></i>
+                </button>` : ''}
               </div>
             </td>`;
         }
-        
-        // Check for highlight
+
         const isHighlighted = payload.highlightId == s.id;
-        const rowClass = isHighlighted ? 'bg-yellow-100 border-l-4 border-yellow-500' : 'hover:bg-gray-50';
-        
+        const rowClass = isHighlighted ? 'bg-yellow-50 border-l-4 border-yellow-400' : 'hover:bg-gray-50';
+
         return `
-        <tr id="row-${s.id}" class="${rowClass} transition-colors duration-1000">
-          <td class="px-4 py-3 text-sm font-medium text-gray-900">${s.invoice_number}</td>
-          <td class="px-4 py-3 text-sm text-gray-600">${s.time}</td>
-          <td class="px-4 py-3 text-sm text-gray-600">${s.cashier ?? '-'}</td>
-          <td class="px-4 py-3">${methodBadge(s.payment_method)}</td>
-          <td class="px-4 py-3 text-sm text-right font-medium text-orange-600">${rupiah(s.total_discount)}</td>
-          <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">${rupiah(s.grand_total)}</td>
-          <td class="px-4 py-3 text-center">${statusBadge(s.status)}</td>
+        <tr id="row-${s.id}" class="${rowClass} transition-colors duration-500">
+          <td class="px-4 py-4 font-bold text-gray-900 whitespace-nowrap">${s.invoice_number}</td>
+          <td class="px-4 py-4 text-gray-500 whitespace-nowrap">${s.time}</td>
+          <td class="px-4 py-4 text-gray-700 whitespace-nowrap">${s.cashier ?? '-'}</td>
+          <td class="px-4 py-4 whitespace-nowrap">${methodBadge(s.payment_method)}</td>
+          <td class="px-4 py-4 text-right font-bold text-orange-500 whitespace-nowrap">${rupiah(s.total_discount)}</td>
+          <td class="px-4 py-4 text-right font-black text-gray-900 whitespace-nowrap">${rupiah(s.grand_total)}</td>
+          <td class="px-4 py-4 text-center whitespace-nowrap">${statusBadge(s.status)}</td>
           ${actionColumn}
         </tr>`;
       }).join('');
-      
-      // Scroll to highlighted element if exists
+
       if (payload.highlightId) {
           const row = document.getElementById(`row-${payload.highlightId}`);
           if (row) {
               setTimeout(() => {
                   row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  // Remove highlight after 2 seconds
                   setTimeout(() => {
-                      row.classList.remove('bg-yellow-100', 'border-l-4', 'border-yellow-500');
+                      row.classList.remove('bg-yellow-50', 'border-l-4', 'border-yellow-400');
                       row.classList.add('hover:bg-gray-50');
                   }, 3000);
               }, 100);
@@ -791,20 +632,17 @@
     document.getElementById('summaryTransactions').innerText = payload.summary.transactions;
     document.getElementById('summaryProfit').innerText = rupiah(payload.summary.profit);
     document.getElementById('summaryRefunds').innerText = rupiah(payload.summary.refunds);
-    document.getElementById('summaryDiscount').innerText = rupiah(payload.summary.discount);
+    const discEl = document.getElementById('summaryDiscount');
+    if (discEl) discEl.innerText = rupiah(payload.summary.discount);
   }
 
   let currentSelectedDate = '{{ $selectedDate }}';
   let searchTimeout = null;
 
   async function loadDaily(dateStr) {
-    // Keep requested date but might change based on response
-    currentSelectedDate = dateStr; 
+    currentSelectedDate = dateStr;
     setLoading(true);
-    
-    // Get search value
     const search = document.getElementById('searchInvoice').value;
-    
     try {
       const res = await fetch(`/sales/daily?date=${dateStr}&search=${search}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -812,8 +650,8 @@
       const json = await res.json();
       refreshUI(json);
     } catch (e) {
-      const tbody = document.getElementById('salesTableBody');
-      tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-red-500">Gagal memuat data.</td></tr>`;
+      document.getElementById('salesTableBody').innerHTML =
+        `<tr><td colspan="8" class="px-4 py-12 text-center text-sm text-red-500 font-bold">Gagal memuat data. Coba lagi.</td></tr>`;
       console.error(e);
     }
   }
@@ -823,11 +661,7 @@
     calendar = new FullCalendar.Calendar(calendarEl, {
       initialDate: '{{ $selectedDate }}',
       initialView: 'dayGridMonth',
-      headerToolbar: { 
-        left: 'prev', 
-        center: 'title', 
-        right: 'next' 
-      },
+      headerToolbar: { left: 'prev', center: 'title', right: 'next' },
       locale: 'id',
       firstDay: 1,
       height: 'auto',
@@ -839,13 +673,8 @@
     });
     calendar.render();
 
-    // Fix for calendar layout issue on initial load
-    // The container is hidden (display: none) by a FOUC mask in app.blade.php until window load.
-    // We must update size after the mask is removed.
     window.addEventListener('load', () => {
-        setTimeout(() => {
-            calendar.updateSize();
-        }, 500); // 500ms to be safe and match the fade-in transition
+        setTimeout(() => calendar.updateSize(), 500);
     });
 
     document.getElementById('btnToday').addEventListener('click', () => {
@@ -854,73 +683,41 @@
       loadDaily(today);
     });
 
-    // Search Handler
     document.getElementById('searchInvoice').addEventListener('keyup', function() {
         clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            loadDaily(currentSelectedDate);
-        }, 500);
+        searchTimeout = setTimeout(() => loadDaily(currentSelectedDate), 500);
     });
 
-    // Handle Refund Form AJAX
-    const refundForm = document.getElementById('refundForm');
-    if(refundForm){
-        refundForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Get button to show loading state
-            const btn = this.querySelector('button[type="submit"]');
-            const originalContent = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-
-            try {
-                const action = this.action;
-                const token = this.querySelector('input[name="_token"]').value;
-
-                const res = await fetch(action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': token,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                });
-
-                const data = await res.json();
-
-                if (data.success) {
-                    closeRefundModal();
-                    
-                    // Show success notification
-                    const container = document.querySelector('main .max-w-7xl');
-                    const alertHtml = `
-                        <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3 text-sm animate-fadeIn">
-                            <i class="fas fa-check-circle mt-0.5 text-green-500"></i>
-                            <p class="text-green-800">${data.message}</p>
-                        </div>
-                    `;
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = alertHtml;
-                    container.insertBefore(tempDiv.firstElementChild, container.firstChild);
-
-                    // Refresh data
-                    loadDaily(currentSelectedDate);
-
-                    // Scroll to top
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    alert(data.message || 'Gagal melakukan refund');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Terjadi kesalahan saat memproses refund');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalContent;
+    // Session Flash SweetAlert
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 3000,
+            iconColor: '#658C58',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+                htmlContainer: 'text-sm font-medium text-gray-500'
             }
         });
-    }
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: "{{ session('error') }}",
+            confirmButtonColor: '#ef4444',
+            customClass: {
+                popup: 'rounded-3xl border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+                htmlContainer: 'text-sm font-medium text-gray-500'
+            }
+        });
+    @endif
   });
 </script>
 @endpush
