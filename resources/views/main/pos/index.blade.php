@@ -2965,6 +2965,73 @@
 
 </div>
 
+<!-- Modal: Product Details (Qty & Notes) -->
+<div id="productDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <div>
+                <h3 id="detailModalProductName" class="text-xl font-bold text-gray-900">Product Name</h3>
+                <p id="detailModalProductPrice" class="text-emerald-600 font-bold mt-1">Rp 0</p>
+            </div>
+            <button onclick="closeProductDetailModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-6 overflow-y-auto">
+            <!-- Quantity Control -->
+            <div>
+                <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-3 text-center">Jumlah</label>
+                <div class="flex items-center justify-center gap-4">
+                    <button onclick="detailModalDecrement()" class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 active:scale-95 transition-all">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" id="detailModalQty" value="1" min="1" class="w-24 text-center text-2xl font-black text-gray-900 border-none focus:ring-0">
+                    <button onclick="detailModalIncrement()" class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 hover:bg-indigo-200 active:scale-95 transition-all">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Attributed To -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Atas Nama</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                            <i class="fas fa-user-tag text-xs"></i>
+                        </span>
+                        <input type="text" id="detailModalAttributedTo" 
+                               class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm font-medium" 
+                               placeholder="Nama pembeli / Pesanan untuk...">
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Catatan Pesanan</label>
+                    <textarea id="detailModalNotes" rows="3" 
+                              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm resize-none" 
+                              placeholder="Contoh: Kurangi gula, Tidak pakai es, dll..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-6 border-t border-gray-100 flex gap-3">
+            <button onclick="closeProductDetailModal()" class="flex-1 px-4 py-3 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-sm">
+                Batal
+            </button>
+            <button id="detailModalSubmitBtn" onclick="submitProductDetail()" class="flex-[2] px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 text-sm flex items-center justify-center gap-2">
+                <i class="fas fa-check-circle"></i>
+                <span id="detailModalSubmitText">Tambah ke Keranjang</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal: QR Fullscreen -->
 <div id="qrFullscreenModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-[70] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300" onclick="if(event.target === this) closeQrFullscreen()">
     <div class="relative w-full max-w-lg h-auto flex flex-col items-center justify-center animate-scaleIn">
@@ -3015,6 +3082,8 @@ let debtPaymentData = {
     paidAmount: 0,
     remainingAmount: 0
 };
+let currentCustomer = @json($selectedCustomer);
+let customerSearchTimeout = null;
 
 document.addEventListener('DOMContentLoaded', async function() {
     try {
@@ -4263,6 +4332,8 @@ function formatDateTime(s){
 }
 
 // ==================== CART FUNCTIONS ====================
+let currentDetailCartKey = null;
+
 function addProductToCart(el) {
     const isStoreOpen = !document.getElementById('menuCloseCashRegister').classList.contains('hidden');
     if (!isStoreOpen) {
@@ -4271,15 +4342,110 @@ function addProductToCart(el) {
     }
 
     const productId = el.dataset.productId;
+    const productName = el.dataset.productName;
+    const productPrice = parseFloat(el.dataset.productPrice || 0);
     const estStock = parseFloat(el.dataset.estimatedStock || 0);
     const isProduced = el.dataset.isProduced === 'true';
-    const productName = el.dataset.productName;
 
-    const currentQty = cart[productId] ? parseFloat(cart[productId].quantity) : 0;
-    const newQty = currentQty + 1;
+    // If item already in cart, increment quantity automatically (+1)
+    if (cart[productId]) {
+        incrementQty(productId);
+        return;
+    }
 
-    if (isProduced && newQty > estStock) {
-        Swal.fire({
+    // NEW PRODUCT: Show Modal
+    showProductDetailModal({
+        productId: productId,
+        productName: productName,
+        productPrice: productPrice,
+        isProduced: isProduced,
+        estStock: estStock
+    });
+}
+
+function showProductDetailModal(data, isEdit = false) {
+    const modal = document.getElementById('productDetailModal');
+    document.getElementById('detailModalProductName').textContent = data.productName;
+    document.getElementById('detailModalProductPrice').textContent = 'Rp ' + formatNumber(data.productPrice);
+    
+    const qtyInput = document.getElementById('detailModalQty');
+    const attributedInput = document.getElementById('detailModalAttributedTo');
+    const notesInput = document.getElementById('detailModalNotes');
+    const submitText = document.getElementById('detailModalSubmitText');
+    
+    if (isEdit) {
+        currentDetailCartKey = data.cartKey;
+        qtyInput.value = data.quantity || 1;
+        
+        // Parse notes if they follow our format
+        let rawNotes = data.notes || '';
+        let attributedTo = '';
+        let userNotes = '';
+        
+        if (rawNotes.includes('Atas nama:')) {
+            const parts = rawNotes.split('___NOTES___');
+            attributedTo = parts[0].replace('Atas nama:', '').trim();
+            userNotes = parts[1] ? parts[1].trim() : '';
+        } else {
+            userNotes = rawNotes;
+        }
+        
+        attributedInput.value = attributedTo;
+        notesInput.value = userNotes;
+        submitText.textContent = 'Simpan Perubahan';
+    } else {
+        currentDetailCartKey = null;
+        qtyInput.value = 1;
+        notesInput.value = '';
+        
+        // Pre-fill attributed name if customer selected
+        if (typeof currentCustomer !== 'undefined' && currentCustomer) {
+            attributedInput.value = currentCustomer.name;
+        } else {
+            attributedInput.value = '';
+        }
+        submitText.textContent = 'Tambah ke Keranjang';
+    }
+    
+    // Store data for submission
+    modal.dataset.productId = data.productId;
+    modal.dataset.isProduced = data.isProduced;
+    modal.dataset.estStock = data.estStock;
+    modal.dataset.productName = data.productName;
+    
+    modal.classList.remove('hidden');
+}
+
+function closeProductDetailModal() {
+    document.getElementById('productDetailModal').classList.add('hidden');
+}
+
+function detailModalIncrement() {
+    const input = document.getElementById('detailModalQty');
+    input.value = parseInt(input.value) + 1;
+}
+
+function detailModalDecrement() {
+    const input = document.getElementById('detailModalQty');
+    if (parseInt(input.value) > 1) {
+        input.value = parseInt(input.value) - 1;
+    }
+}
+
+function submitProductDetail() {
+    const modal = document.getElementById('productDetailModal');
+    const productId = modal.dataset.productId;
+    const qty = parseInt(document.getElementById('detailModalQty').value);
+    const attributedTo = document.getElementById('detailModalAttributedTo').value.trim();
+    const userNotes = document.getElementById('detailModalNotes').value.trim();
+    
+    const isProduced = modal.dataset.isProduced === 'true';
+    const estStock = parseFloat(modal.dataset.estStock || 0);
+    const productName = modal.dataset.productName;
+
+    // Stock check for kitchen items
+    if (isProduced && qty > estStock) {
+         Swal.fire({
             title: 'Stok Terbatas',
             text: `Stok bahan baku di dapur untuk ${productName} mungkin kurang. Lanjutkan?`,
             icon: 'warning',
@@ -4291,19 +4457,37 @@ function addProductToCart(el) {
             reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
-                performAddToCart(productId);
+                performSubmitProductDetail(productId, qty, attributedTo, userNotes);
             }
         });
     } else {
-        performAddToCart(productId);
+        performSubmitProductDetail(productId, qty, attributedTo, userNotes);
     }
 }
 
-function performAddToCart(productId) {
+function performSubmitProductDetail(productId, qty, attributedTo, userNotes) {
+    // Format notes exactly as requested:
+    // Atas nama: [Name]
+    // ___NOTES___
+    // [Notes]
+    const nameLabel = attributedTo ? `Atas nama: ${attributedTo}\n` : '';
+    const finalNotes = `${nameLabel}___NOTES___\n${userNotes}`;
+
+    if (currentDetailCartKey) {
+        // EDIT MODE
+        performUpdateCartQuantity(currentDetailCartKey, qty, finalNotes);
+    } else {
+        // ADD MODE
+        performAddToCart(productId, qty, finalNotes);
+    }
+    closeProductDetailModal();
+}
+
+function performAddToCart(productId, quantity = 1, notes = '') {
     fetch('{{ route("pos.cart.add") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
-        body: JSON.stringify({ product_id: productId, quantity: 1 })
+        body: JSON.stringify({ product_id: productId, quantity: quantity, notes: notes })
     })
     .then(r=>r.json())
     .then(data=>{
@@ -4320,7 +4504,7 @@ function performAddToCart(productId) {
     .catch(()=>showToast('error','Terjadi kesalahan'));
 }
 
-function updateCartQuantity(cartKey, newQty) {
+function updateCartQuantity(cartKey, newQty, notes = null) {
     let qty = parseFloat(newQty);
     if (isNaN(qty) || qty < 0) qty = 0;
 
@@ -4346,7 +4530,7 @@ function updateCartQuantity(cartKey, newQty) {
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    performUpdateCartQuantity(cartKey, qty);
+                    performUpdateCartQuantity(cartKey, qty, notes);
                 } else {
                     renderCart(); // Reset quantity in UI
                 }
@@ -4354,14 +4538,17 @@ function updateCartQuantity(cartKey, newQty) {
             return;
         }
     }
-    performUpdateCartQuantity(cartKey, qty);
+    performUpdateCartQuantity(cartKey, qty, notes);
 }
 
-function performUpdateCartQuantity(cartKey, qty) {
+function performUpdateCartQuantity(cartKey, qty, notes = null) {
+    const payload = { cart_key: cartKey, quantity: qty };
+    if (notes !== null) payload.notes = notes;
+
     fetch('{{ route("pos.cart.update") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json','X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify({ cart_key: cartKey, quantity: qty })
+        body: JSON.stringify(payload)
     })
     .then(r => r.json())
     .then(data => {
@@ -4433,6 +4620,27 @@ function clearCart() {
     });
 }
 
+function showEditCartItemModal(cartKey) {
+    const item = cart[cartKey];
+    if (!item) return;
+    
+    // Find the product card for stock info
+    const el = document.querySelector(`.product-card[data-product-id="${item.product_id}"]`);
+    const estStock = el ? parseFloat(el.dataset.estimatedStock || 0) : 999;
+    const isProduced = el ? (el.dataset.isProduced === 'true') : false;
+
+    showProductDetailModal({
+        cartKey: cartKey,
+        productId: item.product_id,
+        productName: item.product_name,
+        productPrice: item.unit_price,
+        quantity: item.quantity,
+        notes: item.notes,
+        isProduced: isProduced,
+        estStock: estStock
+    }, true);
+}
+
 function renderCart() {
     const preview = document.getElementById('cartItemsPreview');
     const oldDiscountInfo = document.getElementById('discountInfo');
@@ -4461,9 +4669,10 @@ function renderCart() {
 
             html += `
             <div class="order-item">
-                <div class="order-item-info">
-                    <div class="order-item-name" title="${item.product_name}">${item.product_name}</div>
+                <div class="order-item-info cursor-pointer flex-1 group" onclick="showEditCartItemModal('${key}')">
+                    <div class="order-item-name group-hover:text-indigo-600 transition-colors" title="${item.product_name}">${item.product_name}</div>
                     <div class="order-item-price">@ Rp ${formattedPrice} = <span class="font-semibold text-indigo-600">Rp ${formattedSubtotal}</span></div>
+                    ${item.notes ? `<div class="text-[10px] text-gray-400 mt-1 italic line-clamp-1"><i class="fas fa-sticky-note mr-1 text-gray-300"></i>${item.notes.replace(/\n/g, ' ')}</div>` : ''}
                 </div>
 
                 ${!isPayflow 
@@ -7290,8 +7499,6 @@ function closeSaleDetailModal() {
     // ==========================================
     // CUSTOMER SEARCH LOGIC
     // ==========================================
-    let currentCustomer = @json($selectedCustomer);
-    let customerSearchTimeout = null;
 
     function updateProductPricesUI() {
         const cards = document.querySelectorAll('.product-card');

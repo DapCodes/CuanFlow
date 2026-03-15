@@ -195,6 +195,7 @@ class PointOfSaleController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|numeric|min:0.01',
+            'notes' => 'nullable|string',
         ]);
 
         $product = Product::findOrFail($request->product_id);
@@ -257,6 +258,7 @@ class PointOfSaleController extends Controller
                 'discount_percent' => 0,
                 'discount_amount' => 0,
                 'subtotal' => $price * $request->quantity,
+                'notes' => $request->notes ?? '',
             ];
         }
 
@@ -287,6 +289,7 @@ class PointOfSaleController extends Controller
         $request->validate([
             'cart_key' => 'required',
             'quantity' => 'required|numeric|min:0',
+            'notes' => 'nullable|string',
         ]);
 
         $cart = Session::get('pos_cart', []);
@@ -301,6 +304,9 @@ class PointOfSaleController extends Controller
         if ($request->quantity == 0) {
             unset($cart[$request->cart_key]);
             Session::put('pos_cart', $cart);
+
+            $this->autoApplyNonVoucherDiscount();
+            $cart = Session::get('pos_cart', []); // refresh cart after discount adjustment
 
             return response()->json([
                 'success' => true,
@@ -328,6 +334,9 @@ class PointOfSaleController extends Controller
         }
 
         $cart[$request->cart_key]['quantity'] = $request->quantity;
+        if ($request->has('notes')) {
+            $cart[$request->cart_key]['notes'] = $request->notes;
+        }
         $cart[$request->cart_key]['subtotal'] = ($cart[$request->cart_key]['unit_price'] * $request->quantity) - $cart[$request->cart_key]['discount_amount'];
 
         Session::put('pos_cart', $cart);
