@@ -142,7 +142,7 @@
                                         <tr>
                                             <th class="px-4 py-3 text-left">Invoice</th>
                                             <th class="px-4 py-3 text-left">Waktu</th>
-                                            <th class="px-4 py-3 text-left">Kasir</th>
+                                            <th class="px-4 py-3 text-left">Pelanggan</th>
                                             <th class="px-4 py-3 text-left">Metode</th>
                                             <th class="px-4 py-3 text-right">Diskon</th>
                                             <th class="px-4 py-3 text-right">Total</th>
@@ -162,7 +162,8 @@
                                                     {{ $sale->created_at->format('H:i') }}
                                                 </td>
                                                 <td class="px-4 py-4 text-gray-700 whitespace-nowrap">
-                                                    {{ $sale->cashier->name }}
+                                                    <div class="font-bold text-gray-900">{{ $sale->customer_name ?? ($sale->customer?->name ?? 'Umum') }}</div>
+                                                    <div class="text-[10px] text-gray-400">Kasir: {{ $sale->cashier->name ?? '-' }}</div>
                                                 </td>
                                                 <td class="px-4 py-4 whitespace-nowrap">
                                                     @if($sale->payment_method == 'cash')

@@ -112,7 +112,7 @@
                             <div class="flex items-center justify-between gap-3">
                                 <dt class="text-[10px] font-black uppercase tracking-widest text-gray-400">Pelanggan</dt>
                                 <dd class="font-bold text-gray-900 truncate max-w-[60%]">
-                                    {{ $sale->customer->name ?? '-' }}
+                                    {{ $sale->customer_name ?? ($sale->customer?->name ?? 'Umum') }}
                                 </dd>
                             </div>
                             <div class="flex items-center justify-between gap-3">
@@ -393,6 +393,14 @@
                                             @if(isset($item->product->unit->name))
                                                 <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-0.5">
                                                     {{ $item->product->unit->name }}
+                                                </div>
+                                            @endif
+                                            @if($item->notes)
+                                                <div class="mt-2 p-3 bg-amber-50 border border-amber-100 rounded-xl text-[10px] text-gray-600 leading-relaxed italic whitespace-pre-line">
+                                                    <div class="flex items-start gap-2">
+                                                        <i class="fas fa-sticky-note text-amber-400 mt-1"></i>
+                                                        <span>{{ $item->notes }}</span>
+                                                    </div>
                                                 </div>
                                             @endif
                                         </td>

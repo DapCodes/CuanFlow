@@ -810,6 +810,29 @@ class PaymentController extends Controller
             ? $discountPlan['customer_id'] 
             : Session::get('pos_customer_id');
 
+        $customerName = null;
+        if ($customerId) {
+            $customer = Customer::find($customerId);
+            if ($customer) {
+                $customerName = $customer->name;
+            }
+        }
+
+        // Fallback: search for "Atas nama" in items if no global customer selected
+        if (! $customerName) {
+            foreach ($cart as $item) {
+                if (! empty($item['notes']) && str_contains($item['notes'], 'Atas nama:')) {
+                    $parts = explode('___NOTES___', $item['notes']);
+                    $namePart = str_replace('Atas nama:', '', $parts[0]);
+                    $extractedName = trim($namePart);
+                    if (! empty($extractedName)) {
+                        $customerName = $extractedName;
+                        break;
+                    }
+                }
+            }
+        }
+
         // PERBAIKAN: Simpan discount plan lengkap dengan free items info
         $notesData = [];
         if ($discountPlan) {
@@ -888,6 +911,7 @@ class PaymentController extends Controller
         $saleData = array_merge([
             'outlet_id' => auth()->user()->outlet_id,
             'customer_id' => $customerId,
+            'customer_name' => $customerName,
             'cashier_id' => auth()->id(),
             'subtotal' => $summary['subtotal'],
             'discount_amount' => $summary['total_discount'],
@@ -926,6 +950,7 @@ class PaymentController extends Controller
                 'discount_amount' => $discountAmount,
                 'subtotal' => ($item['unit_price'] * $item['quantity']) - $discountAmount,
                 'hpp' => $item['hpp'],
+                'notes' => $item['notes'] ?? null,
             ]);
         }
 

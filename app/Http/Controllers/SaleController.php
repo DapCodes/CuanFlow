@@ -316,7 +316,7 @@ class SaleController extends Controller
                     'id' => $s->id,
                     'invoice_number' => $s->invoice_number,
                     'time' => $s->created_at->format('H:i'),
-                    'customer_name' => $s->customer?->name,
+                    'customer_name' => $s->customer_name ?? ($s->customer?->name ?? 'Umum'),
                     'cashier' => $s->cashier?->name,
                     'payment_method' => $s->payment_method,
                     'grand_total' => (int) $s->grand_total,
@@ -362,7 +362,7 @@ class SaleController extends Controller
             'invoice_number' => $sale->invoice_number,
             'created_at' => $sale->created_at->format('d/m/Y H:i'), // ✅ Format lebih friendly
             'cashier_name' => $sale->cashier->name ?? '-',
-            'customer_name' => $sale->customer->name ?? 'Umum', // ✅ Ubah dari 'Guest'
+            'customer_name' => $sale->customer_name ?? ($sale->customer->name ?? 'Umum'), // ✅ Prioritize manual name from POS
             'customer_id' => $sale->customer_id,
             'customer' => $sale->customer ? [
                 'name' => $sale->customer->name,

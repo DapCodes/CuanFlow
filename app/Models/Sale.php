@@ -16,7 +16,7 @@ class Sale extends Model
     use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
-        'invoice_number', 'outlet_id', 'customer_id', 'cashier_id', 'refunded_at', 'is_reported',
+        'invoice_number', 'outlet_id', 'customer_id', 'customer_name', 'cashier_id', 'refunded_at', 'is_reported',
         'subtotal', 'discount_amount', 'tax_amount', 'tax_percent', 'grand_total',
         'paid_amount', 'change_amount', 'payment_method', 'payment_status',
         'outlet_payment_link_id', 'service_type', 'table_id',
