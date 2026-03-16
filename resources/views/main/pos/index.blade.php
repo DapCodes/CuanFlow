@@ -1473,7 +1473,6 @@
                         </button>
                         <button onclick="openPendingProductionModal()" class="h-[38px] px-3 flex-shrink-0 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors border border-blue-100 font-bold text-xs gap-2" title="Antrean Dapur">
                             <i class="fas fa-utensils"></i>
-                            <span class="hidden sm:inline">Antrean Dapur</span>
                         </button>
                     </div>
                 </div>
