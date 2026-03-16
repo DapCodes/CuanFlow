@@ -5,7 +5,7 @@
 @section('breadcrumb')
 <li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <span class="text-gray-900 font-bold tracking-tight">Kebijakan Outlet</span>
+    <span class="text-gray-900 font-medium tracking-tight">Kebijakan Outlet</span>
 </li>
 @endsection
 
@@ -24,17 +24,51 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-                <div class="relative group min-w-[240px]">
-                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cuan-green transition-colors"></i>
-                    <input type="text" x-model="searchQuery" placeholder="Cari kebijakan..." 
-                        class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all shadow-sm">
-                </div>
                 @can('buat kebijakan outlet')
-                <a href="{{ route('outlet-policies.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-2xl shadow-lg shadow-cuan-green/20 hover:bg-cuan-dark transition-all text-xs font-black uppercase tracking-widest active:scale-95">
-                    <i class="fas fa-plus mr-2"></i>
-                    Buat Baru
+                <a href="{{ route('outlet-policies.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-cuan-green px-5 py-3 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                    <i class="fas fa-plus"></i>
+                    <span>Buat Baru</span>
                 </a>
                 @endcan
+            </div>
+        </section>
+
+        {{-- RINGKASAN STATISTIK --}}
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Kebijakan</p>
+                <p class="mt-2 text-2xl font-black text-gray-900">{{ number_format($policies->count(), 0) }}</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Kategori Aktif</p>
+                <p class="mt-2 text-2xl font-black text-cuan-green">{{ $policies->pluck('category')->unique()->count() }}</p>
+            </div>
+            @php
+                $recentCount = $policies->where('created_at', '>=', now()->subDays(7))->count();
+            @endphp
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Baru (7 Hari)</p>
+                <p class="mt-2 text-2xl font-black text-emerald-600">{{ $recentCount }}</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Status Sistem</p>
+                <div class="mt-2 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cuan-green animate-pulse"></span>
+                    <span class="text-sm font-black text-gray-900 uppercase tracking-tighter">Terhubung</span>
+                </div>
+            </div>
+        </section>
+
+        {{-- SEARCH & FILTER --}}
+        <section class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="relative group w-full md:w-96">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cuan-green transition-colors"></i>
+                <input type="text" x-model="searchQuery" placeholder="Cari kebijakan atau kategori..." 
+                    class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all shadow-sm">
+            </div>
+            <div class="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                <i class="fas fa-info-circle text-cuan-green"></i>
+                <span>Klik Kartu Untuk Detail</span>
             </div>
         </section>
 
@@ -54,12 +88,12 @@
         {{-- Interactive Grid --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
             @forelse($policies as $policy)
-                <div class="group bg-white border border-gray-200 rounded-[2rem] p-8 shadow-sm hover:shadow-2xl hover:shadow-gray-200 transition-all duration-500 flex flex-col justify-between animate-fade-in-up"
+                <div class="group bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-xl hover:shadow-emerald-100/50 transition-all duration-300 flex flex-col justify-between animate-fade-in-up"
                      x-show="searchQuery === '' || '{{ strtolower($policy->title) }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower($policy->category) }}'.includes(searchQuery.toLowerCase())">
                     
                     <div>
-                        <div class="flex items-start justify-between mb-6">
-                            <span class="px-4 py-1.5 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400 rounded-full border border-gray-100 group-hover:bg-cuan-green group-hover:text-white group-hover:border-cuan-green transition-all duration-300">
+                        <div class="flex items-start justify-between mb-4">
+                            <span class="px-3 py-1 bg-emerald-50 text-[10px] font-black uppercase tracking-widest text-emerald-600 rounded-lg border border-emerald-100 group-hover:bg-cuan-green group-hover:text-white group-hover:border-cuan-green transition-all">
                                 {{ $policy->category ?? 'Umum' }}
                             </span>
                             <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -99,17 +133,17 @@
                                 <span class="text-[10px] font-medium text-gray-400">{{ $policy->creator->name ?? 'Sistem' }}</span>
                             </div>
                         </div>
-                        <a href="{{ route('outlet-policies.show', $policy->id) }}" class="w-10 h-10 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-cuan-green hover:text-white transition-all group/btn">
+                        <a href="{{ route('outlet-policies.show', $policy->id) }}" class="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-cuan-green hover:text-white transition-all group/btn">
                             <i class="fas fa-arrow-right text-xs group-hover/btn:translate-x-0.5 transition-transform"></i>
                         </a>
                     </div>
                 </div>
             @empty
-                <div class="col-span-full py-20 flex flex-col items-center justify-center bg-gray-50/50 rounded-[3rem] border-2 border-dashed border-gray-200">
-                    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center text-gray-200 text-4xl shadow-sm mb-6">
+                <div class="col-span-full py-20 flex flex-col items-center justify-center bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <div class="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-300 text-3xl mb-6">
                         <i class="fas fa-book-open"></i>
                     </div>
-                    <h3 class="text-xl font-black text-gray-900 mb-2">Belum Ada Kebijakan</h3>
+                    <h3 class="text-lg font-black text-gray-900 mb-2 uppercase tracking-tighter">Belum Ada Kebijakan</h3>
                     <p class="text-sm text-gray-500 font-medium max-w-xs text-center px-6">Mulailah dengan membuat kebijakan pertama Anda untuk menstandarisasi operasional outlet.</p>
                 </div>
             @endforelse

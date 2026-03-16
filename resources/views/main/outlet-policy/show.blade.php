@@ -3,39 +3,35 @@
 @section('title', $outletPolicy->title . ' - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('outlet-policies.index') }}" class="text-gray-500 hover:text-gray-900 transition-colors">Kebijakan Outlet</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('outlet-policies.index') }}" class="text-gray-500 hover:text-gray-900 transition-colors tracking-tight">Kebijakan Outlet</a>
 </li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Detail Kebijakan</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-medium tracking-tight">Detail Kebijakan</span>
 </li>
 @endsection
 
 @section('content')
-<main class="flex-grow py-12 px-4 bg-[#f9fafb]" x-data="{ readingProgress: 0 }" @scroll.window="readingProgress = (window.pageYOffset / (document.body.scrollHeight - window.innerHeight)) * 100">
+<main class="flex-grow py-12 px-4 bg-gray-50" x-data="{ readingProgress: 0 }" @scroll.window="readingProgress = (window.pageYOffset / (document.body.scrollHeight - window.innerHeight)) * 100">
     {{-- Reading Progress Bar --}}
-    <div class="fixed top-0 left-0 h-1.5 bg-gray-900 z-[60] transition-all duration-100" :style="'width: ' + readingProgress + '%'"></div>
+    <div class="fixed top-0 left-0 h-1.5 bg-cuan-green shadow-lg shadow-emerald-400/20 z-[60] transition-all duration-100" :style="'width: ' + readingProgress + '%'"></div>
 
     <div class="max-w-4xl mx-auto space-y-10">
         
         {{-- Header Section --}}
         <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in-down">
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 bg-gray-900 text-[10px] font-black uppercase tracking-widest text-white rounded-lg">
+                    <span class="px-3 py-1 bg-cuan-green text-[10px] font-black uppercase tracking-widest text-white rounded-lg shadow-sm shadow-emerald-100">
                         {{ $outletPolicy->category ?? 'Umum' }}
                     </span>
                     <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                         Diperbarui {{ $outletPolicy->updated_at->diffForHumans() }}
                     </span>
                 </div>
-                <h1 class="text-4xl font-black text-gray-900 tracking-tighter sm:text-5xl leading-tight">
+                <h1 class="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-tight">
                     {{ $outletPolicy->title }}
                 </h1>
             </div>
@@ -53,7 +49,7 @@
         </section>
 
         {{-- Main Document --}}
-        <article class="bg-white border border-gray-200 rounded-[3rem] shadow-2xl shadow-gray-200/50 overflow-hidden animate-fade-in-up">
+        <article class="bg-white border border-gray-200 rounded-xl shadow-2xl shadow-gray-200/20 overflow-hidden animate-fade-in-up">
             <div class="p-8 md:p-16">
                 
                 {{-- Meta Info --}}
@@ -96,8 +92,8 @@
                             <p class="text-xs text-gray-500 font-medium">Pastikan seluruh tim telah membaca dan memahami kebijakan ini.</p>
                         </div>
                         <div class="flex items-center gap-2">
-                             <span class="text-[10px] font-black uppercase text-gray-400 tracking-widest mr-4">Status: <span class="text-emerald-500 ml-1">Aktif & Berlaku</span></span>
-                             <button onclick="window.print()" class="px-6 py-3 bg-gray-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-gray-200 hover:bg-black transition-all">
+                             <span class="text-[10px] font-black uppercase text-gray-400 tracking-widest mr-4">Status: <span class="text-cuan-green ml-1">Aktif & Berlaku</span></span>
+                             <button onclick="window.print()" class="px-6 py-3 bg-cuan-green text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-100 hover:bg-cuan-dark transition-all active:scale-95">
                                  <i class="fas fa-print mr-2"></i> Cetak Dokumen
                              </button>
                         </div>
@@ -109,26 +105,26 @@
 
         {{-- Help Section --}}
         <section class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up" style="animation-delay: 0.2s">
-            <div class="bg-gray-900 rounded-[2rem] p-8 text-white relative overflow-hidden group">
+            <div class="bg-gray-900 rounded-xl p-8 text-white relative overflow-hidden group">
                 <div class="relative z-10 space-y-4">
-                    <h4 class="text-xl font-bold">Butuh Penjelasan Lebih?</h4>
+                    <h4 class="text-xl font-black uppercase tracking-tighter">Butuh Penjelasan?</h4>
                     <p class="text-xs text-gray-400 font-medium leading-relaxed">
-                        Jika ada bagian dari kebijakan ini yang kurang jelas, silakan tanyakan kepada manajer outlet atau pemilik.
+                        Jika ada bagian dari kebijakan ini yang kurang jelas, silakan tanyakan kepada manajer outlet atau admin.
                     </p>
-                    <a href="#" class="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors">
+                    <a href="#" class="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-cuan-green hover:text-white transition-colors">
                         Hubungi via WhatsApp <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                     </a>
                 </div>
                 <i class="fas fa-comment-dots absolute -bottom-6 -right-6 text-8xl text-white/5"></i>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-[2rem] p-8 relative overflow-hidden group">
+            <div class="bg-white border border-gray-200 rounded-xl p-8 relative overflow-hidden group">
                 <div class="relative z-10 space-y-4">
-                    <h4 class="text-xl font-bold text-gray-900">FAQ Terkait</h4>
+                    <h4 class="text-xl font-black uppercase tracking-tighter text-gray-900">FAQ Terkait</h4>
                     <p class="text-xs text-gray-500 font-medium leading-relaxed">
                         Mungkin pertanyaan Anda sudah terjawab di pusat bantuan kami.
                     </p>
-                    <a href="{{ route('faqs.index') }}" class="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors">
+                    <a href="{{ route('faqs.index') }}" class="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-cuan-green/60 hover:text-cuan-green transition-colors">
                         Pusat Bantuan <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                     </a>
                 </div>
