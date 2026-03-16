@@ -2244,7 +2244,7 @@
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <h3 class="text-xl font-black text-gray-900">Antrean Dapur</h3>
             <div class="flex items-center gap-3">
-                <button onclick="refreshPendingProduction()" class="text-blue-500 hover:text-blue-700 text-sm font-semibold flex items-center gap-1 transition-colors" title="Refresh">
+                <button onclick="refreshPendingProduction()" class="text-cuan-green hover:text-cuan-dark text-sm font-semibold flex items-center gap-1 transition-colors" title="Refresh">
                     <i class="fas fa-sync-alt" id="refreshSpinner"></i>
                 </button>
                 <button onclick="closePendingProductionModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
@@ -2256,11 +2256,12 @@
         <div class="flex-1 overflow-y-auto p-6 custom-scrollbar" id="pendingProductionContent">
             <!-- Loading state -->
             <div id="pendingProductionLoading" class="flex flex-col items-center justify-center py-12">
-                <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600 mb-4"></div>
+                <div class="animate-spin rounded-full h-10 w-10 border-4 border-cuan-green/20 border-t-cuan-green mb-4"></div>
                 <p class="text-sm text-gray-500">Memuat antrean dapur...</p>
             </div>
 
             <!-- Empty state -->
+            <div id="pendingProductionEmpty" class="hidden flex flex-col items-center justify-center py-12">
                 <p class="text-lg font-black text-gray-900 uppercase tracking-tighter">Pesanan Selesai</p>
                 <p class="text-sm text-gray-500 mt-1">Tidak ada pesanan yang menunggu produksi</p>
             </div>
@@ -2291,49 +2292,34 @@
             <div class="summary-cards-container">
                 <!-- Total Transaksi -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-50 text-gray-400">
-                        <!-- Icon Removed -->
-                    </div>
                     <div class="summary-card-label">Total Transaksi</div>
-                    <div class="summary-card-value text-blue-600" id="modalTotalTransactions">0</div>
+                    <div class="summary-card-value text-gray-900" id="modalTotalTransactions">0</div>
                 </div>
 
                 <!-- Total Pendapatan -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-50 text-gray-400">
-                        <!-- Icon Removed -->
-                    </div>
                     <div class="summary-card-label">Total Pendapatan</div>
-                    <div class="summary-card-value text-green-600" id="modalTotalRevenue">Rp 0</div>
+                    <div class="summary-card-value text-cuan-green" id="modalTotalRevenue">Rp 0</div>
                 </div>
 
                 <!-- Tunai -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-50 text-gray-400">
-                        <!-- Icon Removed -->
-                    </div>
                     <div class="summary-card-label">Tunai</div>
-                    <div class="summary-card-value text-indigo-600" id="modalCashTotal">Rp 0</div>
+                    <div class="summary-card-value text-gray-700" id="modalCashTotal">Rp 0</div>
                 </div>
 
                 <!-- Non-Tunai -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-50 text-gray-400">
-                        <!-- Icon Removed -->
-                    </div>
                     <div class="summary-card-label">Non-Tunai</div>
-                    <div class="summary-card-value text-purple-600" id="modalNonCashTotal">Rp 0</div>
+                    <div class="summary-card-value text-gray-700" id="modalNonCashTotal">Rp 0</div>
                 </div>
 
                 <!-- Total Piutang -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-50 text-gray-400">
-                        <!-- Icon Removed -->
-                    </div>
                     <div class="summary-card-label">Total Piutang</div>
                     <div class="summary-card-value text-red-600" id="modalDebtTotal">Rp 0</div>
                     <div class="summary-card-subvalue">
-                        Terbayar: <span id="modalDebtPaid" class="text-green-600 font-semibold">Rp 0</span>
+                        Terbayar: <span id="modalDebtPaid" class="text-cuan-green font-semibold">Rp 0</span>
                     </div>
                 </div>
             </div>
@@ -2371,7 +2357,7 @@
         <!-- Footer - Fixed -->
         <div class="modal-footer-fixed p-6 flex justify-end gap-3">
             @can('lihat riwayat kasir')
-            <a href="{{ route('sales.index') }}" class="action-btn action-btn-primary">
+            <a href="{{ route('sales.index') }}" class="action-btn action-btn-secondary">
                 <i class="fas fa-external-link-alt"></i>
                 Lihat Semua Penjualan
             </a>
@@ -2698,24 +2684,20 @@
             <!-- Stats -->
             <div class="summary-cards-container">
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-50 text-gray-400"></div>
                     <div class="summary-card-label">Total Meja</div>
                     <div class="summary-card-value text-gray-900" id="tmTotalTables">0</div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-50 text-gray-400"></div>
                     <div class="summary-card-label">Tersedia</div>
-                    <div class="summary-card-value text-emerald-600" id="tmAvailableTables">0</div>
+                    <div class="summary-card-value text-cuan-green" id="tmAvailableTables">0</div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-50 text-gray-400"></div>
                     <div class="summary-card-label">Terisi</div>
                     <div class="summary-card-value text-red-600" id="tmOccupiedTables">0</div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-50 text-gray-400"></div>
                     <div class="summary-card-label">Dipesan</div>
-                    <div class="summary-card-value text-cuan-green" id="tmReservedTables">0</div>
+                    <div class="summary-card-value text-orange-500" id="tmReservedTables">0</div>
                 </div>
             </div>
 
@@ -2726,6 +2708,7 @@
                 </div>
 
                 <!-- Empty State -->
+                <div id="tableManagementEmpty" class="hidden text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 mx-auto max-w-2xl">
                     <h4 class="text-gray-900 font-black text-lg mb-1 uppercase tracking-tight">Belum Ada Meja</h4>
                     <p class="text-gray-500 text-sm mb-6">Silakan tambahkan data meja melalui menu pengaturan meja</p>
                     <a href="{{ route('tables.create') }}" class="inline-flex items-center gap-2 px-8 py-3 bg-cuan-green text-white rounded-full font-bold text-sm hover:bg-cuan-dark transition-all shadow-lg hover:shadow-emerald-200 active:scale-95">
@@ -5160,10 +5143,10 @@ async function loadAndRenderTableManagement() {
         const statusColors = {
             available: { 
                 bg: 'bg-white', 
-                border: 'border-emerald-100', 
-                icon: 'bg-emerald-100 text-emerald-600', 
-                badge: 'bg-emerald-500 text-white',
-                shadow: 'hover:shadow-emerald-200'
+                border: 'border-cuan-green/10', 
+                icon: 'bg-cuan-green/10 text-cuan-green', 
+                badge: 'bg-cuan-green text-white',
+                shadow: 'hover:shadow-cuan-green/20'
             },
             occupied: { 
                 bg: 'bg-white', 
@@ -5174,10 +5157,10 @@ async function loadAndRenderTableManagement() {
             },
             reserved: { 
                 bg: 'bg-white', 
-                border: 'border-cuan-green/20', 
-                icon: 'bg-cuan-green/20 text-cuan-green', 
-                badge: 'bg-cuan-green/50 text-white',
-                shadow: 'hover:shadow-emerald-200'
+                border: 'border-orange-100', 
+                icon: 'bg-orange-50 text-orange-500', 
+                badge: 'bg-orange-500 text-white',
+                shadow: 'hover:shadow-orange-200'
             },
             maintenance: { 
                 bg: 'bg-white', 
@@ -6570,7 +6553,7 @@ function renderPendingProductionList(sales) {
                         </div>
                         ${notes ? `<div class="text-xs text-cuan-green">Note: ${notes}</div>` : ''}
                     </div>
-                    <div class="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
+                    <div class="text-[10px] font-black bg-cuan-green/10 text-cuan-green px-2 py-0.5 rounded-full uppercase tracking-tighter">
                         ${quantity} ${unitName}
                     </div>
                 </div>
@@ -6581,12 +6564,12 @@ function renderPendingProductionList(sales) {
             <div class="p-4 bg-white border-b border-gray-100 flex justify-between items-center">
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${sale.invoice_number}</span>
-                        <span class="text-xs text-gray-400">${sale.created_at ? new Date(sale.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}</span>
+                        <span class="text-[10px] font-black text-cuan-green bg-cuan-green/10 px-2 py-0.5 rounded uppercase tracking-widest">${sale.invoice_number}</span>
+                        <span class="text-xs text-gray-400 font-medium">${sale.created_at ? new Date(sale.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}</span>
                     </div>
                     <div class="text-sm font-bold text-gray-800 mt-1">${sale.customer ? sale.customer.name : 'Pelanggan Umum'}</div>
                 </div>
-                <button onclick="ringKitchenBell(${sale.id}, this)" class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-all active:scale-95 shadow-sm border border-blue-100 group">
+                <button onclick="ringKitchenBell(${sale.id}, this)" class="w-10 h-10 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-cuan-green/10 hover:text-cuan-green transition-all active:scale-95 shadow-sm border border-gray-100 group">
                     <i class="fas fa-bell group-hover:animate-shake"></i>
                 </button>
             </div>
