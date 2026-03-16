@@ -20,7 +20,7 @@ class Product extends Model
         'code', 'name', 'barcode', 'category_id', 'unit_id',
         'hpp', 'selling_price', 'reseller_price', 'promo_price', 'margin_percent',
         'min_stock', 'shelf_life_days', 'image', 'description',
-        'is_active', 'is_sellable', 'track_stock', 'is_stock', 'outlet_id',
+        'is_active', 'is_sellable', 'track_stock', 'is_stock', 'outlet_id', 'supplier_id',
     ];
 
     protected $casts = [
@@ -48,6 +48,11 @@ class Product extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public function outlet(): BelongsTo
@@ -88,6 +93,11 @@ class Product extends Model
     public function productions(): HasMany
     {
         return $this->hasMany(Production::class);
+    }
+
+    public function purchaseItems(): HasMany
+    {
+        return $this->hasMany(PurchaseItem::class);
     }
 
     public function saleItems(): HasMany
