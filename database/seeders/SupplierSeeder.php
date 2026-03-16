@@ -111,8 +111,11 @@ class SupplierSeeder extends Seeder
             ],
         ];
 
+        $outlet = \App\Models\Outlet::first();
+
         foreach ($suppliers as $data) {
             Supplier::create(array_merge($data, [
+                'outlet_id' => $outlet->id ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]));
