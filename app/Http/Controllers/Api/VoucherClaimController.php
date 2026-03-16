@@ -22,7 +22,7 @@ class VoucherClaimController extends Controller
 
         $customer = Customer::where('email', $request->user()->email)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return response()->json([
                 'success' => false,
                 'message' => 'Profil pelanggan tidak ditemukan.',
@@ -32,7 +32,7 @@ class VoucherClaimController extends Controller
         $discount = Discount::with('outlet')->findOrFail($request->discount_id);
 
         // Validasi apakah diskon ini publik dan aktif sebagai voucher
-        if (!$discount->is_public || !$discount->is_voucher || !$discount->is_active) {
+        if (! $discount->is_public || ! $discount->is_voucher || ! $discount->is_active) {
             return response()->json([
                 'success' => false,
                 'message' => 'Voucher ini tidak tersedia untuk diklaim.',
@@ -81,14 +81,15 @@ class VoucherClaimController extends Controller
                     'secret_code' => $claimedVoucher->secret_code,
                     'discount_name' => $discount->name,
                     'outlet_name' => $discount->outlet->name,
-                ]
+                ],
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengklaim voucher: ' . $e->getMessage(),
+                'message' => 'Gagal mengklaim voucher: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -100,7 +101,7 @@ class VoucherClaimController extends Controller
     {
         $customer = Customer::where('email', $request->user()->email)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return response()->json([
                 'success' => false,
                 'message' => 'Profil pelanggan tidak ditemukan.',
@@ -125,8 +126,8 @@ class VoucherClaimController extends Controller
                         'outlet' => [
                             'id' => $claimed->discount->outlet->id,
                             'name' => $claimed->discount->outlet->name,
-                        ]
-                    ]
+                        ],
+                    ],
                 ];
             });
 
@@ -139,39 +140,38 @@ class VoucherClaimController extends Controller
     /**
      * List all available public vouchers across all outlets.
      */
-// In VoucherClaimController.php
-public function availableVouchers()
-{
-    $vouchers = Discount::with('outlet')
-        ->where('is_public', true)
-        ->where('is_voucher', true)
-        ->active()
-        ->latest()
-        ->get()
-        ->map(function ($discount) {
-            return [
-                'id' => $discount->id,
-                'name' => $discount->name,
-                'code' => $discount->code,
-                'type' => $discount->type,
-                'value' => $discount->value,
-                'min_purchase' => $discount->min_purchase,
-                'max_discount' => $discount->max_discount,
-                'is_public' => $discount->is_public, // Add this
-                'is_voucher' => $discount->is_voucher, // Add this
-                'end_date' => $discount->end_date ? $discount->end_date->format('Y-m-d H:i:s') : null,
-                'outlet' => [
-                    'id' => $discount->outlet->id,
-                    'name' => $discount->outlet->name,
-                ],
-                'outlet_id' => $discount->outlet_id, // Add this for easier filtering
-            ];
-        });
+    // In VoucherClaimController.php
+    public function availableVouchers()
+    {
+        $vouchers = Discount::with('outlet')
+            ->where('is_public', true)
+            ->where('is_voucher', true)
+            ->active()
+            ->latest()
+            ->get()
+            ->map(function ($discount) {
+                return [
+                    'id' => $discount->id,
+                    'name' => $discount->name,
+                    'code' => $discount->code,
+                    'type' => $discount->type,
+                    'value' => $discount->value,
+                    'min_purchase' => $discount->min_purchase,
+                    'max_discount' => $discount->max_discount,
+                    'is_public' => $discount->is_public, // Add this
+                    'is_voucher' => $discount->is_voucher, // Add this
+                    'end_date' => $discount->end_date ? $discount->end_date->format('Y-m-d H:i:s') : null,
+                    'outlet' => [
+                        'id' => $discount->outlet->id,
+                        'name' => $discount->outlet->name,
+                    ],
+                    'outlet_id' => $discount->outlet_id, // Add this for easier filtering
+                ];
+            });
 
-    return response()->json([
-        'success' => true,
-        'data' => $vouchers,
-    ]);
-}
-
+        return response()->json([
+            'success' => true,
+            'data' => $vouchers,
+        ]);
+    }
 }

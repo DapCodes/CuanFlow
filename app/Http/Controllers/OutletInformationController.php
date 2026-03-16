@@ -31,7 +31,7 @@ class OutletInformationController extends Controller implements HasMiddleware
 
         if ($user->hasRole('owner')) {
             $query = Outlet::where('owner_id', $user->id);
-            
+
             // Global stats before filtering
             $stats = [
                 'total' => (clone $query)->count(),
@@ -113,7 +113,7 @@ class OutletInformationController extends Controller implements HasMiddleware
 
     public function show(Outlet $outlet)
     {
-        if (!$outlet->is_active) {
+        if (! $outlet->is_active) {
             return redirect()->route('dashboard')->with('error', 'Akses ditolak: Outlet telah dinonaktifkan.');
         }
 
@@ -146,7 +146,7 @@ class OutletInformationController extends Controller implements HasMiddleware
 
     public function edit(Outlet $outlet)
     {
-        if (!$outlet->is_active) {
+        if (! $outlet->is_active) {
             return redirect()->route('dashboard')->with('error', 'Akses ditolak: Outlet telah dinonaktifkan.');
         }
 
@@ -172,7 +172,7 @@ class OutletInformationController extends Controller implements HasMiddleware
 
     public function update(Request $request, Outlet $outlet)
     {
-        if (!$outlet->is_active) {
+        if (! $outlet->is_active) {
             return redirect()->route('dashboard')->with('error', 'Akses ditolak: Outlet telah dinonaktifkan.');
         }
 
@@ -220,7 +220,7 @@ class OutletInformationController extends Controller implements HasMiddleware
 
     public function destroy(Outlet $outlet)
     {
-        if (!$outlet->is_active) {
+        if (! $outlet->is_active) {
             return redirect()->route('dashboard')->with('error', 'Akses ditolak: Outlet telah dinonaktifkan.');
         }
 

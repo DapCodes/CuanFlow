@@ -107,16 +107,19 @@ class RawMaterialAndSupplierController extends Controller
             'expiring' => 0,
         ];
 
-        foreach($allMaterialsForStats as $material) {
+        foreach ($allMaterialsForStats as $material) {
             $stock = $material->stocks->first();
             $qty = $stock ? $stock->quantity : 0;
-            
-            if ($qty <= 0) $stats['out']++;
-            elseif ($qty <= $material->min_stock) $stats['low']++;
+
+            if ($qty <= 0) {
+                $stats['out']++;
+            } elseif ($qty <= $material->min_stock) {
+                $stats['low']++;
+            }
 
             // Check batches for expiry
             $batches = PurchaseItem::where('raw_material_id', $material->id)
-                ->whereHas('purchase', fn($q) => $q->where('outlet_id', $outletId))
+                ->whereHas('purchase', fn ($q) => $q->where('outlet_id', $outletId))
                 ->where('remaining_quantity', '>', 0)
                 ->where('is_disposed', false)
                 ->get();
@@ -124,16 +127,23 @@ class RawMaterialAndSupplierController extends Controller
             $hasExpired = false;
             $hasExpiring = false;
 
-            foreach($batches as $batch) {
+            foreach ($batches as $batch) {
                 if ($batch->expired_at) {
                     $days = $now->diffInDays($batch->expired_at, false);
-                    if ($days < 0) $hasExpired = true;
-                    elseif ($days <= $warningDays) $hasExpiring = true;
+                    if ($days < 0) {
+                        $hasExpired = true;
+                    } elseif ($days <= $warningDays) {
+                        $hasExpiring = true;
+                    }
                 }
             }
 
-            if ($hasExpired) $stats['expired']++;
-            if ($hasExpiring) $stats['expiring']++;
+            if ($hasExpired) {
+                $stats['expired']++;
+            }
+            if ($hasExpiring) {
+                $stats['expiring']++;
+            }
         }
 
         $rawMaterials = $query->latest()->paginate(15);
@@ -153,6 +163,7 @@ class RawMaterialAndSupplierController extends Controller
             foreach ($batches as $batch) {
                 if (! $batch->expired_at) {
                     $material->total_valid_qty += $batch->remaining_quantity;
+
                     continue;
                 }
 
@@ -771,15 +782,15 @@ class RawMaterialAndSupplierController extends Controller
         // Calculate global stats BEFORE pagination
         $statsQuery = clone $query;
         $total_active = $statsQuery->where('is_active', true)->count();
-        
+
         $statsQueryForItems = clone $query;
         $total_items_supplied = $statsQueryForItems->get()->sum('raw_materials_count');
 
         $suppliers = $query->latest()->paginate(15);
 
         return view('main.raw-material_n_supplier.index-supplier', compact(
-            'suppliers', 
-            'total_active', 
+            'suppliers',
+            'total_active',
             'total_items_supplied'
         ));
     }

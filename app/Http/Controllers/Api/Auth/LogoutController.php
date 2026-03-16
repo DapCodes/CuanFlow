@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Events\UserPresenceChanged;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Events\UserPresenceChanged;
 
 class LogoutController extends Controller
 {

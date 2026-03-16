@@ -13,7 +13,7 @@ class ResellerApplicationController extends Controller
         }
 
         $query = \App\Models\ResellerApplication::query();
-        
+
         // Stats
         $stats = [
             'total' => (clone $query)->count(),
@@ -26,8 +26,8 @@ class ResellerApplicationController extends Controller
             ->when($request->search, function ($query, $search) {
                 $query->whereHas('customer', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
                 });
             })
             ->when($request->status, function ($query, $status) {

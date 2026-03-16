@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Main;
 use App\Http\Controllers\Controller;
 use App\Models\Outlet;
 use App\Models\Product;
-use App\Models\ProductStock;
-use App\Models\RawMaterial;
-use App\Models\RawMaterialStock;
 use App\Models\Production;
+use App\Models\ProductStock;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
+use App\Models\RawMaterial;
+use App\Models\RawMaterialStock;
 use App\Models\StockMovement;
 use App\Models\StockTransfer;
 use App\Models\StockTransferItem;
@@ -64,16 +64,16 @@ class StockTransferController extends Controller
         // But assuming $userOutlet->owner_id is the link.
 
         // Get Stockables with Batches
-        $rawMaterials = RawMaterial::with(['purchaseItems' => function($q) use ($userOutlet) {
-                // Find purchase items for purchases in this outlet
-                $q->whereHas('purchase', function($q2) use ($userOutlet) {
-                    $q2->where('outlet_id', $userOutlet->id);
-                })
+        $rawMaterials = RawMaterial::with(['purchaseItems' => function ($q) use ($userOutlet) {
+            // Find purchase items for purchases in this outlet
+            $q->whereHas('purchase', function ($q2) use ($userOutlet) {
+                $q2->where('outlet_id', $userOutlet->id);
+            })
                 ->where('remaining_quantity', '>', 0)
                 ->where('is_disposed', false)
                 ->orderByRaw('expired_at IS NULL, expired_at ASC')
                 ->orderBy('created_at', 'ASC');
-            }])
+        }])
             ->where('outlet_id', $userOutlet->id)
             ->where('is_active', true)
             ->get();
@@ -83,7 +83,7 @@ class StockTransferController extends Controller
             ->where('track_stock', true)
             ->get();
 
-        // Attach batches for products manually to avoid heavy nested relations if unnecessary, 
+        // Attach batches for products manually to avoid heavy nested relations if unnecessary,
         // but let's just use eager loading on Production since product has many productions? Wait.
         // Actually, let's load productions manually since the relationship is Outlet->Productions.
         // Products don't have a direct 'productions' relation in the default model assuming.
@@ -123,11 +123,11 @@ class StockTransferController extends Controller
 
             foreach ($request->items as $item) {
                 $stockableType = $item['type'] === 'product' ? Product::class : RawMaterial::class;
-                
-                // If specific batches were selected, join them temporarily in batch_number 
+
+                // If specific batches were selected, join them temporarily in batch_number
                 // We will split them into separate items during the Send (updateStatus) phase
                 $batchIdentifier = null;
-                if (!empty($item['selected_batches'])) {
+                if (! empty($item['selected_batches'])) {
                     $batchIdentifier = implode(',', $item['selected_batches']);
                 }
 
@@ -203,22 +203,22 @@ class StockTransferController extends Controller
                         ->where('outlet_id', $stockTransfer->from_outlet_id)
                         ->where('status', 'completed')
                         ->where('is_disposed', false);
-                    
-                    if (!empty($userSelectedBatches)) {
+
+                    if (! empty($userSelectedBatches)) {
                         $query->whereIn('batch_number', $userSelectedBatches);
                     }
-                    
+
                     $candidateBatches = $query->orderByRaw('expired_at IS NULL, expired_at ASC')
                         ->orderBy('completed_at', 'ASC')
                         ->get();
                 } else {
                     $query = PurchaseItem::where('raw_material_id', $item->stockable_id)
-                        ->whereHas('purchase', function($q) use ($stockTransfer) {
+                        ->whereHas('purchase', function ($q) use ($stockTransfer) {
                             $q->where('outlet_id', $stockTransfer->from_outlet_id);
                         })
                         ->where('remaining_quantity', '>', 0);
-                    
-                    if (!empty($userSelectedBatches)) {
+
+                    if (! empty($userSelectedBatches)) {
                         $query->whereIn('batch_number', $userSelectedBatches);
                     }
 
@@ -230,7 +230,9 @@ class StockTransferController extends Controller
                 // 3. CONSUME BATCHES AND SPLIT ITEMS
                 $remainingToDistribute = $neededQuantity;
                 foreach ($candidateBatches as $batch) {
-                    if ($remainingToDistribute <= 0.00001) break;
+                    if ($remainingToDistribute <= 0.00001) {
+                        break;
+                    }
 
                     // Calculate how much we can take from this batch
                     if ($item->stockable_type === Product::class) {
@@ -242,7 +244,7 @@ class StockTransferController extends Controller
                     }
 
                     $consume = min($batchQty, $remainingToDistribute);
-                    
+
                     if ($consume > 0) {
                         // Record a new item split for this batch
                         $newItems[] = [
@@ -288,7 +290,7 @@ class StockTransferController extends Controller
                         'stockable_type' => $item->stockable_type,
                         'stockable_id' => $item->stockable_id,
                         'quantity' => $remainingToDistribute,
-                        'batch_number' => !empty($userSelectedBatches) ? $userSelectedBatches[0] : null,
+                        'batch_number' => ! empty($userSelectedBatches) ? $userSelectedBatches[0] : null,
                         'expired_at' => null,
                     ];
                 }
@@ -359,15 +361,15 @@ class StockTransferController extends Controller
                     Production::create([
                         'outlet_id' => $stockTransfer->to_outlet_id,
                         'product_id' => $targetStockableId,
-                        // Use original batch if available, else generate one. 
+                        // Use original batch if available, else generate one.
                         // To avoid global uniqueness collision, we can append a suffix if needed.
-                        'batch_number' => $item->batch_number ? ($item->batch_number . '-T' . $stockTransfer->to_outlet_id) : ('PRD-TRF-' . $stockTransfer->transfer_number . '-' . $targetStockableId),
+                        'batch_number' => $item->batch_number ? ($item->batch_number.'-T'.$stockTransfer->to_outlet_id) : ('PRD-TRF-'.$stockTransfer->transfer_number.'-'.$targetStockableId),
                         'planned_quantity' => $item->quantity,
                         'actual_quantity' => $item->quantity,
                         'status' => 'completed',
                         'completed_at' => now(),
                         'expired_at' => $item->expired_at,
-                        'notes' => 'Diterima dari Transfer #'.$stockTransfer->transfer_number . ($item->batch_number ? ' (Asal: ' . $item->batch_number . ')' : ''),
+                        'notes' => 'Diterima dari Transfer #'.$stockTransfer->transfer_number.($item->batch_number ? ' (Asal: '.$item->batch_number.')' : ''),
                         'created_by' => auth()->id(),
                         'completed_by' => auth()->id(),
                     ]);
@@ -406,12 +408,12 @@ class StockTransferController extends Controller
 
                     // Recreate Purchase Batch in destination
                     $dummyPurchase = Purchase::create([
-                        'purchase_number' => 'TRF-' . $stockTransfer->transfer_number . '-' . strtoupper(substr(uniqid(), -4)),
+                        'purchase_number' => 'TRF-'.$stockTransfer->transfer_number.'-'.strtoupper(substr(uniqid(), -4)),
                         'outlet_id' => $stockTransfer->to_outlet_id,
                         'purchase_date' => today(),
                         'status' => 'received',
                         'received_date' => today(),
-                        'notes' => 'Diterima dari Transfer #' . $stockTransfer->transfer_number,
+                        'notes' => 'Diterima dari Transfer #'.$stockTransfer->transfer_number,
                         'created_by' => auth()->id(),
                     ]);
 

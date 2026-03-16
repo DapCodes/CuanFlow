@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Testimonial;
-use App\Models\ProductReview;
 use App\Models\Outlet;
 use App\Models\Product;
+use App\Models\Testimonial;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -34,20 +33,20 @@ class TestimonialController extends Controller implements HasMiddleware
         // 1. Query General Testimonials
         $testimonialsBase = \DB::table('testimonials')
             ->where('outlet_id', $outletId)
-            ->when($productId, function($q) {
+            ->when($productId, function ($q) {
                 return $q->whereRaw('1=0');
             })
             ->select([
-                'id', 
-                'name', 
-                'role', 
-                'content', 
-                'rating', 
-                'image', 
-                'is_published', 
-                'created_at', 
-                \DB::raw("'general' as type"), 
-                \DB::raw("NULL as product_name")
+                'id',
+                'name',
+                'role',
+                'content',
+                'rating',
+                'image',
+                'is_published',
+                'created_at',
+                \DB::raw("'general' as type"),
+                \DB::raw('NULL as product_name'),
             ]);
 
         // 2. Query Product Reviews
@@ -58,25 +57,25 @@ class TestimonialController extends Controller implements HasMiddleware
             ->leftJoin('customers', 'sales.customer_id', '=', 'customers.id')
             ->where('products.outlet_id', $outletId)
             ->whereNull('products.deleted_at')
-            ->when($productId, function($q) use ($productId) {
+            ->when($productId, function ($q) use ($productId) {
                 return $q->where('product_reviews.product_id', $productId);
             })
             ->select([
-                'product_reviews.id', 
-                \DB::raw("COALESCE(customers.name, 'Pelanggan Umum') as name"), 
-                \DB::raw("'Pembeli' as role"), 
-                'product_reviews.comment as content', 
-                'product_reviews.rating', 
-                \DB::raw("NULL as image"), 
-                \DB::raw("1 as is_published"), 
-                'product_reviews.created_at', 
+                'product_reviews.id',
+                \DB::raw("COALESCE(customers.name, 'Pelanggan Umum') as name"),
+                \DB::raw("'Pembeli' as role"),
+                'product_reviews.comment as content',
+                'product_reviews.rating',
+                \DB::raw('NULL as image'),
+                \DB::raw('1 as is_published'),
+                'product_reviews.created_at',
                 \DB::raw("'product' as type"),
-                'products.name as product_name'
+                'products.name as product_name',
             ]);
 
         // 3. Combine and Paginate
         $unionQuery = $testimonialsBase->unionAll($reviewsBase);
-        
+
         // Wrap for ordering and pagination
         $results = \DB::table(\DB::raw("({$unionQuery->toSql()}) as combined"))
             ->mergeBindings($unionQuery)
@@ -85,7 +84,7 @@ class TestimonialController extends Controller implements HasMiddleware
 
         if ($request->ajax()) {
             return view('testimonials._table', [
-                'testimonials' => $results
+                'testimonials' => $results,
             ])->render();
         }
 
@@ -103,7 +102,7 @@ class TestimonialController extends Controller implements HasMiddleware
     {
         $outletId = $request->get('outlet_id');
         $products = Product::where('outlet_id', $outletId)->get(['id', 'name']);
-        
+
         return response()->json($products);
     }
 

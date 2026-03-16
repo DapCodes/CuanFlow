@@ -28,7 +28,7 @@ class DashboardController extends Controller
     public function activeUsersCount()
     {
         $activeCount = \App\Models\User::where('last_seen_at', '>=', now()->subMinutes(5))->count();
-        
+
         return response()->json([
             'count' => $activeCount,
         ]);

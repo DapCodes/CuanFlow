@@ -59,11 +59,11 @@ class LandingPageController extends Controller implements HasMiddleware
         $outlet = $landingPage->outlet;
 
         // Check if landing page is active. Allow admins and outlet owners to preview even if inactive.
-        if (!$landingPage->is_active) {
+        if (! $landingPage->is_active) {
             $user = auth()->user();
             $canPreview = $user && ($user->hasRole('admin') || $user->outlet_id == $id);
-            
-            if (!$canPreview) {
+
+            if (! $canPreview) {
                 abort(404, 'Landing page ini sedang tidak aktif.');
             }
         }

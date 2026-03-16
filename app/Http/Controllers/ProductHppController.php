@@ -296,7 +296,7 @@ class ProductHppController extends Controller
         }
 
         $product->load(['category', 'unit', 'recipes.items.rawMaterial.unit', 'hppCalculations.calculatedBy', 'activeSalesTarget']);
-        
+
         $salesTarget = $product->activeSalesTarget;
         $hasTarget = (bool) $salesTarget;
 
@@ -823,7 +823,7 @@ class ProductHppController extends Controller
             // Panggil AI API dengan timeout lebih lama
             $response = Http::timeout(120)
                 ->withHeaders([
-                    'Authorization' => 'Bearer ' . config('services.clara.key'),
+                    'Authorization' => 'Bearer '.config('services.clara.key'),
                     'Content-Type' => 'application/json',
                 ])
                 ->post('https://openrouter.ai/api/v1/chat/completions', [

@@ -30,11 +30,11 @@ class InvoiceController extends Controller implements HasMiddleware
         $search = request('search');
 
         $recentSales = Sale::where('outlet_id', $outletId)
-            ->when($search, function($query) use ($search) {
+            ->when($search, function ($query) use ($search) {
                 $query->where('invoice_number', 'like', "%{$search}%")
-                      ->orWhereHas('customer', function($q) use ($search) {
-                          $q->where('name', 'like', "%{$search}%");
-                      });
+                    ->orWhereHas('customer', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             })
             ->latest()
             ->paginate(5, ['*'], 'sales_page')
@@ -43,10 +43,10 @@ class InvoiceController extends Controller implements HasMiddleware
         $recentIncomes = Expense::where('outlet_id', $outletId)
             ->where('type', 'income')
             ->where('status', 'approved')
-            ->when($search, function($query) use ($search) {
-                $query->where(function($q) use ($search) {
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('expense_number', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
+                        ->orWhere('description', 'like', "%{$search}%");
                 });
             })
             ->latest()
@@ -56,10 +56,10 @@ class InvoiceController extends Controller implements HasMiddleware
         $recentExpenses = Expense::where('outlet_id', $outletId)
             ->where('type', 'expense')
             ->where('status', 'approved')
-            ->when($search, function($query) use ($search) {
-                $query->where(function($q) use ($search) {
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('expense_number', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
+                        ->orWhere('description', 'like', "%{$search}%");
                 });
             })
             ->latest()
@@ -69,10 +69,10 @@ class InvoiceController extends Controller implements HasMiddleware
         $recentDebts = CustomerDebt::with(['customer', 'sale'])
             ->where('outlet_id', $outletId)
             ->whereIn('status', ['pending', 'partial'])
-            ->when($search, function($query) use ($search) {
-                $query->whereHas('customer', function($q) use ($search) {
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas('customer', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
-                })->orWhereHas('sale', function($q) use ($search) {
+                })->orWhereHas('sale', function ($q) use ($search) {
                     $q->where('invoice_number', 'like', "%{$search}%");
                 });
             })

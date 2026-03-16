@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Events\UserPresenceChanged;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\LoginHistory;
@@ -9,7 +10,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use App\Events\UserPresenceChanged;
 
 class LoginController extends Controller
 {

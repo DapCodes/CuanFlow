@@ -645,6 +645,7 @@ class PaymentController extends Controller
                 $exists = \App\Models\DebtPayment::where('reference_number', $notification->transaction_id)->exists();
                 if ($exists) {
                     DB::rollBack();
+
                     return response()->json(['success' => true, 'message' => 'Already recorded by another process'], 200);
                 }
 
@@ -806,8 +807,8 @@ class PaymentController extends Controller
      */
     private function createSaleWithDiscount($cart, $summary, $discountPlan, $additionalData = [])
     {
-        $customerId = ($discountPlan && isset($discountPlan['customer_id'])) 
-            ? $discountPlan['customer_id'] 
+        $customerId = ($discountPlan && isset($discountPlan['customer_id']))
+            ? $discountPlan['customer_id']
             : Session::get('pos_customer_id');
 
         $customerName = null;
@@ -1006,6 +1007,7 @@ class PaymentController extends Controller
                     'used_at' => now(),
                 ]);
                 \Log::info("Used personal voucher ID: {$cd->id}");
+
                 return; // SKIP normal Discount usage increment
             }
         }

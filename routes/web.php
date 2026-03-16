@@ -25,6 +25,7 @@ use App\Http\Controllers\PointOfSaleController;
 use App\Http\Controllers\PosDiscountController;
 use App\Http\Controllers\ProductHppController;
 use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RawMaterialAndSupplierController;
 use App\Http\Controllers\ReceiptController;
@@ -41,7 +42,6 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\WithdrawController;
-use App\Http\Controllers\ProductReviewController;
 use Illuminate\Support\Facades\Route;
 
 // =========================================================================

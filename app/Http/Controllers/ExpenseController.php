@@ -28,8 +28,8 @@ class ExpenseController extends Controller
         $query->when($request->search, function ($q) use ($request) {
             $q->where(function ($sq) use ($request) {
                 $sq->where('description', 'like', "%{$request->search}%")
-                   ->orWhere('expense_number', 'like', "%{$request->search}%")
-                   ->orWhere('reference_number', 'like', "%{$request->search}%");
+                    ->orWhere('expense_number', 'like', "%{$request->search}%")
+                    ->orWhere('reference_number', 'like', "%{$request->search}%");
             });
         });
 

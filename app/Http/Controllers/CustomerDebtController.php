@@ -63,7 +63,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
         return response()->json([
             'success' => true,
-            'stats' => $stats
+            'stats' => $stats,
         ]);
     }
 
@@ -277,6 +277,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
                 $exists = DebtPayment::where('reference_number', $referenceNumber)->exists();
                 if ($exists) {
                     DB::rollBack();
+
                     return response()->json([
                         'success' => true,
                         'message' => 'Pembayaran sudah tercatat sebelumnya',
@@ -497,6 +498,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
         $supplierData = $suppliers->map(function ($app) {
             $c = $app->customer;
+
             return [
                 'id' => $app->id,
                 'customer_id' => $c->id,
@@ -559,9 +561,10 @@ class CustomerDebtController extends Controller implements HasMiddleware
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membatalkan kontrak: ' . $e->getMessage(),
+                'message' => 'Gagal membatalkan kontrak: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -571,14 +574,19 @@ class CustomerDebtController extends Controller implements HasMiddleware
      */
     private function getWhatsappUrl($phone)
     {
-        if (empty($phone)) return null;
-        $number = preg_replace('/[^0-9]/', '', $phone);
-        if (empty($number)) return null;
-        if (str_starts_with($number, '0')) {
-            $number = '62' . substr($number, 1);
-        } elseif (!str_starts_with($number, '62')) {
-            $number = '62' . $number;
+        if (empty($phone)) {
+            return null;
         }
+        $number = preg_replace('/[^0-9]/', '', $phone);
+        if (empty($number)) {
+            return null;
+        }
+        if (str_starts_with($number, '0')) {
+            $number = '62'.substr($number, 1);
+        } elseif (! str_starts_with($number, '62')) {
+            $number = '62'.$number;
+        }
+
         return "https://wa.me/{$number}";
     }
 
@@ -597,8 +605,8 @@ class CustomerDebtController extends Controller implements HasMiddleware
                 $remainingDebt = $sale->debt ? (float) $sale->debt->remaining_amount : 0;
                 $status = $sale->status;
 
-                // If sale is completed but has remaining debt, show status as "pending_payment" 
-                // or similar, but the user specifically asked: 
+                // If sale is completed but has remaining debt, show status as "pending_payment"
+                // or similar, but the user specifically asked:
                 // "cek lagi jika pada CustomerDebt sudah complete dan sudah tidak ada sisa hutang lagi baru complete"
                 if ($status === 'completed' && $remainingDebt > 0) {
                     $status = 'debt'; // We'll handle this status in the frontend

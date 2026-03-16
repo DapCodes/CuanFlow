@@ -24,7 +24,7 @@ class ProductReviewController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal: ' . implode(', ', $validator->errors()->all()),
+                'message' => 'Validasi gagal: '.implode(', ', $validator->errors()->all()),
             ], 422);
         }
 
@@ -61,7 +61,7 @@ class ProductReviewController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengirim ulasan: ' . $e->getMessage(),
+                'message' => 'Gagal mengirim ulasan: '.$e->getMessage(),
             ], 500);
         }
     }

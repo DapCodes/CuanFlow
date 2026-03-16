@@ -42,14 +42,14 @@ class EmployeeController extends Controller implements HasMiddleware
             ->where('outlet_id', auth()->user()->outlet_id);
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
         if ($roleFilter) {
-            $query->whereHas('roles', function($q) use ($roleFilter) {
+            $query->whereHas('roles', function ($q) use ($roleFilter) {
                 $q->where('name', $roleFilter);
             });
         }

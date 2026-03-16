@@ -40,7 +40,7 @@ class CustomerDiscount extends Model
     public static function generateSecretCode(Outlet $outlet): string
     {
         $initials = self::getOutletInitials($outlet->name);
-        
+
         do {
             $random = strtoupper(\Illuminate\Support\Str::random(6));
             $code = "{$initials}-{$random}";
@@ -52,12 +52,13 @@ class CustomerDiscount extends Model
     private static function getOutletInitials(string $name): string
     {
         $words = explode(' ', $name);
-        
+
         if (count($words) >= 2) {
             $initials = '';
             foreach ($words as $w) {
                 $initials .= strtoupper(substr($w, 0, 1));
             }
+
             return substr($initials, 0, 3);
         }
 
