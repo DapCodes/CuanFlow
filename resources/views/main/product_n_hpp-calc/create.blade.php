@@ -1975,6 +1975,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Set required attributes
             document.getElementById('manualHppInput').setAttribute('required', 'required');
             document.getElementById('initialStockInput').setAttribute('required', 'required');
+            document.querySelector('select[name="expense_category_id"]').setAttribute('required', 'required');
+            document.querySelector('select[name="payment_method"]').setAttribute('required', 'required');
         } else {
             if (readyToSellFields) readyToSellFields.classList.add('hidden');
             if (hppSummarySection) hppSummarySection.classList.remove('hidden');
@@ -1983,6 +1985,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Remove required attributes
             if (document.getElementById('manualHppInput')) document.getElementById('manualHppInput').removeAttribute('required');
             if (document.getElementById('initialStockInput')) document.getElementById('initialStockInput').removeAttribute('required');
+            if (document.querySelector('select[name="expense_category_id"]')) document.querySelector('select[name="expense_category_id"]').removeAttribute('required');
+            if (document.querySelector('select[name="payment_method"]')) document.querySelector('select[name="payment_method"]').removeAttribute('required');
         }
         
         showStep(currentStep);
