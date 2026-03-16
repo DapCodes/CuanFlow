@@ -11,7 +11,7 @@ class PurchaseItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'purchase_id', 'raw_material_id', 'quantity', 'received_quantity', 'remaining_quantity',
+        'purchase_id', 'raw_material_id', 'product_id', 'quantity', 'received_quantity', 'remaining_quantity',
         'unit_price', 'discount_percent', 'discount_amount', 'subtotal',
         'expired_at', 'batch_number', 'notes', 'is_disposed',
     ];
@@ -36,6 +36,11 @@ class PurchaseItem extends Model
     public function rawMaterial(): BelongsTo
     {
         return $this->belongsTo(RawMaterial::class);
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     public function isFullyReceived(): bool
