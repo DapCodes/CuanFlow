@@ -2863,13 +2863,13 @@
 <div id="productDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
     <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
         <!-- Header -->
-        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
             <div>
-                <h3 id="detailModalProductName" class="text-xl font-bold text-gray-900">Product Name</h3>
-                <p id="detailModalProductPrice" class="text-emerald-600 font-bold mt-1">Rp 0</p>
+                <h3 id="detailModalProductName" class="text-xl font-black text-gray-900 uppercase tracking-tighter">Product Name</h3>
+                <p id="detailModalProductPrice" class="text-cuan-green font-black mt-1">Rp 0</p>
             </div>
             <button onclick="closeProductDetailModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                <i class="fas fa-times text-2xl"></i>
+                <i class="fas fa-times"></i>
             </button>
         </div>
 
@@ -2879,11 +2879,11 @@
             <div>
                 <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-3 text-center">Jumlah</label>
                 <div class="flex items-center justify-center gap-4">
-                    <button onclick="detailModalDecrement()" class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 active:scale-95 transition-all">
+                    <button onclick="detailModalDecrement()" class="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 active:scale-95 transition-all border border-gray-100">
                         <i class="fas fa-minus"></i>
                     </button>
-                    <input type="number" id="detailModalQty" value="1" min="1" class="w-24 text-center text-2xl font-black text-gray-900 border-none focus:ring-0">
-                    <button onclick="detailModalIncrement()" class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 hover:bg-indigo-200 active:scale-95 transition-all">
+                    <input type="number" id="detailModalQty" value="1" min="1" class="w-24 text-center text-3xl font-black text-gray-900 border-none focus:ring-0 bg-transparent">
+                    <button onclick="detailModalIncrement()" class="w-12 h-12 rounded-xl bg-cuan-green/10 flex items-center justify-center text-cuan-green hover:bg-cuan-green/20 active:scale-95 transition-all">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
@@ -2892,22 +2892,19 @@
             <div class="space-y-4">
                 <!-- Attributed To -->
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Atas Nama</label>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Atas Nama</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
-                            <i class="fas fa-user-tag text-xs"></i>
-                        </span>
                         <input type="text" id="detailModalAttributedTo" 
-                               class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm font-medium" 
+                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent text-sm font-bold" 
                                placeholder="Nama pembeli / Pesanan untuk...">
                     </div>
                 </div>
 
                 <!-- Notes -->
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Catatan Pesanan</label>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Catatan Pesanan</label>
                     <textarea id="detailModalNotes" rows="3" 
-                              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 text-sm resize-none" 
+                              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent text-sm font-medium resize-none" 
                               placeholder="Contoh: Kurangi gula, Tidak pakai es, dll..."></textarea>
                 </div>
             </div>
@@ -2915,11 +2912,10 @@
 
         <!-- Footer -->
         <div class="p-6 border-t border-gray-100 flex gap-3">
-            <button onclick="closeProductDetailModal()" class="flex-1 px-4 py-3 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all text-sm">
+            <button onclick="closeProductDetailModal()" class="flex-1 px-4 py-3 border border-gray-200 text-gray-500 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs uppercase tracking-widest">
                 Batal
             </button>
-            <button id="detailModalSubmitBtn" onclick="submitProductDetail()" class="flex-[2] px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 text-sm flex items-center justify-center gap-2">
-                <i class="fas fa-check-circle"></i>
+            <button id="detailModalSubmitBtn" onclick="submitProductDetail()" class="flex-[2] px-4 py-3 bg-gradient-to-r from-cuan-green to-cuan-dark text-white rounded-xl font-black hover:opacity-90 shadow-lg shadow-emerald-100 transition-all active:scale-95 text-xs uppercase tracking-widest flex items-center justify-center gap-2">
                 <span id="detailModalSubmitText">Tambah ke Keranjang</span>
             </button>
         </div>
