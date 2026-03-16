@@ -107,10 +107,10 @@
 
     .search-input:focus {
         outline: none;
-        border-color: #f97316;
+        border-color: #658C58;
         background-color: #ffffff;
         box-shadow:
-            0 0 0 1px rgba(249, 115, 22, 0.08),
+            0 0 0 1px rgba(101, 140, 88, 0.08),
             0 6px 10px rgba(15, 23, 42, 0.06);
     }
 
@@ -140,8 +140,8 @@
 
     .filter-select:focus {
         outline: none;
-        border-color: #f97316;
-        box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.12);
+        border-color: #658C58;
+        box-shadow: 0 0 0 1px rgba(101, 140, 88, 0.12);
     }
 
     .category-tabs {
@@ -180,9 +180,9 @@
     }
 
     .category-tab.active {
-        background-color: #fff7ed;
-        border-color: #f97316;
-        color: #9a3412;
+        background-color: #f0f7f0;
+        border-color: #658C58;
+        color: #31694E;
     }
 
     /* ===================== PRODUCT GRID ===================== */
@@ -205,12 +205,12 @@
     }
 
     .product-card:hover {
-        border-color: #f97316;
+        border-color: #658C58;
         box-shadow:
             0 10px 18px rgba(15, 23, 42, 0.08),
             0 1px 3px rgba(15, 23, 42, 0.08);
         transform: translateY(-1px);
-        background-color: #fffdf9;
+        background-color: #f0f7f0;
     }
 
     .product-image {
@@ -427,25 +427,25 @@
     .btn-primary {
         padding: 0.75rem;
         font-size: 0.875rem;
-        background-color: #f97316;
+        background-color: #658C58;
         color: #ffffff;
         box-shadow:
-            0 10px 18px rgba(249, 115, 22, 0.35),
+            0 10px 18px rgba(101, 140, 88, 0.35),
             0 1px 3px rgba(15, 23, 42, 0.25);
     }
 
     .btn-primary:hover {
-        background-color: #ea580c;
+        background-color: #31694E;
         transform: translateY(-1px);
         box-shadow:
-            0 14px 24px rgba(234, 88, 12, 0.4),
+            0 14px 24px rgba(49, 105, 78, 0.4),
             0 2px 4px rgba(15, 23, 42, 0.35);
     }
 
     .btn-primary:active {
         transform: translateY(0);
         box-shadow:
-            0 7px 12px rgba(249, 115, 22, 0.35),
+            0 7px 12px rgba(101, 140, 88, 0.35),
             0 1px 3px rgba(15, 23, 42, 0.35);
     }
 
@@ -608,12 +608,12 @@
     }
 
     .payment-method:hover {
-        border-color: #f97316;
+        border-color: #658C58;
         box-shadow:
             0 10px 14px rgba(15, 23, 42, 0.08),
             0 1px 3px rgba(15, 23, 42, 0.08);
         transform: translateY(-1px);
-        background-color: #fffaf3;
+        background-color: #f0f7f0;
     }
 
     .payment-icon {
@@ -625,7 +625,7 @@
         justify-content: center;
         color: #ffffff;
         flex-shrink: 0;
-        background-color: #f97316;
+        background-color: #658C58;
     }
 
     .payment-info {
@@ -800,12 +800,12 @@
 }
 
 .customer-search-item:hover {
-    background-color: #fff7ed;
+    background-color: #f0f7f0;
 }
 
 .customer-search-item.selected {
-    background-color: #ffedd5;
-    border-left: 3px solid #f97316;
+    background-color: #eef2ed;
+    border-left: 3px solid #658C58;
 }
 
 /* Modal Table Styles */
@@ -1298,18 +1298,12 @@
 <div id="startSalesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 lg:p-8">
         <div class="text-center mb-5">
-            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-1">Selamat Datang!</h3>
-            <p class="text-gray-600 text-sm">Mulai penjualan Anda hari ini</p>
+            <h3 class="text-2xl font-black text-gray-900 mb-1">Selamat Datang!</h3>
+            <p class="text-gray-500 font-medium tracking-tight">Mulai sesi penjualan Anda hari ini</p>
         </div>
-        <div class="bg-orange-50 rounded-xl p-3 mb-5">
-            <p class="text-xs sm:text-sm text-gray-700 text-center">
-                <i class="fas fa-info-circle text-orange-600 mr-1.5"></i>
-                Sistem akan mencatat semua transaksi Anda hari ini
+        <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-5">
+            <p class="text-[11px] text-gray-400 text-center uppercase font-bold tracking-widest">
+                SESI BARU • RECORDING ACTIVE
             </p>
         </div>
         <div class="flex gap-2.5">
@@ -1317,7 +1311,7 @@
                 Tidak
             </button>
             @can('buka kasir')
-            <button onclick="openOpeningAmountModal()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg">
+            <button onclick="openOpeningAmountModal()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-cuan-green to-cuan-dark text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md hover:shadow-lg">
                 Ya, Mulai
             </button>
             @endcan
@@ -1328,16 +1322,11 @@
 <!-- Modal: Payment Success -->
 <div id="paymentSuccessModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 lg:p-8">
-        <div class="flex justify-center mb-5">
-            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-                <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                </svg>
-            </div>
+        <div class="text-center mb-5">
+            <h3 class="text-2xl font-black text-cuan-green">Berhasil!</h3>
+            <p class="text-gray-500 text-sm font-medium">Transaksi telah diproses</p>
         </div>
-        <h3 class="text-xl font-bold text-gray-900 text-center mb-1.5">Pembayaran Berhasil!</h3>
-        <p class="text-gray-600 text-sm text-center mb-5">Transaksi telah berhasil diproses</p>
-        <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-4 mb-5">
+        <div class="bg-gray-50 border border-gray-100 rounded-2xl p-5 mb-5">
             <div class="space-y-1.5 text-sm">
                 <div class="flex justify-between">
                     <span class="text-gray-600">No. Invoice:</span>
@@ -1351,9 +1340,9 @@
                     <span class="text-gray-600">Pelanggan:</span>
                     <span class="font-bold text-gray-900" id="successCustomer">-</span>
                 </div>
-                <div class="flex justify-between text-base font-bold border-t border-orange-200 pt-2 mt-2">
+                <div class="flex justify-between text-base font-bold border-t border-cuan-green/20 pt-2 mt-2">
                     <span class="text-gray-700">Total:</span>
-                    <span class="text-orange-600" id="successTotal">Rp 0</span>
+                    <span class="text-cuan-green" id="successTotal">Rp 0</span>
                 </div>
                 <div class="flex justify-between text-sm" id="successChangeRow" style="display: none;">
                     <span class="text-gray-600">Kembalian:</span>
@@ -1367,7 +1356,7 @@
         </div>
         <div class="space-y-2.5">
             @can('cetak struk')
-            <button onclick="printReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl text-sm font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg">
+            <button onclick="printReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-gradient-to-r from-cuan-green to-cuan-dark text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-md hover:shadow-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                 </svg>
@@ -1375,7 +1364,7 @@
             </button>
             @endcan
             @can('unduh struk')
-            <button onclick="downloadReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-orange-200 text-orange-600 rounded-xl text-sm font-semibold hover:bg-orange-50 transition-all">
+            <button onclick="downloadReceipt()" class="w-full flex items-center justify-center gap-2.5 px-4 py-3 bg-white border-2 border-cuan-green/20 text-cuan-green rounded-xl text-sm font-semibold hover:bg-cuan-green/10 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
@@ -1568,9 +1557,9 @@
                     <h3 class="text-xl font-bold text-gray-900 mb-6 text-center">Pilih Tipe Layanan</h3>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div onclick="selectServiceType('dine_in')" class="flex flex-col items-center gap-4 p-8 bg-white border-2 border-gray-200 rounded-2xl cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition-all group">
-                            <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <i class="fas fa-utensils text-3xl text-amber-600"></i>
+                        <div onclick="selectServiceType('dine_in')" class="flex flex-col items-center gap-4 p-8 bg-white border-2 border-gray-200 rounded-2xl cursor-pointer hover:border-cuan-green hover:bg-cuan-green/5 transition-all group">
+                            <div class="w-20 h-20 bg-cuan-green/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i class="fas fa-utensils text-3xl text-cuan-green"></i>
                             </div>
                             <div class="text-center">
                                 <p class="text-lg font-bold text-gray-900">Makan di Tempat</p>
@@ -1602,7 +1591,7 @@
                     </div>
 
                     <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <i class="fas fa-chair text-amber-500"></i>
+                        <i class="fas fa-chair text-cuan-green"></i>
                         Pilih Meja
                     </h3>
                     
@@ -1610,11 +1599,11 @@
                         <!-- Tables will be loaded dynamically -->
                     </div>
 
-                    <div id="selectedTableInfo" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                    <div id="selectedTableInfo" class="hidden bg-cuan-green/5 border border-cuan-green/20 rounded-xl p-4 mb-4">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-chair text-amber-600"></i>
+                                <div class="w-10 h-10 bg-cuan-green/20 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chair text-cuan-green"></i>
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-600">Meja Dipilih</p>
@@ -1650,9 +1639,9 @@
                             <i id="serviceIcon" class="fas fa-shopping-bag text-blue-600"></i>
                             <span class="text-sm font-medium text-blue-800" id="paymentServiceText">Bawa Pulang (Take Away)</span>
                         </div>
-                        <div id="paymentTableBadge" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2">
-                            <i class="fas fa-chair text-amber-600"></i>
-                            <span class="text-sm font-medium text-amber-800">Meja: <span id="paymentTableNumber">-</span></span>
+                        <div id="paymentTableBadge" class="hidden bg-cuan-green/5 border border-cuan-green/20 rounded-xl p-3 flex items-center gap-2">
+                            <i class="fas fa-chair text-cuan-green"></i>
+                            <span class="text-sm font-medium text-cuan-dark">Meja: <span id="paymentTableNumber">-</span></span>
                         </div>
                     </div>
 
@@ -1888,15 +1877,15 @@
 
                         <!-- Kelola Meja -->
                         @can('pilih meja pos')
-                        <button id="btnManageTables" onclick="openTableManagementModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-amber-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100" style="{{ auth()->user()->outlet->has_table_system ? '' : 'display: none;' }}">
-                            <i class="fas fa-chair w-4 text-amber-600"></i>
+                        <button id="btnManageTables" onclick="openTableManagementModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-cuan-green/5 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100" style="{{ auth()->user()->outlet->has_table_system ? '' : 'display: none;' }}">
+                            <i class="fas fa-chair w-4 text-cuan-green"></i>
                             <span>Kelola Meja</span>
                         </button>
                         @endcan
 
                         @can('atur tampilan produk pos')
-                        <button onclick="openProductSettingsModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-orange-50 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
-                            <i class="fas fa-cog w-4 text-orange-600"></i>
+                        <button onclick="openProductSettingsModal(); togglePOSMenu();" class="w-full px-4 py-2.5 text-left text-sm hover:bg-cuan-green/10 transition-colors flex items-center gap-2 text-gray-700 border-b border-gray-100">
+                            <i class="fas fa-cog w-4 text-cuan-green"></i>
                             <span>Pengaturan</span>
                         </button>
                         @endcan
@@ -1948,7 +1937,7 @@
                 </div>
 
                 <div id="actionsPayflowSummary" class="hidden mt-4">
-                    <div class="w-full px-4 py-3 bg-orange-50 text-orange-700 rounded-xl text-sm font-semibold flex items-center justify-between">
+                    <div class="w-full px-4 py-3 bg-cuan-green/10 text-cuan-dark rounded-xl text-sm font-semibold flex items-center justify-between">
                         <span id="payflowSummaryLabel">0 item · Rp 0</span>
                         <button class="text-xs underline hover:no-underline" onclick="backToBrowse()">Ubah Pesanan</button>
                     </div>
@@ -1962,7 +1951,7 @@
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden">
         <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50">
             <div class="flex items-center gap-3 flex-shrink-0">
-                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                <div class="w-8 h-8 rounded-full bg-cuan-green/20 flex items-center justify-center text-cuan-green">
                     <i class="fas fa-barcode"></i>
                 </div>
                 <h3 class="font-bold text-gray-900 hidden sm:block">Scan Barcode</h3>
@@ -1971,7 +1960,7 @@
             <div class="relative flex-1 max-w-md w-full">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                 <input type="text" id="manualBarcodeInput" 
-                       class="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all font-mono" 
+                       class="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-cuan-green focus:border-cuan-green transition-all font-mono" 
                        placeholder="Cari nama atau scan kode..." autofocus
                        autocomplete="off">
                 <div id="barcodeRecommendations" class="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-[70] hidden max-h-64 overflow-y-auto overflow-x-hidden"></div>
@@ -1986,7 +1975,7 @@
             <div id="reader" class="w-full max-w-md"></div>
             <!-- Overlay visual for scanning area -->
             <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
-                <div class="w-64 h-64 border-2 border-orange-500 border-dashed rounded-2xl opacity-30"></div>
+                <div class="w-64 h-64 border-2 border-cuan-green border-dashed rounded-2xl opacity-30"></div>
                 <div class="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-black bg-opacity-50 text-white text-[10px] rounded-full">
                     Arahkan kamera ke barcode produk
                 </div>
@@ -2008,18 +1997,12 @@
 <div id="openingAmountModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 lg:p-8">
         <div class="text-center mb-5">
-            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-1">Modal Awal</h3>
-            <p class="text-gray-600 text-sm">Masukkan jumlah uang modal awal untuk hari ini</p>
+            <h3 class="text-2xl font-black text-gray-900 mb-1">Modal Awal</h3>
+            <p class="text-gray-500 text-sm font-medium">Masukan saldo kas awal</p>
         </div>
-        <div class="bg-orange-50 rounded-xl p-3 mb-5">
-            <p class="text-xs sm:text-sm text-gray-700 text-center">
-                <i class="fas fa-info-circle text-orange-600 mr-1.5"></i>
-                Modal awal adalah uang tunai yang Anda bawa untuk memulai penjualan hari ini
+        <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-5">
+            <p class="text-[10px] text-gray-400 text-center uppercase font-bold tracking-widest">
+                REQUIRED FOR CASH FLOW TRACKING
             </p>
         </div>
         <div class="mb-5">
@@ -2027,21 +2010,20 @@
             <input 
                 type="number" 
                 id="openingAmountInput" 
-                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-base font-semibold" 
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent text-base font-semibold" 
                 placeholder="0"
                 min="0"
                 step="1000"
                 onkeypress="if(event.key==='Enter') submitOpeningAmount()">
-            <p class="text-xs text-gray-500 mt-2">
-                <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
-                Contoh: Rp 100.000 untuk kembalian dan pengeluaran tak terduga
+            <p class="text-xs text-gray-400 mt-2 italic">
+                Saldo kas untuk keperluan kembalian transaksi tunai
             </p>
         </div>
         <div class="flex gap-2.5">
             <button onclick="skipOpeningAmount()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
                 Lewati (Rp 0)
             </button>
-            <button onclick="submitOpeningAmount()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg">
+            <button onclick="submitOpeningAmount()" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-cuan-green to-cuan-dark text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md hover:shadow-lg">
                 Simpan & Mulai
             </button>
         </div>
@@ -2053,7 +2035,7 @@
     <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <i class="fas fa-calculator text-orange-600"></i>
+                <i class="fas fa-calculator text-cuan-green"></i>
                 Kalkulator
             </h3>
             <button onclick="closeCalculator()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
@@ -2065,7 +2047,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 h-full">
                 <!-- Calculator -->
                 <div class="lg:col-span-3">
-                    <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200">
+                    <div class="bg-gradient-to-br from-cuan-green/10 to-cuan-dark/10 rounded-xl p-4 border border-cuan-green/20">
                         <!-- Display -->
                         <div class="bg-white rounded-lg p-4 mb-4 shadow-inner">
                             <div class="text-right text-sm text-gray-500 h-6" id="calcExpression"></div>
@@ -2075,27 +2057,27 @@
                         <!-- Buttons -->
                         <div class="grid grid-cols-4 gap-2">
                             <button onclick="calcClear()" class="calc-btn bg-red-500 hover:bg-red-600 text-white col-span-2 font-black">C</button>
-                            <button onclick="calcDelete()" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white font-black text-xs">DEL</button>
-                            <button onclick="calcOperator('/')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">÷</button>
+                            <button onclick="calcDelete()" class="calc-btn bg-cuan-green hover:bg-cuan-dark text-white font-black text-xs">DEL</button>
+                            <button onclick="calcOperator('/')" class="calc-btn bg-cuan-green hover:bg-cuan-dark text-white text-xl">÷</button>
                             
                             <button onclick="calcNumber('7')" class="calc-btn">7</button>
                             <button onclick="calcNumber('8')" class="calc-btn">8</button>
                             <button onclick="calcNumber('9')" class="calc-btn">9</button>
-                            <button onclick="calcOperator('*')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">×</button>
+                            <button onclick="calcOperator('*')" class="calc-btn bg-cuan-green hover:bg-cuan-dark text-white text-xl">×</button>
                             
                             <button onclick="calcNumber('4')" class="calc-btn">4</button>
                             <button onclick="calcNumber('5')" class="calc-btn">5</button>
                             <button onclick="calcNumber('6')" class="calc-btn">6</button>
-                            <button onclick="calcOperator('-')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">−</button>
+                            <button onclick="calcOperator('-')" class="calc-btn bg-cuan-green hover:bg-cuan-dark text-white text-xl">−</button>
                             
                             <button onclick="calcNumber('1')" class="calc-btn">1</button>
                             <button onclick="calcNumber('2')" class="calc-btn">2</button>
                             <button onclick="calcNumber('3')" class="calc-btn">3</button>
-                            <button onclick="calcOperator('+')" class="calc-btn bg-orange-500 hover:bg-orange-600 text-white text-xl">+</button>
+                            <button onclick="calcOperator('+')" class="calc-btn bg-cuan-green hover:bg-cuan-dark text-white text-xl">+</button>
                             
                             <button onclick="calcNumber('0')" class="calc-btn col-span-2">0</button>
                             <button onclick="calcDecimal()" class="calc-btn">.</button>
-                            <button onclick="calcEquals()" class="calc-btn bg-orange-600 hover:bg-orange-700 text-white font-black text-xl">=</button>
+                            <button onclick="calcEquals()" class="calc-btn bg-cuan-dark hover:bg-cuan-dark/80 text-white font-black text-xl">=</button>
                         </div>
                     </div>
                 </div>
@@ -2125,7 +2107,7 @@
     <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <i class="fas fa-cog text-orange-600"></i>
+                <i class="fas fa-cog text-cuan-green"></i>
                 Pengaturan
             </h3>
             <button onclick="closeProductSettingsModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
@@ -2142,7 +2124,7 @@
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="hideOutOfStock" class="sr-only peer" onchange="applyProductSettings()">
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cuan-green/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-green"></div>
                 </label>
             </div>
 
@@ -2154,15 +2136,15 @@
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="hideNavbarToggle" class="sr-only peer" onchange="toggleNavbarVisibility(this.checked)">
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cuan-green/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-green"></div>
                 </label>
             </div>
 
             <!-- Toggle: Sistem Meja -->
-            <div class="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-200">
+            <div class="flex items-center justify-between p-4 bg-cuan-green/5 rounded-xl border border-cuan-green/20">
                 <div class="flex-1">
                     <div class="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                        <i class="fas fa-chair text-amber-600"></i>
+                        <i class="fas fa-chair text-cuan-green"></i>
                         Sistem Meja
                     </div>
                     <div class="text-sm text-gray-600">Aktifkan untuk memilih meja sebelum pembayaran</div>
@@ -2171,7 +2153,7 @@
                     <input type="checkbox" id="tableSystemToggle" class="sr-only peer" 
                            {{ auth()->user()->outlet && auth()->user()->outlet->has_table_system ? 'checked' : '' }}
                            onchange="toggleTableSystem(this.checked)">
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cuan-green/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-green/50"></div>
                 </label>
             </div>
 
@@ -2193,10 +2175,10 @@
             </div>
 
             <!-- Toggle: Posisi Panel -->
-            <div class="flex items-center justify-between p-4 bg-orange-50 rounded-xl border border-orange-200">
+            <div class="flex items-center justify-between p-4 bg-cuan-green/10 rounded-xl border border-cuan-green/20">
                 <div class="flex-1">
                     <div class="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                        <i class="fas fa-columns text-orange-600"></i>
+                        <i class="fas fa-columns text-cuan-green"></i>
                         Tukar Posisi Panel
                     </div>
                     <div class="text-sm text-gray-600">Pindahkan ringkasan pesanan ke sisi kiri</div>
@@ -2204,14 +2186,14 @@
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="layoutPositionToggle" class="sr-only peer" 
                            onchange="togglePanelPosition(this.checked)">
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cuan-green/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-green"></div>
                 </label>
             </div>
 
             <!-- Select: Urutkan Produk -->
             <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
                 <label class="block font-semibold text-gray-900 mb-3">Urutkan Produk</label>
-                <select id="sortProducts" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm" onchange="applyProductSettings()">
+                <select id="sortProducts" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent text-sm" onchange="applyProductSettings()">
                     <option value="default">Default (ID)</option>
                     <option value="name-asc">Nama (A-Z)</option>
                     <option value="name-desc">Nama (Z-A)</option>
@@ -2227,14 +2209,14 @@
                     <div class="font-semibold text-gray-900">Sembunyikan Beberapa Produk</div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="enableProductHiding" class="sr-only peer" onchange="toggleProductListVisibility()">
-                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cuan-green/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-green"></div>
                     </label>
                 </div>
                 
                 <!-- Product List (Hidden by default) -->
                 <div id="productVisibilityList" class="hidden mt-4 space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
                     @foreach($products as $product)
-                    <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
+                    <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-cuan-green transition-colors">
                         <div class="flex-1 min-w-0">
                             <div class="font-medium text-gray-900 truncate">{{ $product->name }}</div>
                             <div class="text-xs text-gray-500">{{ $product->code }}</div>
@@ -2255,7 +2237,7 @@
                                 data-product-id="{{ $product->id }}"
                                 {{ $product->is_active ? 'checked' : '' }}
                                 onchange="toggleProductVisibility({{ $product->id }}, this.checked)">
-                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cuan-green/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cuan-green"></div>
                         </label>
                     </div>
                     @endforeach
@@ -2267,7 +2249,7 @@
             <button onclick="resetProductSettings()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
                 <i class="fas fa-undo mr-2"></i>Reset
             </button>
-            <button onclick="closeProductSettingsModal()" class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
+            <button onclick="closeProductSettingsModal()" class="flex-1 px-4 py-3 bg-gradient-to-r from-cuan-green to-cuan-dark text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-md">
                 <i class="fas fa-check mr-2"></i>Selesai
             </button>
         </div>
@@ -2321,7 +2303,7 @@
         <div class="modal-header-fixed flex items-center justify-between p-6">
             <div>
                 <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-chart-line text-orange-600"></i>
+                    <i class="fas fa-chart-line text-cuan-green"></i>
                     Penjualan Hari Ini
                 </h3>
                 <p class="text-sm text-gray-600 mt-1" id="salesTodayDate">-</p>
@@ -2436,7 +2418,7 @@
         <div class="modal-header-fixed flex items-center justify-between p-6">
             <div>
                 <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-receipt text-orange-600"></i>
+                    <i class="fas fa-receipt text-cuan-green"></i>
                     Detail Penjualan
                 </h3>
                 <p class="text-sm text-gray-600 mt-1" id="detailInvoiceNumber">-</p>
@@ -2472,8 +2454,8 @@
                         <div class="font-bold text-gray-900" id="detailTime">-</div>
                     </div>
                     
-                    <div class="detail-info-card bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-                        <div class="text-xs text-orange-600 font-semibold mb-1 flex items-center gap-2">
+                    <div class="detail-info-card bg-gradient-to-br from-cuan-green/10 to-cuan-green/20 border-cuan-green/20">
+                        <div class="text-xs text-cuan-green font-semibold mb-1 flex items-center gap-2">
                             <i class="fas fa-credit-card"></i> PEMBAYARAN
                         </div>
                         <div class="font-bold text-gray-900" id="detailPaymentMethod">-</div>
@@ -2483,7 +2465,7 @@
                 <!-- Structured Notes (New) -->
                 <div id="detailNotesContainer" class="hidden">
                     <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                        <i class="fas fa-percentage text-orange-600"></i>
+                        <i class="fas fa-percentage text-cuan-green"></i>
                         Catatan & Promo
                     </h4>
                     <div id="detailStructuredNotes" class="space-y-3"></div>
@@ -2492,7 +2474,7 @@
                 <!-- Daftar Item -->
                 <div>
                     <h4 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                        <i class="fas fa-shopping-basket text-orange-600"></i>
+                        <i class="fas fa-shopping-basket text-cuan-green"></i>
                         Item Pembelian
                     </h4>
                     <div class="items-table-container">
@@ -2522,7 +2504,7 @@
                 <!-- Ringkasan Pembayaran -->
                 <div class="payment-summary-box">
                     <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <i class="fas fa-calculator text-orange-600"></i>
+                        <i class="fas fa-calculator text-cuan-green"></i>
                         Ringkasan Pembayaran
                     </h4>
                     <div class="space-y-3">
@@ -2540,7 +2522,7 @@
                         </div>
                         <div class="border-t-2 border-gray-300 pt-3 flex justify-between text-lg">
                             <span class="font-bold text-gray-900">Total Akhir</span>
-                            <span class="font-bold text-orange-600" id="detailGrandTotal">Rp 0</span>
+                            <span class="font-bold text-cuan-green" id="detailGrandTotal">Rp 0</span>
                         </div>
                         <div class="bg-white rounded-lg p-3 space-y-2 border border-gray-200">
                             <div class="flex justify-between text-sm">
@@ -2579,7 +2561,7 @@
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <div>
                 <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-hand-holding-usd text-orange-600"></i>
+                    <i class="fas fa-hand-holding-usd text-cuan-green"></i>
                     Pembayaran Dengan Utang
                 </h3>
                 <p class="text-sm text-gray-600 mt-1">Masukkan informasi pelanggan</p>
@@ -2591,16 +2573,16 @@
         
         <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
             <!-- Payment Info Summary -->
-            <div class="grid grid-cols-2 gap-4 mb-6 bg-gradient-to-br from-orange-50 to-red-50 p-5 rounded-2xl border border-orange-200 shadow-sm">
+            <div class="grid grid-cols-2 gap-4 mb-6 bg-gradient-to-br from-cuan-green/10 to-cuan-dark/10 p-5 rounded-2xl border border-cuan-green/20 shadow-sm">
                 <div>
-                    <div class="text-[10px] font-bold text-orange-500 uppercase mb-1">Total Belanja</div>
+                    <div class="text-[10px] font-bold text-cuan-green uppercase mb-1">Total Belanja</div>
                     <div class="text-xl font-black text-gray-900" id="debtTotalAmount">Rp 0</div>
                 </div>
                 <div>
                     <div class="text-[10px] font-bold text-green-600 uppercase mb-1">Dibayar</div>
                     <div class="text-xl font-black text-green-600" id="debtPaidAmount">Rp 0</div>
                 </div>
-                <div class="col-span-2 pt-3 border-t border-orange-200">
+                <div class="col-span-2 pt-3 border-t border-cuan-green/20">
                     <div class="text-[10px] font-bold text-red-500 uppercase mb-1">Sisa (Utang)</div>
                     <div class="text-3xl font-black text-red-600" id="debtRemainingAmount">Rp 0</div>
                 </div>
@@ -2619,7 +2601,7 @@
                         type="text" 
                         id="debtCustomerName" 
                         name="customer_name"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent resize-none" 
                         placeholder="Cari atau ketik nama pelanggan..."
                         required
                         autocomplete="off">
@@ -2639,7 +2621,7 @@
                         type="text" 
                         id="debtCustomerPhone" 
                         name="customer_phone"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent resize-none" 
                         placeholder="Contoh: 08123456789"
                         required
                         autocomplete="off">
@@ -2654,7 +2636,7 @@
                         type="email" 
                         id="debtCustomerEmail" 
                         name="customer_email"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent resize-none" 
                         placeholder="email@example.com"
                         required>
                 </div>
@@ -2668,7 +2650,7 @@
                         id="debtCustomerAddress" 
                         name="customer_address"
                         rows="2"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent resize-none" 
                         placeholder="Alamat lengkap pelanggan..."></textarea>
                 </div>
 
@@ -2680,7 +2662,7 @@
                     <input type="hidden" id="debtCustomerTypeHidden" name="customer_type" value="regular">
                     <select 
                         id="debtCustomerType" 
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-gray-100 cursor-not-allowed"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent bg-gray-100 cursor-not-allowed"
                         disabled
                         required>
                         <option value="regular">Regular</option>
@@ -2698,7 +2680,7 @@
                         type="number" 
                         id="debtCreditLimit" 
                         name="credit_limit"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent resize-none" 
                         placeholder="0"
                         min="0"
                         step="1000">
@@ -2714,7 +2696,7 @@
                         type="date" 
                         id="debtDueDate" 
                         name="due_date"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent resize-none"
                         min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                 </div>
 
@@ -2727,7 +2709,7 @@
                         id="debtNotes" 
                         name="notes"
                         rows="2"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent resize-none" 
                         placeholder="Catatan tambahan..."></textarea>
                 </div>
             </form>
@@ -2741,7 +2723,7 @@
             </button>
             <button 
                 onclick="submitDebtPayment()" 
-                class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-cuan-green to-cuan-dark text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-md">
                 <i class="fas fa-check mr-2"></i>Proses Utang
             </button>
         </div>
@@ -2755,7 +2737,7 @@
         <div class="modal-header-fixed flex items-center justify-between p-6">
             <div>
                 <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-chair text-amber-600"></i>
+                    <i class="fas fa-chair text-cuan-green"></i>
                     Kelola Status Meja
                 </h3>
                 <p class="text-sm text-gray-600 mt-1">Pantau dan ubah status ketersediaan meja outlet</p>
@@ -2791,11 +2773,11 @@
                     <div class="summary-card-value text-red-600" id="tmOccupiedTables">0</div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-amber-100 text-amber-600">
+                    <div class="summary-card-icon bg-cuan-green/10 text-cuan-green">
                         <i class="fas fa-bookmark"></i>
                     </div>
                     <div class="summary-card-label">Dipesan</div>
-                    <div class="summary-card-value text-amber-600" id="tmReservedTables">0</div>
+                    <div class="summary-card-value text-cuan-green" id="tmReservedTables">0</div>
                 </div>
             </div>
 
@@ -2812,7 +2794,7 @@
                     </div>
                     <h4 class="text-gray-900 font-bold text-lg mb-1">Meja Belum Tersedia</h4>
                     <p class="text-gray-500 text-sm mb-6">Silakan tambahkan data meja melalui menu pengaturan meja</p>
-                    <a href="{{ route('tables.create') }}" class="inline-flex items-center gap-2 px-8 py-3 bg-amber-600 text-white rounded-full font-bold text-sm hover:bg-amber-700 transition-all shadow-lg hover:shadow-amber-200 active:scale-95">
+                    <a href="{{ route('tables.create') }}" class="inline-flex items-center gap-2 px-8 py-3 bg-cuan-green text-white rounded-full font-bold text-sm hover:bg-cuan-dark transition-all shadow-lg hover:shadow-emerald-200 active:scale-95">
                         <i class="fas fa-plus"></i> 
                         Tambah Meja Sekarang
                     </a>
@@ -2822,7 +2804,7 @@
 
         <!-- Footer - Fixed -->
         <div class="modal-footer-fixed p-6 flex justify-end gap-3">
-            <a href="{{ route('tables.index') }}" class="action-btn action-btn-primary !bg-amber-600 hover:!bg-amber-700">
+            <a href="{{ route('tables.index') }}" class="action-btn action-btn-primary !bg-cuan-green hover:!bg-cuan-dark">
                 <i class="fas fa-external-link-alt"></i>
                 Pengaturan Meja Lengkap
             </a>
@@ -3351,7 +3333,7 @@ function createDiscountBadge(discount) {
             break;
         case 'fixed':
             text = `-Rp ${formatNumber(discount.value)}`;
-            color = 'bg-orange-500';
+            color = 'bg-cuan-green/100';
             break;
         case 'buy_x_get_y':
             text = `Beli ${discount.buy_quantity} Gratis ${discount.get_quantity}`;
@@ -3460,7 +3442,7 @@ function showFreeItemSelectionModal(discountPlan) {
                 const item = document.createElement('div');
                 item.className = 'free-item-candidate';
                 item.innerHTML = `
-                    <div class="flex items-center justify-between p-3 border ${isOutOfStock ? 'border-red-200 bg-red-50' : 'border-gray-200 hover:bg-orange-50'} rounded-xl transition-all duration-200">
+                    <div class="flex items-center justify-between p-3 border ${isOutOfStock ? 'border-red-200 bg-red-50' : 'border-gray-200 hover:bg-cuan-green/10'} rounded-xl transition-all duration-200">
                         <div class="flex-1">
                             <div class="font-bold text-gray-900">${escapeHtml(candidate.product_name)}</div>
                             <div class="text-sm text-gray-600">Rp ${formatNumber(candidate.unit_price || 0)}</div>
@@ -3489,7 +3471,7 @@ function showFreeItemSelectionModal(discountPlan) {
                                    id="freeQty_${candidate.product_id}"
                                    data-available-stock="${stockLimit}">
                             <button type="button" 
-                                    class="w-8 h-8 flex items-center justify-center rounded-md bg-orange-500 text-white hover:bg-orange-600 transition-colors shadow-sm ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}" 
+                                    class="w-8 h-8 flex items-center justify-center rounded-md bg-cuan-green text-white hover:bg-cuan-dark transition-colors shadow-sm ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}" 
                                     ${isOutOfStock ? 'disabled' : ''}
                                     onclick="adjustFreeQty(${candidate.product_id}, 1)">
                                 <i class="fas fa-plus text-xs"></i>
@@ -3527,7 +3509,7 @@ function createFreeItemModal() {
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col">
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
                 <h3 class="text-xl font-bold text-gray-900">
-                    <i class="fas fa-gift text-orange-500 mr-2"></i>
+                    <i class="fas fa-gift text-cuan-green mr-2"></i>
                     Pilih Item Gratis
                 </h3>
                 <button onclick="closeFreeItemModal()" class="text-gray-400 hover:text-gray-600">
@@ -3535,8 +3517,8 @@ function createFreeItemModal() {
                 </button>
             </div>
             
-            <div class="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 flex-shrink-0">
-                <p class="text-sm text-orange-800">
+            <div class="bg-cuan-green/10 border border-cuan-green/20 rounded-xl p-3 mb-4 flex-shrink-0">
+                <p class="text-sm text-cuan-dark">
                     <i class="fas fa-info-circle mr-2"></i>
                     Anda berhak mendapat <span id="freeItemQuota" class="font-bold">0</span> item gratis!
                     Sisa: <span id="freeItemsRemaining" class="font-bold">0</span>
@@ -3550,7 +3532,7 @@ function createFreeItemModal() {
                 <button onclick="closeFreeItemModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
                     Batal
                 </button>
-                <button onclick="confirmFreeItems()" class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-700 transition-all shadow-md">
+                <button onclick="confirmFreeItems()" class="flex-1 px-4 py-3 bg-gradient-to-r from-cuan-green to-cuan-dark text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-md">
                     <i class="fas fa-check mr-2"></i>
                     Konfirmasi
                 </button>
@@ -3783,10 +3765,15 @@ function clearDiscount(confirm = true) {
             text: "Diskon yang diterapkan akan dihapus",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#f97316',
+            confirmButtonColor: '#658C58',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal',
+            iconColor: '#658C58',
+            customClass: {
+                popup: 'rounded-[1.5rem] border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+            },
             backdrop: 'rgba(0, 0, 0, 0.5)'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -3823,7 +3810,7 @@ function createDiscountCodeModal() {
     modal.innerHTML = `
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div class="text-center mb-4">
-                <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div class="w-16 h-16 bg-gradient-to-br from-cuan-green to-cuan-dark rounded-full flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-ticket-alt text-white text-2xl"></i>
                 </div>
                 <h3 class="text-xl font-bold text-gray-900">Masukkan Kode Voucher</h3> <!-- ⬅️ Ubah -->
@@ -3831,7 +3818,7 @@ function createDiscountCodeModal() {
             <div class="mb-4">
                 <input type="text" 
                     id="discountCodeInput" 
-                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-center text-lg font-semibold uppercase"
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-cuan-green focus:border-transparent text-center text-lg font-semibold uppercase"
                     placeholder="KODE VOUCHER" 
                     onkeypress="if(event.key==='Enter') submitDiscountCode()">
             </div>
@@ -3840,7 +3827,7 @@ function createDiscountCodeModal() {
                 <button onclick="closeDiscountCodeModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50">
                     Batal
                 </button>
-                <button onclick="submitDiscountCode()" class="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-red-700">
+                <button onclick="submitDiscountCode()" class="flex-1 px-4 py-3 bg-gradient-to-r from-cuan-green to-cuan-dark text-white rounded-lg font-semibold hover:opacity-90">
                     Terapkan
                 </button>
             </div>
@@ -4080,10 +4067,15 @@ function calcClearHistory() {
         text: "Semua riwayat kalkulator akan dihapus",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
         confirmButtonText: 'Ya, Hapus',
         cancelButtonText: 'Batal',
+        iconColor: '#dc2626',
+        customClass: {
+            popup: 'rounded-[1.5rem] border-none shadow-2xl',
+            title: 'font-black text-gray-900',
+        },
         backdrop: 'rgba(0, 0, 0, 0.5)'
     }).then((result) => {
         if (result.isConfirmed) {
@@ -4187,10 +4179,15 @@ function skipOpeningAmount() {
         text: "Modal awal akan diset Rp 0. Anda yakin?",
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#f97316',
-        cancelButtonColor: '#d33',
+        confirmButtonColor: '#658C58',
+        cancelButtonColor: '#6b7280',
         confirmButtonText: 'Ya, Lewati',
         cancelButtonText: 'Batal',
+        iconColor: '#658C58',
+        customClass: {
+            popup: 'rounded-[1.5rem] border-none shadow-2xl',
+            title: 'font-black text-gray-900',
+        },
         backdrop: 'rgba(0, 0, 0, 0.5)'
     }).then((result) => {
         if (result.isConfirmed) {
@@ -4450,10 +4447,15 @@ function submitProductDetail() {
             text: `Stok bahan baku di dapur untuk ${productName} mungkin kurang. Lanjutkan?`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#f97316',
+            confirmButtonColor: '#658C58',
             cancelButtonColor: '#6b7280',
             confirmButtonText: 'Lanjutkan',
             cancelButtonText: 'Batal',
+            iconColor: '#658C58',
+            customClass: {
+                popup: 'rounded-[1.5rem] border-none shadow-2xl',
+                title: 'font-black text-gray-900',
+            },
             reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
@@ -4523,10 +4525,15 @@ function updateCartQuantity(cartKey, newQty, notes = null) {
                 text: `Stok bahan baku di dapur untuk ${productName} mungkin kurang. Lanjutkan?`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#f97316',
+                confirmButtonColor: '#658C58',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Lanjutkan',
                 cancelButtonText: 'Batal',
+                iconColor: '#658C58',
+                customClass: {
+                    popup: 'rounded-[1.5rem] border-none shadow-2xl',
+                    title: 'font-black text-gray-900',
+                },
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -4595,10 +4602,15 @@ function clearCart() {
         text: "Semua item di keranjang akan dihapus!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
+        confirmButtonColor: '#658C58',
+        cancelButtonColor: '#6b7280',
         confirmButtonText: 'Ya, Kosongkan',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        iconColor: '#658C58',
+        customClass: {
+            popup: 'rounded-[1.5rem] border-none shadow-2xl',
+            title: 'font-black text-gray-900',
+        }
     }).then((result) => {
         if (result.isConfirmed) {
     fetch('{{ route("pos.cart.clear") }}', {
@@ -4769,7 +4781,7 @@ function renderCart() {
         const saved = activeDiscountPlan.total_discount || cartSummary.total_discount || 0;
         
         discountInfo.innerHTML = `
-            <div class="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-xl p-3 mb-3">
+            <div class="bg-gradient-to-r from-red-50 to-cuan-green/10 border border-red-100 rounded-xl p-3 mb-3">
                 <div class="flex items-center justify-between">
                     <div>
                         <div class="text-[10px] font-bold text-red-500 uppercase mb-0.5">Diskon Aktif</div>
@@ -4911,21 +4923,21 @@ function processCashPayment() {
             title: 'Jumlah Uang Kurang',
             html: `
                 <div class="text-left space-y-4 mt-2">
-                    <div class="bg-gradient-to-br from-orange-50 to-red-50 p-5 rounded-2xl border border-orange-100 shadow-sm">
+                    <div class="bg-gradient-to-br from-cuan-green/10 to-cuan-dark/10 p-5 rounded-2xl border border-cuan-green/20 shadow-sm">
                         <div class="flex justify-between items-center mb-3">
-                            <span class="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Total Transaksi</span>
+                            <span class="text-[10px] font-bold text-cuan-green uppercase tracking-wider">Total Transaksi</span>
                             <span class="text-lg font-black text-gray-900">Rp ${formatNumber(grandTotal)}</span>
                         </div>
                         <div class="flex justify-between items-center mb-3">
-                            <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Uang Diterima</span>
-                            <span class="text-lg font-black text-green-600">Rp ${formatNumber(paid)}</span>
+                            <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Uang Diterima</span>
+                            <span class="text-lg font-black text-emerald-600">Rp ${formatNumber(paid)}</span>
                         </div>
-                        <div class="flex justify-between items-center pt-3 border-t border-orange-200">
+                        <div class="flex justify-between items-center pt-3 border-t border-cuan-green/20">
                             <span class="text-[10px] font-bold text-red-500 uppercase tracking-wider">Sisa Kekurangan</span>
                             <span class="text-2xl font-black text-red-600">Rp ${formatNumber(shortfall)}</span>
                         </div>
                     </div>
-                    <div class="flex gap-3 text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100 items-start">
+                    <div class="flex gap-3 text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100 items-start">
                         <i class="fas fa-info-circle mt-0.5"></i>
                         <p class="text-xs font-medium leading-relaxed">
                             Pembayaran kurang dari total belanja. Apakah sisa kekurangan ini akan dicatat sebagai <b>utang pelanggan</b>?
@@ -4935,12 +4947,14 @@ function processCashPayment() {
             `,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#f97316',
+            confirmButtonColor: '#658C58',
             cancelButtonColor: '#6b7280',
             confirmButtonText: '<i class="fas fa-check mr-2"></i>Ya, Catat Utang',
             cancelButtonText: '<i class="fas fa-times mr-2"></i>Tidak, Batalkan',
+            iconColor: '#658C58',
             customClass: {
-                popup: 'swal-wide',
+                popup: 'rounded-[1.5rem] border-none shadow-2xl swal-wide',
+                title: 'font-black text-gray-900',
                 confirmButton: 'px-6 py-3',
                 cancelButton: 'px-6 py-3'
             },
@@ -5231,10 +5245,10 @@ async function loadAndRenderTableManagement() {
             },
             reserved: { 
                 bg: 'bg-white', 
-                border: 'border-amber-100', 
-                icon: 'bg-amber-100 text-amber-600', 
-                badge: 'bg-amber-500 text-white',
-                shadow: 'hover:shadow-amber-200'
+                border: 'border-cuan-green/20', 
+                icon: 'bg-cuan-green/20 text-cuan-green', 
+                badge: 'bg-cuan-green/50 text-white',
+                shadow: 'hover:shadow-emerald-200'
             },
             maintenance: { 
                 bg: 'bg-white', 
@@ -5257,7 +5271,7 @@ async function loadAndRenderTableManagement() {
                     <span class="text-xl font-black leading-none">${table.table_number}</span>
                     <span class="text-[9px] font-bold mt-1 opacity-60">KAP: ${table.capacity}</span>
                 </div>
-                <div class="text-sm font-bold text-gray-900 group-hover:text-amber-600 transition-colors truncate w-full text-center px-1">
+                <div class="text-sm font-bold text-gray-900 group-hover:text-cuan-green transition-colors truncate w-full text-center px-1">
                     ${table.name || 'Meja ' + table.table_number}
                 </div>
                 <div class="text-[10px] font-medium text-gray-400 mt-0.5 tracking-tighter truncate w-full text-center">
@@ -5366,8 +5380,13 @@ function initiatePaymentFlow() {
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Pilih Sekarang',
                 cancelButtonText: 'Tidak, Hapus Promo',
-                confirmButtonColor: '#f97316',
-                cancelButtonColor: '#ef4444',
+                confirmButtonColor: '#658C58',
+                cancelButtonColor: '#6b7280',
+                iconColor: '#658C58',
+                customClass: {
+                    popup: 'rounded-[1.5rem] border-none shadow-2xl',
+                    title: 'font-black text-gray-900',
+                },
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -5423,14 +5442,14 @@ async function renderTableSelection() {
                     <i class="fas fa-chair text-gray-300"></i>
                 </div>
                 <p class="text-sm text-gray-500">Tidak ada meja tersedia</p>
-                <button onclick="skipTableSelection()" class="mt-4 text-amber-600 font-semibold text-sm">Tetap lanjut tanpa meja</button>
+                <button onclick="skipTableSelection()" class="mt-4 text-cuan-green font-semibold text-sm">Tetap lanjut tanpa meja</button>
             </div>
         `;
         return;
     }
     
     grid.innerHTML = availableTables.map(table => `
-        <div class="table-select-item bg-white border-2 border-gray-200 rounded-xl p-3 text-center cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-all"
+        <div class="table-select-item bg-white border-2 border-gray-200 rounded-xl p-3 text-center cursor-pointer hover:border-amber-400 hover:bg-cuan-green/5 transition-all"
              onclick="selectTable(${table.id}, '${table.table_number}', '${table.name || ''}')">
             <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <span class="text-sm font-bold text-emerald-700">${table.table_number}</span>
@@ -5447,9 +5466,9 @@ function selectTable(tableId, tableNumber, tableName) {
     
     // Update UI
     document.querySelectorAll('.table-select-item').forEach(el => {
-        el.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-300');
+        el.classList.remove('border-amber-500', 'bg-cuan-green/5', 'ring-2', 'ring-amber-300');
     });
-    event.currentTarget.classList.add('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-300');
+    event.currentTarget.classList.add('border-amber-500', 'bg-cuan-green/5', 'ring-2', 'ring-amber-300');
     
     // Show selected info
     document.getElementById('selectedTableInfo').classList.remove('hidden');
@@ -5466,7 +5485,7 @@ function clearSelectedTable() {
     selectedTableNumber = null;
     
     document.querySelectorAll('.table-select-item').forEach(el => {
-        el.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-300');
+        el.classList.remove('border-amber-500', 'bg-cuan-green/5', 'ring-2', 'ring-amber-300');
     });
     
     document.getElementById('selectedTableInfo').classList.add('hidden');
@@ -5485,10 +5504,10 @@ function proceedToPaymentSelection() {
     if (serviceBadge) {
         serviceBadge.classList.remove('hidden');
         if (selectedServiceType === 'dine_in') {
-            serviceBadge.className = 'bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2';
-            serviceText.className = 'text-sm font-medium text-amber-800';
+            serviceBadge.className = 'bg-cuan-green/5 border border-cuan-green/20 rounded-xl p-3 flex items-center gap-2';
+            serviceText.className = 'text-sm font-medium text-cuan-dark';
             serviceText.textContent = 'Makan di Tempat (Dine In)';
-            serviceIcon.className = 'fas fa-utensils text-amber-600';
+            serviceIcon.className = 'fas fa-utensils text-cuan-green';
         } else {
             serviceBadge.className = 'bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-2';
             serviceText.className = 'text-sm font-medium text-blue-800';
@@ -5900,13 +5919,13 @@ function submitDebtPayment() {
                     title: '<h3 class="text-xl font-extrabold text-gray-900">Produksi Sekarang?</h3>',
                     html: '<p class="text-sm text-gray-500">Terdapat produk yang perlu dimasak/diproduksi. Kirim pesanan ke dapur sekarang?</p>',
                     icon: 'question',
-                    iconColor: '#2563eb',
+                    iconColor: '#658C58',
                     showCancelButton: true,
                     confirmButtonText: '<i class="fas fa-play mr-2"></i> Ya, Produksi Sekarang',
                     cancelButtonText: 'Tidak, Nanti Saja',
                     customClass: {
-                        popup: 'rounded-[32px] border-none shadow-2xl',
-                        confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-3 text-sm font-bold shadow-lg shadow-blue-200 border-none transition-all active:scale-95 mx-2',
+                        popup: 'rounded-[1.5rem] border-none shadow-2xl',
+                        confirmButton: 'bg-cuan-green hover:bg-cuan-dark text-white rounded-xl px-6 py-3 text-sm font-bold shadow-lg shadow-emerald-200 border-none transition-all active:scale-95 mx-2',
                         cancelButton: 'bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-xl px-6 py-3 text-sm font-bold border-none transition-all mx-2',
                         actions: 'mt-6',
                     },
@@ -6618,9 +6637,9 @@ function renderPendingProductionList(sales) {
                     <div class="flex-1">
                         <div class="text-sm font-bold text-gray-800">
                             ${productName}
-                            ${isWaiting ? '<span class="text-[10px] font-bold bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded ml-2">Tunda</span>' : ''}
+                            ${isWaiting ? '<span class="text-[10px] font-bold bg-cuan-green/20 text-cuan-green px-1.5 py-0.5 rounded ml-2">Tunda</span>' : ''}
                         </div>
-                        ${notes ? `<div class="text-xs text-orange-600">Note: ${notes}</div>` : ''}
+                        ${notes ? `<div class="text-xs text-cuan-green">Note: ${notes}</div>` : ''}
                     </div>
                     <div class="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
                         ${quantity} ${unitName}
@@ -6878,10 +6897,15 @@ function resetProductSettings() {
         text: "Semua pengaturan produk akan dikembalikan ke default",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
         confirmButtonText: 'Ya, Reset',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        iconColor: '#dc2626',
+        customClass: {
+            popup: 'rounded-[1.5rem] border-none shadow-2xl',
+            title: 'font-black text-gray-900',
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             productSettings = {
@@ -7051,7 +7075,12 @@ function confirmRefund(saleId) {
         confirmButtonColor: '#dc2626',
         cancelButtonColor: '#6b7280',
         confirmButtonText: 'Ya, Refund',
-        cancelButtonText: 'Batal'
+        cancelButtonText: 'Batal',
+        iconColor: '#dc2626',
+        customClass: {
+            popup: 'rounded-[1.5rem] border-none shadow-2xl',
+            title: 'font-black text-gray-900',
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             processRefund(saleId);
@@ -7196,7 +7225,7 @@ function showSaleDetail(saleId) {
                                             </div>
                                         </div>
                                         <div class="text-right">
-                                            <p class="text-sm font-black text-orange-600">- Rp ${formatNumber(applied.amount || 0)}</p>
+                                            <p class="text-sm font-black text-cuan-green">- Rp ${formatNumber(applied.amount || 0)}</p>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -7274,7 +7303,7 @@ function showSaleDetail(saleId) {
                 }
                 if (window.permissions.cetakStrukPenjualan) {
                     actionContainer.innerHTML += `
-                        <a href="/sales/${data.id}/print" target="_blank" class="px-4 py-2 bg-orange-500 text-white rounded-lg text-xs font-semibold hover:bg-orange-600 transition-colors flex items-center gap-2">
+                        <a href="/sales/${data.id}/print" target="_blank" class="px-4 py-2 bg-cuan-green text-white rounded-lg text-xs font-semibold hover:opacity-90 transition-colors flex items-center gap-2">
                             <i class="fas fa-print"></i> Cetak
                         </a>
                     `;
@@ -7391,13 +7420,13 @@ function closeSaleDetailModal() {
             if (barcode.toLowerCase().includes(code.toLowerCase()) || productName.toLowerCase().includes(code.toLowerCase())) {
                 foundCount++;
                 html += `
-                    <div class="barcode-recommendation p-3 hover:bg-orange-50 cursor-pointer border-b border-gray-100 flex justify-between items-center transition-colors" 
+                    <div class="barcode-recommendation p-3 hover:bg-cuan-green/10 cursor-pointer border-b border-gray-100 flex justify-between items-center transition-colors" 
                          onclick="selectRecommendedBarcode('${barcode}')">
                         <div class="flex flex-col">
                             <span class="text-sm font-semibold text-gray-900">${productName}</span>
                             <span class="text-xs text-gray-500 font-mono">${barcode}</span>
                         </div>
-                        <i class="fas fa-plus text-orange-500 text-xs"></i>
+                        <i class="fas fa-plus text-cuan-green text-xs"></i>
                     </div>
                 `;
             }
@@ -7569,7 +7598,7 @@ function closeSaleDetailModal() {
         if (currentCustomer) {
             searchInput.value = `${currentCustomer.name} (${currentCustomer.type.toUpperCase()})`;
             searchInput.disabled = true;
-            searchInput.classList.add('bg-orange-50', 'text-orange-900', 'font-semibold');
+            searchInput.classList.add('bg-cuan-green/10', 'text-cuan-dark', 'font-semibold');
             clearBtn.classList.remove('hidden');
             updateProductPricesUI();
         }
@@ -7602,7 +7631,7 @@ function closeSaleDetailModal() {
                 if(customer.type === 'vip') badgeClass = 'bg-purple-100 text-purple-800';
 
                 html += `
-                    <div class="customer-search-item hover:bg-orange-50 p-3 cursor-pointer border-b border-gray-100 last:border-0" 
+                    <div class="customer-search-item hover:bg-cuan-green/10 p-3 cursor-pointer border-b border-gray-100 last:border-0" 
                          onclick='selectCustomer(${JSON.stringify(customer).replace(/'/g, "&#39;")})'>
                         <div class="flex justify-between items-start">
                             <div>
@@ -7634,7 +7663,7 @@ function closeSaleDetailModal() {
         // Update UI
         searchInput.value = customer.name;
         searchInput.disabled = true;
-        searchInput.classList.add('bg-orange-50', 'text-orange-900', 'font-semibold');
+        searchInput.classList.add('bg-cuan-green/10', 'text-cuan-dark', 'font-semibold');
         resultsContainer.classList.add('hidden');
         clearBtn.classList.remove('hidden');
 
@@ -7700,7 +7729,7 @@ function closeSaleDetailModal() {
         currentCustomer = null;
         searchInput.value = '';
         searchInput.disabled = false;
-        searchInput.classList.remove('bg-orange-50', 'text-orange-900', 'font-semibold');
+        searchInput.classList.remove('bg-cuan-green/10', 'text-orange-900', 'font-semibold');
         clearBtn.classList.add('hidden');
         
         // Hide Badge
@@ -7833,8 +7862,11 @@ function closeSaleDetailModal() {
             showConfirmButton: false,
             timer: 8000,
             timerProgressBar: true,
-            background: '#f0fdf4',
-            iconColor: '#22c55e',
+            background: '#ffffff',
+            iconColor: '#658C58',
+            customClass: {
+                popup: 'rounded-[1rem] shadow-xl border border-emerald-100',
+            },
             didOpen: function(toast) {
                 toast.addEventListener('mouseenter', Swal.stopTimer);
                 toast.addEventListener('mouseleave', Swal.resumeTimer);
