@@ -415,7 +415,7 @@
                         </div>
 
                         {{-- Supplier --}}
-                        <div>
+                        <div id="supplierSelectContainer">
                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
                                 Supplier
                             </label>
@@ -1971,6 +1971,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (readyToSellFields) readyToSellFields.classList.remove('hidden');
             if (hppSummarySection) hppSummarySection.classList.add('hidden');
             if (marginHppRow) marginHppRow.classList.add('hidden');
+            if (document.getElementById('supplierSelectContainer')) document.getElementById('supplierSelectContainer').classList.remove('hidden');
             
             // Set required attributes
             document.getElementById('manualHppInput').setAttribute('required', 'required');
@@ -1981,6 +1982,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (readyToSellFields) readyToSellFields.classList.add('hidden');
             if (hppSummarySection) hppSummarySection.classList.remove('hidden');
             if (marginHppRow) marginHppRow.classList.remove('hidden');
+            if (document.getElementById('supplierSelectContainer')) document.getElementById('supplierSelectContainer').classList.add('hidden');
             
             // Remove required attributes
             if (document.getElementById('manualHppInput')) document.getElementById('manualHppInput').removeAttribute('required');
