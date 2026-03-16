@@ -1140,7 +1140,7 @@
 
       if (!$hasMultiOutlet) {
           $singleOutlet = auth()->user()->hasRole('owner')
-              ? auth()->user()->ownedOutlets()->first()
+              ? auth()->user()->outletsOwned()->first()
               : auth()->user()->outlet;
           if ($singleOutlet) {
               $outletUrl = route('outlets.show', $singleOutlet->id);
