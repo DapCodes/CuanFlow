@@ -185,7 +185,7 @@ class RawMaterialAndSupplierController extends Controller
 
         // Get filter options
         $categories = Category::orderBy('name')->get();
-        $suppliers = Supplier::active()->orderBy('name')->get();
+        $suppliers = Supplier::where('outlet_id', $outletId)->active()->orderBy('name')->get();
 
         // NEW: Handles Instant Products Tab
         $tab = $request->get('tab', 'raw_material');
@@ -851,7 +851,7 @@ class RawMaterialAndSupplierController extends Controller
         if (! auth()->user()->can('lihat supplier')) {
             abort(403);
         }
-        $query = Supplier::withCount('rawMaterials');
+        $query = Supplier::where('outlet_id', Auth::user()->outlet_id)->withCount('rawMaterials');
 
         // Search
         if ($request->filled('search')) {
@@ -873,8 +873,7 @@ class RawMaterialAndSupplierController extends Controller
         $statsQuery = clone $query;
         $total_active = $statsQuery->where('is_active', true)->count();
 
-        $statsQueryForItems = clone $query;
-        $total_items_supplied = $statsQueryForItems->get()->sum('raw_materials_count');
+        $total_items_supplied = (clone $query)->get()->sum('raw_materials_count');
 
         $suppliers = $query->latest()->paginate(15);
 
@@ -894,7 +893,7 @@ class RawMaterialAndSupplierController extends Controller
             abort(403);
         }
         // Generate unique supplier code
-        $lastSupplier = Supplier::orderBy('id', 'desc')->first();
+        $lastSupplier = Supplier::where('outlet_id', Auth::user()->outlet_id)->orderBy('id', 'desc')->first();
         $nextNumber = $lastSupplier ? (int) substr($lastSupplier->code, 4) + 1 : 1;
         $code = 'SUP-'.str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
@@ -921,6 +920,7 @@ class RawMaterialAndSupplierController extends Controller
         ]);
 
         $validated['is_active'] = $request->has('is_active');
+        $validated['outlet_id'] = Auth::user()->outlet_id;
 
         Supplier::create($validated);
 

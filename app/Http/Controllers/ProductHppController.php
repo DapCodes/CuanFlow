@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class ProductHppController extends Controller
 {
@@ -167,6 +168,9 @@ class ProductHppController extends Controller
                     ],
                     'calculated_by' => Auth::id(),
                 ]);
+
+                // Update product HPP
+                $product->update(['hpp' => $hppPerUnit]);
 
                 // Record initial stock if provided
                 if ($validated['initial_stock'] > 0) {
