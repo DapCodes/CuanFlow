@@ -7,6 +7,7 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
+use App\Models\Product;
 use App\Models\RawMaterial;
 use App\Models\StockMovement;
 use App\Models\Supplier;
@@ -185,12 +186,69 @@ class RawMaterialAndSupplierController extends Controller
         $categories = Category::orderBy('name')->get();
         $suppliers = Supplier::active()->orderBy('name')->get();
 
+        // NEW: Handles Instant Products Tab
+        $tab = $request->get('tab', 'raw_material');
+        $products = collect();
+        $productStats = [];
+
+        if ($tab === 'instant_product') {
+            $productQuery = Product::where('outlet_id', $outletId)
+                ->where('is_stock', true)
+                ->doesntHave('recipes')
+                ->with(['category', 'unit', 'stocks' => function ($q) use ($outletId) {
+                    $q->where('outlet_id', $outletId);
+                }]);
+
+            // Apply search to products
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $productQuery->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhere('barcode', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter products by category
+            if ($request->filled('category_id')) {
+                $productQuery->where('category_id', $request->category_id);
+            }
+
+            // Product Stats
+            $statsProductQuery = clone $productQuery;
+            $allProductsForStats = $statsProductQuery->get();
+            
+            $productStats = [
+                'total' => $allProductsForStats->count(),
+                'active' => $allProductsForStats->where('is_active', true)->count(),
+                'low' => 0,
+                'out' => 0,
+                'expired' => 0, 
+                'expiring' => 0,
+            ];
+
+            foreach ($allProductsForStats as $product) {
+                $stock = $product->stocks->first();
+                $qty = $stock ? $stock->quantity : 0;
+                if ($qty <= 0) {
+                    $productStats['out']++;
+                } elseif ($qty <= $product->min_stock) {
+                    $productStats['low']++;
+                }
+            }
+
+            $products = $productQuery->latest()->paginate(15);
+            $stats = $productStats; 
+        }
+
         if ($request->ajax()) {
             return view('main.raw-material_n_supplier.index-raw_material_stock', compact(
                 'rawMaterials',
                 'categories',
                 'suppliers',
-                'stats'
+                'stats',
+                'tab',
+                'products'
             ));
         }
 
@@ -198,7 +256,9 @@ class RawMaterialAndSupplierController extends Controller
             'rawMaterials',
             'categories',
             'suppliers',
-            'stats'
+            'stats',
+            'tab',
+            'products'
         ));
     }
 
