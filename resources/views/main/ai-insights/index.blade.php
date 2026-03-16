@@ -3,11 +3,9 @@
 @section('title', 'Insight - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-  <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-  </svg>
-  <span class="text-gray-900 font-medium">Insight</span>
+<li class="flex items-center text-sm">
+  <span class="text-gray-400 mx-2">/</span>
+  <span class="text-gray-900 font-bold tracking-tight">AI Insights</span>
 </li>
 @endsection
 
@@ -15,24 +13,21 @@
 <main class="flex-grow py-4 sm:py-8 px-3 sm:px-4 bg-gray-50">
   <div class="max-w-7xl mx-auto space-y-4 sm:space-y-6">
 
-    {{-- Header --}}
-    <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
-      <div class="flex-1">
-        <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-          <span class="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-purple-50 text-purple-600 border border-purple-100">
-            <i class="fas fa-lightbulb text-xs sm:text-sm"></i>
-          </span>
-          <span>Insight Clara AI</span>
+    {{-- HEADER HALAMAN --}}
+    <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-xl md:text-2xl font-black text-gray-900">
+          Insight Clara AI
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-gray-500">
-          Klik tanggal di kalender untuk melihat insight. Ada status Belum Dibaca, Sudah Dibaca, dan Dismiss.
+        <p class="mt-1 text-sm text-gray-500">
+          Statistik cerdas dan rekomendasi otomatis untuk performa bisnis Anda.
         </p>
       </div>
-
-      <div class="flex items-center gap-2 sm:gap-3 justify-start md:justify-end">
+      <div class="flex items-center gap-3">
         <button id="btnToday"
-          class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 px-3 sm:px-4 py-2 text-xs font-semibold text-white hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-1">
-          Hari Ini
+          class="inline-flex items-center gap-2 rounded-xl bg-cuan-green px-5 py-3 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+          <i class="fas fa-calendar-day"></i>
+          <span>Lihat Hari Ini</span>
         </button>
       </div>
     </section>
@@ -42,13 +37,13 @@
       {{-- Calendar --}}
       <div class="lg:col-span-8">
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <div class="border-b border-gray-200 px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div class="bg-gray-50 px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
-              <h2 class="text-sm font-semibold text-gray-900">Kalender Insight</h2>
-              <p class="text-xs text-gray-500 mt-0.5">Indikator: U=Unread, R=Read, D=Dismissed</p>
+              <h2 class="text-sm font-black text-gray-900 uppercase tracking-widest">Kalender Insight</h2>
+              <p class="text-[10px] text-gray-500 font-medium">U: UNREAD • R: READ • D: DISMISSED</p>
             </div>
-            <div class="text-xs text-gray-500">
-              Klik tanggal untuk detail
+            <div class="text-[10px] font-black text-cuan-green uppercase tracking-widest">
+              Klik Tanggal Untuk Detail
             </div>
           </div>
 
@@ -60,21 +55,21 @@
 
       {{-- Side panel: legend (simple) --}}
       <div class="lg:col-span-4">
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-5">
-          <h3 class="text-sm font-semibold text-gray-900 mb-3">Legenda</h3>
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+          <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-4">Legenda Status</h3>
 
-          <div class="space-y-2 text-xs sm:text-sm">
-            <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-purple-50 border border-purple-100">
-              <span class="text-gray-700">Unread (U)</span>
-              <span class="text-purple-700 font-semibold">badge ungu</span>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+              <span class="text-[10px] font-black text-emerald-800 uppercase tracking-tight">Belum Dibaca (U)</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
-            <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-gray-50 border border-gray-100">
-              <span class="text-gray-700">Read (R)</span>
-              <span class="text-gray-700 font-semibold">badge abu</span>
+            <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+              <span class="text-[10px] font-black text-gray-600 uppercase tracking-tight">Sudah Dibaca (R)</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
             </div>
-            <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <span class="text-gray-700">Dismissed (D)</span>
-              <span class="text-slate-700 font-semibold">badge garis</span>
+            <div class="flex items-center justify-between p-3 rounded-xl bg-white border border-gray-100">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-tight">Diabaikan (D)</span>
+              <span class="w-2.5 h-2.5 rounded-full border-2 border-slate-200"></span>
             </div>
           </div>
 
@@ -95,30 +90,30 @@
     <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 overflow-hidden w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col">
       
       {{-- Modal Header --}}
-      <div class="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-200 flex items-start justify-between gap-3 flex-shrink-0">
-        <div class="flex-1 min-w-0">
-          <div class="text-xs text-gray-500">Insight tanggal</div>
-          <div id="modalDate" class="text-base sm:text-lg font-bold text-gray-900 truncate">-</div>
-          <div id="modalCounts" class="text-xs text-gray-500 mt-1 break-words">-</div>
+      <div class="px-6 py-5 border-b border-gray-100 flex items-start justify-between gap-4 flex-shrink-0 bg-gray-50/50">
+        <div class="flex-1">
+          <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Detail Insight AI</p>
+          <div id="modalDate" class="text-lg font-black text-gray-900 uppercase tracking-tighter">-</div>
+          <div id="modalCounts" class="text-[10px] font-bold text-cuan-green mt-1 bg-cuan-green/10 px-3 py-1 rounded-full w-fit uppercase tracking-tighter">-</div>
         </div>
-        <button id="btnCloseModal" class="text-gray-400 hover:text-gray-700 flex-shrink-0 p-1">
-          <i class="fas fa-times text-lg sm:text-xl"></i>
+        <button id="btnCloseModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i class="fas fa-times text-xl"></i>
         </button>
       </div>
 
       {{-- Tabs --}}
-      <div class="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-gray-200 flex-shrink-0 overflow-x-auto">
-        <div class="flex flex-nowrap sm:flex-wrap gap-2 items-center min-w-max sm:min-w-0">
-          <button data-tab="all" class="tabBtn px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 whitespace-nowrap">Semua</button>
-          <button data-tab="unread" class="tabBtn px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap">Belum Dibaca</button>
-          <button data-tab="read" class="tabBtn px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap">Sudah Dibaca</button>
-          <button data-tab="dismissed" class="tabBtn px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap">Dismiss</button>
+      <div class="px-5 py-3 border-b border-gray-100 flex-shrink-0 bg-white">
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <button data-tab="all" class="tabBtn px-4 py-2 text-[10px] font-black rounded-xl bg-cuan-green text-white uppercase tracking-widest transition-all">Semua</button>
+          <button data-tab="unread" class="tabBtn px-4 py-2 text-[10px] font-black rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 uppercase tracking-widest transition-all">Belum Dibaca</button>
+          <button data-tab="read" class="tabBtn px-4 py-2 text-[10px] font-black rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 uppercase tracking-widest transition-all">Sudah Dibaca</button>
+          <button data-tab="dismissed" class="tabBtn px-4 py-2 text-[10px] font-black rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 uppercase tracking-widest transition-all">Dismiss</button>
 
           <div class="hidden sm:flex ml-auto">
             @can('tandai semua ai insight dibaca')
             <button id="btnMarkAllRead"
-              class="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 text-white hover:opacity-95 whitespace-nowrap">
-              Tandai semua sudah dibaca
+              class="px-4 py-2 text-[10px] font-black rounded-xl bg-cuan-green text-white uppercase tracking-widest hover:bg-cuan-dark transition-all shadow-lg shadow-emerald-100">
+              Tandai Semua Dibaca
             </button>
             @endcan
           </div>
@@ -126,11 +121,11 @@
       </div>
 
       {{-- Mark All Read Button for Mobile --}}
-      <div class="sm:hidden px-3 py-2 border-b border-gray-200 flex-shrink-0">
+      <div class="sm:hidden px-5 py-3 border-b border-gray-100 bg-white">
         @can('tandai semua ai insight dibaca')
         <button id="btnMarkAllReadMobile"
-          class="w-full px-3 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-violet-400 to-purple-600 text-white hover:opacity-95">
-          Tandai semua sudah dibaca
+          class="w-full py-3 text-[10px] font-black rounded-xl bg-cuan-green text-white uppercase tracking-widest shadow-lg shadow-emerald-100">
+          Tandai Semua Sudah Dibaca
         </button>
         @endcan
       </div>
@@ -145,9 +140,9 @@
       </div>
 
       {{-- Modal Footer --}}
-      <div class="px-4 sm:px-5 py-3 sm:py-4 border-t border-gray-200 flex items-center justify-end flex-shrink-0">
-        <button id="btnCloseModal2" class="text-sm font-semibold text-gray-700 hover:text-gray-900">
-          Tutup
+      <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-end bg-gray-50/50">
+        <button id="btnCloseModal2" class="text-xs font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest">
+          Tutup Panel
         </button>
       </div>
     </div>
@@ -160,8 +155,8 @@
 <style>
   /* Seragam: ungu minimal */
   #calendar {
-    --fc-border-color: #e5e7eb;
-    --fc-today-bg-color: rgba(167, 139, 250, .16); /* violet soft */
+    --fc-border-color: #f3f4f6;
+    --fc-today-bg-color: rgba(16, 185, 129, .05); /* emerald soft */
   }
 
   .fc .fc-toolbar-title {
@@ -218,9 +213,9 @@
     }
   }
 
-  .cf-unread { background: rgba(167,139,250,.18); color: #5b21b6; border: 1px solid rgba(167,139,250,.35); }
-  .cf-read { background: #f3f4f6; color:#374151; border: 1px solid #e5e7eb; }
-  .cf-dismiss { background: #fff; color:#334155; border: 1px dashed #cbd5e1; }
+  .cf-unread { background: rgba(16, 185, 129, .1); color: #059669; border: 1px solid rgba(16, 185, 129, .2); }
+  .cf-read { background: #f9fafb; color:#6b7280; border: 1px solid #f3f4f6; }
+  .cf-dismiss { background: #fff; color:#94a3b8; border: 1px dashed #e2e8f0; }
 
   /* Responsive calendar day cells */
   .fc-daygrid-day-number {
@@ -303,7 +298,7 @@
   function pillSeverity(sev){
     if(sev==='critical') return 'bg-red-50 text-red-700 border-red-100';
     if(sev==='warning') return 'bg-amber-50 text-amber-700 border-amber-100';
-    return 'bg-purple-50 text-purple-700 border-purple-100';
+    return 'bg-emerald-50 text-emerald-700 border-emerald-100';
   }
 
   function statusText(item){
@@ -354,11 +349,11 @@
           </div>
           <div class="flex flex-row sm:flex-row gap-2 flex-shrink-0">
             ${(!i.is_dismissed && !i.is_read && permissions.canMarkRead) ? `
-              <button class="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 hover:bg-purple-100 whitespace-nowrap"
-                onclick="markRead(${i.id})">Tandai dibaca</button>` : ``}
+              <button class="px-3 py-1.5 text-[10px] font-black rounded-lg bg-cuan-green/10 text-cuan-green border border-cuan-green/20 hover:bg-cuan-green/20 uppercase tracking-tighter whitespace-nowrap transition-all"
+                onclick="markRead(${i.id})">Tandai Dibaca</button>` : ``}
             ${(!i.is_dismissed && permissions.canDismiss) ? `
-              <button class="px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap"
-                onclick="dismissInsight(${i.id})">Dismiss</button>` : ``}
+              <button class="px-3 py-1.5 text-[10px] font-black rounded-lg bg-gray-50 text-gray-400 border border-gray-200 hover:bg-gray-100 uppercase tracking-tighter whitespace-nowrap transition-all"
+                onclick="dismissInsight(${i.id})">Abaikan</button>` : ``}
           </div>
         </div>
         <div class="mt-2.5 sm:mt-3 text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line break-words">
@@ -392,12 +387,12 @@
     document.querySelectorAll('.tabBtn').forEach(btn=>{
       const tab = btn.getAttribute('data-tab');
       const active = tab === currentTab;
-      btn.classList.toggle('bg-purple-50', active);
-      btn.classList.toggle('text-purple-700', active);
-      btn.classList.toggle('border-purple-100', active);
-      btn.classList.toggle('bg-white', !active);
-      btn.classList.toggle('text-gray-700', !active);
-      btn.classList.toggle('border-gray-200', !active);
+      btn.classList.toggle('bg-cuan-green', active);
+      btn.classList.toggle('text-white', active);
+      btn.classList.remove('bg-purple-50', 'text-purple-700', 'border-purple-100'); // Clean up old classes if any
+      btn.classList.toggle('bg-gray-50', !active);
+      btn.classList.toggle('text-gray-400', !active);
+      btn.classList.toggle('bg-white', false); // Ensure this is explicitly managed
     });
   }
 
@@ -433,19 +428,39 @@
       if(selectedDate) await refreshDailyAndCalendar();
     }catch(e){
       console.error(e);
-      alert(e.message || 'Gagal menandai dibaca');
+      showToast('error', e.message || 'Gagal menandai dibaca');
     }
   }
 
   window.dismissInsight = async function(id){
-    if(!confirm('Yakin ingin dismiss insight ini?')) return;
-    try{
-      await postJson(routes.dismiss(id));
-      if(selectedDate) await refreshDailyAndCalendar();
-    }catch(e){
-      console.error(e);
-      alert(e.message || 'Gagal dismiss insight');
-    }
+    Swal.fire({
+      title: 'Abaikan insight ini?',
+      text: 'Insight ini tidak akan muncul lagi di daftar utama.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Ya, Abaikan',
+      cancelButtonText: 'Batal',
+      reverseButtons: true,
+      customClass: {
+          container: 'rounded-2xl',
+          popup: 'rounded-2xl',
+          confirmButton: 'rounded-xl font-bold px-6 py-3',
+          cancelButton: 'rounded-xl font-bold px-6 py-3'
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try{
+          await postJson(routes.dismiss(id));
+          if(selectedDate) await refreshDailyAndCalendar();
+          showToast('success', 'Insight berhasil diabaikan.');
+        }catch(e){
+          console.error(e);
+          showToast('error', e.message || 'Gagal mengabaikan insight');
+        }
+      }
+    });
   }
 
   // Mark all read untuk desktop dan mobile
@@ -455,7 +470,7 @@
       if(selectedDate) await refreshDailyAndCalendar();
     }catch(e){
       console.error(e);
-      alert(e.message || 'Gagal menandai semua dibaca');
+      showToast('error', e.message || 'Gagal menandai semua dibaca');
     }
   };
 
