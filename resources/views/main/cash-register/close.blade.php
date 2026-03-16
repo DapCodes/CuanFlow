@@ -312,32 +312,23 @@ const expectedAmount = {{ $register->expected_amount }};
 
 // ====== JS kamu yang lama boleh dipakai, hanya aku sederhanakan text confirm ======
 
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+});
+
 function showToast(type, message) {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    const colors = {
-        success: 'bg-green-500',
-        error: 'bg-red-500',
-        info: 'bg-blue-500',
-        warning: 'bg-orange-500'
-    };
-    const icons = {
-        success: 'fa-check-circle',
-        error: 'fa-exclamation-circle',
-        info: 'fa-info-circle',
-        warning: 'fa-exclamation-triangle'
-    };
-
-    toast.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 min-w-[280px]`;
-    toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="text-sm font-medium">${message}</span>`;
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        toast.style.transition = 'all 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 3500);
+    Toast.fire({
+        icon: type,
+        title: message
+    });
 }
 
 function calculateDifference() {
@@ -393,57 +384,79 @@ function calculateDifference() {
 document.getElementById('closeRegisterForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const closingAmount = parseFloat(document.getElementById('closingAmount').value);
+    const closingAmountInput = document.getElementById('closingAmount');
+    const closingAmount = parseFloat(closingAmountInput.value);
     const notes = document.getElementById('notes').value;
     const generateDailyReport = document.getElementById('generateDailyReport').checked;
     const submitBtn = document.getElementById('submitBtn');
 
-    if (!closingAmount || closingAmount < 0) {
+    if (isNaN(closingAmount) || closingAmount < 0) {
         showToast('error', 'Masukkan jumlah uang kas yang valid.');
         return;
     }
 
-    let confirmMessage = 'Tutup sesi sekarang?';
+    let confirmTitle = 'Tutup sesi sekarang?';
+    let confirmText = 'Pastikan semua uang kas telah dihitung dengan benar.';
+    
     if (generateDailyReport) {
-        confirmMessage = 'Tutup sesi dan buat laporan harian sekarang?';
+        confirmTitle = 'Tutup Sesi & Buat Laporan?';
+        confirmText = 'Sistem akan menutup sesi kasir dan mengunci laporan harian untuk hari ini.';
     }
 
-    if (!confirm(confirmMessage)) return;
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Memproses...';
-
-    fetch('{{ route("cash-register.process-close") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            closing_amount: closingAmount,
-            notes: notes,
-            generate_daily_report: generateDailyReport
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('success', data.message);
-            
-            // Tampilkan modal success
-            setTimeout(() => {
-                document.getElementById('successModal').classList.remove('hidden');
-            }, 500);
-        } else {
-            showToast('error', data.message || 'Gagal menutup sesi.');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Tutup Sesi';
+    Swal.fire({
+        title: confirmTitle,
+        text: confirmText,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Tutup Sesi',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            container: 'rounded-2xl',
+            popup: 'rounded-2xl',
+            confirmButton: 'rounded-xl font-bold px-6 py-3',
+            cancelButton: 'rounded-xl font-bold px-6 py-3'
         }
-    })
-    .catch(() => {
-        showToast('error', 'Terjadi kesalahan.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Tutup Sesi';
+    }).then((result) => {
+        if (result.isConfirmed) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Memproses...';
+
+            fetch('{{ route("cash-register.process-close") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    closing_amount: closingAmount,
+                    notes: notes,
+                    generate_daily_report: generateDailyReport
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', data.message);
+                    
+                    // Tampilkan modal success
+                    setTimeout(() => {
+                        document.getElementById('successModal').classList.remove('hidden');
+                    }, 500);
+                } else {
+                    showToast('error', data.message || 'Gagal menutup sesi.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Konfirmasi & Tutup Sesi';
+                }
+            })
+            .catch(() => {
+                showToast('error', 'Terjadi kesalahan sistem.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Konfirmasi & Tutup Sesi';
+            });
+        }
     });
 });
 
