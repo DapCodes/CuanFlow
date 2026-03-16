@@ -3,32 +3,34 @@
 @section('title', 'Kebijakan Outlet - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Kebijakan Outlet</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-bold tracking-tight">Kebijakan Outlet</span>
 </li>
 @endsection
 
 @section('content')
-<main class="flex-grow py-8 px-4 bg-[#f9fafb]" x-data="{ searchQuery: '' }">
-    <div class="max-w-6xl mx-auto space-y-8">
+<main class="flex-grow py-8 px-4 bg-gray-50" x-data="{ searchQuery: '' }">
+    <div class="max-w-7xl mx-auto space-y-6">
         
-        {{-- Header Section --}}
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div class="animate-fade-in-down">
-                <h1 class="text-3xl font-black text-gray-900 tracking-tight">Kebijakan & SOP</h1>
-                <p class="text-sm text-gray-500 font-medium mt-1">Pusat dokumentasi aturan dan prosedur operasional outlet Anda.</p>
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Kebijakan & SOP
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Pusat dokumentasi aturan dan prosedur operasional outlet Anda.
+                </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 <div class="relative group min-w-[240px]">
-                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-gray-900 transition-colors"></i>
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cuan-green transition-colors"></i>
                     <input type="text" x-model="searchQuery" placeholder="Cari kebijakan..." 
-                        class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all shadow-sm">
+                        class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all shadow-sm">
                 </div>
                 @can('buat kebijakan outlet')
-                <a href="{{ route('outlet-policies.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-gray-900 text-white rounded-2xl shadow-xl shadow-gray-200 hover:bg-black transition-all text-xs font-black uppercase tracking-[0.2em] active:scale-95">
+                <a href="{{ route('outlet-policies.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-cuan-green text-white rounded-2xl shadow-lg shadow-cuan-green/20 hover:bg-cuan-dark transition-all text-xs font-black uppercase tracking-widest active:scale-95">
                     <i class="fas fa-plus mr-2"></i>
                     Buat Baru
                 </a>
@@ -38,12 +40,12 @@
 
         {{-- Flash Messages --}}
         @if(session('success'))
-            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" class="px-5 py-4 bg-gray-900 text-white rounded-2xl shadow-lg flex items-center justify-between animate-fade-in-down">
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" class="px-5 py-4 bg-cuan-green text-white rounded-2xl shadow-xl shadow-emerald-100 flex items-center justify-between animate-fade-in-down">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
                         <i class="fas fa-check text-xs"></i>
                     </div>
-                    <span class="text-sm font-bold">{{ session('success') }}</span>
+                    <span class="text-xs font-black uppercase tracking-widest">{{ session('success') }}</span>
                 </div>
                 <button @click="show = false" class="text-white/50 hover:text-white"><i class="fas fa-times text-xs"></i></button>
             </div>
@@ -57,7 +59,7 @@
                     
                     <div>
                         <div class="flex items-start justify-between mb-6">
-                            <span class="px-4 py-1.5 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400 rounded-full border border-gray-100 group-hover:bg-gray-900 group-hover:text-white group-hover:border-gray-900 transition-all duration-300">
+                            <span class="px-4 py-1.5 bg-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400 rounded-full border border-gray-100 group-hover:bg-cuan-green group-hover:text-white group-hover:border-cuan-green transition-all duration-300">
                                 {{ $policy->category ?? 'Umum' }}
                             </span>
                             <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -67,10 +69,10 @@
                                 </a>
                                 @endcan
                                 @can('hapus kebijakan outlet')
-                                <form action="{{ route('outlet-policies.destroy', $policy->id) }}" method="POST" onsubmit="return confirm('Hapus kebijakan ini?')">
+                                <form action="{{ route('outlet-policies.destroy', $policy->id) }}" method="POST" class="delete-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 transition-colors">
+                                    <button type="button" onclick="confirmDelete(this)" class="p-2 text-gray-400 hover:text-red-600 transition-colors">
                                         <i class="fas fa-trash text-xs"></i>
                                     </button>
                                 </form>
@@ -97,7 +99,7 @@
                                 <span class="text-[10px] font-medium text-gray-400">{{ $policy->creator->name ?? 'Sistem' }}</span>
                             </div>
                         </div>
-                        <a href="{{ route('outlet-policies.show', $policy->id) }}" class="w-10 h-10 rounded-2xl bg-gray-50 text-gray-900 flex items-center justify-center hover:bg-gray-900 hover:text-white transition-all group/btn">
+                        <a href="{{ route('outlet-policies.show', $policy->id) }}" class="w-10 h-10 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-cuan-green hover:text-white transition-all group/btn">
                             <i class="fas fa-arrow-right text-xs group-hover/btn:translate-x-0.5 transition-transform"></i>
                         </a>
                     </div>
@@ -130,3 +132,32 @@
     .animate-fade-in-down { animation: fade-in-down 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 </style>
 @endsection
+
+@push('scripts')
+<script>
+    function confirmDelete(button) {
+        const form = button.closest('form');
+        Swal.fire({
+            title: 'Hapus kebijakan ini?',
+            text: 'Dokumentasi kebijakan ini akan dihapus secara permanen.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+            customClass: {
+                container: 'rounded-2xl',
+                popup: 'rounded-2xl',
+                confirmButton: 'rounded-xl font-bold px-6 py-3',
+                cancelButton: 'rounded-xl font-bold px-6 py-3'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    }
+</script>
+@endpush
