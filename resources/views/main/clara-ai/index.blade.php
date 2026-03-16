@@ -3,11 +3,9 @@
 @section('title', 'Clara AI')
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Clara AI</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-bold tracking-tight">Clara AI</span>
 </li>
 @endsection
 
@@ -59,22 +57,19 @@
             class="w-64 bg-white border-r border-gray-200 flex flex-col fixed lg:relative z-30 h-full lg:translate-x-0 -translate-x-full transition-transform duration-300 ease-in-out">
 
             <!-- Sidebar Header -->
-            <div class="p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
-                <h2 class="font-semibold text-gray-800 text-sm">Riwayat Chat</h2>
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0 bg-gray-50/50">
+                <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Riwayat Chat</h2>
                 <button onclick="toggleSidebar()" class="lg:hidden text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
+                    <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
 
             <!-- New Chat Button -->
-            <div class="p-3 border-b border-gray-200 flex-shrink-0">
+            <div class="p-4 border-b border-gray-100 flex-shrink-0 bg-white">
                 @can('sesi baru clara ai')
                 <button onclick="createNewChat()"
-                    class="w-full px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-lg hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium shadow-sm hover:shadow">
-                    <i class="fas fa-plus mr-2"></i>Chat Baru
+                    class="w-full px-4 py-3 bg-cuan-green text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-cuan-dark transition-all shadow-lg shadow-emerald-100 active:scale-95">
+                    <i class="fas fa-plus mr-2"></i>Mulai Chat Baru
                 </button>
                 @endcan
             </div>
@@ -86,11 +81,11 @@
                         class="chat-item relative mb-1 {{ $s->id == $session->id ? 'active' : '' }}">
                         <div class="relative group">
                             <button onclick="loadChat({{ $s->id }})"
-                                class="w-full text-left px-3 py-2.5 pr-10 rounded-lg hover:bg-gray-100 transition-colors duration-150 {{ $s->id == $session->id ? 'bg-indigo-50 border border-indigo-200' : 'border border-transparent' }}">
-                                <div class="text-sm font-medium truncate session-title {{ $s->id == $session->id ? 'text-indigo-700' : 'text-gray-700' }}">
+                                class="w-full text-left px-3 py-3 pr-10 rounded-xl transition-all duration-200 {{ $s->id == $session->id ? 'bg-emerald-50 border border-emerald-100 shadow-sm' : 'border border-transparent hover:bg-gray-50' }}">
+                                <div class="text-xs font-black uppercase tracking-tight truncate session-title {{ $s->id == $session->id ? 'text-emerald-700' : 'text-gray-700' }}">
                                     {{ $s->title }}
                                 </div>
-                                <div class="text-xs text-gray-500 mt-0.5">{{ $s->created_at->diffForHumans() }}</div>
+                                <div class="text-[10px] font-bold text-gray-400 mt-1 uppercase">{{ $s->created_at->diffForHumans() }}</div>
                             </button>
                             @can('hapus sesi clara ai')
                             <button onclick="confirmDelete(event, {{ $s->id }})" 
@@ -128,12 +123,12 @@
                         </button>
 
                         <div
-                            class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                            class="w-9 h-9 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
                             <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
                         </div>
                         <div class="min-w-0">
-                            <h1 class="font-semibold text-gray-900 truncate text-sm">Clara AI</h1>
-                            <p class="text-xs text-gray-500">Asisten Bisnis Cerdas</p>
+                            <h1 class="font-black text-gray-900 truncate text-sm uppercase tracking-tighter">Clara AI</h1>
+                            <p class="text-[10px] font-bold text-cuan-green uppercase tracking-widest">Asisten Bisnis Cerdas</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -146,18 +141,18 @@
                 <div class="max-w-3xl mx-auto px-4 py-6">
                     @forelse($messages as $message)
                         @if ($message->role === 'user')
-                            <div class="flex justify-end mb-4">
-                                <div class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%] shadow-sm break-words">
+                            <div class="flex justify-end mb-6">
+                                <div class="bg-gray-900 text-white rounded-2xl rounded-tr-none px-5 py-3.5 max-w-[85%] shadow-lg shadow-gray-200/50 break-words">
                                     <p class="text-sm leading-relaxed whitespace-pre-wrap break-words">{{ $message->content }}</p>
                                 </div>
                             </div>
                         @else
-                            <div class="flex gap-3 mb-4">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <div class="flex gap-4 mb-6">
+                                <div class="w-9 h-9 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-xl shadow-emerald-50">
                                     <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
                                 </div>
-                                <div class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[80%] break-words overflow-hidden">
-                                    <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words word-break">{{ $message->content }}</p>
+                                <div class="bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-tl-none px-5 py-3.5 max-w-[85%] shadow-sm break-words overflow-hidden border-l-4 border-l-cuan-green">
+                                    <p class="text-sm leading-relaxed whitespace-pre-wrap break-words word-break transition-all duration-300">{{ $message->content }}</p>
                                 </div>
                             </div>
                         @endif
@@ -168,20 +163,22 @@
                                 <p class="text-gray-600 text-sm mb-8">Saya Clara AI, siap membantu bisnis Anda dengan
                                     analisis data dan insight berharga</p>
 
-                                <div class="space-y-2">
+                                <div class="space-y-3">
                                     @can('chat dengan clara ai')
                                     <button onclick="askQuestion('Bagaimana trend penjualan minggu ini?')"
-                                        class="w-full px-4 py-3 bg-white border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 rounded-xl text-sm text-left transition-all duration-200 shadow-sm hover:shadow group">
-                                        <span class="text-gray-700 group-hover:text-indigo-700">Trend penjualan minggu
-                                            ini</span>
+                                        class="w-full px-5 py-4 bg-white border border-gray-100 hover:border-cuan-green hover:shadow-emerald-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-left transition-all duration-300 shadow-sm hover:shadow-xl group flex items-center justify-between">
+                                        <span class="text-gray-400 group-hover:text-cuan-green">Trend penjualan minggu ini</span>
+                                        <i class="fas fa-chevron-right text-gray-200 group-hover:text-cuan-green group-hover:translate-x-1 transition-all"></i>
                                     </button>
                                     <button onclick="askQuestion('Produk apa yang paling laris?')"
-                                        class="w-full px-4 py-3 bg-white border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 rounded-xl text-sm text-left transition-all duration-200 shadow-sm hover:shadow group">
-                                        <span class="text-gray-700 group-hover:text-indigo-700">Produk terlaris</span>
+                                        class="w-full px-5 py-4 bg-white border border-gray-100 hover:border-cuan-green hover:shadow-emerald-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-left transition-all duration-300 shadow-sm hover:shadow-xl group flex items-center justify-between">
+                                        <span class="text-gray-400 group-hover:text-cuan-green">Produk terlaris</span>
+                                        <i class="fas fa-chevron-right text-gray-200 group-hover:text-cuan-green group-hover:translate-x-1 transition-all"></i>
                                     </button>
                                     <button onclick="askQuestion('Produk mana yang stoknya menipis?')"
-                                        class="w-full px-4 py-3 bg-white border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 rounded-xl text-sm text-left transition-all duration-200 shadow-sm hover:shadow group">
-                                        <span class="text-gray-700 group-hover:text-indigo-700">Cek stok menipis</span>
+                                        class="w-full px-5 py-4 bg-white border border-gray-100 hover:border-cuan-green hover:shadow-emerald-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-left transition-all duration-300 shadow-sm hover:shadow-xl group flex items-center justify-between">
+                                        <span class="text-gray-400 group-hover:text-cuan-green">Cek stok menipis</span>
+                                        <i class="fas fa-chevron-right text-gray-200 group-hover:text-cuan-green group-hover:translate-x-1 transition-all"></i>
                                     </button>
                                     @endcan
                                 </div>
@@ -201,23 +198,20 @@
                         <div class="flex-1">
                             @can('chat dengan clara ai')
                             <input type="text" id="messageInput" name="message"
-                                placeholder="Tanyakan sesuatu tentang bisnis Anda..."
-                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition-shadow shadow-sm"
+                                placeholder="Tanyakan tren bisnis Anda..."
+                                class="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green focus:bg-white text-sm transition-all shadow-sm"
                                 maxlength="1000" autocomplete="off">
                             @else
                             <input type="text" disabled
-                                placeholder="Anda tidak memiliki izin untuk chat dengan Clara AI"
-                                class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-sm cursor-not-allowed">
+                                placeholder="Izin akses Clara AI ditangguhkan"
+                                class="w-full px-6 py-4 bg-gray-100 border border-gray-200 rounded-2xl text-sm cursor-not-allowed">
                             @endcan
                         </div>
 
                         @can('chat dengan clara ai')
                         <button type="submit" id="sendButton"
-                            class="p-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-xl font-medium hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm hover:shadow flex items-center justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                            </svg>
+                            class="w-12 h-12 bg-cuan-green text-white rounded-2xl font-black hover:bg-cuan-dark transition-all shadow-xl shadow-emerald-100 active:scale-95 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-paper-plane text-lg"></i>
                         </button>
                         @endcan
                     </form>
@@ -283,9 +277,27 @@
             function confirmDelete(event, sessionId) {
                 event.stopPropagation(); // Prevent triggering loadChat
 
-                if (confirm('Yakin ingin menghapus chat session ini? Semua pesan akan dihapus secara permanen.')) {
-                    deleteSession(sessionId);
-                }
+                Swal.fire({
+                    title: 'Hapus sesi chat?',
+                    text: 'Semua pesan dalam sesi ini akan dihapus secara permanen.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Hapus',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true,
+                    customClass: {
+                        container: 'rounded-2xl',
+                        popup: 'rounded-2xl',
+                        confirmButton: 'rounded-xl font-bold px-6 py-3',
+                        cancelButton: 'rounded-xl font-bold px-6 py-3'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deleteSession(sessionId);
+                    }
+                });
             }
 
             async function deleteSession(sessionId) {
@@ -313,11 +325,21 @@
                             }
                         }
                     } else {
-                        alert('Gagal menghapus chat session: ' + data.message);
+                        Swal.fire({
+                            title: 'Gagal',
+                            text: 'Gagal menghapus chat session: ' + data.message,
+                            icon: 'error',
+                            customClass: { popup: 'rounded-2xl' }
+                        });
                     }
                 } catch (err) {
                     console.error('Error deleting session:', err);
-                    alert('Terjadi kesalahan saat menghapus chat session.');
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Terjadi kesalahan saat menghapus chat session.',
+                        icon: 'error',
+                        customClass: { popup: 'rounded-2xl' }
+                    });
                 }
             }
 
@@ -345,8 +367,8 @@
                 // Add user message
                 const chatContent = container.querySelector('.max-w-3xl') || container;
                 chatContent.insertAdjacentHTML('beforeend', `
-                    <div class="flex justify-end mb-4">
-                        <div class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%] shadow-sm break-words">
+                    <div class="flex justify-end mb-6">
+                        <div class="bg-gray-900 text-white rounded-2xl rounded-tr-none px-5 py-3.5 max-w-[85%] shadow-lg shadow-gray-200/50 break-words">
                             <p class="text-sm leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(message)}</p>
                         </div>
                     </div>
@@ -354,15 +376,15 @@
 
                 // Add loading
                 chatContent.insertAdjacentHTML('beforeend', `
-                    <div class="flex gap-3 mb-4" id="loading">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <div class="flex gap-4 mb-6" id="loading">
+                        <div class="w-9 h-9 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-xl shadow-emerald-50">
                             <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
                         </div>
-                        <div class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5">
-                            <div class="flex gap-1">
-                                <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                                <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
-                                <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
+                        <div class="bg-white border border-gray-100 rounded-2xl rounded-tl-none px-5 py-3.5 shadow-sm">
+                            <div class="flex gap-1.5">
+                                <div class="w-2 h-2 bg-cuan-green rounded-full animate-bounce"></div>
+                                <div class="w-2 h-2 bg-cuan-green rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
+                                <div class="w-2 h-2 bg-cuan-green rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
                             </div>
                         </div>
                     </div>
@@ -389,12 +411,12 @@
 
                     if (data.success) {
                         chatContent.insertAdjacentHTML('beforeend', `
-                            <div class="flex gap-3 mb-4">
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <div class="flex gap-4 mb-6">
+                                <div class="w-9 h-9 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-xl shadow-emerald-50">
                                     <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
                                 </div>
-                                <div class="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[80%] break-words overflow-hidden">
-                                    <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words word-break">${escapeHtml(data.message)}</p>
+                                <div class="bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-tl-none px-5 py-3.5 max-w-[85%] shadow-sm break-words overflow-hidden border-l-4 border-l-cuan-green">
+                                    <p class="text-sm leading-relaxed whitespace-pre-wrap break-words word-break">${escapeHtml(data.message)}</p>
                                 </div>
                             </div>
                         `);
