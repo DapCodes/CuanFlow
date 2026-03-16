@@ -1951,9 +1951,6 @@
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden">
         <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50">
             <div class="flex items-center gap-3 flex-shrink-0">
-                <div class="w-8 h-8 rounded-full bg-cuan-green/20 flex items-center justify-center text-cuan-green">
-                    <i class="fas fa-barcode"></i>
-                </div>
                 <h3 class="font-bold text-gray-900 hidden sm:block">Scan Barcode</h3>
             </div>
             
@@ -2034,10 +2031,7 @@
 <div id="calculatorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-            <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <i class="fas fa-calculator text-cuan-green"></i>
-                Kalkulator
-            </h3>
+            <h3 class="text-xl font-black text-gray-900">Kalkulator</h3>
             <button onclick="closeCalculator()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
                 <i class="fas fa-times"></i>
             </button>
@@ -2047,7 +2041,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 h-full">
                 <!-- Calculator -->
                 <div class="lg:col-span-3">
-                    <div class="bg-gradient-to-br from-cuan-green/10 to-cuan-dark/10 rounded-xl p-4 border border-cuan-green/20">
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
                         <!-- Display -->
                         <div class="bg-white rounded-lg p-4 mb-4 shadow-inner">
                             <div class="text-right text-sm text-gray-500 h-6" id="calcExpression"></div>
@@ -2086,8 +2080,8 @@
                 <div class="lg:col-span-2 flex flex-col h-full lg:min-h-[400px]">
                     <div class="flex items-center justify-between mb-3 flex-shrink-0">
                         <h4 class="text-sm font-bold text-gray-700 uppercase tracking-widest">Riwayat</h4>
-                        <button onclick="calcClearHistory()" class="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1">
-                            <i class="fas fa-trash text-[10px]"></i>Hapus
+                        <button onclick="calcClearHistory()" class="text-[10px] text-red-500 hover:text-red-700 font-bold uppercase tracking-wider">
+                            Hapus Riwayat
                         </button>
                     </div>
                     <div id="calcHistory" class="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
@@ -2106,10 +2100,7 @@
 <div id="productSettingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-            <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <i class="fas fa-cog text-cuan-green"></i>
-                Pengaturan
-            </h3>
+            <h3 class="text-xl font-black text-gray-900">Pengaturan POS</h3>
             <button onclick="closeProductSettingsModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
                 <i class="fas fa-times"></i>
             </button>
@@ -2143,10 +2134,7 @@
             <!-- Toggle: Sistem Meja -->
             <div class="flex items-center justify-between p-4 bg-cuan-green/5 rounded-xl border border-cuan-green/20">
                 <div class="flex-1">
-                    <div class="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                        <i class="fas fa-chair text-cuan-green"></i>
-                        Sistem Meja
-                    </div>
+                    <div class="font-semibold text-gray-900 mb-1">Sistem Meja</div>
                     <div class="text-sm text-gray-600">Aktifkan untuk memilih meja sebelum pembayaran</div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
@@ -2160,10 +2148,7 @@
             <!-- Toggle: Produksi Otomatis -->
             <div class="flex items-center justify-between p-4 bg-emerald-50 rounded-xl border border-emerald-200">
                 <div class="flex-1">
-                    <div class="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                        <i class="fas fa-magic text-emerald-600"></i>
-                        Produksi Otomatis
-                    </div>
+                    <div class="font-semibold text-gray-900 mb-1">Produksi Otomatis</div>
                     <div class="text-sm text-gray-600">Otomatis menyelesaikan produksi untuk item non-stok</div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
@@ -2177,10 +2162,7 @@
             <!-- Toggle: Posisi Panel -->
             <div class="flex items-center justify-between p-4 bg-cuan-green/10 rounded-xl border border-cuan-green/20">
                 <div class="flex-1">
-                    <div class="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                        <i class="fas fa-columns text-cuan-green"></i>
-                        Tukar Posisi Panel
-                    </div>
+                    <div class="font-semibold text-gray-900 mb-1">Tukar Posisi Panel</div>
                     <div class="text-sm text-gray-600">Pindahkan ringkasan pesanan ke sisi kiri</div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
@@ -2260,10 +2242,7 @@
 <div id="pendingProductionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-            <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <i class="fas fa-utensils text-blue-600"></i>
-                Antrean Dapur
-            </h3>
+            <h3 class="text-xl font-black text-gray-900">Antrean Dapur</h3>
             <div class="flex items-center gap-3">
                 <button onclick="refreshPendingProduction()" class="text-blue-500 hover:text-blue-700 text-sm font-semibold flex items-center gap-1 transition-colors" title="Refresh">
                     <i class="fas fa-sync-alt" id="refreshSpinner"></i>
@@ -2282,11 +2261,7 @@
             </div>
 
             <!-- Empty state -->
-            <div id="pendingProductionEmpty" class="hidden flex flex-col items-center justify-center py-12">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                    <i class="fas fa-check-circle text-3xl text-green-500"></i>
-                </div>
-                <p class="text-lg font-bold text-gray-800">Semua Pesanan Selesai!</p>
+                <p class="text-lg font-black text-gray-900 uppercase tracking-tighter">Pesanan Selesai</p>
                 <p class="text-sm text-gray-500 mt-1">Tidak ada pesanan yang menunggu produksi</p>
             </div>
 
@@ -2302,10 +2277,7 @@
         <!-- Header - Fixed -->
         <div class="modal-header-fixed flex items-center justify-between p-6">
             <div>
-                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-chart-line text-cuan-green"></i>
-                    Penjualan Hari Ini
-                </h3>
+                <h3 class="text-xl font-black text-gray-900">Penjualan Hari Ini</h3>
                 <p class="text-sm text-gray-600 mt-1" id="salesTodayDate">-</p>
             </div>
             <button onclick="closeSalesTodayModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
@@ -2319,8 +2291,8 @@
             <div class="summary-cards-container">
                 <!-- Total Transaksi -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-blue-100 text-blue-600">
-                        <i class="fas fa-receipt"></i>
+                    <div class="summary-card-icon bg-gray-50 text-gray-400">
+                        <!-- Icon Removed -->
                     </div>
                     <div class="summary-card-label">Total Transaksi</div>
                     <div class="summary-card-value text-blue-600" id="modalTotalTransactions">0</div>
@@ -2328,8 +2300,8 @@
 
                 <!-- Total Pendapatan -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-green-100 text-green-600">
-                        <i class="fas fa-coins"></i>
+                    <div class="summary-card-icon bg-gray-50 text-gray-400">
+                        <!-- Icon Removed -->
                     </div>
                     <div class="summary-card-label">Total Pendapatan</div>
                     <div class="summary-card-value text-green-600" id="modalTotalRevenue">Rp 0</div>
@@ -2337,8 +2309,8 @@
 
                 <!-- Tunai -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-indigo-100 text-indigo-600">
-                        <i class="fas fa-money-bill-wave"></i>
+                    <div class="summary-card-icon bg-gray-50 text-gray-400">
+                        <!-- Icon Removed -->
                     </div>
                     <div class="summary-card-label">Tunai</div>
                     <div class="summary-card-value text-indigo-600" id="modalCashTotal">Rp 0</div>
@@ -2346,8 +2318,8 @@
 
                 <!-- Non-Tunai -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-purple-100 text-purple-600">
-                        <i class="fas fa-credit-card"></i>
+                    <div class="summary-card-icon bg-gray-50 text-gray-400">
+                        <!-- Icon Removed -->
                     </div>
                     <div class="summary-card-label">Non-Tunai</div>
                     <div class="summary-card-value text-purple-600" id="modalNonCashTotal">Rp 0</div>
@@ -2355,8 +2327,8 @@
 
                 <!-- Total Piutang -->
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-red-100 text-red-600">
-                        <i class="fas fa-file-invoice-dollar"></i>
+                    <div class="summary-card-icon bg-gray-50 text-gray-400">
+                        <!-- Icon Removed -->
                     </div>
                     <div class="summary-card-label">Total Piutang</div>
                     <div class="summary-card-value text-red-600" id="modalDebtTotal">Rp 0</div>
@@ -2417,10 +2389,7 @@
         <!-- Header - Fixed -->
         <div class="modal-header-fixed flex items-center justify-between p-6">
             <div>
-                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-receipt text-cuan-green"></i>
-                    Detail Penjualan
-                </h3>
+                <h3 class="text-xl font-black text-gray-900">Detail Penjualan</h3>
                 <p class="text-sm text-gray-600 mt-1" id="detailInvoiceNumber">-</p>
             </div>
             <button onclick="closeSaleDetailModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
@@ -2434,49 +2403,35 @@
                 <!-- Info Cards Grid -->
                 <div class="detail-info-grid">
                     <div class="detail-info-card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                        <div class="text-xs text-blue-600 font-semibold mb-1 flex items-center gap-2">
-                            <i class="fas fa-user"></i> KASIR
-                        </div>
+                        <div class="text-[10px] text-blue-500 font-bold mb-1 uppercase tracking-widest">KASIR</div>
                         <div class="font-bold text-gray-900" id="detailCashier">-</div>
                     </div>
                     
                     <div class="detail-info-card bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                        <div class="text-xs text-green-600 font-semibold mb-1 flex items-center gap-2">
-                            <i class="fas fa-user-tag"></i> PELANGGAN
-                        </div>
+                        <div class="text-[10px] text-green-500 font-bold mb-1 uppercase tracking-widest">PELANGGAN</div>
                         <div class="font-bold text-gray-900" id="detailCustomer">-</div>
                     </div>
                     
                     <div class="detail-info-card bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                        <div class="text-xs text-purple-600 font-semibold mb-1 flex items-center gap-2">
-                            <i class="fas fa-clock"></i> WAKTU
-                        </div>
+                        <div class="text-[10px] text-purple-500 font-bold mb-1 uppercase tracking-widest">WAKTU</div>
                         <div class="font-bold text-gray-900" id="detailTime">-</div>
                     </div>
                     
                     <div class="detail-info-card bg-gradient-to-br from-cuan-green/10 to-cuan-green/20 border-cuan-green/20">
-                        <div class="text-xs text-cuan-green font-semibold mb-1 flex items-center gap-2">
-                            <i class="fas fa-credit-card"></i> PEMBAYARAN
-                        </div>
+                        <div class="text-[10px] text-cuan-green font-bold mb-1 uppercase tracking-widest">PEMBAYARAN</div>
                         <div class="font-bold text-gray-900" id="detailPaymentMethod">-</div>
                     </div>
                 </div>
                 
                 <!-- Structured Notes (New) -->
                 <div id="detailNotesContainer" class="hidden">
-                    <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                        <i class="fas fa-percentage text-cuan-green"></i>
-                        Catatan & Promo
-                    </h4>
+                    <h4 class="font-bold text-gray-900 mb-2 uppercase text-[10px] tracking-widest">Catatan & Promo</h4>
                     <div id="detailStructuredNotes" class="space-y-3"></div>
                 </div>
 
                 <!-- Daftar Item -->
                 <div>
-                    <h4 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                        <i class="fas fa-shopping-basket text-cuan-green"></i>
-                        Item Pembelian
-                    </h4>
+                    <h4 class="font-bold text-gray-900 mb-3 uppercase text-[10px] tracking-widest">Item Pesanan</h4>
                     <div class="items-table-container">
                         <div class="table-wrapper">
                             <table class="w-full text-sm">
@@ -2503,10 +2458,7 @@
 
                 <!-- Ringkasan Pembayaran -->
                 <div class="payment-summary-box">
-                    <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <i class="fas fa-calculator text-cuan-green"></i>
-                        Ringkasan Pembayaran
-                    </h4>
+                    <h4 class="font-bold text-gray-900 mb-4 uppercase text-[10px] tracking-widest">Ringkasan</h4>
                     <div class="space-y-3">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Subtotal</span>
@@ -2560,10 +2512,7 @@
     <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <div>
-                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-hand-holding-usd text-cuan-green"></i>
-                    Pembayaran Dengan Utang
-                </h3>
+                <h3 class="text-xl font-black text-gray-900">Pembayaran Utang</h3>
                 <p class="text-sm text-gray-600 mt-1">Masukkan informasi pelanggan</p>
             </div>
             <button onclick="closeDebtPaymentModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
@@ -2573,7 +2522,7 @@
         
         <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
             <!-- Payment Info Summary -->
-            <div class="grid grid-cols-2 gap-4 mb-6 bg-gradient-to-br from-cuan-green/10 to-cuan-dark/10 p-5 rounded-2xl border border-cuan-green/20 shadow-sm">
+            <div class="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-5 rounded-2xl border border-gray-100">
                 <div>
                     <div class="text-[10px] font-bold text-cuan-green uppercase mb-1">Total Belanja</div>
                     <div class="text-xl font-black text-gray-900" id="debtTotalAmount">Rp 0</div>
@@ -2736,10 +2685,7 @@
         <!-- Header - Fixed -->
         <div class="modal-header-fixed flex items-center justify-between p-6">
             <div>
-                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-chair text-cuan-green"></i>
-                    Kelola Status Meja
-                </h3>
+                <h3 class="text-xl font-black text-gray-900">Status Meja</h3>
                 <p class="text-sm text-gray-600 mt-1">Pantau dan ubah status ketersediaan meja outlet</p>
             </div>
             <button onclick="closeTableManagementModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
@@ -2752,30 +2698,22 @@
             <!-- Stats -->
             <div class="summary-cards-container">
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-gray-100 text-gray-600">
-                        <i class="fas fa-list-ol"></i>
-                    </div>
+                    <div class="summary-card-icon bg-gray-50 text-gray-400"></div>
                     <div class="summary-card-label">Total Meja</div>
                     <div class="summary-card-value text-gray-900" id="tmTotalTables">0</div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-emerald-100 text-emerald-600">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
+                    <div class="summary-card-icon bg-gray-50 text-gray-400"></div>
                     <div class="summary-card-label">Tersedia</div>
                     <div class="summary-card-value text-emerald-600" id="tmAvailableTables">0</div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-red-100 text-red-600">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
+                    <div class="summary-card-icon bg-gray-50 text-gray-400"></div>
                     <div class="summary-card-label">Terisi</div>
                     <div class="summary-card-value text-red-600" id="tmOccupiedTables">0</div>
                 </div>
                 <div class="summary-card">
-                    <div class="summary-card-icon bg-cuan-green/10 text-cuan-green">
-                        <i class="fas fa-bookmark"></i>
-                    </div>
+                    <div class="summary-card-icon bg-gray-50 text-gray-400"></div>
                     <div class="summary-card-label">Dipesan</div>
                     <div class="summary-card-value text-cuan-green" id="tmReservedTables">0</div>
                 </div>
@@ -2788,11 +2726,7 @@
                 </div>
 
                 <!-- Empty State -->
-                <div id="tableManagementEmpty" class="hidden text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 mx-auto max-w-2xl">
-                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-100">
-                        <i class="fas fa-chair text-gray-200 text-3xl"></i>
-                    </div>
-                    <h4 class="text-gray-900 font-bold text-lg mb-1">Meja Belum Tersedia</h4>
+                    <h4 class="text-gray-900 font-black text-lg mb-1 uppercase tracking-tight">Belum Ada Meja</h4>
                     <p class="text-gray-500 text-sm mb-6">Silakan tambahkan data meja melalui menu pengaturan meja</p>
                     <a href="{{ route('tables.create') }}" class="inline-flex items-center gap-2 px-8 py-3 bg-cuan-green text-white rounded-full font-bold text-sm hover:bg-cuan-dark transition-all shadow-lg hover:shadow-emerald-200 active:scale-95">
                         <i class="fas fa-plus"></i> 
@@ -2820,10 +2754,7 @@
     <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <div>
-                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fas fa-file-invoice-dollar text-emerald-600"></i>
-                    Operasional (Kas)
-                </h3>
+                <h3 class="text-xl font-black text-gray-900">Operasional (Kas)</h3>
                 <p class="text-xs text-gray-500 mt-1">Catat pemasukan atau pengeluaran non-penjualan</p>
             </div>
             <button onclick="closeFinanceModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
@@ -2834,11 +2765,9 @@
         <!-- Tabs -->
         <div class="flex border-b border-gray-100 bg-gray-50/50">
             <button onclick="switchFinanceTab('income')" id="tab-income" class="flex-1 py-4 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 border-emerald-600 text-emerald-600 bg-white">
-                <i class="fas fa-plus-circle"></i>
                 Pemasukan
             </button>
             <button onclick="switchFinanceTab('expense')" id="tab-expense" class="flex-1 py-4 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 border-transparent text-gray-500 hover:text-red-600 hover:bg-red-50/30">
-                <i class="fas fa-minus-circle"></i>
                 Pengeluaran
             </button>
         </div>
