@@ -383,7 +383,7 @@
                                         <td class="px-6 py-5 whitespace-nowrap text-center">
                                             <div class="flex items-center justify-center gap-2">
                                                 @can('lihat stok produksi')
-                                                <a href="{{ route('products.manage-stock', $product->id) }}"
+                                                <a href="{{ route('products-hpp.manage-stock', $product->id) }}"
                                                    class="w-9 h-9 flex items-center justify-center rounded-xl bg-orange-50 text-orange-500 hover:bg-orange-500 hover:text-white transition-all active:scale-95 border border-orange-100"
                                                    title="Kelola Stok">
                                                     <i class="fas fa-dolly text-xs"></i>

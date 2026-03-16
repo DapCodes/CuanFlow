@@ -8,6 +8,7 @@ use App\Models\ExpenseCategory;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\Product;
+use App\Models\ProductStock;
 use App\Models\RawMaterial;
 use App\Models\StockMovement;
 use App\Models\Supplier;
@@ -234,6 +235,35 @@ class RawMaterialAndSupplierController extends Controller
                     $productStats['out']++;
                 } elseif ($qty <= $product->min_stock) {
                     $productStats['low']++;
+                }
+
+                // Check batches for expiry for products too
+                $batches = PurchaseItem::where('product_id', $product->id)
+                    ->whereHas('purchase', fn ($q) => $q->where('outlet_id', $outletId))
+                    ->where('remaining_quantity', '>', 0)
+                    ->where('is_disposed', false)
+                    ->get();
+
+                $hasExpired = false;
+                $hasExpiring = false;
+
+                foreach ($batches as $batch) {
+                    if ($batch->expired_at) {
+                        $days = $now->diffInDays($batch->expired_at, false);
+                        if ($days < 0) {
+                            $hasExpired = true;
+                        } elseif ($days <= $warningDays) {
+                            $hasExpiring = true;
+                        }
+                    }
+                }
+
+                if ($hasExpired) {
+                    $productStats['expired']++;
+                }
+
+                if ($hasExpiring) {
+                    $productStats['expiring']++;
                 }
             }
 
@@ -974,5 +1004,268 @@ class RawMaterialAndSupplierController extends Controller
 
         return redirect()->route('raw-materials.suppliers')
             ->with('success', 'Supplier berhasil dihapus!');
+    }
+
+    /**
+     * Manage stock for a single Product (Instant Product)
+     */
+    public function manageProductStock(Product $product)
+    {
+        if (! auth()->user()->can('kelola stok bahan baku')) { // Re-using permission for simplicity or use specific one
+            abort(403);
+        }
+        if ($product->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
+        $product->load(['category', 'unit', 'supplier', 'stocks' => function ($q) {
+            $q->where('outlet_id', Auth::user()->outlet_id);
+        }]);
+
+        $stock = $product->stocks->first();
+        $currentStock = $stock ? $stock->quantity : 0;
+
+        $expenseCategories = ExpenseCategory::all();
+
+        // Calculate status for overview
+        $now = now();
+        $warningDays = 7;
+
+        $batches = PurchaseItem::with('purchase')->where('product_id', $product->id)
+            ->whereHas('purchase', function ($q) {
+                $q->where('outlet_id', Auth::user()->outlet_id);
+            })
+            ->where('remaining_quantity', '>', 0)
+            ->where('is_disposed', false)
+            ->orderBy('expired_at', 'asc')
+            ->get();
+
+        $expiredQty = 0;
+        $expiringQty = 0;
+        $validQty = 0;
+
+        $expiredStocks = [];
+        $expiringStocks = [];
+        $validStocks = [];
+
+        foreach ($batches as $batch) {
+            $batchData = [
+                'id' => $batch->id,
+                'batch_number' => $batch->batch_number,
+                'quantity' => $batch->remaining_quantity,
+                'expired_at' => $batch->expired_at,
+            ];
+
+            if (! $batch->expired_at) {
+                $validQty += $batch->remaining_quantity;
+                $batchData['days_until_expiry'] = null;
+                $validStocks[] = $batchData;
+                continue;
+            }
+
+            $daysUntilExpiry = $now->diffInDays($batch->expired_at, false);
+            $batchData['days_until_expiry'] = $daysUntilExpiry;
+
+            if ($daysUntilExpiry < 0) {
+                $expiredQty += $batch->remaining_quantity;
+                $expiredStocks[] = $batchData;
+            } elseif ($daysUntilExpiry <= $warningDays) {
+                $expiringQty += $batch->remaining_quantity;
+                $expiringStocks[] = $batchData;
+            } else {
+                $validQty += $batch->remaining_quantity;
+                $validStocks[] = $batchData;
+            }
+        }
+
+        return view('main.raw-material_n_supplier.manage-product_stock', compact(
+            'product',
+            'currentStock',
+            'expenseCategories',
+            'expiredQty',
+            'expiringQty',
+            'validQty',
+            'expiredStocks',
+            'expiringStocks',
+            'validStocks'
+        ));
+    }
+
+    /**
+     * Process stock adjustment for Product
+     */
+    public function updateProductStock(Request $request, Product $product)
+    {
+        if (! auth()->user()->can('update stok bahan baku')) {
+            abort(403);
+        }
+        if ($product->outlet_id !== Auth::user()->outlet_id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'type' => 'required|in:add,reduce',
+            'quantity' => 'required|numeric|min:0.01',
+            'notes' => 'nullable|string|max:500',
+            'batch_number' => 'nullable|string|max:50',
+            'expired_at' => 'nullable|date|after:today',
+            'expense_category_id' => 'required_if:type,add|nullable|exists:expense_categories,id',
+            'payment_method' => 'required_if:type,add|in:cash,transfer,card',
+            'unit_price' => 'nullable|numeric|min:0',
+        ]);
+
+        return DB::transaction(function () use ($request, $product, $validated) {
+            $stock = $product->stocks()
+                ->where('outlet_id', Auth::user()->outlet_id)
+                ->first();
+
+            if (! $stock) {
+                $stock = $product->stocks()->create([
+                    'outlet_id' => Auth::user()->outlet_id,
+                    'quantity' => 0,
+                    'avg_purchase_price' => $product->hpp ?: 0,
+                ]);
+            }
+
+            $quantityBefore = $stock->quantity;
+            $outletId = Auth::user()->outlet_id;
+            $userId = Auth::id();
+
+            if ($validated['type'] === 'add') {
+                $quantityAfter = $quantityBefore + $validated['quantity'];
+                $movementType = 'in';
+                $message = 'Stok produk berhasil ditambahkan!';
+
+                // Create Purchase
+                $purchaseNumber = 'PUR-P-'.date('Ymd').'-'.strtoupper(Str::random(5));
+                $unitPrice = $request->filled('unit_price') ? $request->unit_price : ($product->hpp ?: 0);
+                $totalAmount = $validated['quantity'] * $unitPrice;
+
+                $purchase = Purchase::create([
+                    'purchase_number' => $purchaseNumber,
+                    'outlet_id' => $outletId,
+                    'supplier_id' => $product->supplier_id,
+                    'subtotal' => $totalAmount,
+                    'grand_total' => $totalAmount,
+                    'paid_amount' => $totalAmount,
+                    'payment_status' => 'paid',
+                    'status' => 'received',
+                    'purchase_date' => now(),
+                    'received_date' => now(),
+                    'notes' => $validated['notes'] ?? 'Quick stock add (Product)',
+                    'created_by' => $userId,
+                ]);
+
+                // Create Purchase Item
+                PurchaseItem::create([
+                    'purchase_id' => $purchase->id,
+                    'product_id' => $product->id,
+                    'quantity' => $validated['quantity'],
+                    'received_quantity' => $validated['quantity'],
+                    'remaining_quantity' => $validated['quantity'],
+                    'unit_price' => $unitPrice,
+                    'subtotal' => $totalAmount,
+                    'expired_at' => $validated['expired_at'] ?? null,
+                    'batch_number' => $validated['batch_number'] ?? null,
+                ]);
+
+                // Create Expense
+                Expense::create([
+                    'expense_number' => 'EXP-P-'.date('Ymd').'-'.strtoupper(Str::random(5)),
+                    'outlet_id' => $outletId,
+                    'expense_category_id' => $validated['expense_category_id'],
+                    'amount' => $totalAmount,
+                    'expense_date' => now(),
+                    'description' => 'Pembelian Stok Produk: '.$product->name,
+                    'payment_method' => $validated['payment_method'],
+                    'reference_number' => $purchaseNumber,
+                    'notes' => $validated['notes'],
+                    'created_by' => $userId,
+                    'status' => 'approved',
+                ]);
+
+                // Update HPP if necessary (Optional, simple MOVING AVERAGE logic could be here)
+
+            } else {
+                if ($quantityBefore < $validated['quantity']) {
+                    throw new \Exception('Jumlah pengurangan melebihi stok tersedia!');
+                }
+                $quantityAfter = $quantityBefore - $validated['quantity'];
+                $movementType = 'out';
+                $message = 'Stok produk berhasil dikurangi!';
+            }
+
+            $stock->update(['quantity' => $quantityAfter]);
+
+            StockMovement::create([
+                'outlet_id' => $outletId,
+                'stockable_type' => Product::class,
+                'stockable_id' => $product->id,
+                'type' => $movementType,
+                'quantity' => $validated['quantity'],
+                'quantity_before' => $quantityBefore,
+                'quantity_after' => $quantityAfter,
+                'unit_price' => $product->hpp ?: 0,
+                'reference_type' => 'manual_adjustment',
+                'reference_id' => isset($purchase) ? $purchase->id : null,
+                'notes' => $validated['notes'],
+                'batch_number' => $validated['batch_number'] ?? null,
+                'expired_at' => $validated['expired_at'] ?? null,
+                'created_by' => $userId,
+            ]);
+
+            return redirect()->route('raw-materials.index', ['tab' => 'instant_product'])
+                ->with('success', $message);
+        });
+    }
+
+    /**
+     * Remove expired batches for Product
+     */
+    public function removeProductExpired(Request $request, Product $product)
+    {
+        if (! auth()->user()->can('update stok bahan baku')) {
+            abort(403);
+        }
+        $validated = $request->validate([
+            'batch_ids' => 'required|array',
+            'batch_ids.*' => 'required|exists:purchase_items,id',
+        ]);
+
+        return DB::transaction(function () use ($product, $validated) {
+            $items = PurchaseItem::whereIn('id', $validated['batch_ids'])
+                ->where('product_id', $product->id)
+                ->where('is_disposed', false)
+                ->get();
+
+            $totalRemoved = 0;
+            $stock = $product->stocks()->where('outlet_id', Auth::user()->outlet_id)->first();
+
+            foreach ($items as $item) {
+                $totalRemoved += $item->remaining_quantity;
+                $item->update(['is_disposed' => true, 'remaining_quantity' => 0]);
+
+                StockMovement::create([
+                    'outlet_id' => Auth::user()->outlet_id,
+                    'stockable_type' => Product::class,
+                    'stockable_id' => $product->id,
+                    'type' => 'waste',
+                    'quantity' => $item->remaining_quantity,
+                    'quantity_before' => $stock->quantity,
+                    'quantity_after' => $stock->quantity - $item->remaining_quantity,
+                    'unit_price' => $item->unit_price,
+                    'notes' => 'Disposal batch kadaluarsa: '.$item->batch_number,
+                    'reference_type' => 'disposal',
+                    'reference_id' => $item->id,
+                    'created_by' => Auth::id(),
+                ]);
+
+                if ($stock) {
+                    $stock->decrement('quantity', $item->remaining_quantity);
+                }
+            }
+
+            return redirect()->back()->with('success', "Berhasil membuang $totalRemoved stok kadaluarsa.");
+        });
     }
 }
