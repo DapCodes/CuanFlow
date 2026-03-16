@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\HppCalculation;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\Product;
 use App\Models\ProductSalesTarget;
 use App\Models\ProductStock;
@@ -12,6 +16,7 @@ use App\Models\Recipe;
 use App\Models\RecipeItem;
 use App\Models\Sale;
 use App\Models\StockMovement;
+use App\Models\Supplier;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -61,8 +66,9 @@ class ProductHppController extends Controller
             ->where('outlet_id', Auth::user()->outlet_id)
             ->active()
             ->get();
+        $suppliers = Supplier::where('outlet_id', Auth::user()->outlet_id)->active()->get();
 
-        return view('main.product_n_hpp-calc.create', compact('categories', 'units', 'rawMaterials'));
+        return view('main.product_n_hpp-calc.create', compact('categories', 'units', 'rawMaterials', 'suppliers'));
     }
 
     public function store(Request $request)
@@ -76,6 +82,7 @@ class ProductHppController extends Controller
             'code' => 'required|string|max:30|unique:products,code',
             'barcode' => 'nullable|string|max:50',
             'category_id' => 'nullable|exists:categories,id',
+            'supplier_id' => 'nullable|exists:suppliers,id',
             'unit_id' => 'required|exists:units,id',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
@@ -95,6 +102,10 @@ class ProductHppController extends Controller
             'product_type' => 'required|string|in:direct,stock,ready',
             'manual_hpp' => 'required_if:product_type,ready|nullable|numeric|min:0',
             'initial_stock' => 'required_if:product_type,ready|nullable|numeric|min:0',
+            'batch_number' => 'nullable|string|max:50',
+            'expired_at' => 'nullable|date',
+            'expense_category_id' => 'required_if:product_type,ready|nullable|exists:expense_categories,id',
+            'payment_method' => 'required_if:product_type,ready|nullable|in:cash,transfer,card',
         ];
 
         if ($request->product_type !== 'ready') {
@@ -132,7 +143,8 @@ class ProductHppController extends Controller
                 'is_active' => true,
                 'is_sellable' => true,
                 'track_stock' => true,
-                'is_stock' => $request->boolean('is_stock'),
+                'is_stock' => $request->boolean('is_stock') || ($request->product_type === 'ready'),
+                'supplier_id' => $validated['supplier_id'] ?? null,
             ]);
 
             $hppPerUnit = 0;

@@ -188,6 +188,9 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
         Route::post('/generate-recipe-ai', [ProductHppController::class, 'generateRecipeAI'])->name('generate-recipe-ai');
         Route::get('/{product}/barcode-preview', [ProductHppController::class, 'barcodePreview'])->name('barcode-preview');
         Route::get('/{product}/barcode-download', [ProductHppController::class, 'barcodeDownload'])->name('barcode-download');
+        Route::get('/{product}/manage-stock', [RawMaterialAndSupplierController::class, 'manageProductStock'])->name('manage-stock');
+        Route::post('/{product}/update-stock', [RawMaterialAndSupplierController::class, 'updateProductStock'])->name('update-stock');
+        Route::post('/{product}/remove-expired', [RawMaterialAndSupplierController::class, 'removeProductExpired'])->name('remove-expired');
         Route::post('/{product}/toggle-status', [ProductHppController::class, 'toggleStatus'])->name('toggle-status');
     });
     Route::resource('products-hpp', ProductHppController::class)->parameters(['products-hpp' => 'product'])->middleware('feature.access:products_recipes');
