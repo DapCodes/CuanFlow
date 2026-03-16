@@ -67,8 +67,9 @@ class ProductHppController extends Controller
             ->active()
             ->get();
         $suppliers = Supplier::where('outlet_id', Auth::user()->outlet_id)->active()->get();
+        $expenseCategories = ExpenseCategory::all();
 
-        return view('main.product_n_hpp-calc.create', compact('categories', 'units', 'rawMaterials', 'suppliers'));
+        return view('main.product_n_hpp-calc.create', compact('categories', 'units', 'rawMaterials', 'suppliers', 'expenseCategories'));
     }
 
     public function store(Request $request)
@@ -168,12 +169,59 @@ class ProductHppController extends Controller
                 ]);
 
                 // Record initial stock if provided
-                if ($request->input('initial_stock') > 0) {
-                    ProductStock::updateOrCreate(
+                if ($validated['initial_stock'] > 0) {
+                    $stock = ProductStock::updateOrCreate(
                         ['product_id' => $product->id, 'outlet_id' => Auth::user()->outlet_id],
-                        ['quantity' => $validated['initial_stock']]
+                        ['quantity' => $validated['initial_stock'], 'avg_purchase_price' => $hppPerUnit]
                     );
 
+                    // Create Purchase
+                    $purchaseNumber = 'PUR-INIT-'.date('Ymd').'-'.strtoupper(Str::random(5));
+                    $totalAmount = $validated['initial_stock'] * $hppPerUnit;
+
+                    $purchase = Purchase::create([
+                        'purchase_number' => $purchaseNumber,
+                        'outlet_id' => Auth::user()->outlet_id,
+                        'supplier_id' => $validated['supplier_id'] ?? null,
+                        'subtotal' => $totalAmount,
+                        'grand_total' => $totalAmount,
+                        'paid_amount' => $totalAmount,
+                        'payment_status' => 'paid',
+                        'status' => 'received',
+                        'purchase_date' => now(),
+                        'received_date' => now(),
+                        'notes' => 'Stok awal saat pendaftaran produk siap jual',
+                        'created_by' => Auth::id(),
+                    ]);
+
+                    // Create Purchase Item
+                    PurchaseItem::create([
+                        'purchase_id' => $purchase->id,
+                        'product_id' => $product->id,
+                        'quantity' => $validated['initial_stock'],
+                        'received_quantity' => $validated['initial_stock'],
+                        'remaining_quantity' => $validated['initial_stock'],
+                        'unit_price' => $hppPerUnit,
+                        'subtotal' => $totalAmount,
+                        'expired_at' => $validated['expired_at'] ?? null,
+                        'batch_number' => $validated['batch_number'] ?? null,
+                    ]);
+
+                    // Create Expense
+                    Expense::create([
+                        'expense_number' => 'EXP-INIT-'.date('Ymd').'-'.strtoupper(Str::random(5)),
+                        'outlet_id' => Auth::user()->outlet_id,
+                        'expense_category_id' => $validated['expense_category_id'],
+                        'amount' => $totalAmount,
+                        'expense_date' => now(),
+                        'description' => 'Pembelian Stok Awal Produk: '.$product->name,
+                        'payment_method' => $validated['payment_method'],
+                        'reference_number' => $purchaseNumber,
+                        'created_by' => Auth::id(),
+                        'status' => 'approved',
+                    ]);
+
+                    // Movement
                     StockMovement::create([
                         'outlet_id' => Auth::user()->outlet_id,
                         'stockable_type' => Product::class,
@@ -183,9 +231,18 @@ class ProductHppController extends Controller
                         'quantity_before' => 0,
                         'quantity_after' => $validated['initial_stock'],
                         'unit_price' => $hppPerUnit,
-                        'notes' => 'Stok awal produk siap jual',
+                        'reference_type' => 'initial_stock',
+                        'reference_id' => $purchase->id,
+                        'notes' => 'Stok awal saat pembuatan produk',
+                        'batch_number' => $validated['batch_number'] ?? null,
+                        'expired_at' => $validated['expired_at'] ?? null,
                         'created_by' => Auth::id(),
                     ]);
+                } else {
+                    ProductStock::updateOrCreate(
+                        ['product_id' => $product->id, 'outlet_id' => Auth::user()->outlet_id],
+                        ['quantity' => 0, 'avg_purchase_price' => $hppPerUnit]
+                    );
                 }
             } else {
                 $recipe = Recipe::create([

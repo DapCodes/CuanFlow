@@ -414,6 +414,24 @@
                             </p>
                         </div>
 
+                        {{-- Supplier --}}
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                                Supplier
+                            </label>
+                            <select name="supplier_id" class="select2-init w-full">
+                                <option value="">- Pilih Supplier -</option>
+                                @foreach($suppliers ?? [] as $supplier)
+                                    <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
+                                        {{ $supplier->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-2 text-[10px] text-gray-400 font-medium">
+                                Opsional, untuk tracking asal produk instant.
+                            </p>
+                        </div>
+
                         {{-- Satuan --}}
                         <div>
                             <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
@@ -764,6 +782,38 @@
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                        placeholder="Contoh: 50">
                                 <p class="text-xs text-gray-500 mt-1">Jumlah stok fisik yang ada di outlet saat ini.</p>
+                            </div>
+
+                            {{-- Financial Tracking for Initial Stock --}}
+                            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 mt-4 border-t border-gray-100">
+                                <div class="md:col-span-2">
+                                    <h5 class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Informasi Pembelian Stok Awal</h5>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Kategori Pengeluaran <span class="text-red-500">*</span></label>
+                                    <select name="expense_category_id" class="select2-init w-full">
+                                        <option value="">-- Pilih Kategori --</option>
+                                        @foreach($expenseCategories ?? [] as $category)
+                                            <option value="{{ $category->id }}" {{ old('expense_category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Metode Bayar <span class="text-red-500">*</span></label>
+                                    <select name="payment_method" class="select2-init w-full">
+                                        <option value="cash" {{ old('payment_method') == 'cash' ? 'selected' : '' }}>Tunai (Cash)</option>
+                                        <option value="transfer" {{ old('payment_method') == 'transfer' ? 'selected' : '' }}>Transfer</option>
+                                        <option value="card" {{ old('payment_method') == 'card' ? 'selected' : '' }}>Kartu</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Batch / SN</label>
+                                    <input type="text" name="batch_number" value="{{ old('batch_number') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Opsional">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Kadaluarsa</label>
+                                    <input type="date" name="expired_at" value="{{ old('expired_at') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                </div>
                             </div>
                         </div>
 
