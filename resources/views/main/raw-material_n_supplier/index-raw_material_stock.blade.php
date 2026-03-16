@@ -452,6 +452,13 @@
 
 @push('scripts')
 <script>
+window.switchTab = function(tabId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tabId);
+    url.searchParams.delete('page'); // Reset pagination on tab switch
+    window.location.href = url.toString();
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     {{-- Session Notifications --}}
     @if(session('success'))
@@ -491,9 +498,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function refreshTable() {
         const url = new URL(window.location.href);
-        const search = searchInput.value;
-        const category = categoryFilter.value;
-        const stock = stockFilter.value;
+        const search = searchInput ? searchInput.value : '';
+        const category = categoryFilter ? categoryFilter.value : '';
+        const stock = stockFilter ? stockFilter.value : '';
         const supplier = supplierFilter ? supplierFilter.value : '';
         const currentTab = '{{ $tab }}';
 
@@ -504,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
         url.searchParams.set('tab', currentTab);
 
         const target = document.getElementById('material-table-container');
-        target.style.opacity = '0.5';
+        if (target) target.style.opacity = '0.5';
 
         fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(response => response.text())
@@ -512,25 +519,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             const newContent = doc.getElementById('material-table-container');
-            if (newContent) {
+            if (newContent && target) {
                 target.innerHTML = newContent.innerHTML;
                 window.history.replaceState({}, '', url);
             }
         })
-        .finally(() => { target.style.opacity = '1'; });
+        .finally(() => { if (target) target.style.opacity = '1'; });
     }
 
-    window.switchTab = function(tabId) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('tab', tabId);
-        url.searchParams.delete('page'); // Reset pagination on tab switch
-        
-        // We can either do a full page reload or an AJAX update. 
-        // Let's do a full reload for simplicity to ensure all variables ($tab, $stats) are properly updated from the controller.
-        window.location.href = url.toString();
-    }
-
-    [searchInput, categoryFilter, stockFilter, supplierFilter].forEach(el => {
+    // Safely iterate over filter elements
+    const filters = [searchInput, categoryFilter, stockFilter, supplierFilter];
+    filters.forEach(el => {
         if (!el) return;
         el.addEventListener(el.id === 'searchInput' ? 'input' : 'change', () => {
             clearTimeout(timeout);
@@ -557,7 +556,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById('delete-form-' + id).submit();
+                const form = document.getElementById('delete-form-' + id);
+                if (form) form.submit();
             }
         });
     }
@@ -580,7 +580,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById('delete-form-product-' + id).submit();
+                const form = document.getElementById('delete-form-product-' + id);
+                if (form) form.submit();
             }
         });
     }
@@ -588,11 +589,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle pagination clicks for AJAX
     document.addEventListener('click', function(e) {
         const link = e.target.closest('.pagination a');
-        if (link && document.getElementById('material-table-container').contains(link)) {
+        const container = document.getElementById('material-table-container');
+        if (link && container && container.contains(link)) {
             e.preventDefault();
             const url = new URL(link.href);
-            const target = document.getElementById('material-table-container');
-            target.style.opacity = '0.5';
+            container.style.opacity = '0.5';
             fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(response => response.text())
             .then(html => {
@@ -600,12 +601,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const doc = parser.parseFromString(html, 'text/html');
                 const newContent = doc.getElementById('material-table-container');
                 if (newContent) {
-                    target.innerHTML = newContent.innerHTML;
+                    container.innerHTML = newContent.innerHTML;
                     window.history.pushState({}, '', url);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             })
-            .finally(() => { target.style.opacity = '1'; });
+            .finally(() => { container.style.opacity = '1'; });
         }
     });
 });
