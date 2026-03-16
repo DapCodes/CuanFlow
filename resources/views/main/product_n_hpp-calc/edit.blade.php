@@ -300,6 +300,18 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                <div class="space-y-4">
+                                    <label for="supplier_id" class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Supplier</label>
+                                    <select name="supplier_id" class="select2-init w-full">
+                                        <option value="">- Pilih Supplier -</option>
+                                        @foreach($suppliers ?? [] as $supplier)
+                                            <option value="{{ $supplier->id }}" {{ old('supplier_id', $product->supplier_id) == $supplier->id ? 'selected' : '' }}>
+                                                {{ $supplier->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight italic">Opsional untuk barang jadi.</p>
+                                </div>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">

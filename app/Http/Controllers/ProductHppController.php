@@ -388,6 +388,7 @@ class ProductHppController extends Controller
             ->where('outlet_id', Auth::user()->outlet_id)
             ->active()
             ->get();
+        $suppliers = Supplier::where('outlet_id', Auth::user()->outlet_id)->active()->get();
 
         $product->load([
             'category',
@@ -396,7 +397,7 @@ class ProductHppController extends Controller
             'latestHppCalculation',
         ]);
 
-        return view('main.product_n_hpp-calc.edit', compact('product', 'categories', 'units', 'rawMaterials'));
+        return view('main.product_n_hpp-calc.edit', compact('product', 'categories', 'units', 'rawMaterials', 'suppliers'));
     }
 
     public function update(Request $request, Product $product)
@@ -414,6 +415,7 @@ class ProductHppController extends Controller
             'code' => 'required|string|max:30|unique:products,code,'.$product->id,
             'barcode' => 'nullable|string|max:50',
             'category_id' => 'nullable|exists:categories,id',
+            'supplier_id' => 'nullable|exists:suppliers,id',
             'unit_id' => 'required|exists:units,id',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
@@ -451,6 +453,7 @@ class ProductHppController extends Controller
                 'name' => $validated['name'],
                 'barcode' => $validated['barcode'] ?? null,
                 'category_id' => $validated['category_id'] ?? null,
+                'supplier_id' => $validated['supplier_id'] ?? null,
                 'unit_id' => $validated['unit_id'],
                 'description' => $validated['description'] ?? null,
                 'image' => $validated['image'] ?? $product->image,
@@ -459,7 +462,7 @@ class ProductHppController extends Controller
                 'promo_price' => $validated['promo_price'] ?? null,
                 'min_stock' => $validated['min_stock'] ?? 0,
                 'shelf_life_days' => $validated['shelf_life_days'] ?? null,
-                'is_stock' => $request->boolean('is_stock'),
+                'is_stock' => $request->boolean('is_stock') || ($request->product_type === 'ready'),
             ]);
 
             $hppPerUnit = 0;
