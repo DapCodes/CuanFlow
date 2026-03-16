@@ -17,7 +17,7 @@ return new class extends Migration
 
         Schema::table('purchase_items', function (Blueprint $table) {
             $table->foreignId('product_id')->nullable()->after('raw_material_id')->constrained('products')->nullOnDelete();
-            // Ensure raw_material_id is nullable if it wasn't already, although typically it is or we can just leave it
+            $table->unsignedBigInteger('raw_material_id')->nullable()->change();
         });
     }
 
