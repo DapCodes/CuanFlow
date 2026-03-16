@@ -3,17 +3,13 @@
 @section('title', 'Tutup Toko - CuanFlow')
 
 @section('breadcrumb')
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <a href="{{ route('pos.index') }}" class="text-gray-600 hover:text-indigo-600">Point of Sale</a>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <a href="{{ route('pos.index') }}" class="text-gray-500 hover:text-cuan-green transition-colors font-medium">Point of Sale</a>
 </li>
-<li class="flex items-center">
-    <svg class="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-    </svg>
-    <span class="text-gray-900 font-medium">Tutup Toko</span>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-bold tracking-tight">Tutup Sesi Kasir</span>
 </li>
 @endsection
 
@@ -32,80 +28,80 @@
 <main class="flex-grow py-4 md:py-6 px-3 md:px-4 bg-gray-50">
     <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
 
-        {{-- Header: seragam seperti halaman index outlet --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {{-- Header Halaman --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
-                        <i class="fas fa-cash-register text-sm"></i>
-                    </span>
-                    <span>Rekap Penjualan</span>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900 flex items-center gap-2">
+                    Tutup Sesi & Rekap
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    Hitung pengeluaran dan pendapatan toko Anda kali ini.
+                    Selesaikan operasional kasir dan hitung pendapatan hari ini.
                 </p>
             </div>
-            <div class="text-sm text-gray-600 md:text-right">
-                <p class="font-semibold text-gray-900">{{ auth()->user()->name }}</p>
-                <p class="text-gray-500">Dibuka: {{ $register->opened_at->format('d/m/Y H:i') }}</p>
+            <div class="flex items-center gap-3">
+                <div class="px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-right">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Kasir Aktif</p>
+                    <p class="text-sm font-bold text-gray-900 uppercase tracking-tighter">{{ auth()->user()->name }}</p>
+                </div>
+                <div class="px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-right">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Waktu Buka</p>
+                    <p class="text-sm font-bold text-cuan-green">{{ $register->opened_at->format('H:i') }} <span class="text-[10px] text-gray-400">({{ $register->opened_at->format('d M') }})</span></p>
+                </div>
             </div>
         </section>
 
         {{-- Ringkasan: compact --}}
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 md:p-5 border-b border-indigo-200">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div>
-                        <p class="text-sm font-semibold text-indigo-900">Ringkasan Sesi</p>
-                        <p class="text-xs text-indigo-700/80">Data otomatis dari transaksi pada sesi ini</p>
-                    </div>
-                    <div class="text-xs text-indigo-700/80">
-                        <span class="font-medium text-indigo-900">Outlet:</span>
-                        {{ auth()->user()->outlet->name ?? '-' }}
-                    </div>
+            <div class="bg-gray-50 p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <h2 class="text-sm font-black text-gray-900 uppercase tracking-widest">Ringkasan Sesi</h2>
+                    <p class="text-[10px] text-gray-500 font-medium">DATA OTOMATIS BERDASARKAN TRANSAKSI AKTIF</p>
+                </div>
+                <div class="text-[10px] font-black text-cuan-green bg-cuan-green/10 px-3 py-1 rounded-full uppercase tracking-widest">
+                    {{ auth()->user()->outlet->name ?? '-' }}
                 </div>
             </div>
 
             <div class="p-4 md:p-5">
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div class="stat-card bg-white rounded-lg border border-gray-200 p-3">
-                        <p class="text-[11px] text-gray-500 font-medium">Transaksi</p>
-                        <p class="text-xl font-bold text-gray-900">{{ number_format($register->total_transactions, 0, ',', '.') }}</p>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="stat-card bg-white border border-gray-100 rounded-xl p-4 transition-all hover:border-cuan-green/30">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Transaksi</p>
+                        <p class="mt-2 text-2xl font-black text-gray-900">{{ number_format($register->total_transactions, 0, ',', '.') }}</p>
                     </div>
 
-                    <div class="stat-card bg-white rounded-lg border border-gray-200 p-3">
-                        <p class="text-[11px] text-gray-500 font-medium">Penjualan</p>
-                        <p class="text-xl font-bold text-green-600">Rp {{ number_format($register->total_sales, 0, ',', '.') }}</p>
+                    <div class="stat-card bg-white border border-gray-100 rounded-xl p-4 transition-all hover:border-cuan-green/30">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Penjualan</p>
+                        <p class="mt-2 text-2xl font-black text-cuan-green">Rp {{ number_format($register->total_sales, 0, ',', '.') }}</p>
                     </div>
 
-                    <div class="stat-card bg-white rounded-lg border border-gray-200 p-3">
-                        <p class="text-[11px] text-gray-500 font-medium">Diskon</p>
-                        <p class="text-xl font-bold text-orange-600">Rp {{ number_format($totalDiscount ?? 0, 0, ',', '.') }}</p>
+                    <div class="stat-card bg-white border border-gray-100 rounded-xl p-4 transition-all hover:border-cuan-green/30">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Potongan Diskon</p>
+                        <p class="mt-2 text-2xl font-black text-orange-500">Rp {{ number_format($totalDiscount ?? 0, 0, ',', '.') }}</p>
                     </div>
 
-                    <div class="stat-card bg-white rounded-lg border border-gray-200 p-3">
-                        <p class="text-[11px] text-gray-500 font-medium">Modal Awal</p>
-                        <p class="text-xl font-bold text-purple-600">Rp {{ number_format($register->opening_amount, 0, ',', '.') }}</p>
+                    <div class="stat-card bg-white border border-gray-100 rounded-xl p-4 transition-all hover:border-cuan-green/30">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Modal Awal Kas</p>
+                        <p class="mt-2 text-2xl font-black text-gray-700">Rp {{ number_format($register->opening_amount, 0, ',', '.') }}</p>
                     </div>
                 </div>
 
-                {{-- Metode Pembayaran: minimal icon --}}
-                <div class="mt-4 md:mt-5">
-                    <p class="text-sm font-semibold text-gray-900 mb-2">Metode Pembayaran</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div class="payment-card bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
-                            <p class="text-[11px] text-green-700 font-semibold">Tunai</p>
-                            <p class="text-lg font-bold text-green-900">Rp {{ number_format($register->total_cash, 0, ',', '.') }}</p>
+                {{-- Metode Pembayaran --}}
+                <div class="mt-6 border-t border-gray-50 pt-6">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Detail Per Metode Pembayaran</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col">
+                            <span class="text-[10px] font-black text-cuan-green uppercase tracking-tighter">Pemasukan Tunai</span>
+                            <span class="text-xl font-black text-gray-900 mt-1 uppercase">Rp {{ number_format($register->total_cash, 0, ',', '.') }}</span>
                         </div>
 
-                        <div class="payment-card bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
-                            <p class="text-[11px] text-purple-700 font-semibold">QRIS</p>
-                            <p class="text-lg font-bold text-purple-900">Rp {{ number_format($register->total_qris, 0, ',', '.') }}</p>
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col">
+                            <span class="text-[10px] font-black text-purple-600 uppercase tracking-tighter">Pembayaran QRIS</span>
+                            <span class="text-xl font-black text-gray-900 mt-1 uppercase">Rp {{ number_format($register->total_qris, 0, ',', '.') }}</span>
                         </div>
 
-                        <div class="payment-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
-                            <p class="text-[11px] text-blue-700 font-semibold">Transfer</p>
-                            <p class="text-lg font-bold text-blue-900">Rp {{ number_format($register->total_transfer, 0, ',', '.') }}</p>
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col">
+                            <span class="text-[10px] font-black text-blue-600 uppercase tracking-tighter">Transfer Bank</span>
+                            <span class="text-xl font-black text-gray-900 mt-1 uppercase">Rp {{ number_format($register->total_transfer, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -125,28 +121,28 @@
                 @csrf
 
                 {{-- Expected amount --}}
-                <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-4">
-                    <p class="text-xs font-semibold text-indigo-900">Uang tunai yang seharusnya ada</p>
-                    <p class="text-2xl font-bold text-indigo-600 mt-1">
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Ekspektasi Uang Tunai di Kas</p>
+                    <p class="text-4xl font-black text-cuan-green tracking-tighter uppercase">
                         Rp {{ number_format($register->expected_amount, 0, ',', '.') }}
                     </p>
-                    <p class="text-xs text-gray-700 mt-2">
-                        Rumus: Modal awal (Rp {{ number_format($register->opening_amount, 0, ',', '.') }}) + Tunai masuk (Rp {{ number_format($register->total_cash, 0, ',', '.') }}).
-                    </p>
+                    <div class="mt-3 inline-flex items-center gap-2 text-[10px] font-bold text-gray-500 bg-white border border-gray-100 px-3 py-1 rounded-full uppercase tracking-tighter">
+                        Rumus: Modal Awal + Tunai Masuk
+                    </div>
                 </div>
 
                 {{-- Closing input --}}
                 <div>
-                    <label class="block text-sm font-semibold text-gray-900 mb-2">
-                        Uang tunai di kas (hasil hitung fisik) <span class="text-red-500">*</span>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                        Hasil Hitung Fisik (Kas Aktual) <span class="text-red-500">*</span>
                     </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">Rp</span>
+                    <div class="relative group">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-black text-xl">Rp</span>
                         <input
                             type="number"
                             id="closingAmount"
                             name="closing_amount"
-                            class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-lg font-bold text-gray-900"
+                            class="w-full pl-14 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green focus:bg-white text-3xl font-black text-gray-900 transition-all uppercase placeholder-gray-200"
                             placeholder="0"
                             required
                             min="0"
@@ -155,7 +151,7 @@
                             onchange="calculateDifference()"
                         >
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Contoh: jumlah uang kertas + koin di laci kas.</p>
+                    <p class="text-xs text-gray-500 mt-2">Contoh: jumlah uang kertas + koin di laci kas.</p>
                 </div>
 
                 {{-- Difference --}}
@@ -207,14 +203,14 @@
                 </div>
 
                 {{-- Actions --}}
-                <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+                <div class="flex flex-col sm:flex-row gap-3 pt-6">
                     <a href="{{ route('pos.index') }}"
-                       class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all text-center">
-                        Kembali
+                       class="flex-1 px-4 py-4 border border-gray-200 text-gray-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all text-center">
+                        Batalkan
                     </a>
                     <button type="submit" id="submitBtn"
-                            class="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg hover:shadow-xl">
-                        Tutup Sesi
+                            class="flex-[2] px-4 py-4 bg-cuan-green text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-cuan-dark transition-all shadow-xl shadow-emerald-100 active:scale-95">
+                        Konfirmasi & Tutup Sesi
                     </button>
                 </div>
             </form>
@@ -237,12 +233,12 @@
                     <table class="w-full min-w-[820px]">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Invoice</th>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Waktu</th>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Metode</th>
-                                <th class="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
-                                <th class="px-3 py-2 text-right text-xs font-bold text-gray-700 uppercase">Diskon</th>
-                                <th class="px-3 py-2 text-right text-xs font-bold text-gray-700 uppercase">Total</th>
+                                <th class="px-3 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">No. Invoice</th>
+                                <th class="px-3 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Waktu</th>
+                                <th class="px-3 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Metode</th>
+                                <th class="px-3 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                <th class="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Diskon</th>
+                                <th class="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</th>
                             </tr>
                         </thead>
 
@@ -266,10 +262,10 @@
                                             {{ strtoupper($sale->payment_method) }}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-2">
-                                        <span class="px-2 py-1 text-xs font-bold rounded-full
-                                            {{ $isRefunded ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
-                                            {{ $isRefunded ? 'REFUNDED' : 'COMPLETED' }}
+                                    <td class="px-3 py-3">
+                                        <span class="px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-tighter
+                                            {{ $isRefunded ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-cuan-green/10 text-cuan-green border border-cuan-green/20' }}">
+                                            {{ $isRefunded ? 'Refunded' : 'Completed' }}
                                         </span>
                                     </td>
                                     <td class="px-3 py-2 text-sm font-bold text-right text-orange-600 whitespace-nowrap">
@@ -297,12 +293,12 @@
 <div id="successModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
         <div class="text-center">
-            <h3 class="text-xl font-bold text-gray-900">Sesi berhasil ditutup</h3>
-            <p class="text-gray-600 mt-2 text-sm">Terima kasih, data sudah tersimpan.</p>
+            <h3 class="text-xl font-black text-gray-900 uppercase tracking-tighter">Sesi Berhasil Ditutup</h3>
+            <p class="text-gray-500 mt-2 text-sm">Terima kasih, data operasional hari ini telah tersimpan dengan aman.</p>
         </div>
 
         <button onclick="window.location.href='{{ route('dashboard') }}'"
-                class="mt-6 w-full px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg font-semibold hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-lg">
+                class="mt-8 w-full px-4 py-4 bg-cuan-green text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-cuan-dark transition-all shadow-xl shadow-emerald-100">
             Kembali ke Dashboard
         </button>
     </div>
