@@ -53,4 +53,8 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'heatmap' => [
+        'ai_key' => env('AI_API_KEY'),
+    ],
+
 ];

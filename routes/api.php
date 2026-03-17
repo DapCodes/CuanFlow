@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResendVerificationController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\DebtPaymentApiController;
+use App\Http\Controllers\Api\HeatmapController;
 use App\Http\Controllers\Api\OutletApiController;
 use App\Http\Controllers\Api\ResellerApplicationApiController;
 use App\Http\Controllers\PaymentController;
@@ -54,6 +55,13 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/outlets', [OutletApiController::class, 'index']);
     Route::get('/outlets/{outlet}', [OutletApiController::class, 'show']);
+
+    // Heatmap (public, no auth required)
+    Route::prefix('heatmap')->group(function () {
+        Route::get('/', [HeatmapController::class, 'heatmap']);
+        Route::get('/stats', [HeatmapController::class, 'stats']);
+    });
+    Route::get('/business-points', [HeatmapController::class, 'businessPoints']);
 });
 
 Route::post('/payment/midtrans/notification', [PaymentController::class, 'handleMidtransNotification'])
