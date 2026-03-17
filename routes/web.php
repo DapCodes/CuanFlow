@@ -42,6 +42,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\WithdrawController;
+use App\Http\Controllers\OpportunityMapController;
 use Illuminate\Support\Facades\Route;
 
 // =========================================================================
@@ -505,6 +506,9 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
         Route::get('/new-session', [ClaraAiController::class, 'newSession'])->name('new-session');
         Route::delete('/session/{id}', [ClaraAiController::class, 'deleteSession'])->name('delete-session');
     });
+
+    // Business Opportunity Map
+    Route::get('/opportunity-map', [OpportunityMapController::class, 'index'])->name('opportunity-map.index');
 
     // FAQ (feature: help_faq)
     Route::prefix('faqs')->name('faqs.')->middleware('feature.access:help_faq')->group(function () {
