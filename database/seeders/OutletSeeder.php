@@ -21,9 +21,9 @@ class OutletSeeder extends Seeder
         // 2) OUTLETS (JAWA BARAT SAJA, NYEBAR)
         $outletsData = [
             // BANDUNG + CIMAHI
-            ['code' => 'TKY-BDG', 'name' => 'Takoyaki Didi', 'address' => 'Jl. Braga, Bandung', 'latitude' => -6.9175, 'longitude' => 107.6191, 'phone' => '081200000101', 'email' => 'batagor.bdg@outlet.com', 'is_active' => true],
-            ['code' => 'MKK-BDG', 'name' => 'Mie Kocok Mang Dadang', 'address' => 'Jl. Cihampelas, Bandung', 'latitude' => -6.8937, 'longitude' => 107.6047, 'phone' => '081200000102', 'email' => 'miekocok.bdg@outlet.com', 'is_active' => true],
-            ['code' => 'SBK-BDG', 'name' => 'Seblak Jeletet Sunda', 'address' => 'Jl. Dago, Bandung', 'latitude' => -6.8839, 'longitude' => 107.6130, 'phone' => '081200000103', 'email' => 'seblak.bdg@outlet.com', 'is_active' => true],
+            ['code' => 'TKY01-BDG', 'name' => 'Takoyaki Didi (Cabang 1)', 'address' => 'Jl. Braga, Bandung', 'latitude' => -6.9175, 'longitude' => 107.6191, 'phone' => '081200000101', 'email' => 'takoyaki1.bdg@outlet.com', 'is_active' => true],
+            ['code' => 'TKY02-BDG', 'name' => 'Takoyaki Didi (Cabang 2)', 'address' => 'Jl. Cihampelas, Bandung', 'latitude' => -6.8937, 'longitude' => 107.6047, 'phone' => '081200000102', 'email' => 'takoyaki2.bdg@outlet.com', 'is_active' => true],
+            ['code' => 'TKY03-BDG', 'name' => 'Takoyaki Didi (Cabang 3)', 'address' => 'Jl. Dago, Bandung', 'latitude' => -6.8839, 'longitude' => 107.6130, 'phone' => '081200000103', 'email' => 'takoyaki3.bdg@outlet.com', 'is_active' => true],
             ['code' => 'SRB-CMH', 'name' => 'Surabi Oncom Cimahi', 'address' => 'Jl. Gatot Subroto, Cimahi', 'latitude' => -6.8720, 'longitude' => 107.5420, 'phone' => '081200000104', 'email' => 'surabi.cimahi@outlet.com', 'is_active' => true],
 
             // BOGOR + DEPOK
@@ -96,7 +96,7 @@ class OutletSeeder extends Seeder
         // 4) BAGI OUTLET: 1 user punya 2–3 outlet
         // (Kode outlet harus ada di $outlets array)
         $ownershipMap = [
-            0 => ['TKY-BDG', 'MKK-BDG', 'SBK-BDG'],       // Daffa (3)
+            0 => ['TKY01-BDG', 'TKY02-BDG', 'TKY03-BDG'],       // Daffa (3)
             1 => ['CTK-BGR', 'CRG-DPK'],                // Rio (2)
             2 => ['KPT-BKS', 'STM-KRW', 'STM-PWK'],       // Nabila (3)
             3 => ['BNK-SBG', 'TMM-SKB'],                // Fajar (2)
