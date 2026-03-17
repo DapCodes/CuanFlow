@@ -1282,6 +1282,21 @@
 @endcan
 @endcanAccessFeature
 
+@canAccessFeature('ai_insights')
+  <a href="{{ route('opportunity-map.index') }}"
+    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
+    data-step="100"
+    data-title="Peta Cuan Lokasi"
+    data-intro="<strong>Analisis lokasi berbasis AI.</strong> Temukan area bisnis berpotensi tinggi untuk membuka cabang baru berdasarkan peta sebaran usaha.">
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-400 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+      <i class="fa-solid fa-map-location-dot text-4xl sm:text-5xl text-white"></i>
+    </div>
+    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+      Peta Cuan Lokasi
+    </span>
+  </a>
+@endcanAccessFeature
+
   <!-- BANTUAN & PENGATURAN -->
 @canAccessFeature('outlet_policies')
 @can('lihat kebijakan outlet')
@@ -2723,6 +2738,10 @@ document.addEventListener('DOMContentLoaded', function() {
     @can('lihat ai insights')
     { label: 'AI Insights', keywords: ['ai', 'insight', 'saran', 'analisis', 'cerdas'], url: "{{ route('ai-insights.index') }}", type: 'Menu' },
     @endcan
+    @endcanAccessFeature
+
+    @canAccessFeature('ai_insights')
+    { label: 'Peta Cuan Lokasi', keywords: ['peta', 'cuan', 'lokasi', 'map', 'heatmap', 'peluang', 'opportunity'], url: "{{ route('opportunity-map.index') }}", type: 'Menu' },
     @endcanAccessFeature
 
     @canAccessFeature('clara_ai')
