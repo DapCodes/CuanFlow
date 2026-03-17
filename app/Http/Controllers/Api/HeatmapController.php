@@ -38,7 +38,20 @@ class HeatmapController extends Controller
 
             // Filter by classification label
             if ($request->has('label')) {
-                $query->where('ai_classification', $request->input('label'));
+                $label = $request->input('label');
+                $query->where(function ($q) use ($label) {
+                    $q->where('ai_classification', $label)
+                      ->orWhere(function ($sq) use ($label) {
+                          $sq->whereNull('ai_classification');
+                          if ($label === 'High Potential') {
+                              $sq->where('opportunity_score', '>=', 60);
+                          } elseif ($label === 'Medium') {
+                              $sq->where('opportunity_score', '>=', 30)->where('opportunity_score', '<', 60);
+                          } elseif ($label === 'Low') {
+                              $sq->where('opportunity_score', '<', 30);
+                          }
+                      });
+                });
             }
 
             // Filter by radius
@@ -174,10 +187,19 @@ class HeatmapController extends Controller
                 'total_grid_areas' => (clone $gridQuery)->count(),
                 'grids_with_data' => (clone $gridQuery)->where('total_businesses', '>', 0)->count(),
                 'classifications' => [
-                    'high_potential' => (clone $gridQuery)->where('ai_classification', 'High Potential')->count(),
-                    'medium' => (clone $gridQuery)->where('ai_classification', 'Medium')->count(),
-                    'low' => (clone $gridQuery)->where('ai_classification', 'Low')->count(),
-                    'unclassified' => (clone $gridQuery)->whereNull('ai_classification')->count(),
+                    'high_potential' => (clone $gridQuery)->where(function($q) {
+                        $q->where('ai_classification', 'High Potential')
+                          ->orWhere(function($sq) { $sq->whereNull('ai_classification')->where('opportunity_score', '>=', 60); });
+                    })->count(),
+                    'medium' => (clone $gridQuery)->where(function($q) {
+                        $q->where('ai_classification', 'Medium')
+                          ->orWhere(function($sq) { $sq->whereNull('ai_classification')->where('opportunity_score', '>=', 30)->where('opportunity_score', '<', 60); });
+                    })->count(),
+                    'low' => (clone $gridQuery)->where(function($q) {
+                        $q->where('ai_classification', 'Low')
+                          ->orWhere(function($sq) { $sq->whereNull('ai_classification')->where('opportunity_score', '<', 30); });
+                    })->count(),
+                    'unclassified' => 0, // Now all have a fallback
                 ],
                 'categories' => (clone $pointQuery)->selectRaw('category, COUNT(*) as count')
                     ->groupBy('category')
