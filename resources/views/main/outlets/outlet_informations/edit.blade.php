@@ -222,7 +222,7 @@
                         <!-- Informasi Dasar -->
                         <div>
                             <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <i class="fas fa-info-circle text-cuan-green text-sm"></i>
+                                <!-- <i class="fas fa-info-circle text-cuan-green text-sm"></i> -->
                                 Informasi Dasar
                             </h3>
                             <div class="space-y-6">
@@ -246,7 +246,7 @@
                         <!-- Informasi Kontak -->
                         <div>
                             <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <i class="fas fa-phone text-blue-500 text-sm"></i>
+                                <!-- <i class="fas fa-phone text-blue-500 text-sm"></i> -->
                                 Kontak Detail
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -283,7 +283,7 @@
                         <!-- Lokasi -->
                         <div>
                             <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <i class="fas fa-map-marked-alt text-red-500 text-sm"></i>
+                                <!-- <i class="fas fa-map-marked-alt text-red-500 text-sm"></i> -->
                                 Lokasi Geografis
                             </h3>
                             <div class="space-y-8">
