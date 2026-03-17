@@ -41,6 +41,14 @@ class HeatmapController extends Controller
                 $query->where('ai_classification', $request->input('label'));
             }
 
+            // Filter by radius
+            if ($request->has(['lat', 'lng'])) {
+                $lat = (float) $request->input('lat');
+                $lng = (float) $request->input('lng');
+                $radius = (float) $request->input('radius', 15);
+                $query->withinRadius($lat, $lng, $radius);
+            }
+
             // Filter by bounding box
             if ($request->has('bounds')) {
                 $parts = array_map('floatval', explode(',', $request->input('bounds')));
@@ -142,29 +150,45 @@ class HeatmapController extends Controller
      *
      * Returns summary statistics for the heatmap data.
      */
-    public function stats(): JsonResponse
+    public function stats(Request $request): JsonResponse
     {
-        $stats = Cache::remember('heatmap:stats', 3600, function () {
+        $cacheKey = 'heatmap:stats:' . md5($request->getQueryString() ?? 'all');
+        $stats = Cache::remember($cacheKey, 3600, function () use ($request) {
+            $gridQuery = GridArea::query();
+            $pointQuery = BusinessPoint::query();
+
+            // Filter by radius
+            if ($request->has(['lat', 'lng'])) {
+                $lat = (float) $request->input('lat');
+                $lng = (float) $request->input('lng');
+                $radius = (float) $request->input('radius', 15);
+                
+                $gridQuery->withinRadius($lat, $lng, $radius);
+
+                $haversinePoints = "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))";
+                $pointQuery->whereRaw("{$haversinePoints} <= ?", [$lat, $lng, $lat, $radius]);
+            }
+
             return [
-                'total_business_points' => BusinessPoint::count(),
-                'total_grid_areas' => GridArea::count(),
-                'grids_with_data' => GridArea::where('total_businesses', '>', 0)->count(),
+                'total_business_points' => (clone $pointQuery)->count(),
+                'total_grid_areas' => (clone $gridQuery)->count(),
+                'grids_with_data' => (clone $gridQuery)->where('total_businesses', '>', 0)->count(),
                 'classifications' => [
-                    'high_potential' => GridArea::where('ai_classification', 'High Potential')->count(),
-                    'medium' => GridArea::where('ai_classification', 'Medium')->count(),
-                    'low' => GridArea::where('ai_classification', 'Low')->count(),
-                    'unclassified' => GridArea::whereNull('ai_classification')->count(),
+                    'high_potential' => (clone $gridQuery)->where('ai_classification', 'High Potential')->count(),
+                    'medium' => (clone $gridQuery)->where('ai_classification', 'Medium')->count(),
+                    'low' => (clone $gridQuery)->where('ai_classification', 'Low')->count(),
+                    'unclassified' => (clone $gridQuery)->whereNull('ai_classification')->count(),
                 ],
-                'categories' => BusinessPoint::selectRaw('category, COUNT(*) as count')
+                'categories' => (clone $pointQuery)->selectRaw('category, COUNT(*) as count')
                     ->groupBy('category')
                     ->orderByDesc('count')
                     ->get()
                     ->pluck('count', 'category')
                     ->toArray(),
                 'score_range' => [
-                    'min' => GridArea::where('total_businesses', '>', 0)->min('opportunity_score'),
-                    'max' => GridArea::where('total_businesses', '>', 0)->max('opportunity_score'),
-                    'avg' => round(GridArea::where('total_businesses', '>', 0)->avg('opportunity_score') ?? 0, 2),
+                    'min' => (clone $gridQuery)->where('total_businesses', '>', 0)->min('opportunity_score'),
+                    'max' => (clone $gridQuery)->where('total_businesses', '>', 0)->max('opportunity_score'),
+                    'avg' => round((clone $gridQuery)->where('total_businesses', '>', 0)->avg('opportunity_score') ?? 0, 2),
                 ],
             ];
         });

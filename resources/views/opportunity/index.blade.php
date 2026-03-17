@@ -209,17 +209,44 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentData = [];
     let viewMode = 'circles'; // 'circles' | 'heat'
 
+    // Outlet coordinates from backend (fallback to Jakarta)
+    const outletLat = {{ auth()->user()->outlet->latitude ?? '-6.2088' }};
+    const outletLng = {{ auth()->user()->outlet->longitude ?? '106.8456' }};
+    const initialZoom = {{ auth()->user()->outlet->latitude ? 12 : 11 }};
+    const radiusKm = 15;
+
     // ─── Init Map ───
     function initMap() {
         map = L.map('opportunity-map', {
             zoomControl: true,
             scrollWheelZoom: true,
-        }).setView([-2.5, 118.0], 5);
+            maxBounds: [[-11.0, 94.0], [6.0, 141.0]], // approximate Indonesian bounds
+            maxBoundsViscosity: 1.0
+        }).setView([outletLat, outletLng], initialZoom);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19,
         }).addTo(map);
+
+        // Draw 15km radius boundary
+        L.circle([outletLat, outletLng], {
+            radius: radiusKm * 1000,
+            color: '#3b82f6',
+            weight: 2,
+            dashArray: '5, 8',
+            fillOpacity: 0.03,
+            interactive: false
+        }).addTo(map);
+
+        // Outlet Marker
+        L.circleMarker([outletLat, outletLng], {
+            radius: 6,
+            color: '#ffffff',
+            fillColor: '#3b82f6',
+            fillOpacity: 1,
+            weight: 2
+        }).bindPopup('<div class="font-bold text-center">Outlet Anda</div>').addTo(map);
 
         // Create layer groups
         circleLayer = L.layerGroup().addTo(map);
@@ -236,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const label = document.getElementById('filterLabel').value;
         const minScore = document.getElementById('filterMinScore').value;
 
-        let url = '/api/v1/heatmap?limit=5000';
+        let url = `/api/v1/heatmap?limit=5000&lat=${outletLat}&lng=${outletLng}&radius=${radiusKm}`;
         if (label) url += `&label=${encodeURIComponent(label)}`;
         if (minScore > 0) url += `&min_score=${minScore}`;
 
@@ -275,10 +302,14 @@ document.addEventListener('DOMContentLoaded', function() {
             renderHeat(data);
         }
 
-        // Auto-fit bounds if we have data
+        // Auto-fit bounds if we have data (constrained to the 15km area)
         if (data.length > 0) {
-            const bounds = data.map(p => [p.lat, p.lng]);
-            map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+            // We use the 15km bounding box to keep the map centered on the search area
+            const rOffset = 0.15; // approx 15km in degrees
+            map.fitBounds([
+                [outletLat - rOffset, outletLng - rOffset], 
+                [outletLat + rOffset, outletLng + rOffset]
+            ], { padding: [20, 20], maxZoom: initialZoom });
         }
     }
 
@@ -477,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ─── Stats Loader ───
     async function loadStats() {
         try {
-            const response = await fetch('/api/v1/heatmap/stats');
+            const response = await fetch(`/api/v1/heatmap/stats?lat=${outletLat}&lng=${outletLng}&radius=${radiusKm}`);
             const json = await response.json();
 
             if (json.success && json.data) {

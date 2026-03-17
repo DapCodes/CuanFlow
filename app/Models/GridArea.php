@@ -44,12 +44,24 @@ class GridArea extends Model
         return $query->where('ai_classification', $classification);
     }
 
-    /**
-     * Scope: filter by bounding box
-     */
     public function scopeWithinBounds($query, float $minLat, float $maxLat, float $minLng, float $maxLng)
     {
         return $query->whereBetween('center_lat', [$minLat, $maxLat])
                      ->whereBetween('center_lng', [$minLng, $maxLng]);
+    }
+
+    /**
+     * Scope: filter by radius from a center point (Haversine formula)
+     */
+    public function scopeWithinRadius($query, float $lat, float $lng, float $radiusKm)
+    {
+        // Haversine formula in raw SQL
+        $haversine = "(6371 * acos(cos(radians(?))
+                     * cos(radians(center_lat))
+                     * cos(radians(center_lng) - radians(?))
+                     + sin(radians(?))
+                     * sin(radians(center_lat))))";
+
+        return $query->whereRaw("{$haversine} <= ?", [$lat, $lng, $lat, $radiusKm]);
     }
 }
