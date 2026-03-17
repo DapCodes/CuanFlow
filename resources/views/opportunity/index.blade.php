@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Business Opportunity Map - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
+@section('title', 'Peta Peluang Bisnis - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
 @section('breadcrumb')
 <li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <span class="text-gray-900 font-medium tracking-tight">Business Opportunity Map</span>
+    <span class="text-gray-900 font-medium tracking-tight">Peta Peluang Bisnis</span>
 </li>
 @endsection
 
@@ -64,22 +64,22 @@
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
                 <h1 class="text-xl md:text-2xl font-black text-gray-900">
-                    Business Opportunity Map
+                    Peta Peluang Bisnis
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    AI-powered location analysis — discover the best areas to open a new business.
+                    Analisis lokasi berbasis AI, temukan area terbaik untuk memulai bisnis baru.
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 <button onclick="refreshData()" id="btnRefresh"
                     class="inline-flex items-center gap-2 rounded-xl bg-white border border-gray-200 px-5 py-3 text-sm font-black text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95">
                     <i class="fas fa-sync-alt text-xs"></i>
-                    <span>Refresh</span>
+                    <span>Perbarui Data</span>
                 </button>
                 <button onclick="toggleStats()" id="btnStats"
                     class="inline-flex items-center gap-2 rounded-xl bg-cuan-green px-5 py-3 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
                     <i class="fas fa-chart-bar text-xs"></i>
-                    <span>Statistics</span>
+                    <span>Lihat Statistik</span>
                 </button>
             </div>
         </section>
@@ -87,19 +87,19 @@
         {{-- STATS CARDS (initially hidden, toggled) --}}
         <section id="statsSection" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300">
             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Business Points</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Titik Bisnis</p>
                 <p class="mt-2 text-2xl font-black text-gray-900" id="statTotalPoints">—</p>
             </div>
             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">High Potential Areas</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Area Potensi Tinggi</p>
                 <p class="mt-2 text-2xl font-black text-cuan-green" id="statHighPotential">—</p>
             </div>
             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Medium Areas</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Area Menengah</p>
                 <p class="mt-2 text-2xl font-black text-amber-500" id="statMedium">—</p>
             </div>
             <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Avg. Score</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Rata-rata Skor</p>
                 <p class="mt-2 text-2xl font-black text-blue-600" id="statAvgScore">—</p>
             </div>
         </section>
@@ -112,16 +112,16 @@
                 <div class="flex-1 relative">
                     <select id="filterLabel"
                         class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all bg-white font-bold text-gray-700">
-                        <option value="">All Classifications</option>
-                        <option value="High Potential">🟢 High Potential</option>
-                        <option value="Medium">🟡 Medium</option>
-                        <option value="Low">🔴 Low</option>
+                        <option value="">Semua Klasifikasi</option>
+                        <option value="High Potential">🟢 Potensi Tinggi</option>
+                        <option value="Medium">🟡 Menengah</option>
+                        <option value="Low">🔴 Rendah</option>
                     </select>
                 </div>
 
                 {{-- Min Score --}}
                 <div class="flex items-center gap-3">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Min Score</label>
+                    <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">Skor Min</label>
                     <input type="range" id="filterMinScore" min="0" max="100" value="0" step="5"
                         class="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-cuan-green">
                     <span id="minScoreValue" class="text-sm font-black text-gray-700 w-8 text-center">0</span>
@@ -131,7 +131,7 @@
                 <div class="flex rounded-xl overflow-hidden border border-gray-200">
                     <button id="viewCircles" onclick="setViewMode('circles')"
                         class="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest bg-cuan-green text-white transition-all">
-                        Circles
+                        Lingkaran
                     </button>
                     <button id="viewHeat" onclick="setViewMode('heat')"
                         class="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest bg-white text-gray-400 hover:bg-gray-50 transition-all">
@@ -149,7 +149,7 @@
                         <div class="w-3 h-3 bg-cuan-green rounded-full map-loading-dot"></div>
                         <div class="w-3 h-3 bg-cuan-green rounded-full map-loading-dot"></div>
                     </div>
-                    <p class="text-sm font-bold text-gray-500">Loading map data...</p>
+                    <p class="text-sm font-bold text-gray-500">Memuat data peta...</p>
                 </div>
 
                 {{-- Empty State Overlay --}}
@@ -157,9 +157,9 @@
                     <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                         <i class="fas fa-map-marked-alt text-3xl text-gray-300"></i>
                     </div>
-                    <h3 class="text-base font-semibold text-gray-900 mb-1">No data available</h3>
+                    <h3 class="text-base font-semibold text-gray-900 mb-1">Data belum tersedia</h3>
                     <p class="text-sm text-gray-500 mb-4 max-w-sm text-center">
-                        Run <code class="bg-gray-100 px-2 py-1 rounded-lg text-xs font-bold">php artisan heatmap:fetch-osm</code> to load OSM data.
+                        Silakan jalankan perintah pengambilan data untuk wilayah ini di konsol sistem.
                     </p>
                 </div>
 
@@ -170,27 +170,27 @@
         {{-- LEGEND --}}
         <div class="fixed bottom-6 left-6 z-50">
             <div class="bg-white shadow-lg rounded-2xl border border-gray-100 p-4 space-y-3 min-w-[180px]">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Opportunity Level</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Tingkat Peluang</p>
                 <div class="space-y-2.5">
                     <div class="flex items-center gap-3">
                         <span class="w-4 h-4 rounded-full bg-emerald-400 border-2 border-emerald-200 shadow-sm shadow-emerald-100"></span>
-                        <span class="text-xs font-bold text-gray-700">High Potential</span>
+                        <span class="text-xs font-bold text-gray-700">Potensi Tinggi</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="w-4 h-4 rounded-full bg-amber-400 border-2 border-amber-200 shadow-sm shadow-amber-100"></span>
-                        <span class="text-xs font-bold text-gray-700">Medium</span>
+                        <span class="text-xs font-bold text-gray-700">Menengah</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="w-4 h-4 rounded-full bg-red-400 border-2 border-red-200 shadow-sm shadow-red-100"></span>
-                        <span class="text-xs font-bold text-gray-700">Low</span>
+                        <span class="text-xs font-bold text-gray-700">Rendah</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="w-4 h-4 rounded-full bg-gray-200 border-2 border-gray-100"></span>
-                        <span class="text-xs font-bold text-gray-400">No Data</span>
+                        <span class="text-xs font-bold text-gray-400">Tanpa Data</span>
                     </div>
                 </div>
                 <div class="pt-2 border-t border-gray-100">
-                    <p class="text-[10px] text-gray-400" id="legendPointCount">0 points loaded</p>
+                    <p class="text-[10px] text-gray-400" id="legendPointCount">0 titik dimuat</p>
                 </div>
             </div>
         </div>
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showLoading(false);
 
             // Update legend count
-            document.getElementById('legendPointCount').textContent = `${currentData.length.toLocaleString()} points loaded`;
+            document.getElementById('legendPointCount').textContent = `${currentData.length.toLocaleString()} titik dimuat`;
 
         } catch (err) {
             console.error('Fetch error:', err);
@@ -365,15 +365,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function createPopupContent(point) {
         const { color, badgeClass } = getPointColors(point.score, point.label);
         const scoreBar = Math.min(point.score, 100);
+        
+        // Translate label for display
+        let displayLabel = point.label;
+        if (point.label === 'High Potential') displayLabel = 'Potensi Tinggi';
+        else if (point.label === 'Medium') displayLabel = 'Menengah';
+        else if (point.label === 'Low') displayLabel = 'Rendah';
 
         return `
             <div style="padding: 16px; min-width: 220px; font-family: 'Satoshi', sans-serif;">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
                     <span style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af;">
-                        Area Analysis
+                        Analisis Area
                     </span>
                     <span style="display:inline-flex; align-items:center; padding:3px 10px; border-radius:999px; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; ${badgeClass}">
-                        ${point.label}
+                        ${displayLabel}
                     </span>
                 </div>
 
@@ -382,33 +388,33 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span style="font-size:28px; font-weight:900; color:#111827;">${point.score.toFixed(1)}</span>
                         <span style="font-size:12px; font-weight:700; color:#9ca3af;">/100</span>
                     </div>
-                    <div style="margin-top:6px; height:6px; background:#f3f4f6; border-radius:999px; overflow:hidden;">
-                        <div style="height:100%; width:${scoreBar}%; background:${color}; border-radius:999px; transition:width 0.3s ease;"></div>
+                    <div style="margin-top:6px; height:6px; background:#f3f4f6; border-radius:9999px; overflow:hidden;">
+                        <div style="height:100%; width:${scoreBar}%; background:${color}; border-radius:9999px; transition:width 0.3s ease;"></div>
                     </div>
                 </div>
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; padding-top:10px; border-top:1px solid #f3f4f6;">
                     <div>
-                        <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0;">Businesses</p>
+                        <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0;">Total Bisnis</p>
                         <p style="font-size:16px; font-weight:900; color:#111827; margin:2px 0 0;">${point.total_businesses}</p>
                     </div>
                     <div>
-                        <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0;">Categories</p>
+                        <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0;">Kategori</p>
                         <p style="font-size:16px; font-weight:900; color:#111827; margin:2px 0 0;">${point.category_diversity}</p>
                     </div>
                     <div>
-                        <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0;">Demand</p>
+                        <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0;">Permintaan</p>
                         <p style="font-size:16px; font-weight:900; color:#658C58; margin:2px 0 0;">${point.demand_score}</p>
                     </div>
                     <div>
-                        <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0;">Competition</p>
+                        <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0;">Kompetisi</p>
                         <p style="font-size:16px; font-weight:900; color:#ef4444; margin:2px 0 0;">${point.competition_score}</p>
                     </div>
                 </div>
 
                 ${point.analysis ? `
                 <div style="margin-top:10px; padding-top:10px; border-top:1px solid #f3f4f6;">
-                    <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0 0 4px;">AI Analysis</p>
+                    <p style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin:0 0 4px;">Analisis AI</p>
                     <p style="font-size:12px; color:#6b7280; line-height:1.5; margin:0;">${point.analysis}</p>
                 </div>
                 ` : ''}

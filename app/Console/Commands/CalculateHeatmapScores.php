@@ -29,7 +29,7 @@ class CalculateHeatmapScores extends Command
         // Check for business data
         $totalPoints = BusinessPoint::count();
         if ($totalPoints === 0) {
-            $this->error('No business points found! Run `php artisan heatmap:fetch-osm` first.');
+            $this->error('Data untuk lokasi anda belum di temukan, silahkan cek kembali nanti');
             return self::FAILURE;
         }
 
