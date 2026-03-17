@@ -1,7 +1,6 @@
 # Dokumentasi Sistem Peta Peluang Bisnis (CuanFlow Heatmap)
 
-Sistem Peta Peluang Bisnis adalah fitur berbasis AI pada aplikasi CuanFlow yang membantu pemilik UMKM (seperti outlet Takoyaki Didi) mencari lokasi strategis terbaik untuk membuka cabang baru. Fitur ini menggunakan perbandingan data geografi (OpenStreetMap) dan algoritma AI untuk memberikan skor peluang di berbagai area.
-
+Sistem Analisis Peluang Bisnis (Heatmap) adalah fitur intelijen lokasi pada aplikasi CuanFlow. Sistem ini menggunakan **Algoritma Haversine** untuk pemetaan radius geografis (via OpenStreetMap) dan **Model Klasifikasi AI** untuk menganalisis kepadatan pesaing serta potensi pasar, guna merekomendasikan lokasi cabang baru yang paling strategis bagi UMKM.
 ---
 
 ## 🧭 Alur Kerja Sistem (Step-by-Step)
