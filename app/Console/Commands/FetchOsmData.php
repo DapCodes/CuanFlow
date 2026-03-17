@@ -98,7 +98,13 @@ class FetchOsmData extends Command
         );
 
         $this->newLine();
-        $this->info('💡 Next: run `php artisan heatmap:calculate` to generate opportunity scores.');
+        if ($customBbox) {
+            $bboxStrForCalc = implode(',', $customBbox);
+        } else {
+            $bbox = $service->getBoundingBox($area);
+            $bboxStrForCalc = implode(',', $bbox);
+        }
+        $this->info("💡 Next: run `php artisan heatmap:calculate --bounds=\"{$bboxStrForCalc}\"` to generate opportunity scores.");
 
         return self::SUCCESS;
     }

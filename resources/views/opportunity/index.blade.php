@@ -273,6 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!json.success || !json.data || json.data.length === 0) {
                 currentData = [];
+                clearLayers(); // Add this line to remove ghost markers
                 showEmpty();
                 showLoading(false);
                 return;

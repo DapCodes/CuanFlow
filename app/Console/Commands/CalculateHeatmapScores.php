@@ -12,6 +12,7 @@ use Illuminate\Console\Command;
 class CalculateHeatmapScores extends Command
 {
     protected $signature = 'heatmap:calculate
+                            {--bounds= : Bounding box to calculate "minLat,maxLat,minLng,maxLng"}
                             {--no-ai : Skip AI classification}
                             {--queue : Dispatch to queue instead of running synchronously}';
 
@@ -35,6 +36,15 @@ class CalculateHeatmapScores extends Command
         $this->info("Business points in database: " . number_format($totalPoints));
         $this->newLine();
 
+        $boundsOpt = $this->option('bounds');
+        // If no bounds provided, and there are dots across Indonesia, it will take forever.
+        // Let's force an area parameter to make it localized.
+        if (!$boundsOpt) {
+            $this->error('Please provide a bounding box using --bounds="minLat,maxLat,minLng,maxLng" to limit the calculation area, or use the area parameter in the fetch command which passes it automatically.');
+            $this->line('Example (Bandung): php artisan heatmap:calculate --bounds="-6.97,-6.85,107.55,107.70"');
+            return self::FAILURE;
+        }
+
         // Dispatch to queue if requested
         if ($useQueue) {
             CalculateGridScoresJob::dispatch(!$skipAI);
@@ -42,10 +52,18 @@ class CalculateHeatmapScores extends Command
             return self::SUCCESS;
         }
 
+        // Parse bounds
+        $boundsArray = array_map('floatval', explode(',', $boundsOpt));
+        if (count($boundsArray) !== 4) {
+            $this->error('Invalid bounds format.');
+            return self::FAILURE;
+        }
+        [$minLat, $maxLat, $minLng, $maxLng] = $boundsArray;
+
         // Step 1: Grid Calculation
         $this->info('Step 1: Generating grid cells and calculating scores...');
 
-        $gridResult = $gridService->calculateAll();
+        $gridResult = $gridService->calculateForBounds($minLat, $maxLat, $minLng, $maxLng);
 
         $this->info("  • Grid cells created: " . number_format($gridResult['grids_created']));
         $this->info("  • Grids with businesses: " . number_format($gridResult['grids_with_data']));
