@@ -263,9 +263,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const label = document.getElementById('filterLabel').value;
         const minScore = document.getElementById('filterMinScore').value;
 
-        let url = `/api/v1/heatmap?limit=5000&lat=${outletLat}&lng=${outletLng}&radius=${radiusKm}`;
+        // Note: Always send min_score even if it's 0 to avoid cached empty results for the "no-min-score" key
+        let url = `/api/v1/heatmap?limit=5000&lat=${outletLat}&lng=${outletLng}&radius=${radiusKm}&min_score=${minScore}&t=${Date.now()}`;
         if (label) url += `&label=${encodeURIComponent(label)}`;
-        if (minScore > 0) url += `&min_score=${minScore}`;
 
         try {
             const response = await fetch(url);
@@ -305,8 +305,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Auto-fit bounds if we have data (constrained to the 15km area)
         if (data.length > 0) {
-            // We use the 15km bounding box to keep the map centered on the search area
-            const rOffset = 0.15; // approx 15km in degrees
+            // We use the 15km bounding box (approx 0.135 deg) to keep the map centered on the search area
+            const rOffset = 0.135; 
             map.fitBounds([
                 [outletLat - rOffset, outletLng - rOffset], 
                 [outletLat + rOffset, outletLng + rOffset]
@@ -509,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ─── Stats Loader ───
     async function loadStats() {
         try {
-            const response = await fetch(`/api/v1/heatmap/stats?lat=${outletLat}&lng=${outletLng}&radius=${radiusKm}`);
+            const response = await fetch(`/api/v1/heatmap/stats?lat=${outletLat}&lng=${outletLng}&radius=${radiusKm}&t=${Date.now()}`);
             const json = await response.json();
 
             if (json.success && json.data) {
@@ -539,6 +539,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ─── Init ───
     initMap();
+
+    // Fix partial tile loading / gray map bug
+    const fixMapLayout = () => { 
+        if (map) {
+            map.invalidateSize();
+            // Center map on outlet
+            map.setView([outletLat, outletLng], initialZoom);
+        }
+    };
+    
+    // Multiple attempts to ensure layout is ready
+    window.addEventListener('load', fixMapLayout);
+    [100, 500, 1000, 2000].forEach(delay => setTimeout(fixMapLayout, delay));
 });
 </script>
 @endpush
