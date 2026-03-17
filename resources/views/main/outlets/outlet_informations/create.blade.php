@@ -146,27 +146,50 @@
                             </div>
                         </div>
 
-                        <!-- Status Toggle -->
+                        <!-- Settings Toggle -->
                         <div>
                             <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-4">
-                                Status Operasional
+                                Konfigurasi Outlet
                             </h3>
-                            <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 ring-1 ring-gray-100 flex items-center justify-between">
-                                <div>
-                                    <p class="text-xs font-black text-gray-900 uppercase tracking-tight">Aktifkan Outlet</p>
-                                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-tight">Langsung dapat beroperasi</p>
+                            <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 ring-1 ring-gray-100 space-y-6">
+                                <!-- Produksi Otomatis -->
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs font-black text-gray-900 uppercase tracking-tight">Produksi Otomatis</p>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-tight">Status produksi langsung selesai</p>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="checkbox" 
+                                               name="auto_production" 
+                                               id="auto_production"
+                                               value="1"
+                                               {{ old('auto_production', false) ? 'checked' : '' }}
+                                               class="sr-only toggle-checkbox">
+                                        <label for="auto_production" class="block relative w-12 h-6 cursor-pointer">
+                                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 transition-colors duration-300"></div>
+                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300" id="auto_production_dot"></div>
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="relative">
-                                    <input type="checkbox" 
-                                           name="is_active" 
-                                           id="is_active"
-                                           value="1"
-                                           {{ old('is_active', true) ? 'checked' : '' }}
-                                           class="sr-only toggle-checkbox">
-                                    <label for="is_active" class="block relative w-12 h-6 cursor-pointer">
-                                        <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 transition-colors duration-300"></div>
-                                        <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300" id="toggleDot"></div>
-                                    </label>
+
+                                <!-- Sistem Meja -->
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs font-black text-gray-900 uppercase tracking-tight">Sistem Meja</p>
+                                        <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-tight">Aktifkan pemesanan berbasis meja</p>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="checkbox" 
+                                               name="has_table_system" 
+                                               id="has_table_system"
+                                               value="1"
+                                               {{ old('has_table_system', false) ? 'checked' : '' }}
+                                               class="sr-only toggle-checkbox">
+                                        <label for="has_table_system" class="block relative w-12 h-6 cursor-pointer">
+                                            <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 transition-colors duration-300"></div>
+                                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300" id="has_table_system_dot"></div>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -340,12 +363,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     removeLogo.addEventListener('click', e => { e.stopPropagation(); logoInput.value = ''; logoPreview.src = ''; logoPreview.style.display = 'none'; logoPlaceholder.style.display = 'block'; });
 
-    // Toggle Switch
-    const toggleCheckbox = document.getElementById('is_active');
-    const toggleDot = document.getElementById('toggleDot');
-    const updateToggle = () => toggleDot.style.transform = toggleCheckbox.checked ? 'translateX(1.5rem)' : 'translateX(0)';
-    toggleCheckbox.addEventListener('change', updateToggle);
-    updateToggle();
+    // Toggle Handlers
+    const autoProdCheckbox = document.getElementById('auto_production');
+    const autoProdDot = document.getElementById('auto_production_dot');
+    const tableSysCheckbox = document.getElementById('has_table_system');
+    const tableSysDot = document.getElementById('has_table_system_dot');
+
+    const updateToggle = (box, dot) => dot.style.transform = box.checked ? 'translateX(1.5rem)' : 'translateX(0)';
+    
+    autoProdCheckbox.addEventListener('change', () => updateToggle(autoProdCheckbox, autoProdDot));
+    tableSysCheckbox.addEventListener('change', () => updateToggle(tableSysCheckbox, tableSysDot));
+    
+    updateToggle(autoProdCheckbox, autoProdDot);
+    updateToggle(tableSysCheckbox, tableSysDot);
 
     // Map Handler
     const defaultLat = -6.2088;
