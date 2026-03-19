@@ -16,7 +16,7 @@ class ClaraAiController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:akses clara ai', only: ['index', 'studioIndex']),
+            new Middleware('permission:akses clara ai', only: ['index', 'videoPrompt', 'affiliateScript', 'adsImagePrompt']),
             new Middleware('permission:chat dengan clara ai', only: ['chat', 'generate']),
             new Middleware('permission:sesi baru clara ai', only: ['newSession']),
             new Middleware('permission:hapus sesi clara ai', only: ['deleteSession']),
@@ -148,11 +148,27 @@ class ClaraAiController extends Controller implements HasMiddleware
     }
 
     /**
-     * AI Studio — Multi-Mode Generator Page
+     * AI Studio — Video Prompt Generator Page
      */
-    public function studioIndex()
+    public function videoPrompt()
     {
-        return view('main.clara-ai.studio');
+        return view('main.clara-ai.video-prompt');
+    }
+
+    /**
+     * AI Studio — Affiliate Script Generator Page
+     */
+    public function affiliateScript()
+    {
+        return view('main.clara-ai.affiliate-script');
+    }
+
+    /**
+     * AI Studio — Ads Image Prompt Generator Page
+     */
+    public function adsImagePrompt()
+    {
+        return view('main.clara-ai.ads-image-prompt');
     }
 
     /**

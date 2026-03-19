@@ -505,7 +505,9 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
         Route::post('/chat', [ClaraAiController::class, 'chat'])->name('chat');
         Route::get('/new-session', [ClaraAiController::class, 'newSession'])->name('new-session');
         Route::delete('/session/{id}', [ClaraAiController::class, 'deleteSession'])->name('delete-session');
-        Route::get('/studio', [ClaraAiController::class, 'studioIndex'])->name('studio');
+        Route::get('/video-prompt', [ClaraAiController::class, 'videoPrompt'])->name('video-prompt');
+        Route::get('/affiliate-script', [ClaraAiController::class, 'affiliateScript'])->name('affiliate-script');
+        Route::get('/ads-image-prompt', [ClaraAiController::class, 'adsImagePrompt'])->name('ads-image-prompt');
         Route::post('/generate', [ClaraAiController::class, 'generate'])->name('generate');
     });
 
