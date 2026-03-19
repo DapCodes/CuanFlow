@@ -136,6 +136,8 @@ class ResellerProductManagementController extends Controller
             $product = \App\Models\Product::create([
                 'outlet_id' => $user->outlet_id,
                 'supplier_id' => $supplier->id,
+                'category_id' => $resellerProduct->sourceProduct?->category_id,
+                'unit_id' => $resellerProduct->sourceProduct?->unit_id,
                 'name' => $resellerProduct->name,
                 'code' => 'PROD-RES-' . strtoupper(\Illuminate\Support\Str::random(6)),
                 'hpp' => $request->selling_price,
