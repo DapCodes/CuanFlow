@@ -535,4 +535,7 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
     Route::post('reseller-applications/toggle-acceptance', [ResellerApplicationController::class, 'toggleAcceptance'])->name('reseller-applications.toggle-acceptance')->middleware('feature.access:reseller_app');
     Route::resource('reseller-applications', ResellerApplicationController::class)->only(['index', 'store', 'update'])->middleware('feature.access:reseller_app');
 
+    // Reseller Product Management (New Feature)
+    Route::resource('reseller-products', \App\Http\Controllers\ResellerProductManagementController::class);
+
 });

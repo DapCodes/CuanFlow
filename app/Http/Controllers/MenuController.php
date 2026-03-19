@@ -31,17 +31,20 @@ class MenuController extends Controller
                 ->exists()
             : false;
 
-        // Ambil unread insights untuk user outlet ini
         $unreadInsights = $user->outlet_id
             ? AiInsight::where('outlet_id', $user->outlet_id)
                 ->unread()
                 ->active()
-                ->orderBy('severity', 'desc') // Critical dulu
+                ->orderBy('severity', 'desc')
                 ->orderBy('created_at', 'desc')
-                ->limit(5) // Maksimal 5 insights dalam carousel
+                ->limit(5)
                 ->get()
             : collect();
 
-        return view('dashboard', compact('unreadInsights', 'isPosOpen'));
+        $isReseller = $user->email
+            ? \App\Models\Customer::where('email', $user->email)->where('type', 'reseller')->exists()
+            : false;
+
+        return view('dashboard', compact('unreadInsights', 'isPosOpen', 'isReseller'));
     }
 }

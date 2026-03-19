@@ -816,6 +816,19 @@
 @endcan
 @endcanAccessFeature
 
+@if(isset($isReseller) && $isReseller)
+<a href="{{ route('reseller-products.index') }}"
+  class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
+  data-title="Produk Reseller"
+  data-intro="<strong>Barang siap jual dari pusat.</strong> Terima dan kelola stok barang yang Anda beli dari outlet pusat di sini.">
+  <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+    <i class="fa-solid fa-boxes-packing text-4xl sm:text-5xl text-white"></i>
+  </div>
+  <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+    Produk Reseller
+  </span>
+</a>
+@endif
 
 @canAccessFeature('sales_management')
 @can('lihat penjualan')
