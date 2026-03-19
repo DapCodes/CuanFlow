@@ -7,6 +7,8 @@ use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\ResellerApplication;
+use App\Models\ResellerProduct;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
 use Illuminate\Http\Request;
@@ -316,6 +318,7 @@ class PaymentController extends Controller
                 'message' => 'Pembayaran tunai berhasil diproses',
                 'sale' => [
                     'id' => $sale->id,
+                    'reseller_sync' => $sale->has_reseller_sync ?? false,
                     'invoice_number' => $sale->invoice_number,
                     'created_at' => $sale->created_at,
                     'grand_total' => $sale->grand_total,
@@ -426,6 +429,7 @@ class PaymentController extends Controller
                 'message' => 'Pembayaran transfer berhasil dikonfirmasi',
                 'sale' => [
                     'id' => $sale->id,
+                    'reseller_sync' => $sale->has_reseller_sync ?? false,
                     'invoice_number' => $sale->invoice_number,
                     'created_at' => $sale->created_at,
                     'grand_total' => $sale->grand_total,
@@ -613,6 +617,9 @@ class PaymentController extends Controller
                     if ($sale->discount_amount > 0) {
                         $this->incrementDiscountUsageFromSaleNotes($sale);
                     }
+
+                    // SYNC RESELLER PRODUCTS
+                    $this->syncResellerProducts($sale);
                 }
             }
 
@@ -955,7 +962,66 @@ class PaymentController extends Controller
             ]);
         }
 
+        // SYNC RESELLER PRODUCTS
+        if ($sale->status === 'completed' || $sale->payment_method === 'debt') {
+             $this->syncResellerProducts($sale);
+        }
+
         return $sale->fresh();
+    }
+
+    /**
+     * Sync items to ResellerProduct table for resale
+     */
+    private function syncResellerProducts(Sale $sale)
+    {
+        if (!$sale->customer_id) return 0;
+
+        $customer = Customer::find($sale->customer_id);
+        if (!$customer || $customer->type !== 'reseller' || !$customer->reseller_outlet_id) return 0;
+
+        // Verify approved application for THIS outlet
+        $isVerified = ResellerApplication::where('customer_id', $sale->customer_id)
+            ->where('outlet_id', $sale->outlet_id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$isVerified) return 0;
+
+        $syncedCount = 0;
+        foreach ($sale->items as $item) {
+            $product = Product::find($item->product_id);
+            if (!$product) continue;
+
+            // Increment stock if already exists, else create
+            $resellerProduct = ResellerProduct::where('reseller_outlet_id', $customer->reseller_outlet_id)
+                ->where('source_outlet_id', $sale->outlet_id)
+                ->where('source_product_id', $item->product_id)
+                ->where('status', '!=', 'rejected')
+                ->first();
+
+            if ($resellerProduct) {
+                $resellerProduct->increment('stock', $item->quantity);
+            } else {
+                ResellerProduct::create([
+                    'reseller_outlet_id' => $customer->reseller_outlet_id,
+                    'source_outlet_id' => $sale->outlet_id,
+                    'source_product_id' => $item->product_id,
+                    'name' => $item->product_name,
+                    'purchase_price' => $product->reseller_price ?? $item->unit_price,
+                    'selling_price' => 0,
+                    'stock' => $item->quantity,
+                    'status' => 'pending',
+                    'is_active' => true,
+                ]);
+            }
+            $syncedCount++;
+        }
+
+        // Set flag on sale object for response
+        $sale->has_reseller_sync = ($syncedCount > 0);
+        
+        return $syncedCount;
     }
 
     /**

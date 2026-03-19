@@ -8,6 +8,9 @@ use App\Models\CustomerDebt;
 use App\Models\DebtPayment;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use App\Models\ResellerApplication;
+use App\Models\ResellerProduct;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -173,6 +176,9 @@ class DebtPaymentController extends Controller
                 'notes' => $request->notes,
             ]);
 
+            // SYNC RESELLER PRODUCTS
+            $this->syncResellerProducts($sale);
+
             // Mark table as occupied if dine-in
             if ($request->service_type === 'dine_in' && $request->table_id) {
                 \App\Models\Table::find($request->table_id)->update(['status' => 'occupied']);
@@ -253,6 +259,7 @@ class DebtPaymentController extends Controller
                             'is_stock' => $item->product ? (bool) $item->product->is_stock : true,
                         ];
                     })->values(),
+                    'reseller_sync' => $sale->has_reseller_sync ?? false,
                 ],
             ]);
 
@@ -495,5 +502,59 @@ class DebtPaymentController extends Controller
 
             $item->save();
         }
+    }
+
+    /**
+     * Sync items to ResellerProduct table for resale
+     */
+    private function syncResellerProducts(Sale $sale)
+    {
+        if (!$sale->customer_id) return 0;
+
+        $customer = Customer::find($sale->customer_id);
+        if (!$customer || $customer->type !== 'reseller' || !$customer->reseller_outlet_id) return 0;
+
+        // Verify approved application for THIS outlet
+        $isVerified = ResellerApplication::where('customer_id', $sale->customer_id)
+            ->where('outlet_id', $sale->outlet_id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$isVerified) return 0;
+
+        $syncedCount = 0;
+        foreach ($sale->items as $item) {
+            $product = Product::find($item->product_id);
+            if (!$product) continue;
+
+            // Increment stock if already exists, else create
+            $resellerProduct = ResellerProduct::where('reseller_outlet_id', $customer->reseller_outlet_id)
+                ->where('source_outlet_id', $sale->outlet_id)
+                ->where('source_product_id', $item->product_id)
+                ->where('status', '!=', 'rejected')
+                ->first();
+
+            if ($resellerProduct) {
+                $resellerProduct->increment('stock', $item->quantity);
+            } else {
+                ResellerProduct::create([
+                    'reseller_outlet_id' => $customer->reseller_outlet_id,
+                    'source_outlet_id' => $sale->outlet_id,
+                    'source_product_id' => $item->product_id,
+                    'name' => $item->product_name,
+                    'purchase_price' => $product->reseller_price ?? $item->unit_price,
+                    'selling_price' => 0,
+                    'stock' => $item->quantity,
+                    'status' => 'pending',
+                    'is_active' => true,
+                ]);
+            }
+            $syncedCount++;
+        }
+
+        // Set flag on sale object for response
+        $sale->has_reseller_sync = ($syncedCount > 0);
+        
+        return $syncedCount;
     }
 }
