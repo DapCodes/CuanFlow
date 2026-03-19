@@ -11,6 +11,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+use App\Models\Supplier;
+use App\Models\RawMaterial;
+use App\Models\Product;
+use App\Models\Recipe;
+use App\Models\RecipeItem;
+use App\Models\AdditionalCost;
+use Illuminate\Support\Facades\DB;
+
 class OutletInformationController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
@@ -73,8 +81,9 @@ class OutletInformationController extends Controller implements HasMiddleware
     public function create()
     {
         $owners = User::role(['owner', 'admin'])->get();
+        $activeOutlet = auth()->user()->outlet;
 
-        return view('main.outlets.outlet_informations.create', compact('owners'));
+        return view('main.outlets.outlet_informations.create', compact('owners', 'activeOutlet'));
     }
 
     public function store(Request $request)
@@ -88,6 +97,8 @@ class OutletInformationController extends Controller implements HasMiddleware
             'longitude' => 'nullable|numeric',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'boolean',
+            'transfer_data' => 'nullable|boolean',
+            'transfer_items' => 'nullable|array',
         ]);
 
         $validated['owner_id'] = auth()->user()->id;
@@ -105,7 +116,96 @@ class OutletInformationController extends Controller implements HasMiddleware
             'tax_percentage' => 0,
         ];
 
-        Outlet::create($validated);
+        DB::beginTransaction();
+        try {
+            $outlet = Outlet::create($validated);
+
+            if ($request->transfer_data && $request->transfer_items) {
+                $sourceOutlet = auth()->user()->outlet;
+                if ($sourceOutlet) {
+                    $items = $request->transfer_items;
+                    
+                    $supplierMap = [];
+                    $rawMaterialMap = [];
+
+                    // 1. Transfer Suppliers
+                    if (in_array('suppliers', $items)) {
+                        $suppliers = Supplier::where('outlet_id', $sourceOutlet->id)->get();
+                        foreach ($suppliers as $oldSupplier) {
+                            $newSupplier = $oldSupplier->replicate();
+                            $newSupplier->outlet_id = $outlet->id;
+                            $newSupplier->code = 'SUP-'.strtoupper(Str::random(6));
+                            $newSupplier->save();
+                            $supplierMap[$oldSupplier->id] = $newSupplier->id;
+                        }
+                    }
+
+                    // 2. Transfer Raw Materials
+                    if (in_array('raw_materials', $items)) {
+                        $rawMaterials = RawMaterial::where('outlet_id', $sourceOutlet->id)->get();
+                        foreach ($rawMaterials as $oldMaterial) {
+                            $newMaterial = $oldMaterial->replicate();
+                            $newMaterial->outlet_id = $outlet->id;
+                            $newMaterial->code = 'RM-'.strtoupper(Str::random(6));
+                            // Map supplier if transferred
+                            if ($oldMaterial->supplier_id && isset($supplierMap[$oldMaterial->supplier_id])) {
+                                $newMaterial->supplier_id = $supplierMap[$oldMaterial->supplier_id];
+                            }
+                            // Note: If supplier wasn't transferred, it still points to the old supplier ID.
+                            // However, in this system, shared suppliers might be okay or not.
+                            // The user instructions imply copying to same table with different code.
+                            $newMaterial->save();
+                            $rawMaterialMap[$oldMaterial->id] = $newMaterial->id;
+                        }
+                    }
+
+                    // 3. Transfer Products
+                    if (in_array('products', $items)) {
+                        $products = Product::where('outlet_id', $sourceOutlet->id)->with('recipes.items', 'recipes.additionalCosts')->get();
+                        foreach ($products as $oldProduct) {
+                            $newProduct = $oldProduct->replicate();
+                            $newProduct->outlet_id = $outlet->id;
+                            $newProduct->code = 'PRD-'.strtoupper(Str::random(6));
+                            // Map supplier if transferred
+                            if ($oldProduct->supplier_id && isset($supplierMap[$oldProduct->supplier_id])) {
+                                $newProduct->supplier_id = $supplierMap[$oldProduct->supplier_id];
+                            }
+                            $newProduct->save();
+
+                            // Transfer Recipes
+                            foreach ($oldProduct->recipes as $oldRecipe) {
+                                $newRecipe = $oldRecipe->replicate();
+                                $newRecipe->product_id = $newProduct->id;
+                                $newRecipe->save();
+
+                                // Transfer Recipe Items
+                                foreach ($oldRecipe->items as $oldItem) {
+                                    $newItem = $oldItem->replicate();
+                                    $newItem->recipe_id = $newRecipe->id;
+                                    // Map raw material if transferred
+                                    if ($oldItem->raw_material_id && isset($rawMaterialMap[$oldItem->raw_material_id])) {
+                                        $newItem->raw_material_id = $rawMaterialMap[$oldItem->raw_material_id];
+                                    }
+                                    $newItem->save();
+                                }
+
+                                // Transfer Additional Costs
+                                foreach ($oldRecipe->additionalCosts as $oldCost) {
+                                    $newCost = $oldCost->replicate();
+                                    $newCost->recipe_id = $newRecipe->id;
+                                    $newCost->save();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal membuat outlet: ' . $e->getMessage())->withInput();
+        }
 
         return redirect()->route('outlets.index')
             ->with('success', 'Outlet berhasil ditambahkan!');

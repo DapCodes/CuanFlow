@@ -315,6 +315,58 @@
                     </div>
                 </div>
 
+                <!-- Data Transfer Section -->
+                @if($activeOutlet)
+                <div class="pt-8 border-t border-gray-100">
+                    <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                        Transfer Data
+                    </h3>
+                    <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 ring-1 ring-gray-100 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-black text-gray-900 uppercase tracking-tight">Transfer Data dari {{ $activeOutlet->name }}</p>
+                                <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-tight">Salin data produk, supplier, dan bahan baku ke outlet baru ini</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" 
+                                       name="transfer_data" 
+                                       id="transfer_data"
+                                       value="1"
+                                       class="sr-only toggle-checkbox">
+                                <label for="transfer_data" class="block relative w-12 h-6 cursor-pointer">
+                                    <div class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 transition-colors duration-300"></div>
+                                    <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300" id="transfer_data_dot"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="transfer_options" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200/50">
+                            <label class="flex items-center p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green/30 transition-all shadow-sm">
+                                <input type="checkbox" name="transfer_items[]" value="products" class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20" checked>
+                                <span class="ml-3">
+                                    <span class="block text-xs font-black text-gray-900 uppercase tracking-tight">Produk & Resep</span>
+                                    <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">Tanpa stok</span>
+                                </span>
+                            </label>
+                            <label class="flex items-center p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green/30 transition-all shadow-sm">
+                                <input type="checkbox" name="transfer_items[]" value="suppliers" class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20" checked>
+                                <span class="ml-3">
+                                    <span class="block text-xs font-black text-gray-900 uppercase tracking-tight">Data Supplier</span>
+                                    <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">Informasi kontak</span>
+                                </span>
+                            </label>
+                            <label class="flex items-center p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green/30 transition-all shadow-sm">
+                                <input type="checkbox" name="transfer_items[]" value="raw_materials" class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20" checked>
+                                <span class="ml-3">
+                                    <span class="block text-xs font-black text-gray-900 uppercase tracking-tight">Bahan Baku</span>
+                                    <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">Kategori & satuan</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Action Buttons -->
                 <div class="pt-8 border-t border-gray-100">
                     <div class="flex flex-col md:flex-row md:justify-end gap-3">
@@ -376,6 +428,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     updateToggle(autoProdCheckbox, autoProdDot);
     updateToggle(tableSysCheckbox, tableSysDot);
+
+    // Transfer Data Handler
+    const transferCheckbox = document.getElementById('transfer_data');
+    const transferDot = document.getElementById('transfer_data_dot');
+    const transferOptions = document.getElementById('transfer_options');
+
+    if (transferCheckbox) {
+        transferCheckbox.addEventListener('change', function() {
+            updateToggle(this, transferDot);
+            if (this.checked) {
+                transferOptions.classList.remove('hidden');
+            } else {
+                transferOptions.classList.add('hidden');
+            }
+        });
+        updateToggle(transferCheckbox, transferDot);
+    }
 
     // Map Handler
     const defaultLat = -6.2088;
