@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             AdminLandingPageSeeder::class,
             // ProductStockSeeder::class,
             TermsAndConditionSeeder::class,
+            ResellerTestSeeder::class,
         ]);
 
         // Buat Akun Admin

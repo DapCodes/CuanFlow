@@ -88,6 +88,15 @@ class ResellerApplicationController extends Controller
             if ($request->status === 'approved') {
                 // Change customer type to reseller
                 $customer->update(['type' => 'reseller']);
+
+                // Try to find if this customer has a user account with an outlet
+                $userAccount = \App\Models\User::where('email', $customer->email)
+                    ->orWhere('phone', $customer->phone)
+                    ->first();
+                
+                if ($userAccount && $userAccount->outlet_id) {
+                    $customer->update(['reseller_outlet_id' => $userAccount->outlet_id]);
+                }
             } else {
                 // If rejected and was reseller, revert to regular
                 if ($customer->type === 'reseller') {
