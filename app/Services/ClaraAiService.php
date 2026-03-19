@@ -677,11 +677,11 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
             ];
         }
 
-        $cleanPrompt = $this->sanitizeInput($userPrompt);
-        $enrichedPrompt = $this->enrichPrompt($outletData, $cleanPrompt);
-
         $tone = $options['tone'] ?? 'casual';
         $language = $options['language'] ?? 'id';
+
+        $cleanPrompt = $this->sanitizeInput($userPrompt);
+        $enrichedPrompt = $this->enrichPrompt($outletData, $cleanPrompt, $language);
 
         try {
             $result = match ($mode) {
@@ -723,7 +723,9 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
     private function generateVideoPrompt(array $data, string $userPrompt, string $tone, string $language): array
     {
         $productContext = $this->formatProductContext($data);
-        $langInstruction = $language === 'en' ? 'Respond entirely in English.' : 'Respond entirely in Bahasa Indonesia.';
+        $langInstruction = $language === 'en'
+            ? 'CRITICAL LANGUAGE RULE: You MUST write your ENTIRE response in English. Every single word, sentence, heading, and description must be in English. Do NOT use any Indonesian/Bahasa Indonesia whatsoever.'
+            : 'CRITICAL LANGUAGE RULE: Kamu WAJIB menulis SELURUH respons dalam Bahasa Indonesia. Setiap kata, kalimat, heading, dan deskripsi harus dalam Bahasa Indonesia. JANGAN gunakan Bahasa Inggris sama sekali kecuali istilah teknis.';
         $toneInstruction = $this->getToneInstruction($tone, 'video');
 
         $systemPrompt = "You are a world-class AI video prompt engineer specializing in creating highly detailed, cinematic prompts for AI video generation tools (Runway Gen-3, Sora, Pika Labs, Kling).
@@ -746,7 +748,9 @@ Generate a structured, highly optimized video production prompt based on the use
 7. **STYLE REFERENCE** — Visual style (commercial, documentary, cinematic, social media, etc.)
 8. **AI VIDEO TOOL KEYWORDS** — Comma-separated keywords optimized for AI video tools
 
-Make the prompt extremely detailed and visual. Each scene should be a paragraph of description. Think like a film director.";
+Make the prompt extremely detailed and visual. Each scene should be a paragraph of description. Think like a film director.
+
+REMINDER: {$langInstruction}";
 
         $messages = [
             ['role' => 'system', 'content' => $systemPrompt],
@@ -762,7 +766,9 @@ Make the prompt extremely detailed and visual. Each scene should be a paragraph 
     private function generateAffiliateScript(array $data, string $userPrompt, string $tone, string $language): array
     {
         $productContext = $this->formatProductContext($data);
-        $langInstruction = $language === 'en' ? 'Respond entirely in English.' : 'Respond entirely in Bahasa Indonesia.';
+        $langInstruction = $language === 'en'
+            ? 'CRITICAL LANGUAGE RULE: You MUST write your ENTIRE response in English. Every single word, sentence, heading, and description must be in English. Do NOT use any Indonesian/Bahasa Indonesia whatsoever.'
+            : 'CRITICAL LANGUAGE RULE: Kamu WAJIB menulis SELURUH respons dalam Bahasa Indonesia. Setiap kata, kalimat, heading, dan deskripsi harus dalam Bahasa Indonesia. JANGAN gunakan Bahasa Inggris sama sekali kecuali istilah teknis.';
         $toneInstruction = $this->getToneInstruction($tone, 'affiliate');
 
         $bestSeller = $data['top_products']->first();
@@ -793,7 +799,9 @@ Generate a complete, high-converting affiliate/promotional script based on the u
    - **Instagram Reels Version** (30-60 sec script)
    - **YouTube Shorts Version** (30-60 sec script)
 
-Each version should feel native to the platform. Use real product names and pricing from the business data.";
+Each version should feel native to the platform. Use real product names and pricing from the business data.
+
+REMINDER: {$langInstruction}";
 
         $messages = [
             ['role' => 'system', 'content' => $systemPrompt],
@@ -809,7 +817,9 @@ Each version should feel native to the platform. Use real product names and pric
     private function generateAdsImagePrompt(array $data, string $userPrompt, string $tone, string $language): array
     {
         $productContext = $this->formatProductContext($data);
-        $langInstruction = $language === 'en' ? 'Respond entirely in English.' : 'Respond entirely in Bahasa Indonesia.';
+        $langInstruction = $language === 'en'
+            ? 'CRITICAL LANGUAGE RULE: You MUST write your ENTIRE response in English. Every single word, sentence, heading, and description must be in English. Do NOT use any Indonesian/Bahasa Indonesia whatsoever.'
+            : 'CRITICAL LANGUAGE RULE: Kamu WAJIB menulis SELURUH respons dalam Bahasa Indonesia. Setiap kata, kalimat, heading, dan deskripsi harus dalam Bahasa Indonesia. JANGAN gunakan Bahasa Inggris sama sekali kecuali istilah teknis.';
         $toneInstruction = $this->getToneInstruction($tone, 'ads_image');
 
         $systemPrompt = "You are an expert advertising creative director and AI image prompt engineer specializing in DALL·E 3, Midjourney, and Stable Diffusion XL (SDXL).
@@ -836,7 +846,9 @@ Generate highly optimized image generation prompts for advertising materials bas
    - **DALL·E 3 Prompt** — Optimized natural language prompt
    - **SDXL Prompt** — Prompt with positive/negative prompt structure
 
-Each prompt should be production-ready and specifically reference the business/product context.";
+Each prompt should be production-ready and specifically reference the business/product context.
+
+REMINDER: {$langInstruction}";
 
         $messages = [
             ['role' => 'system', 'content' => $systemPrompt],
@@ -849,23 +861,32 @@ Each prompt should be production-ready and specifically reference the business/p
     /**
      * Enrich user prompt with business context.
      */
-    private function enrichPrompt(array $data, string $userPrompt): string
+    private function enrichPrompt(array $data, string $userPrompt, string $language = 'id'): string
     {
         $topProductNames = $data['top_products']->pluck('name')->implode(', ');
         $avgTransaction = $data['revenue_stats']->avg_transaction ?? 0;
 
         $context = [];
-        $context[] = "Bisnis: {$data['outlet_name']}";
 
-        if ($topProductNames) {
-            $context[] = "Produk unggulan: {$topProductNames}";
+        if ($language === 'en') {
+            $context[] = "Business: {$data['outlet_name']}";
+            if ($topProductNames) {
+                $context[] = "Top products: {$topProductNames}";
+            }
+            if ($avgTransaction > 0) {
+                $context[] = "Average transaction: Rp " . number_format($avgTransaction, 0, ',', '.');
+            }
+            $contextSuffix = "\n\n[Business context: " . implode(' | ', $context) . "]";
+        } else {
+            $context[] = "Bisnis: {$data['outlet_name']}";
+            if ($topProductNames) {
+                $context[] = "Produk unggulan: {$topProductNames}";
+            }
+            if ($avgTransaction > 0) {
+                $context[] = "Rata-rata transaksi: Rp " . number_format($avgTransaction, 0, ',', '.');
+            }
+            $contextSuffix = "\n\n[Konteks bisnis: " . implode(' | ', $context) . "]";
         }
-
-        if ($avgTransaction > 0) {
-            $context[] = "Rata-rata transaksi: Rp " . number_format($avgTransaction, 0, ',', '.');
-        }
-
-        $contextSuffix = "\n\n[Konteks bisnis: " . implode(' | ', $context) . "]";
 
         return $userPrompt . $contextSuffix;
     }
