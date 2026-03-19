@@ -1352,6 +1352,10 @@
                     <span class="text-gray-600">Sisa Utang:</span>
                     <span class="font-bold text-red-600" id="successDebt">Rp 0</span>
                 </div>
+                <div class="flex justify-between text-xs py-1" id="successResellerSyncRow" style="display: none;">
+                    <span class="text-blue-600 font-semibold italic">Sync Reseller:</span>
+                    <span class="font-bold text-blue-700" id="successResellerSync">Data Berhasil Disinkronkan</span>
+                </div>
             </div>
         </div>
         <div class="space-y-2.5">
@@ -6244,6 +6248,16 @@ function openPaymentSuccessModal(data){
         }
     }
 
+    // Reseller Sync
+    const resellerSyncRow = document.getElementById('successResellerSyncRow');
+    if (resellerSyncRow) {
+        if (data.sale && data.sale.reseller_sync) {
+            resellerSyncRow.style.display = 'flex';
+        } else {
+            resellerSyncRow.style.display = 'none';
+        }
+    }
+
     document.getElementById('paymentSuccessModal').classList.remove('hidden');
 }
 
@@ -7588,12 +7602,12 @@ function closeSaleDetailModal() {
         } else if (customer.type === 'reseller') {
             if (customer.is_verified_reseller) {
                 badge.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
-                badgeIcon.className = 'fas fa-store text-blue-600';
-                badgeText.textContent = 'RESELLER';
+                badgeIcon.className = 'fas fa-sync text-blue-600';
+                badgeText.textContent = 'RESELLER (SYNC ACTIVE)';
             } else {
                 badge.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-300');
                 badgeIcon.className = 'fas fa-store text-gray-500';
-                badgeText.textContent = 'RESELLER (PENDING)';
+                badgeText.textContent = 'RESELLER (UNVERIFIED)';
             }
         } else {
             badge.classList.add('bg-gray-50', 'text-gray-700', 'border-gray-200');
