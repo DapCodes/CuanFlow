@@ -34,12 +34,13 @@ return new class extends Migration
             $table->decimal('selling_price', 15, 2)->default(0);
             $table->decimal('stock', 15, 4)->default(0);
             
+            $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
             
             // Index for faster POS lookup
-            $table->index(['reseller_outlet_id', 'is_active']);
+            $table->index(['reseller_outlet_id', 'status', 'is_active']);
         });
     }
 

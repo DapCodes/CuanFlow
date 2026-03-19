@@ -19,6 +19,7 @@ class ResellerProduct extends Model
         'purchase_price',
         'selling_price',
         'stock',
+        'status',
         'is_active',
     ];
 
