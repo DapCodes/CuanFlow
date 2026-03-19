@@ -340,28 +340,79 @@
                             </div>
                         </div>
 
-                        <div id="transfer_options" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200/50">
-                            <label class="flex items-center p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green/30 transition-all shadow-sm">
-                                <input type="checkbox" name="transfer_items[]" value="products" class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20" checked>
-                                <span class="ml-3">
-                                    <span class="block text-xs font-black text-gray-900 uppercase tracking-tight">Produk & Resep</span>
-                                    <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">Tanpa stok</span>
-                                </span>
-                            </label>
-                            <label class="flex items-center p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green/30 transition-all shadow-sm">
-                                <input type="checkbox" name="transfer_items[]" value="suppliers" class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20" checked>
-                                <span class="ml-3">
-                                    <span class="block text-xs font-black text-gray-900 uppercase tracking-tight">Data Supplier</span>
-                                    <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">Informasi kontak</span>
-                                </span>
-                            </label>
-                            <label class="flex items-center p-4 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green/30 transition-all shadow-sm">
-                                <input type="checkbox" name="transfer_items[]" value="raw_materials" class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20" checked>
-                                <span class="ml-3">
-                                    <span class="block text-xs font-black text-gray-900 uppercase tracking-tight">Bahan Baku</span>
-                                    <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">Kategori & satuan</span>
-                                </span>
-                            </label>
+                        <div id="transfer_options" class="hidden space-y-8 pt-6 border-t border-gray-200/50">
+                            <!-- Products Section -->
+                            <div>
+                                <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center justify-between">
+                                    <span>Produk & Resep</span>
+                                    <button type="button" onclick="selectAll('product')" class="text-cuan-green hover:underline">Pilih Semua</button>
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    @foreach($transferData['products'] as $product)
+                                    <label class="product-item flex items-center p-3 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green/30 transition-all shadow-sm">
+                                        <input type="checkbox" 
+                                               name="transfer_products[]" 
+                                               value="{{ $product->id }}" 
+                                               data-type="product"
+                                               data-suppliers="{{ json_encode(array_filter([$product->supplier_id])) }}"
+                                               data-raw-materials="{{ json_encode($product->defaultRecipe ? $product->defaultRecipe->items->pluck('raw_material_id')->toArray() : []) }}"
+                                               class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20 dependency-check">
+                                        <div class="ml-3 overflow-hidden">
+                                            <span class="block text-xs font-black text-gray-900 uppercase tracking-tight truncate">{{ $product->name }}</span>
+                                            <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">{{ $product->code }}</span>
+                                        </div>
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Suppliers Section -->
+                            <div>
+                                <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center justify-between">
+                                    <span>Supplier</span>
+                                    <button type="button" onclick="selectAll('supplier')" class="text-cuan-green hover:underline">Pilih Semua</button>
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    @foreach($transferData['suppliers'] as $supplier)
+                                    <label class="flex items-center p-3 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green/30 transition-all shadow-sm">
+                                        <input type="checkbox" 
+                                               name="transfer_suppliers[]" 
+                                               value="{{ $supplier->id }}" 
+                                               id="sup-{{ $supplier->id }}"
+                                               data-type="supplier"
+                                               class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20">
+                                        <div class="ml-3 overflow-hidden">
+                                            <span class="block text-xs font-black text-gray-900 uppercase tracking-tight truncate">{{ $supplier->name }}</span>
+                                            <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">{{ $supplier->code }}</span>
+                                        </div>
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Raw Materials Section -->
+                            <div>
+                                <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center justify-between">
+                                    <span>Bahan Baku</span>
+                                    <button type="button" onclick="selectAll('raw_material')" class="text-cuan-green hover:underline">Pilih Semua</button>
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    @foreach($transferData['raw_materials'] as $material)
+                                    <label class="flex items-center p-3 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-cuan-green/30 transition-all shadow-sm">
+                                        <input type="checkbox" 
+                                               name="transfer_raw_materials[]" 
+                                               value="{{ $material->id }}" 
+                                               id="rm-{{ $material->id }}"
+                                               data-type="raw_material"
+                                               class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20">
+                                        <div class="ml-3 overflow-hidden">
+                                            <span class="block text-xs font-black text-gray-900 uppercase tracking-tight truncate">{{ $material->name }}</span>
+                                            <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">{{ $material->code }}</span>
+                                        </div>
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -445,6 +496,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         updateToggle(transferCheckbox, transferDot);
     }
+
+    // Auto-check dependencies logic
+    const dependencyChecks = document.querySelectorAll('.dependency-check');
+    dependencyChecks.forEach(check => {
+        check.addEventListener('change', function() {
+            if (this.checked) {
+                const suppliers = JSON.parse(this.dataset.suppliers || '[]');
+                const rawMaterials = JSON.parse(this.dataset.rawMaterials || '[]');
+
+                suppliers.forEach(id => {
+                    const el = document.getElementById(`sup-${id}`);
+                    if (el) el.checked = true;
+                });
+
+                rawMaterials.forEach(id => {
+                    const el = document.getElementById(`rm-${id}`);
+                    if (el) el.checked = true;
+                });
+            }
+        });
+    });
+
+    window.selectAll = function(type) {
+        document.querySelectorAll(`input[data-type="${type}"]`).forEach(el => {
+            el.checked = true;
+            // Trigger change event for product to check dependencies
+            if (type === 'product') el.dispatchEvent(new Event('change'));
+        });
+    };
 
     // Map Handler
     const defaultLat = -6.2088;

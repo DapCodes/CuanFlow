@@ -83,7 +83,21 @@ class OutletInformationController extends Controller implements HasMiddleware
         $owners = User::role(['owner', 'admin'])->get();
         $activeOutlet = auth()->user()->outlet;
 
-        return view('main.outlets.outlet_informations.create', compact('owners', 'activeOutlet'));
+        $transferData = [
+            'products' => [],
+            'suppliers' => [],
+            'raw_materials' => [],
+        ];
+
+        if ($activeOutlet) {
+            $transferData['products'] = Product::where('outlet_id', $activeOutlet->id)
+                ->with(['defaultRecipe.items', 'supplier'])
+                ->get();
+            $transferData['suppliers'] = Supplier::where('outlet_id', $activeOutlet->id)->get();
+            $transferData['raw_materials'] = RawMaterial::where('outlet_id', $activeOutlet->id)->get();
+        }
+
+        return view('main.outlets.outlet_informations.create', compact('owners', 'activeOutlet', 'transferData'));
     }
 
     public function store(Request $request)
@@ -98,7 +112,9 @@ class OutletInformationController extends Controller implements HasMiddleware
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'boolean',
             'transfer_data' => 'nullable|boolean',
-            'transfer_items' => 'nullable|array',
+            'transfer_products' => 'nullable|array',
+            'transfer_suppliers' => 'nullable|array',
+            'transfer_raw_materials' => 'nullable|array',
         ]);
 
         $validated['owner_id'] = auth()->user()->id;
@@ -120,17 +136,17 @@ class OutletInformationController extends Controller implements HasMiddleware
         try {
             $outlet = Outlet::create($validated);
 
-            if ($request->transfer_data && $request->transfer_items) {
+            if ($request->transfer_data) {
                 $sourceOutlet = auth()->user()->outlet;
                 if ($sourceOutlet) {
-                    $items = $request->transfer_items;
-                    
                     $supplierMap = [];
                     $rawMaterialMap = [];
 
-                    // 1. Transfer Suppliers
-                    if (in_array('suppliers', $items)) {
-                        $suppliers = Supplier::where('outlet_id', $sourceOutlet->id)->get();
+                    // 1. Transfer Selected Suppliers
+                    if ($request->has('transfer_suppliers')) {
+                        $suppliers = Supplier::whereIn('id', $request->transfer_suppliers)
+                            ->where('outlet_id', $sourceOutlet->id)
+                            ->get();
                         foreach ($suppliers as $oldSupplier) {
                             $newSupplier = $oldSupplier->replicate();
                             $newSupplier->outlet_id = $outlet->id;
@@ -140,33 +156,35 @@ class OutletInformationController extends Controller implements HasMiddleware
                         }
                     }
 
-                    // 2. Transfer Raw Materials
-                    if (in_array('raw_materials', $items)) {
-                        $rawMaterials = RawMaterial::where('outlet_id', $sourceOutlet->id)->get();
+                    // 2. Transfer Selected Raw Materials
+                    if ($request->has('transfer_raw_materials')) {
+                        $rawMaterials = RawMaterial::whereIn('id', $request->transfer_raw_materials)
+                            ->where('outlet_id', $sourceOutlet->id)
+                            ->get();
                         foreach ($rawMaterials as $oldMaterial) {
                             $newMaterial = $oldMaterial->replicate();
                             $newMaterial->outlet_id = $outlet->id;
                             $newMaterial->code = 'RM-'.strtoupper(Str::random(6));
-                            // Map supplier if transferred
+                            // Map supplier if also transferred
                             if ($oldMaterial->supplier_id && isset($supplierMap[$oldMaterial->supplier_id])) {
                                 $newMaterial->supplier_id = $supplierMap[$oldMaterial->supplier_id];
                             }
-                            // Note: If supplier wasn't transferred, it still points to the old supplier ID.
-                            // However, in this system, shared suppliers might be okay or not.
-                            // The user instructions imply copying to same table with different code.
                             $newMaterial->save();
                             $rawMaterialMap[$oldMaterial->id] = $newMaterial->id;
                         }
                     }
 
-                    // 3. Transfer Products
-                    if (in_array('products', $items)) {
-                        $products = Product::where('outlet_id', $sourceOutlet->id)->with('recipes.items', 'recipes.additionalCosts')->get();
+                    // 3. Transfer Selected Products
+                    if ($request->has('transfer_products')) {
+                        $products = Product::whereIn('id', $request->transfer_products)
+                            ->where('outlet_id', $sourceOutlet->id)
+                            ->with('recipes.items', 'recipes.additionalCosts')
+                            ->get();
                         foreach ($products as $oldProduct) {
                             $newProduct = $oldProduct->replicate();
                             $newProduct->outlet_id = $outlet->id;
                             $newProduct->code = 'PRD-'.strtoupper(Str::random(6));
-                            // Map supplier if transferred
+                            // Map supplier if also transferred
                             if ($oldProduct->supplier_id && isset($supplierMap[$oldProduct->supplier_id])) {
                                 $newProduct->supplier_id = $supplierMap[$oldProduct->supplier_id];
                             }
@@ -182,7 +200,7 @@ class OutletInformationController extends Controller implements HasMiddleware
                                 foreach ($oldRecipe->items as $oldItem) {
                                     $newItem = $oldItem->replicate();
                                     $newItem->recipe_id = $newRecipe->id;
-                                    // Map raw material if transferred
+                                    // Map raw material if also transferred
                                     if ($oldItem->raw_material_id && isset($rawMaterialMap[$oldItem->raw_material_id])) {
                                         $newItem->raw_material_id = $rawMaterialMap[$oldItem->raw_material_id];
                                     }
