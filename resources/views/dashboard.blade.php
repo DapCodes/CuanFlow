@@ -326,6 +326,9 @@
   .menu-card:nth-child(29) { animation-delay: 1.45s; }
   .menu-card:nth-child(30) { animation-delay: 1.5s; }
   .menu-card:nth-child(31) { animation-delay: 1.55s; }
+  .menu-card:nth-child(32) { animation-delay: 1.6s; }
+  .menu-card:nth-child(33) { animation-delay: 1.65s; }
+  .menu-card:nth-child(34) { animation-delay: 1.7s; }
 
 
   .backdrop-blur-effect { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
