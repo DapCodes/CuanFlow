@@ -404,7 +404,8 @@
                                                value="{{ $material->id }}" 
                                                id="rm-{{ $material->id }}"
                                                data-type="raw_material"
-                                               class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20">
+                                               data-supplier="{{ $material->supplier_id }}"
+                                               class="w-4 h-4 text-cuan-green border-gray-200 rounded focus:ring-cuan-green/20 dependency-check">
                                         <div class="ml-3 overflow-hidden">
                                             <span class="block text-xs font-black text-gray-900 uppercase tracking-tight truncate">{{ $material->name }}</span>
                                             <span class="block text-[9px] font-bold text-gray-400 uppercase tracking-tight">{{ $material->code }}</span>
@@ -502,18 +503,34 @@ document.addEventListener('DOMContentLoaded', function() {
     dependencyChecks.forEach(check => {
         check.addEventListener('change', function() {
             if (this.checked) {
-                const suppliers = JSON.parse(this.dataset.suppliers || '[]');
-                const rawMaterials = JSON.parse(this.dataset.rawMaterials || '[]');
+                const type = this.dataset.type;
+                
+                if (type === 'product') {
+                    // Product dependencies
+                    const suppliers = JSON.parse(this.dataset.suppliers || '[]');
+                    const rawMaterials = JSON.parse(this.dataset.rawMaterials || '[]');
 
-                suppliers.forEach(id => {
-                    const el = document.getElementById(`sup-${id}`);
-                    if (el) el.checked = true;
-                });
+                    suppliers.forEach(id => {
+                        const el = document.getElementById(`sup-${id}`);
+                        if (el) el.checked = true;
+                    });
 
-                rawMaterials.forEach(id => {
-                    const el = document.getElementById(`rm-${id}`);
-                    if (el) el.checked = true;
-                });
+                    rawMaterials.forEach(id => {
+                        const el = document.getElementById(`rm-${id}`);
+                        if (el) {
+                            el.checked = true;
+                            // Trigger change on raw material to check its own supplier
+                            el.dispatchEvent(new Event('change'));
+                        }
+                    });
+                } else if (type === 'raw_material') {
+                    // Raw material dependencies
+                    const supplierId = this.dataset.supplier;
+                    if (supplierId) {
+                        const el = document.getElementById(`sup-${supplierId}`);
+                        if (el) el.checked = true;
+                    }
+                }
             }
         });
     });
