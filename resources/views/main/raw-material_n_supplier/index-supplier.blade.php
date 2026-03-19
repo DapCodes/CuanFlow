@@ -134,7 +134,7 @@
 
                                     <td class="px-6 py-5">
                                         <span class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-black bg-blue-50 text-blue-600 border border-blue-100 uppercase tracking-widest">
-                                            {{ $supplier->raw_materials_count }} Items
+                                            {{ $supplier->raw_materials_count + $supplier->products_count }} Items
                                         </span>
                                     </td>
 

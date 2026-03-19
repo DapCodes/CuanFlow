@@ -26,6 +26,11 @@ class Supplier extends Model
         return $this->hasMany(RawMaterial::class);
     }
 
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
     public function purchases(): HasMany
     {
         return $this->hasMany(Purchase::class);

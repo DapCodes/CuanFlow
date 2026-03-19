@@ -851,7 +851,7 @@ class RawMaterialAndSupplierController extends Controller
         if (! auth()->user()->can('lihat supplier')) {
             abort(403);
         }
-        $query = Supplier::where('outlet_id', Auth::user()->outlet_id)->withCount('rawMaterials');
+        $query = Supplier::where('outlet_id', Auth::user()->outlet_id)->withCount(['rawMaterials', 'products']);
 
         // Search
         if ($request->filled('search')) {
@@ -873,7 +873,9 @@ class RawMaterialAndSupplierController extends Controller
         $statsQuery = clone $query;
         $total_active = $statsQuery->where('is_active', true)->count();
 
-        $total_items_supplied = (clone $query)->get()->sum('raw_materials_count');
+        $total_items_supplied = (clone $query)->get()->sum(function($s) {
+            return $s->raw_materials_count + $s->products_count;
+        });
 
         $suppliers = $query->latest()->paginate(15);
 
