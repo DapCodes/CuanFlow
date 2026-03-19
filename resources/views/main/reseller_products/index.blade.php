@@ -152,8 +152,8 @@
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="status" value="accepted">
-                                                <input type="hidden" name="selling_price" value="{{ $product->selling_price }}">
-                                                <button type="submit"
+                                                <button type="button"
+                                                        onclick="openAcceptModal({{ $product->id }}, '{{ $product->name }}', {{ $product->purchase_price }})"
                                                         class="w-9 h-9 flex items-center justify-center rounded-xl bg-cuan-green/10 text-cuan-green hover:bg-cuan-green hover:text-white transition-all active:scale-95"
                                                         title="Terima">
                                                     <i class="fas fa-check text-xs"></i>
@@ -164,7 +164,7 @@
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="status" value="rejected">
-                                                <input type="hidden" name="selling_price" value="{{ $product->selling_price }}">
+                                                <input type="hidden" name="selling_price" value="0">
                                                 <button type="submit"
                                                         class="w-9 h-9 flex items-center justify-center rounded-xl bg-red-100/50 text-red-600 hover:bg-red-500 hover:text-white transition-all active:scale-95"
                                                         title="Tolak">
@@ -172,14 +172,6 @@
                                                 </button>
                                             </form>
                                         @endif
-
-                                        {{-- Edit Harga Jual --}}
-                                        <button type="button" 
-                                                onclick="openEditSellingPriceModal({{ $product->id }}, '{{ $product->name }}', {{ $product->selling_price }})"
-                                                class="w-9 h-9 flex items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all active:scale-95"
-                                                title="Edit Harga">
-                                            <i class="fas fa-tag text-xs"></i>
-                                        </button>
 
                                         {{-- Hapus (Soft Delete) --}}
                                         <form action="{{ route('reseller-products.destroy', $product->id) }}" method="POST" class="inline confirm-delete" data-name="{{ $product->name }}">
@@ -223,8 +215,8 @@
     </div>
 </main>
 
-{{-- MODAL EDIT HARGA JUAL --}}
-<div id="editSellingPriceModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+{{-- MODAL TERIMA PRODUK --}}
+<div id="acceptProductModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 transition-opacity" aria-hidden="true">
             <div class="absolute inset-0 bg-gray-900 opacity-75 backdrop-blur-sm"></div>
@@ -233,40 +225,46 @@
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
         <div class="inline-block align-bottom bg-white rounded-[2rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-            <form id="editPriceForm" method="POST">
+            <form id="acceptProductForm" method="POST">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="status" value="accepted">
                 <div class="bg-white px-8 pt-8 pb-6">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-xl font-black text-gray-900" id="modalTitle">
-                            Atur Harga Jual
+                            Terima Produk
                         </h3>
-                        <button type="button" onclick="closeEditSellingPriceModal()" class="text-gray-400 hover:text-gray-500 bg-gray-50 p-2 rounded-xl transition-all">
+                        <button type="button" onclick="closeAcceptModal()" class="text-gray-400 hover:text-gray-500 bg-gray-50 p-2 rounded-xl transition-all">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
 
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Produk</label>
+                        <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                            <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Produk</label>
                             <p id="productName" class="font-bold text-gray-900"></p>
+                            <div class="mt-2 text-xs flex items-center gap-2">
+                                <span class="text-gray-400">Harga Beli:</span>
+                                <span id="purchasePriceDisplay" class="font-black text-cuan-green"></span>
+                            </div>
                         </div>
 
                         <div>
-                            <label for="selling_price" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Harga Jual Baru (Rp)</label>
+                            <label for="selling_price" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Tentukan Harga Jual (Rp)</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">Rp</span>
                                 <input type="number" name="selling_price" id="selling_price" required min="0"
                                        class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-900">
                             </div>
+                            <p class="mt-2 text-[10px] text-gray-400 italic">* Harga ini juga akan digunakan sebagai HPP produk di sistem Anda.</p>
                         </div>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-8 py-6 flex flex-col gap-3">
                     <button type="submit" class="w-full bg-cuan-green hover:bg-cuan-dark text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
-                        Simpan Perubahan
+                        Konfirmasi & Terima
                     </button>
-                    <button type="button" onclick="closeEditSellingPriceModal()" class="w-full bg-white border border-gray-200 text-gray-500 font-bold py-3 rounded-xl hover:bg-gray-50 transition-all">
+                    <button type="button" onclick="closeAcceptModal()" class="w-full bg-white border border-gray-200 text-gray-500 font-bold py-3 rounded-xl hover:bg-gray-50 transition-all">
                         Batal
                     </button>
                 </div>
@@ -277,22 +275,24 @@
 
 @push('scripts')
 <script>
-    function openEditSellingPriceModal(id, name, currentPrice) {
-        const form = document.getElementById('editPriceForm');
-        const modal = document.getElementById('editSellingPriceModal');
-        const input = document.getElementById('selling_price');
+    function openAcceptModal(id, name, purchasePrice) {
+        const form = document.getElementById('acceptProductForm');
+        const modal = document.getElementById('acceptProductModal');
         const nameText = document.getElementById('productName');
+        const priceDisplay = document.getElementById('purchasePriceDisplay');
+        const input = document.getElementById('selling_price');
 
         form.action = `/reseller-products/${id}`;
         nameText.innerText = name;
-        input.value = currentPrice;
+        priceDisplay.innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(purchasePrice);
+        input.value = purchasePrice; // Default to purchase price
 
         modal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
     }
 
-    function closeEditSellingPriceModal() {
-        const modal = document.getElementById('editSellingPriceModal');
+    function closeAcceptModal() {
+        const modal = document.getElementById('acceptProductModal');
         modal.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
     }

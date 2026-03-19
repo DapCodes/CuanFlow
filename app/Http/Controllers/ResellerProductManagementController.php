@@ -104,13 +104,54 @@ class ResellerProductManagementController extends Controller
         
         $request->validate([
             'selling_price' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
-            'status' => 'nullable|in:accepted,rejected,pending',
+            'status' => 'required|in:accepted,rejected,pending',
         ]);
 
-        $resellerProduct->update($request->only(['selling_price', 'is_active', 'status']));
+        if ($request->status === 'accepted') {
+            $user = auth()->user();
+            $sourceOutlet = $resellerProduct->sourceOutlet;
 
-        return redirect()->route('reseller-products.index')->with('success', 'Produk berhasil diperbarui.');
+            // 1. Automate Supplier creation from Source Outlet
+            $supplier = \App\Models\Supplier::updateOrCreate(
+                [
+                    'outlet_id' => $user->outlet_id,
+                    'name' => $sourceOutlet->name,
+                ],
+                [
+                    'code' => 'SUP-' . strtoupper(substr($sourceOutlet->name, 0, 3)) . '-' . $sourceOutlet->id,
+                    'contact_person' => $sourceOutlet->name,
+                    'phone' => $sourceOutlet->phone,
+                    'email' => $sourceOutlet->email,
+                    'address' => $sourceOutlet->address,
+                    'is_active' => true,
+                ]
+            );
+
+            // 2. Automate Product creation
+            $product = \App\Models\Product::create([
+                'outlet_id' => $user->outlet_id,
+                'supplier_id' => $supplier->id,
+                'name' => $resellerProduct->name,
+                'code' => 'PROD-RES-' . strtoupper(\Illuminate\Support\Str::random(6)),
+                'hpp' => $request->selling_price, // As requested: HPP from user input price
+                'selling_price' => $request->selling_price,
+                'is_stock' => true,
+                'is_active' => true,
+                'is_sellable' => true,
+                'track_stock' => true,
+            ]);
+
+            $resellerProduct->update([
+                'status' => 'accepted',
+                'selling_price' => $request->selling_price,
+            ]);
+
+            return redirect()->route('reseller-products.index')->with('success', 'Produk berhasil diterima dan telah ditambahkan ke daftar Produk Anda.');
+        }
+
+        $resellerProduct->update($request->only(['status']));
+
+        return redirect()->route('reseller-products.index')->with('success', 'Status produk berhasil diperbarui.');
     }
 
     /**
