@@ -505,6 +505,8 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
         Route::post('/chat', [ClaraAiController::class, 'chat'])->name('chat');
         Route::get('/new-session', [ClaraAiController::class, 'newSession'])->name('new-session');
         Route::delete('/session/{id}', [ClaraAiController::class, 'deleteSession'])->name('delete-session');
+        Route::get('/studio', [ClaraAiController::class, 'studioIndex'])->name('studio');
+        Route::post('/generate', [ClaraAiController::class, 'generate'])->name('generate');
     });
 
     // Business Opportunity Map

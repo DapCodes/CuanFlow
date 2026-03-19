@@ -6,6 +6,7 @@ use App\Models\AiChatSession;
 use App\Models\AiInsight;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -584,5 +585,434 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
 
         // 3. Generate insight otomatis
         $this->generateDailyInsights($outletId);
+    }
+
+    // =====================================================================
+    // AI STUDIO — Multi-Mode Prompt Generation
+    // =====================================================================
+
+    /**
+     * Get user's outlet business data with caching.
+     */
+    public function getUserOutletData($userId): array
+    {
+        $user = User::findOrFail($userId);
+        $outletId = $user->outlet_id;
+
+        if (! $outletId) {
+            return ['error' => 'User tidak memiliki outlet.'];
+        }
+
+        return Cache::remember("clara_studio_outlet_{$outletId}", now()->addMinutes(15), function () use ($outletId) {
+            $outlet = DB::table('outlets')->where('id', $outletId)->first();
+
+            // Products catalog
+            $products = DB::table('products')
+                ->where('outlet_id', $outletId)
+                ->where('is_active', true)
+                ->select('name', 'selling_price', 'hpp', 'description', 'category_id')
+                ->limit(30)
+                ->get();
+
+            // Top selling products (30 days)
+            $topProducts = DB::table('sale_items')
+                ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+                ->join('products', 'sale_items.product_id', '=', 'products.id')
+                ->where('sales.outlet_id', $outletId)
+                ->where('sales.status', 'completed')
+                ->where('sales.created_at', '>=', now()->subDays(30))
+                ->selectRaw('products.name, SUM(sale_items.quantity) as total_sold, SUM(sale_items.subtotal) as total_revenue')
+                ->groupBy('products.id', 'products.name')
+                ->orderBy('total_sold', 'desc')
+                ->limit(10)
+                ->get();
+
+            // Revenue stats (30 days)
+            $revenueStats = DB::table('sales')
+                ->where('outlet_id', $outletId)
+                ->where('status', 'completed')
+                ->where('created_at', '>=', now()->subDays(30))
+                ->selectRaw('COUNT(*) as total_transactions, SUM(grand_total) as total_revenue, AVG(grand_total) as avg_transaction')
+                ->first();
+
+            // Customer demographics
+            $customerStats = DB::table('sales')
+                ->where('outlet_id', $outletId)
+                ->where('status', 'completed')
+                ->where('created_at', '>=', now()->subDays(30))
+                ->selectRaw('COUNT(DISTINCT customer_id) as unique_customers')
+                ->first();
+
+            return [
+                'outlet_name' => $outlet->name ?? 'Outlet',
+                'outlet_id' => $outletId,
+                'products' => $products,
+                'top_products' => $topProducts,
+                'revenue_stats' => $revenueStats,
+                'customer_stats' => $customerStats,
+            ];
+        });
+    }
+
+    /**
+     * Main entry point for AI Studio generation.
+     */
+    public function generate(string $mode, string $userPrompt, int $userId, array $options = []): array
+    {
+        $validModes = ['video_prompt', 'affiliate_script', 'ads_image_prompt'];
+
+        if (! in_array($mode, $validModes)) {
+            return [
+                'success' => false,
+                'message' => 'Mode tidak valid. Pilih: video_prompt, affiliate_script, atau ads_image_prompt.',
+            ];
+        }
+
+        $outletData = $this->getUserOutletData($userId);
+
+        if (isset($outletData['error'])) {
+            return [
+                'success' => false,
+                'message' => $outletData['error'],
+            ];
+        }
+
+        $cleanPrompt = $this->sanitizeInput($userPrompt);
+        $enrichedPrompt = $this->enrichPrompt($outletData, $cleanPrompt);
+
+        $tone = $options['tone'] ?? 'casual';
+        $language = $options['language'] ?? 'id';
+
+        try {
+            $result = match ($mode) {
+                'video_prompt' => $this->generateVideoPrompt($outletData, $enrichedPrompt, $tone, $language),
+                'affiliate_script' => $this->generateAffiliateScript($outletData, $enrichedPrompt, $tone, $language),
+                'ads_image_prompt' => $this->generateAdsImagePrompt($outletData, $enrichedPrompt, $tone, $language),
+            };
+
+            if (! $result['success']) {
+                return $result;
+            }
+
+            return [
+                'success' => true,
+                'mode' => $mode,
+                'result' => $result['content'],
+                'data_used' => [
+                    'outlet_name' => $outletData['outlet_name'],
+                    'products_count' => $outletData['products']->count(),
+                    'top_products' => $outletData['top_products']->pluck('name')->toArray(),
+                ],
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Clara AI Studio Exception', [
+                'mode' => $mode,
+                'message' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghasilkan konten: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Generate cinematic video prompt.
+     */
+    private function generateVideoPrompt(array $data, string $userPrompt, string $tone, string $language): array
+    {
+        $productContext = $this->formatProductContext($data);
+        $langInstruction = $language === 'en' ? 'Respond entirely in English.' : 'Respond entirely in Bahasa Indonesia.';
+        $toneInstruction = $this->getToneInstruction($tone, 'video');
+
+        $systemPrompt = "You are a world-class AI video prompt engineer specializing in creating highly detailed, cinematic prompts for AI video generation tools (Runway Gen-3, Sora, Pika Labs, Kling).
+
+{$langInstruction}
+{$toneInstruction}
+
+BUSINESS CONTEXT for {$data['outlet_name']}:
+{$productContext}
+
+YOUR TASK:
+Generate a structured, highly optimized video production prompt based on the user's request. Your output MUST include ALL of the following sections clearly labeled:
+
+1. **SCENE BREAKDOWN** — Describe each scene in detail (Scene 1, Scene 2, etc.)
+2. **CAMERA MOVEMENT** — Specific camera techniques (dolly, crane, tracking shot, close-up, wide, etc.)
+3. **LIGHTING** — Lighting setup (golden hour, studio, neon, natural, cinematic, etc.)
+4. **MOOD & TONE** — Overall emotional atmosphere
+5. **SUBJECT DETAILS** — Detailed description of the main subject/product
+6. **ENVIRONMENT** — Background, setting, location details
+7. **STYLE REFERENCE** — Visual style (commercial, documentary, cinematic, social media, etc.)
+8. **AI VIDEO TOOL KEYWORDS** — Comma-separated keywords optimized for AI video tools
+
+Make the prompt extremely detailed and visual. Each scene should be a paragraph of description. Think like a film director.";
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $userPrompt],
+        ];
+
+        return $this->callAI($messages);
+    }
+
+    /**
+     * Generate high-converting affiliate script.
+     */
+    private function generateAffiliateScript(array $data, string $userPrompt, string $tone, string $language): array
+    {
+        $productContext = $this->formatProductContext($data);
+        $langInstruction = $language === 'en' ? 'Respond entirely in English.' : 'Respond entirely in Bahasa Indonesia.';
+        $toneInstruction = $this->getToneInstruction($tone, 'affiliate');
+
+        $bestSeller = $data['top_products']->first();
+        $bestSellerInfo = $bestSeller
+            ? "Best-selling product: {$bestSeller->name} ({$bestSeller->total_sold} units sold, Rp " . number_format($bestSeller->total_revenue, 0, ',', '.') . " revenue)"
+            : 'No sales data available yet.';
+
+        $systemPrompt = "You are an elite affiliate marketing copywriter and social media script writer with expertise in viral content creation for TikTok, Instagram Reels, and YouTube Shorts.
+
+{$langInstruction}
+{$toneInstruction}
+
+BUSINESS CONTEXT for {$data['outlet_name']}:
+{$productContext}
+{$bestSellerInfo}
+
+YOUR TASK:
+Generate a complete, high-converting affiliate/promotional script based on the user's request. Your output MUST include ALL of the following sections clearly labeled:
+
+1. **HOOK** (0-3 seconds) — An attention-grabbing opening line that stops the scroll. Use curiosity, controversy, or shock value.
+2. **PROBLEM STATEMENT** — Identify and amplify the pain point the target audience faces.
+3. **PRODUCT INTRODUCTION** — Naturally introduce the product/brand as the solution. Include specific details from the business data.
+4. **BENEFITS** — List 3-5 compelling benefits as bullet points. Use specific numbers and results when possible.
+5. **SOCIAL PROOF** — Add credibility elements (bestseller data, customer count, ratings, testimonials framework).
+6. **CALL TO ACTION (CTA)** — Clear, urgent, compelling action step.
+7. **PLATFORM ADAPTATIONS:**
+   - **TikTok Version** (15-30 sec script)
+   - **Instagram Reels Version** (30-60 sec script)
+   - **YouTube Shorts Version** (30-60 sec script)
+
+Each version should feel native to the platform. Use real product names and pricing from the business data.";
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $userPrompt],
+        ];
+
+        return $this->callAI($messages);
+    }
+
+    /**
+     * Generate AI image prompt for ads.
+     */
+    private function generateAdsImagePrompt(array $data, string $userPrompt, string $tone, string $language): array
+    {
+        $productContext = $this->formatProductContext($data);
+        $langInstruction = $language === 'en' ? 'Respond entirely in English.' : 'Respond entirely in Bahasa Indonesia.';
+        $toneInstruction = $this->getToneInstruction($tone, 'ads_image');
+
+        $systemPrompt = "You are an expert advertising creative director and AI image prompt engineer specializing in DALL·E 3, Midjourney, and Stable Diffusion XL (SDXL).
+
+{$langInstruction}
+{$toneInstruction}
+
+BUSINESS CONTEXT for {$data['outlet_name']}:
+{$productContext}
+
+YOUR TASK:
+Generate highly optimized image generation prompts for advertising materials based on the user's request. Your output MUST include ALL of the following sections clearly labeled:
+
+1. **VISUAL COMPOSITION** — Layout, framing, rule of thirds, focal point placement.
+2. **SUBJECT & FOCUS** — Detailed description of the main subject/product appearance.
+3. **BACKGROUND** — Background environment, props, setting details.
+4. **LIGHTING** — Specific lighting setup (studio, natural, dramatic, flat lay, etc.)
+5. **COLOR GRADING** — Color palette, mood, saturation, contrast.
+6. **BRANDING STYLE** — Visual brand identity direction (minimal, luxury, street, artisan, etc.)
+7. **MARKETING ANGLE** — Choose one: luxury, urgency, discount, exclusivity, lifestyle, FOMO, social proof.
+8. **TEXT OVERLAY SUGGESTION** — Headline text, subtext, CTA text, font style recommendation.
+9. **READY-TO-USE PROMPTS:**
+   - **Midjourney Prompt** — Full prompt with parameters (--ar, --style, --v)
+   - **DALL·E 3 Prompt** — Optimized natural language prompt
+   - **SDXL Prompt** — Prompt with positive/negative prompt structure
+
+Each prompt should be production-ready and specifically reference the business/product context.";
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $userPrompt],
+        ];
+
+        return $this->callAI($messages);
+    }
+
+    /**
+     * Enrich user prompt with business context.
+     */
+    private function enrichPrompt(array $data, string $userPrompt): string
+    {
+        $topProductNames = $data['top_products']->pluck('name')->implode(', ');
+        $avgTransaction = $data['revenue_stats']->avg_transaction ?? 0;
+
+        $context = [];
+        $context[] = "Bisnis: {$data['outlet_name']}";
+
+        if ($topProductNames) {
+            $context[] = "Produk unggulan: {$topProductNames}";
+        }
+
+        if ($avgTransaction > 0) {
+            $context[] = "Rata-rata transaksi: Rp " . number_format($avgTransaction, 0, ',', '.');
+        }
+
+        $contextSuffix = "\n\n[Konteks bisnis: " . implode(' | ', $context) . "]";
+
+        return $userPrompt . $contextSuffix;
+    }
+
+    /**
+     * Format product catalog as context string.
+     */
+    private function formatProductContext(array $data): string
+    {
+        $lines = [];
+
+        if ($data['products']->isNotEmpty()) {
+            $lines[] = "PRODUCT CATALOG:";
+            foreach ($data['products']->take(15) as $p) {
+                $price = number_format($p->selling_price, 0, ',', '.');
+                $desc = $p->description ? " — {$p->description}" : '';
+                $lines[] = "- {$p->name}: Rp {$price}{$desc}";
+            }
+        }
+
+        if ($data['top_products']->isNotEmpty()) {
+            $lines[] = "\nTOP SELLING PRODUCTS (last 30 days):";
+            foreach ($data['top_products']->take(5) as $tp) {
+                $rev = number_format($tp->total_revenue, 0, ',', '.');
+                $lines[] = "- {$tp->name}: {$tp->total_sold} sold (Rp {$rev})";
+            }
+        }
+
+        if ($data['revenue_stats']) {
+            $totalRev = number_format($data['revenue_stats']->total_revenue ?? 0, 0, ',', '.');
+            $totalTx = $data['revenue_stats']->total_transactions ?? 0;
+            $lines[] = "\nBUSINESS STATS (30 days): {$totalTx} transactions, Rp {$totalRev} revenue";
+        }
+
+        if ($data['customer_stats']) {
+            $lines[] = "Unique customers (30 days): " . ($data['customer_stats']->unique_customers ?? 0);
+        }
+
+        return implode("\n", $lines) ?: 'No business data available.';
+    }
+
+    /**
+     * Get tone instruction for prompts.
+     */
+    private function getToneInstruction(string $tone, string $context): string
+    {
+        return match ($tone) {
+            'formal' => 'TONE: Professional, polished, corporate. Use sophisticated vocabulary and structured language.',
+            'aggressive' => 'TONE: Bold, urgent, high-energy marketing. Use power words, scarcity tactics, and strong emotional triggers.',
+            default => 'TONE: Friendly, conversational, approachable. Use casual language that feels relatable and authentic.',
+        };
+    }
+
+    /**
+     * Sanitize user input.
+     */
+    private function sanitizeInput(string $input): string
+    {
+        $input = strip_tags($input);
+        $input = preg_replace('/\s+/', ' ', $input);
+        $input = trim($input);
+
+        return mb_substr($input, 0, 2000);
+    }
+
+    /**
+     * Call AI API with retry and fallback logic.
+     */
+    private function callAI(array $messages): array
+    {
+        if (! $this->apiKey) {
+            return [
+                'success' => false,
+                'message' => 'API Key Clara AI belum dikonfigurasi. Silakan hubungi administrator.',
+            ];
+        }
+
+        $attempts = 0;
+        $maxAttempts = 2;
+        $currentModel = 'arcee-ai/trinity-mini:free';
+        $httpResponse = null;
+
+        while ($attempts < $maxAttempts) {
+            $attempts++;
+
+            $httpResponse = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+                'HTTP-Referer' => config('app.url'),
+                'X-Title' => 'CuanFlow POS - AI Studio',
+            ])->timeout(120)->post($this->baseUrl . '/chat/completions', [
+                'model' => $currentModel,
+                'messages' => $messages,
+                'max_tokens' => 3000,
+            ]);
+
+            if ($httpResponse->successful()) {
+                $responseData = $httpResponse->json();
+
+                if (isset($responseData['error'])) {
+                    \Log::warning('Clara AI Studio provider error on model ' . $currentModel, ['error' => $responseData['error']]);
+
+                    if ($attempts < $maxAttempts) {
+                        $currentModel = 'google/gemini-2.0-flash-exp:free';
+                        continue;
+                    }
+
+                    return [
+                        'success' => false,
+                        'message' => 'Clara AI sedang sibuk. Silakan coba lagi sebentar lagi.',
+                    ];
+                }
+
+                if (! isset($responseData['choices'][0]['message']['content'])) {
+                    return [
+                        'success' => false,
+                        'message' => 'Format response AI tidak valid.',
+                    ];
+                }
+
+                $content = $responseData['choices'][0]['message']['content'];
+                $content = preg_replace('/<think>.*?<\/think>/s', '', $content);
+                $content = trim($content);
+
+                if ($content === '') {
+                    return [
+                        'success' => false,
+                        'message' => 'AI tidak dapat menghasilkan konten. Coba ubah prompt Anda.',
+                    ];
+                }
+
+                return [
+                    'success' => true,
+                    'content' => $content,
+                ];
+            }
+
+            if ($attempts < $maxAttempts) {
+                $currentModel = 'google/gemini-2.0-flash-exp:free';
+                sleep(1);
+                continue;
+            }
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Gagal menghubungi AI. Status: ' . ($httpResponse ? $httpResponse->status() : 'unknown'),
+        ];
     }
 }

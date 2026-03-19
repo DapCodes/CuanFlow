@@ -16,8 +16,8 @@ class ClaraAiController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:akses clara ai', only: ['index']),
-            new Middleware('permission:chat dengan clara ai', only: ['chat']),
+            new Middleware('permission:akses clara ai', only: ['index', 'studioIndex']),
+            new Middleware('permission:chat dengan clara ai', only: ['chat', 'generate']),
             new Middleware('permission:sesi baru clara ai', only: ['newSession']),
             new Middleware('permission:hapus sesi clara ai', only: ['deleteSession']),
         ];
@@ -145,6 +145,48 @@ class ClaraAiController extends Controller implements HasMiddleware
             'success' => true,
             'message' => 'Chat session berhasil dihapus.',
         ]);
+    }
+
+    /**
+     * AI Studio — Multi-Mode Generator Page
+     */
+    public function studioIndex()
+    {
+        return view('main.clara-ai.studio');
+    }
+
+    /**
+     * AI Studio — Generate content via selected mode
+     */
+    public function generate(Request $request)
+    {
+        $request->validate([
+            'mode' => 'required|string|in:video_prompt,affiliate_script,ads_image_prompt',
+            'prompt' => 'required|string|max:2000',
+            'tone' => 'nullable|string|in:formal,casual,aggressive',
+            'language' => 'nullable|string|in:id,en',
+        ]);
+
+        $user = auth()->user();
+
+        if (! $user->outlet_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda belum memiliki outlet. Silakan daftarkan outlet terlebih dahulu.',
+            ], 403);
+        }
+
+        $result = $this->claraAi->generate(
+            $request->mode,
+            $request->prompt,
+            $user->id,
+            [
+                'tone' => $request->tone ?? 'casual',
+                'language' => $request->language ?? 'id',
+            ]
+        );
+
+        return response()->json($result);
     }
 
     /**
