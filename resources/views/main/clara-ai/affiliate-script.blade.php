@@ -20,127 +20,149 @@
     .lang-toggle.active { background-color: var(--cuan-green, #658C58); color: white; }
     .fade-in { animation: fadeIn 0.3s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .history-scroll::-webkit-scrollbar { width: 4px; }
+    .history-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
 </style>
 @endpush
 
 @section('content')
-{{-- LAYOUT: Side-by-side (input left, output right) on desktop, stacked on mobile --}}
-<div x-data="scriptGenApp()" class="bg-gray-50 min-h-[calc(100vh-64px-57px)]">
+<main x-data="scriptGenApp()" class="flex-grow py-8 px-4 bg-gray-50">
+    <div class="max-w-7xl mx-auto space-y-6">
 
-    {{-- Header --}}
-    <div class="bg-white border-b border-gray-200 flex-shrink-0">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
-                        <i class="fa-solid fa-scroll text-white text-sm"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <h1 class="font-black text-gray-900 text-sm uppercase tracking-tighter">Script Generator AI</h1>
-                        <p class="text-[10px] font-bold text-cuan-green uppercase tracking-widest">TikTok · Instagram · YouTube</p>
-                    </div>
+        {{-- HEADER HALAMAN --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
+                    <i class="fa-solid fa-scroll text-white text-xl"></i>
                 </div>
-                <div class="hidden sm:flex items-center gap-2">
-                    <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
-                        <button @click="tone = 'casual'" class="tone-pill px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': tone === 'casual' }">Casual</button>
-                        <button @click="tone = 'formal'" class="tone-pill px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': tone === 'formal' }">Formal</button>
-                        <button @click="tone = 'aggressive'" class="tone-pill px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': tone === 'aggressive' }">Agresif</button>
-                    </div>
-                    <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
-                        <button @click="language = 'id'" class="lang-toggle px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': language === 'id' }">ID</button>
-                        <button @click="language = 'en'" class="lang-toggle px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': language === 'en' }">EN</button>
-                    </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tighter">
+                        Script Generator AI
+                    </h1>
+                    <p class="mt-1 text-sm text-cuan-green font-bold tracking-wider">
+                        TIKTOK · INSTAGRAM · YOUTUBE
+                    </p>
                 </div>
             </div>
-            {{-- Mobile controls --}}
-            <div class="sm:hidden flex items-center gap-2 mt-3">
-                <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5 flex-1">
-                    <button @click="tone = 'casual'" class="tone-pill flex-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': tone === 'casual' }">Casual</button>
-                    <button @click="tone = 'formal'" class="tone-pill flex-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': tone === 'formal' }">Formal</button>
-                    <button @click="tone = 'aggressive'" class="tone-pill flex-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': tone === 'aggressive' }">Agresif</button>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-0.5 bg-white border border-gray-200 rounded-lg p-0.5 shadow-sm">
+                    <button @click="tone = 'casual'" class="tone-pill px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': tone === 'casual' }">Casual</button>
+                    <button @click="tone = 'formal'" class="tone-pill px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': tone === 'formal' }">Formal</button>
+                    <button @click="tone = 'aggressive'" class="tone-pill px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': tone === 'aggressive' }">Agresif</button>
                 </div>
-                <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
-                    <button @click="language = 'id'" class="lang-toggle px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': language === 'id' }">ID</button>
-                    <button @click="language = 'en'" class="lang-toggle px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': language === 'en' }">EN</button>
+                <div class="flex items-center gap-0.5 bg-white border border-gray-200 rounded-lg p-0.5 shadow-sm">
+                    <button @click="language = 'id'" class="lang-toggle px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': language === 'id' }">ID</button>
+                    <button @click="language = 'en'" class="lang-toggle px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': language === 'en' }">EN</button>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    {{-- Main Content --}}
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+        {{-- WORKSPACE GRID --}}
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {{-- Input Panel --}}
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div class="px-5 py-3 border-b border-gray-50 flex items-center justify-between">
-                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Deskripsi Script</p>
-                <span class="text-[10px] text-gray-300 font-medium" x-text="prompt.length + ' / 2000'"></span>
+            {{-- 1. Input Panel (Col 4) --}}
+            <div class="lg:col-span-4 space-y-4">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-full min-h-[400px]">
+                    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                        <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Deskripsi Promosi</p>
+                        <span class="text-[10px] text-gray-400 font-bold" x-text="prompt.length + '/2000'"></span>
+                    </div>
+                    
+                    <textarea x-model="prompt" @keydown.ctrl.enter="submit()" @keydown.meta.enter="submit()"
+                        placeholder="Mau jualan apa hari ini? Contoh: Script soft selling untuk es kopi susu aren, target anak senja..."
+                        maxlength="2000"
+                        class="flex-1 w-full px-5 py-4 border-0 focus:ring-0 text-sm resize-none bg-white placeholder-gray-300"
+                        :disabled="loading"></textarea>
+                        
+                    <div class="p-4 border-t border-gray-100 bg-white">
+                        <button @click="submit()" :disabled="loading || !prompt.trim()"
+                            class="w-full py-3.5 bg-cuan-green hover:bg-cuan-dark disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-100 active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fas" :class="loading ? 'fa-circle-notch fa-spin' : 'fa-pen-nib'"></i>
+                            <span x-text="loading ? 'Menulis...' : 'Generate Script'"></span>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <textarea x-model="prompt" @keydown.ctrl.enter="submit()" @keydown.meta.enter="submit()"
-                placeholder="Deskripsikan script yang ingin dibuat. Contoh: Script jualan takoyaki pedas yang viral di TikTok..."
-                maxlength="2000" rows="4"
-                class="w-full px-5 py-4 border-0 focus:ring-0 text-sm resize-none bg-white placeholder-gray-300"
-                :disabled="loading"></textarea>
-            <div class="px-5 py-3 bg-gray-50/50 border-t border-gray-50">
-                <button @click="submit()" :disabled="loading || !prompt.trim()"
-                    class="w-full px-5 py-3 bg-cuan-green hover:bg-cuan-dark disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-100 active:scale-95 flex items-center justify-center gap-2">
-                    <i class="fas" :class="loading ? 'fa-circle-notch fa-spin' : 'fa-bolt'"></i>
-                    <span x-text="loading ? 'Generating...' : 'Generate Script'"></span>
-                </button>
-            </div>
-        </div>
 
-        {{-- Quick Prompts --}}
-        <div x-show="!output && !loading && !error" class="grid grid-cols-1 sm:grid-cols-2 gap-3 fade-in">
-            <template x-for="q in quickPrompts" :key="q">
-                <button @click="prompt = q"
-                    class="text-left px-5 py-4 bg-white border border-gray-100 hover:border-cuan-green/30 hover:shadow-emerald-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-cuan-green transition-all shadow-sm hover:shadow-xl group flex items-center justify-between">
-                    <span x-text="q"></span>
-                    <i class="fas fa-chevron-right text-gray-200 group-hover:text-cuan-green group-hover:translate-x-1 transition-all"></i>
-                </button>
-            </template>
-        </div>
+            {{-- 2. Output Panel (Col 5) --}}
+            <div class="lg:col-span-5 relative min-h-[400px]">
+                
+                {{-- Empty State --}}
+                <div x-show="!output && !loading && !error" class="absolute inset-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-8 flex flex-col items-center justify-center text-center fade-in">
+                    <div class="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-file-lines text-2xl text-gray-300"></i>
+                    </div>
+                    <h3 class="text-sm font-black text-gray-800 uppercase tracking-tight mb-2">Kertas Masih Kosong</h3>
+                    <p class="text-xs text-gray-400 max-w-xs">Isi deskripsi promosi di sebelah kiri. Clara AI akan membuatkan Hook & Call-To-Action yang mengkonversi penjualan.</p>
+                </div>
 
-        {{-- Loading --}}
-        <div x-show="loading" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center fade-in">
-            <div class="flex justify-center gap-1.5 mb-3">
-                <div class="w-2 h-2 bg-cuan-green rounded-full animate-bounce"></div>
-                <div class="w-2 h-2 bg-cuan-green rounded-full animate-bounce" style="animation-delay:0.15s"></div>
-                <div class="w-2 h-2 bg-cuan-green rounded-full animate-bounce" style="animation-delay:0.3s"></div>
-            </div>
-            <p class="text-sm font-bold text-gray-600">Clara AI sedang membuat script...</p>
-        </div>
+                {{-- Loading State --}}
+                <div x-show="loading" class="absolute inset-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-8 flex flex-col items-center justify-center text-center fade-in z-10">
+                    <i class="fa-solid fa-pen-nib text-3xl text-cuan-green animate-bounce mb-4"></i>
+                    <p class="text-sm font-bold text-gray-800">Merangkai kata-kata viral...</p>
+                </div>
 
-        {{-- Error --}}
-        <div x-show="error && !loading" class="fade-in">
-            <div class="bg-red-50 border border-red-200 rounded-2xl px-4 py-2.5">
-                <p class="text-sm text-red-600" x-text="error"></p>
-            </div>
-        </div>
+                {{-- Error State --}}
+                <div x-show="error && !loading" class="bg-red-50 border border-red-200 rounded-2xl p-6 fade-in mb-4">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl"></i>
+                        <p class="text-sm font-bold text-red-700" x-text="error"></p>
+                    </div>
+                </div>
 
-        {{-- Output --}}
-        <div x-show="output && !loading" class="fade-in">
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div class="px-5 py-3 border-b border-gray-50 flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-lg bg-cuan-green flex items-center justify-center">
-                            <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-0.5" alt="">
+                {{-- Result --}}
+                <div x-show="output && !loading" class="bg-white rounded-2xl border border-gray-200 shadow-sm h-full flex flex-col fade-in">
+                    <div class="px-5 py-3 border-b border-gray-100 bg-emerald-50/30 flex items-center justify-between overflow-hidden relative">
+                        <div class="flex items-center gap-2 relative z-10">
+                            <i class="fa-solid fa-check-circle text-cuan-green"></i>
+                            <p class="text-[10px] font-black text-gray-800 uppercase tracking-widest">Hasil Script Copywriting</p>
                         </div>
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Hasil Script</p>
+                        <button @click="copyOutput()"
+                            class="relative z-10 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gray-600 hover:text-cuan-green hover:border-cuan-green transition-all shadow-sm">
+                            <i class="fas mr-1" :class="copied ? 'fa-check text-cuan-green' : 'fa-copy'"></i>
+                            <span x-text="copied ? 'Tersalin!' : 'Salin Text'"></span>
+                        </button>
                     </div>
-                    <button @click="copyOutput()"
-                        class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-cuan-green border border-gray-100 hover:border-cuan-green/30 rounded-lg transition-all">
-                        <i class="fas mr-1" :class="copied ? 'fa-check text-cuan-green' : 'fa-copy'"></i>
-                        <span x-text="copied ? 'Tersalin' : 'Salin'"></span>
-                    </button>
-                </div>
-                <div class="px-5 py-4">
-                    <p class="output-area text-sm text-gray-800 leading-relaxed" x-text="output"></p>
+                    <div class="p-5 flex-1 overflow-y-auto" style="max-height: calc(100vh - 300px);">
+                        <p class="output-area text-sm text-gray-700 leading-relaxed" x-text="output"></p>
+                    </div>
                 </div>
             </div>
+
+            {{-- 3. History Panel (Col 3) --}}
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-full max-h-[calc(100vh-12rem)] min-h-[400px]">
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-gray-500">
+                            <i class="fa-solid fa-clock-rotate-left text-xs"></i>
+                            <h2 class="text-[10px] font-black uppercase tracking-widest">Riwayat Script</h2>
+                        </div>
+                        <button @click="clearHistory" x-show="history.length > 0" class="text-[10px] text-red-500 hover:text-red-700 font-bold uppercase tracking-wider">Hapus</button>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto history-scroll p-3 space-y-2 bg-gray-50/30">
+                        <template x-if="history.length === 0">
+                            <div class="text-[10px] text-gray-400 text-center py-8">Belum ada history.</div>
+                        </template>
+                        
+                        <template x-for="item in history" :key="item.id">
+                            <button @click="loadHistory(item)" class="w-full text-left bg-white p-3 rounded-xl border border-gray-100 hover:border-cuan-green hover:shadow-md transition-all">
+                                <span class="block text-[8px] text-gray-400 font-bold mb-1" x-text="formatTime(item.timestamp)"></span>
+                                <p class="text-xs text-gray-700 font-medium line-clamp-3 leading-tight" x-text="item.prompt"></p>
+                                <div class="flex items-center gap-1 mt-2">
+                                    <span class="px-1.5 py-0.5 rounded bg-gray-100 text-[8px] font-black uppercase text-gray-500" x-text="item.language"></span>
+                                    <span class="px-1.5 py-0.5 rounded bg-blue-50 text-[8px] font-black uppercase text-blue-600" x-text="item.tone"></span>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
+</main>
 
 @push('scripts')
 <script>
@@ -148,11 +170,14 @@ function scriptGenApp() {
     return {
         prompt: '', output: '', error: '', loading: false, copied: false,
         tone: 'casual', language: 'id',
-        quickPrompts: [
-            'Script jualan produk best seller untuk TikTok',
-            'Script review produk dengan gaya storytelling',
-            'Script promo diskon akhir bulan yang mendesak',
-        ],
+        history: [],
+        storageKey: 'clara_script_prompt_history',
+        init() {
+            const saved = localStorage.getItem(this.storageKey);
+            if(saved) {
+                try { this.history = JSON.parse(saved); } catch(e) {}
+            }
+        },
         async submit() {
             if (this.loading || !this.prompt.trim()) return;
             this.loading = true; this.output = ''; this.error = ''; this.copied = false;
@@ -163,8 +188,33 @@ function scriptGenApp() {
                     body: JSON.stringify({ mode: 'affiliate_script', prompt: this.prompt, tone: this.tone, language: this.language })
                 });
                 const data = await res.json();
-                if (data.success) { this.output = data.result; } else { this.error = data.message || 'Gagal menghasilkan konten.'; }
+                if (data.success) { 
+                    this.output = data.result; 
+                    this.saveToHistory(this.prompt, this.output, this.tone, this.language);
+                } else { 
+                    this.error = data.message || 'Gagal menghasilkan konten.'; 
+                }
             } catch (e) { this.error = 'Koneksi gagal. Coba lagi.'; } finally { this.loading = false; }
+        },
+        saveToHistory(prompt, output, tone, language) {
+            const newItem = { id: Date.now(), timestamp: new Date().toISOString(), prompt, output, tone, language };
+            this.history.unshift(newItem);
+            if(this.history.length > 20) this.history.pop();
+            localStorage.setItem(this.storageKey, JSON.stringify(this.history));
+        },
+        loadHistory(item) {
+            this.prompt = item.prompt; this.output = item.output;
+            this.tone = item.tone; this.language = item.language;
+            this.error = '';
+        },
+        clearHistory() {
+            if(confirm('Hapus semua history?')) {
+                this.history = []; localStorage.removeItem(this.storageKey);
+            }
+        },
+        formatTime(iso) {
+            const d = new Date(iso);
+            return d.getDate() + '/' + (d.getMonth()+1) + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
         },
         async copyOutput() {
             if (!this.output) return;

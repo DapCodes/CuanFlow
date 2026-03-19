@@ -9,7 +9,7 @@
 </li>
 <li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <span class="text-gray-900 font-bold tracking-tight">Image Prompt AI</span>
+    <span class="text-gray-900 font-bold tracking-tight">Ads Image AI</span>
 </li>
 @endsection
 
@@ -20,139 +20,184 @@
     .lang-toggle.active { background-color: var(--cuan-green, #658C58); color: white; }
     .fade-in { animation: fadeIn 0.3s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .history-scroll::-webkit-scrollbar { width: 4px; }
+    .history-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
 </style>
 @endpush
 
 @section('content')
-{{-- LAYOUT: Centered card with floating input at bottom (Stacked card layout) --}}
-<div x-data="imagePromptApp()" class="bg-gray-50 min-h-[calc(100vh-64px-57px)] flex flex-col">
+<main x-data="imagePromptApp()" class="flex-grow py-8 px-4 bg-gray-50 h-full flex flex-col">
+    <div class="max-w-7xl mx-auto space-y-6 w-full flex flex-col h-full relative">
 
-    {{-- Header --}}
-    <div class="bg-white border-b border-gray-200 flex-shrink-0">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
-                        <i class="fa-solid fa-image text-white text-sm"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <h1 class="font-black text-gray-900 text-sm uppercase tracking-tighter">Image Prompt AI</h1>
-                        <p class="text-[10px] font-bold text-cuan-green uppercase tracking-widest">Midjourney · DALL·E · SDXL</p>
-                    </div>
+        {{-- HEADER --}}
+        <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
+                    <i class="fa-solid fa-image text-white text-xl"></i>
                 </div>
-                <div class="hidden sm:flex items-center gap-2">
-                    <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
-                        <button @click="tone = 'casual'" class="tone-pill px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': tone === 'casual' }">Casual</button>
-                        <button @click="tone = 'formal'" class="tone-pill px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': tone === 'formal' }">Formal</button>
-                        <button @click="tone = 'aggressive'" class="tone-pill px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': tone === 'aggressive' }">Agresif</button>
-                    </div>
-                    <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
-                        <button @click="language = 'id'" class="lang-toggle px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': language === 'id' }">ID</button>
-                        <button @click="language = 'en'" class="lang-toggle px-2.5 py-1 rounded-md text-[10px] font-bold uppercase" :class="{ 'active': language === 'en' }">EN</button>
-                    </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tighter">
+                        Ads Image AI
+                    </h1>
+                    <p class="mt-1 text-sm text-cuan-green font-bold tracking-wider">
+                        MIDJOURNEY · DALL-E · SDXL
+                    </p>
                 </div>
             </div>
-            {{-- Mobile controls --}}
-            <div class="sm:hidden flex items-center gap-2 mt-3">
-                <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5 flex-1">
-                    <button @click="tone = 'casual'" class="tone-pill flex-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': tone === 'casual' }">Casual</button>
-                    <button @click="tone = 'formal'" class="tone-pill flex-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': tone === 'formal' }">Formal</button>
-                    <button @click="tone = 'aggressive'" class="tone-pill flex-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': tone === 'aggressive' }">Agresif</button>
+            
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-0.5 bg-white border border-gray-200 rounded-lg p-0.5 shadow-sm">
+                    <button @click="tone = 'casual'" class="tone-pill px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': tone === 'casual' }">Casual</button>
+                    <button @click="tone = 'formal'" class="tone-pill px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': tone === 'formal' }">Formal</button>
+                    <button @click="tone = 'aggressive'" class="tone-pill px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': tone === 'aggressive' }">Agresif</button>
                 </div>
-                <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
-                    <button @click="language = 'id'" class="lang-toggle px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': language === 'id' }">ID</button>
-                    <button @click="language = 'en'" class="lang-toggle px-2 py-1 rounded-md text-[9px] font-bold uppercase" :class="{ 'active': language === 'en' }">EN</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Main Content --}}
-    <div class="flex-1 overflow-y-auto">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-4">
-
-            {{-- Output / Empty State --}}
-            <div x-show="!output && !loading && !error" class="fade-in">
-                {{-- Grid of quick prompt cards --}}
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                    <template x-for="(q, i) in quickPrompts" :key="i">
-                        <button @click="prompt = q.text"
-                            class="text-left bg-white rounded-2xl border border-gray-100 hover:border-cuan-green/30 p-5 transition-all shadow-sm hover:shadow-xl hover:shadow-emerald-100 group">
-                            <div class="w-8 h-8 rounded-lg bg-gray-50 group-hover:bg-emerald-50 flex items-center justify-center mb-3 transition-colors">
-                                <i class="fa-solid text-gray-300 group-hover:text-cuan-green transition-colors" :class="q.icon"></i>
-                            </div>
-                            <p class="text-[10px] font-black text-gray-700 uppercase tracking-tight mb-1" x-text="q.label"></p>
-                            <p class="text-[10px] text-gray-400 leading-relaxed" x-text="q.text"></p>
-                        </button>
-                    </template>
+                <div class="flex items-center gap-0.5 bg-white border border-gray-200 rounded-lg p-0.5 shadow-sm">
+                    <button @click="language = 'id'" class="lang-toggle px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': language === 'id' }">ID</button>
+                    <button @click="language = 'en'" class="lang-toggle px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': language === 'en' }">EN</button>
                 </div>
             </div>
+        </section>
 
-            {{-- Loading --}}
-            <div x-show="loading" class="fade-in">
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="flex justify-center gap-1.5 mb-3">
-                        <div class="w-2 h-2 bg-cuan-green rounded-full animate-bounce"></div>
-                        <div class="w-2 h-2 bg-cuan-green rounded-full animate-bounce" style="animation-delay:0.15s"></div>
-                        <div class="w-2 h-2 bg-cuan-green rounded-full animate-bounce" style="animation-delay:0.3s"></div>
-                    </div>
-                    <p class="text-sm font-bold text-gray-600">Clara AI sedang membuat prompt gambar...</p>
-                    <p class="text-xs text-gray-400 mt-1">Sekitar 15-30 detik</p>
-                </div>
-            </div>
-
-            {{-- Error --}}
-            <div x-show="error && !loading" class="fade-in">
-                <div class="bg-red-50 border border-red-200 rounded-2xl px-4 py-2.5">
-                    <p class="text-sm text-red-600" x-text="error"></p>
-                </div>
-            </div>
-
-            {{-- Output: Stacked cards for each prompt type --}}
-            <div x-show="output && !loading" class="fade-in space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-lg bg-cuan-green flex items-center justify-center">
-                            <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-0.5" alt="">
+        {{-- MAIN CONTENT AREA --}}
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 pb-24">
+            
+            {{-- Center Flow (Span 3) --}}
+            <div class="lg:col-span-3 pb-8">
+                
+                {{-- Idle State (Cards) --}}
+                <div x-show="!output && !loading && !error" class="fade-in">
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center mb-6">
+                        <div class="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
+                            <i class="fa-solid fa-wand-magic-sparkles text-3xl text-cuan-green"></i>
                         </div>
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Hasil Image Prompt</p>
+                        <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">Generate Prompt Gambar Profesional</h2>
+                        <p class="text-sm text-gray-400 mt-2 max-w-md mx-auto">Kami akan menyusun prompt Midjourney/DALL-E lengkap dengan pencahayaan, angle kamera, dan gaya visual.</p>
                     </div>
-                    <button @click="copyOutput()"
-                        class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 hover:text-cuan-green border border-gray-100 hover:border-cuan-green/30 rounded-lg transition-all">
-                        <i class="fas mr-1" :class="copied ? 'fa-check text-cuan-green' : 'fa-copy'"></i>
-                        <span x-text="copied ? 'Tersalin' : 'Salin semua'"></span>
-                    </button>
+
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Kumpulan Ide Cepat</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <template x-for="q in quickCards" :key="q.title">
+                            <button @click="prompt = q.prompt" class="bg-white border text-left border-gray-200 hover:border-cuan-green/50 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                                <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <i :class="q.icon" class="text-6xl"></i>
+                                </div>
+                                <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-cuan-green mb-3 relative z-10">
+                                    <i :class="q.icon" class="text-sm"></i>
+                                </div>
+                                <h3 class="text-xs font-black text-gray-800 uppercase tracking-wide mb-1 relative z-10" x-text="q.title"></h3>
+                                <p class="text-[10px] text-gray-400 font-medium line-clamp-2 relative z-10" x-text="q.prompt"></p>
+                            </button>
+                        </template>
+                    </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div class="px-5 py-4">
-                        <p class="output-area text-sm text-gray-800 leading-relaxed" x-text="output"></p>
+                {{-- Loading State --}}
+                <div x-show="loading" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center fade-in h-64 flex flex-col items-center justify-center">
+                    <div class="relative w-16 h-16 mb-6">
+                        <div class="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-cuan-green rounded-full border-t-transparent animate-spin"></div>
+                        <i class="fa-solid fa-paintbrush absolute inset-0 m-auto w-fit h-fit text-cuan-green"></i>
+                    </div>
+                    <p class="text-sm font-bold text-gray-800 uppercase tracking-widest">Melukis Prompt...</p>
+                </div>
+
+                {{-- Error State --}}
+                <div x-show="error && !loading" class="bg-red-50 border border-red-200 rounded-2xl p-6 fade-in">
+                    <div class="flex items-center gap-3 justify-center">
+                        <i class="fa-solid fa-brake-warning text-red-500 text-2xl"></i>
+                        <p class="text-sm font-bold text-red-700" x-text="error"></p>
+                    </div>
+                </div>
+
+                {{-- Output State --}}
+                <div x-show="output && !loading" class="fade-in">
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden border-t-4 border-t-cuan-green">
+                        <div class="px-6 py-4 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/50">
+                            <div>
+                                <h3 class="text-xs font-black text-gray-800 uppercase tracking-widest">Prompt Siap Pakai</h3>
+                                <p class="text-[10px] text-gray-400 font-medium">Salin dan gunakan di AI Generator pilihan Anda</p>
+                            </div>
+                            <button @click="copyOutput()"
+                                class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-cuan-green hover:border-cuan-green transition-all shadow-sm">
+                                <i class="fas mr-1.5" :class="copied ? 'fa-check text-cuan-green' : 'fa-copy'"></i>
+                                <span x-text="copied ? 'Tersalin!' : 'Copy Prompt'"></span>
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 text-gray-300 relative group overflow-hidden">
+                                <i class="fa-solid fa-quote-left absolute -top-2 -left-2 text-4xl text-gray-800/50"></i>
+                                <p class="output-area text-sm leading-relaxed font-mono relative z-10" x-text="output"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    {{-- Floating Bottom Input Bar --}}
-    <div class="bg-white border-t border-gray-200 flex-shrink-0">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4">
-            <div class="flex items-end gap-3">
-                <div class="flex-1">
-                    <textarea x-model="prompt" @keydown.ctrl.enter="submit()" @keydown.meta.enter="submit()"
-                        placeholder="Deskripsikan gambar iklan yang ingin dibuat..."
-                        maxlength="2000" rows="2"
-                        class="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green focus:bg-white text-sm transition-all shadow-sm resize-none"
-                        :disabled="loading"></textarea>
+            {{-- Right Column (Span 1) --}}
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden h-full flex flex-col max-h-[calc(100vh-14rem)] sticky top-6">
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-gray-500">
+                            <i class="fa-solid fa-clock-rotate-left text-xs"></i>
+                            <h2 class="text-[10px] font-black uppercase tracking-widest">Gallery History</h2>
+                        </div>
+                        <button @click="clearHistory" x-show="history.length > 0" class="text-[10px] text-red-500 hover:text-red-700 font-bold uppercase tracking-wider">Clear</button>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto history-scroll p-3 space-y-2 bg-gray-50/30">
+                        <template x-if="history.length === 0">
+                            <div class="text-[10px] text-gray-400 text-center py-8">Belum ada history.</div>
+                        </template>
+                        
+                        <template x-for="item in history" :key="item.id">
+                            <button @click="loadHistory(item)" class="w-full text-left bg-white p-3 rounded-xl border border-gray-100 hover:border-cuan-green hover:shadow-md transition-all group overflow-hidden">
+                                <div class="flex items-center justify-between mb-1.5 relative z-10">
+                                    <span class="text-[8px] text-gray-400 font-bold" x-text="formatTime(item.timestamp)"></span>
+                                    <div class="flex gap-1">
+                                        <div class="w-1.5 h-1.5 rounded-full" :class="item.language === 'en' ? 'bg-blue-400' : 'bg-red-400'"></div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-700 font-medium line-clamp-3 leading-tight relative z-10" x-text="item.prompt"></p>
+                            </button>
+                        </template>
+                    </div>
                 </div>
-                <button @click="submit()" :disabled="loading || !prompt.trim()"
-                    class="w-12 h-12 bg-cuan-green hover:bg-cuan-dark disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl font-black transition-all shadow-xl shadow-emerald-100 active:scale-95 flex items-center justify-center flex-shrink-0">
-                    <i class="fas" :class="loading ? 'fa-circle-notch fa-spin' : 'fa-paper-plane text-lg'"></i>
-                </button>
             </div>
-            <p class="text-xs text-gray-400 text-center mt-2">Clara AI dapat membuat kesalahan. Harap verifikasi informasi penting.</p>
+
         </div>
+
+        {{-- FLOATING PROMPT BAR --}}
+        <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-t border-gray-200 shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)] py-4 px-4">
+            <div class="max-w-4xl mx-auto md:ml-64 transition-all pr-4"> {{-- Adjust for sidebar --}}
+                <div class="relative flex items-end gap-3 bg-white p-2 rounded-3xl border border-gray-200 shadow-lg focus-within:border-emerald-300 focus-within:ring-4 focus-within:ring-emerald-50 transition-all">
+                    
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cuan-green to-emerald-400 flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <i class="fa-solid fa-paintbrush text-white text-lg"></i>
+                    </div>
+                    
+                    <div class="flex-1 min-w-0 pb-1">
+                        <textarea x-model="prompt" @keydown.ctrl.enter="submit()" @keydown.meta.enter="submit()"
+                            placeholder="Deskripsikan ide visual Ads Anda di sini..."
+                            maxlength="2000" rows="1" x-ref="promptInput"
+                            @input="resizeTextarea"
+                            class="w-full px-2 py-2 border-0 focus:ring-0 text-sm resize-none bg-transparent placeholder-gray-400"
+                            style="min-height: 40px; max-height: 120px;"
+                            :disabled="loading"></textarea>
+                    </div>
+
+                    <div class="flex-shrink-0 flex items-center pb-1 pr-1">
+                         <button @click="submit()" :disabled="loading || !prompt.trim()"
+                            class="w-12 h-12 flex items-center justify-center bg-gray-900 hover:bg-black disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white rounded-2xl transition-all shadow-md active:scale-95 group">
+                            <i class="fas" :class="loading ? 'fa-spinner fa-spin' : 'fa-paper-plane group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform'"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
     </div>
-</div>
+</main>
 
 @push('scripts')
 <script>
@@ -160,23 +205,70 @@ function imagePromptApp() {
     return {
         prompt: '', output: '', error: '', loading: false, copied: false,
         tone: 'casual', language: 'id',
-        quickPrompts: [
-            { label: 'Feed Instagram', text: 'Gambar iklan produk unggulan untuk feed Instagram', icon: 'fa-hashtag' },
-            { label: 'Banner Promo', text: 'Banner promo diskon 50% dengan style modern dan clean', icon: 'fa-tag' },
-            { label: 'Poster Menu', text: 'Desain poster menu premium dengan food photography', icon: 'fa-utensils' },
+        history: [],
+        storageKey: 'clara_image_prompt_history',
+        quickCards: [
+            { icon: 'fa-solid fa-box-open', title: 'Product Display', prompt: 'Gambar produk di studio dengan pencahayaan dramatis dari samping, background minimalis.' },
+            { icon: 'fa-solid fa-utensils', title: 'Food Detail', prompt: 'Foto makro makanan yang menggugah selera, fokus tajam pada tekstur makanan, uap panas terlihat.' },
+            { icon: 'fa-solid fa-users', title: 'Lifestyle Ads', prompt: 'Orang menggunakan produk dengan bahagia di taman saat golden hour, warna hangat.' },
         ],
+        init() {
+            const saved = localStorage.getItem(this.storageKey);
+            if(saved) {
+                try { this.history = JSON.parse(saved); } catch(e) {}
+            }
+        },
+        resizeTextarea() {
+            const el = this.$refs.promptInput;
+            el.style.height = 'auto';
+            el.style.height = (el.scrollHeight) + 'px';
+        },
         async submit() {
             if (this.loading || !this.prompt.trim()) return;
             this.loading = true; this.output = ''; this.error = ''; this.copied = false;
+            
+            // scroll page up slightly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             try {
                 const res = await fetch('{{ route("clara-ai.generate") }}', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-                    body: JSON.stringify({ mode: 'ads_image_prompt', prompt: this.prompt, tone: this.tone, language: this.language })
+                    body: JSON.stringify({ mode: 'ads_image', prompt: this.prompt, tone: this.tone, language: this.language })
                 });
                 const data = await res.json();
-                if (data.success) { this.output = data.result; } else { this.error = data.message || 'Gagal menghasilkan konten.'; }
+                if (data.success) { 
+                    this.output = data.result; 
+                    this.saveToHistory(this.prompt, this.output, this.tone, this.language);
+                } else { 
+                    this.error = data.message || 'Gagal menghasilkan konten.'; 
+                }
             } catch (e) { this.error = 'Koneksi gagal. Coba lagi.'; } finally { this.loading = false; }
+        },
+        saveToHistory(prompt, output, tone, language) {
+            const newItem = { id: Date.now(), timestamp: new Date().toISOString(), prompt, output, tone, language };
+            this.history.unshift(newItem);
+            if(this.history.length > 20) this.history.pop();
+            localStorage.setItem(this.storageKey, JSON.stringify(this.history));
+            
+            // reset textarea
+            setTimeout(() => this.resizeTextarea(), 10);
+        },
+        loadHistory(item) {
+            this.prompt = item.prompt; this.output = item.output;
+            this.tone = item.tone; this.language = item.language;
+            this.error = '';
+            setTimeout(() => this.resizeTextarea(), 10);
+            window.scrollTo({ top: 100, behavior: 'smooth' });
+        },
+        clearHistory() {
+            if(confirm('Hapus semua history?')) {
+                this.history = []; localStorage.removeItem(this.storageKey);
+            }
+        },
+        formatTime(iso) {
+            const d = new Date(iso);
+            return d.getDate() + '/' + (d.getMonth()+1) + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
         },
         async copyOutput() {
             if (!this.output) return;
