@@ -258,6 +258,12 @@
                             </div>
                             <p class="mt-2 text-[10px] text-gray-400 italic">* Harga ini juga akan digunakan sebagai HPP produk di sistem Anda.</p>
                         </div>
+
+                        <div>
+                            <label for="expired_at" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Tanggal Kadaluarsa (Opsional)</label>
+                            <input type="date" name="expired_at" id="expired_at"
+                                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-900">
+                        </div>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-8 py-6 flex flex-col gap-3">

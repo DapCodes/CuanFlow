@@ -105,6 +105,7 @@ class ResellerProductManagementController extends Controller
         $request->validate([
             'selling_price' => 'required|numeric|min:0',
             'status' => 'required|in:accepted,rejected,pending',
+            'expired_at' => 'nullable|date',
         ]);
 
         if ($request->status === 'accepted') {
@@ -166,6 +167,7 @@ class ResellerProductManagementController extends Controller
                 'reference_type' => \App\Models\ResellerProduct::class,
                 'reference_id' => $resellerProduct->id,
                 'created_by' => $user->id,
+                'expired_at' => $request->expired_at,
             ]);
 
             $resellerProduct->update([
