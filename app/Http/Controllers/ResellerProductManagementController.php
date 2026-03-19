@@ -108,6 +108,10 @@ class ResellerProductManagementController extends Controller
         ]);
 
         if ($request->status === 'accepted') {
+            if ($resellerProduct->status === 'accepted') {
+                return redirect()->back()->with('error', 'Produk ini sudah diterima sebelumnya.');
+            }
+
             $user = auth()->user();
             $sourceOutlet = $resellerProduct->sourceOutlet;
 
@@ -133,7 +137,7 @@ class ResellerProductManagementController extends Controller
                 'supplier_id' => $supplier->id,
                 'name' => $resellerProduct->name,
                 'code' => 'PROD-RES-' . strtoupper(\Illuminate\Support\Str::random(6)),
-                'hpp' => $request->selling_price, // As requested: HPP from user input price
+                'hpp' => $request->selling_price,
                 'selling_price' => $request->selling_price,
                 'is_stock' => true,
                 'is_active' => true,
@@ -141,12 +145,35 @@ class ResellerProductManagementController extends Controller
                 'track_stock' => true,
             ]);
 
+            // 3. Initialize Product Stock
+            $productStock = \App\Models\ProductStock::create([
+                'product_id' => $product->id,
+                'outlet_id' => $user->outlet_id,
+                'quantity' => $resellerProduct->stock,
+            ]);
+
+            // 4. Record Stock Movement
+            \App\Models\StockMovement::create([
+                'outlet_id' => $user->outlet_id,
+                'stockable_type' => \App\Models\Product::class,
+                'stockable_id' => $product->id,
+                'type' => 'in',
+                'quantity' => $resellerProduct->stock,
+                'quantity_before' => 0,
+                'quantity_after' => $resellerProduct->stock,
+                'unit_price' => $resellerProduct->purchase_price,
+                'notes' => 'Penerimaan stok dari Reseller Sync (' . $sourceOutlet->name . ')',
+                'reference_type' => \App\Models\ResellerProduct::class,
+                'reference_id' => $resellerProduct->id,
+                'created_by' => $user->id,
+            ]);
+
             $resellerProduct->update([
                 'status' => 'accepted',
                 'selling_price' => $request->selling_price,
             ]);
 
-            return redirect()->route('reseller-products.index')->with('success', 'Produk berhasil diterima dan telah ditambahkan ke daftar Produk Anda.');
+            return redirect()->route('reseller-products.index')->with('success', 'Produk berhasil diterima, stok telah ditambahkan, dan riwayat stok telah dicatat.');
         }
 
         $resellerProduct->update($request->only(['status']));
