@@ -5,7 +5,11 @@
 @section('breadcrumb')
 <li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <span class="text-gray-900 font-bold tracking-tight">Video Prompt Generator</span>
+    <a href="{{ route('clara-ai.index') }}" class="text-gray-400 hover:text-gray-900 transition-colors">Clara AI</a>
+</li>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-bold tracking-tight">Video Prompt AI</span>
 </li>
 @endsection
 
@@ -116,7 +120,7 @@
                         <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-1" alt="">
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-tl-none px-5 py-3.5 shadow-sm break-words overflow-hidden border-l-4 border-l-cuan-green">
+                        <div class="bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-tl-none px-5 py-3.5 shadow-sm break-words overflow-hidden">
                             <p class="output-area text-sm leading-relaxed" x-text="output"></p>
                         </div>
                         <div class="flex items-center gap-2 mt-2">

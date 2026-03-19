@@ -5,7 +5,11 @@
 @section('breadcrumb')
 <li class="flex items-center text-sm">
     <span class="text-gray-400 mx-2">/</span>
-    <span class="text-gray-900 font-bold tracking-tight">Ads Image Prompt Generator</span>
+    <a href="{{ route('clara-ai.index') }}" class="text-gray-400 hover:text-gray-900 transition-colors">Clara AI</a>
+</li>
+<li class="flex items-center text-sm">
+    <span class="text-gray-400 mx-2">/</span>
+    <span class="text-gray-900 font-bold tracking-tight">Image Prompt AI</span>
 </li>
 @endsection
 
@@ -25,14 +29,14 @@
 
     {{-- Header --}}
     <div class="bg-white border-b border-gray-200 flex-shrink-0">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
                         <i class="fa-solid fa-image text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                        <h1 class="font-black text-gray-900 text-sm uppercase tracking-tighter">Ads Image Prompt Generator</h1>
+                        <h1 class="font-black text-gray-900 text-sm uppercase tracking-tighter">Image Prompt AI</h1>
                         <p class="text-[10px] font-bold text-cuan-green uppercase tracking-widest">Midjourney · DALL·E · SDXL</p>
                     </div>
                 </div>
@@ -65,7 +69,7 @@
 
     {{-- Main Content --}}
     <div class="flex-1 overflow-y-auto">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-4">
 
             {{-- Output / Empty State --}}
             <div x-show="!output && !loading && !error" class="fade-in">
@@ -120,7 +124,7 @@
                     </button>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden border-l-4 border-l-cuan-green">
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div class="px-5 py-4">
                         <p class="output-area text-sm text-gray-800 leading-relaxed" x-text="output"></p>
                     </div>
@@ -131,7 +135,7 @@
 
     {{-- Floating Bottom Input Bar --}}
     <div class="bg-white border-t border-gray-200 flex-shrink-0">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4">
             <div class="flex items-end gap-3">
                 <div class="flex-1">
                     <textarea x-model="prompt" @keydown.ctrl.enter="submit()" @keydown.meta.enter="submit()"
