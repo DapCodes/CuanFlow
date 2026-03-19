@@ -1311,6 +1311,50 @@
   </a>
 @endcanAccessFeature
 
+@canAccessFeature('clara_ai')
+@can('akses clara ai')
+  <a href="{{ route('clara-ai.video-prompt') }}"
+    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
+    data-step="101"
+    data-title="Video Prompt AI"
+    data-intro="<strong>Generate prompt video sinematik.</strong> Buat prompt detail untuk tools AI video seperti Runway, Sora, dan Pika berdasarkan data produk Anda.">
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+      <i class="fa-solid fa-film text-4xl sm:text-5xl text-white"></i>
+    </div>
+    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+      Video Prompt AI
+    </span>
+  </a>
+
+  <a href="{{ route('clara-ai.affiliate-script') }}"
+    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
+    data-step="102"
+    data-title="Script Generator AI"
+    data-intro="<strong>Generate script affiliate.</strong> Buat script jualan high-converting untuk TikTok, Instagram, dan YouTube dengan data bisnis Anda.">
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+      <i class="fa-solid fa-scroll text-4xl sm:text-5xl text-white"></i>
+    </div>
+    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+      Script Generator AI
+    </span>
+  </a>
+
+  <a href="{{ route('clara-ai.ads-image-prompt') }}"
+    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
+    data-step="103"
+    data-title="Image Prompt AI"
+    data-intro="<strong>Generate prompt gambar iklan.</strong> Buat prompt untuk Midjourney, DALL·E, dan SDXL yang disesuaikan dengan produk dan brand Anda.">
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-sky-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+      <i class="fa-solid fa-image text-4xl sm:text-5xl text-white"></i>
+    </div>
+    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+      Image Prompt AI
+    </span>
+  </a>
+@endcan
+@endcanAccessFeature
+
+
   <!-- BANTUAN & PENGATURAN -->
 @canAccessFeature('outlet_policies')
 @can('lihat kebijakan outlet')
@@ -2761,6 +2805,9 @@ document.addEventListener('DOMContentLoaded', function() {
     @canAccessFeature('clara_ai')
     @can('akses clara ai')
     { label: 'Clara AI Chat', keywords: ['clara', 'ai', 'chat', 'tanya', 'asisten', 'bot'], url: "{{ route('clara-ai.index') }}", type: 'Action' },
+    { label: 'Video Prompt AI', keywords: ['video', 'prompt', 'ai', 'sinematik', 'runway', 'sora', 'pika'], url: "{{ route('clara-ai.video-prompt') }}", type: 'Menu' },
+    { label: 'Script Generator AI', keywords: ['script', 'affiliate', 'tiktok', 'instagram', 'youtube', 'copywriting'], url: "{{ route('clara-ai.affiliate-script') }}", type: 'Menu' },
+    { label: 'Image Prompt AI', keywords: ['image', 'gambar', 'iklan', 'ads', 'midjourney', 'dalle', 'sdxl'], url: "{{ route('clara-ai.ads-image-prompt') }}", type: 'Menu' },
     @endcan
     @endcanAccessFeature
 
