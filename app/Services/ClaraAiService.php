@@ -659,7 +659,7 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
      */
     public function generate(string $mode, string $userPrompt, int $userId, array $options = []): array
     {
-        $validModes = ['video_prompt', 'affiliate_script', 'ads_image_prompt'];
+        $validModes = ['video_prompt', 'affiliate_script', 'ads_image_prompt', 'kalkulaba'];
 
         if (! in_array($mode, $validModes)) {
             return [
@@ -688,6 +688,7 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
                 'video_prompt' => $this->generateVideoPrompt($outletData, $enrichedPrompt, $tone, $language),
                 'affiliate_script' => $this->generateAffiliateScript($outletData, $enrichedPrompt, $tone, $language),
                 'ads_image_prompt' => $this->generateAdsImagePrompt($outletData, $enrichedPrompt, $tone, $language),
+                'kalkulaba' => $this->generateKalkulaba($outletData, $enrichedPrompt, $tone, $language, $options),
             };
 
             if (! $result['success']) {
@@ -849,6 +850,112 @@ Generate highly optimized image generation prompts for advertising materials bas
 Each prompt should be production-ready and specifically reference the business/product context.
 
 REMINDER: {$langInstruction}";
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $userPrompt],
+        ];
+
+        return $this->callAI($messages);
+    }
+
+    /**
+     * Generate Kalkulaba AI — Cost Analysis & Pricing Strategy for UMKM.
+     */
+    private function generateKalkulaba(array $data, string $userPrompt, string $tone, string $language, array $options = []): array
+    {
+        $productContext = $this->formatProductContext($data);
+        $langInstruction = $language === 'en'
+            ? 'CRITICAL LANGUAGE RULE: You MUST write your ENTIRE response in English. Every single word must be in English.'
+            : 'CRITICAL LANGUAGE RULE: Kamu WAJIB menulis SELURUH respons dalam Bahasa Indonesia. JANGAN gunakan Bahasa Inggris kecuali istilah teknis.';
+
+        // Extract kalkulaba-specific options
+        $productName = $options['product_name'] ?? '';
+        $productDescription = $options['product_description'] ?? '';
+        $imageUrl = $options['image_url'] ?? '';
+        $businessType = $options['business_type'] ?? 'food';
+        $costInput = $options['cost_input'] ?? [];
+        $targetProfit = $options['target_profit'] ?? 0;
+        $advancedMode = $options['advanced_mode'] ?? '';
+
+        // Build cost context
+        $costContext = '';
+        if (!empty($costInput)) {
+            $parts = [];
+            if (isset($costInput['gas']) && $costInput['gas'] > 0) $parts[] = "Gas: Rp " . number_format($costInput['gas'], 0, ',', '.');
+            if (isset($costInput['labor']) && $costInput['labor'] > 0) $parts[] = "Labor: Rp " . number_format($costInput['labor'], 0, ',', '.');
+            if (isset($costInput['packaging']) && $costInput['packaging'] > 0) $parts[] = "Packaging: Rp " . number_format($costInput['packaging'], 0, ',', '.');
+            if (isset($costInput['rent']) && $costInput['rent'] > 0) $parts[] = "Rent: Rp " . number_format($costInput['rent'], 0, ',', '.');
+            if (isset($costInput['utilities']) && $costInput['utilities'] > 0) $parts[] = "Utilities: Rp " . number_format($costInput['utilities'], 0, ',', '.');
+            if (isset($costInput['other']) && $costInput['other'] > 0) $parts[] = "Other: Rp " . number_format($costInput['other'], 0, ',', '.');
+            if (!empty($parts)) {
+                $costContext = "\nUSER-PROVIDED ADDITIONAL COSTS:\n" . implode("\n", $parts);
+            }
+        }
+
+        $advancedInstruction = '';
+        if ($advancedMode === 'exclusive') {
+            $advancedInstruction = "\n\nADVANCED MODE: EXCLUSIVE\n- Enhance branding suggestions\n- Suggest premium packaging ideas\n- Suggest upselling strategies\n- Focus on perceived luxury value";
+        } elseif ($advancedMode === 'efficiency') {
+            $advancedInstruction = "\n\nADVANCED MODE: EFFICIENCY\n- Focus on minimizing production cost\n- Suggest cheaper ingredient alternatives\n- Optimize portion sizes for cost savings\n- Prioritize volume-based strategies";
+        }
+
+        $systemPrompt = "You are Kalkulaba AI, an advanced business calculator and cost analysis AI system designed specifically for Indonesian small businesses (UMKM). You help business owners calculate profit, generate product recipes, and predict revenue targets.
+
+{$langInstruction}
+
+BUSINESS CONTEXT for {$data['outlet_name']}:
+{$productContext}
+
+PRODUCT TO ANALYZE:
+- Name: {$productName}
+- Description: {$productDescription}
+- Business Type: {$businessType}" .
+($imageUrl ? "\n- Image URL: {$imageUrl}" : '') .
+"\n- Target Profit: Rp " . number_format($targetProfit, 0, ',', '.') .
+$costContext .
+$advancedInstruction . "
+
+YOUR TASK — Follow these steps precisely:
+
+1. PRODUCT ANALYSIS: Analyze the product description" . ($imageUrl ? ' and image' : '') . ". Identify category, likely ingredients, target market (low-end/mid/premium).
+
+2. RECIPE GENERATION (for food/beverage): Generate a realistic, cost-efficient recipe with:
+   - Ingredient list with estimated quantities per portion
+   - Brief preparation steps
+   - Estimated portion yield
+   If NOT food/beverage, skip recipe and list raw materials/components instead.
+
+3. COST ESTIMATION (COGS): Calculate total cost per unit:
+   - Ingredient/material costs (use realistic Indonesian local market prices in Rupiah)
+   - Add user-provided additional costs (gas, labor, packaging, rent, utilities, other) distributed per unit
+   - Show complete breakdown
+
+4. PRICING STRATEGY: Generate 3 pricing tiers:
+   - LOW: 5-15% margin (high volume target)
+   - COMPETITIVE: 20-40% margin (balanced)
+   - EXCLUSIVE: 50-100%+ margin (premium branding)
+   For each: selling price, profit per unit, margin percentage
+
+5. PROFIT TARGET: For each pricing tier, calculate units_needed = target_profit / profit_per_unit (round UP)
+
+6. SMART INSIGHTS: 3-5 actionable insights about:
+   - Most realistic pricing strategy
+   - Risk analysis
+   - Cost reduction suggestions
+   - Value improvement ideas
+
+CRITICAL: You MUST respond with ONLY valid JSON. No markdown, no explanation outside JSON. Use this EXACT structure:
+
+{\"recipe\":{\"ingredients\":[{\"name\":\"string\",\"quantity\":\"string\",\"estimated_cost\":0}],\"steps\":[\"string\"],\"estimated_cost\":0},\"cost_analysis\":{\"cogs_per_unit\":0,\"breakdown\":{\"ingredients\":0,\"gas\":0,\"labor\":0,\"packaging\":0,\"rent\":0,\"utilities\":0,\"other\":0}},\"pricing\":{\"low\":{\"price\":0,\"profit_per_unit\":0,\"margin\":0,\"units_to_target\":0},\"competitive\":{\"price\":0,\"profit_per_unit\":0,\"margin\":0,\"units_to_target\":0},\"exclusive\":{\"price\":0,\"profit_per_unit\":0,\"margin\":0,\"units_to_target\":0}},\"insights\":[\"string\"]}
+
+RULES:
+- ALL monetary values must be in Indonesian Rupiah (integer, no decimals)
+- Margin values as percentage numbers (e.g. 25 for 25%)
+- Keep calculations logical and realistic for small businesses
+- Do NOT hallucinate extreme numbers
+- If data is missing, estimate intelligently based on Indonesian market prices
+- RESPOND WITH ONLY THE JSON OBJECT, nothing else";
 
         $messages = [
             ['role' => 'system', 'content' => $systemPrompt],

@@ -508,6 +508,7 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
         Route::get('/video-prompt', [ClaraAiController::class, 'videoPrompt'])->name('video-prompt');
         Route::get('/affiliate-script', [ClaraAiController::class, 'affiliateScript'])->name('affiliate-script');
         Route::get('/ads-image-prompt', [ClaraAiController::class, 'adsImagePrompt'])->name('ads-image-prompt');
+        Route::get('/kalkulaba', [ClaraAiController::class, 'kalkulaba'])->name('kalkulaba');
         Route::post('/generate', [ClaraAiController::class, 'generate'])->name('generate');
     });
 

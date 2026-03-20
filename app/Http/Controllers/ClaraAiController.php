@@ -16,7 +16,7 @@ class ClaraAiController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:akses clara ai', only: ['index', 'videoPrompt', 'affiliateScript', 'adsImagePrompt']),
+            new Middleware('permission:akses clara ai', only: ['index', 'videoPrompt', 'affiliateScript', 'adsImagePrompt', 'kalkulaba']),
             new Middleware('permission:chat dengan clara ai', only: ['chat', 'generate']),
             new Middleware('permission:sesi baru clara ai', only: ['newSession']),
             new Middleware('permission:hapus sesi clara ai', only: ['deleteSession']),
@@ -172,12 +172,20 @@ class ClaraAiController extends Controller implements HasMiddleware
     }
 
     /**
+     * AI Studio — Kalkulaba Cost Analysis & Pricing Page
+     */
+    public function kalkulaba()
+    {
+        return view('main.clara-ai.kalkulaba');
+    }
+
+    /**
      * AI Studio — Generate content via selected mode
      */
     public function generate(Request $request)
     {
         $request->validate([
-            'mode' => 'required|string|in:video_prompt,affiliate_script,ads_image_prompt',
+            'mode' => 'required|string|in:video_prompt,affiliate_script,ads_image_prompt,kalkulaba',
             'prompt' => 'required|string|max:2000',
             'tone' => 'nullable|string|in:formal,casual,aggressive',
             'language' => 'nullable|string|in:id,en',
@@ -192,14 +200,27 @@ class ClaraAiController extends Controller implements HasMiddleware
             ], 403);
         }
 
+        $options = [
+            'tone' => $request->tone ?? 'casual',
+            'language' => $request->language ?? 'id',
+        ];
+
+        // Forward kalkulaba-specific options
+        if ($request->mode === 'kalkulaba') {
+            $options['product_name'] = $request->input('product_name', '');
+            $options['product_description'] = $request->input('product_description', '');
+            $options['image_url'] = $request->input('image_url', '');
+            $options['business_type'] = $request->input('business_type', 'food');
+            $options['cost_input'] = $request->input('cost_input', []);
+            $options['target_profit'] = (int) $request->input('target_profit', 0);
+            $options['advanced_mode'] = $request->input('advanced_mode', '');
+        }
+
         $result = $this->claraAi->generate(
             $request->mode,
             $request->prompt,
             $user->id,
-            [
-                'tone' => $request->tone ?? 'casual',
-                'language' => $request->language ?? 'id',
-            ]
+            $options
         );
 
         return response()->json($result);
