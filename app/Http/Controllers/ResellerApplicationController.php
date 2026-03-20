@@ -12,7 +12,15 @@ class ResellerApplicationController extends Controller
             abort(403);
         }
 
-        $query = \App\Models\ResellerApplication::query();
+        $user = auth()->user();
+        $outletId = $user->outlet_id;
+
+        // Strict isolation: if no outlet, show nothing
+        if (! $outletId) {
+            $query = \App\Models\ResellerApplication::whereRaw('1 = 0');
+        } else {
+            $query = \App\Models\ResellerApplication::where('outlet_id', $outletId);
+        }
 
         // Stats
         $stats = [
@@ -66,7 +74,8 @@ class ResellerApplicationController extends Controller
 
     public function update(Request $request, \App\Models\ResellerApplication $reseller_application)
     {
-        if (! auth()->user()->can('kelola reseller applications')) {
+        $user = auth()->user();
+        if (! $user->can('kelola reseller applications') || ! $user->outlet_id || $reseller_application->outlet_id !== $user->outlet_id) {
             abort(403);
         }
 
