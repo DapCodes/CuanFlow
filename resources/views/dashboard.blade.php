@@ -786,7 +786,7 @@
 <button class="edit-mode-done-btn" id="editModeDoneBtn">
   <i class="fa-solid fa-check mr-2"></i> Selesai
 </button>
-<div id="menuGrid" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-6 max-w-8xl w-full">
+<div id="menuGrid" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-6 max-w-8xl w-full">
 
   <!-- OPERASIONAL UTAMA (Prioritas Tertinggi) -->
 @canAccessFeature('pos')
