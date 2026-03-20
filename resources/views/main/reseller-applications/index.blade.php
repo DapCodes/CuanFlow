@@ -209,10 +209,16 @@
                     
                     <div id="modalDocumentSection" class="hidden">
                         <label class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Dokumen CV / Pendukung</label>
+                        
+                        {{-- File Viewer --}}
+                        <div id="fileViewer" class="mb-4 hidden p-1.5 bg-gray-50 border border-gray-100 rounded-3xl overflow-hidden shadow-inner">
+                            <!-- Content injected by JS -->
+                        </div>
+
                         <a href="#" id="modalDocumentLink" target="_blank" 
                            class="inline-flex items-center justify-center gap-3 w-full px-6 py-4 bg-white border border-gray-200 text-gray-700 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95 shadow-sm">
-                            <i class="fas fa-file-pdf text-red-500"></i>
-                            Unduh Dokumen CV Pelamar
+                            <i class="fas fa-download text-cuan-green"></i>
+                            Unduh Dokumen CV / Pendukung
                         </a>
                     </div>
                 </div>
@@ -383,9 +389,41 @@
         
         const docSection = document.getElementById('modalDocumentSection');
         const docLink = document.getElementById('modalDocumentLink');
+        const fileViewer = document.getElementById('fileViewer');
+        
+        // Reset viewer
+        fileViewer.innerHTML = '';
+        fileViewer.classList.add('hidden');
+
         if (appData.document_path) {
             docSection.classList.remove('hidden');
             docLink.href = docUrl;
+
+            // Handle Preview
+            const ext = appData.document_path.split('.').pop().toLowerCase();
+            let viewerContent = '';
+            
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                viewerContent = `<img src="${docUrl}" class="w-full h-auto rounded-2xl shadow-sm border border-gray-100 mx-auto max-h-[500px] object-contain" />`;
+            } else if (ext === 'pdf') {
+                viewerContent = `<iframe src="${docUrl}" class="w-full h-[450px] border-none rounded-2xl shadow-inner" loading="lazy"></iframe>`;
+            } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
+                // Warning: Google Viewer might not work on localhost, but works on public domains
+                const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(new URL(docUrl, window.location.origin).href)}&embedded=true`;
+                viewerContent = `
+                    <div class="space-y-3">
+                        <iframe src="${googleViewerUrl}" class="w-full h-[450px] border-none rounded-2xl shadow-inner" loading="lazy"></iframe>
+                        <div class="text-[9px] text-center text-gray-400 font-bold uppercase italic">
+                            Pratinjau Office menggunakan Google Viewer (memerlukan internet)
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (viewerContent) {
+                fileViewer.innerHTML = viewerContent;
+                fileViewer.classList.remove('hidden');
+            }
         } else {
             docSection.classList.add('hidden');
         }
