@@ -35,18 +35,13 @@
 
         {{-- Header Section --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
-                    <i class="fa-solid fa-film text-white text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                        Video Prompt AI
-                    </h1>
-                    <p class="mt-1 text-sm text-cuan-green font-bold tracking-wider">
-                        RUNWAY · SORA · PIKA · KLING
-                    </p>
-                </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Video Prompt AI
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Rancang skenario video cinematic untuk model AI seperti Runway, Sora, dan Kling.
+                </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 <div class="flex items-center gap-0.5 bg-white border border-gray-200 rounded-lg p-0.5 shadow-sm">
@@ -71,7 +66,6 @@
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     <div class="px-5 py-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
                         <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-clapperboard text-gray-400"></i>
                             <span class="text-xs font-black text-gray-600 uppercase tracking-widest">Skenario Video</span>
                         </div>
                         <span class="text-xs text-gray-400 font-medium" x-text="prompt.length + ' / 2000'"></span>
@@ -93,7 +87,6 @@
                         </div>
                         <button @click="submit()" :disabled="loading || !prompt.trim()"
                             class="px-6 py-2.5 bg-cuan-green hover:bg-cuan-dark disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-100 active:scale-95 flex items-center gap-2">
-                            <i class="fas" :class="loading ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'"></i>
                             <span x-text="loading ? 'Generating...' : 'Generate Prompt'"></span>
                         </button>
                     </div>

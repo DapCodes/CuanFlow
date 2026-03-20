@@ -55,18 +55,13 @@
 
         {{-- HEADER --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
-                    <i class="fa-solid fa-calculator text-white text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                        Kalkulaba AI
-                    </h1>
-                    <p class="mt-1 text-sm text-cuan-green font-bold tracking-wider">
-                        KALKULATOR BISNIS · COGS · PRICING · PROFIT
-                    </p>
-                </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Kalkulaba AI
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Kalkulasi HPP, strategi harga, dan target profit UMKM secara otomatis.
+                </p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
                 <div class="flex items-center gap-0.5 bg-white border border-gray-200 rounded-lg p-0.5 shadow-sm">
@@ -90,7 +85,7 @@
 
                     {{-- Image Upload --}}
                     <div class="px-5 py-3 border-b border-gray-100 bg-gray-50">
-                        <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest"><i class="fa-solid fa-camera mr-1"></i> Foto Produk</p>
+                        <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Foto Produk</p>
                     </div>
                     <div class="p-4 border-b border-gray-100">
                         <template x-if="!imagePreview">
@@ -140,7 +135,7 @@
                             <div class="flex flex-wrap gap-1.5">
                                 <template x-for="t in ['food','beverage','product','other']" :key="t">
                                     <button @click="businessType = t" class="biz-pill px-3 py-1.5 rounded-lg text-xs font-bold uppercase border border-gray-200 transition-all"
-                                        :class="{ 'active': businessType === t }" x-text="t === 'food' ? '🍳 Makanan' : t === 'beverage' ? '🥤 Minuman' : t === 'product' ? '📦 Produk' : '🔧 Lainnya'">
+                                        :class="{ 'active': businessType === t }" x-text="t === 'food' ? 'Makanan' : t === 'beverage' ? 'Minuman' : t === 'product' ? 'Produk' : 'Lainnya'">
                                     </button>
                                 </template>
                             </div>
@@ -151,7 +146,7 @@
                     <div class="border-b border-gray-100">
                         <button @click="showCosts = !showCosts" class="w-full px-5 py-3 bg-gray-50 flex items-center justify-between cursor-pointer select-none">
                             <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">
-                                <i class="fa-solid fa-coins mr-1"></i> Pengeluaran Tambahan
+                                Pengeluaran Tambahan
                                 <span class="text-gray-400 font-normal normal-case" x-text="'(' + additionalCosts.length + ')'"></span>
                             </p>
                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs transition-transform" :class="{ 'rotate-180': showCosts }"></i>
@@ -180,7 +175,7 @@
                     {{-- Target Profit --}}
                     <div class="px-5 py-3 border-b border-gray-100 bg-gray-50">
                         <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">
-                            <i class="fa-solid fa-bullseye mr-1"></i> Target Keuntungan
+                            Target Keuntungan
                         </p>
                     </div>
                     <div class="p-4">
@@ -239,7 +234,6 @@
                     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div class="px-5 py-3 bg-emerald-50/30 flex items-center justify-between border-b border-gray-100">
                             <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-check-circle text-cuan-green"></i>
                                 <p class="text-[10px] font-black text-gray-800 uppercase tracking-widest">Hasil Analisis Kalkulaba</p>
                             </div>
                             <button @click="copyRawJson()"
@@ -252,13 +246,10 @@
                         {{-- COGS Summary --}}
                         <div class="p-5">
                             <div class="flex items-center gap-3 mb-4">
-                                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                                    <i class="fa-solid fa-coins text-blue-600"></i>
-                                </div>
                                 <div>
                                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">HPP Per Unit</p>
                                     <p class="text-xl font-black text-gray-900" x-text="'Rp ' + formatNumber(computedCogs)"></p>
-                                    <p x-show="recipeEdited" class="text-[10px] text-amber-600 font-bold"><i class="fa-solid fa-pen mr-1"></i> Dihitung dari resep yang diedit</p>
+                                    <p x-show="recipeEdited" class="text-[10px] text-amber-600 font-bold">Dihitung dari resep yang diedit</p>
                                 </div>
                             </div>
 
@@ -312,7 +303,6 @@
                     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" x-show="editableIngredients.length > 0">
                         <div class="px-5 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-utensils text-cuan-green text-sm"></i>
                                 <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Resep & Bahan</p>
                                 <span x-show="recipeEdited" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded uppercase">Diedit</span>
                             </div>
@@ -363,7 +353,6 @@
                     {{-- Insights --}}
                     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" x-show="parsedResult?.insights?.length > 0">
                         <div class="px-5 py-3 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
-                            <i class="fa-solid fa-lightbulb text-amber-500 text-sm"></i>
                             <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Smart Insights</p>
                         </div>
                         <div class="p-4 space-y-2">

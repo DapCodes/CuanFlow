@@ -31,18 +31,13 @@
 
         {{-- HEADER HALAMAN --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
-                    <i class="fa-solid fa-scroll text-white text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                        Script Generator AI
-                    </h1>
-                    <p class="mt-1 text-sm text-cuan-green font-bold tracking-wider">
-                        TIKTOK · INSTAGRAM · YOUTUBE
-                    </p>
-                </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Script Generator AI
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Buat script konten affiliate yang high-converting untuk TikTok, Instagram, dan YouTube.
+                </p>
             </div>
             
             <div class="flex flex-wrap items-center gap-3">
@@ -78,7 +73,6 @@
                     <div class="p-4 border-t border-gray-100 bg-white">
                         <button @click="submit()" :disabled="loading || !prompt.trim()"
                             class="w-full py-3.5 bg-cuan-green hover:bg-cuan-dark disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-100 active:scale-95 flex items-center justify-center gap-2">
-                            <i class="fas" :class="loading ? 'fa-circle-notch fa-spin' : 'fa-pen-nib'"></i>
                             <span x-text="loading ? 'Menulis...' : 'Generate Script'"></span>
                         </button>
                     </div>
@@ -115,7 +109,6 @@
                 <div x-show="output && !loading" class="bg-white rounded-2xl border border-gray-200 shadow-sm h-full flex flex-col fade-in">
                     <div class="px-5 py-3 border-b border-gray-100 bg-emerald-50/30 flex items-center justify-between overflow-hidden relative">
                         <div class="flex items-center gap-2 relative z-10">
-                            <i class="fa-solid fa-check-circle text-cuan-green"></i>
                             <p class="text-[10px] font-black text-gray-800 uppercase tracking-widest">Hasil Script Copywriting</p>
                         </div>
                         <button @click="copyOutput()"

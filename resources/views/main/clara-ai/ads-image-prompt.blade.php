@@ -31,18 +31,13 @@
 
         {{-- HEADER --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-cuan-green flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-100">
-                    <i class="fa-solid fa-image text-white text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tighter">
-                        Ads Image AI
-                    </h1>
-                    <p class="mt-1 text-sm text-cuan-green font-bold tracking-wider">
-                        MIDJOURNEY · DALL-E · SDXL
-                    </p>
-                </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-gray-900">
+                    Ads Image AI
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Buat prompt gambar iklan profesional untuk Midjourney, DALL-E, dan Stable Diffusion.
+                </p>
             </div>
             
             <div class="flex flex-wrap items-center gap-3">
@@ -67,11 +62,8 @@
                 {{-- Idle State (Cards) --}}
                 <div x-show="!output && !loading && !error" class="fade-in">
                     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center mb-6">
-                        <div class="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
-                            <i class="fa-solid fa-wand-magic-sparkles text-3xl text-cuan-green"></i>
-                        </div>
-                        <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">Generate Prompt Gambar Profesional</h2>
-                        <p class="text-sm text-gray-400 mt-2 max-w-md mx-auto">Kami akan menyusun prompt Midjourney/DALL-E lengkap dengan pencahayaan, angle kamera, dan gaya visual.</p>
+                        <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">Prompt Gambar Profesional</h2>
+                        <p class="text-sm text-gray-400 mt-2 max-w-md mx-auto">Clara AI akan menyusun prompt Midjourney/DALL-E lengkap dengan setting kamera dan visual.</p>
                     </div>
 
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Kumpulan Ide Cepat</p>
