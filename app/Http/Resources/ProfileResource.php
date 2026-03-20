@@ -15,9 +15,14 @@ class ProfileResource extends JsonResource
         return [
             'account' => [
                 'id' => $this->id,
+                'outlet_id' => $this->outlet_id,
+                'outlet_ids' => $this->isOwner() 
+                    ? $this->outletsOwned()->pluck('id')->toArray() 
+                    : ($this->outlet_id ? [(int) $this->outlet_id] : []),
                 'name' => $this->name,
                 'email' => $this->email,
                 'phone' => $this->phone,
+                'role' => $this->getRoleNames()->first(),
                 'avatar_url' => $this->avatar_url,
                 'email_verified_at' => optional($this->email_verified_at)->toISOString(),
                 'created_at' => optional($this->created_at)->toISOString(),
