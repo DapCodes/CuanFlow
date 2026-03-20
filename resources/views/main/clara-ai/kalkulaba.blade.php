@@ -30,18 +30,22 @@
     .pricing-competitive { border-top: 3px solid #658C58; }
     .pricing-exclusive { border-top: 3px solid #f59e0b; }
 
-    .cost-input-group input { font-variant-numeric: tabular-nums; }
-    .cost-toggle { cursor: pointer; user-select: none; }
-
     .insight-item { border-left: 3px solid var(--cuan-green, #658C58); }
-
     .ingredient-row:nth-child(even) { background: #f9fafb; }
+
+    .dropzone { border: 2px dashed #d1d5db; transition: all 0.2s ease; }
+    .dropzone.dragover { border-color: var(--cuan-green, #658C58); background: rgba(101, 140, 88, 0.05); }
+    .dropzone:hover { border-color: #9ca3af; }
 
     @keyframes pulseGlow {
         0%, 100% { box-shadow: 0 0 0 0 rgba(101, 140, 88, 0.3); }
         50% { box-shadow: 0 0 0 8px rgba(101, 140, 88, 0); }
     }
     .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+
+    .editable-input { background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 2px 4px; transition: all 0.15s; }
+    .editable-input:hover { border-color: #e5e7eb; }
+    .editable-input:focus { border-color: var(--cuan-green, #658C58); background: white; outline: none; box-shadow: 0 0 0 2px rgba(101, 140, 88, 0.15); }
 </style>
 @endpush
 
@@ -64,9 +68,7 @@
                     </p>
                 </div>
             </div>
-
             <div class="flex flex-wrap items-center gap-3">
-                {{-- Advanced Mode Toggle --}}
                 <div class="flex items-center gap-0.5 bg-white border border-gray-200 rounded-lg p-0.5 shadow-sm">
                     <button @click="advancedMode = ''" class="mode-pill px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': advancedMode === '' }">Standard</button>
                     <button @click="advancedMode = 'exclusive'" class="mode-pill px-3 py-1.5 rounded-md text-xs font-bold uppercase" :class="{ 'active': advancedMode === 'exclusive' }">Exclusive</button>
@@ -82,9 +84,44 @@
         {{-- WORKSPACE GRID --}}
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-            {{-- 1. Input Panel (Col 4) --}}
+            {{-- ==================== 1. INPUT PANEL (Col 4) ==================== --}}
             <div class="lg:col-span-4 space-y-4">
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+
+                    {{-- Image Upload --}}
+                    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50">
+                        <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest"><i class="fa-solid fa-camera mr-1"></i> Foto Produk</p>
+                    </div>
+                    <div class="p-4 border-b border-gray-100">
+                        <template x-if="!imagePreview">
+                            <div class="dropzone rounded-xl p-6 text-center cursor-pointer"
+                                :class="{ 'dragover': isDragging }"
+                                @click="$refs.imageInput.click()"
+                                @dragover.prevent="isDragging = true"
+                                @dragleave.prevent="isDragging = false"
+                                @drop.prevent="handleDrop($event)">
+                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-300 mb-2"></i>
+                                <p class="text-xs text-gray-500 font-medium">Klik atau drag & drop gambar produk</p>
+                                <p class="text-[10px] text-gray-400 mt-1">JPG, PNG, WebP · Max 5MB</p>
+                                <div x-show="uploading" class="mt-2">
+                                    <i class="fa-solid fa-circle-notch fa-spin text-cuan-green"></i>
+                                    <span class="text-xs text-cuan-green font-bold ml-1">Mengunggah...</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="imagePreview">
+                            <div class="relative rounded-xl overflow-hidden">
+                                <img :src="imagePreview" class="w-full h-40 object-cover rounded-xl">
+                                <button @click="removeImage()" class="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs shadow-lg transition-colors">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                                <div class="absolute bottom-2 left-2 px-2 py-1 bg-black/50 backdrop-blur rounded-md text-[10px] text-white font-bold">
+                                    <i class="fa-solid fa-check-circle text-green-400 mr-1"></i> Gambar siap dianalisis AI
+                                </div>
+                            </div>
+                        </template>
+                        <input type="file" x-ref="imageInput" @change="handleFileSelect($event)" accept="image/jpeg,image/png,image/webp" class="hidden">
+                    </div>
 
                     {{-- Product Info --}}
                     <div class="px-5 py-3 border-b border-gray-100 bg-gray-50">
@@ -94,17 +131,10 @@
                         <input x-model="productName" type="text" placeholder="Nama Produk (contoh: Es Kopi Susu)"
                             class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-1 focus:ring-cuan-green focus:border-cuan-green"
                             :disabled="loading">
-
                         <textarea x-model="productDescription" rows="2" placeholder="Deskripsi singkat produk..."
                             maxlength="500"
                             class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:ring-1 focus:ring-cuan-green focus:border-cuan-green"
                             :disabled="loading"></textarea>
-
-                        <input x-model="imageUrl" type="url" placeholder="URL Gambar Produk (opsional)"
-                            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-1 focus:ring-cuan-green focus:border-cuan-green"
-                            :disabled="loading">
-
-                        {{-- Business Type --}}
                         <div>
                             <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Tipe Bisnis</p>
                             <div class="flex flex-wrap gap-1.5">
@@ -117,26 +147,33 @@
                         </div>
                     </div>
 
-                    {{-- Cost Inputs (Collapsible) --}}
+                    {{-- Dynamic Cost Inputs --}}
                     <div class="border-b border-gray-100">
-                        <button @click="showCosts = !showCosts" class="cost-toggle w-full px-5 py-3 bg-gray-50 flex items-center justify-between">
+                        <button @click="showCosts = !showCosts" class="w-full px-5 py-3 bg-gray-50 flex items-center justify-between cursor-pointer select-none">
                             <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">
-                                <i class="fa-solid fa-coins mr-1"></i> Biaya Tambahan (Opsional)
+                                <i class="fa-solid fa-coins mr-1"></i> Pengeluaran Tambahan
+                                <span class="text-gray-400 font-normal normal-case" x-text="'(' + additionalCosts.length + ')'"></span>
                             </p>
                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs transition-transform" :class="{ 'rotate-180': showCosts }"></i>
                         </button>
                         <div x-show="showCosts" x-collapse class="p-4 space-y-2">
-                            <template x-for="field in costFields" :key="field.key">
-                                <div class="cost-input-group flex items-center gap-2">
-                                    <label class="text-xs text-gray-500 w-24 flex-shrink-0" x-text="field.label"></label>
-                                    <div class="flex-1 relative">
-                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">Rp</span>
-                                        <input type="number" min="0" x-model.number="costInput[field.key]" placeholder="0"
-                                            class="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm text-right focus:ring-1 focus:ring-cuan-green focus:border-cuan-green"
-                                            :disabled="loading">
+                            <template x-for="(cost, idx) in additionalCosts" :key="idx">
+                                <div class="flex items-center gap-2 fade-in">
+                                    <input type="text" x-model="additionalCosts[idx].label" placeholder="Nama biaya"
+                                        class="flex-1 px-2.5 py-2 border border-gray-200 rounded-lg text-xs focus:ring-1 focus:ring-cuan-green focus:border-cuan-green" :disabled="loading">
+                                    <div class="relative w-32">
+                                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">Rp</span>
+                                        <input type="number" min="0" x-model.number="additionalCosts[idx].value" placeholder="0"
+                                            class="w-full pl-7 pr-2 py-2 border border-gray-200 rounded-lg text-xs text-right focus:ring-1 focus:ring-cuan-green focus:border-cuan-green font-mono" :disabled="loading">
                                     </div>
+                                    <button @click="removeCost(idx)" class="w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
                                 </div>
                             </template>
+                            <button @click="addCost()" class="w-full py-2 border border-dashed border-gray-300 rounded-lg text-xs text-gray-500 hover:text-cuan-green hover:border-cuan-green transition-colors flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Tambah Biaya
+                            </button>
                         </div>
                     </div>
 
@@ -168,7 +205,7 @@
                 </div>
             </div>
 
-            {{-- 2. Output Panel (Col 5) --}}
+            {{-- ==================== 2. OUTPUT PANEL (Col 5) ==================== --}}
             <div class="lg:col-span-5 relative min-h-[400px]">
 
                 {{-- Empty State --}}
@@ -177,14 +214,14 @@
                         <i class="fa-solid fa-chart-pie text-2xl text-gray-300"></i>
                     </div>
                     <h3 class="text-sm font-black text-gray-800 uppercase tracking-tight mb-2">Belum Ada Analisis</h3>
-                    <p class="text-xs text-gray-400 max-w-xs">Isi informasi produk di sebelah kiri. Kalkulaba AI akan menghitung HPP, strategi harga, dan prediksi keuntungan.</p>
+                    <p class="text-xs text-gray-400 max-w-xs">Upload foto atau isi informasi produk. Kalkulaba AI akan menghitung HPP, strategi harga, dan prediksi keuntungan.</p>
                 </div>
 
                 {{-- Loading State --}}
                 <div x-show="loading" class="absolute inset-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-8 flex flex-col items-center justify-center text-center fade-in z-10">
                     <i class="fa-solid fa-calculator text-3xl text-cuan-green animate-bounce mb-4"></i>
                     <p class="text-sm font-bold text-gray-800">Menghitung biaya & strategi harga...</p>
-                    <p class="text-xs text-gray-400 mt-1">AI sedang menganalisis produk kamu</p>
+                    <p class="text-xs text-gray-400 mt-1" x-text="imageBase64 ? 'AI sedang menganalisis gambar & produk kamu' : 'AI sedang menganalisis produk kamu'"></p>
                 </div>
 
                 {{-- Error State --}}
@@ -198,7 +235,7 @@
                 {{-- Result Cards --}}
                 <div x-show="parsedResult && !loading" class="space-y-4 fade-in">
 
-                    {{-- Top bar --}}
+                    {{-- Top Bar --}}
                     <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div class="px-5 py-3 bg-emerald-50/30 flex items-center justify-between border-b border-gray-100">
                             <div class="flex items-center gap-2">
@@ -220,19 +257,24 @@
                                 </div>
                                 <div>
                                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">HPP Per Unit</p>
-                                    <p class="text-xl font-black text-gray-900" x-text="'Rp ' + formatNumber(parsedResult?.cost_analysis?.cogs_per_unit || 0)"></p>
+                                    <p class="text-xl font-black text-gray-900" x-text="'Rp ' + formatNumber(computedCogs)"></p>
+                                    <p x-show="recipeEdited" class="text-[10px] text-amber-600 font-bold"><i class="fa-solid fa-pen mr-1"></i> Dihitung dari resep yang diedit</p>
                                 </div>
                             </div>
 
                             {{-- Breakdown Table --}}
-                            <div class="bg-gray-50 rounded-xl p-3" x-show="parsedResult?.cost_analysis?.breakdown">
+                            <div class="bg-gray-50 rounded-xl p-3" x-show="cogsBreakdown.length > 0">
                                 <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Rincian Biaya</p>
-                                <template x-for="(val, key) in (parsedResult?.cost_analysis?.breakdown || {})" :key="key">
+                                <template x-for="(item, idx) in cogsBreakdown" :key="idx">
                                     <div class="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
-                                        <span class="text-xs text-gray-600 capitalize" x-text="costLabel(key)"></span>
-                                        <span class="text-xs font-bold text-gray-800" x-text="'Rp ' + formatNumber(val)"></span>
+                                        <span class="text-xs text-gray-600" x-text="item.label"></span>
+                                        <span class="text-xs font-bold text-gray-800" x-text="'Rp ' + formatNumber(item.value)"></span>
                                     </div>
                                 </template>
+                                <div class="flex justify-between items-center pt-2 mt-1 border-t-2 border-gray-300">
+                                    <span class="text-xs font-black text-gray-700">Total HPP</span>
+                                    <span class="text-sm font-black text-cuan-green" x-text="'Rp ' + formatNumber(computedCogs)"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -240,65 +282,75 @@
                     {{-- Pricing Cards --}}
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <template x-for="tier in ['low', 'competitive', 'exclusive']" :key="tier">
-                            <div class="pricing-card bg-white rounded-2xl border border-gray-200 shadow-sm p-4"
-                                :class="'pricing-' + tier">
+                            <div class="pricing-card bg-white rounded-2xl border border-gray-200 shadow-sm p-4" :class="'pricing-' + tier">
                                 <div class="flex items-center gap-2 mb-3">
                                     <i class="text-sm" :class="tier === 'low' ? 'fa-solid fa-tag text-blue-500' : tier === 'competitive' ? 'fa-solid fa-balance-scale text-cuan-green' : 'fa-solid fa-crown text-amber-500'"></i>
                                     <p class="text-[10px] font-black uppercase tracking-widest"
                                         :class="tier === 'low' ? 'text-blue-600' : tier === 'competitive' ? 'text-cuan-green' : 'text-amber-600'"
                                         x-text="tier === 'low' ? 'Harga Hemat' : tier === 'competitive' ? 'Harga Pasar' : 'Harga Premium'"></p>
                                 </div>
-                                <p class="text-lg font-black text-gray-900 mb-2" x-text="'Rp ' + formatNumber(parsedResult?.pricing?.[tier]?.price || 0)"></p>
+                                <p class="text-lg font-black text-gray-900 mb-2" x-text="'Rp ' + formatNumber(computedPricing[tier]?.price || 0)"></p>
                                 <div class="space-y-1.5 text-xs">
                                     <div class="flex justify-between">
                                         <span class="text-gray-500">Profit/unit</span>
-                                        <span class="font-bold text-cuan-green" x-text="'Rp ' + formatNumber(parsedResult?.pricing?.[tier]?.profit_per_unit || 0)"></span>
+                                        <span class="font-bold text-cuan-green" x-text="'Rp ' + formatNumber(computedPricing[tier]?.profit || 0)"></span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-gray-500">Margin</span>
-                                        <span class="font-bold" x-text="(parsedResult?.pricing?.[tier]?.margin || 0) + '%'"></span>
+                                        <span class="font-bold" x-text="(computedPricing[tier]?.margin || 0) + '%'"></span>
                                     </div>
                                     <div class="flex justify-between bg-gray-50 -mx-1 px-1 py-1 rounded">
                                         <span class="text-gray-500">Target unit</span>
-                                        <span class="font-black text-gray-900" x-text="formatNumber(parsedResult?.pricing?.[tier]?.units_to_target || 0) + ' pcs'"></span>
+                                        <span class="font-black text-gray-900" x-text="formatNumber(computedPricing[tier]?.units || 0) + ' pcs'"></span>
                                     </div>
                                 </div>
                             </div>
                         </template>
                     </div>
 
-                    {{-- Recipe Section --}}
-                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" x-show="parsedResult?.recipe?.ingredients?.length > 0">
-                        <div class="px-5 py-3 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
-                            <i class="fa-solid fa-utensils text-cuan-green text-sm"></i>
-                            <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Resep & Bahan</p>
+                    {{-- EDITABLE Recipe Section --}}
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" x-show="editableIngredients.length > 0">
+                        <div class="px-5 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-utensils text-cuan-green text-sm"></i>
+                                <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Resep & Bahan</p>
+                                <span x-show="recipeEdited" class="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded uppercase">Diedit</span>
+                            </div>
+                            <button @click="resetRecipe()" x-show="recipeEdited" class="text-[10px] text-gray-500 hover:text-cuan-green font-bold uppercase tracking-wider">
+                                <i class="fa-solid fa-rotate-left mr-1"></i> Reset
+                            </button>
                         </div>
                         <div class="p-4">
-                            {{-- Ingredients --}}
+                            {{-- Editable Ingredients --}}
                             <div class="mb-4">
-                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Bahan-bahan</p>
-                                <template x-for="(ing, idx) in (parsedResult?.recipe?.ingredients || [])" :key="idx">
-                                    <div class="ingredient-row flex justify-between items-center py-2 px-2 rounded text-xs">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-5 h-5 rounded-full bg-cuan-green/10 text-cuan-green text-[10px] font-bold flex items-center justify-center" x-text="idx + 1"></span>
-                                            <span class="text-gray-700 font-medium" x-text="ing.name"></span>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Bahan-bahan <span class="text-gray-300 normal-case">(klik untuk edit)</span></p>
+                                <template x-for="(ing, idx) in editableIngredients" :key="idx">
+                                    <div class="ingredient-row flex items-center gap-1 py-1.5 px-2 rounded text-xs group">
+                                        <span class="w-5 h-5 rounded-full bg-cuan-green/10 text-cuan-green text-[10px] font-bold flex items-center justify-center flex-shrink-0" x-text="idx + 1"></span>
+                                        <input type="text" x-model="editableIngredients[idx].name" @input="markRecipeEdited()" class="editable-input flex-1 text-xs text-gray-700 font-medium min-w-0">
+                                        <input type="text" x-model="editableIngredients[idx].quantity" @input="markRecipeEdited()" class="editable-input w-20 text-xs text-gray-500 text-center">
+                                        <div class="relative w-24">
+                                            <span class="absolute left-1 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">Rp</span>
+                                            <input type="number" min="0" x-model.number="editableIngredients[idx].estimated_cost" @input="markRecipeEdited(); recalculate()" class="editable-input w-full pl-5 text-xs font-bold text-gray-800 text-right">
                                         </div>
-                                        <div class="flex items-center gap-3">
-                                            <span class="text-gray-500" x-text="ing.quantity"></span>
-                                            <span class="font-bold text-gray-800 min-w-[70px] text-right" x-text="'Rp ' + formatNumber(ing.estimated_cost || 0)"></span>
-                                        </div>
+                                        <button @click="removeIngredient(idx)" class="w-5 h-5 flex items-center justify-center text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <i class="fa-solid fa-xmark text-[10px]"></i>
+                                        </button>
                                     </div>
                                 </template>
+                                <button @click="addIngredient()" class="w-full py-1.5 mt-1 border border-dashed border-gray-200 rounded-lg text-[10px] text-gray-400 hover:text-cuan-green hover:border-cuan-green transition-colors flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-plus"></i> Tambah Bahan
+                                </button>
                                 <div class="flex justify-between items-center pt-2 mt-2 border-t border-gray-200 px-2">
                                     <span class="text-xs font-bold text-gray-600">Total Bahan</span>
-                                    <span class="text-sm font-black text-cuan-green" x-text="'Rp ' + formatNumber(parsedResult?.recipe?.estimated_cost || 0)"></span>
+                                    <span class="text-sm font-black text-cuan-green" x-text="'Rp ' + formatNumber(computedIngredientsCost)"></span>
                                 </div>
                             </div>
 
                             {{-- Steps --}}
-                            <div x-show="parsedResult?.recipe?.steps?.length > 0">
+                            <div x-show="recipeSteps.length > 0">
                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Langkah Pembuatan</p>
-                                <template x-for="(step, idx) in (parsedResult?.recipe?.steps || [])" :key="idx">
+                                <template x-for="(step, idx) in recipeSteps" :key="idx">
                                     <div class="flex gap-2 mb-2 text-xs text-gray-600">
                                         <span class="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold flex items-center justify-center" x-text="idx + 1"></span>
                                         <p x-text="step" class="leading-relaxed"></p>
@@ -334,7 +386,7 @@
                 </div>
             </div>
 
-            {{-- 3. History Panel (Col 3) --}}
+            {{-- ==================== 3. HISTORY PANEL (Col 3) ==================== --}}
             <div class="lg:col-span-3">
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col h-full max-h-[calc(100vh-12rem)] min-h-[400px]">
                     <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
@@ -344,19 +396,25 @@
                         </div>
                         <button @click="clearHistory" x-show="history.length > 0" class="text-[10px] text-red-500 hover:text-red-700 font-bold uppercase tracking-wider">Hapus</button>
                     </div>
-
                     <div class="flex-1 overflow-y-auto history-scroll p-3 space-y-2 bg-gray-50/30">
                         <template x-if="history.length === 0">
                             <div class="text-[10px] text-gray-400 text-center py-8">Belum ada history.</div>
                         </template>
-
                         <template x-for="item in history" :key="item.id">
                             <button @click="loadHistory(item)" class="w-full text-left bg-white p-3 rounded-xl border border-gray-100 hover:border-cuan-green hover:shadow-md transition-all">
                                 <span class="block text-[8px] text-gray-400 font-bold mb-1" x-text="formatTime(item.timestamp)"></span>
-                                <p class="text-xs text-gray-700 font-bold line-clamp-1" x-text="item.productName"></p>
-                                <p class="text-[10px] text-gray-500 mt-0.5" x-text="'HPP: Rp ' + formatNumber(item.cogs || 0)"></p>
-                                <div class="flex items-center gap-1 mt-2">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <template x-if="item.imagePreview">
+                                        <img :src="item.imagePreview" class="w-8 h-8 rounded-lg object-cover flex-shrink-0">
+                                    </template>
+                                    <div class="min-w-0">
+                                        <p class="text-xs text-gray-700 font-bold truncate" x-text="item.productName"></p>
+                                        <p class="text-[10px] text-gray-500" x-text="'HPP: Rp ' + formatNumber(item.cogs || 0)"></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1 mt-1.5">
                                     <span class="px-1.5 py-0.5 rounded bg-gray-100 text-[8px] font-black uppercase text-gray-500" x-text="item.businessType"></span>
+                                    <span x-show="item.hasImage" class="px-1.5 py-0.5 rounded bg-purple-50 text-[8px] font-black uppercase text-purple-600">📷 foto</span>
                                     <span class="px-1.5 py-0.5 rounded bg-blue-50 text-[8px] font-black uppercase text-blue-600" x-text="item.advancedMode || 'standard'"></span>
                                 </div>
                             </button>
@@ -376,13 +434,23 @@ function kalkulabaApp() {
         // Input state
         productName: '',
         productDescription: '',
-        imageUrl: '',
         businessType: 'food',
-        costInput: { gas: 0, labor: 0, packaging: 0, rent: 0, utilities: 0, other: 0 },
+        additionalCosts: [
+            { label: 'Gas / Listrik', value: 0 },
+            { label: 'Tenaga Kerja', value: 0 },
+            { label: 'Packaging', value: 0 },
+        ],
         targetProfit: 1000000,
         advancedMode: '',
         language: 'id',
         showCosts: false,
+
+        // Image state
+        imagePreview: null,
+        imageBase64: '',
+        imageUrl: '',
+        uploading: false,
+        isDragging: false,
 
         // Output state
         rawOutput: '',
@@ -392,18 +460,15 @@ function kalkulabaApp() {
         copied: false,
         showRaw: false,
 
+        // Editable recipe state
+        editableIngredients: [],
+        recipeSteps: [],
+        originalIngredients: [],
+        recipeEdited: false,
+
         // History
         history: [],
-        storageKey: 'kalkulaba_analysis_history',
-
-        costFields: [
-            { key: 'gas', label: 'Gas / Listrik' },
-            { key: 'labor', label: 'Tenaga Kerja' },
-            { key: 'packaging', label: 'Packaging' },
-            { key: 'rent', label: 'Sewa Tempat' },
-            { key: 'utilities', label: 'Utilitas' },
-            { key: 'other', label: 'Lain-lain' },
-        ],
+        storageKey: 'kalkulaba_analysis_history_v2',
 
         init() {
             const saved = localStorage.getItem(this.storageKey);
@@ -412,15 +477,191 @@ function kalkulabaApp() {
             }
         },
 
+        // ===================== IMAGE HANDLING =====================
+        handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) this.uploadImage(file);
+        },
+
+        handleDrop(event) {
+            this.isDragging = false;
+            const file = event.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) this.uploadImage(file);
+        },
+
+        async uploadImage(file) {
+            if (file.size > 5 * 1024 * 1024) {
+                this.error = 'Ukuran gambar maksimal 5MB.';
+                return;
+            }
+
+            // Local preview immediately using blob URL
+            this.imagePreview = URL.createObjectURL(file);
+            this.uploading = true;
+            this.error = '';
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const res = await fetch('{{ route("clara-ai.kalkulaba.upload-image") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: formData,
+                });
+                const data = await res.json();
+                if (data.success) {
+                    // We keep using the local preview URL if server gives a 403, 
+                    // but we store the real URL for persistence if needed
+                    this.imageUrl = data.url;
+                    this.imageBase64 = data.image_base64;
+                    // If server URL is successful, we can optionally switch preview
+                    // but local blob is safer and faster.
+                } else {
+                    this.error = data.message || 'Gagal mengunggah gambar.';
+                    this.removeImage();
+                }
+            } catch (e) {
+                this.error = 'Gagal mengunggah gambar. Coba lagi.';
+                this.removeImage();
+            } finally {
+                this.uploading = false;
+            }
+        },
+
+        removeImage() {
+            this.imagePreview = null;
+            this.imageBase64 = '';
+            this.imageUrl = '';
+            if (this.$refs.imageInput) this.$refs.imageInput.value = '';
+        },
+
+        // ===================== COST MANAGEMENT =====================
+        addCost() {
+            this.additionalCosts.push({ label: '', value: 0 });
+        },
+
+        removeCost(idx) {
+            this.additionalCosts.splice(idx, 1);
+        },
+
+        // ===================== RECIPE EDITING =====================
+        addIngredient() {
+            this.editableIngredients.push({ name: '', quantity: '', estimated_cost: 0 });
+            this.markRecipeEdited();
+        },
+
+        removeIngredient(idx) {
+            this.editableIngredients.splice(idx, 1);
+            this.markRecipeEdited();
+            this.recalculate();
+        },
+
+        markRecipeEdited() {
+            this.recipeEdited = true;
+        },
+
+        resetRecipe() {
+            this.editableIngredients = JSON.parse(JSON.stringify(this.originalIngredients));
+            this.recipeEdited = false;
+            this.recalculate();
+        },
+
+        // ===================== COMPUTED VALUES =====================
+        get computedIngredientsCost() {
+            return this.editableIngredients.reduce((sum, ing) => sum + (Number(ing.estimated_cost) || 0), 0);
+        },
+
+        get cogsBreakdown() {
+            if (!this.parsedResult?.cost_analysis?.breakdown) return [];
+
+            const breakdown = this.parsedResult.cost_analysis.breakdown;
+            let items = [];
+
+            // Handle new array format
+            if (Array.isArray(breakdown)) {
+                items = breakdown.map(b => ({
+                    label: b.label || 'Unknown',
+                    value: b.value || 0,
+                }));
+            } else {
+                // Handle old object format (backwards compatibility)
+                for (const [key, val] of Object.entries(breakdown)) {
+                    items.push({ label: this.costLabelMap(key), value: val });
+                }
+            }
+
+            // Replace Bahan Baku with computed value if recipe was edited
+            if (this.recipeEdited && items.length > 0) {
+                const bahanIdx = items.findIndex(i => i.label.toLowerCase().includes('bahan'));
+                if (bahanIdx !== -1) {
+                    items[bahanIdx].value = this.computedIngredientsCost;
+                }
+            }
+
+            return items;
+        },
+
+        get computedCogs() {
+            return this.cogsBreakdown.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+        },
+
+        get computedPricing() {
+            if (!this.parsedResult?.pricing) return {};
+
+            const cogs = this.computedCogs;
+            const result = {};
+
+            for (const tier of ['low', 'competitive', 'exclusive']) {
+                const original = this.parsedResult.pricing[tier];
+                if (!original) continue;
+
+                // If recipe was edited, recalculate based on new COGS
+                if (this.recipeEdited) {
+                    const margin = original.margin || 0;
+                    const price = Math.ceil(cogs * (1 + margin / 100));
+                    const profit = price - cogs;
+                    const units = profit > 0 ? Math.ceil(this.targetProfit / profit) : 0;
+
+                    result[tier] = { price, profit, margin, units };
+                } else {
+                    result[tier] = {
+                        price: original.price || 0,
+                        profit: original.profit_per_unit || 0,
+                        margin: original.margin || 0,
+                        units: original.units_to_target || 0,
+                    };
+                }
+            }
+
+            return result;
+        },
+
+        recalculate() {
+            // Force reactivity — Alpine handles this via getters
+        },
+
+        costLabelMap(key) {
+            const map = { ingredients: 'Bahan Baku', gas: 'Gas / Listrik', labor: 'Tenaga Kerja', packaging: 'Packaging', rent: 'Sewa Tempat', utilities: 'Utilitas', other: 'Lain-lain' };
+            return map[key] || key;
+        },
+
+        // ===================== SUBMIT =====================
         async submit() {
             if (this.loading || !this.productName.trim()) return;
             this.loading = true;
             this.rawOutput = '';
             this.parsedResult = null;
+            this.editableIngredients = [];
+            this.recipeSteps = [];
+            this.originalIngredients = [];
+            this.recipeEdited = false;
             this.error = '';
             this.copied = false;
 
-            // Build the prompt from product info
             const prompt = `Analisis produk: ${this.productName}. ${this.productDescription}. Tipe bisnis: ${this.businessType}. Target profit: Rp ${this.targetProfit}.`;
 
             try {
@@ -429,7 +670,7 @@ function kalkulabaApp() {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
                     },
                     body: JSON.stringify({
                         mode: 'kalkulaba',
@@ -438,21 +679,19 @@ function kalkulabaApp() {
                         product_name: this.productName,
                         product_description: this.productDescription,
                         image_url: this.imageUrl,
+                        image_base64: this.imageBase64,
                         business_type: this.businessType,
-                        cost_input: this.costInput,
+                        additional_costs: this.additionalCosts.filter(c => c.label && c.value > 0),
                         target_profit: this.targetProfit,
                         advanced_mode: this.advancedMode,
-                    })
+                    }),
                 });
 
                 const data = await res.json();
-
                 if (data.success) {
                     this.rawOutput = data.result;
                     this.parseResult(data.result);
-                    if (this.parsedResult) {
-                        this.saveToHistory();
-                    }
+                    if (this.parsedResult) this.saveToHistory();
                 } else {
                     this.error = data.message || 'Gagal menganalisis produk.';
                 }
@@ -465,29 +704,46 @@ function kalkulabaApp() {
 
         parseResult(raw) {
             try {
-                // Try to extract JSON from the response
                 let jsonStr = raw.trim();
 
-                // Remove markdown code blocks if present
-                jsonStr = jsonStr.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+                // 1. Remove markdown code blocks if any
+                jsonStr = jsonStr.replace(/^```json\s*/im, '')
+                                .replace(/```\s*$/i, '')
+                                .trim();
 
-                // Try to find JSON object
+                // 2. Extract only the content between the FIRST { and LAST }
                 const firstBrace = jsonStr.indexOf('{');
                 const lastBrace = jsonStr.lastIndexOf('}');
-                if (firstBrace !== -1 && lastBrace !== -1) {
-                    jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
+                
+                if (firstBrace === -1 || lastBrace === -1) {
+                    throw new Error("No JSON object found in response");
                 }
+                
+                jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
 
+                // 3. Strip trailing commas (common AI error)
+                jsonStr = jsonStr.replace(/,\s*([\]}])/g, '$1');
+
+                // 4. Attempt to parse
                 this.parsedResult = JSON.parse(jsonStr);
+
+                // Populate editable recipe
+                if (this.parsedResult?.recipe?.ingredients) {
+                    this.editableIngredients = JSON.parse(JSON.stringify(this.parsedResult.recipe.ingredients));
+                    this.originalIngredients = JSON.parse(JSON.stringify(this.parsedResult.recipe.ingredients));
+                }
+                if (this.parsedResult?.recipe?.steps) {
+                    this.recipeSteps = [...this.parsedResult.recipe.steps];
+                }
             } catch (e) {
-                console.warn('Failed to parse JSON, showing raw output', e);
-                // Fallback: show raw output
+                console.error('Failed to parse JSON:', e, { content: raw });
                 this.parsedResult = null;
-                this.error = 'AI response bukan format JSON yang valid. Lihat raw output di bawah.';
+                this.error = 'AI response bukan format JSON yang valid: ' + (e.message || 'Unknown error');
                 this.showRaw = true;
             }
         },
 
+        // ===================== HISTORY =====================
         saveToHistory() {
             const newItem = {
                 id: Date.now(),
@@ -495,41 +751,61 @@ function kalkulabaApp() {
                 productName: this.productName,
                 businessType: this.businessType,
                 advancedMode: this.advancedMode,
-                cogs: this.parsedResult?.cost_analysis?.cogs_per_unit || 0,
+                hasImage: !!this.imageBase64,
+                imagePreview: this.imagePreview,
+                cogs: this.computedCogs,
                 rawOutput: this.rawOutput,
                 parsedResult: this.parsedResult,
-                // Save inputs for restoration
                 inputs: {
                     productName: this.productName,
                     productDescription: this.productDescription,
+                    imagePreview: this.imagePreview,
                     imageUrl: this.imageUrl,
                     businessType: this.businessType,
-                    costInput: {...this.costInput},
+                    additionalCosts: JSON.parse(JSON.stringify(this.additionalCosts)),
                     targetProfit: this.targetProfit,
                     advancedMode: this.advancedMode,
                     language: this.language,
-                }
+                },
             };
             this.history.unshift(newItem);
             if (this.history.length > 15) this.history.pop();
-            localStorage.setItem(this.storageKey, JSON.stringify(this.history));
+
+            // Don't save base64 to localStorage (too large)
+            const historyForStorage = this.history.map(h => {
+                const copy = {...h};
+                delete copy.imageBase64;
+                return copy;
+            });
+            localStorage.setItem(this.storageKey, JSON.stringify(historyForStorage));
         },
 
         loadHistory(item) {
             this.rawOutput = item.rawOutput;
             this.parsedResult = item.parsedResult;
             this.error = '';
+            this.recipeEdited = false;
 
-            // Restore inputs
             if (item.inputs) {
                 this.productName = item.inputs.productName;
                 this.productDescription = item.inputs.productDescription;
-                this.imageUrl = item.inputs.imageUrl;
+                this.imagePreview = item.inputs.imagePreview || null;
+                this.imageUrl = item.inputs.imageUrl || '';
+                this.imageBase64 = ''; // Not stored in history
                 this.businessType = item.inputs.businessType;
-                this.costInput = item.inputs.costInput || { gas: 0, labor: 0, packaging: 0, rent: 0, utilities: 0, other: 0 };
+                this.additionalCosts = item.inputs.additionalCosts || [{ label: 'Gas / Listrik', value: 0 }, { label: 'Tenaga Kerja', value: 0 }, { label: 'Packaging', value: 0 }];
                 this.targetProfit = item.inputs.targetProfit;
                 this.advancedMode = item.inputs.advancedMode;
                 this.language = item.inputs.language;
+            }
+
+            // Populate editable recipe
+            if (this.parsedResult?.recipe?.ingredients) {
+                this.editableIngredients = JSON.parse(JSON.stringify(this.parsedResult.recipe.ingredients));
+                this.originalIngredients = JSON.parse(JSON.stringify(this.parsedResult.recipe.ingredients));
+            }
+            if (this.parsedResult?.recipe?.steps) {
+                this.recipeSteps = [...this.parsedResult.recipe.steps];
             }
         },
 
@@ -540,9 +816,10 @@ function kalkulabaApp() {
             }
         },
 
+        // ===================== UTILITIES =====================
         formatNumber(num) {
             if (!num && num !== 0) return '0';
-            return Number(num).toLocaleString('id-ID');
+            return Number(Math.round(num)).toLocaleString('id-ID');
         },
 
         formatTime(iso) {
@@ -550,35 +827,13 @@ function kalkulabaApp() {
             return d.getDate() + '/' + (d.getMonth() + 1) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
         },
 
-        costLabel(key) {
-            const map = {
-                ingredients: 'Bahan Baku',
-                gas: 'Gas / Listrik',
-                labor: 'Tenaga Kerja',
-                packaging: 'Packaging',
-                rent: 'Sewa Tempat',
-                utilities: 'Utilitas',
-                other: 'Lain-lain',
-            };
-            return map[key] || key;
-        },
-
         async copyRawJson() {
             if (!this.rawOutput) return;
-            try {
-                await navigator.clipboard.writeText(this.rawOutput);
-            } catch {
-                const t = document.createElement('textarea');
-                t.value = this.rawOutput;
-                t.style.cssText = 'position:fixed;opacity:0';
-                document.body.appendChild(t);
-                t.select();
-                document.execCommand('copy');
-                document.body.removeChild(t);
-            }
+            try { await navigator.clipboard.writeText(this.rawOutput); }
+            catch { const t = document.createElement('textarea'); t.value = this.rawOutput; t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); }
             this.copied = true;
             setTimeout(() => this.copied = false, 2000);
-        }
+        },
     };
 }
 </script>

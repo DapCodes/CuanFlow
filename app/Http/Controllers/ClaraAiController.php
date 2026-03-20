@@ -7,6 +7,7 @@ use App\Services\ClaraAiService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ClaraAiController extends Controller implements HasMiddleware
@@ -17,7 +18,7 @@ class ClaraAiController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('permission:akses clara ai', only: ['index', 'videoPrompt', 'affiliateScript', 'adsImagePrompt', 'kalkulaba']),
-            new Middleware('permission:chat dengan clara ai', only: ['chat', 'generate']),
+            new Middleware('permission:chat dengan clara ai', only: ['chat', 'generate', 'uploadKalkulabaImage']),
             new Middleware('permission:sesi baru clara ai', only: ['newSession']),
             new Middleware('permission:hapus sesi clara ai', only: ['deleteSession']),
         ];
@@ -180,6 +181,42 @@ class ClaraAiController extends Controller implements HasMiddleware
     }
 
     /**
+     * Upload product image for Kalkulaba AI analysis.
+     * Stores in storage/app/public/kalkulaba/ and returns URL + base64.
+     */
+    public function uploadKalkulabaImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,jpg,png,webp|max:5120', // max 5MB
+        ]);
+
+        try {
+            $file = $request->file('image');
+            $filename = 'kalkulaba_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('public/kalkulaba', $filename);
+
+            // Generate base64 for AI vision analysis
+            $imageData = file_get_contents($file->getRealPath());
+            $base64 = base64_encode($imageData);
+            $mimeType = $file->getMimeType();
+
+            return response()->json([
+                'success' => true,
+                'url' => Storage::url($path),
+                'image_base64' => "data:{$mimeType};base64,{$base64}",
+                'filename' => $filename,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Kalkulaba image upload failed', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengunggah gambar: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * AI Studio — Generate content via selected mode
      */
     public function generate(Request $request)
@@ -210,8 +247,9 @@ class ClaraAiController extends Controller implements HasMiddleware
             $options['product_name'] = $request->input('product_name', '');
             $options['product_description'] = $request->input('product_description', '');
             $options['image_url'] = $request->input('image_url', '');
+            $options['image_base64'] = $request->input('image_base64', '');
             $options['business_type'] = $request->input('business_type', 'food');
-            $options['cost_input'] = $request->input('cost_input', []);
+            $options['additional_costs'] = $request->input('additional_costs', []);
             $options['target_profit'] = (int) $request->input('target_profit', 0);
             $options['advanced_mode'] = $request->input('advanced_mode', '');
         }

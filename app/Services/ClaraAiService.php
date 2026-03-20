@@ -81,7 +81,7 @@ class ClaraAiService
                         \Log::warning('Clara AI provider error on model '.$currentModel, ['error' => $data['error']]);
 
                         if ($attempts < $maxAttempts) {
-                            $currentModel = 'google/gemini-2.0-flash-exp:free'; // Fallback ke Gemini yang lebih stabil
+                            $currentModel = 'google/gemma-3-12b-it:free'; // Fallback ke Gemini yang lebih stabil
 
                             continue;
                         }
@@ -124,7 +124,7 @@ class ClaraAiService
 
                 // Jika status code bukan 2xx (e.g. 429 atau 5xx)
                 if ($attempts < $maxAttempts) {
-                    $currentModel = 'google/gemini-2.0-flash-exp:free';
+                    $currentModel = 'google/gemma-3-12b-it:free';
                     sleep(1); // Jeda sebelum retry
 
                     continue;
@@ -688,7 +688,7 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
                 'video_prompt' => $this->generateVideoPrompt($outletData, $enrichedPrompt, $tone, $language),
                 'affiliate_script' => $this->generateAffiliateScript($outletData, $enrichedPrompt, $tone, $language),
                 'ads_image_prompt' => $this->generateAdsImagePrompt($outletData, $enrichedPrompt, $tone, $language),
-                'kalkulaba' => $this->generateKalkulaba($outletData, $enrichedPrompt, $tone, $language, $options),
+                'kalkulaba' => $this->generateKalkulaba($outletData, $cleanPrompt, $tone, $language, $options),
             };
 
             if (! $result['success']) {
@@ -861,6 +861,7 @@ REMINDER: {$langInstruction}";
 
     /**
      * Generate Kalkulaba AI — Cost Analysis & Pricing Strategy for UMKM.
+     * Supports multimodal image analysis and dynamic cost categories.
      */
     private function generateKalkulaba(array $data, string $userPrompt, string $tone, string $language, array $options = []): array
     {
@@ -869,27 +870,29 @@ REMINDER: {$langInstruction}";
             ? 'CRITICAL LANGUAGE RULE: You MUST write your ENTIRE response in English. Every single word must be in English.'
             : 'CRITICAL LANGUAGE RULE: Kamu WAJIB menulis SELURUH respons dalam Bahasa Indonesia. JANGAN gunakan Bahasa Inggris kecuali istilah teknis.';
 
-        // Extract kalkulaba-specific options
+        // Extract options
         $productName = $options['product_name'] ?? '';
         $productDescription = $options['product_description'] ?? '';
         $imageUrl = $options['image_url'] ?? '';
+        $imageBase64 = $options['image_base64'] ?? '';
         $businessType = $options['business_type'] ?? 'food';
-        $costInput = $options['cost_input'] ?? [];
+        $additionalCosts = $options['additional_costs'] ?? [];
         $targetProfit = $options['target_profit'] ?? 0;
         $advancedMode = $options['advanced_mode'] ?? '';
 
-        // Build cost context
+        // Build dynamic cost context from user-defined categories
         $costContext = '';
-        if (!empty($costInput)) {
+        if (!empty($additionalCosts) && is_array($additionalCosts)) {
             $parts = [];
-            if (isset($costInput['gas']) && $costInput['gas'] > 0) $parts[] = "Gas: Rp " . number_format($costInput['gas'], 0, ',', '.');
-            if (isset($costInput['labor']) && $costInput['labor'] > 0) $parts[] = "Labor: Rp " . number_format($costInput['labor'], 0, ',', '.');
-            if (isset($costInput['packaging']) && $costInput['packaging'] > 0) $parts[] = "Packaging: Rp " . number_format($costInput['packaging'], 0, ',', '.');
-            if (isset($costInput['rent']) && $costInput['rent'] > 0) $parts[] = "Rent: Rp " . number_format($costInput['rent'], 0, ',', '.');
-            if (isset($costInput['utilities']) && $costInput['utilities'] > 0) $parts[] = "Utilities: Rp " . number_format($costInput['utilities'], 0, ',', '.');
-            if (isset($costInput['other']) && $costInput['other'] > 0) $parts[] = "Other: Rp " . number_format($costInput['other'], 0, ',', '.');
+            foreach ($additionalCosts as $cost) {
+                $label = $cost['label'] ?? '';
+                $value = (int) ($cost['value'] ?? 0);
+                if ($label && $value > 0) {
+                    $parts[] = "{$label}: Rp " . number_format($value, 0, ',', '.');
+                }
+            }
             if (!empty($parts)) {
-                $costContext = "\nUSER-PROVIDED ADDITIONAL COSTS:\n" . implode("\n", $parts);
+                $costContext = "\nUSER-PROVIDED ADDITIONAL COSTS (include these in COGS breakdown):\n" . implode("\n", $parts);
             }
         }
 
@@ -899,6 +902,12 @@ REMINDER: {$langInstruction}";
         } elseif ($advancedMode === 'efficiency') {
             $advancedInstruction = "\n\nADVANCED MODE: EFFICIENCY\n- Focus on minimizing production cost\n- Suggest cheaper ingredient alternatives\n- Optimize portion sizes for cost savings\n- Prioritize volume-based strategies";
         }
+
+        $hasImage = !empty($imageBase64) || !empty($imageUrl);
+
+        $imageInstruction = $hasImage
+            ? "\n\nIMAGE ANALYSIS INSTRUCTION:\nA product image has been provided. You MUST analyze it visually to identify:\n- Type of food/product\n- Visible ingredients\n- Portion size estimation\n- Presentation quality (street food, casual, premium)\n- Packaging type\nUse this visual analysis to generate an accurate recipe and cost estimate."
+            : '';
 
         $systemPrompt = "You are Kalkulaba AI, an advanced business calculator and cost analysis AI system designed specifically for Indonesian small businesses (UMKM). You help business owners calculate profit, generate product recipes, and predict revenue targets.
 
@@ -911,14 +920,15 @@ PRODUCT TO ANALYZE:
 - Name: {$productName}
 - Description: {$productDescription}
 - Business Type: {$businessType}" .
-($imageUrl ? "\n- Image URL: {$imageUrl}" : '') .
+($imageUrl && !$imageBase64 ? "\n- Image URL: {$imageUrl}" : '') .
 "\n- Target Profit: Rp " . number_format($targetProfit, 0, ',', '.') .
 $costContext .
-$advancedInstruction . "
+$advancedInstruction .
+$imageInstruction . "
 
 YOUR TASK — Follow these steps precisely:
 
-1. PRODUCT ANALYSIS: Analyze the product description" . ($imageUrl ? ' and image' : '') . ". Identify category, likely ingredients, target market (low-end/mid/premium).
+1. PRODUCT ANALYSIS: Analyze the product" . ($hasImage ? ' image and' : '') . " description. Identify category, likely ingredients, target market (low-end/mid/premium).
 
 2. RECIPE GENERATION (for food/beverage): Generate a realistic, cost-efficient recipe with:
    - Ingredient list with estimated quantities per portion
@@ -928,7 +938,7 @@ YOUR TASK — Follow these steps precisely:
 
 3. COST ESTIMATION (COGS): Calculate total cost per unit:
    - Ingredient/material costs (use realistic Indonesian local market prices in Rupiah)
-   - Add user-provided additional costs (gas, labor, packaging, rent, utilities, other) distributed per unit
+   - Include ALL user-provided additional costs in the breakdown (use the exact labels the user provided)
    - Show complete breakdown
 
 4. PRICING STRATEGY: Generate 3 pricing tiers:
@@ -947,15 +957,42 @@ YOUR TASK — Follow these steps precisely:
 
 CRITICAL: You MUST respond with ONLY valid JSON. No markdown, no explanation outside JSON. Use this EXACT structure:
 
-{\"recipe\":{\"ingredients\":[{\"name\":\"string\",\"quantity\":\"string\",\"estimated_cost\":0}],\"steps\":[\"string\"],\"estimated_cost\":0},\"cost_analysis\":{\"cogs_per_unit\":0,\"breakdown\":{\"ingredients\":0,\"gas\":0,\"labor\":0,\"packaging\":0,\"rent\":0,\"utilities\":0,\"other\":0}},\"pricing\":{\"low\":{\"price\":0,\"profit_per_unit\":0,\"margin\":0,\"units_to_target\":0},\"competitive\":{\"price\":0,\"profit_per_unit\":0,\"margin\":0,\"units_to_target\":0},\"exclusive\":{\"price\":0,\"profit_per_unit\":0,\"margin\":0,\"units_to_target\":0}},\"insights\":[\"string\"]}
+{\"recipe\":{\"ingredients\":[{\"name\":\"string\",\"quantity\":\"string\",\"estimated_cost\":0}],\"steps\":[\"string\"],\"estimated_cost\":0},\"cost_analysis\":{\"cogs_per_unit\":0,\"breakdown\":[{\"label\":\"string\",\"value\":0}]},\"pricing\":{\"low\":{\"price\":0,\"profit_per_unit\":0,\"margin\":0,\"units_to_target\":0},\"competitive\":{\"price\":0,\"profit_per_unit\":0,\"margin\":0,\"units_to_target\":0},\"exclusive\":{\"price\":0,\"profit_per_unit\":0,\"margin\":0,\"units_to_target\":0}},\"insights\":[\"string\"]}
 
-RULES:
+IMPORTANT for cost_analysis.breakdown:
+- It MUST be an ARRAY of objects with \"label\" and \"value\" keys
+- First item should be \"Bahan Baku\" (total ingredients cost)
+- Then include each user-provided cost category with their exact label
+- Example: [{\"label\":\"Bahan Baku\",\"value\":5000},{\"label\":\"Gas\",\"value\":500},{\"label\":\"Packaging\",\"value\":1000}]
+
 - ALL monetary values must be in Indonesian Rupiah (integer, no decimals)
 - Margin values as percentage numbers (e.g. 25 for 25%)
 - Keep calculations logical and realistic for small businesses
 - Do NOT hallucinate extreme numbers
 - If data is missing, estimate intelligently based on Indonesian market prices
-- RESPOND WITH ONLY THE JSON OBJECT, nothing else";
+- RESPONSE MUST BE ONLY THE JSON OBJECT.
+- NO MARKDOWN, NO CODE BLOCKS, NO 'Here is the JSON', NO 'I hope this helps'.
+- JUST THE RAW JSON STARTING WITH { AND ENDING WITH }.";
+
+        // Build messages with multimodal support for image analysis
+        if (!empty($imageBase64)) {
+            // Use multimodal format with base64 image for vision models
+            $userContent = [
+                ['type' => 'text', 'text' => $userPrompt],
+                [
+                    'type' => 'image_url',
+                    'image_url' => ['url' => $imageBase64],
+                ],
+            ];
+
+            $messages = [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $userContent],
+            ];
+
+            // Force vision-capable model for image analysis
+            return $this->callAIWithModel($messages, 'openrouter/free');
+        }
 
         $messages = [
             ['role' => 'system', 'content' => $systemPrompt],
@@ -1097,7 +1134,7 @@ RULES:
                     \Log::warning('Clara AI Studio provider error on model ' . $currentModel, ['error' => $responseData['error']]);
 
                     if ($attempts < $maxAttempts) {
-                        $currentModel = 'google/gemini-2.0-flash-exp:free';
+                        $currentModel = 'google/gemma-3-12b-it:free';
                         continue;
                     }
 
@@ -1132,7 +1169,7 @@ RULES:
             }
 
             if ($attempts < $maxAttempts) {
-                $currentModel = 'google/gemini-2.0-flash-exp:free';
+                $currentModel = 'google/gemma-3-12b-it:free';
                 sleep(1);
                 continue;
             }
@@ -1141,6 +1178,71 @@ RULES:
         return [
             'success' => false,
             'message' => 'Gagal menghubungi AI. Status: ' . ($httpResponse ? $httpResponse->status() : 'unknown'),
+        ];
+    }
+
+    /**
+     * Call AI API with a specific model (no fallback). Used for vision/multimodal.
+     */
+    private function callAIWithModel(array $messages, string $model): array
+    {
+        if (! $this->apiKey) {
+            return [
+                'success' => false,
+                'message' => 'API Key Clara AI belum dikonfigurasi. Silakan hubungi administrator.',
+            ];
+        }
+
+        $httpResponse = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Content-Type' => 'application/json',
+            'HTTP-Referer' => config('app.url'),
+            'X-Title' => 'CuanFlow POS - Kalkulaba AI',
+        ])->timeout(180)->post($this->baseUrl . '/chat/completions', [
+            'model' => $model,
+            'messages' => $messages,
+            'max_tokens' => 4000,
+        ]);
+
+        if ($httpResponse->successful()) {
+            $responseData = $httpResponse->json();
+
+            if (isset($responseData['error'])) {
+                \Log::warning('Kalkulaba AI vision model error', ['error' => $responseData['error']]);
+
+                return [
+                    'success' => false,
+                    'message' => 'AI vision model sedang sibuk. Silakan coba lagi.',
+                ];
+            }
+
+            if (! isset($responseData['choices'][0]['message']['content'])) {
+                return [
+                    'success' => false,
+                    'message' => 'Format response AI tidak valid.',
+                ];
+            }
+
+            $content = $responseData['choices'][0]['message']['content'];
+            $content = preg_replace('/<think>.*?<\/think>/s', '', $content);
+            $content = trim($content);
+
+            if ($content === '') {
+                return [
+                    'success' => false,
+                    'message' => 'AI tidak dapat menghasilkan konten. Coba ubah prompt Anda.',
+                ];
+            }
+
+            return [
+                'success' => true,
+                'content' => $content,
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Gagal menghubungi AI vision. Status: ' . $httpResponse->status(),
         ];
     }
 }
