@@ -100,7 +100,7 @@
         </div>
 
         <!-- Right Section: Google Profile Form -->
-        <div class="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 xl:p-16 bg-white shrink-0 h-full overflow-y-auto no-scrollbar" x-data="{ loading: false }">
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 xl:p-16 bg-white shrink-0 h-full overflow-y-auto no-scrollbar" x-data="{ loading: false, password: '', password_confirmation: '' }">
             <div class="w-full max-w-sm lg:max-w-md my-auto">
                 
                 <!-- Logo -->
@@ -137,7 +137,15 @@
                     </div>
                 @endif
 
-                <form id="complete-profile-form" method="POST" action="{{ route('auth.google.store') }}">
+                <form id="complete-profile-form" method="POST" action="{{ route('auth.google.store') }}" 
+                    @submit="
+                        if (password !== password_confirmation) {
+                            $event.preventDefault();
+                            showAlert('error', 'Kata sandi tidak cocok', 'Konfirmasi kata sandi tidak sesuai.');
+                            return;
+                        }
+                        loading = true;
+                    ">
                     @csrf
                     <input type="hidden" name="email" value="{{ $googleUser['email'] ?? '' }}">
                     <input type="hidden" name="name" value="{{ $googleUser['name'] ?? '' }}">
@@ -154,7 +162,7 @@
                         <div class="space-y-1.5" x-data="{ show: false }">
                             <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Buat Kata Sandi</label>
                             <div class="relative">
-                                <input :type="show ? 'text' : 'password'" name="password" required placeholder="••••••••"
+                                <input :type="show ? 'text' : 'password'" name="password" x-model="password" required placeholder="••••••••"
                                     class="w-full px-4 py-3.5 pr-12 text-sm font-medium text-gray-900 bg-gray-50/50 border border-gray-100 rounded-xl placeholder-gray-400 input-focus focus:outline-none" />
                                 <button type="button" @click="show = !show" class="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-gray-600">
                                     <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -166,7 +174,7 @@
                         <div class="space-y-1.5" x-data="{ show: false }">
                             <label class="block text-xs font-bold text-gray-500 px-1 uppercase tracking-wider">Konfirmasi Kata Sandi</label>
                             <div class="relative">
-                                <input :type="show ? 'text' : 'password'" name="password_confirmation" required placeholder="••••••••"
+                                <input :type="show ? 'text' : 'password'" name="password_confirmation" x-model="password_confirmation" required placeholder="••••••••"
                                     class="w-full px-4 py-3.5 pr-12 text-sm font-medium text-gray-900 bg-gray-50/50 border border-gray-100 rounded-xl placeholder-gray-400 input-focus focus:outline-none" />
                                 <button type="button" @click="show = !show" class="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-gray-600">
                                     <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -187,7 +195,6 @@
                         <button
                             type="submit"
                             :disabled="loading"
-                            @click="loading = true"
                             class="w-full py-4 bg-gray-900 text-white rounded-xl text-base font-bold hover:bg-black transition-all shadow-md active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             <template x-if="!loading">
@@ -229,23 +236,6 @@
         function showAlert(icon, title, text) {
             return Toast.fire({ icon, title, text, confirmButtonText: 'Mengerti' });
         }
-
-        // Form Submission Validation
-        document.getElementById('complete-profile-form').addEventListener('submit', function(e) {
-            const phone = this.querySelector('input[name="phone"]').value;
-            const password = this.querySelector('input[name="password"]').value;
-            const confirm = this.querySelector('input[name="password_confirmation"]').value;
-            
-            if (!phone || !password || !confirm) {
-                // Let browser default validation handle it
-                return;
-            }
-
-            if (password !== confirm) {
-                e.preventDefault();
-                showAlert('error', 'Kata sandi tidak cocok', 'Konfirmasi kata sandi tidak sesuai.');
-            }
-        });
 
         // Laravel alerts
         @if ($errors->any())
