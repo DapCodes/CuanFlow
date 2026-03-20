@@ -1303,7 +1303,7 @@
         </div>
         <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-5">
             <p class="text-[11px] text-gray-400 text-center uppercase font-bold tracking-widest">
-                SESI BARU • RECORDING ACTIVE
+                SESI BARU
             </p>
         </div>
         <div class="flex gap-2.5">
