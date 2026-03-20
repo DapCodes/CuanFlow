@@ -329,6 +329,8 @@
   .menu-card:nth-child(32) { animation-delay: 1.6s; }
   .menu-card:nth-child(33) { animation-delay: 1.65s; }
   .menu-card:nth-child(34) { animation-delay: 1.7s; }
+  .menu-card:nth-child(35) { animation-delay: 1.75s; }
+  .menu-card:nth-child(36) { animation-delay: 1.8s; }
 
 
   .backdrop-blur-effect { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
@@ -1352,6 +1354,19 @@
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
       Image Prompt AI
+    </span>
+  </a>
+
+  <a href="{{ route('clara-ai.kalkulaba') }}"
+    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
+    data-step="104"
+    data-title="Kalkulaba AI"
+    data-intro="<strong>Kalkulator laba pintar.</strong> Hitung HPP, strategi harga, dan target profit secara otomatis dengan bantuan AI.">
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+      <i class="fa-solid fa-calculator text-4xl sm:text-5xl text-white"></i>
+    </div>
+    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+      Kalkulaba AI
     </span>
   </a>
 @endcan
@@ -2811,6 +2826,7 @@ document.addEventListener('DOMContentLoaded', function() {
     { label: 'Video Prompt AI', keywords: ['video', 'prompt', 'ai', 'sinematik', 'runway', 'sora', 'pika'], url: "{{ route('clara-ai.video-prompt') }}", type: 'Menu' },
     { label: 'Script Generator AI', keywords: ['script', 'affiliate', 'tiktok', 'instagram', 'youtube', 'copywriting'], url: "{{ route('clara-ai.affiliate-script') }}", type: 'Menu' },
     { label: 'Image Prompt AI', keywords: ['image', 'gambar', 'iklan', 'ads', 'midjourney', 'dalle', 'sdxl'], url: "{{ route('clara-ai.ads-image-prompt') }}", type: 'Menu' },
+    { label: 'Kalkulaba AI', keywords: ['kalkulaba', 'laba', 'untung', 'profit', 'hpp', 'cogs', 'pricing', 'resep', 'kalkulator'], url: "{{ route('clara-ai.kalkulaba') }}", type: 'Menu' },
     @endcan
     @endcanAccessFeature
 
