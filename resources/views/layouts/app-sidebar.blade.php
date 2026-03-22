@@ -59,10 +59,6 @@
         .global-page-loader.active { opacity: 1; visibility: visible; }
         #app-content-wrapper { opacity: 0; transition: opacity 0.6s ease; }
         #app-content-wrapper.ready { opacity: 1; }
-        
-        /* Smooth transitions for sidebar */
-        .sidebar-transition { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .content-transition { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
     
     @stack('styles')
@@ -90,7 +86,7 @@
              style="display: none;"></div>
         
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-100 transform lg:translate-x-0 sidebar-transition overflow-x-hidden"
+        <aside class="fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-100 transform lg:translate-x-0 overflow-x-hidden"
                :class="{ 
                    'translate-x-0': sidebarOpen, 
                    '-translate-x-full': !sidebarOpen,
@@ -101,7 +97,7 @@
         </aside>
         
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col min-h-screen content-transition"
+        <div class="flex-1 flex flex-col min-h-screen"
              :class="{ 
                  'lg:ml-64': !sidebarCollapsed, 
                  'lg:ml-20': sidebarCollapsed 
@@ -122,7 +118,7 @@
                     <!-- Left: Toggle & Title -->
                     <div class="flex items-center gap-4">
                         <!-- Desktop Toggle -->
-                        <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden lg:flex text-gray-500 hover:text-emerald-600 transition-colors">
+                        <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden lg:flex text-gray-500 hover:text-emerald-600">
                             <i class="fas" :class="sidebarCollapsed ? 'fa-indent' : 'fa-outdent'"></i>
                         </button>
                         <!-- Mobile Toggle -->
