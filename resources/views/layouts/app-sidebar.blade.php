@@ -176,7 +176,10 @@
           get currentLayout() { return $store.app.layout },
           set currentLayout(val) { $store.app.layout = val },
           get sidebarCollapsed() { return $store.app.sidebarCollapsed },
-          set sidebarCollapsed(val) { $store.app.sidebarCollapsed = val },
+          set sidebarCollapsed(val) { 
+              $store.app.sidebarCollapsed = val;
+              localStorage.setItem('sidebarCollapsed', val);
+          },
           get isFullScreen() { return $store.app.isFullScreen },
           sidebarOpen: false
       }"
