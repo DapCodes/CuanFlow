@@ -588,6 +588,12 @@
                                 <i class="fa-solid fa-bell mr-2 text-gray-400"></i>
                                 Notifikasi
                             </a>
+                            @hasrole('owner')
+                            <a href="{{ route('subscription.manage') }}" class="nav-link flex items-center w-full px-3 py-2 rounded-lg hover:bg-emerald-50 text-gray-900">
+                                <i class="fa-solid fa-crown mr-2 text-emerald-500"></i>
+                                Langganan VIP
+                            </a>
+                            @endhasrole
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="logout-btn flex items-center w-full px-3 py-2 rounded-lg hover:bg-red-50 text-red-600">
@@ -682,6 +688,12 @@
                                     <i class="fas fa-bell w-4 text-center"></i>
                                     <span>Notifikasi</span>
                                 </a>
+                                @hasrole('owner')
+                                <a href="{{ route('subscription.manage') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors nav-link">
+                                    <i class="fas fa-crown w-4 text-center text-emerald-500"></i>
+                                    <span>Langganan VIP</span>
+                                </a>
+                                @endhasrole
                                 <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100 mt-2">
                                     @csrf
                                     <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-xs text-red-600 hover:bg-red-50 font-bold">

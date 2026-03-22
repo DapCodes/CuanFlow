@@ -591,6 +591,12 @@
                                 <i class="fa-solid fa-bell mr-2 text-gray-400"></i>
                                 Notifikasi
                             </a>
+                            @hasrole('owner')
+                            <a href="{{ route('subscription.manage') }}" class="nav-link flex items-center w-full px-3 py-2 rounded-lg hover:bg-emerald-50 text-gray-900">
+                                <i class="fa-solid fa-crown mr-2 text-emerald-500"></i>
+                                Langganan VIP
+                            </a>
+                            @endhasrole
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="logout-btn flex items-center w-full px-3 py-2 rounded-lg hover:bg-red-50 text-red-600">
