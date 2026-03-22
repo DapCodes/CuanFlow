@@ -162,12 +162,13 @@
 </head>
 <body class="antialiased bg-gray-50 relative overflow-x-hidden" 
       x-data="{ 
-          currentLayout: localStorage.getItem('app_layout') || '{{ $_COOKIE['app_layout'] ?? 'grid' }}',
-          sidebarOpen: false, 
-          sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' 
+          get currentLayout() { return $store.app.layout },
+          set currentLayout(val) { $store.app.layout = val },
+          get sidebarCollapsed() { return $store.app.sidebarCollapsed },
+          set sidebarCollapsed(val) { $store.app.sidebarCollapsed = val },
+          sidebarOpen: false
       }"
-      @app-layout-changed.window="currentLayout = $event.detail"
-      x-init="$watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
+      @app-layout-changed.window="$store.app.setLayout($event.detail)">
     @if(auth()->check() && auth()->user()->isOnTrial())
     <div class="fixed bottom-6 right-6 z-[9999] pointer-events-none opacity-40 select-none">
         <div class="bg-gray-900/10 backdrop-blur-sm border border-gray-900/20 px-4 py-2 rounded-full">
@@ -718,6 +719,24 @@
         </main>
     </div>
 
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('app', {
+                layout: localStorage.getItem('app_layout') || '{{ $_COOKIE["app_layout"] ?? "grid" }}',
+                sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+                setLayout(val) {
+                    this.layout = val;
+                    localStorage.setItem('app_layout', val);
+                    document.cookie = 'app_layout=' + val + ';path=/;max-age=' + (60*60*24*365);
+                },
+                toggleSidebar() {
+                    this.sidebarCollapsed = !this.sidebarCollapsed;
+                    localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
+                }
+            });
+        });
+    </script>
     <!-- Defer non-critical scripts -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

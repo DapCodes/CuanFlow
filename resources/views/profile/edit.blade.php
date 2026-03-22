@@ -23,11 +23,17 @@
         if (this.appLayout === choice) return;
 
         this.appLayout = choice;
-        localStorage.setItem('app_layout', choice);
-        // Set cookie so server recognizes it on next full request
-        document.cookie = 'app_layout=' + choice + ';path=/;max-age=' + (60*60*24*365);
         
-        // Dispatch event for master layout to react immediately
+        // Use Alpine Store for instant global switch
+        if (window.Alpine && Alpine.store('app')) {
+            Alpine.store('app').setLayout(choice);
+        } else {
+            // Fallback for direct storage if store isn't ready
+            localStorage.setItem('app_layout', choice);
+            document.cookie = 'app_layout=' + choice + ';path=/;max-age=' + (60*60*24*365);
+        }
+        
+        // Dispatch event for any other listeners
         window.dispatchEvent(new CustomEvent('app-layout-changed', { detail: choice }));
     },
     switchTab(tab) {
