@@ -622,7 +622,7 @@
                 <a href="{{ route('profile.edit') }}"
                     class="nav-link flex items-center w-full px-3 py-2 rounded-lg hover:bg-cuan-yellow/20 text-gray-900">
                     <i class="fa-solid fa-gear mr-2"></i>
-                    Pengaturan Akun
+                    Pengaturan dan Akun
                 </a>
 
                 <form method="POST" action="{{ route('logout') }}">
