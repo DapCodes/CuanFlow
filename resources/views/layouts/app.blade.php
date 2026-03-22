@@ -406,64 +406,49 @@
             <!-- Right: Desktop user dropdown -->
             <div class="hidden sm:flex items-center space-x-4 flex-1 justify-end">
                 <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open"
-                        class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
-                        <img src="{{ auth()->user()->avatar_url }}"
-                            alt="{{ auth()->user()->name }}"
-                            class="h-8 w-8 rounded-full object-cover">
-                        <span class="text-sm font-medium text-gray-900 max-w-[180px] truncate">
-                            {{ auth()->user()->name }}
-                        </span>
-                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    <button @click="open = !open" class="flex items-center gap-2 hover:bg-gray-50 rounded-xl px-1 py-1 transition-all">
+                        <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-50">
+                        <div class="hidden sm:block text-left mr-1">
+                            <span class="block text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">{{ auth()->user()->name }}</span>
+                            <span class="block text-[9px] font-bold text-emerald-600 uppercase tracking-wider mt-1">{{ auth()->user()->getRoleNames()->first() }}</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''"></i>
                     </button>
 
-                    <div x-show="open"
-                        @click.away="open = false"
-                        x-transition:enter="transition ease-out duration-100"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-75"
-                        x-transition:leave-start="transform opacity-100 scale-100"
-                        x-transition:leave-end="transform opacity-0 scale-95"
-                        class="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg py-2 border border-gray-200"
-                        style="display:none;">
+                    <div x-show="open" @click.away="open = false" 
+                         class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden"
+                         x-transition style="display:none;">
+                        <div class="px-4 py-3 border-b border-gray-100">
+                            <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                            <p class="text-[10px] text-gray-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
+                        </div>
+                        
+                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                            <i class="fas fa-user-gear w-4 text-center text-gray-400"></i>
+                            <span>Pengaturan dan Akun</span>
+                        </a>
 
-                        @if(auth()->user()->outlet_id)
-                            <div class="px-4 py-2 border-b border-gray-200">
-                                <p class="text-xs text-gray-500">Outlet ({{ auth()->user()->getRoleNames()->first() }})</p>
-                                <p class="text-sm font-medium text-gray-900 truncate">{{ auth()->user()->outlet->name }}</p>
-                            </div>
-                        @endif
-
+                        <a href="{{ route('stock-notifications.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                            <i class="fas fa-bell w-4 text-center text-gray-400"></i>
+                            <span>Notifikasi</span>
+                        </a>
+                        
                         @hasrole('owner')
-                        <a href="{{ route('subscription.manage') }}"
-                            class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">
-                            <i class="fa-solid fa-crown mr-2 text-cuan-green"></i>
-                            Kelola Langganan
+                        <a href="{{ route('subscription.manage') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                            <i class="fas fa-crown w-4 text-center text-emerald-500"></i>
+                            <span>Langganan VIP</span>
                         </a>
                         @endhasrole
 
-                        <a href="{{ route('profile.edit') }}"
-                            class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">
-                            <i class="fa-solid fa-gear mr-2"></i>
-                            Pengaturan dan Akun
-                        </a>
-
-
-                        <a href="{{ route('stock-notifications.index') }}"
-                            class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">
-                            <i class="fa-solid fa-bell mr-2"></i>
-                            Notifikasi
-                        </a>
-
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit"
-                                class="logout-btn w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                <i class="fa-solid fa-right-from-bracket mr-2"></i>
-                                Logout
-                            </button>
-                        </form>
+                        <div class="border-t border-gray-100 mt-2 pt-2">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors font-bold logout-btn">
+                                    <i class="fas fa-sign-out-alt w-4 text-center"></i>
+                                    <span>Keluar Aplikasi</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

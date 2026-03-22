@@ -256,6 +256,10 @@
                                     <i class="fas fa-user-gear w-4 text-center text-gray-400"></i>
                                     <span>Pengaturan dan Akun</span>
                                 </a>
+                                <a href="{{ route('stock-notifications.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                                    <i class="fas fa-bell w-4 text-center text-gray-400"></i>
+                                    <span>Notifikasi</span>
+                                </a>
                                 @hasrole('owner')
                                 <a href="{{ route('subscription.manage') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
                                     <i class="fas fa-crown w-4 text-center text-emerald-500"></i>
