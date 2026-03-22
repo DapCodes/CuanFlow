@@ -23,6 +23,15 @@
         document.cookie = 'app_layout=' + choice + ';path=/;max-age=' + (60*60*24*365);
         // Reload with tab parameter to stay on appearance tab
         window.location.href = window.location.pathname + '?tab=' + this.activeTab;
+    },
+    switchTab(tab) {
+        this.activeTab = tab;
+        // Clean URL if any tab parameter exists
+        if (window.location.search.includes('tab=')) {
+            const url = new URL(window.location);
+            url.searchParams.delete('tab');
+            window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+        }
     }
 }">
     <div class="max-w-6xl mx-auto space-y-8">
@@ -91,15 +100,15 @@
             <aside class="lg:col-span-3 space-y-4">
                 {{-- Desktop Sidebar --}}
                 <nav class="hidden lg:flex flex-col gap-1.5 p-2 bg-white border border-gray-200 rounded-2xl shadow-sm">
-                    <button @click="activeTab = 'profile'" :class="activeTab === 'profile' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm text-left group">
+                    <button @click="switchTab('profile')" :class="activeTab === 'profile' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm text-left group">
                         <i class="fas fa-user-circle text-lg opacity-40 group-hover:opacity-100 transition-opacity" :class="activeTab === 'profile' ? 'opacity-100' : ''"></i>
                         Informasi Profil
                     </button>
-                    <button @click="activeTab = 'security'" :class="activeTab === 'security' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm text-left group">
+                    <button @click="switchTab('security')" :class="activeTab === 'security' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm text-left group">
                         <i class="fas fa-shield-alt text-lg opacity-40 group-hover:opacity-100 transition-opacity" :class="activeTab === 'security' ? 'opacity-100' : ''"></i>
                         Keamanan
                     </button>
-                    <button @click="activeTab = 'appearance'" :class="activeTab === 'appearance' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm text-left group">
+                    <button @click="switchTab('appearance')" :class="activeTab === 'appearance' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm text-left group">
                         <i class="fas fa-display text-lg opacity-40 group-hover:opacity-100 transition-opacity" :class="activeTab === 'appearance' ? 'opacity-100' : ''"></i>
                         Tampilan Aplikasi
                     </button>
@@ -109,16 +118,15 @@
 
                 {{-- Mobile Horizontal Tabs --}}
                 <nav class="lg:hidden flex border border-gray-200 rounded-2xl bg-white p-1 overflow-x-auto no-scrollbar scroll-smooth shadow-sm">
-                    <button @click="activeTab = 'profile'" :class="activeTab === 'profile' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                    <button @click="switchTab('profile')" :class="activeTab === 'profile' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-user-circle"></i> Profil
                     </button>
-                    <button @click="activeTab = 'security'" :class="activeTab === 'security' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                    <button @click="switchTab('security')" :class="activeTab === 'security' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-shield-alt"></i> Keamanan
                     </button>
-                    <button @click="activeTab = 'appearance'" :class="activeTab === 'appearance' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                    <button @click="switchTab('appearance')" :class="activeTab === 'appearance' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-display"></i> Tampilan
                     </button>
-
                 </nav>
 
                 {{-- Help Card (Desktop Only) --}}
