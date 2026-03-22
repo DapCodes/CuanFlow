@@ -1,5 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
+@php
+    // Global fallback for notifications if not passed from controller
+    if (auth()->check()) {
+        $stockNotificationService = app(\App\Services\StockNotificationService::class);
+        $navStockNotifications = $navStockNotifications ?? $stockNotificationService->getLatestNotifications(auth()->user()->outlet_id, 5);
+        $unreadStockCount = $unreadStockCount ?? $navStockNotifications->where('is_read_by_me', false)->count();
+    } else {
+        $navStockNotifications = collect();
+        $unreadStockCount = 0;
+    }
+@endphp
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
