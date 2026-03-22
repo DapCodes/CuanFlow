@@ -49,27 +49,77 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 
-        /* Loader Styles */
+        /* Global Page Loader from app.blade.php */
         .global-page-loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 99999;
             opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease;
+            will-change: opacity, visibility;
         }
         .global-page-loader.active { opacity: 1; visibility: visible; }
-        #app-content-wrapper { opacity: 0; transition: opacity 0.6s ease; }
+        
+        .global-loader-asterisk {
+            width: 60px; height: 60px;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            will-change: transform;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.15); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        .global-loader-dots { display: flex; gap: 6px; margin-top: 16px; }
+        .global-loader-dot {
+            width: 6px; height: 6px; background: #31694E; border-radius: 50%;
+            animation: pulse 1.2s ease-in-out infinite; will-change: transform, opacity;
+        }
+        .global-loader-dot:nth-child(2) { animation-delay: 0.15s; }
+        .global-loader-dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        
+        .global-loader-text {
+            color: #31694E; font-size: 16px; font-weight: 600; margin-top: 12px;
+            animation: fadeInOut 1.5s ease-in-out infinite;
+        }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        #app-content-wrapper { 
+            opacity: 0; 
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
         #app-content-wrapper.ready { opacity: 1; }
+
+        /* FOUC Mask */
+        #fouc-mask-style { position: fixed; inset: 0; background: white; z-index: 99998; }
     </style>
     
     @stack('styles')
 </head>
-<body class="antialiased bg-gray-50/50 text-gray-900" x-data="{ sidebarOpen: false, sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' }" x-init="$watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
-    <!-- Loader -->
+<body class="antialiased bg-gray-50/50 text-gray-900" 
+      x-data="{ sidebarOpen: false, sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' }" 
+      x-init="$watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
+    
+    <div id="fouc-mask-style"></div>
+
+    <!-- Exact Loader from app.blade.php -->
     <div id="global-page-loader" class="global-page-loader active">
-        <svg  width="60" height="60" viewBox="0 0 80 80" fill="none" class="animate-spin">
+        <svg class="global-loader-asterisk" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#31694E" stroke-width="8" stroke-linecap="round"/>
         </svg>
-        <p class="mt-4 text-cuan-dark font-bold">Loading...</p>
+        <div class="global-loader-dots">
+            <div class="global-loader-dot"></div>
+            <div class="global-loader-dot"></div>
+            <div class="global-loader-dot"></div>
+        </div>
+        <p class="global-loader-text">Loading...</p>
     </div>
 
     <div id="app-content-wrapper" class="min-h-screen flex">
@@ -191,12 +241,12 @@
                                     <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
                                     <p class="text-[10px] text-gray-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
                                 </div>
-                                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
+                                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
                                     <i class="fas fa-user-gear w-4 text-center text-gray-400"></i>
                                     <span>Pengaturan Akun</span>
                                 </a>
                                 @hasrole('owner')
-                                <a href="{{ route('subscription.manage') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
+                                <a href="{{ route('subscription.manage') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
                                     <i class="fas fa-crown w-4 text-center text-emerald-500"></i>
                                     <span>Langganan VIP</span>
                                 </a>
@@ -204,7 +254,7 @@
                                 <div class="border-t border-gray-100 mt-2 pt-2">
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
-                                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors font-bold">
+                                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors font-bold logout-btn">
                                             <i class="fas fa-sign-out-alt w-4 text-center"></i>
                                             <span>Keluar Aplikasi</span>
                                         </button>
@@ -220,7 +270,7 @@
             @if(View::hasSection('breadcrumb'))
             <nav class="flex py-3 px-8 bg-white/50 border-b border-gray-100" aria-label="Breadcrumb">
                 <ol class="flex items-center space-x-2 text-[10px] font-bold text-gray-400 tracking-widest uppercase">
-                    <li><a href="{{ route('dashboard') }}" class="hover:text-emerald-600"><i class="fas fa-home"></i></a></li>
+                    <li><a href="{{ route('dashboard') }}" class="hover:text-emerald-600 nav-link"><i class="fas fa-home"></i></a></li>
                     <i class="fas fa-chevron-right text-[7px] opacity-40"></i>
                     @yield('breadcrumb')
                 </ol>
@@ -248,17 +298,77 @@
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
+        // Exact Navigation Logic from app.blade.php
         (function() {
             const loader = document.getElementById('global-page-loader');
             const wrapper = document.getElementById('app-content-wrapper');
-            
+            const foucMask = document.getElementById('fouc-mask-style');
+            let isNavigating = false;
+
+            function navigate(url, e) {
+                if (e) e.preventDefault();
+                if (isNavigating) return;
+                isNavigating = true;
+                loader.classList.add('active');
+                setTimeout(() => { window.location.href = url; }, 300);
+            }
+
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.no-loader')) return;
+                const link = e.target.closest('a') || e.target.closest('.nav-link');
+                if (link && link.tagName === 'A') {
+                    const url = link.getAttribute('href');
+                    if (url && url !== '#' && !url.startsWith('javascript:') && !link.getAttribute('target')) {
+                        navigate(url, e);
+                    }
+                }
+                const logoutBtn = e.target.closest('.logout-btn');
+                if (logoutBtn) {
+                    e.preventDefault();
+                    if (isNavigating) return;
+                    isNavigating = true;
+                    loader.classList.add('active');
+                    setTimeout(() => { logoutBtn.closest('form').submit(); }, 300);
+                }
+            });
+
+            document.addEventListener('submit', (e) => {
+                const form = e.target;
+                if (form.querySelector('input[name="outlet_id"]') || form.classList.contains('with-loader')) {
+                    if (isNavigating) return;
+                    isNavigating = true;
+                    loader.classList.add('active');
+                }
+            });
+
             window.addEventListener('load', () => {
+                if (foucMask) foucMask.remove();
                 setTimeout(() => {
                     loader.classList.remove('active');
                     wrapper.classList.add('ready');
+                    isNavigating = false;
                 }, 400);
             });
 
+            window.addEventListener('pageshow', (e) => {
+                if (e.persisted) {
+                    loader.classList.remove('active');
+                    wrapper.classList.add('ready');
+                    isNavigating = false;
+                }
+            });
+        })();
+        
+        function markAllStockAsRead() {
+            fetch('{{ route('stock-notifications.read-all') }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+            }).then(() => window.location.reload());
+        }
+    </script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
             @if(session('success'))
                 Swal.fire({
                     icon: 'success', title: 'Sukses!', text: "{{ session('success') }}",
@@ -273,14 +383,7 @@
                     customClass: { popup: 'rounded-3xl border-none shadow-2xl' }
                 });
             @endif
-        })();
-        
-        function markAllStockAsRead() {
-            fetch('{{ route('stock-notifications.read-all') }}', {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
-            }).then(() => window.location.reload());
-        }
+        });
     </script>
     @stack('scripts')
 </body>
