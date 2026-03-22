@@ -23,16 +23,31 @@
     }
 
     main {
-        height: calc(100vh - 65px); /* Sesuaikan dengan tinggi navbar */
-        overflow: hidden;
+        height: calc(100vh - 64px) !important;
+        overflow: hidden !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Override wrapper div in app-sidebar to be full height and full width for POS */
+    main > div {
+        height: 100% !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex;
+        flex-direction: column;
     }
 
     .pos-container {
+        flex: 1;
         height: 100%;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        max-width: 100vw;
+        width: 100%;
+        min-height: 0;
     }
 
     .breadcrumb-container {
