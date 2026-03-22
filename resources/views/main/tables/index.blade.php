@@ -1,4 +1,7 @@
-@extends('layouts.app')
+@php
+    $preferredLayout = $_COOKIE['app_layout'] ?? 'grid';
+@endphp
+@extends($preferredLayout === 'sidebar' ? 'layouts.app-sidebar' : 'layouts.app')
 
 @section('title', 'Kelola Meja - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 

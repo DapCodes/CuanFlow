@@ -1,7 +1,10 @@
 {{-- ============================================ --}}
 {{-- FILE: outlet-payment-links/edit.blade.php --}}
 {{-- ============================================ --}}
-@extends('layouts.app')
+@php
+    $preferredLayout = $_COOKIE['app_layout'] ?? 'grid';
+@endphp
+@extends($preferredLayout === 'sidebar' ? 'layouts.app-sidebar' : 'layouts.app')
 
 @section('title', 'Edit Metode Pembayaran - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 

@@ -446,7 +446,7 @@
                         <a href="{{ route('profile.edit') }}"
                             class="nav-link block px-4 py-2 text-sm text-gray-900 hover:bg-cuan-yellow/20">
                             <i class="fa-solid fa-gear mr-2"></i>
-                            Pengaturan Akun
+                            Pengaturan dan Akun
                         </a>
 
 
