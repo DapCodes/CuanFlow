@@ -14,13 +14,19 @@
     $isReseller = $user->email
         ? \App\Models\Customer::where('email', $user->email)->where('type', 'reseller')->exists()
         : false;
+
+    // Fetch user outlets for switcher
+    $userOutlets = $user->isOwner()
+        ? $user->outletsOwned->where('is_active', true)->sortBy('name')
+        : collect([$user->outlet])->filter(fn($o) => $o && $o->is_active);
+    $hasMultipleOutlets = $userOutlets->count() > 1;
 @endphp
 
 <div class="flex flex-col h-full bg-white">
-    <!-- Sidebar Header (Logo/Outlet) -->
-    <div class="h-20 flex items-center px-6 mb-2 border-b border-gray-50 flex-shrink-0">
+    <!-- Sidebar Header (Logo/Outlet & Dropdown) -->
+    <div class="h-20 flex items-center px-6 mb-2 border-b border-gray-50 flex-shrink-0 relative" x-data="{ switcherOpen: false }">
         @if($user->outlet_id && $user->outlet)
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group overflow-hidden">
+            <div class="flex items-center gap-3 group cursor-pointer w-full overflow-hidden" @click="switcherOpen = !switcherOpen">
                 <div class="flex-shrink-0 p-2 bg-emerald-50 rounded-xl group-hover:bg-emerald-100 transition-colors">
                     @if($user->outlet->logo)
                         <img src="{{ Storage::url($user->outlet->logo) }}" alt="{{ $user->outlet->name }}" class="h-8 w-8 object-contain">
@@ -30,11 +36,52 @@
                         </div>
                     @endif
                 </div>
-                <div class="min-w-0">
+                <div class="min-w-0 pr-4">
                     <span class="block text-gray-900 font-bold text-sm truncate">{{ $user->outlet->name }}</span>
-                    <span class="block text-emerald-600 text-[9px] font-bold uppercase tracking-wider">User Panel</span>
+                    <div class="flex items-center gap-1">
+                        <span class="block text-emerald-600 text-[9px] font-bold uppercase tracking-wider">User Panel</span>
+                        @if($hasMultipleOutlets)
+                            <i class="fa-solid fa-chevron-down text-[8px] text-gray-400"></i>
+                        @endif
+                    </div>
                 </div>
-            </a>
+            </div>
+
+            @if($hasMultipleOutlets)
+            <!-- Switcher Dropdown -->
+            <div x-show="switcherOpen" 
+                 @click.away="switcherOpen = false"
+                 class="absolute left-6 top-16 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-[60] ring-1 ring-black/5"
+                 x-transition style="display:none;">
+                <div class="px-4 py-2 border-b border-gray-50">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pilih Outlet</p>
+                </div>
+                <div class="max-h-60 overflow-y-auto custom-scrollbar">
+                    @foreach($userOutlets as $outlet)
+                        <form method="POST" action="{{ route('change.outlet') }}">
+                            @csrf
+                            <input type="hidden" name="outlet_id" value="{{ $outlet->id }}">
+                            <button type="submit" class="w-full text-left px-4 py-3 hover:bg-emerald-50 transition-colors flex items-center gap-3 {{ $user->outlet_id == $outlet->id ? 'bg-emerald-50/50' : '' }}">
+                                @if($outlet->logo)
+                                    <img src="{{ Storage::url($outlet->logo) }}" class="h-6 w-6 object-contain rounded">
+                                @else
+                                    <div class="h-6 w-6 rounded bg-gray-100 flex items-center justify-center text-gray-400 text-[10px] font-bold">
+                                        {{ substr($outlet->name, 0, 1) }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-gray-900 truncate">{{ $outlet->name }}</p>
+                                    <p class="text-[9px] text-gray-500 truncate">{{ $outlet->business_category }}</p>
+                                </div>
+                                @if($user->outlet_id == $outlet->id)
+                                    <i class="fa-solid fa-check text-emerald-500 text-[10px] ml-auto"></i>
+                                @endif
+                            </button>
+                        </form>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         @else
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
                 <div class="p-2 bg-emerald-50 rounded-xl group-hover:bg-emerald-100 transition-colors">
@@ -53,9 +100,9 @@
 
     <!-- Navigation -->
     <nav class="flex-1 px-4 py-4 overflow-y-auto custom-scrollbar">
-        <ul class="space-y-1">
+        <ul class="space-y-1.5">
             <!-- SEKSI OPERASIONAL -->
-            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-2">Operasional</p>
+            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-2">Operasional Utama</p>
             
             @canAccessFeature('pos')
             @can('akses pos')
@@ -110,19 +157,99 @@
             @endcan
             @endcanAccessFeature
 
+            @canAccessFeature('other_income')
+            @can('buat pemasukan')
+            <li>
+                <a href="{{ route('expenses.index', ['type' => 'income']) }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->fullUrl() == route('expenses.index', ['type' => 'income']) ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-arrow-trend-up w-5 text-center text-base {{ request()->fullUrl() == route('expenses.index', ['type' => 'income']) ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Pemasukan Lain</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('operational_costs')
+            @can('buat pengeluaran')
+            <li>
+                <a href="{{ route('expenses.index', ['type' => 'expense']) }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->fullUrl() == route('expenses.index', ['type' => 'expense']) ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-receipt w-5 text-center text-base {{ request()->fullUrl() == route('expenses.index', ['type' => 'expense']) ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Biaya Ops</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('balance_withdrawal')
+            @can('buat penarikan')
+            <li>
+                <a href="{{ route('withdraw.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('withdraw.*') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-hand-holding-dollar w-5 text-center text-base {{ request()->routeIs('withdraw.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Penarikan Saldo</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('invoice_list')
+            @can('lihat invoice')
+            <li>
+                <a href="{{ route('invoices.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('invoices.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-file-lines w-5 text-center text-base {{ request()->routeIs('invoices.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Daftar Invoice</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('payment_methods')
+            @can('lihat metode pembayaran')
+            <li>
+                <a href="{{ route('outlet-payment-links.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('outlet-payment-links.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-qrcode w-5 text-center text-base {{ request()->routeIs('outlet-payment-links.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Metode Pembayaran</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
             @canAccessFeature('task_management')
             @can('tasks.view')
             <li>
-                <a href="{{ route('tasks.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('tasks.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <i class="fa-solid fa-list-check w-5 text-center text-base {{ request()->routeIs('tasks.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                <a href="{{ route('tasks.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('tasks.*') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-list-check w-5 text-center text-base {{ request()->routeIs('tasks.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span class="text-sm">Manajemen Tugas</span>
                 </a>
             </li>
             @endcan
             @endcanAccessFeature
 
-            <!-- SEKSI PRODUK & STOK -->
-            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Produk & Stok</p>
+            <!-- MONITORING & ANALISIS -->
+            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Monitoring & Analisis</p>
+
+            @canAccessFeature('dashboard')
+            @can('lihat statistik')
+            <li>
+                <a href="{{ route('statistics.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('statistics.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-chart-line w-5 text-center text-base {{ request()->routeIs('statistics.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Dashboard & Statistik</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('reports')
+            @can('lihat laporan')
+            <li>
+                <a href="{{ route('reports.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('reports.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-file-invoice w-5 text-center text-base {{ request()->routeIs('reports.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Laporan Keseluruhan</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            <!-- MANAJEMEN PRODUK & INVENTORI -->
+            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Produk & Inventori</p>
 
             @canAccessFeature('products_recipes')
             @can('lihat produk')
@@ -146,6 +273,39 @@
             @endcan
             @endcanAccessFeature
 
+            @canAccessFeature('suppliers')
+            @can('lihat supplier')
+            <li>
+                <a href="{{ route('raw-materials.suppliers') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('raw-materials.suppliers') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-truck-field w-5 text-center text-base {{ request()->routeIs('raw-materials.suppliers') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Pemasok</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('reseller_app')
+            @can('lihat reseller applications')
+            <li>
+                <a href="{{ route('reseller-applications.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('reseller-applications.*') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-handshake w-5 text-center text-base {{ request()->routeIs('reseller-applications.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Lamaran Reseller</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('production')
+            @can('lihat produksi')
+            <li>
+                <a href="{{ route('production.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('production.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-flask w-5 text-center text-base {{ request()->routeIs('production.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Produksi</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
             @canAccessFeature('stock_opname')
             @can('lihat stock opname')
             <li>
@@ -157,19 +317,86 @@
             @endcan
             @endcanAccessFeature
 
-            <!-- SEKSI ANALISIS & AI -->
-            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Analisis & AI</p>
-
-            @canAccessFeature('dashboard')
-            @can('lihat statistik')
+            @canAccessFeature('stock_transfer')
+            @can('lihat stock transfer')
             <li>
-                <a href="{{ route('statistics.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('statistics.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <i class="fa-solid fa-chart-line w-5 text-center text-base {{ request()->routeIs('statistics.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
-                    <span class="text-sm">Statistik</span>
+                <a href="{{ route('stock-transfers.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('stock-transfers.*') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-truck-fast w-5 text-center text-base {{ request()->routeIs('stock-transfers.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Transfer Stok</span>
                 </a>
             </li>
             @endcan
             @endcanAccessFeature
+
+            <!-- PENGATURAN BISNIS -->
+            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Pengaturan Bisnis</p>
+
+            @can('lihat outlet')
+            <li>
+                <a href="{{ $outletUrl }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->url() == $outletUrl ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-store w-5 text-center text-base {{ request()->url() == $outletUrl ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Informasi Outlet</span>
+                </a>
+            </li>
+            @endcan
+
+            @canAccessFeature('landing_page')
+            @can('lihat landing page')
+            <li>
+                <a href="{{ route('landing-pages.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('landing-pages.*') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-rocket w-5 text-center text-base {{ request()->routeIs('landing-pages.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Landing Page</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('testimonials')
+            @can('lihat testimoni')
+            <li>
+                <a href="{{ route('testimonials.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('testimonials.*') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-quote-left w-5 text-center text-base {{ request()->routeIs('testimonials.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Testimoni</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('employee_management')
+            @can('lihat pegawai')
+            <li>
+                <a href="{{ route('employees.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('employees.*') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-users w-5 text-center text-base {{ request()->routeIs('employees.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Pegawai & Hak Akses</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('customer_management')
+            @can('lihat pelanggan')
+            <li>
+                <a href="{{ route('customer-debts.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('customer-debts.*') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-address-book w-5 text-center text-base {{ request()->routeIs('customer-debts.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Pelanggan & Piutang</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('table_management')
+            @can('lihat meja')
+            <li>
+                <a href="{{ route('tables.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('tables.*') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-chair w-5 text-center text-base {{ request()->routeIs('tables.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Kelola Meja</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
+            <!-- SEKSI AI & INSIGHT -->
+            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">AI & Insight</p>
 
             @canAccessFeature('ai_insights')
             @can('lihat ai insights')
@@ -186,59 +413,53 @@
             @can('akses clara ai')
             <li>
                 <a href="{{ route('clara-ai.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('clara-ai.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <div class="w-5 h-5 flex items-center justify-center">
-                        <img src="{{ asset('assets/image/clara-ai.png') }}" class="w-4 h-4 object-contain {{ request()->routeIs('clara-ai.index') ? '' : 'grayscale opacity-60' }}">
-                    </div>
+                    <i class="fa-solid fa-robot w-5 text-center text-base {{ request()->routeIs('clara-ai.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span class="text-sm">Clara AI</span>
                 </a>
             </li>
             @endcan
             @endcanAccessFeature
 
-            <!-- SEKSI BISNIS & SISTEM -->
-            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Bisnis & Sistem</p>
-
-            @can('lihat outlet')
+            @canAccessFeature('ai_insights')
             <li>
-                <a href="{{ $outletUrl }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->url() == $outletUrl ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <i class="fa-solid fa-store w-5 text-center text-base {{ request()->url() == $outletUrl ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
-                    <span class="text-sm">Informasi Outlet</span>
+                <a href="{{ route('opportunity-map.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('opportunity-map.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-map-location-dot w-5 text-center text-base {{ request()->routeIs('opportunity-map.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Peta Cuan Lokasi</span>
                 </a>
             </li>
-            @endcan
+            @endcanAccessFeature
 
-            @canAccessFeature('landing_page')
-            @can('lihat landing page')
+            @canAccessFeature('clara_ai')
+            @can('akses clara ai')
             <li>
-                <a href="{{ route('landing-pages.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('landing-pages.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <i class="fa-solid fa-rocket w-5 text-center text-base {{ request()->routeIs('landing-pages.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
-                    <span class="text-sm">Landing Page</span>
+                <a href="{{ route('clara-ai.video-prompt') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('clara-ai.video-prompt') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-film w-5 text-center text-base {{ request()->routeIs('clara-ai.video-prompt') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Video Prompt AI</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('clara-ai.affiliate-script') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('clara-ai.affiliate-script') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-scroll w-5 text-center text-base {{ request()->routeIs('clara-ai.affiliate-script') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Script Generator AI</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('clara-ai.ads-image-prompt') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('clara-ai.ads-image-prompt') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-image w-5 text-center text-base {{ request()->routeIs('clara-ai.ads-image-prompt') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Image Prompt AI</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('clara-ai.kalkulaba') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('clara-ai.kalkulaba') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fa-solid fa-calculator w-5 text-center text-base {{ request()->routeIs('clara-ai.kalkulaba') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Kalkulaba AI</span>
                 </a>
             </li>
             @endcan
             @endcanAccessFeature
 
-            @canAccessFeature('employee_management')
-            @can('lihat pegawai')
-            <li>
-                <a href="{{ route('employees.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('employees.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <i class="fa-solid fa-users w-5 text-center text-base {{ request()->routeIs('employees.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
-                    <span class="text-sm">Pegawai</span>
-                </a>
-            </li>
-            @endcan
-            @endcanAccessFeature
-
-            @canAccessFeature('customer_management')
-            @can('lihat pelanggan')
-            <li>
-                <a href="{{ route('customer-debts.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group {{ request()->routeIs('customer-debts.index') ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <i class="fa-solid fa-address-book w-5 text-center text-base {{ request()->routeIs('customer-debts.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
-                    <span class="text-sm">Pelanggan</span>
-                </a>
-            </li>
-            @endcan
-            @endcanAccessFeature
+            <!-- SEKSI BANTUAN & LAINNYA -->
+            <p class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Bantuan & Lainnya</p>
 
             @canAccessFeature('outlet_policies')
             @can('lihat kebijakan outlet')

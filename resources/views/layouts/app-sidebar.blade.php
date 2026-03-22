@@ -105,8 +105,8 @@
                 $unreadStockCount = $navStockNotifications->count();
             @endphp
             
-            <header class="bg-white border-b border-gray-200 sticky top-0 z-30 h-16 flex items-center">
-                <div class="flex items-center justify-between w-full px-4 lg:px-6">
+            <header class="bg-white border-b border-gray-200 sticky top-0 z-40 h-16 flex items-center">
+                <div class="flex items-center justify-between w-full px-4 lg:px-8">
                     <!-- Left: Toggle & Title -->
                     <div class="flex items-center gap-4">
                         <button @click="sidebarOpen = true" class="lg:hidden text-gray-600 hover:text-gray-900">
@@ -220,8 +220,10 @@
             @endif
             
             <!-- Page Content -->
-            <main class="flex-1 p-4 lg:p-6 overflow-y-auto">
-                @yield('content')
+            <main class="flex-1 p-4 lg:p-8 overflow-y-auto">
+                <div class="max-w-7xl mx-auto space-y-6">
+                    @yield('content')
+                </div>
             </main>
             
             <footer class="bg-white border-t border-gray-100 py-4 px-6">
