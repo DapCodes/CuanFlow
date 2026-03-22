@@ -86,7 +86,7 @@
              style="display: none;"></div>
         
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-100 transform lg:translate-x-0 overflow-x-hidden"
+        <aside class="fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-100 transform lg:translate-x-0"
                :class="{ 
                    'translate-x-0': sidebarOpen, 
                    '-translate-x-full': !sidebarOpen,

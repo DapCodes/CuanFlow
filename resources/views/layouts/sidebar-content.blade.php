@@ -53,12 +53,15 @@
             </div>
 
             @if($hasMultipleOutlets)
-            <!-- Switcher Dropdown (Adjusted for collapse) -->
+            <!-- Switcher Dropdown (Adjusted for collapse & z-index) -->
             <div x-show="switcherOpen" 
                  @click.away="switcherOpen = false"
-                 class="absolute bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-[60] ring-1 ring-black/5"
-                 :class="sidebarCollapsed ? 'left-16 top-4 w-64' : 'left-6 top-14 w-64'"
-                 x-transition style="display:none;">
+                 class="absolute bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-[9999] ring-1 ring-black/10 transition-all duration-100"
+                 :class="sidebarCollapsed ? 'left-16 top-2 w-64' : 'left-3 right-3 top-14 w-[calc(100%-1.5rem)]'"
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 style="display:none;">
                 <div class="px-4 py-2 border-b border-gray-50">
                     <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pilih Outlet</p>
                 </div>
