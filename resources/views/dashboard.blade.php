@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app-sidebar')
 
 @section('title', 'Menu - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
