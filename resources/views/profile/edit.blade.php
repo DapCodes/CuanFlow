@@ -13,7 +13,7 @@
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-[#f9fafb] shadow-sm md:shadow-none" x-data="{ 
-    activeTab: '{{ session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() || request()->reset_token || ($errors->any() && !session('status')) ? 'security' : 'profile' }}',
+    activeTab: '{{ request('tab') ?? (session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() || request()->reset_token || ($errors->any() && !session('status')) ? 'security' : 'profile') }}',
     showResetModal: {{ request()->reset_token || ($errors->any() && !session('status')) ? 'true' : 'false' }},
     appLayout: localStorage.getItem('app_layout') || 'grid',
     updateLayout(choice) {
@@ -21,7 +21,8 @@
         localStorage.setItem('app_layout', choice);
         // Set cookie so server (Blade) knows on next request
         document.cookie = 'app_layout=' + choice + ';path=/;max-age=' + (60*60*24*365);
-        window.location.reload();
+        // Reload with tab parameter to stay on appearance tab
+        window.location.href = window.location.pathname + '?tab=' + this.activeTab;
     }
 }">
     <div class="max-w-6xl mx-auto space-y-8">
@@ -361,7 +362,7 @@
                                             </div>
                                         </div>
                                         <div x-show="appLayout === 'grid'" class="absolute inset-0 bg-gray-900/10 flex items-center justify-center">
-                                            <div class="bg-white rounded-full p-2 shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+                                            <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center">
@@ -389,7 +390,7 @@
                                             </div>
                                         </div>
                                         <div x-show="appLayout === 'sidebar'" class="absolute inset-0 bg-gray-900/10 flex items-center justify-center">
-                                            <div class="bg-white rounded-full p-2 shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+                                            <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
                                         </div>
                                     </div>
                                     <div class="flex justify-between items-center">
