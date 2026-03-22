@@ -304,11 +304,7 @@
                 </div>
             </main>
             
-            <footer class="bg-white border-t border-gray-100 py-6 px-8">
-                <p class="text-center text-[9px] text-gray-400 font-bold uppercase tracking-[0.3em]">
-                    &copy; {{ date('Y') }} CuanFlow Ecosystem. All rights reserved.
-                </p>
-            </footer>
+
         </div>
     </div>
     
