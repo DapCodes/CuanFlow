@@ -298,7 +298,7 @@
             @endif
             
             <!-- Page Content -->
-            <main class="flex-1 p-6 lg:p-10 overflow-y-auto">
+            <main class="flex-1 overflow-y-auto">
                 <div class="max-w-[1600px] mx-auto">
                     @yield('content')
                 </div>
