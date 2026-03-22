@@ -279,13 +279,22 @@
             
             <!-- Breadcrumbs -->
             @if(View::hasSection('breadcrumb'))
-            <nav class="flex py-3 px-8 bg-white/50 border-b border-gray-100" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-2 text-[10px] font-bold text-gray-400 tracking-widest uppercase">
-                    <li><a href="{{ route('dashboard') }}" class="hover:text-emerald-600 nav-link"><i class="fas fa-home"></i></a></li>
-                    <i class="fas fa-chevron-right text-[7px] opacity-40"></i>
-                    @yield('breadcrumb')
-                </ol>
-            </nav>
+            <div class="bg-white border-b border-gray-100">
+                <div class="px-4 lg:px-8 py-3">
+                    <nav class="flex" aria-label="Breadcrumb">
+                        <ol class="flex items-center space-x-2 text-sm">
+                            <li>
+                                <a href="{{ route('dashboard') }}" class="nav-link text-gray-500 hover:text-gray-700 flex items-center">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                            @yield('breadcrumb')
+                        </ol>
+                    </nav>
+                </div>
+            </div>
             @endif
             
             <!-- Page Content -->
