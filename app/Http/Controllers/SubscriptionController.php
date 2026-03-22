@@ -73,6 +73,15 @@ class SubscriptionController extends Controller
 
     public function createTrialVerification(Request $request)
     {
+        // Check if user already has an ACTIVE or TRIAL subscription
+        $activeSubscription = auth()->user()->subscriptions()
+            ->whereIn('status', [\App\Models\UserSubscription::STATUS_ACTIVE, \App\Models\UserSubscription::STATUS_TRIAL])
+            ->first();
+
+        if ($activeSubscription && $activeSubscription->isActive()) {
+            return redirect()->route('dashboard')->with('error', 'Anda masih memiliki subscription aktif.');
+        }
+
         // Check if this IP address has already used a trial
         $existingIpTrial = \App\Models\TrialVerificationRequest::where('ip_address', $request->ip())->exists();
         $hasUsedTrialBefore = $existingIpTrial || auth()->user()->subscriptions()->where('is_trial', true)->exists();
@@ -82,6 +91,15 @@ class SubscriptionController extends Controller
 
     public function storeTrialVerification(Request $request)
     {
+        // Double check for active subscription
+        $activeSubscription = auth()->user()->subscriptions()
+            ->whereIn('status', [\App\Models\UserSubscription::STATUS_ACTIVE, \App\Models\UserSubscription::STATUS_TRIAL])
+            ->first();
+
+        if ($activeSubscription && $activeSubscription->isActive()) {
+            return redirect()->route('dashboard')->with('error', 'Anda masih memiliki subscription aktif.');
+        }
+
         // Double check for IP-based trial (server-side)
         if (\App\Models\TrialVerificationRequest::where('ip_address', $request->ip())->exists()) {
             return back()->with('error', 'Perangkat ini sudah pernah melakukan uji coba.');
