@@ -199,4 +199,21 @@ class StockNotificationService
 
         return $notifications;
     }
+
+    /**
+     * Get the count of unread notifications for a user in an outlet.
+     */
+    public function getUnreadCount(?int $outletId): int
+    {
+        if (! $outletId) {
+            return 0;
+        }
+
+        $userId = auth()->id();
+
+        return StockNotification::where('outlet_id', $outletId)
+            ->where('is_read', false)
+            ->unreadBy($userId)
+            ->count();
+    }
 }

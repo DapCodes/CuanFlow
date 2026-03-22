@@ -5,7 +5,7 @@
     if (auth()->check()) {
         $stockNotificationService = app(\App\Services\StockNotificationService::class);
         $navStockNotifications = $navStockNotifications ?? $stockNotificationService->getLatestNotifications(auth()->user()->outlet_id, 5);
-        $unreadStockCount = $unreadStockCount ?? $navStockNotifications->where('is_read_by_me', false)->count();
+        $unreadStockCount = $unreadStockCount ?? $stockNotificationService->getUnreadCount(auth()->user()->outlet_id);
     } else {
         $navStockNotifications = collect();
         $unreadStockCount = 0;
