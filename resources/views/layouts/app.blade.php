@@ -643,24 +643,61 @@
 
                             <!-- Noti Dropdown Sidebar Header -->
                             <div x-show="open" @click.away="open = false" 
-                                 class="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 ring-1 ring-black/5 z-50 overflow-hidden"
-                                 x-transition style="display:none;">
-                                <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/30">
-                                    <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest text-center">Pemberitahuan</h3>
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                 x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                                 class="absolute right-0 mt-3 w-96 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 py-2 z-50 overflow-hidden ring-1 ring-black/5"
+                                 style="display:none;">
+                                
+                                <div class="px-5 py-4 flex items-center justify-between border-b border-gray-50">
+                                    <div>
+                                        <h3 class="text-base font-bold text-gray-900">Notifikasi</h3>
+                                        <p class="text-xs text-gray-500 font-medium mt-0.5">
+                                            @if($unreadStockCount > 0)
+                                                Anda memiliki {{ $unreadStockCount }} peringatan stok
+                                            @else
+                                                Tidak ada peringatan stok baru
+                                            @endif
+                                        </p>
+                                    </div>
                                 </div>
-                                <div class="max-h-80 overflow-y-auto custom-scrollbar p-1">
+
+                                <div class="max-h-[380px] overflow-y-auto custom-scrollbar p-2">
                                     @forelse($navStockNotifications as $noti)
-                                        <a href="{{ route('stock-notifications.index') }}" class="block p-3 rounded-xl hover:bg-gray-50 transition-colors mb-1">
-                                            <p class="text-xs font-bold text-gray-900 truncate">{{ $noti->title }}</p>
-                                            <p class="text-[10px] text-gray-500 mt-0.5">{{ $noti->message }}</p>
-                                        </a>
-                                    @empty
-                                        <div class="py-8 text-center text-gray-400">
-                                            <p class="text-[10px]">Semua aman, Bos!</p>
+                                    <a href="{{ route('stock-notifications.index') }}" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1 {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
+                                        <div class="flex gap-4">
+                                            <div class="h-10 w-10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-all duration-300 shadow-sm border 
+                                                {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
+                                                <i class="fa-solid {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'fa-circle-xmark' : 'fa-triangle-exclamation' }} text-sm"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0 pt-0.5">
+                                                <div class="flex justify-between items-start mb-0.5">
+                                                    <p class="text-sm font-bold text-gray-900 truncate">{{ $noti->title }}</p>
+                                                    <span class="text-[10px] text-gray-400 font-medium">{{ $noti->created_at->diffForHumans() }}</span>
+                                                </div>
+                                                <p class="text-xs text-gray-500 leading-relaxed line-clamp-1">
+                                                    {{ $noti->message }}
+                                                </p>
+                                            </div>
                                         </div>
+                                    </a>
+                                    @empty
+                                    <div class="py-12 text-center text-gray-400">
+                                        <i class="fa-solid fa-check-circle text-2xl mb-2 opacity-20"></i>
+                                        <p class="text-[11px]">Semua aman, Bos!</p>
+                                    </div>
                                     @endforelse
                                 </div>
-                                <a href="{{ route('stock-notifications.index') }}" class="block w-full py-3 text-center text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-gray-50 hover:bg-emerald-50">Lihat Laporan Lengkap</a>
+
+                                <div class="p-3 border-t border-gray-50 bg-gray-50/50">
+                                    <a href="{{ route('stock-notifications.index') }}" class="flex items-center justify-center w-full py-2.5 text-xs font-bold text-cuan-dark bg-white border border-gray-200 rounded-xl hover:bg-cuan-dark hover:text-white hover:border-cuan-dark transition-all duration-200 shadow-sm group">
+                                        Laporan Stok Lengkap
+                                        <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
