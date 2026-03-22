@@ -14,7 +14,15 @@
 @section('content')
 <main class="flex-grow py-8 px-4 bg-[#f9fafb] shadow-sm md:shadow-none" x-data="{ 
     activeTab: '{{ session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() || request()->reset_token || ($errors->any() && !session('status')) ? 'security' : 'profile' }}',
-    showResetModal: {{ request()->reset_token || ($errors->any() && !session('status')) ? 'true' : 'false' }}
+    showResetModal: {{ request()->reset_token || ($errors->any() && !session('status')) ? 'true' : 'false' }},
+    appLayout: localStorage.getItem('app_layout') || 'grid',
+    updateLayout(choice) {
+        this.appLayout = choice;
+        localStorage.setItem('app_layout', choice);
+        // Set cookie so server (Blade) knows on next request
+        document.cookie = 'app_layout=' + choice + ';path=/;max-age=' + (60*60*24*365);
+        window.location.reload();
+    }
 }">
     <div class="max-w-6xl mx-auto space-y-8">
         
@@ -90,6 +98,10 @@
                         <i class="fas fa-shield-alt text-lg opacity-40 group-hover:opacity-100 transition-opacity" :class="activeTab === 'security' ? 'opacity-100' : ''"></i>
                         Keamanan
                     </button>
+                    <button @click="activeTab = 'appearance'" :class="activeTab === 'appearance' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm text-left group">
+                        <i class="fas fa-display text-lg opacity-40 group-hover:opacity-100 transition-opacity" :class="activeTab === 'appearance' ? 'opacity-100' : ''"></i>
+                        Tampilan Aplikasi
+                    </button>
                     <div class="my-2 border-t border-gray-100 mx-2"></div>
 
                 </nav>
@@ -101,6 +113,9 @@
                     </button>
                     <button @click="activeTab = 'security'" :class="activeTab === 'security' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-shield-alt"></i> Keamanan
+                    </button>
+                    <button @click="activeTab = 'appearance'" :class="activeTab === 'appearance' ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500'" class="flex-1 whitespace-nowrap px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-display"></i> Tampilan
                     </button>
 
                 </nav>
@@ -308,6 +323,83 @@
                                         </button>
                                     </form>
                                 @endif
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                {{-- Appearance Tab Content --}}
+                <section x-show="activeTab === 'appearance'" class="animate-fade-in-up" x-cloak>
+                    <div class="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
+                        <div class="p-6 md:p-8 lg:p-10">
+                            <div class="flex items-center gap-4 mb-10">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm border border-indigo-100/50">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-black text-gray-900">Tampilan Aplikasi</h2>
+                                    <p class="text-xs text-gray-500 font-medium mt-0.5">Pilih layout yang paling nyaman untuk operasional bisnis Anda.</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {{-- Layout Option 1: Grid (Default) --}}
+                                <div @click="updateLayout('grid')" 
+                                     class="relative group cursor-pointer rounded-3xl border-2 transition-all p-4"
+                                     :class="appLayout === 'grid' ? 'border-gray-900 bg-gray-50 shadow-xl' : 'border-gray-100 hover:border-gray-300'">
+                                    
+                                    <div class="aspect-video bg-gray-200 rounded-2xl mb-4 overflow-hidden relative shadow-inner">
+                                        <!-- Grid Layout Mockup -->
+                                        <div class="absolute inset-0 flex flex-col">
+                                            <div class="h-4 bg-gray-400 w-full mb-1"></div> <!-- Top Nav -->
+                                            <div class="flex-1 p-2 grid grid-cols-3 gap-1">
+                                                <div class="h-4 bg-gray-300 rounded"></div>
+                                                <div class="h-4 bg-gray-300 rounded"></div>
+                                                <div class="h-4 bg-gray-300 rounded"></div>
+                                                <div class="h-4 bg-gray-300 rounded"></div>
+                                                <div class="h-4 bg-gray-300 rounded"></div>
+                                            </div>
+                                        </div>
+                                        <div x-show="appLayout === 'grid'" class="absolute inset-0 bg-gray-900/10 flex items-center justify-center">
+                                            <div class="bg-white rounded-full p-2 shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <h3 class="text-sm font-black text-gray-900">Layout Grid (Bawaan)</h3>
+                                            <p class="text-[10px] text-gray-500 font-medium italic mt-0.5">Navigasi atas, konten melebar.</p>
+                                        </div>
+                                        <span x-show="appLayout === 'grid'" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg">Aktif</span>
+                                    </div>
+                                </div>
+
+                                {{-- Layout Option 2: Sidebar --}}
+                                <div @click="updateLayout('sidebar')" 
+                                     class="relative group cursor-pointer rounded-3xl border-2 transition-all p-4"
+                                     :class="appLayout === 'sidebar' ? 'border-gray-900 bg-gray-50 shadow-xl' : 'border-gray-100 hover:border-gray-300'">
+                                    
+                                    <div class="aspect-video bg-gray-200 rounded-2xl mb-4 overflow-hidden relative shadow-inner">
+                                        <!-- Sidebar Layout Mockup -->
+                                        <div class="absolute inset-0 flex">
+                                            <div class="w-1/4 bg-gray-400 h-full"></div> <!-- Sidebar -->
+                                            <div class="flex-1 p-2 space-y-1">
+                                                <div class="h-2 bg-gray-300 w-1/2 rounded mb-2"></div> <!-- Title -->
+                                                <div class="h-10 bg-gray-300 w-full rounded"></div>
+                                                <div class="h-10 bg-gray-300 w-full rounded"></div>
+                                            </div>
+                                        </div>
+                                        <div x-show="appLayout === 'sidebar'" class="absolute inset-0 bg-gray-900/10 flex items-center justify-center">
+                                            <div class="bg-white rounded-full p-2 shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <h3 class="text-sm font-black text-gray-900">Layout Sidebar</h3>
+                                            <p class="text-[10px] text-gray-500 font-medium italic mt-0.5">Navigasi samping, akses cepat.</p>
+                                        </div>
+                                        <span x-show="appLayout === 'sidebar'" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg">Aktif</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

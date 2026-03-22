@@ -1,4 +1,7 @@
-@extends('layouts.app-sidebar')
+@php
+    $preferredLayout = $_COOKIE['app_layout'] ?? 'grid';
+@endphp
+@extends($preferredLayout === 'sidebar' ? 'layouts.app-sidebar' : 'layouts.app')
 
 @section('title', 'Menu - ' . (auth()->user()->outlet->name ?? 'CuanFlow'))
 
@@ -3007,5 +3010,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 });
+</script>
+@push('scripts')
+<script>
+    // Sync localStorage to Cookie for Blade layout handling
+    (function() {
+        const storedLayout = localStorage.getItem('app_layout');
+        const currentCookie = document.cookie.split('; ').find(row => row.startsWith('app_layout='))?.split('=')[1];
+        
+        if (storedLayout && storedLayout !== currentCookie) {
+            document.cookie = 'app_layout=' + storedLayout + ';path=/;max-age=' + (60*60*24*365);
+            window.location.reload();
+        }
+    })();
 </script>
 @endpush
