@@ -724,12 +724,6 @@
             @csrf
         </form>
 
-        <!-- Main Content -->
-        <main class="flex-grow">
-            @yield('content')
-        </main>
-    </div>
-
 
     <script>
         document.addEventListener('alpine:init', () => {
