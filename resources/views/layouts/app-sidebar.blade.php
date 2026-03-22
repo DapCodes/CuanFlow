@@ -109,6 +109,17 @@
     
     <div id="fouc-mask-style"></div>
 
+    @if(auth()->check() && auth()->user()->isOnTrial())
+    <div class="fixed bottom-6 right-6 z-[9999] pointer-events-none opacity-40 select-none">
+        <div class="bg-gray-900/10 backdrop-blur-sm border border-gray-900/20 px-4 py-2 rounded-full">
+            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-900/60 flex items-center gap-2">
+                <i class="fa-solid fa-flask-vial animate-pulse text-emerald-600"></i>
+                Dalam Uji Coba
+            </span>
+        </div>
+    </div>
+    @endif
+
     <!-- Exact Loader from app.blade.php -->
     <div id="global-page-loader" class="global-page-loader active">
         <svg class="global-loader-asterisk" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -360,10 +371,24 @@
         })();
         
         function markAllStockAsRead() {
-            fetch('{{ route('stock-notifications.read-all') }}', {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
-            }).then(() => window.location.reload());
+            Swal.fire({
+                title: 'Baca Semua?',
+                text: 'Tandai semua pemberitahuan stok sebagai dibaca?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#658C58',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'Ya, Tandai',
+                cancelButtonText: 'Batal',
+                customClass: { popup: 'rounded-[1.5rem] border-none shadow-xl' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('{{ route('stock-notifications.read-all') }}', {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+                    }).then(() => window.location.reload());
+                }
+            });
         }
     </script>
     
@@ -371,18 +396,55 @@
         document.addEventListener('DOMContentLoaded', function() {
             @if(session('success'))
                 Swal.fire({
-                    icon: 'success', title: 'Sukses!', text: "{{ session('success') }}",
+                    icon: 'success', title: 'Berhasil', text: "{{ session('success') }}",
                     showConfirmButton: false, timer: 3000, iconColor: '#658C58',
-                    customClass: { popup: 'rounded-3xl border-none shadow-2xl' }
+                    customClass: { popup: 'rounded-[2rem] border-none shadow-2xl', title: 'font-black text-gray-900', htmlContainer: 'text-sm font-medium text-gray-500' }
                 });
             @endif
             @if(session('error'))
                 Swal.fire({
-                    icon: 'error', title: 'Error!', text: "{{ session('error') }}",
+                    icon: 'error', title: 'Gagal', text: "{{ session('error') }}",
                     showConfirmButton: false, timer: 3000, iconColor: '#ef4444',
-                    customClass: { popup: 'rounded-3xl border-none shadow-2xl' }
+                    customClass: { popup: 'rounded-[2rem] border-none shadow-2xl', title: 'font-black text-gray-900', htmlContainer: 'text-sm font-medium text-gray-500' }
                 });
             @endif
+            @if($errors->any())
+                @php $errorMsg = ''; foreach($errors->all() as $error) { $errorMsg .= '• ' . $error . '<br>'; } @endphp
+                Swal.fire({
+                    icon: 'error', title: 'Kesalahan Input', html: "{!! $errorMsg !!}",
+                    confirmButtonColor: '#ef4444', 
+                    customClass: { popup: 'rounded-[2rem] border-none shadow-2xl', title: 'font-black text-gray-900', htmlContainer: 'text-left text-sm font-medium text-gray-500' }
+                });
+            @endif
+
+            document.addEventListener('click', function(e) {
+                const deleteBtn = e.target.closest('.confirm-delete');
+                if (deleteBtn) {
+                    e.preventDefault();
+                    const form = deleteBtn.closest('form');
+                    const name = deleteBtn.dataset.name || 'data ini';
+                    Swal.fire({
+                        title: 'Hapus Data?', text: `Apakah Anda yakin ingin menghapus "${name}"?`,
+                        icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#9ca3af',
+                        confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal',
+                        customClass: { popup: 'rounded-[2rem] border-none shadow-2xl' }
+                    }).then((result) => { if (result.isConfirmed && form) form.submit(); });
+                }
+                const toggleBtn = e.target.closest('.confirm-toggle');
+                if (toggleBtn) {
+                    e.preventDefault();
+                    const form = toggleBtn.closest('form');
+                    const name = toggleBtn.dataset.name || 'ini';
+                    const status = toggleBtn.dataset.status || 'ubah';
+                    Swal.fire({
+                        title: `${status.charAt(0).toUpperCase() + status.slice(1)}?`,
+                        text: `Apakah Anda yakin ingin ${status} "${name}"?`,
+                        icon: 'question', showCancelButton: true, confirmButtonColor: '#658C58', cancelButtonColor: '#9ca3af',
+                        confirmButtonText: 'Ya, Lanjutkan', cancelButtonText: 'Batal',
+                        customClass: { popup: 'rounded-[2rem] border-none shadow-2xl' }
+                    }).then((result) => { if (result.isConfirmed && form) form.submit(); });
+                }
+            });
         });
     </script>
     @stack('scripts')
