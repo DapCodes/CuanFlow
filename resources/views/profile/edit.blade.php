@@ -20,12 +20,15 @@
     showResetModal: {{ request()->reset_token || ($errors->any() && !session('status')) ? 'true' : 'false' }},
     appLayout: localStorage.getItem('app_layout') || 'grid',
     updateLayout(choice) {
+        if (this.appLayout === choice) return;
+
         this.appLayout = choice;
         localStorage.setItem('app_layout', choice);
-        // Set cookie so server (Blade) knows on next request
+        // Set cookie so server recognizes it on next full request
         document.cookie = 'app_layout=' + choice + ';path=/;max-age=' + (60*60*24*365);
-        // Reload with tab parameter to stay on appearance tab
-        window.location.href = window.location.pathname + '?tab=' + this.activeTab;
+        
+        // Dispatch event for master layout to react immediately
+        window.dispatchEvent(new CustomEvent('app-layout-changed', { detail: choice }));
     },
     switchTab(tab) {
         this.activeTab = tab;

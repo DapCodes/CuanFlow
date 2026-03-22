@@ -160,7 +160,14 @@
     
     @stack('styles')
 </head>
-<body class="antialiased bg-gray-50 relative">
+<body class="antialiased bg-gray-50 relative overflow-x-hidden" 
+      x-data="{ 
+          currentLayout: localStorage.getItem('app_layout') || '{{ $_COOKIE['app_layout'] ?? 'grid' }}',
+          sidebarOpen: false, 
+          sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' 
+      }"
+      @app-layout-changed.window="currentLayout = $event.detail"
+      x-init="$watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
     @if(auth()->check() && auth()->user()->isOnTrial())
     <div class="fixed bottom-6 right-6 z-[9999] pointer-events-none opacity-40 select-none">
         <div class="bg-gray-900/10 backdrop-blur-sm border border-gray-900/20 px-4 py-2 rounded-full">
@@ -185,464 +192,521 @@
         <p class="global-loader-text">Loading...</p>
     </div>
 
-    <div id="app-content-wrapper" class="min-h-screen flex flex-col">
-        <!-- Navbar -->
-@inject('stockNotiService', 'App\Services\StockNotificationService')
-@php
-    $navStockNotifications = auth()->check() && auth()->user()->outlet_id 
-        ? $stockNotiService->getLatestNotifications(auth()->user()->outlet_id, 15)
-        : collect();
-    
-    // Only show unread notifications in the navbar
-    $navStockNotifications = $navStockNotifications->where('is_read_by_me', false)->values();
-    $unreadStockCount = $navStockNotifications->count();
-@endphp
-<nav id="main-navbar" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16 items-center">
-            
-            <!-- Left: Logo / Outlet -->
-            <div class="flex items-center min-w-0 flex-1">
-                @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
-                    @php
-                        $userOutlets = auth()->user()->isOwner()
-                            ? auth()->user()->outletsOwned->where('is_active', true)->sortBy('name')
-                            : collect([auth()->user()->outlet])->filter(fn($o) => $o && $o->is_active);
+    <div id="app-content-wrapper" class="min-h-screen flex" :class="currentLayout === 'grid' ? 'flex-col' : ''">
+        
+        <!-- Sidebar Structure (For Sidebar layout mode) -->
+        <template x-if="currentLayout === 'sidebar'">
+            <div>
+                <!-- Sidebar Overlay (Mobile) -->
+                <div x-show="sidebarOpen" 
+                    x-transition:enter="transition-opacity duration-300"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity duration-300"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    @click="sidebarOpen = false"
+                    class="fixed inset-0 bg-gray-900/50 z-40 lg:hidden"
+                    style="display: none;"></div>
+                
+                <!-- Aside Sidebar -->
+                <aside class="fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-100 transform lg:translate-x-0"
+                    :class="{ 
+                        'translate-x-0': sidebarOpen, 
+                        '-translate-x-full': !sidebarOpen,
+                        'w-64': !sidebarCollapsed,
+                        'w-20': sidebarCollapsed 
+                    }">
+                    @include('layouts.sidebar-content')
+                </aside>
+            </div>
+        </template>
 
-                        $hasMultipleOutlets = $userOutlets->count() > 1;
-                    @endphp
+        <div class="flex-1 flex flex-col min-h-screen"
+            :class="{ 
+                'lg:ml-64': currentLayout === 'sidebar' && !sidebarCollapsed, 
+                'lg:ml-20': currentLayout === 'sidebar' && sidebarCollapsed 
+            }">
+            <!-- Navbar Grid -->
+            <!-- Navbar Grid (For Grid mode) -->
+            <nav id="main-navbar" x-show="currentLayout === 'grid'" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between h-16 items-center">
+                        
+                        <!-- Left: Logo / Outlet -->
+                        <div class="flex items-center min-w-0 flex-1">
+                            @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
+                                @php
+                                    $userOutlets = auth()->user()->isOwner()
+                                        ? auth()->user()->outletsOwned->where('is_active', true)->sortBy('name')
+                                        : collect([auth()->user()->outlet])->filter(fn($o) => $o && $o->is_active);
 
-                    <!-- Desktop outlet display (same as before, but truncated nicely) -->
-                    <div class="hidden sm:flex items-center">
-                        @if($hasMultipleOutlets)
-                            <!-- Multi Outlet Dropdown (Desktop) -->
-                            <div class="relative" x-data="{ open: false }">
-                                <button @click="open = !open"
-                                    class="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-lg transition">
+                                    $hasMultipleOutlets = $userOutlets->count() > 1;
+                                @endphp
+
+                                <!-- Desktop outlet display -->
+                                <div class="hidden sm:flex items-center">
+                                    @if($hasMultipleOutlets)
+                                        <!-- Multi Outlet Dropdown -->
+                                        <div class="relative" x-data="{ open: false }">
+                                            <button @click="open = !open"
+                                                class="flex items-center space-x-3 hover:bg-gray-50 px-3 py-2 rounded-lg transition">
+                                                @if(auth()->user()->outlet->logo)
+                                                    <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
+                                                        alt="{{ auth()->user()->outlet->name }}"
+                                                        class="h-10 w-10 object-contain rounded-lg">
+                                                @endif
+
+                                                <div class="flex items-center space-x-2 min-w-0">
+                                                    <span class="text-lg font-bold text-gray-900 truncate max-w-[220px]">
+                                                        {{ auth()->user()->outlet->name }}
+                                                    </span>
+                                                    <i class="fa-solid fa-chevron-down text-xs text-gray-600"></i>
+                                                </div>
+                                            </button>
+
+                                            <div x-show="open"
+                                                @click.away="open = false"
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="transform opacity-0 scale-95"
+                                                x-transition:enter-end="transform opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-75"
+                                                x-transition:leave-start="transform opacity-100 scale-100"
+                                                x-transition:leave-end="transform opacity-0 scale-95"
+                                                class="absolute left-0 mt-2 w-72 bg-white rounded-lg shadow-lg py-2 border border-gray-200 z-50"
+                                                style="display:none;">
+
+                                                <div class="px-4 py-2 border-b border-gray-200">
+                                                    <p class="text-xs text-gray-500 font-medium">Pilih Outlet</p>
+                                                </div>
+
+                                                @foreach($userOutlets as $outlet)
+                                                    <form method="POST" action="{{ route('change.outlet') }}">
+                                                        @csrf
+                                                        <input type="hidden" name="outlet_id" value="{{ $outlet->id }}">
+
+                                                        <button type="submit"
+                                                            class="w-full text-left block px-4 py-3 hover:bg-cuan-yellow/20 transition
+                                                            {{ auth()->user()->outlet_id == $outlet->id ? 'bg-cuan-yellow/30' : '' }}">
+                                                            <div class="flex items-center space-x-3">
+                                                                @if($outlet->logo)
+                                                                    <img src="{{ Storage::url($outlet->logo) }}"
+                                                                        alt="{{ $outlet->name }}"
+                                                                        class="h-8 w-8 object-contain rounded">
+                                                                @else
+                                                                    <div
+                                                                        class="h-8 w-8 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
+                                                                        {{ substr($outlet->name, 0, 1) }}
+                                                                    </div>
+                                                                @endif
+
+                                                                <div class="flex-1 min-w-0">
+                                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                                        {{ $outlet->name }}
+                                                                    </p>
+                                                                    <p class="text-xs text-gray-500 truncate">
+                                                                        {{ $outlet->business_category }}
+                                                                    </p>
+                                                                </div>
+
+                                                                @if(auth()->user()->outlet_id == $outlet->id)
+                                                                    <i class="fa-solid fa-check text-cuan-green"></i>
+                                                                @endif
+                                                            </div>
+                                                        </button>
+                                                    </form>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @else
+                                        <!-- Single Outlet -->
+                                        <a href="{{ route('dashboard') }}" class="nav-link flex items-center space-x-3">
+                                            @if(auth()->user()->outlet->logo)
+                                                <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
+                                                    alt="{{ auth()->user()->outlet->name }}"
+                                                    class="h-10 w-10 object-contain rounded-lg">
+                                            @endif
+                                            <span class="text-lg font-bold text-gray-900 truncate max-w-[240px]">
+                                                {{ auth()->user()->outlet->name }}
+                                            </span>
+                                        </a>
+                                    @endif
+                                </div>
+
+                                <!-- Mobile outlet display -->
+                                <a href="{{ route('dashboard') }}" class="sm:hidden flex items-center space-x-2 min-w-0">
                                     @if(auth()->user()->outlet->logo)
                                         <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
                                             alt="{{ auth()->user()->outlet->name }}"
-                                            class="h-10 w-10 object-contain rounded-lg">
+                                            class="h-9 w-9 object-contain rounded-lg">
                                     @endif
+                                    <span class="text-base font-bold text-gray-900 truncate">
+                                        {{ auth()->user()->outlet->name }}
+                                    </span>
+                                </a>
 
-                                    <div class="flex items-center space-x-2 min-w-0">
-                                        <span class="text-lg font-bold text-gray-900 truncate max-w-[220px]">
-                                            {{ auth()->user()->outlet->name }}
-                                        </span>
-                                        <i class="fa-solid fa-chevron-down text-xs text-gray-600"></i>
-                                    </div>
-                                </button>
-
-                                <div x-show="open"
-                                    @click.away="open = false"
-                                    x-transition:enter="transition ease-out duration-100"
-                                    x-transition:enter-start="transform opacity-0 scale-95"
-                                    x-transition:enter-end="transform opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-75"
-                                    x-transition:leave-start="transform opacity-100 scale-100"
-                                    x-transition:leave-end="transform opacity-0 scale-95"
-                                    class="absolute left-0 mt-2 w-72 bg-white rounded-lg shadow-lg py-2 border border-gray-200"
-                                    style="display:none;">
-
-                                    <div class="px-4 py-2 border-b border-gray-200">
-                                        <p class="text-xs text-gray-500 font-medium">Pilih Outlet</p>
-                                    </div>
-
-                                    @foreach($userOutlets as $outlet)
-                                        <form method="POST" action="{{ route('change.outlet') }}">
-                                            @csrf
-                                            <input type="hidden" name="outlet_id" value="{{ $outlet->id }}">
-
-                                            <button type="submit"
-                                                class="w-full text-left block px-4 py-3 hover:bg-cuan-yellow/20 transition
-                                                {{ auth()->user()->outlet_id == $outlet->id ? 'bg-cuan-yellow/30' : '' }}">
-                                                <div class="flex items-center space-x-3">
-                                                    @if($outlet->logo)
-                                                        <img src="{{ Storage::url($outlet->logo) }}"
-                                                            alt="{{ $outlet->name }}"
-                                                            class="h-8 w-8 object-contain rounded">
-                                                    @else
-                                                        <div
-                                                            class="h-8 w-8 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
-                                                            {{ substr($outlet->name, 0, 1) }}
-                                                        </div>
-                                                    @endif
-
-                                                    <div class="flex-1 min-w-0">
-                                                        <p class="text-sm font-medium text-gray-900 truncate">
-                                                            {{ $outlet->name }}
-                                                        </p>
-                                                        <p class="text-xs text-gray-500 truncate">
-                                                            {{ $outlet->business_category }}
-                                                        </p>
-                                                    </div>
-
-                                                    @if(auth()->user()->outlet_id == $outlet->id)
-                                                        <i class="fa-solid fa-check text-cuan-green"></i>
-                                                    @endif
-                                                </div>
-                                            </button>
-                                        </form>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @else
-                            <!-- Single Outlet (Desktop) -->
-                            <a href="{{ route('dashboard') }}" class="nav-link flex items-center space-x-3">
-                                @if(auth()->user()->outlet->logo)
-                                    <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
-                                        alt="{{ auth()->user()->outlet->name }}"
-                                        class="h-10 w-10 object-contain rounded-lg">
-                                @endif
-                                <span class="text-lg font-bold text-gray-900 truncate max-w-[240px]">
-                                    {{ auth()->user()->outlet->name }}
-                                </span>
-                            </a>
-                        @endif
-                    </div>
-
-                    <!-- Mobile outlet display (compact) -->
-                    <a href="{{ route('dashboard') }}" class="sm:hidden flex items-center space-x-2 min-w-0">
-                        @if(auth()->user()->outlet->logo)
-                            <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
-                                alt="{{ auth()->user()->outlet->name }}"
-                                class="h-9 w-9 object-contain rounded-lg">
-                        @endif
-                        <span class="text-base font-bold text-gray-900 truncate">
-                            {{ auth()->user()->outlet->name }}
-                        </span>
-                    </a>
-
-                @else
-                    <!-- No Outlet -->
-                    <a href="{{ route('dashboard') }}" class="nav-link flex items-center space-x-3">
-                        <img src="{{ asset('assets/image/logo.svg') }}" alt="CuanFlow" class="h-10 w-auto">
-                        <span class="text-lg font-bold text-gray-900">CuanFlow</span>
-                    </a>
-                @endif
-            </div>
-
-            <!-- Center: Notification (Desktop) -->
-            <div class="hidden md:flex justify-center items-center flex-1">
-                <div class="relative" x-data="{ notiOpen: false }">
-                    <button @click="notiOpen = !notiOpen" 
-                        class="p-2.5 text-gray-500 hover:text-cuan-dark hover:bg-cuan-green/5 rounded-xl transition-all duration-200 relative group active:scale-95">
-                        <i class="fa-regular fa-bell text-xl"></i>
-                        @if($unreadStockCount > 0)
-                        <span class="absolute top-2 right-2 flex h-2.5 w-2.5">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white"></span>
-                        </span>
-                        @endif
-                    </button>
-
-                    <!-- Dropdown Desktop -->
-                    <div x-show="notiOpen" 
-                        @click.away="notiOpen = false"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 translate-y-2 scale-95"
-                        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                        x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                        class="absolute left-1/2 -translate-x-1/2 mt-4 w-96 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 py-2 z-50 overflow-hidden ring-1 ring-black/5"
-                        style="display:none;">
-                        
-                        <div class="px-5 py-4 flex items-center justify-between border-b border-gray-50">
-                            <div>
-                                <h3 class="text-base font-bold text-gray-900">Notifikasi</h3>
-                                <p class="text-xs text-gray-500 font-medium mt-0.5">
-                                    @if($unreadStockCount > 0)
-                                        Anda memiliki {{ $unreadStockCount }} peringatan stok
-                                    @else
-                                        Tidak ada peringatan stok baru
-                                    @endif
-                                </p>
-                            </div>
-                            @if($unreadStockCount > 0)
-                            <button onclick="markAllStockAsRead()" class="text-[10px] font-bold text-cuan-dark hover:text-cuan-green bg-cuan-green/10 hover:bg-cuan-green/20 px-3 py-1.5 rounded-full transition-colors">
-                                Tandai Dibaca
-                            </button>
+                            @else
+                                <!-- No Outlet -->
+                                <a href="{{ route('dashboard') }}" class="nav-link flex items-center space-x-3">
+                                    <img src="{{ asset('assets/image/logo.svg') }}" alt="CuanFlow" class="h-10 w-auto">
+                                    <span class="text-lg font-bold text-gray-900">CuanFlow</span>
+                                </a>
                             @endif
                         </div>
 
-                        <div class="max-h-[380px] overflow-y-auto custom-scrollbar p-2">
-                            @forelse($navStockNotifications as $noti)
-                            <a href="{{ route('stock-notifications.index') }}" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1 {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
-                                <div class="flex gap-4">
-                                    <div class="h-10 w-10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-all duration-300 shadow-sm border 
-                                        {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
-                                        <i class="fa-solid {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'fa-circle-xmark' : 'fa-triangle-exclamation' }} text-sm"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0 pt-0.5">
-                                        <div class="flex justify-between items-start mb-0.5">
-                                            <p class="text-sm font-bold text-gray-900 truncate">{{ $noti->title }}</p>
-                                            <span class="text-[10px] text-gray-400 font-medium">{{ $noti->created_at->diffForHumans() }}</span>
+                        <!-- Center: Notification (Desktop Grid) -->
+                        <div class="hidden md:flex justify-center items-center flex-1">
+                            <div class="relative" x-data="{ notiOpen: false }">
+                                <button @click="notiOpen = !notiOpen" 
+                                    class="p-2.5 text-gray-500 hover:text-cuan-dark hover:bg-cuan-green/5 rounded-xl transition-all duration-200 relative group active:scale-95">
+                                    <i class="fa-regular fa-bell text-xl"></i>
+                                    @if($unreadStockCount > 0)
+                                    <span class="absolute top-2 right-2 flex h-2.5 w-2.5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white"></span>
+                                    </span>
+                                    @endif
+                                </button>
+
+                                <!-- Dropdown Grid -->
+                                <div x-show="notiOpen" 
+                                    @click.away="notiOpen = false"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                    x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                                    class="absolute left-1/2 -translate-x-1/2 mt-4 w-96 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 py-2 z-50 overflow-hidden ring-1 ring-black/5"
+                                    style="display:none;">
+                                    
+                                    <div class="px-5 py-4 flex items-center justify-between border-b border-gray-50">
+                                        <div>
+                                            <h3 class="text-base font-bold text-gray-900">Notifikasi</h3>
+                                            <p class="text-xs text-gray-500 font-medium mt-0.5">
+                                                @if($unreadStockCount > 0)
+                                                    Anda memiliki {{ $unreadStockCount }} peringatan stok
+                                                @else
+                                                    Tidak ada peringatan stok baru
+                                                @endif
+                                            </p>
                                         </div>
-                                        <p class="text-xs text-gray-500 leading-relaxed line-clamp-1">
-                                            {{ $noti->message }}
-                                        </p>
+                                    </div>
+
+                                    <div class="max-h-[380px] overflow-y-auto custom-scrollbar p-2">
+                                        @forelse($navStockNotifications as $noti)
+                                        <a href="{{ route('stock-notifications.index') }}" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1 {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
+                                            <div class="flex gap-4">
+                                                <div class="h-10 w-10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-all duration-300 shadow-sm border 
+                                                    {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
+                                                    <i class="fa-solid {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'fa-circle-xmark' : 'fa-triangle-exclamation' }} text-sm"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0 pt-0.5">
+                                                    <div class="flex justify-between items-start mb-0.5">
+                                                        <p class="text-sm font-bold text-gray-900 truncate">{{ $noti->title }}</p>
+                                                        <span class="text-[10px] text-gray-400 font-medium">{{ $noti->created_at->diffForHumans() }}</span>
+                                                    </div>
+                                                    <p class="text-xs text-gray-500 leading-relaxed line-clamp-1">
+                                                        {{ $noti->message }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        @empty
+                                        <div class="py-12 text-center text-gray-400">
+                                            <i class="fa-solid fa-check-circle text-2xl mb-2 opacity-20"></i>
+                                            <p class="text-[11px]">Semua aman, Bos!</p>
+                                        </div>
+                                        @endforelse
+                                    </div>
+
+                                    <div class="p-3 border-t border-gray-50 bg-gray-50/50">
+                                        <a href="{{ route('stock-notifications.index') }}" class="flex items-center justify-center w-full py-2.5 text-xs font-bold text-cuan-dark bg-white border border-gray-200 rounded-xl hover:bg-cuan-dark hover:text-white hover:border-cuan-dark transition-all duration-200 shadow-sm group">
+                                            Laporan Stok Lengkap
+                                            <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                                        </a>
                                     </div>
                                 </div>
-                            </a>
-                            @empty
-                            <div class="py-12 text-center">
-                                <i class="fa-solid fa-check-circle text-gray-200 text-3xl mb-2"></i>
-                                <p class="text-xs text-gray-400 font-medium">Semua stok aman</p>
                             </div>
-                            @endforelse
                         </div>
 
-                        <div class="p-3 border-t border-gray-50 bg-gray-50/50">
-                            <a href="{{ route('stock-notifications.index') }}" class="flex items-center justify-center w-full py-2.5 text-xs font-bold text-cuan-dark bg-white border border-gray-200 rounded-xl hover:bg-cuan-dark hover:text-white hover:border-cuan-dark transition-all duration-200 shadow-sm group">
-                                Lihat Semua Pemberitahuan Stok
-                                <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                            </a>
+                        <!-- Right: Desktop user dropdown -->
+                        <div class="hidden sm:flex items-center space-x-4 flex-1 justify-end">
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="flex items-center gap-2 hover:bg-gray-50 rounded-xl px-1 py-1 transition-all">
+                                    <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-50">
+                                    <div class="hidden sm:block text-left mr-1">
+                                        <span class="block text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">{{ auth()->user()->name }}</span>
+                                        <span class="block text-[9px] font-bold text-emerald-600 uppercase tracking-wider mt-1">{{ auth()->user()->getRoleNames()->first() }}</span>
+                                    </div>
+                                    <i class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                                </button>
+
+                                <div x-show="open" @click.away="open = false" 
+                                     class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden"
+                                     x-transition style="display:none;">
+                                    <div class="px-4 py-3 border-b border-gray-100">
+                                        <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                                        <p class="text-[10px] text-gray-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
+                                    </div>
+                                    
+                                    <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                                        <i class="fas fa-user-gear w-4 text-center text-gray-400"></i>
+                                        <span>Pengaturan dan Akun</span>
+                                    </a>
+
+                                    <a href="{{ route('stock-notifications.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                                        <i class="fas fa-bell w-4 text-center text-gray-400"></i>
+                                        <span>Notifikasi</span>
+                                    </a>
+                                    
+                                    @hasrole('owner')
+                                    <a href="{{ route('subscription.manage') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                                        <i class="fas fa-crown w-4 text-center text-emerald-500"></i>
+                                        <span>Langganan VIP</span>
+                                    </a>
+                                    @endhasrole
+
+                                    <div class="border-t border-gray-100 mt-2 pt-2">
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors font-bold logout-btn">
+                                                <i class="fas fa-sign-out-alt w-4 text-center"></i>
+                                                <span>Keluar Aplikasi</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Mobile hamburger & Notification -->
+                        <div class="sm:hidden flex items-center space-x-2">
+                            <div class="relative" x-data="{ notiOpen: false }">
+                                <button @click="notiOpen = !notiOpen" 
+                                    class="p-2 text-gray-400 hover:text-gray-900 focus:outline-none relative active:bg-gray-100 rounded-lg transition-colors">
+                                    <i class="fa-regular fa-bell text-xl"></i>
+                                    @if($unreadStockCount > 0)
+                                    <span class="absolute top-1.5 right-2 flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500 border-2 border-white"></span>
+                                    </span>
+                                    @endif
+                                </button>
+
+                                <!-- Dropdown Mobile -->
+                                <div x-show="notiOpen" 
+                                    @click.away="notiOpen = false"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 scale-95 origin-top-right"
+                                    x-transition:enter-end="opacity-100 scale-100 origin-top-right"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 scale-100 origin-top-right"
+                                    x-transition:leave-end="opacity-0 scale-95 origin-top-right"
+                                    class="absolute right-0 mt-3 w-[85vw] max-w-[320px] bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden ring-1 ring-black/5"
+                                    style="display:none;">
+                                    
+                                    <div class="px-4 py-3 flex items-center justify-between border-b border-gray-50">
+                                        <h3 class="text-sm font-bold text-gray-900">Notifikasi ({{ $unreadStockCount }})</h3>
+                                    </div>
+
+                                    <div class="max-h-[350px] overflow-y-auto custom-scrollbar">
+                                        @forelse($navStockNotifications as $noti)
+                                        <a href="{{ route('stock-notifications.index') }}" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 group {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
+                                            <div class="flex gap-3">
+                                                <div class="h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 border 
+                                                    {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
+                                                    <i class="fa-solid {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'fa-circle-xmark' : 'fa-triangle-exclamation' }} text-xs"></i>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <div class="flex justify-between items-start">
+                                                        <p class="text-xs font-bold text-gray-900 truncate">{{ $noti->title }}</p>
+                                                        <span class="text-[10px] text-gray-400">{{ $noti->created_at->diffForHumans() }}</span>
+                                                    </div>
+                                                    <p class="text-[11px] text-gray-500 mt-0.5 line-clamp-1">{{ $noti->message }}</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        @empty
+                                        <div class="py-8 text-center text-gray-400">
+                                            <p class="text-[10px]">Semua aman, Bos!</p>
+                                        </div>
+                                        @endforelse
+                                    </div>
+                                    <div class="p-3 border-t border-gray-50 bg-gray-50/50">
+                                        <a href="{{ route('stock-notifications.index') }}" class="block w-full text-center py-2 text-xs font-bold text-emerald-600 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                            Lihat Semua
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button @click="mobileOpen = !mobileOpen"
+                                class="inline-flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 focus:outline-none"
+                                aria-label="Open menu">
+                                <svg class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path x-show="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                                    <path x-show="mobileOpen" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" style="display:none;" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Right: Desktop user dropdown -->
-            <div class="hidden sm:flex items-center space-x-4 flex-1 justify-end">
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="flex items-center gap-2 hover:bg-gray-50 rounded-xl px-1 py-1 transition-all">
-                        <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-50">
-                        <div class="hidden sm:block text-left mr-1">
-                            <span class="block text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">{{ auth()->user()->name }}</span>
-                            <span class="block text-[9px] font-bold text-emerald-600 uppercase tracking-wider mt-1">{{ auth()->user()->getRoleNames()->first() }}</span>
-                        </div>
-                        <i class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''"></i>
-                    </button>
+                <!-- Mobile panel Grid -->
+                <div x-show="mobileOpen"
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 -translate-y-2"
+                    class="sm:hidden border-t border-gray-200 bg-white"
+                    style="display:none;"
+                    @click.away="mobileOpen = false">
 
-                    <div x-show="open" @click.away="open = false" 
-                         class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden"
-                         x-transition style="display:none;">
-                        <div class="px-4 py-3 border-b border-gray-100">
-                            <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
-                            <p class="text-[10px] text-gray-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
-                        </div>
-                        
-                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
-                            <i class="fas fa-user-gear w-4 text-center text-gray-400"></i>
-                            <span>Pengaturan dan Akun</span>
-                        </a>
-
-                        <a href="{{ route('stock-notifications.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
-                            <i class="fas fa-bell w-4 text-center text-gray-400"></i>
-                            <span>Notifikasi</span>
-                        </a>
-                        
-                        @hasrole('owner')
-                        <a href="{{ route('subscription.manage') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
-                            <i class="fas fa-crown w-4 text-center text-emerald-500"></i>
-                            <span>Langganan VIP</span>
-                        </a>
-                        @endhasrole
-
-                        <div class="border-t border-gray-100 mt-2 pt-2">
+                    <div class="px-4 py-3 space-y-3">
+                        <!-- Actions -->
+                        <div class="pt-2 space-y-2">
+                            <a href="{{ route('profile.edit') }}" class="nav-link flex items-center w-full px-3 py-2 rounded-lg hover:bg-emerald-50 text-gray-900">
+                                <i class="fa-solid fa-gear mr-2 text-gray-400"></i>
+                                Pengaturan dan Akun
+                            </a>
+                            <a href="{{ route('stock-notifications.index') }}" class="nav-link flex items-center w-full px-3 py-2 rounded-lg hover:bg-emerald-50 text-gray-900">
+                                <i class="fa-solid fa-bell mr-2 text-gray-400"></i>
+                                Notifikasi
+                            </a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors font-bold logout-btn">
-                                    <i class="fas fa-sign-out-alt w-4 text-center"></i>
-                                    <span>Keluar Aplikasi</span>
+                                <button type="submit" class="logout-btn flex items-center w-full px-3 py-2 rounded-lg hover:bg-red-50 text-red-600">
+                                    <i class="fa-solid fa-right-from-bracket mr-2"></i>
+                                    Logout
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
-            </div>
+            </nav>
 
-            <!-- Right: Mobile hamburger & Notification -->
-            <div class="sm:hidden flex items-center space-x-2">
-                <div class="relative" x-data="{ notiOpen: false }">
-                    <button @click="notiOpen = !notiOpen" 
-                        class="p-2 text-gray-500 hover:text-gray-900 focus:outline-none relative active:bg-gray-100 rounded-lg transition-colors">
-                        <i class="fa-regular fa-bell text-xl"></i>
-                        @if($unreadStockCount > 0)
-                        <span class="absolute top-1.5 right-2 flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500 border-2 border-white"></span>
-                        </span>
-                        @endif
-                    </button>
-
-                    <!-- Dropdown Mobile -->
-                    <div x-show="notiOpen" 
-                        @click.away="notiOpen = false"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95 origin-top-right"
-                        x-transition:enter-end="opacity-100 scale-100 origin-top-right"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 scale-100 origin-top-right"
-                        x-transition:leave-end="opacity-0 scale-95 origin-top-right"
-                        class="absolute right-0 mt-3 w-[85vw] max-w-[320px] bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden ring-1 ring-black/5"
-                        style="display:none;">
-                        
-                        <div class="px-4 py-3 flex items-center justify-between border-b border-gray-50">
-                            <h3 class="text-sm font-bold text-gray-900">Notifikasi ({{ $unreadStockCount }})</h3>
-                            @if($unreadStockCount > 0)
-                            <button onclick="markAllStockAsRead()" class="text-[10px] font-bold text-cuan-dark">
-                                Tandai Dibaca
-                            </button>
-                            @endif
-                        </div>
-
-                        <div class="max-h-[350px] overflow-y-auto custom-scrollbar">
-                            @forelse($navStockNotifications as $noti)
-                            <a href="{{ route('stock-notifications.index') }}" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 group {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
-                                <div class="flex gap-3">
-                                    <div class="h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 border 
-                                        {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
-                                        <i class="fa-solid {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'fa-circle-xmark' : 'fa-triangle-exclamation' }} text-xs"></i>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex justify-between items-start">
-                                            <p class="text-xs font-bold text-gray-900 truncate">{{ $noti->title }}</p>
-                                            <span class="text-[10px] text-gray-400">{{ $noti->created_at->diffForHumans() }}</span>
-                                        </div>
-                                        <p class="text-[11px] text-gray-500 mt-0.5 line-clamp-1">{{ $noti->message }}</p>
-                                    </div>
-                                </div>
-                            </a>
-                            @empty
-                            <div class="py-8 text-center">
-                                <p class="text-[10px] text-gray-400">Tidak ada notifikasi</p>
-                            </div>
-                            @endforelse
-                        </div>
-                        <div class="p-3 border-t border-gray-50 bg-gray-50/50">
-                            <a href="{{ route('stock-notifications.index') }}" class="block w-full text-center py-2 text-xs font-bold text-cuan-dark bg-white border border-gray-200 rounded-lg shadow-sm">
-                                Lihat Semua
-                            </a>
-                        </div>
+            <!-- Sidebar Top Header (For Sidebar mode) -->
+            <header x-show="currentLayout === 'sidebar'" class="bg-white border-b border-gray-100 sticky top-0 z-40 h-16 flex items-center shadow-sm">
+                <div class="flex items-center justify-between w-full px-4 lg:px-8">
+                    <!-- Left: Toggle & Title -->
+                    <div class="flex items-center gap-4">
+                        <!-- Desktop Toggle -->
+                        <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden lg:flex text-gray-500 hover:text-emerald-600 p-2 hover:bg-emerald-50 rounded-lg transition-colors">
+                            <i class="fas" :class="sidebarCollapsed ? 'fa-indent' : 'fa-outdent'"></i>
+                        </button>
+                        <!-- Mobile Toggle -->
+                        <button @click="sidebarOpen = true" class="lg:hidden text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h1 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] hidden sm:block">
+                            @yield('title')
+                        </h1>
                     </div>
-                </div>
+                    
+                    <!-- Right: Notifications & User -->
+                    <div class="flex items-center gap-2 sm:gap-4">
+                        <!-- Notifications Sidebar Top Header -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="p-2.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl relative transition-all">
+                                <i class="fa-regular fa-bell text-lg"></i>
+                                @if($unreadStockCount > 0)
+                                    <span class="absolute top-2.5 right-2.5 flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500 border border-white"></span>
+                                    </span>
+                                @endif
+                            </button>
 
-                <button @click="mobileOpen = !mobileOpen"
-                    class="inline-flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 focus:outline-none"
-                    aria-label="Open menu">
-                    <svg class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path x-show="!mobileOpen" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                        <path x-show="mobileOpen" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" style="display:none;" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mobile panel -->
-    <div x-show="mobileOpen"
-        x-transition:enter="transition ease-out duration-150"
-        x-transition:enter-start="opacity-0 -translate-y-2"
-        x-transition:enter-end="opacity-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-100"
-        x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 -translate-y-2"
-        class="sm:hidden border-t border-gray-200 bg-white"
-        style="display:none;"
-        @click.away="mobileOpen = false">
-
-        <div class="px-4 py-3 space-y-3">
-            <!-- User info -->
-            <div class="flex items-center space-x-3">
-                <img src="{{ auth()->user()->avatar_url }}"
-                    alt="{{ auth()->user()->name }}"
-                    class="h-10 w-10 rounded-full object-cover">
-                <div class="min-w-0">
-                    <p class="text-sm font-semibold text-gray-900 truncate">{{ auth()->user()->name }}</p>
-                    @if(auth()->user()->outlet_id)
-                        <p class="text-xs text-gray-500 truncate">
-                            {{ auth()->user()->outlet->name }} • {{ auth()->user()->getRoleNames()->first() }}
-                        </p>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Mobile outlet switcher (only if multiple) -->
-            @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
-                @php
-                    $userOutlets = auth()->user()->isOwner()
-                        ? auth()->user()->outletsOwned->where('is_active', true)->sortBy('name')
-                        : collect([auth()->user()->outlet])->filter(fn($o) => $o && $o->is_active);
-                    $hasMultipleOutlets = $userOutlets->count() > 1;
-                @endphp
-
-                @if($hasMultipleOutlets)
-                    <div class="pt-2 border-t border-gray-100">
-                        <p class="text-xs font-medium text-gray-500 mb-2">Pilih Outlet</p>
-                        <div class="space-y-2">
-                            @foreach($userOutlets as $outlet)
-                                <form method="POST" action="{{ route('change.outlet') }}">
-                                    @csrf
-                                    <input type="hidden" name="outlet_id" value="{{ $outlet->id }}">
-                                    <button type="submit"
-                                        class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg border
-                                            {{ auth()->user()->outlet_id == $outlet->id ? 'border-cuan-green bg-cuan-yellow/20' : 'border-gray-200 hover:bg-gray-50' }}">
-                                        @if($outlet->logo)
-                                            <img src="{{ Storage::url($outlet->logo) }}" alt="{{ $outlet->name }}"
-                                                class="h-8 w-8 object-contain rounded">
-                                        @else
-                                            <div class="h-8 w-8 rounded bg-gradient-to-br from-cuan-olive to-cuan-green flex items-center justify-center text-white font-semibold text-sm">
-                                                {{ substr($outlet->name, 0, 1) }}
-                                            </div>
-                                        @endif
-                                        <div class="flex-1 min-w-0 text-left">
-                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $outlet->name }}</p>
-                                            <p class="text-xs text-gray-500 truncate">{{ $outlet->business_category }}</p>
+                            <!-- Noti Dropdown Sidebar Header -->
+                            <div x-show="open" @click.away="open = false" 
+                                 class="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 ring-1 ring-black/5 z-50 overflow-hidden"
+                                 x-transition style="display:none;">
+                                <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/30">
+                                    <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest text-center">Pemberitahuan</h3>
+                                </div>
+                                <div class="max-h-80 overflow-y-auto custom-scrollbar p-1">
+                                    @forelse($navStockNotifications as $noti)
+                                        <a href="{{ route('stock-notifications.index') }}" class="block p-3 rounded-xl hover:bg-gray-50 transition-colors mb-1">
+                                            <p class="text-xs font-bold text-gray-900 truncate">{{ $noti->title }}</p>
+                                            <p class="text-[10px] text-gray-500 mt-0.5">{{ $noti->message }}</p>
+                                        </a>
+                                    @empty
+                                        <div class="py-8 text-center text-gray-400">
+                                            <p class="text-[10px]">Semua aman, Bos!</p>
                                         </div>
-                                        @if(auth()->user()->outlet_id == $outlet->id)
-                                            <i class="fa-solid fa-check text-cuan-green"></i>
-                                        @endif
+                                    @endforelse
+                                </div>
+                                <a href="{{ route('stock-notifications.index') }}" class="block w-full py-3 text-center text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-gray-50 hover:bg-emerald-50">Lihat Laporan Lengkap</a>
+                            </div>
+                        </div>
+
+                        <!-- User Dropdown (Common UI in Grid & Sidebar) -->
+                        <!-- The user requested it to be uniform, so I'll just keep the one I added in Chunk 2 -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center gap-2 hover:bg-gray-50 rounded-xl px-1 py-1 transition-all">
+                                <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-50">
+                                <div class="hidden sm:block text-left mr-1">
+                                    <span class="block text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">{{ auth()->user()->name }}</span>
+                                    <span class="block text-[9px] font-bold text-emerald-600 uppercase tracking-wider mt-1">{{ auth()->user()->getRoleNames()->first() }}</span>
+                                </div>
+                                <i class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                            </button>
+                            <!-- Dropdown UI (Already handled in reactive way if we use Same Component, but for now I'll just hardcode it here for the Sidebar mode) -->
+                            <div x-show="open" @click.away="open = false" 
+                                 class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden"
+                                 x-transition style="display:none;">
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                                    <p class="text-[10px] text-gray-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
+                                </div>
+                                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-user-gear w-4 text-center"></i>
+                                    <span>Pengaturan Akun</span>
+                                </a>
+                                <a href="{{ route('stock-notifications.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-bell w-4 text-center"></i>
+                                    <span>Notifikasi</span>
+                                </a>
+                                <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100 mt-2">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-xs text-red-600 hover:bg-red-50 font-bold">
+                                        <i class="fas fa-sign-out-alt w-4 text-center"></i>
+                                        <span>Logout</span>
                                     </button>
                                 </form>
-                            @endforeach
+                            </div>
                         </div>
                     </div>
-                @endif
+                </div>
+            </header>
+
+            <!-- Breadcrumbs -->
+            @if(View::hasSection('breadcrumb'))
+            <div class="bg-white border-b border-gray-100 shadow-sm">
+                <div :class="currentLayout === 'sidebar' ? 'px-4 lg:px-8 py-3' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3'">
+                    <nav class="flex" aria-label="Breadcrumb">
+                        <ol class="flex items-center space-x-2 text-sm">
+                            <li>
+                                <a href="{{ route('dashboard') }}" class="nav-link text-gray-400 hover:text-emerald-600 flex items-center transition-colors">
+                                    <i class="fa-solid fa-house text-xs"></i>
+                                </a>
+                            </li>
+                            @yield('breadcrumb')
+                        </ol>
+                    </nav>
+                </div>
+            </div>
             @endif
 
-            <!-- Actions -->
-            <div class="pt-2 border-t border-gray-100 space-y-2">
-                <a href="{{ route('profile.edit') }}"
-                    class="nav-link flex items-center w-full px-3 py-2 rounded-lg hover:bg-cuan-yellow/20 text-gray-900">
-                    <i class="fa-solid fa-gear mr-2"></i>
-                    Pengaturan dan Akun
-                </a>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                        class="logout-btn flex items-center w-full px-3 py-2 rounded-lg hover:bg-red-50 text-red-600">
-                        <i class="fa-solid fa-right-from-bracket mr-2"></i>
-                        Logout
-                    </button>
-                </form>
-            </div>
+            <!-- Main Page Content -->
+            <main class="flex-grow">
+                @yield('content')
+            </main>
         </div>
     </div>
-</nav>
-
-
-        <!-- Breadcrumbs -->
-        @if(View::hasSection('breadcrumb'))
-        <div class="bg-white border-b border-gray-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                <nav class="flex" aria-label="Breadcrumb">
-                    <ol class="flex items-center space-x-2 text-sm">
-                        <li>
-                            <a href="{{ route('dashboard') }}" class="nav-link text-gray-500 hover:text-gray-700 flex items-center">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
-                                </svg>
-                            </a>
-                        </li>
-                        @yield('breadcrumb')
-                    </ol>
-                </nav>
-            </div>
-        </div>
-        @endif
 
         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
             @csrf
