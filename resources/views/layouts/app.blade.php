@@ -177,9 +177,11 @@
           set currentLayout(val) { $store.app.layout = val },
           get sidebarCollapsed() { return $store.app.sidebarCollapsed },
           set sidebarCollapsed(val) { $store.app.sidebarCollapsed = val },
+          get isFullScreen() { return $store.app.isFullScreen },
           sidebarOpen: false
       }"
-      @app-layout-changed.window="$store.app.setLayout($event.detail)">
+      @app-layout-changed.window="$store.app.setLayout($event.detail)"
+      @toggle-fullscreen.window="$store.app.setFullScreen($event.detail)">
     @if(auth()->check() && auth()->user()->isOnTrial())
     <div class="fixed bottom-6 right-6 z-[9999] pointer-events-none opacity-40 select-none">
         <div class="bg-gray-900/10 backdrop-blur-sm border border-gray-900/20 px-4 py-2 rounded-full">
@@ -207,7 +209,7 @@
     <div id="app-content-wrapper" class="min-h-screen flex" :class="currentLayout === 'grid' ? 'flex-col' : ''">
         
         <!-- Sidebar Structure (For Sidebar layout mode) -->
-        <template x-if="currentLayout === 'sidebar'">
+        <template x-if="currentLayout === 'sidebar' && !isFullScreen">
             <div>
                 <!-- Sidebar Overlay (Mobile) -->
                 <div x-show="sidebarOpen" 
@@ -234,14 +236,15 @@
             </div>
         </template>
 
-        <div class="flex-1 flex flex-col min-h-screen"
+        <div class="flex-1 flex flex-col min-h-screen transition-all duration-300"
             :class="{ 
-                'lg:ml-64': currentLayout === 'sidebar' && !sidebarCollapsed, 
-                'lg:ml-20': currentLayout === 'sidebar' && sidebarCollapsed 
+                'lg:ml-64': currentLayout === 'sidebar' && !sidebarCollapsed && !isFullScreen, 
+                'lg:ml-20': currentLayout === 'sidebar' && sidebarCollapsed && !isFullScreen,
+                'lg:ml-0': isFullScreen
             }">
             <!-- Navbar Grid -->
             <!-- Navbar Grid (For Grid mode) -->
-            <nav id="main-navbar" x-show="currentLayout === 'grid'" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
+            <nav id="main-navbar" x-show="currentLayout === 'grid' && !isFullScreen" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16 items-center">
                         
@@ -601,7 +604,7 @@
             </nav>
 
             <!-- Sidebar Top Header (For Sidebar mode) -->
-            <header x-show="currentLayout === 'sidebar'" class="bg-white border-b border-gray-100 sticky top-0 z-40 h-16 flex items-center shadow-sm">
+            <header x-show="currentLayout === 'sidebar' && !isFullScreen" class="bg-white border-b border-gray-100 sticky top-0 z-40 h-16 flex items-center shadow-sm">
                 <div class="flex items-center justify-between w-full px-4 lg:px-8">
                     <!-- Left: Toggle & Title -->
                     <div class="flex items-center gap-4">
@@ -657,40 +660,52 @@
 
                         <!-- User Dropdown (Common UI in Grid & Sidebar) -->
                         <!-- The user requested it to be uniform, so I'll just keep the one I added in Chunk 2 -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="flex items-center gap-2 hover:bg-gray-50 rounded-xl px-1 py-1 transition-all">
-                                <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-50">
-                                <div class="hidden sm:block text-left mr-1">
-                                    <span class="block text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">{{ auth()->user()->name }}</span>
-                                    <span class="block text-[9px] font-bold text-emerald-600 uppercase tracking-wider mt-1">{{ auth()->user()->getRoleNames()->first() }}</span>
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="flex items-center gap-2 hover:bg-gray-50 rounded-xl px-1 py-1 transition-all">
+                                    <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-50">
+                                    <div class="hidden sm:block text-left mr-1">
+                                        <span class="block text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">{{ auth()->user()->name }}</span>
+                                        <span class="block text-[9px] font-bold text-emerald-600 uppercase tracking-wider mt-1">{{ auth()->user()->getRoleNames()->first() }}</span>
+                                    </div>
+                                    <i class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                                </button>
+
+                                <div x-show="open" @click.away="open = false" 
+                                     class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden"
+                                     x-transition style="display:none;">
+                                    <div class="px-4 py-3 border-b border-gray-100">
+                                        <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                                        <p class="text-[10px] text-gray-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
+                                    </div>
+                                    
+                                    <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                                        <i class="fas fa-user-gear w-4 text-center text-gray-400"></i>
+                                        <span>Pengaturan dan Akun</span>
+                                    </a>
+
+                                    <a href="{{ route('stock-notifications.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                                        <i class="fas fa-bell w-4 text-center text-gray-400"></i>
+                                        <span>Notifikasi</span>
+                                    </a>
+                                    
+                                    @hasrole('owner')
+                                    <a href="{{ route('subscription.manage') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors nav-link">
+                                        <i class="fas fa-crown w-4 text-center text-emerald-500"></i>
+                                        <span>Langganan VIP</span>
+                                    </a>
+                                    @endhasrole
+
+                                    <div class="border-t border-gray-100 mt-2 pt-2">
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors font-bold logout-btn">
+                                                <i class="fas fa-sign-out-alt w-4 text-center"></i>
+                                                <span>Keluar Aplikasi</span>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
-                                <i class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''"></i>
-                            </button>
-                            <!-- Dropdown UI (Already handled in reactive way if we use Same Component, but for now I'll just hardcode it here for the Sidebar mode) -->
-                            <div x-show="open" @click.away="open = false" 
-                                 class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden"
-                                 x-transition style="display:none;">
-                                <div class="px-4 py-3 border-b border-gray-100">
-                                    <p class="text-xs font-bold text-gray-900 truncate">{{ auth()->user()->name }}</p>
-                                    <p class="text-[10px] text-gray-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
-                                </div>
-                                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors">
-                                    <i class="fas fa-user-gear w-4 text-center"></i>
-                                    <span>Pengaturan Akun</span>
-                                </a>
-                                <a href="{{ route('stock-notifications.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-100 transition-colors">
-                                    <i class="fas fa-bell w-4 text-center"></i>
-                                    <span>Notifikasi</span>
-                                </a>
-                                <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100 mt-2">
-                                    @csrf
-                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-xs text-red-600 hover:bg-red-50 font-bold">
-                                        <i class="fas fa-sign-out-alt w-4 text-center"></i>
-                                        <span>Logout</span>
-                                    </button>
-                                </form>
                             </div>
-                        </div>
                     </div>
                 </div>
             </header>
@@ -730,6 +745,7 @@
             Alpine.store('app', {
                 layout: localStorage.getItem('app_layout') || '{{ $_COOKIE["app_layout"] ?? "grid" }}',
                 sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+                isFullScreen: false,
                 setLayout(val) {
                     this.layout = val;
                     localStorage.setItem('app_layout', val);
@@ -738,6 +754,9 @@
                 toggleSidebar() {
                     this.sidebarCollapsed = !this.sidebarCollapsed;
                     localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
+                },
+                setFullScreen(val) {
+                    this.isFullScreen = val;
                 }
             });
         });
