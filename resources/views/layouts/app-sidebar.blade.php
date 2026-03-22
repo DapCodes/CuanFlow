@@ -57,18 +57,20 @@
             opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease;
         }
         .global-page-loader.active { opacity: 1; visibility: visible; }
-        .global-loader-asterisk { width: 60px; height: 60px; animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.15); } 100% { transform: rotate(360deg) scale(1); } }
         #app-content-wrapper { opacity: 0; transition: opacity 0.6s ease; }
         #app-content-wrapper.ready { opacity: 1; }
+        
+        /* Smooth transitions for sidebar */
+        .sidebar-transition { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .content-transition { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
     
     @stack('styles')
 </head>
-<body class="antialiased bg-gray-50/50 text-gray-900" x-data="{ sidebarOpen: false }">
+<body class="antialiased bg-gray-50/50 text-gray-900" x-data="{ sidebarOpen: false, sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true' }" x-init="$watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))">
     <!-- Loader -->
     <div id="global-page-loader" class="global-page-loader active">
-        <svg class="global-loader-asterisk" viewBox="0 0 80 80" fill="none">
+        <svg  width="60" height="60" viewBox="0 0 80 80" fill="none" class="animate-spin">
             <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#31694E" stroke-width="8" stroke-linecap="round"/>
         </svg>
         <p class="mt-4 text-cuan-dark font-bold">Loading...</p>
@@ -77,10 +79,10 @@
     <div id="app-content-wrapper" class="min-h-screen flex">
         <!-- Sidebar Overlay (Mobile) -->
         <div x-show="sidebarOpen" 
-             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter="transition-opacity duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
-             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave="transition-opacity duration-300"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
              @click="sidebarOpen = false"
@@ -88,13 +90,23 @@
              style="display: none;"></div>
         
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 transform transition-transform duration-300 ease-in-out lg:translate-x-0"
-               :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+        <aside class="fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-100 transform lg:translate-x-0 sidebar-transition"
+               :class="{ 
+                   'translate-x-0': sidebarOpen, 
+                   '-translate-x-full': !sidebarOpen,
+                   'w-64': !sidebarCollapsed,
+                   'w-20': sidebarCollapsed 
+               }">
             @include('layouts.sidebar-content')
         </aside>
         
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col min-h-screen lg:ml-64">
+        <div class="flex-1 flex flex-col min-h-screen content-transition"
+             :class="{ 
+                 'lg:ml-64': !sidebarCollapsed, 
+                 'lg:ml-20': sidebarCollapsed 
+             }">
+            
             <!-- Navbar -->
             @inject('stockNotiService', 'App\Services\StockNotificationService')
             @php
@@ -105,28 +117,33 @@
                 $unreadStockCount = $navStockNotifications->count();
             @endphp
             
-            <header class="bg-white border-b border-gray-200 sticky top-0 z-40 h-16 flex items-center">
+            <header class="bg-white border-b border-gray-100 sticky top-0 z-40 h-16 flex items-center">
                 <div class="flex items-center justify-between w-full px-4 lg:px-8">
                     <!-- Left: Toggle & Title -->
                     <div class="flex items-center gap-4">
+                        <!-- Desktop Toggle -->
+                        <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden lg:flex text-gray-500 hover:text-emerald-600 transition-colors">
+                            <i class="fas" :class="sidebarCollapsed ? 'fa-indent' : 'fa-outdent'"></i>
+                        </button>
+                        <!-- Mobile Toggle -->
                         <button @click="sidebarOpen = true" class="lg:hidden text-gray-600 hover:text-gray-900">
                             <i class="fas fa-bars text-xl"></i>
                         </button>
-                        <h1 class="text-sm font-bold text-gray-700 uppercase tracking-widest hidden sm:block">
+                        <h1 class="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] hidden sm:block">
                             @yield('title')
                         </h1>
                     </div>
                     
                     <!-- Right: Notifications & User -->
                     <div class="flex items-center gap-2 sm:gap-4">
-                        <!-- Notifications (Stock) -->
+                        <!-- Notifications -->
                         <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="p-2 text-gray-500 hover:text-cuan-dark hover:bg-gray-50 rounded-xl relative transition-all">
-                                <i class="fa-regular fa-bell text-xl"></i>
+                            <button @click="open = !open" class="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl relative transition-all">
+                                <i class="fa-regular fa-bell text-lg"></i>
                                 @if($unreadStockCount > 0)
-                                    <span class="absolute top-2 right-2 flex h-2.5 w-2.5">
+                                    <span class="absolute top-2.5 right-2.5 flex h-2 w-2">
                                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500 border border-white"></span>
                                     </span>
                                 @endif
                             </button>
@@ -136,7 +153,7 @@
                                  class="absolute right-0 mt-3 w-[85vw] sm:w-96 bg-white rounded-2xl shadow-xl border border-gray-100 ring-1 ring-black/5 z-50 overflow-hidden"
                                  x-transition style="display:none;">
                                 <div class="px-5 py-4 flex items-center justify-between border-b border-gray-50 bg-gray-50/30">
-                                    <h3 class="text-sm font-bold text-gray-900">Pemberitahuan</h3>
+                                    <h3 class="text-xs font-black text-gray-900 uppercase tracking-widest">Pemberitahuan</h3>
                                     @if($unreadStockCount > 0)
                                         <button onclick="markAllStockAsRead()" class="text-[10px] font-bold text-emerald-600 hover:underline">Tandai Dibaca</button>
                                     @endif
@@ -151,23 +168,20 @@
                                     @empty
                                         <div class="py-12 text-center text-gray-400">
                                             <i class="fa-solid fa-check-circle text-2xl mb-2 opacity-20"></i>
-                                            <p class="text-[11px]">Tidak ada notifikasi baru</p>
+                                            <p class="text-[11px]">Semua aman, Bos!</p>
                                         </div>
                                     @endforelse
                                 </div>
-                                <a href="{{ route('stock-notifications.index') }}" class="block w-full py-3 text-center text-[11px] font-bold text-emerald-600 bg-gray-50 hover:bg-emerald-50 transition-colors">Lihat Semua</a>
+                                <a href="{{ route('stock-notifications.index') }}" class="block w-full py-3 text-center text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-gray-50 hover:bg-emerald-50">Laporan Stok Lengkap</a>
                             </div>
                         </div>
 
-                        <!-- Vertical Divider -->
-                        <div class="h-6 w-px bg-gray-200 mx-1 hidden sm:block"></div>
-
                         <!-- User Profile -->
                         <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="flex items-center gap-2 sm:gap-3 hover:bg-gray-50 rounded-xl px-1 sm:px-2 py-1 transition-all">
+                            <button @click="open = !open" class="flex items-center gap-2 hover:bg-gray-50 rounded-xl px-1 py-1 transition-all">
                                 <img src="{{ auth()->user()->avatar_url }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-50">
-                                <div class="hidden sm:block text-left">
-                                    <span class="block text-xs font-bold text-gray-900 leading-none">{{ auth()->user()->name }}</span>
+                                <div class="hidden sm:block text-left mr-1">
+                                    <span class="block text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">{{ auth()->user()->name }}</span>
                                     <span class="block text-[9px] font-bold text-emerald-600 uppercase tracking-wider mt-1">{{ auth()->user()->getRoleNames()->first() }}</span>
                                 </div>
                                 <i class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''"></i>
@@ -188,15 +202,15 @@
                                 @hasrole('owner')
                                 <a href="{{ route('subscription.manage') }}" class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
                                     <i class="fas fa-crown w-4 text-center text-emerald-500"></i>
-                                    <span>Langganan</span>
+                                    <span>Langganan VIP</span>
                                 </a>
                                 @endhasrole
                                 <div class="border-t border-gray-100 mt-2 pt-2">
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
-                                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors">
+                                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 transition-colors font-bold">
                                             <i class="fas fa-sign-out-alt w-4 text-center"></i>
-                                            <span>Keluar</span>
+                                            <span>Keluar Aplikasi</span>
                                         </button>
                                     </form>
                                 </div>
@@ -208,27 +222,25 @@
             
             <!-- Breadcrumbs -->
             @if(View::hasSection('breadcrumb'))
-            <div class="bg-white border-b border-gray-100 py-2.5 px-4 lg:px-6">
-                <nav class="flex text-[11px]" aria-label="Breadcrumb">
-                    <ol class="flex items-center space-x-2 text-gray-400">
-                        <li><a href="{{ route('dashboard') }}" class="hover:text-emerald-600"><i class="fas fa-home"></i></a></li>
-                        <i class="fas fa-chevron-right text-[8px]"></i>
-                        @yield('breadcrumb')
-                    </ol>
-                </nav>
-            </div>
+            <nav class="flex py-3 px-8 bg-white/50 border-b border-gray-100" aria-label="Breadcrumb">
+                <ol class="flex items-center space-x-2 text-[10px] font-bold text-gray-400 tracking-widest uppercase">
+                    <li><a href="{{ route('dashboard') }}" class="hover:text-emerald-600"><i class="fas fa-home"></i></a></li>
+                    <i class="fas fa-chevron-right text-[7px] opacity-40"></i>
+                    @yield('breadcrumb')
+                </ol>
+            </nav>
             @endif
             
             <!-- Page Content -->
-            <main class="flex-1 p-4 lg:p-8 overflow-y-auto">
-                <div class="max-w-7xl mx-auto space-y-6">
+            <main class="flex-1 p-6 lg:p-10 overflow-y-auto">
+                <div class="max-w-[1600px] mx-auto">
                     @yield('content')
                 </div>
             </main>
             
-            <footer class="bg-white border-t border-gray-100 py-4 px-6">
-                <p class="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                    &copy; {{ date('Y') }} CuanFlow. All rights reserved.
+            <footer class="bg-white border-t border-gray-100 py-6 px-8">
+                <p class="text-center text-[9px] text-gray-400 font-bold uppercase tracking-[0.3em]">
+                    &copy; {{ date('Y') }} CuanFlow Ecosystem. All rights reserved.
                 </p>
             </footer>
         </div>
@@ -253,14 +265,14 @@
 
             @if(session('success'))
                 Swal.fire({
-                    icon: 'success', title: 'Berhasil', text: "{{ session('success') }}",
+                    icon: 'success', title: 'Sukses!', text: "{{ session('success') }}",
                     showConfirmButton: false, timer: 3000, iconColor: '#658C58',
                     customClass: { popup: 'rounded-3xl border-none shadow-2xl' }
                 });
             @endif
             @if(session('error'))
                 Swal.fire({
-                    icon: 'error', title: 'Gagal', text: "{{ session('error') }}",
+                    icon: 'error', title: 'Error!', text: "{{ session('error') }}",
                     showConfirmButton: false, timer: 3000, iconColor: '#ef4444',
                     customClass: { popup: 'rounded-3xl border-none shadow-2xl' }
                 });
