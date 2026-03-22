@@ -755,7 +755,7 @@
 
             <!-- Breadcrumbs -->
             @if(View::hasSection('breadcrumb'))
-            <div class="bg-white border-b border-gray-100 shadow-sm">
+            <div x-show="!isFullScreen" class="bg-white border-b border-gray-100 shadow-sm">
                 <div :class="currentLayout === 'sidebar' ? 'px-4 lg:px-8 py-3' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3'">
                     <nav class="flex" aria-label="Breadcrumb">
                         <ol class="flex items-center space-x-2 text-sm">

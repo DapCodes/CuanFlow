@@ -27,6 +27,11 @@
         overflow: hidden !important;
         display: flex;
         flex-direction: column;
+        transition: height 0.3s ease-in-out;
+    }
+
+    body.pos-fullscreen main {
+        height: 100vh !important;
     }
 
     /* Override wrapper div in app-sidebar to be full height and full width for POS */
@@ -6679,14 +6684,12 @@ function saveProductSettings() {
 }
 
 function toggleNavbarVisibility(hide, showNotification = true) {
-    const navbar = document.getElementById('main-navbar');
-    if (!navbar) return;
+    // Global Alpine.js Toggle
+    window.dispatchEvent(new CustomEvent('toggle-fullscreen', { detail: hide }));
 
     if (hide) {
-        navbar.style.display = 'none';
         document.body.classList.add('pos-fullscreen');
     } else {
-        navbar.style.display = '';
         document.body.classList.remove('pos-fullscreen');
     }
 

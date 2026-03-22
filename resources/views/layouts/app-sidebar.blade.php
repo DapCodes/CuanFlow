@@ -177,9 +177,11 @@
           set currentLayout(val) { $store.app.layout = val },
           get sidebarCollapsed() { return $store.app.sidebarCollapsed },
           set sidebarCollapsed(val) { $store.app.sidebarCollapsed = val },
+          get isFullScreen() { return $store.app.isFullScreen },
           sidebarOpen: false
       }"
-      @app-layout-changed.window="$store.app.setLayout($event.detail)">
+      @app-layout-changed.window="$store.app.setLayout($event.detail)"
+      @toggle-fullscreen.window="$store.app.setFullScreen($event.detail)">
     @if(auth()->check() && auth()->user()->isOnTrial())
     <div class="fixed bottom-6 right-6 z-[9999] pointer-events-none opacity-40 select-none">
         <div class="bg-gray-900/10 backdrop-blur-sm border border-gray-900/20 px-4 py-2 rounded-full">
@@ -207,7 +209,7 @@
     <div id="app-content-wrapper" class="min-h-screen flex" :class="currentLayout === 'grid' ? 'flex-col' : ''">
         
         <!-- Sidebar Structure (For Sidebar layout mode) -->
-        <template x-if="currentLayout === 'sidebar'">
+        <template x-if="currentLayout === 'sidebar' && !isFullScreen">
             <div>
                 <!-- Sidebar Overlay (Mobile) -->
                 <div x-show="sidebarOpen" 
@@ -236,12 +238,13 @@
 
         <div class="flex-1 flex flex-col min-h-screen"
             :class="{ 
-                'lg:ml-64': currentLayout === 'sidebar' && !sidebarCollapsed, 
-                'lg:ml-20': currentLayout === 'sidebar' && sidebarCollapsed 
+                'lg:ml-64': currentLayout === 'sidebar' && !sidebarCollapsed && !isFullScreen, 
+                'lg:ml-20': currentLayout === 'sidebar' && sidebarCollapsed && !isFullScreen,
+                'lg:ml-0': isFullScreen
             }">
             <!-- Navbar Grid -->
             <!-- Navbar Grid (For Grid mode) -->
-            <nav id="main-navbar" x-show="currentLayout === 'grid'" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
+            <nav id="main-navbar" x-show="currentLayout === 'grid' && !isFullScreen" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16 items-center">
                         
@@ -607,7 +610,7 @@
             </nav>
 
             <!-- Sidebar Top Header (For Sidebar mode) -->
-            <header x-show="currentLayout === 'sidebar'" class="bg-white border-b border-gray-100 sticky top-0 z-40 h-16 flex items-center shadow-sm">
+            <header x-show="currentLayout === 'sidebar' && !isFullScreen" class="bg-white border-b border-gray-100 sticky top-0 z-40 h-16 flex items-center shadow-sm">
                 <div class="flex items-center justify-between w-full px-4 lg:px-8">
                     <!-- Left: Toggle & Title -->
                     <div class="flex items-center gap-4">
@@ -746,7 +749,7 @@
 
             <!-- Breadcrumbs -->
             @if(View::hasSection('breadcrumb'))
-            <div class="bg-white border-b border-gray-100 shadow-sm">
+            <div x-show="!isFullScreen" class="bg-white border-b border-gray-100 shadow-sm">
                 <div :class="currentLayout === 'sidebar' ? 'px-4 lg:px-8 py-3' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3'">
                     <nav class="flex" aria-label="Breadcrumb">
                         <ol class="flex items-center space-x-2 text-sm">
@@ -779,6 +782,7 @@
             Alpine.store('app', {
                 layout: localStorage.getItem('app_layout') || '{{ $_COOKIE["app_layout"] ?? "grid" }}',
                 sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+                isFullScreen: false,
                 setLayout(val) {
                     this.layout = val;
                     localStorage.setItem('app_layout', val);
@@ -787,6 +791,9 @@
                 toggleSidebar() {
                     this.sidebarCollapsed = !this.sidebarCollapsed;
                     localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
+                },
+                setFullScreen(val) {
+                    this.isFullScreen = val;
                 }
             });
         });
