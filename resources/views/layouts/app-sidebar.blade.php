@@ -162,6 +162,32 @@
         #app-content-wrapper.ready {
             opacity: 1;
         }
+
+        /* Custom Scrollbar Styles */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 20px;
+            transition: background 0.3s ease;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        /* Firefox Support */
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.05) transparent;
+        }
     </style>
     
     <style id="fouc-mask">
