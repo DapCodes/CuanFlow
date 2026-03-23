@@ -1414,6 +1414,27 @@
 @endcan
 @endcanAccessFeature
 
+<a href="{{ route('stock-notifications.index') }}"
+  class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
+  data-step="31"
+  data-title="Notifikasi & Peringatan"
+  data-intro="<strong>Pantau info terbaru.</strong> Lihat catatan stok menipis, jadwal kedaluwarsa, atau pengumuman penting lainnya di sini agar bisnis tetap lancar.">
+  <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-rose-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow relative">
+    <i class="fa-solid fa-bell text-4xl sm:text-5xl text-white"></i>
+    @if(isset($unreadStockCount) && $unreadStockCount > 0)
+    <span class="absolute -top-1.5 -right-1.5 flex h-5 w-5">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-5 w-5 bg-red-500 border-2 border-white text-[10px] text-white items-center justify-center font-bold">
+          {{ $unreadStockCount }}
+        </span>
+    </span>
+    @endif
+  </div>
+  <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+    Notifikasi
+  </span>
+</a>
+
 @canAccessFeature('help_faq')
 @can('lihat faq')
   <a href="{{ route('faqs.index') }}"
@@ -2868,6 +2889,8 @@ document.addEventListener('DOMContentLoaded', function() {
     { label: 'Bantuan & FAQ', keywords: ['bantuan', 'faq', 'help', 'tanya'], url: "{{ route('faqs.index') }}", type: 'Menu' },
     @endcan
     @endcanAccessFeature
+
+    { label: 'Notifikasi & Peringatan', keywords: ['notifikasi', 'pesan', 'info', 'alert', 'stock', 'peringatan', 'expired'], url: "{{ route('stock-notifications.index') }}", type: 'Menu' },
 
     @if(auth()->user()->hasRole('owner') && auth()->user()->subscription)
     { label: 'Kelola Langganan', keywords: ['langganan', 'subscribe', 'paket', 'premium', 'vip', 'billing', 'pembayaran'], url: "{{ route('subscription.manage') }}", type: 'Menu' },
