@@ -106,6 +106,15 @@
     <!-- Navigation -->
     <nav class="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden py-4">
         <ul class="space-y-1 px-3">
+            <li>
+                <a href="{{ route('dashboard') }}" 
+                   title="Dashboard"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('dashboard') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
+                    <i class="fa-solid fa-house w-5 text-center text-base {{ request()->routeIs('dashboard') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Menu Utama</span>
+                </a>
+            </li>
             <!-- SEKSI OPERASIONAL -->
             <p x-show="!sidebarCollapsed" class="px-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-2 mt-4 whitespace-nowrap">Operasional Utama</p>
             <div x-show="sidebarCollapsed" class="h-4"></div>
