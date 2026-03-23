@@ -607,6 +607,26 @@
             @endcanAccessFeature
 
             <li>
+                <a href="{{ route('stock-notifications.index') }}" 
+                   title="Notifikasi"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('stock-notifications.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
+                    <div class="relative">
+                        <i class="fa-solid fa-bell w-5 text-center text-base {{ request()->routeIs('stock-notifications.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                        @if(isset($unreadStockCount) && $unreadStockCount > 0)
+                            <span class="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                        @endif
+                    </div>
+                    <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Notifikasi</span>
+                    @if(isset($unreadStockCount) && $unreadStockCount > 0)
+                        <span x-show="!sidebarCollapsed" class="ml-auto bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                            {{ $unreadStockCount }}
+                        </span>
+                    @endif
+                </a>
+            </li>
+
+            <li>
                 <a href="{{ route('profile.edit') }}" 
                    title="Akun"
                    class="flex items-center rounded-xl group {{ request()->routeIs('profile.edit') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
@@ -629,6 +649,18 @@
             </li>
             @endcan
             @endcanAccessFeature
+
+            @if(auth()->user()->hasRole('owner') && auth()->user()->subscription)
+            <li>
+                <a href="{{ route('subscription.manage') }}" 
+                   title="Kelola Langganan"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('subscription.manage') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
+                    <i class="fa-solid fa-crown w-5 text-center text-base {{ request()->routeIs('subscription.manage') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                   <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Kelola Langganan</span>
+                </a>
+            </li>
+            @endif
         </ul>
     </nav>
 </div>
