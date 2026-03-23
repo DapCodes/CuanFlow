@@ -508,8 +508,10 @@
   }
 
   .insights-modal-backdrop {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 100;
     animation: fadeIn 0.4s ease-out;
   }
 
@@ -656,6 +658,7 @@
     .carousel-btn.prev { left: 0.5rem; }
     .carousel-btn.next { right: 0.5rem; }
   }
+
 </style>
 
 <style>
@@ -1425,9 +1428,20 @@
       Bantuan & FAQ
     </span>
   </a>
-@endcan
-@endcanAccessFeature
-
+@if(auth()->user()->hasRole('owner') && auth()->user()->subscription)
+  <a href="{{ route('subscription.manage') }}"
+    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
+    data-step="30"
+    data-title="Kelola Langganan"
+    data-intro="<strong>Atur paket Anda.</strong> Perbarui langganan, lihat riwayat pembayaran, atau ganti paket fitur sesuai kebutuhan bisnis Anda.">
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow">
+      <i class="fa-solid fa-crown text-4xl sm:text-5xl text-white"></i>
+    </div>
+    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+      Kelola Langganan
+    </span>
+  </a>
+@endif
 </div>
 
 </div>
@@ -1543,9 +1557,7 @@
 @canAccessFeature('ai_insights')
 @if(isset($unreadInsights) && $unreadInsights->isNotEmpty())
 @can('lihat ai insights')
-<div id="insightsModal" class="hidden insights-modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
-  <div class="absolute inset-0 bg-gray-900 bg-opacity-70"></div>
-  
+<div id="insightsModal" class="hidden insights-modal-backdrop fixed inset-0 flex items-center justify-center z-[100]">
   <div class="insights-modal-content relative bg-white rounded-3xl shadow-2xl max-w-xl w-full mx-4">
     <!-- Header -->
     <div class="p-6 md:p-8 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100 rounded-t-3xl">
@@ -2082,6 +2094,7 @@ window.closeInsightsModal = function() {
   if (insightsModal) {
     insightsModal.classList.add('insights-modal-exit');
     document.body.classList.remove('modal-open');
+    document.body.classList.remove('insights-modal-open');
     setTimeout(() => {
       insightsModal.classList.add('hidden');
       insightsModal.classList.remove('insights-modal-exit');
@@ -2089,11 +2102,12 @@ window.closeInsightsModal = function() {
   }
 }
 
-function openInsightsModal() {
+window.openInsightsModal = function() {
   const insightsModal = document.getElementById('insightsModal');
   if (insightsModal) {
     insightsModal.classList.remove('hidden');
     document.body.classList.add('modal-open');
+    document.body.classList.add('insights-modal-open');
   }
 }
 
@@ -2102,6 +2116,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const insightsModal = document.getElementById('insightsModal');
   if (insightsModal && !insightsModal.classList.contains('hidden')) {
     document.body.classList.add('modal-open');
+    document.body.classList.add('insights-modal-open');
   }
 });
 ;
@@ -2262,7 +2277,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   if (insightsModal && !document.getElementById('noOutletModal')) {
     setTimeout(() => {
-      insightsModal.classList.remove('hidden');
+      window.openInsightsModal();
     }, 800);
   }
   
