@@ -125,6 +125,7 @@
             @endcanAccessFeature
 
             @if($isReseller)
+            @canAccessFeature('reseller_products')
             @can('lihat produk reseller')
             <li>
                 <a href="{{ route('reseller-products.index') }}" 
@@ -136,6 +137,7 @@
                 </a>
             </li>
             @endcan
+            @endcanAccessFeature
             @endif
 
             @canAccessFeature('sales_management')
@@ -430,7 +432,7 @@
             @endcan
             @endcanAccessFeature
 
-            @canAccessFeature('ai_insights')
+            @canAccessFeature('opportunity_map')
             @can('akses peta cuan')
             <li>
                 <a href="{{ route('opportunity-map.index') }}" 
@@ -446,6 +448,7 @@
 
             @canAccessFeature('clara_ai')
             @can('akses clara ai')
+            @canAccessFeature('video_ai')
             @can('akses video ai')
             <li>
                 <a href="{{ route('clara-ai.video-prompt') }}" 
@@ -457,6 +460,9 @@
                 </a>
             </li>
             @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('script_ai')
             @can('akses script ai')
             <li>
                 <a href="{{ route('clara-ai.affiliate-script') }}" 
@@ -468,6 +474,9 @@
                 </a>
             </li>
             @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('image_ai')
             @can('akses image ai')
             <li>
                 <a href="{{ route('clara-ai.ads-image-prompt') }}" 
@@ -479,6 +488,9 @@
                 </a>
             </li>
             @endcan
+            @endcanAccessFeature
+
+            @canAccessFeature('kalkulaba_ai')
             @can('akses kalkulaba ai')
             <li>
                 <a href="{{ route('clara-ai.kalkulaba') }}" 
@@ -490,6 +502,7 @@
                 </a>
             </li>
             @endcan
+            @endcanAccessFeature
             @endcan
             @endcanAccessFeature
 

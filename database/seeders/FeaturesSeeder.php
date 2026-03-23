@@ -61,6 +61,12 @@ class FeaturesSeeder extends Seeder
             ['name' => 'ai_insights', 'display_name' => 'AI Insights', 'category' => 'Premium', 'icon' => 'brain', 'route_name' => 'ai-insights.index', 'sort_order' => 92],
             ['name' => 'clara_ai', 'display_name' => 'Clara AI Assistant', 'category' => 'Premium', 'icon' => 'message-circle', 'route_name' => 'claude-ai.chat', 'sort_order' => 93],
             ['name' => 'reseller_app', 'display_name' => 'Aplikasi Reseller', 'category' => 'Premium', 'icon' => 'share-2', 'route_name' => 'reseller-applications.index', 'sort_order' => 94],
+            ['name' => 'opportunity_map', 'display_name' => 'Peta Cuan Lokasi', 'category' => 'Premium', 'icon' => 'map-pin', 'route_name' => 'opportunity-map.index', 'sort_order' => 95],
+            ['name' => 'video_ai', 'display_name' => 'Video Prompt AI', 'category' => 'Premium', 'icon' => 'video', 'route_name' => 'clara-ai.video-prompt', 'sort_order' => 96],
+            ['name' => 'script_ai', 'display_name' => 'Script Generator AI', 'category' => 'Premium', 'icon' => 'file-text', 'route_name' => 'clara-ai.affiliate-script', 'sort_order' => 97],
+            ['name' => 'image_ai', 'display_name' => 'Image Prompt AI', 'category' => 'Premium', 'icon' => 'image', 'route_name' => 'clara-ai.ads-image-prompt', 'sort_order' => 98],
+            ['name' => 'kalkulaba_ai', 'display_name' => 'Kalkulaba AI', 'category' => 'Premium', 'icon' => 'calculator', 'route_name' => 'clara-ai.kalkulaba', 'sort_order' => 99],
+            ['name' => 'reseller_products', 'display_name' => 'Produk Reseller', 'category' => 'Premium', 'icon' => 'box', 'route_name' => 'reseller-products.index', 'sort_order' => 100],
         ];
 
         foreach ($features as $feature) {
