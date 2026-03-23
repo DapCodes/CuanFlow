@@ -171,29 +171,46 @@
         </x-card-container>
 
         {{-- LEGEND --}}
-        <div class="fixed bottom-6 left-6 z-50">
-            <div class="bg-white shadow-lg rounded-2xl border border-gray-100 p-4 space-y-3 min-w-[180px]">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Tingkat Peluang</p>
-                <div class="space-y-2.5">
-                    <div class="flex items-center gap-3">
-                        <span class="w-4 h-4 rounded-full bg-emerald-400 border-2 border-emerald-200 shadow-sm shadow-emerald-100"></span>
-                        <span class="text-xs font-bold text-gray-700">Potensi Tinggi</span>
+        <div class="mt-4">
+            <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm w-full">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    
+                    <!-- Title -->
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                        Tingkat Peluang
+                    </p>
+
+                    <!-- Items -->
+                    <div class="flex flex-wrap items-center gap-4">
+                        
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                            <span class="text-xs font-bold text-gray-700">Potensi Tinggi</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                            <span class="text-xs font-bold text-gray-700">Menengah</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-400"></span>
+                            <span class="text-xs font-bold text-gray-700">Rendah</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-gray-200"></span>
+                            <span class="text-xs font-bold text-gray-400">Tanpa Data</span>
+                        </div>
+
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="w-4 h-4 rounded-full bg-amber-400 border-2 border-amber-200 shadow-sm shadow-amber-100"></span>
-                        <span class="text-xs font-bold text-gray-700">Menengah</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="w-4 h-4 rounded-full bg-red-400 border-2 border-red-200 shadow-sm shadow-red-100"></span>
-                        <span class="text-xs font-bold text-gray-700">Rendah</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="w-4 h-4 rounded-full bg-gray-200 border-2 border-gray-100"></span>
-                        <span class="text-xs font-bold text-gray-400">Tanpa Data</span>
-                    </div>
-                </div>
-                <div class="pt-2 border-t border-gray-100">
-                    <p class="text-[10px] text-gray-400" id="legendPointCount">0 titik dimuat</p>
+
+                    <!-- Count -->
+                    <p class="text-xs text-gray-400 text-right sm:text-left" id="legendPointCount">
+                        0 titik dimuat
+                    </p>
+
                 </div>
             </div>
         </div>

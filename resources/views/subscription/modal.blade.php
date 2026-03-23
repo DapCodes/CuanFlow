@@ -131,6 +131,18 @@
                   <div id="pricing-container" class="hidden opacity-0 transition-opacity duration-500">
                        <!-- Loaded via AJAX -->
                   </div>
+                  <!-- Logout Section -->
+                <div class="mt-10 pt-6 border-t border-gray-100 flex justify-center">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="inline-flex items-center gap-2 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-red-600 border border-gray-200 hover:border-red-200 rounded-xl transition-all hover:bg-red-50 active:scale-95">
+                            
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            Logout
+                        </button>
+                    </form>
+                </div>
               </div>
          </div>
     </div>
