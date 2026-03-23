@@ -586,9 +586,12 @@ function kalkulabaApp() {
                 }
             }
 
-            // Replace Bahan Baku with computed value if recipe was edited
-            if (this.recipeEdited && items.length > 0) {
-                const bahanIdx = items.findIndex(i => i.label.toLowerCase().includes('bahan'));
+            // Selalu sinkronkan 'Bahan Baku' dengan total resep jika ada data bahan baku
+            if (this.editableIngredients.length > 0 && items.length > 0) {
+                const bahanIdx = items.findIndex(i => 
+                    i.label.toLowerCase().includes('bahan') || 
+                    i.label.toLowerCase() === 'ingredients'
+                );
                 if (bahanIdx !== -1) {
                     items[bahanIdx].value = this.computedIngredientsCost;
                 }
@@ -704,20 +707,33 @@ function kalkulabaApp() {
                                 .trim();
 
                 // 2. Extract only the content between the FIRST { and LAST }
+                // If it's truncated and missing the last }, we still try to take from the first {
                 const firstBrace = jsonStr.indexOf('{');
-                const lastBrace = jsonStr.lastIndexOf('}');
-                
-                if (firstBrace === -1 || lastBrace === -1) {
+                if (firstBrace === -1) {
                     throw new Error("No JSON object found in response");
                 }
                 
-                jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
+                let lastBrace = jsonStr.lastIndexOf('}');
+                
+                // If truncated, we might need to repair it instead of just cutting to the last brace
+                let candidate = jsonStr.substring(firstBrace, lastBrace !== -1 ? lastBrace + 1 : jsonStr.length);
 
-                // 3. Strip trailing commas (common AI error)
-                jsonStr = jsonStr.replace(/,\s*([\]}])/g, '$1');
+                // 3. Robust Fixes
+                
+                // Fix unescaped newlines in strings
+                candidate = candidate.replace(/\n/g, '\\n');
+                
+                // But wait, the above might break the actual JSON structure if we are not careful.
+                // Re-doing: only fix newlines that are NOT between property/value separators
+                // Actually, a simpler way is to try parsing, and if it fails, try to repair.
 
-                // 4. Attempt to parse
-                this.parsedResult = JSON.parse(jsonStr);
+                try {
+                    this.parsedResult = JSON.parse(this.cleanJSON(candidate));
+                } catch (firstError) {
+                    console.warn("First parse attempt failed, trying to repair JSON...", firstError);
+                    const repaired = this.repairJson(candidate);
+                    this.parsedResult = JSON.parse(repaired);
+                }
 
                 // Populate editable recipe
                 if (this.parsedResult?.recipe?.ingredients) {
@@ -728,11 +744,47 @@ function kalkulabaApp() {
                     this.recipeSteps = [...this.parsedResult.recipe.steps];
                 }
             } catch (e) {
-                console.error('Failed to parse JSON:', e, { content: raw });
+                console.error('Failed to parse JSON even after repair:', e, { content: raw });
                 this.parsedResult = null;
                 this.error = 'AI response bukan format JSON yang valid: ' + (e.message || 'Unknown error');
                 this.showRaw = true;
             }
+        },
+
+        cleanJSON(str) {
+            // Strip trailing commas
+            str = str.replace(/,\s*([\]}])/g, '$1');
+            // Remove any potential non-json filler if AI added it after the last brace
+            return str;
+        },
+
+        repairJson(json) {
+            // 1. Fix unescaped control characters in values (like newlines)
+            // This is tricky without a full parser, but we can fix the most common: literal newlines inside double quotes
+            let repaired = json.replace(/"([^"]*)"/g, (match, p1) => {
+                return '"' + p1.replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"';
+            });
+
+            // 2. Fix truncated JSON by balancing braces and brackets
+            let stack = [];
+            for (let i = 0; i < repaired.length; i++) {
+                let char = repaired[i];
+                if (char === '{' || char === '[') {
+                    stack.push(char === '{' ? '}' : ']');
+                } else if (char === '}' || char === ']') {
+                    if (stack.length > 0 && stack[stack.length - 1] === char) {
+                        stack.pop();
+                    }
+                }
+            }
+
+            // Close everything left in the stack
+            while (stack.length > 0) {
+                let closing = stack.pop();
+                repaired += closing;
+            }
+
+            return repaired;
         },
 
         // ===================== HISTORY =====================

@@ -949,7 +949,7 @@ YOUR TASK — Follow these steps precisely:
 
 5. PROFIT TARGET: For each pricing tier, calculate units_needed = target_profit / profit_per_unit (round UP)
 
-6. SMART INSIGHTS: 3-5 actionable insights about:
+6. SMART INSIGHTS: Give 3 very concise, actionable insights (max 20 words each):
    - Most realistic pricing strategy
    - Risk analysis
    - Cost reduction suggestions
@@ -1124,7 +1124,7 @@ IMPORTANT for cost_analysis.breakdown:
             ])->timeout(120)->post($this->baseUrl . '/chat/completions', [
                 'model' => $currentModel,
                 'messages' => $messages,
-                'max_tokens' => 3000,
+                'max_tokens' => 6000,
             ]);
 
             if ($httpResponse->successful()) {
@@ -1201,7 +1201,7 @@ IMPORTANT for cost_analysis.breakdown:
         ])->timeout(180)->post($this->baseUrl . '/chat/completions', [
             'model' => $model,
             'messages' => $messages,
-            'max_tokens' => 4000,
+            'max_tokens' => 8000,
         ]);
 
         if ($httpResponse->successful()) {
