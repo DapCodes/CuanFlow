@@ -1740,16 +1740,17 @@ document.addEventListener('DOMContentLoaded', function() {
  const isNewUser = @json(session('new_user_onboarding', false));
  const forceSubscriptionChoice = @json(session('force_subscription_choice', false));
  const hasOutlet = @json(auth()->user()->outlet_id !== null);
+ const hasNoSubscription = @json(auth()->check() && !auth()->user()->subscriptions()->exists());
  
  const shouldShowWelcome = @json(session('show_welcome_tour', false)) || 
               localStorage.getItem(WELCOME_KEY) === '1';
 
- // For new users with outlet but haven't completed onboarding, show subscription choice modal
- if (isNewUser && hasOutlet && !modal && !shouldShowWelcome) {
+ // For users with outlet but no subscription, or new users who haven't completed onboarding
+ if (hasOutlet && !modal && !shouldShowWelcome) {
   const onboardingCompleted = localStorage.getItem(ONBOARDING_COMPLETED_KEY) === '1';
   
-  // If onboarding not completed OR force flag is set, show subscription choice modal
-  if (forceSubscriptionChoice || !onboardingCompleted) {
+  // If no subscription, OR force flag is set, OR onboarding not completed for new user, show modal
+  if (hasNoSubscription || forceSubscriptionChoice || (isNewUser && !onboardingCompleted)) {
    setTimeout(() => {
     showSubscriptionChoiceModal();
    }, 1000);
