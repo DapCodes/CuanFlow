@@ -125,6 +125,7 @@
             @endcanAccessFeature
 
             @if($isReseller)
+            @can('lihat produk reseller')
             <li>
                 <a href="{{ route('reseller-products.index') }}" 
                    title="Produk Reseller"
@@ -134,6 +135,7 @@
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Produk Reseller</span>
                 </a>
             </li>
+            @endcan
             @endif
 
             @canAccessFeature('sales_management')
@@ -429,6 +431,7 @@
             @endcanAccessFeature
 
             @canAccessFeature('ai_insights')
+            @can('akses peta cuan')
             <li>
                 <a href="{{ route('opportunity-map.index') }}" 
                    title="Peta Cuan"
@@ -438,10 +441,12 @@
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Peta Cuan</span>
                 </a>
             </li>
+            @endcan
             @endcanAccessFeature
 
             @canAccessFeature('clara_ai')
             @can('akses clara ai')
+            @can('akses video ai')
             <li>
                 <a href="{{ route('clara-ai.video-prompt') }}" 
                    title="Video AI"
@@ -451,6 +456,8 @@
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Video AI</span>
                 </a>
             </li>
+            @endcan
+            @can('akses script ai')
             <li>
                 <a href="{{ route('clara-ai.affiliate-script') }}" 
                    title="Script AI"
@@ -460,6 +467,8 @@
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Script AI</span>
                 </a>
             </li>
+            @endcan
+            @can('akses image ai')
             <li>
                 <a href="{{ route('clara-ai.ads-image-prompt') }}" 
                    title="Image AI"
@@ -469,6 +478,8 @@
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Image AI</span>
                 </a>
             </li>
+            @endcan
+            @can('akses kalkulaba ai')
             <li>
                 <a href="{{ route('clara-ai.kalkulaba') }}" 
                    title="Kalkulaba AI"
@@ -478,6 +489,7 @@
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Kalkulaba AI</span>
                 </a>
             </li>
+            @endcan
             @endcan
             @endcanAccessFeature
 

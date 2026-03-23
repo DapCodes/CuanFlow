@@ -382,6 +382,7 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'lihat reseller applications', 'category' => 'reseller', 'description' => 'Melihat lamaran reseller'],
             ['name' => 'kelola reseller applications', 'category' => 'reseller', 'description' => 'Menyetujui/menolak lamaran reseller'],
             ['name' => 'hapus reseller applications', 'category' => 'reseller', 'description' => 'Menghapus data lamaran reseller'],
+            ['name' => 'lihat produk reseller', 'category' => 'reseller', 'description' => 'Melihat daftar produk reseller'],
 
             // Produksi
             ['name' => 'lihat produksi', 'category' => 'produksi', 'description' => 'Melihat daftar produksi'],
@@ -467,12 +468,17 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'abaikan ai insight', 'category' => 'ai-insights', 'description' => 'Mengabaikan insight'],
             ['name' => 'tandai semua ai insight dibaca', 'category' => 'ai-insights', 'description' => 'Menandai semua sudah dibaca'],
             ['name' => 'lihat kalender ai insight', 'category' => 'ai-insights', 'description' => 'Melihat kalender insight'],
+            ['name' => 'akses peta cuan', 'category' => 'ai-insights', 'description' => 'Mengakses peta peluang bisnis'],
 
             // Clara AI
             ['name' => 'akses clara ai', 'category' => 'clara-ai', 'description' => 'Mengakses Clara AI'],
             ['name' => 'chat dengan clara ai', 'category' => 'clara-ai', 'description' => 'Berkomunikasi dengan Clara AI'],
             ['name' => 'sesi baru clara ai', 'category' => 'clara-ai', 'description' => 'Membuat sesi chat baru'],
             ['name' => 'hapus sesi clara ai', 'category' => 'clara-ai', 'description' => 'Menghapus sesi chat'],
+            ['name' => 'akses video ai', 'category' => 'clara-ai', 'description' => 'Mengakses fitur video prompt AI'],
+            ['name' => 'akses script ai', 'category' => 'clara-ai', 'description' => 'Mengakses fitur script generator AI'],
+            ['name' => 'akses image ai', 'category' => 'clara-ai', 'description' => 'Mengakses fitur image prompt AI'],
+            ['name' => 'akses kalkulaba ai', 'category' => 'clara-ai', 'description' => 'Mengakses fitur kalkulaba AI'],
 
             // Kebijakan Outlet
             ['name' => 'lihat kebijakan outlet', 'category' => 'kebijakan-outlet', 'description' => 'Melihat daftar SOP'],
@@ -593,7 +599,9 @@ class RolePermissionSeeder extends Seeder
             // AI
             'lihat ai insights', 'lihat detail ai insight', 'tandai ai insight dibaca',
             'abaikan ai insight', 'tandai semua ai insight dibaca', 'lihat kalender ai insight',
+            'akses peta cuan',
             'akses clara ai', 'chat dengan clara ai', 'sesi baru clara ai', 'hapus sesi clara ai',
+            'akses video ai', 'akses script ai', 'akses image ai', 'akses kalkulaba ai',
             // Kebijakan
             'lihat kebijakan outlet', 'lihat detail kebijakan outlet',
             // FAQ
@@ -701,6 +709,7 @@ class RolePermissionSeeder extends Seeder
             'lihat dashboard',
             'lihat produk',
             'lihat detail produk',
+            'lihat produk reseller',
             'edit profil',
             'update profil',
             'lihat faq',
