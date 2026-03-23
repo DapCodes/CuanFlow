@@ -1428,6 +1428,9 @@
       Bantuan & FAQ
     </span>
   </a>
+@endcan
+@endcanAccessFeature
+
 @if(auth()->user()->hasRole('owner') && auth()->user()->subscription)
   <a href="{{ route('subscription.manage') }}"
     class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
@@ -2865,6 +2868,10 @@ document.addEventListener('DOMContentLoaded', function() {
     { label: 'Bantuan & FAQ', keywords: ['bantuan', 'faq', 'help', 'tanya'], url: "{{ route('faqs.index') }}", type: 'Menu' },
     @endcan
     @endcanAccessFeature
+
+    @if(auth()->user()->hasRole('owner') && auth()->user()->subscription)
+    { label: 'Kelola Langganan', keywords: ['langganan', 'subscribe', 'paket', 'premium', 'vip', 'billing', 'pembayaran'], url: "{{ route('subscription.manage') }}", type: 'Menu' },
+    @endif
   ];
 
   // Focus shortcut
