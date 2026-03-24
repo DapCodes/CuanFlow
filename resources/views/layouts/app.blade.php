@@ -214,7 +214,7 @@
         <p class="global-loader-text">Loading...</p>
     </div>
 
-    <div id="app-content-wrapper" class="min-h-screen flex" :class="currentLayout === 'grid' ? 'flex-col' : ''">
+    <div id="app-content-wrapper" class="min-h-screen" :class="currentLayout === 'grid' ? 'flex flex-col' : 'block'">
         
         <!-- Sidebar Structure (For Sidebar layout mode) -->
         <template x-if="currentLayout === 'sidebar' && !isFullScreen">
@@ -244,7 +244,7 @@
             </div>
         </template>
 
-        <div class="flex-1 flex flex-col min-h-screen transition-all duration-300"
+        <div class="min-h-screen transition-all duration-300"
             :class="{ 
                 'lg:ml-64': currentLayout === 'sidebar' && !sidebarCollapsed && !isFullScreen, 
                 'lg:ml-20': currentLayout === 'sidebar' && sidebarCollapsed && !isFullScreen,

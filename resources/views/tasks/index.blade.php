@@ -160,7 +160,7 @@
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
         {{-- Alert / Notifikasi --}}
         @if(session('success'))
@@ -179,100 +179,93 @@
 
         {{-- HEADER HALAMAN --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <h1 class="text-xl md:text-2xl font-black text-gray-900">
-                    Project Board
-                </h1>
-                <p class="mt-1 text-sm text-gray-500">
-                    Visualisasikan alur kerja tim outlet <span class="font-semibold text-cuan-green">{{ auth()->user()->outlet->name ?? 'CuanFlow' }}</span>
-                </p>
-            </div>
-            
-            <div class="flex flex-wrap items-center gap-3 justify-start md:justify-end">
-                {{-- View Switcher --}}
-                <div class="inline-flex items-center p-1 bg-gray-50 border border-gray-200 rounded-lg">
-                    <a href="{{ route('tasks.index') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-black transition-all bg-cuan-green text-white shadow-sm shadow-cuan-green/20">
-                        <i class="fa-solid fa-columns mr-1.5"></i>Board
-                    </a>
-                    <a href="{{ route('tasks.table') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-black text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
-                        <i class="fa-solid fa-table mr-1.5"></i>Table
-                    </a>
-                    <a href="{{ route('tasks.calendar') }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-black text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all">
-                        <i class="fa-solid fa-calendar mr-1.5"></i>Calendar
-                    </a>
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-cuan-green/10 rounded-2xl flex items-center justify-center text-cuan-green shadow-sm shadow-cuan-green/10">
+                    <i class="fas fa-tasks text-lg"></i>
                 </div>
-
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Project Board</h1>
+                    <p class="text-sm text-gray-500 mt-0.5 font-medium">Atur dan pantau progres tugas tim Anda</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex rounded-xl bg-white border border-gray-200 p-1 shadow-sm overflow-x-auto custom-scrollbar no-scrollbar">
+                    <button @click="view = 'kanban'" 
+                            :class="view === 'kanban' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'"
+                            class="px-4 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-2">
+                        <i class="fas fa-columns"></i>
+                        <span>Board</span>
+                    </button>
+                    <button @click="view = 'table'" 
+                            :class="view === 'table' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'"
+                            class="px-4 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-2">
+                        <i class="fas fa-table"></i>
+                        <span>Table</span>
+                    </button>
+                    <button @click="view = 'calendar'" 
+                            :class="view === 'calendar' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'"
+                            class="px-4 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-2">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Calendar</span>
+                    </button>
+                </div>
                 @can('tasks.create')
-                <button onclick="openCreateModal()" class="inline-flex items-center gap-2 rounded-lg bg-cuan-green px-4 py-2.5 text-sm font-black text-white hover:bg-cuan-dark transition-all active:scale-95 shadow-sm">
-                    <i class="fas fa-plus-circle text-sm"></i>
+                <button @click="$dispatch('open-create-modal')" 
+                        class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-black text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95">
+                    <i class="fa-solid fa-circle-plus text-xs"></i>
                     <span>Tugas Baru</span>
                 </button>
                 @endcan
             </div>
         </section>
 
-        {{-- RINGKASAN STATISTIK (KONSISTEN DENGAN DISCOUNT INDEX) --}}
-        {{-- RINGKASAN STATISTIK --}}
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Tugas</p>
-                <p class="mt-2 text-2xl font-black text-gray-900">{{ $stats['total'] }}</p>
-                <div class="mt-2">
-                    <span class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Akumulasi Project</span>
-                </div>
+        {{-- STATS GRID --}}
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-5 shadow-sm">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Total Tugas</p>
+                <p class="mt-1 text-xl font-black text-gray-900 leading-none">{{ $stats['total'] }}</p>
             </div>
-
-            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Menunggu</p>
-                <p class="mt-2 text-2xl font-black text-gray-900">{{ $stats['pending'] }}</p>
-                <div class="mt-2 text-[10px] text-gray-400 font-black uppercase tracking-widest">Status Pending</div>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-5 shadow-sm">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Sedang Berjalan</p>
+                <p class="mt-1 text-xl font-black text-blue-600 leading-none">{{ $stats['in_progress'] }}</p>
             </div>
-
-            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Berlangsung</p>
-                <p class="mt-2 text-2xl font-black text-gray-900">{{ $stats['in_progress'] }}</p>
-                <div class="mt-2 text-[10px] text-gray-400 font-black uppercase tracking-widest">Sedang Dikerjakan</div>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-5 shadow-sm">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Selesai</p>
+                <p class="mt-1 text-xl font-black text-cuan-green leading-none">{{ $stats['completed'] }}</p>
             </div>
-
-            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Selesai</p>
-                <p class="mt-2 text-2xl font-black text-cuan-green">{{ $stats['completed'] }}</p>
-                <div class="mt-2">
-                    <span class="text-[10px] text-cuan-green font-black uppercase tracking-widest">Tugas Rampung</span>
-                </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-5 shadow-sm">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Menunggu</p>
+                <p class="mt-1 text-xl font-black text-amber-500 leading-none">{{ $stats['pending'] }}</p>
             </div>
         </section>
 
-        {{-- KONTEN UTAMA: FILTER BAR + KANBAN (KONSISTEN DENGAN DISCOUNT INDEX) --}}
-        <section class="bg-white border border-gray-200 rounded-xl shadow-sm">
+        {{-- KONTEN UTAMA: FILTER BAR + KANBAN --}}
+        <x-card-container>
             {{-- Filter Bar --}}
-            <div class="border-b border-gray-200 px-4 md:px-6 py-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between gap-4">
-                <div class="w-full md:max-w-md">
-                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Cari tugas</label>
-                    <div class="relative">
-                        <input type="text" id="searchTask" placeholder="Cari berdasarkan judul..."
-                               class="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    </div>
+            <div class="border-b border-gray-200 px-6 py-6 flex flex-col lg:flex-row lg:items-end gap-4">
+                <div class="flex-1">
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Cari tugas</label>
+                    <input type="text" id="searchTask" placeholder="Cari berdasarkan judul..."
+                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm placeholder:text-gray-400">
                 </div>
 
-                <form action="{{ route('tasks.index') }}" method="GET" class="flex flex-wrap gap-3 w-full md:w-auto">
-                    <div class="w-full sm:w-40 md:w-44">
-                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Prioritas</label>
+                <form action="{{ route('tasks.index') }}" method="GET" class="flex flex-col sm:flex-row flex-wrap gap-3 w-full lg:w-auto">
+                    <div class="w-full sm:w-40">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Prioritas</label>
                         <select name="priority" onchange="this.form.submit()"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green">
-                            <option value="">Semua Prioritas</option>
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
+                            <option value="">Semua</option>
                             <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>Tinggi</option>
                             <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Sedang</option>
                             <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Rendah</option>
                         </select>
                     </div>
 
-                    <div class="w-full sm:w-40 md:w-44">
-                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Assignee</label>
+                    <div class="w-full sm:w-44">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Assignee</label>
                         <select name="assignee" onchange="this.form.submit()"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green">
-                            <option value="">Semua Assignee</option>
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
+                            <option value="">Semua</option>
                             @foreach($assignableUsers as $user)
                                 <option value="{{ $user->id }}" {{ request('assignee') == $user->id ? 'selected' : '' }}>
                                     {{ $user->name }}
@@ -281,11 +274,11 @@
                         </select>
                     </div>
 
-                    <div class="w-full sm:w-40 md:w-44">
-                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Label</label>
+                    <div class="w-full sm:w-40">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Label</label>
                         <select name="label" onchange="this.form.submit()"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cuan-green/20 focus:border-cuan-green">
-                            <option value="">Semua Label</option>
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
+                            <option value="">Semua</option>
                             @foreach($labels as $label)
                                 <option value="{{ $label->id }}" {{ request('label') == $label->id ? 'selected' : '' }}>
                                     {{ $label->name }}
@@ -296,9 +289,9 @@
 
                     @if(request()->hasAny(['priority', 'assignee', 'label']))
                     <div class="flex items-end">
-                        <a href="{{ route('tasks.index') }}" class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-black">
-                            <i class="fas fa-times-circle"></i>
-                            Reset Filter
+                        <a href="{{ route('tasks.index') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-black transition-all">
+                            <i class="fas fa-undo"></i>
+                            Reset
                         </a>
                     </div>
                     @endif
@@ -434,7 +427,8 @@
                     @endforeach
                 </div>
             </div>
-        </section>
+            </div>
+        </x-card-container>
     </div>
 </main>
 

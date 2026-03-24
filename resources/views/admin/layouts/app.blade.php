@@ -58,7 +58,7 @@
     @stack('styles')
 </head>
 <body class="antialiased bg-gray-50/50 text-gray-900" x-data="{ sidebarOpen: false }">
-    <div class="min-h-screen flex">
+    <div class="min-h-screen block">
         <!-- Sidebar Overlay (Mobile) -->
         <div x-show="sidebarOpen" 
              x-transition:enter="transition-opacity ease-linear duration-300"
@@ -75,7 +75,7 @@
         @include('admin.partials.sidebar')
         
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col min-h-screen lg:ml-64">
+        <div class="flex flex-col min-h-screen lg:pl-64">
             <!-- Navbar -->
             @include('admin.partials.navbar')
             

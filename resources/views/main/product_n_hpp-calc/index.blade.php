@@ -14,7 +14,7 @@
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-gray-50">
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
         {{-- HEADER HALAMAN --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -37,41 +37,40 @@
         </section>
 
         {{-- RINGKASAN STATISTIK --}}
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Produk</p>
-                <p class="mt-2 text-2xl font-black text-gray-900">{{ number_format($stats['total'], 0, ',', '.') }}</p>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-5 shadow-sm">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Total Produk</p>
+                <p class="mt-1 text-xl font-black text-gray-900 leading-none">{{ number_format($stats['total'], 0, ',', '.') }}</p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Produk Aktif</p>
-                <p class="mt-2 text-2xl font-black text-cuan-green">{{ number_format($stats['active'], 0, ',', '.') }}</p>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-5 shadow-sm">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Produk Aktif</p>
+                <p class="mt-1 text-xl font-black text-cuan-green leading-none">{{ number_format($stats['active'], 0, ',', '.') }}</p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Rata-rata HPP</p>
-                <p class="mt-2 text-2xl font-black text-gray-900">Rp {{ number_format($stats['avg_hpp'], 0, ',', '.') }}</p>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-5 shadow-sm">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Rata-rata HPP</p>
+                <p class="mt-1 text-xl font-black text-gray-900 leading-none">Rp {{ number_format($stats['avg_hpp'], 0, ',', '.') }}</p>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl px-5 py-6 shadow-sm">
-                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Avg Margin</p>
-                <p class="mt-2 text-2xl font-black text-blue-600">{{ number_format($stats['avg_margin'], 1) }}%</p>
+            <div class="bg-white border border-gray-200 rounded-xl px-4 py-5 shadow-sm">
+                <p class="text-[9px] font-black uppercase tracking-widest text-gray-400">Avg Margin</p>
+                <p class="mt-1 text-xl font-black text-blue-600 leading-none">{{ number_format($stats['avg_margin'], 1) }}%</p>
             </div>
-        </section>
+        </div>
 
         {{-- KONTEN UTAMA: TOOLBAR + TABEL --}}
         <x-card-container>
             {{-- Toolbar: Search & Filter --}}
-            <div class="px-6 py-5 border-b border-gray-100 bg-white space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
-                <div class="flex-1 relative">
+            <div class="px-6 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center gap-4">
+                <div class="flex-1">
                     <input type="text" id="searchTerm" placeholder="Cari berdasarkan nama atau kode..."
-                           class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold">
-                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm placeholder:text-gray-400">
                 </div>
 
-                <div class="flex flex-wrap gap-3">
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <select id="filterCategory"
-                            class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all bg-white font-bold text-gray-600">
+                            class="w-full sm:w-48 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
                         <option value="">Semua Kategori</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -79,7 +78,7 @@
                     </select>
 
                     <select id="filterStatus"
-                            class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all bg-white font-bold text-gray-600">
+                            class="w-full sm:w-48 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
                         <option value="">Semua Status</option>
                         <option value="active">Aktif</option>
                         <option value="inactive">Nonaktif</option>
@@ -88,6 +87,7 @@
             </div>
 
             {{-- Tabel --}}
+            <div id="product-table-container">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
@@ -260,6 +260,7 @@
                     {{ $products->links() }}
                 </div>
             @endif
+            </div>
         </x-card-container>
     </div>
 
