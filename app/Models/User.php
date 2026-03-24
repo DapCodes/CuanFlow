@@ -7,6 +7,7 @@ use App\Notifications\VerifyEmailNotification;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\ColorPalette;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -25,7 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
     use CausesActivity, HasApiTokens, HasFactory, HasRoles, LogsActivity, MustVerifyEmailTrait, Notifiable, SoftDeletes;
 
     protected $fillable = [
-        'name', 'email', 'password', 'outlet_id', 'phone', 'avatar', 'is_active', 'last_login_at',
+        'name', 'email', 'password', 'outlet_id', 'phone', 'avatar', 'color_palette_id', 'is_active', 'last_login_at',
         'google_id', 'google_avatar', 'email_verified_at', 'last_seen_at',
     ];
 
@@ -61,6 +62,19 @@ class User extends Authenticatable implements MustVerifyEmail
     public function outlet(): BelongsTo
     {
         return $this->belongsTo(Outlet::class);
+    }
+
+    public function colorPalette(): BelongsTo
+    {
+        return $this->belongsTo(ColorPalette::class);
+    }
+
+    /**
+     * Get the active color palette for this user (falls back to default).
+     */
+    public function getActivePalette(): ColorPalette
+    {
+        return $this->colorPalette ?? ColorPalette::getDefault();
     }
 
     public function sales(): HasMany

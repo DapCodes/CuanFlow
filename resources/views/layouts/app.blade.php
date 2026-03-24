@@ -35,16 +35,21 @@
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     
+    @php
+        $activePalette = auth()->check() ? auth()->user()->getActivePalette() : \App\Models\ColorPalette::getDefault();
+    @endphp
     <script>
+        // Active palette colors (server-side, initial render)
+        window.__CUAN_PALETTE__ = {
+            'cuan-yellow': '{{ $activePalette->color_yellow }}',
+            'cuan-olive':  '{{ $activePalette->color_olive }}',
+            'cuan-green':  '{{ $activePalette->color_green }}',
+            'cuan-dark':   '{{ $activePalette->color_dark }}',
+        };
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        'cuan-yellow': '#F0E491',
-                        'cuan-olive': '#BBC863',
-                        'cuan-green': '#658C58',
-                        'cuan-dark': '#31694E',
-                    }
+                    colors: window.__CUAN_PALETTE__
                 }
             }
         }

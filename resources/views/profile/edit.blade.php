@@ -51,7 +51,7 @@
         {{-- Page Header --}}
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div class="animate-fade-in-down">
-                <h1 class="text-2xl font-black text-gray-900 tracking-tight">Pengaturan Akun</h1>
+                <h1 class="text-2xl font-black text-gray-900 tracking-tight">Pengaturan dan Akun</h1>
                 <p class="text-sm text-gray-500 font-medium mt-1">Kelola informasi pribadi, keamanan, dan preferensi akun Anda.</p>
             </div>
         </div>
@@ -350,7 +350,47 @@
                 </section>
                 
                 {{-- Appearance Tab Content --}}
-                <section x-show="activeTab === 'appearance'" class="animate-fade-in-up" x-cloak>
+                <section x-show="activeTab === 'appearance'" class="animate-fade-in-up" x-cloak
+                    x-data="{
+                        activePaletteId: {{ auth()->user()->color_palette_id ?? 'null' }},
+                        saving: false,
+                        saved: false,
+                        
+                        selectPalette(id, palette) {
+                            if (this.activePaletteId === id || this.saving) return;
+                            this.activePaletteId = id;
+                            this.saving = true;
+                            this.saved = false;
+
+                            fetch('{{ route('profile.color-palette.update') }}', {
+                                method: 'PATCH',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                    'Accept': 'application/json',
+                                },
+                                body: JSON.stringify({ color_palette_id: id }),
+                            })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Update CSS custom properties for instant live preview
+                                    const root = document.documentElement;
+                                    // Re-inject Tailwind palette (works for CDN)
+                                    window.__CUAN_PALETTE__ = data.palette;
+
+                                    // Dynamically update CSS variables used in inline styles
+                                    // Also store in localStorage so loader spinner uses new colour on next page
+                                    localStorage.setItem('cuan_palette', JSON.stringify(data.palette));
+                                    
+                                    this.saving = false;
+                                    this.saved = true;
+                                    setTimeout(() => this.saved = false, 2500);
+                                }
+                            })
+                            .catch(() => { this.saving = false; });
+                        }
+                    }">
                     <div class="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
                         <div class="p-6 md:p-8 lg:p-10">
                             <div class="flex items-center gap-4 mb-10">
@@ -359,68 +399,149 @@
                                 </div>
                                 <div>
                                     <h2 class="text-xl font-black text-gray-900">Tampilan Aplikasi</h2>
-                                    <p class="text-xs text-gray-500 font-medium mt-0.5">Pilih layout yang paling nyaman untuk operasional bisnis Anda.</p>
+                                    <p class="text-xs text-gray-500 font-medium mt-0.5">Pilih layout dan warna tema yang paling nyaman untuk Anda.</p>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {{-- Layout Option 1: Grid (Default) --}}
-                                <div @click="updateLayout('grid')" 
-                                     class="relative group cursor-pointer rounded-3xl border-2 transition-all p-4"
-                                     :class="appLayout === 'grid' ? 'border-gray-900 bg-gray-50 shadow-xl' : 'border-gray-100 hover:border-gray-300'">
-                                    
-                                    <div class="aspect-video bg-gray-200 rounded-2xl mb-4 overflow-hidden relative shadow-inner">
-                                        <!-- Grid Layout Mockup -->
-                                        <div class="absolute inset-0 flex flex-col">
-                                            <div class="h-4 bg-gray-400 w-full mb-1"></div> <!-- Top Nav -->
-                                            <div class="flex-1 p-2 grid grid-cols-3 gap-1">
-                                                <div class="h-4 bg-gray-300 rounded"></div>
-                                                <div class="h-4 bg-gray-300 rounded"></div>
-                                                <div class="h-4 bg-gray-300 rounded"></div>
-                                                <div class="h-4 bg-gray-300 rounded"></div>
-                                                <div class="h-4 bg-gray-300 rounded"></div>
+                            {{-- Layout Selector --}}
+                            <div class="mb-10">
+                                <h3 class="text-[11px] font-black uppercase text-gray-400 tracking-[0.2em] mb-5 flex items-center gap-2">
+                                    <i class="fas fa-layout opacity-50"></i> Layout Interface
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {{-- Layout Option 1: Grid (Default) --}}
+                                    <div @click="updateLayout('grid')" 
+                                         class="relative group cursor-pointer rounded-3xl border-2 transition-all p-4"
+                                         :class="appLayout === 'grid' ? 'border-gray-900 bg-gray-50 shadow-xl' : 'border-gray-100 hover:border-gray-300'">
+                                        
+                                        <div class="aspect-video bg-gray-200 rounded-2xl mb-4 overflow-hidden relative shadow-inner">
+                                            <!-- Grid Layout Mockup -->
+                                            <div class="absolute inset-0 flex flex-col">
+                                                <div class="h-4 bg-gray-400 w-full mb-1"></div> <!-- Top Nav -->
+                                                <div class="flex-1 p-2 grid grid-cols-3 gap-1">
+                                                    <div class="h-4 bg-gray-300 rounded"></div>
+                                                    <div class="h-4 bg-gray-300 rounded"></div>
+                                                    <div class="h-4 bg-gray-300 rounded"></div>
+                                                    <div class="h-4 bg-gray-300 rounded"></div>
+                                                    <div class="h-4 bg-gray-300 rounded"></div>
+                                                </div>
+                                            </div>
+                                            <div x-show="appLayout === 'grid'" class="absolute inset-0 bg-gray-900/10 flex items-center justify-center">
+                                                <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
                                             </div>
                                         </div>
-                                        <div x-show="appLayout === 'grid'" class="absolute inset-0 bg-gray-900/10 flex items-center justify-center">
-                                            <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <h3 class="text-sm font-black text-gray-900">Layout Grid (Bawaan)</h3>
+                                                <p class="text-[10px] text-gray-500 font-medium italic mt-0.5">Navigasi atas, konten melebar.</p>
+                                            </div>
+                                            <span x-show="appLayout === 'grid'" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg">Aktif</span>
                                         </div>
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <h3 class="text-sm font-black text-gray-900">Layout Grid (Bawaan)</h3>
-                                            <p class="text-[10px] text-gray-500 font-medium italic mt-0.5">Navigasi atas, konten melebar.</p>
+
+                                    {{-- Layout Option 2: Sidebar --}}
+                                    <div @click="updateLayout('sidebar')" 
+                                         class="relative group cursor-pointer rounded-3xl border-2 transition-all p-4"
+                                         :class="appLayout === 'sidebar' ? 'border-gray-900 bg-gray-50 shadow-xl' : 'border-gray-100 hover:border-gray-300'">
+                                        
+                                        <div class="aspect-video bg-gray-200 rounded-2xl mb-4 overflow-hidden relative shadow-inner">
+                                            <!-- Sidebar Layout Mockup -->
+                                            <div class="absolute inset-0 flex">
+                                                <div class="w-1/4 bg-gray-400 h-full"></div> <!-- Sidebar -->
+                                                <div class="flex-1 p-2 space-y-1">
+                                                    <div class="h-2 bg-gray-300 w-1/2 rounded mb-2"></div> <!-- Title -->
+                                                    <div class="h-10 bg-gray-300 w-full rounded"></div>
+                                                    <div class="h-10 bg-gray-300 w-full rounded"></div>
+                                                </div>
+                                            </div>
+                                            <div x-show="appLayout === 'sidebar'" class="absolute inset-0 bg-gray-900/10 flex items-center justify-center">
+                                                <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+                                            </div>
                                         </div>
-                                        <span x-show="appLayout === 'grid'" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg">Aktif</span>
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <h3 class="text-sm font-black text-gray-900">Layout Sidebar</h3>
+                                                <p class="text-[10px] text-gray-500 font-medium italic mt-0.5">Navigasi samping, akses cepat.</p>
+                                            </div>
+                                            <span x-show="appLayout === 'sidebar'" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg">Aktif</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Divider --}}
+                            <div class="border-t border-gray-100 mb-10"></div>
+
+                            {{-- Color Palette Selector --}}
+                            <div>
+                                <div class="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 class="text-[11px] font-black uppercase text-gray-400 tracking-[0.2em] flex items-center gap-2">
+                                            <i class="fas fa-swatchbook opacity-50"></i> Tema Warna Aplikasi
+                                        </h3>
+                                        <p class="text-xs text-gray-500 font-medium mt-1">Pilih palet warna yang paling mencerminkan kepribadian bisnis Anda.</p>
+                                    </div>
+                                    {{-- Status badge --}}
+                                    <div class="flex items-center gap-2 min-w-[80px] justify-end">
+                                        <span x-show="saving" class="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                                            <svg class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                                            Menyimpan
+                                        </span>
+                                        <span x-show="saved && !saving" class="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 uppercase tracking-wider">
+                                            <i class="fas fa-check-circle"></i> Tersimpan
+                                        </span>
                                     </div>
                                 </div>
 
-                                {{-- Layout Option 2: Sidebar --}}
-                                <div @click="updateLayout('sidebar')" 
-                                     class="relative group cursor-pointer rounded-3xl border-2 transition-all p-4"
-                                     :class="appLayout === 'sidebar' ? 'border-gray-900 bg-gray-50 shadow-xl' : 'border-gray-100 hover:border-gray-300'">
-                                    
-                                    <div class="aspect-video bg-gray-200 rounded-2xl mb-4 overflow-hidden relative shadow-inner">
-                                        <!-- Sidebar Layout Mockup -->
-                                        <div class="absolute inset-0 flex">
-                                            <div class="w-1/4 bg-gray-400 h-full"></div> <!-- Sidebar -->
-                                            <div class="flex-1 p-2 space-y-1">
-                                                <div class="h-2 bg-gray-300 w-1/2 rounded mb-2"></div> <!-- Title -->
-                                                <div class="h-10 bg-gray-300 w-full rounded"></div>
-                                                <div class="h-10 bg-gray-300 w-full rounded"></div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="palette-grid">
+                                    @foreach($colorPalettes as $palette)
+                                    <div
+                                        @click="selectPalette({{ $palette->id }}, {{ json_encode($palette->toTailwindColors()) }})"
+                                        :class="activePaletteId === {{ $palette->id }}
+                                            ? 'ring-2 ring-gray-900 shadow-xl scale-[1.03]'
+                                            : 'ring-1 ring-gray-100 hover:ring-gray-300 hover:shadow-md hover:scale-[1.02]'"
+                                        class="relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 group bg-white">
+
+                                        {{-- Color swatch preview --}}
+                                        <div class="w-full h-16 flex">
+                                            <div class="flex-1" style="background:{{ $palette->color_dark }}"></div>
+                                            <div class="flex-1" style="background:{{ $palette->color_green }}"></div>
+                                            <div class="flex-1" style="background:{{ $palette->color_olive }}"></div>
+                                            <div class="flex-1" style="background:{{ $palette->color_yellow }}"></div>
+                                        </div>
+
+                                        {{-- Palette info --}}
+                                        <div class="p-3">
+                                            <div class="flex items-center justify-between">
+                                                <p class="text-[11px] font-black text-gray-800 leading-tight truncate pr-1">{{ $palette->name }}</p>
+                                                <div x-show="activePaletteId === {{ $palette->id }}"
+                                                    class="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
+                                                    <i class="fas fa-check text-white" style="font-size:8px"></i>
+                                                </div>
+                                            </div>
+                                            {{-- Mini color dots --}}
+                                            <div class="flex gap-1 mt-2">
+                                                <div class="w-3 h-3 rounded-full border border-white/50 shadow-sm" style="background:{{ $palette->color_dark }}"></div>
+                                                <div class="w-3 h-3 rounded-full border border-white/50 shadow-sm" style="background:{{ $palette->color_green }}"></div>
+                                                <div class="w-3 h-3 rounded-full border border-white/50 shadow-sm" style="background:{{ $palette->color_olive }}"></div>
+                                                <div class="w-3 h-3 rounded-full border border-white/50 shadow-sm" style="background:{{ $palette->color_yellow }}"></div>
                                             </div>
                                         </div>
-                                        <div x-show="appLayout === 'sidebar'" class="absolute inset-0 bg-gray-900/10 flex items-center justify-center">
-                                            <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+
+                                        {{-- Default badge --}}
+                                        @if($palette->is_default)
+                                        <div class="absolute top-2 left-2">
+                                            <span class="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-black/50 text-white rounded-full backdrop-blur-sm">Bawaan</span>
                                         </div>
+                                        @endif
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <h3 class="text-sm font-black text-gray-900">Layout Sidebar</h3>
-                                            <p class="text-[10px] text-gray-500 font-medium italic mt-0.5">Navigasi samping, akses cepat.</p>
-                                        </div>
-                                        <span x-show="appLayout === 'sidebar'" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg">Aktif</span>
-                                    </div>
+                                    @endforeach
                                 </div>
+
+                                <p class="text-[10px] text-gray-400 font-medium mt-5 flex items-center gap-1.5">
+                                    <i class="fas fa-info-circle"></i>
+                                    Perubahan warna akan aktif sepenuhnya saat Anda berpindah halaman berikutnya.
+                                </p>
                             </div>
                         </div>
                     </div>

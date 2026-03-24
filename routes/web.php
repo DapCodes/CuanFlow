@@ -141,6 +141,7 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])-
     // ---------------------------------------------------------------------
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/color-palette', [ProfileController::class, 'updateColorPalette'])->name('profile.color-palette.update');
 
     // ---------------------------------------------------------------------
     // Outlet Management

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\ColorPalette;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -26,7 +28,8 @@ class ProfileController extends Controller implements HasMiddleware
     public function edit(Request $request): View
     {
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user'           => $request->user(),
+            'colorPalettes'  => ColorPalette::orderBy('sort_order')->get(),
         ]);
     }
 
@@ -54,5 +57,26 @@ class ProfileController extends Controller implements HasMiddleware
         $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update the user's color palette preference (AJAX – no page reload).
+     */
+    public function updateColorPalette(Request $request): JsonResponse
+    {
+        $request->validate([
+            'color_palette_id' => ['required', 'exists:color_palettes,id'],
+        ]);
+
+        $user = $request->user();
+        $user->color_palette_id = $request->color_palette_id;
+        $user->save();
+
+        $palette = ColorPalette::find($request->color_palette_id);
+
+        return response()->json([
+            'success' => true,
+            'palette' => $palette->toTailwindColors(),
+        ]);
     }
 }
