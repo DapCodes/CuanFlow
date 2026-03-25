@@ -993,7 +993,7 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil',
-                    text: "{{ session('success') }}",
+                    text: @json(session('success')),
                     showConfirmButton: false,
                     timer: 3000,
                     iconColor: '#658C58',
@@ -1009,7 +1009,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal',
-                    text: "{{ session('error') }}",
+                    text: @json(session('error')),
                     confirmButtonColor: '#ef4444',
                     customClass: {
                         popup: 'rounded-[2rem] border-none shadow-2xl',
