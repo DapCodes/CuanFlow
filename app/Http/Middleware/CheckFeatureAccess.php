@@ -140,7 +140,7 @@ class CheckFeatureAccess
                     'display_name' => $feature->display_name,
                     'required_tier' => $requiredTierName,
                 ],
-                'upgrade_url' => route('subscription.plans'),
+                'upgrade_url' => route('subscription.index'),
             ], 403);
         }
 
@@ -153,6 +153,6 @@ class CheckFeatureAccess
             ],
         ]);
 
-        return redirect()->back()->with('error', "Fitur '{$feature->display_name}' memerlukan paket {$requiredTierName}. Upgrade untuk mengakses.");
+        return redirect()->route('dashboard')->with('error', "Fitur '{$feature->display_name}' memerlukan paket {$requiredTierName}. Upgrade untuk mengakses.");
     }
 }

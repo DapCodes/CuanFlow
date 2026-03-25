@@ -289,6 +289,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function clearSubscriptionCache(): void
     {
         Cache::forget("user_{$this->id}_has_subscription");
+        Cache::forget("user_{$this->id}_sub_status");
         Cache::flush(); // Also clear feature cache
     }
 }

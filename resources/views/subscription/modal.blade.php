@@ -1,5 +1,5 @@
 @if(session('show_subscription_modal'))
-    <div style="display: none !important;" 
+    <div style="display: none;" 
          :style="{ display: show ? 'flex' : 'none' }"
          class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-gray-950/60 backdrop-blur-sm"
          x-data="{ show: true }"
