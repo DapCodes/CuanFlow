@@ -32,6 +32,8 @@ class TierFeaturesSeeder extends Seeder
             'account_settings',
             'help_faq',
             'reseller_products',
+            'reseller_app',
+            'testimonials',
         ];
 
         // Gold tier features (Silver + 6 additional = 25 total)
@@ -42,17 +44,15 @@ class TierFeaturesSeeder extends Seeder
             'reports',
             'employee_management',
             'access_rights',
+            'landing_page',
         ];
 
         // Platinum tier features (Gold + 7 premium = 32 total)
         $platinumAdditionalFeatures = [
             'multi_outlet',
-            'landing_page',
-            'testimonials',
             'stock_transfer',
             'ai_insights',
             'clara_ai',
-            'reseller_app',
             'opportunity_map',
             'video_ai',
             'script_ai',
