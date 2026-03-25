@@ -1,5 +1,13 @@
 @php
     $preferredLayout = $_COOKIE['app_layout'] ?? 'grid';
+    $user = auth()->user();
+    if ($user && !$user->hasRole('owner') && !$user->hasRole('admin')) {
+        if (!$user->canAccessFeature('employee_management')) {
+            session(['employee_lock_reason' => 'no_subscription']);
+            redirect()->route('employee.locked')->send();
+            exit;
+        }
+    }
 @endphp
 @extends($preferredLayout === 'sidebar' ? 'layouts.app-sidebar' : 'layouts.app')
 
@@ -1504,7 +1512,7 @@
 </div>
 
 <!-- Modal Pilihan Langganan (muncul setelah onboarding tour selesai untuk user baru) -->
-@if(auth()->check() && !auth()->user()->subscriptions()->exists() && !is_null(auth()->user()->outlet_id))
+@if(auth()->check() && auth()->user()->hasRole('owner') && !auth()->user()->subscriptions()->exists() && !is_null(auth()->user()->outlet_id))
 <div id="subscriptionChoiceModal" class="hidden modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
   <div class="absolute inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-effect"></div>
   
