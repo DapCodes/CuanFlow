@@ -142,9 +142,10 @@ class DebtPaymentController extends Controller
 
             // If a voucher was already applied, we should probably keep it if it's still valid
             // Otherwise, use the better of the two (voucher vs automatic)
-            if ($discountPlan && isset($discountPlan['is_voucher']) && $discountPlan['is_voucher']) {
-                // Keep voucher if it's better or exists
-                // (Logic can be more complex, but let's assume we use the latest session plan for vouchers)
+            if ($discountPlan && isset($discountPlan['customer_discount_id'])) {
+                // Keep customer specific voucher
+            } elseif ($discountPlan && isset($discountPlan['is_voucher']) && $discountPlan['is_voucher']) {
+                // Keep generic voucher
             } else {
                 $discountPlan = $nonVoucherPlan;
             }
@@ -220,15 +221,26 @@ class DebtPaymentController extends Controller
 
             // Increment discount usage
             if ($discountPlan) {
-                if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
-                    foreach ($discountPlan['applied_discounts'] as $discountItem) {
-                        $dId = is_array($discountItem) ? ($discountItem['id'] ?? null) : $discountItem;
-                        if ($dId) {
-                            $this->incrementDiscountUsage($dId);
-                        }
+                if (isset($discountPlan['customer_discount_id'])) {
+                    $cd = \App\Models\CustomerDiscount::find($discountPlan['customer_discount_id']);
+                    if ($cd) {
+                        $cd->update([
+                            'is_used' => true,
+                            'used_at' => now(),
+                        ]);
+                        \Log::info("Used personal voucher ID: {$cd->id} in DebtPayment");
                     }
-                } elseif (isset($discountPlan['discount_id'])) {
-                    $this->incrementDiscountUsage($discountPlan['discount_id']);
+                } else {
+                    if (isset($discountPlan['applied_discounts']) && is_array($discountPlan['applied_discounts'])) {
+                        foreach ($discountPlan['applied_discounts'] as $discountItem) {
+                            $dId = is_array($discountItem) ? ($discountItem['id'] ?? null) : $discountItem;
+                            if ($dId) {
+                                $this->incrementDiscountUsage($dId);
+                            }
+                        }
+                    } elseif (isset($discountPlan['discount_id'])) {
+                        $this->incrementDiscountUsage($discountPlan['discount_id']);
+                    }
                 }
             }
 

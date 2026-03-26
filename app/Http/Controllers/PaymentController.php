@@ -614,7 +614,18 @@ class PaymentController extends Controller
                     // REALTIME: Notify production screen if sale has non-stock items
                     $this->broadcastProductionOrder($sale);
 
-                    if ($sale->discount_amount > 0) {
+                    // Check if there was any discount applied
+                    $hasDiscount = false;
+                    if ($sale->notes) {
+                        try {
+                            $notesInfo = json_decode($sale->notes, true);
+                            if (isset($notesInfo['discount_plan']) || isset($notesInfo['discount_id'])) {
+                                $hasDiscount = true;
+                            }
+                        } catch (\Exception $e) {}
+                    }
+
+                    if ($sale->discount_amount > 0 || $hasDiscount) {
                         $this->incrementDiscountUsageFromSaleNotes($sale);
                     }
 

@@ -242,6 +242,11 @@ class PosDiscountController extends Controller
                 $freeItemSelection
             );
 
+            if (isset($discountPlan['customer_discount_id'])) {
+                $finalPlan['customer_discount_id'] = $discountPlan['customer_discount_id'];
+                $finalPlan['customer_id'] = $discountPlan['customer_id'] ?? null;
+            }
+
             // Update discount plan in session
             Session::put('pos_discount_plan', $finalPlan);
             Session::put('pos_bogo_selection', $freeItemSelection); // Save selection for recalculations
