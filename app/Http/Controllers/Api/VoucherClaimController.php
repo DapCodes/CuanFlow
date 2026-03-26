@@ -118,16 +118,7 @@ class VoucherClaimController extends Controller
                     'secret_code' => $claimed->secret_code,
                     'is_used' => $claimed->is_used,
                     'used_at' => $claimed->used_at ? $claimed->used_at->format('Y-m-d H:i:s') : null,
-                    'discount' => [
-                        'id' => $claimed->discount->id,
-                        'name' => $claimed->discount->name,
-                        'type' => $claimed->discount->type,
-                        'value' => $claimed->discount->value,
-                        'outlet' => [
-                            'id' => $claimed->discount->outlet->id,
-                            'name' => $claimed->discount->outlet->name,
-                        ],
-                    ],
+                    'discount' => $claimed->discount,
                 ];
             });
 
@@ -148,26 +139,7 @@ class VoucherClaimController extends Controller
             ->where('is_voucher', true)
             ->active()
             ->latest()
-            ->get()
-            ->map(function ($discount) {
-                return [
-                    'id' => $discount->id,
-                    'name' => $discount->name,
-                    'code' => $discount->code,
-                    'type' => $discount->type,
-                    'value' => $discount->value,
-                    'min_purchase' => $discount->min_purchase,
-                    'max_discount' => $discount->max_discount,
-                    'is_public' => $discount->is_public, // Add this
-                    'is_voucher' => $discount->is_voucher, // Add this
-                    'end_date' => $discount->end_date ? $discount->end_date->format('Y-m-d H:i:s') : null,
-                    'outlet' => [
-                        'id' => $discount->outlet->id,
-                        'name' => $discount->outlet->name,
-                    ],
-                    'outlet_id' => $discount->outlet_id, // Add this for easier filtering
-                ];
-            });
+            ->get();
 
         return response()->json([
             'success' => true,
