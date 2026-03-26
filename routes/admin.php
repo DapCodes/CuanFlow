@@ -58,6 +58,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Data Master
     Route::resource('roles', RoleController::class)->names('admin.roles');
+    Route::resource('advertisements', \App\Http\Controllers\Admin\AdvertisementController::class)->names('admin.advertisements');
+    Route::post('advertisements/{advertisement}/toggle-status', [\App\Http\Controllers\Admin\AdvertisementController::class, 'toggleStatus'])->name('admin.advertisements.toggle-status');
     Route::resource('permissions', PermissionController::class)->names('admin.permissions');
     Route::resource('permission-categories', PermissionCategoryController::class)->names('admin.permission-categories');
     Route::resource('task-statuses', TaskStatusController::class)->names('admin.task-statuses');
