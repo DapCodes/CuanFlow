@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\DebtPaymentApiController;
 use App\Http\Controllers\Api\HeatmapController;
 use App\Http\Controllers\Api\OutletApiController;
 use App\Http\Controllers\Api\ResellerApplicationApiController;
+use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +63,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/stats', [HeatmapController::class, 'stats']);
     });
     Route::get('/business-points', [HeatmapController::class, 'businessPoints']);
+
+    // Advertisements (Public)
+    Route::get('/advertisements', [AdvertisementController::class, 'index']);
+    Route::get('/advertisements/{id}', [AdvertisementController::class, 'show']);
 });
 
 Route::post('/payment/midtrans/notification', [PaymentController::class, 'handleMidtransNotification'])

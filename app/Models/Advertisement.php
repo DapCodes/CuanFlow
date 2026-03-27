@@ -23,6 +23,10 @@ class Advertisement extends Model
         'end_date' => 'datetime',
     ];
 
+    protected $appends = [
+        'banner_url',
+    ];
+
     public function getBannerUrlAttribute()
     {
         if ($this->banner) {
