@@ -62,7 +62,6 @@ class ResellerTestSeeder extends Seeder
                 'phone' => '081234567890',
                 'address' => 'Jl. Reseller No. 123',
                 'type' => 'reseller',
-                'reseller_outlet_id' => $outlet->id,
                 'is_active' => true,
             ]
         );

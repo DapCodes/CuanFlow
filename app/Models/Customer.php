@@ -12,7 +12,7 @@ class Customer extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'code', 'name', 'phone', 'email', 'address', 'type', 'reseller_outlet_id',
+        'code', 'name', 'phone', 'email', 'address', 'type',
         'credit_limit', 'total_debt', 'points', 'birth_date', 'notes', 'is_active',
     ];
 

@@ -989,9 +989,9 @@ class PaymentController extends Controller
         if (!$sale->customer_id) return 0;
 
         $customer = Customer::find($sale->customer_id);
-        if (!$customer || $customer->type !== 'reseller' || !$customer->reseller_outlet_id) return 0;
+        if (!$customer || $customer->type !== 'reseller') return 0;
 
-        // Verify approved application for THIS outlet
+        // Verify approved reseller application for the selling outlet
         $isVerified = ResellerApplication::where('customer_id', $sale->customer_id)
             ->where('outlet_id', $sale->outlet_id)
             ->where('status', 'approved')
@@ -999,13 +999,22 @@ class PaymentController extends Controller
 
         if (!$isVerified) return 0;
 
+        // Find the reseller's own outlet from their user account
+        $userAccount = \App\Models\User::where('email', $customer->email)
+            ->orWhere('phone', $customer->phone)
+            ->first();
+
+        if (!$userAccount || !$userAccount->outlet_id) return 0;
+
+        $resellerOutletId = $userAccount->outlet_id;
+
         $syncedCount = 0;
         foreach ($sale->items as $item) {
             $product = Product::find($item->product_id);
             if (!$product) continue;
 
             // Increment stock if already exists, else create
-            $resellerProduct = ResellerProduct::where('reseller_outlet_id', $customer->reseller_outlet_id)
+            $resellerProduct = ResellerProduct::where('reseller_outlet_id', $resellerOutletId)
                 ->where('source_outlet_id', $sale->outlet_id)
                 ->where('source_product_id', $item->product_id)
                 ->where('status', '!=', 'rejected')
@@ -1015,7 +1024,7 @@ class PaymentController extends Controller
                 $resellerProduct->increment('stock', $item->quantity);
             } else {
                 ResellerProduct::create([
-                    'reseller_outlet_id' => $customer->reseller_outlet_id,
+                    'reseller_outlet_id' => $resellerOutletId,
                     'source_outlet_id' => $sale->outlet_id,
                     'source_product_id' => $item->product_id,
                     'name' => $item->product_name,
