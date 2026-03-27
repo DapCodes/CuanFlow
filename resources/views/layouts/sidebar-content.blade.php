@@ -15,21 +15,26 @@
         ? \App\Models\Customer::where('email', $user->email)->where('type', 'reseller')->exists()
         : false;
 
-    // Fetch user outlets for switcher
     $userOutlets = $user->isOwner()
         ? $user->outletsOwned->where('is_active', true)->sortBy('name')
         : collect([$user->outlet])->filter(fn($o) => $o && $o->is_active);
     $hasMultipleOutlets = $userOutlets->count() > 1;
 @endphp
 
+{{--
+  Phosphor Icons (ph-light) — pastikan sudah ada di <head>:
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+--}}
+
 <div class="flex flex-col h-full bg-white">
-    <!-- Sidebar Header (Logo/Outlet & Dropdown) -->
-    <div class="h-16 flex items-center mb-2 border-b border-gray-50 flex-shrink-0 relative" 
+
+    <!-- ── Header ── -->
+    <div class="h-16 flex items-center mb-2 border-b border-gray-50 flex-shrink-0 relative"
          :class="sidebarCollapsed ? 'px-0 justify-center' : 'px-6'"
          x-data="{ switcherOpen: false }">
-        
+
         @if($user->outlet_id && $user->outlet)
-            <div class="flex items-center group cursor-pointer overflow-hidden" 
+            <div class="flex items-center group cursor-pointer overflow-hidden"
                  :class="sidebarCollapsed ? 'justify-center w-12' : 'gap-3 w-full'"
                  @click="switcherOpen = !switcherOpen">
                 <div class="flex-shrink-0 p-2 bg-emerald-50 rounded-xl group-hover:bg-emerald-100 transition-colors">
@@ -46,15 +51,14 @@
                     <div class="flex items-center gap-1">
                         <span class="block text-emerald-600 text-[9px] font-bold uppercase tracking-wider">User Panel</span>
                         @if($hasMultipleOutlets)
-                            <i class="fa-solid fa-chevron-down text-[8px] text-gray-400"></i>
+                            <i class="ph-light ph-caret-down text-[10px] text-gray-400"></i>
                         @endif
                     </div>
                 </div>
             </div>
 
             @if($hasMultipleOutlets)
-            <!-- Switcher Dropdown (Adjusted for collapse & z-index) -->
-            <div x-show="switcherOpen" 
+            <div x-show="switcherOpen"
                  @click.away="switcherOpen = false"
                  class="absolute bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-[9999] ring-1 ring-black/10 transition-all duration-100"
                  :class="sidebarCollapsed ? 'left-16 top-2 w-64' : 'left-3 right-3 top-14 w-[calc(100%-1.5rem)]'"
@@ -83,7 +87,7 @@
                                     <p class="text-[9px] text-gray-500 truncate">{{ $outlet->business_category }}</p>
                                 </div>
                                 @if($user->outlet_id == $outlet->id)
-                                    <i class="fa-solid fa-check text-emerald-500 text-[10px] ml-auto"></i>
+                                    <i class="ph-light ph-check text-emerald-500 text-sm ml-auto"></i>
                                 @endif
                             </button>
                         </form>
@@ -103,30 +107,35 @@
         @endif
     </div>
 
-    <!-- Navigation -->
+    <!-- ── Navigation ── -->
     <nav class="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden py-4">
         <ul class="space-y-1 px-3">
+
+            {{-- Dashboard --}}
             <li>
-                <a href="{{ route('dashboard') }}" 
+                <a href="{{ route('dashboard') }}"
                    title="Dashboard"
                    class="flex items-center rounded-xl group {{ request()->routeIs('dashboard') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-house w-5 text-center text-base {{ request()->routeIs('dashboard') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- House Simple: lebih ringan dari fa-house --}}
+                    <i class="ph-light ph-house-simple w-5 text-center text-lg {{ request()->routeIs('dashboard') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Menu Utama</span>
                 </a>
             </li>
-            <!-- SEKSI OPERASIONAL -->
+
+            <!-- ══ OPERASIONAL UTAMA ══ -->
             <p x-show="!sidebarCollapsed" class="px-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-2 mt-4 whitespace-nowrap">Operasional Utama</p>
             <div x-show="sidebarCollapsed" class="h-4"></div>
 
             @canAccessFeature('pos')
             @can('akses pos')
             <li>
-                <a href="{{ route('pos.index') }}" 
+                <a href="{{ route('pos.index') }}"
                    title="Point of Sale"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('pos.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('pos.*', 'cash-register.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-cash-register w-5 text-center text-base {{ request()->routeIs('pos.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Storefront --}}
+                    <i class="ph-light ph-storefront w-5 text-center text-lg {{ request()->routeIs('pos.*', 'cash-register.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Point of Sale</span>
                 </a>
             </li>
@@ -137,11 +146,12 @@
             @canAccessFeature('reseller_products')
             @can('lihat produk reseller')
             <li>
-                <a href="{{ route('reseller-products.index') }}" 
+                <a href="{{ route('reseller-products.index') }}"
                    title="Produk Reseller"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('reseller-products.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('reseller-products.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-boxes-packing w-5 text-center text-base {{ request()->routeIs('reseller-products.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Package --}}
+                    <i class="ph-light ph-package w-5 text-center text-lg {{ request()->routeIs('reseller-products.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Produk Reseller</span>
                 </a>
             </li>
@@ -152,11 +162,12 @@
             @canAccessFeature('sales_management')
             @can('lihat penjualan')
             <li>
-                <a href="{{ route('sales.index') }}" 
+                <a href="{{ route('sales.index') }}"
                    title="Penjualan"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('sales.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('sales.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-cart-shopping w-5 text-center text-base {{ request()->routeIs('sales.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Receipt --}}
+                    <i class="ph-light ph-receipt w-5 text-center text-lg {{ request()->routeIs('sales.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Penjualan</span>
                 </a>
             </li>
@@ -166,11 +177,12 @@
             @canAccessFeature('discount_management')
             @can('lihat diskon')
             <li>
-                <a href="{{ route('discounts.index') }}" 
+                <a href="{{ route('discounts.index') }}"
                    title="Diskon"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('discounts.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('discounts.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-tags w-5 text-center text-base {{ request()->routeIs('discounts.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Ticket --}}
+                    <i class="ph-light ph-ticket w-5 text-center text-lg {{ request()->routeIs('discounts.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Diskon</span>
                 </a>
             </li>
@@ -180,11 +192,12 @@
             @canAccessFeature('finance_management')
             @can('lihat keuangan')
             <li>
-                <a href="{{ route('finance.index') }}" 
+                <a href="{{ route('finance.index') }}"
                    title="Keuangan"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('finance.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('finance.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-wallet w-5 text-center text-base {{ request()->routeIs('finance.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Trend Up --}}
+                    <i class="ph-light ph-trend-up w-5 text-center text-lg {{ request()->routeIs('finance.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Keuangan</span>
                 </a>
             </li>
@@ -194,11 +207,12 @@
             @canAccessFeature('other_income')
             @can('buat pemasukan')
             <li>
-                <a href="{{ route('expenses.index', ['type' => 'income']) }}" 
+                <a href="{{ route('expenses.index', ['type' => 'income']) }}"
                    title="Pemasukan Lain"
-                   class="flex items-center rounded-xl group {{ request()->fullUrl() == route('expenses.index', ['type' => 'income']) ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ (request()->routeIs('expenses.*') && request('type') == 'income') || (request()->fullUrl() == route('expenses.index', ['type' => 'income'])) ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-arrow-trend-up w-5 text-center text-base {{ request()->fullUrl() == route('expenses.index', ['type' => 'income']) ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Coins --}}
+                    <i class="ph-light ph-coins w-5 text-center text-lg {{ (request()->routeIs('expenses.*') && request('type') == 'income') || (request()->fullUrl() == route('expenses.index', ['type' => 'income'])) ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Pemasukan Lain</span>
                 </a>
             </li>
@@ -208,11 +222,12 @@
             @canAccessFeature('operational_costs')
             @can('buat pengeluaran')
             <li>
-                <a href="{{ route('expenses.index', ['type' => 'expense']) }}" 
+                <a href="{{ route('expenses.index', ['type' => 'expense']) }}"
                    title="Biaya Ops"
-                   class="flex items-center rounded-xl group {{ request()->fullUrl() == route('expenses.index', ['type' => 'expense']) ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ (request()->routeIs('expenses.*') && request('type') == 'expense') || (request()->fullUrl() == route('expenses.index', ['type' => 'expense'])) ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-receipt w-5 text-center text-base {{ request()->fullUrl() == route('expenses.index', ['type' => 'expense']) ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Money Wavy --}}
+                    <i class="ph-light ph-money-wavy w-5 text-center text-lg {{ (request()->routeIs('expenses.*') && request('type') == 'expense') || (request()->fullUrl() == route('expenses.index', ['type' => 'expense'])) ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Biaya Ops</span>
                 </a>
             </li>
@@ -222,11 +237,12 @@
             @canAccessFeature('balance_withdrawal')
             @can('buat penarikan')
             <li>
-                <a href="{{ route('withdraw.index') }}" 
+                <a href="{{ route('withdraw.index') }}"
                    title="Penarikan Saldo"
                    class="flex items-center rounded-xl group {{ request()->routeIs('withdraw.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-hand-holding-dollar w-5 text-center text-base {{ request()->routeIs('withdraw.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Bank --}}
+                    <i class="ph-light ph-bank w-5 text-center text-lg {{ request()->routeIs('withdraw.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Penarikan Saldo</span>
                 </a>
             </li>
@@ -236,11 +252,12 @@
             @canAccessFeature('invoice_list')
             @can('lihat invoice')
             <li>
-                <a href="{{ route('invoices.index') }}" 
+                <a href="{{ route('invoices.index') }}"
                    title="Daftar Invoice"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('invoices.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('invoices.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-file-lines w-5 text-center text-base {{ request()->routeIs('invoices.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Invoice --}}
+                    <i class="ph-light ph-invoice w-5 text-center text-lg {{ request()->routeIs('invoices.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Daftar Invoice</span>
                 </a>
             </li>
@@ -250,11 +267,12 @@
             @canAccessFeature('payment_methods')
             @can('lihat metode pembayaran')
             <li>
-                <a href="{{ route('outlet-payment-links.index') }}" 
+                <a href="{{ route('outlet-payment-links.index') }}"
                    title="Metode Pembayaran"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('outlet-payment-links.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('outlet-payment-links.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-qrcode w-5 text-center text-base {{ request()->routeIs('outlet-payment-links.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Scan --}}
+                    <i class="ph-light ph-scan w-5 text-center text-lg {{ request()->routeIs('outlet-payment-links.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Metode Pembayaran</span>
                 </a>
             </li>
@@ -264,29 +282,31 @@
             @canAccessFeature('task_management')
             @can('tasks.view')
             <li>
-                <a href="{{ route('tasks.index') }}" 
+                <a href="{{ route('tasks.index') }}"
                    title="Manajemen Tugas"
                    class="flex items-center rounded-xl group {{ request()->routeIs('tasks.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-list-check w-5 text-center text-base {{ request()->routeIs('tasks.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Clipboard Text --}}
+                    <i class="ph-light ph-clipboard-text w-5 text-center text-lg {{ request()->routeIs('tasks.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Manajemen Tugas</span>
                 </a>
             </li>
             @endcan
             @endcanAccessFeature
 
-            <!-- SEKSI MONITORING -->
+            <!-- ══ MONITORING ══ -->
             <p x-show="!sidebarCollapsed" class="px-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-2 mt-6 whitespace-nowrap">Monitoring</p>
             <div x-show="sidebarCollapsed" class="h-4"></div>
 
             @canAccessFeature('dashboard')
             @can('lihat statistik')
             <li>
-                <a href="{{ route('statistics.index') }}" 
+                <a href="{{ route('statistics.index') }}"
                    title="Dashboard & Statistik"
                    class="flex items-center rounded-xl group {{ request()->routeIs('statistics.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-chart-line w-5 text-center text-base {{ request()->routeIs('statistics.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Chart Bar --}}
+                    <i class="ph-light ph-chart-bar w-5 text-center text-lg {{ request()->routeIs('statistics.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Dashboard & Statistik</span>
                 </a>
             </li>
@@ -296,29 +316,31 @@
             @canAccessFeature('reports')
             @can('lihat laporan')
             <li>
-                <a href="{{ route('reports.index') }}" 
+                <a href="{{ route('reports.index') }}"
                    title="Laporan"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('reports.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('reports.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-file-invoice w-5 text-center text-base {{ request()->routeIs('reports.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- File Magnifying Glass --}}
+                    <i class="ph-light ph-file-magnifying-glass w-5 text-center text-lg {{ request()->routeIs('reports.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Laporan</span>
                 </a>
             </li>
             @endcan
             @endcanAccessFeature
 
-            <!-- PRODUK & STOK -->
+            <!-- ══ PRODUK & STOK ══ -->
             <p x-show="!sidebarCollapsed" class="px-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-2 mt-6 whitespace-nowrap">Produk & Stok</p>
             <div x-show="sidebarCollapsed" class="h-4"></div>
 
             @canAccessFeature('products_recipes')
             @can('lihat produk')
             <li>
-                <a href="{{ route('products-hpp.index') }}" 
+                <a href="{{ route('products-hpp.index') }}"
                    title="Produk & Resep"
                    class="flex items-center rounded-xl group {{ request()->routeIs('products-hpp.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-utensils w-5 text-center text-base {{ request()->routeIs('products-hpp.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Bowl Steam --}}
+                    <i class="ph-light ph-bowl-steam w-5 text-center text-lg {{ request()->routeIs('products-hpp.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Produk & Resep</span>
                 </a>
             </li>
@@ -328,11 +350,12 @@
             @canAccessFeature('raw_materials')
             @can('lihat bahan baku')
             <li>
-                <a href="{{ route('raw-materials.index') }}" 
+                <a href="{{ route('raw-materials.index') }}"
                    title="Bahan Baku"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('raw-materials.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ (request()->routeIs('raw-materials.*') && !request()->routeIs('raw-materials.suppliers*')) ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-boxes-stacked w-5 text-center text-base {{ request()->routeIs('raw-materials.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Warehouse --}}
+                    <i class="ph-light ph-warehouse w-5 text-center text-lg {{ (request()->routeIs('raw-materials.*') && !request()->routeIs('raw-materials.suppliers*')) ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Bahan Baku</span>
                 </a>
             </li>
@@ -342,11 +365,12 @@
             @canAccessFeature('suppliers')
             @can('lihat supplier')
             <li>
-                <a href="{{ route('raw-materials.suppliers') }}" 
+                <a href="{{ route('raw-materials.suppliers') }}"
                    title="Pemasok"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('raw-materials.suppliers') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('raw-materials.suppliers*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-truck-field w-5 text-center text-base {{ request()->routeIs('raw-materials.suppliers') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Truck --}}
+                    <i class="ph-light ph-truck w-5 text-center text-lg {{ request()->routeIs('raw-materials.suppliers*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Pemasok</span>
                 </a>
             </li>
@@ -356,11 +380,12 @@
             @canAccessFeature('reseller_app')
             @can('lihat reseller applications')
             <li>
-                <a href="{{ route('reseller-applications.index') }}" 
+                <a href="{{ route('reseller-applications.index') }}"
                    title="Lamaran Reseller"
                    class="flex items-center rounded-xl group {{ request()->routeIs('reseller-applications.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-handshake w-5 text-center text-base {{ request()->routeIs('reseller-applications.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Users Three --}}
+                    <i class="ph-light ph-users-three w-5 text-center text-lg {{ request()->routeIs('reseller-applications.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Lamaran Reseller</span>
                 </a>
             </li>
@@ -370,11 +395,12 @@
             @canAccessFeature('production')
             @can('lihat produksi')
             <li>
-                <a href="{{ route('production.index') }}" 
+                <a href="{{ route('production.index') }}"
                    title="Produksi"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('production.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('production.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-flask w-5 text-center text-base {{ request()->routeIs('production.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Factory --}}
+                    <i class="ph-light ph-factory w-5 text-center text-lg {{ request()->routeIs('production.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Produksi</span>
                 </a>
             </li>
@@ -384,11 +410,12 @@
             @canAccessFeature('stock_opname')
             @can('lihat stock opname')
             <li>
-                <a href="{{ route('stock-opname.index') }}" 
+                <a href="{{ route('stock-opname.index') }}"
                    title="Stock Opname"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('stock-opname.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('stock-opname.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-boxes-packing w-5 text-center text-base {{ request()->routeIs('stock-opname.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Clipboard List --}}
+                    <i class="ph-light ph-list-checks w-5 text-center text-lg {{ request()->routeIs('stock-opname.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Stock Opname</span>
                 </a>
             </li>
@@ -398,29 +425,31 @@
             @canAccessFeature('stock_transfer')
             @can('lihat stock transfer')
             <li>
-                <a href="{{ route('stock-transfers.index') }}" 
+                <a href="{{ route('stock-transfers.index') }}"
                    title="Transfer Stok"
                    class="flex items-center rounded-xl group {{ request()->routeIs('stock-transfers.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-truck-fast w-5 text-center text-base {{ request()->routeIs('stock-transfers.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Arrows Left Right --}}
+                    <i class="ph-light ph-arrows-left-right w-5 text-center text-lg {{ request()->routeIs('stock-transfers.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Transfer Stok</span>
                 </a>
             </li>
             @endcan
             @endcanAccessFeature
 
-            <!-- AI & ANALISIS -->
+            <!-- ══ ANALISIS AI ══ -->
             <p x-show="!sidebarCollapsed" class="px-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-2 mt-6 whitespace-nowrap">Analisis AI</p>
             <div x-show="sidebarCollapsed" class="h-4"></div>
 
             @canAccessFeature('ai_insights')
             @can('lihat ai insights')
             <li>
-                <a href="{{ route('ai-insights.index') }}" 
+                <a href="{{ route('ai-insights.index') }}"
                    title="Insight"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('ai-insights.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('ai-insights.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-lightbulb w-5 text-center text-base {{ request()->routeIs('ai-insights.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Sparkle --}}
+                    <i class="ph-light ph-sparkle w-5 text-center text-lg {{ request()->routeIs('ai-insights.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Insight</span>
                 </a>
             </li>
@@ -430,11 +459,12 @@
             @canAccessFeature('clara_ai')
             @can('akses clara ai')
             <li>
-                <a href="{{ route('clara-ai.index') }}" 
+                <a href="{{ route('clara-ai.index') }}"
                    title="Clara AI"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('clara-ai.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('clara-ai.index', 'clara-ai.chat', 'clara-ai.new-session') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-robot w-5 text-center text-base {{ request()->routeIs('clara-ai.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Brain: AI/kecerdasan buatan --}}
+                    <i class="ph-light ph-brain w-5 text-center text-lg {{ request()->routeIs('clara-ai.index', 'clara-ai.chat', 'clara-ai.new-session') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Clara AI</span>
                 </a>
             </li>
@@ -444,11 +474,12 @@
             @canAccessFeature('opportunity_map')
             @can('akses peta cuan')
             <li>
-                <a href="{{ route('opportunity-map.index') }}" 
+                <a href="{{ route('opportunity-map.index') }}"
                    title="Peta Cuan"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('opportunity-map.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('opportunity-map.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-map-location-dot w-5 text-center text-base {{ request()->routeIs('opportunity-map.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Map Trifold --}}
+                    <i class="ph-light ph-map-trifold w-5 text-center text-lg {{ request()->routeIs('opportunity-map.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Peta Cuan</span>
                 </a>
             </li>
@@ -460,11 +491,12 @@
             @canAccessFeature('video_ai')
             @can('akses video ai')
             <li>
-                <a href="{{ route('clara-ai.video-prompt') }}" 
+                <a href="{{ route('clara-ai.video-prompt') }}"
                    title="Video AI"
                    class="flex items-center rounded-xl group {{ request()->routeIs('clara-ai.video-prompt') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-film w-5 text-center text-base {{ request()->routeIs('clara-ai.video-prompt') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Video Camera --}}
+                    <i class="ph-light ph-video-camera w-5 text-center text-lg {{ request()->routeIs('clara-ai.video-prompt') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Video AI</span>
                 </a>
             </li>
@@ -474,11 +506,12 @@
             @canAccessFeature('script_ai')
             @can('akses script ai')
             <li>
-                <a href="{{ route('clara-ai.affiliate-script') }}" 
+                <a href="{{ route('clara-ai.affiliate-script') }}"
                    title="Script AI"
                    class="flex items-center rounded-xl group {{ request()->routeIs('clara-ai.affiliate-script') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-scroll w-5 text-center text-base {{ request()->routeIs('clara-ai.affiliate-script') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Microphone Stage --}}
+                    <i class="ph-light ph-microphone-stage w-5 text-center text-lg {{ request()->routeIs('clara-ai.affiliate-script') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Script AI</span>
                 </a>
             </li>
@@ -488,11 +521,12 @@
             @canAccessFeature('image_ai')
             @can('akses image ai')
             <li>
-                <a href="{{ route('clara-ai.ads-image-prompt') }}" 
+                <a href="{{ route('clara-ai.ads-image-prompt') }}"
                    title="Image AI"
                    class="flex items-center rounded-xl group {{ request()->routeIs('clara-ai.ads-image-prompt') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-image w-5 text-center text-base {{ request()->routeIs('clara-ai.ads-image-prompt') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Image Square --}}
+                    <i class="ph-light ph-image-square w-5 text-center text-lg {{ request()->routeIs('clara-ai.ads-image-prompt') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Image AI</span>
                 </a>
             </li>
@@ -502,11 +536,12 @@
             @canAccessFeature('kalkulaba_ai')
             @can('akses kalkulaba ai')
             <li>
-                <a href="{{ route('clara-ai.kalkulaba') }}" 
+                <a href="{{ route('clara-ai.kalkulaba') }}"
                    title="Kalkulaba AI"
                    class="flex items-center rounded-xl group {{ request()->routeIs('clara-ai.kalkulaba') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-calculator w-5 text-center text-base {{ request()->routeIs('clara-ai.kalkulaba') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Percent --}}
+                    <i class="ph-light ph-percent w-5 text-center text-lg {{ request()->routeIs('clara-ai.kalkulaba') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Kalkulaba AI</span>
                 </a>
             </li>
@@ -515,17 +550,18 @@
             @endcan
             @endcanAccessFeature
 
-            <!-- PENGATURAN -->
+            <!-- ══ SISTEM & BANTUAN ══ -->
             <p x-show="!sidebarCollapsed" class="px-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-2 mt-6 whitespace-nowrap">Sistem & Bantuan</p>
             <div x-show="sidebarCollapsed" class="h-4"></div>
 
             @can('lihat outlet')
             <li>
-                <a href="{{ $outletUrl }}" 
+                <a href="{{ $outletUrl }}"
                    title="Outlet"
-                   class="flex items-center rounded-xl group {{ request()->url() == $outletUrl ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->url() == $outletUrl || request()->routeIs('outlets.edit') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-store w-5 text-center text-base {{ request()->url() == $outletUrl ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Buildings --}}
+                    <i class="ph-light ph-buildings w-5 text-center text-lg {{ request()->url() == $outletUrl || request()->routeIs('outlets.edit') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Outlet</span>
                 </a>
             </li>
@@ -534,11 +570,12 @@
             @canAccessFeature('landing_page')
             @can('lihat landing page')
             <li>
-                <a href="{{ route('landing-pages.index') }}" 
+                <a href="{{ route('landing-pages.index') }}"
                    title="Landing Page"
                    class="flex items-center rounded-xl group {{ request()->routeIs('landing-pages.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-rocket w-5 text-center text-base {{ request()->routeIs('landing-pages.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Globe Simple --}}
+                    <i class="ph-light ph-globe-simple w-5 text-center text-lg {{ request()->routeIs('landing-pages.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Landing Page</span>
                 </a>
             </li>
@@ -548,11 +585,12 @@
             @canAccessFeature('testimonials')
             @can('lihat testimoni')
             <li>
-                <a href="{{ route('testimonials.index') }}" 
+                <a href="{{ route('testimonials.index') }}"
                    title="Testimoni"
                    class="flex items-center rounded-xl group {{ request()->routeIs('testimonials.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-quote-left w-5 text-center text-base {{ request()->routeIs('testimonials.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Star Half --}}
+                    <i class="ph-light ph-star-half w-5 text-center text-lg {{ request()->routeIs('testimonials.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Testimoni</span>
                 </a>
             </li>
@@ -562,11 +600,12 @@
             @canAccessFeature('employee_management')
             @can('lihat pegawai')
             <li>
-                <a href="{{ route('employees.index') }}" 
+                <a href="{{ route('employees.index') }}"
                    title="Pegawai"
                    class="flex items-center rounded-xl group {{ request()->routeIs('employees.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-users w-5 text-center text-base {{ request()->routeIs('employees.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Identification Card --}}
+                    <i class="ph-light ph-identification-card w-5 text-center text-lg {{ request()->routeIs('employees.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Pegawai</span>
                 </a>
             </li>
@@ -576,11 +615,12 @@
             @canAccessFeature('customer_management')
             @can('lihat pelanggan')
             <li>
-                <a href="{{ route('customer-debts.index') }}" 
+                <a href="{{ route('customer-debts.index') }}"
                    title="Pelanggan"
                    class="flex items-center rounded-xl group {{ request()->routeIs('customer-debts.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-address-book w-5 text-center text-base {{ request()->routeIs('customer-debts.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Hand Coins --}}
+                    <i class="ph-light ph-hand-coins w-5 text-center text-lg {{ request()->routeIs('customer-debts.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Pelanggan</span>
                 </a>
             </li>
@@ -590,11 +630,12 @@
             @canAccessFeature('table_management')
             @can('lihat meja')
             <li>
-                <a href="{{ route('tables.index') }}" 
+                <a href="{{ route('tables.index') }}"
                    title="Meja"
                    class="flex items-center rounded-xl group {{ request()->routeIs('tables.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-chair w-5 text-center text-base {{ request()->routeIs('tables.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Table --}}
+                    <i class="ph-light ph-table w-5 text-center text-lg {{ request()->routeIs('tables.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Meja</span>
                 </a>
             </li>
@@ -604,11 +645,12 @@
             @canAccessFeature('outlet_policies')
             @can('lihat kebijakan outlet')
             <li>
-                <a href="{{ route('outlet-policies.index') }}" 
+                <a href="{{ route('outlet-policies.index') }}"
                    title="Kebijakan"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('outlet-policies.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('outlet-policies.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-clipboard-list w-5 text-center text-base {{ request()->routeIs('outlet-policies.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Notepad --}}
+                    <i class="ph-light ph-notepad w-5 text-center text-lg {{ request()->routeIs('outlet-policies.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Kebijakan</span>
                 </a>
             </li>
@@ -616,14 +658,15 @@
             @endcanAccessFeature
 
             <li>
-                <a href="{{ route('stock-notifications.index') }}" 
+                <a href="{{ route('stock-notifications.index') }}"
                    title="Notifikasi"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('stock-notifications.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('stock-notifications.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <div class="relative">
-                        <i class="fa-solid fa-bell w-5 text-center text-base {{ request()->routeIs('stock-notifications.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Bell Ringing --}}
+                    <div class="relative w-5 flex justify-center">
+                        <i class="ph-light ph-bell-ringing text-lg {{ request()->routeIs('stock-notifications.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                         @if(isset($unreadStockCount) && $unreadStockCount > 0)
-                            <span class="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                            <span class="absolute -top-1 -right-0.5 h-2.5 w-2.5 bg-red-500 border-2 border-white rounded-full"></span>
                         @endif
                     </div>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Notifikasi</span>
@@ -636,11 +679,12 @@
             </li>
 
             <li>
-                <a href="{{ route('profile.edit') }}" 
+                <a href="{{ route('profile.edit') }}"
                    title="Akun"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('profile.edit') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('profile.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-user-gear w-5 text-center text-base {{ request()->routeIs('profile.edit') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Shield Check --}}
+                    <i class="ph-light ph-shield-check w-5 text-center text-lg {{ request()->routeIs('profile.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Akun</span>
                 </a>
             </li>
@@ -648,11 +692,12 @@
             @canAccessFeature('help_faq')
             @can('lihat faq')
             <li>
-                <a href="{{ route('faqs.index') }}" 
+                <a href="{{ route('faqs.index') }}"
                    title="FAQ"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('faqs.index') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('faqs.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-circle-question w-5 text-center text-base {{ request()->routeIs('faqs.index') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    {{-- Lifebuoy --}}
+                    <i class="ph-light ph-lifebuoy w-5 text-center text-lg {{ request()->routeIs('faqs.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
                     <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">FAQ</span>
                 </a>
             </li>
@@ -661,15 +706,18 @@
 
             @if(auth()->user()->hasRole('owner') && auth()->user()->subscription)
             <li>
-                <a href="{{ route('subscription.manage') }}" 
+                <a href="{{ route('subscription.manage') }}"
                    title="Kelola Langganan"
-                   class="flex items-center rounded-xl group {{ request()->routeIs('subscription.manage') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('subscription.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
                    :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
-                    <i class="fa-solid fa-crown w-5 text-center text-base {{ request()->routeIs('subscription.manage') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
-                   <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Kelola Langganan</span>
+                    {{-- Diamond --}}
+                    <i class="ph-light ph-diamond w-5 text-center text-lg {{ request()->routeIs('subscription.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Kelola Langganan</span>
                 </a>
             </li>
             @endif
+
         </ul>
     </nav>
+
 </div>
