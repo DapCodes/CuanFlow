@@ -129,6 +129,7 @@
         [x-cloak] { display: none !important; }
         body {
             font-family: 'Satoshi', sans-serif;
+            background-color: #f9fafb;
         }
 
         /* ── Top Progress Bar (YouTube/GitHub style) ── */
@@ -186,20 +187,16 @@
             100% { transform: translate3d(200%, 0, 0); }
         }
 
-        /* FOUC Prevention */
+        /* Content hidden until fully ready (Alpine + all scripts loaded) */
         #app-content-wrapper {
             opacity: 0;
-            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.3s ease;
         }
 
         #app-content-wrapper.ready {
             opacity: 1;
         }
-    </style>
-    
-    <style id="fouc-mask">
-        #app-content-wrapper { display: none !important; }
-        body { background-color: #ffffff !important; overflow: hidden !important; }
+
     </style>
     
     @stack('styles')
@@ -229,10 +226,20 @@
     </div>
     @endif
     
-    <!-- Top Progress Bar Loader -->
-    <div id="global-page-loader" class="global-page-loader">
+    <!-- Top Progress Bar Loader (starts active to show immediate feedback) -->
+    <div id="global-page-loader" class="global-page-loader active">
         <div class="progress-bar" id="progress-bar"></div>
     </div>
+    <script>
+        // Start the bar immediately so user sees progress while page loads
+        (function() {
+            var b = document.getElementById('progress-bar');
+            if (b) {
+                b.style.transition = 'width 2s cubic-bezier(0.4, 0, 0.2, 1)';
+                b.style.width = '30%';
+            }
+        })();
+    </script>
 
     <div id="app-content-wrapper" class="min-h-screen" :class="currentLayout === 'grid' ? 'flex flex-col' : 'block'">
         
@@ -272,7 +279,7 @@
             }">
             <!-- Navbar Grid -->
             <!-- Navbar Grid (For Grid mode) -->
-            <nav id="main-navbar" x-show="currentLayout === 'grid' && !isFullScreen" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
+            <nav id="main-navbar" x-cloak x-show="currentLayout === 'grid' && !isFullScreen" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16 items-center">
                         
@@ -638,7 +645,7 @@
             </nav>
 
             <!-- Sidebar Top Header (For Sidebar mode) -->
-            <header x-show="currentLayout === 'sidebar' && !isFullScreen" class="bg-white border-b border-gray-100 sticky top-0 z-40 h-16 flex items-center shadow-sm">
+            <header x-cloak x-show="currentLayout === 'sidebar' && !isFullScreen" class="bg-white border-b border-gray-100 sticky top-0 z-40 h-16 flex items-center shadow-sm">
                 <div class="flex items-center justify-between w-full px-4 lg:px-8">
                     <!-- Left: Toggle & Title -->
                     <div class="flex items-center gap-4">
@@ -925,20 +932,17 @@
 
             // ── Page lifecycle ──
             window.addEventListener('load', function() {
-                const foucMask = document.getElementById('fouc-mask');
                 const contentWrapper = document.getElementById('app-content-wrapper');
 
-                if (foucMask) foucMask.remove();
+                // Complete progress bar
+                completeProgress();
 
-                // Complete the progress bar if it was running, then reveal content
-                if (isNavigating) {
-                    completeProgress();
-                }
-
-                setTimeout(() => {
-                    if (contentWrapper) contentWrapper.classList.add('ready');
-                    document.body.style.overflow = '';
-                }, 100);
+                // Reveal content after Alpine.js is fully initialized
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        if (contentWrapper) contentWrapper.classList.add('ready');
+                    });
+                });
             });
 
             window.addEventListener('pageshow', function(e) {
@@ -952,7 +956,6 @@
 
                     const contentWrapper = document.getElementById('app-content-wrapper');
                     if (contentWrapper) contentWrapper.classList.add('ready');
-                    document.body.style.overflow = '';
                 }
             });
 
