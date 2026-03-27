@@ -27,6 +27,7 @@
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 
     {{-- favicon --}}
     <link rel="shortcut icon" href="{{ asset('assets/image/logo.svg') }}" type="image/x-icon">
