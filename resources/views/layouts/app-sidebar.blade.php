@@ -132,107 +132,65 @@
             font-family: 'Satoshi', sans-serif;
         }
 
-        /* Optimized Global Page Loader - Using transform and will-change for GPU acceleration */
+        /* ── Top Progress Bar (YouTube/GitHub style) ── */
         .global-page-loader {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            height: 3px;
             z-index: 99999;
+            pointer-events: none;
             opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-            will-change: opacity, visibility;
+            background: transparent;
+            transition: opacity 0.4s ease;
         }
-        
-        .global-page-loader.active {
-            opacity: 1;
-            visibility: visible;
+
+        .global-page-loader .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: {{ $activePalette->color_green }};
+            box-shadow: 0 0 10px {{ $activePalette->color_green }}80,
+                        0 0 5px {{ $activePalette->color_green }}40;
+            border-radius: 0 2px 2px 0;
+            transform: translate3d(0, 0, 0);
+            will-change: width, opacity;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
-        
-        /* Optimized Spinning Asterisk - GPU Accelerated */
-        .global-loader-asterisk {
-            width: 60px;
-            height: 60px;
-            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+
+        .global-page-loader .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 100%
+            );
+            animation: shimmer 1.5s ease-in-out infinite;
+            transform: translate3d(-100%, 0, 0);
             will-change: transform;
         }
-        
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg) scale(1);
-            }
-            50% {
-                transform: rotate(180deg) scale(1.15);
-            }
-            100% {
-                transform: rotate(360deg) scale(1);
-            }
+
+        .global-page-loader.active {
+            opacity: 1;
         }
-        
-        /* Optimized Pulsing dots */
-        .global-loader-dots {
-            display: flex;
-            gap: 6px;
-            margin-top: 16px;
-        }
-        
-        .global-loader-dot {
-            width: 6px;
-            height: 6px;
-            background: #31694E;
-            border-radius: 50%;
-            animation: pulse 1.2s ease-in-out infinite;
-            will-change: transform, opacity;
-        }
-        
-        .global-loader-dot:nth-child(2) {
-            animation-delay: 0.15s;
-        }
-        
-        .global-loader-dot:nth-child(3) {
-            animation-delay: 0.3s;
-        }
-        
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(0.8);
-                opacity: 0.5;
-            }
-            50% {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-        }
-        
-        /* Loading text */
-        .global-loader-text {
-            color: #31694E;
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 12px;
-            animation: fadeInOut 1.5s ease-in-out infinite;
-        }
-        
-        @keyframes fadeInOut {
-            0%, 100% {
-                opacity: 0.5;
-            }
-            50% {
-                opacity: 1;
-            }
+
+        @keyframes shimmer {
+            0%   { transform: translate3d(-100%, 0, 0); }
+            100% { transform: translate3d(200%, 0, 0); }
         }
 
         /* FOUC Prevention */
         #app-content-wrapper {
             opacity: 0;
-            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #app-content-wrapper.ready {
@@ -298,17 +256,9 @@
     </div>
     @endif
     
-    <!-- Optimized Global Page Loader -->
-    <div id="global-page-loader" class="global-page-loader active">
-        <svg class="global-loader-asterisk" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M40 10V70M10 40H70M20 20L60 60M60 20L20 60" stroke="#31694E" stroke-width="8" stroke-linecap="round"/>
-        </svg>
-        <div class="global-loader-dots">
-            <div class="global-loader-dot"></div>
-            <div class="global-loader-dot"></div>
-            <div class="global-loader-dot"></div>
-        </div>
-        <p class="global-loader-text">Loading...</p>
+    <!-- Top Progress Bar Loader -->
+    <div id="global-page-loader" class="global-page-loader">
+        <div class="progress-bar" id="progress-bar"></div>
     </div>
 
     <div id="app-content-wrapper" class="min-h-screen" :class="currentLayout === 'grid' ? 'flex flex-col' : 'block'">
@@ -910,32 +860,66 @@
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
-        // Optimized Page Loader Handler - Runs immediately
+        // ── Top Progress Bar Handler (YouTube/GitHub style) ──
         (function() {
             const loader = document.getElementById('global-page-loader');
+            const bar = document.getElementById('progress-bar');
             let isNavigating = false;
-            
-            // Optimized navigation function - minimal delay
+            let simulationTimer = null;
+
+            // Start progress bar animation (simulates 0% → target%)
+            function startProgress() {
+                if (isNavigating) return;
+                isNavigating = true;
+
+                // Reset bar instantly
+                bar.style.transition = 'none';
+                bar.style.width = '0%';
+                // Force reflow so the reset takes effect before animating
+                void bar.offsetWidth;
+
+                // Show bar and animate to ~85%
+                loader.classList.add('active');
+                bar.style.transition = 'width 2.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                bar.style.width = '85%';
+
+                // After initial fast phase, slowly creep towards 95%
+                simulationTimer = setTimeout(() => {
+                    bar.style.transition = 'width 8s cubic-bezier(0.1, 0, 0.2, 1)';
+                    bar.style.width = '95%';
+                }, 2600);
+            }
+
+            // Complete progress bar (snap to 100%, then fade out)
+            function completeProgress() {
+                if (simulationTimer) clearTimeout(simulationTimer);
+
+                bar.style.transition = 'width 0.3s ease-out';
+                bar.style.width = '100%';
+
+                setTimeout(() => {
+                    loader.classList.remove('active');
+                    // After fade-out, reset bar width for next navigation
+                    setTimeout(() => {
+                        bar.style.transition = 'none';
+                        bar.style.width = '0%';
+                        isNavigating = false;
+                    }, 400);
+                }, 350);
+            }
+
+            // Navigation helper – start bar, then navigate
             function navigate(url, e) {
                 if (e) e.preventDefault();
-                if (isNavigating) return;
-                
-                isNavigating = true;
-                loader.classList.add('active');
-                
-                // Navigate immediately after brief visual feedback (300ms)
-                setTimeout(() => {
-                    window.location.href = url;
-                }, 300);
+                startProgress();
+                // Navigate after a tiny delay so the bar is visible
+                setTimeout(() => { window.location.href = url; }, 80);
             }
-            
-            // Use event delegation for better performance
+
+            // ── Event delegation ──
             document.addEventListener('click', function(e) {
-                // Skip if clicked element or parent has no-loader class
-                if (e.target.closest('.no-loader')) {
-                    return;
-                }
-                
+                if (e.target.closest('.no-loader')) return;
+
                 const link = e.target.closest('.nav-link');
                 if (link) {
                     const url = link.getAttribute('href');
@@ -943,67 +927,60 @@
                         navigate(url, e);
                     }
                 }
-                
+
                 const logoutBtn = e.target.closest('.logout-btn');
                 if (logoutBtn) {
                     e.preventDefault();
-                    if (isNavigating) return;
-                    
-                    isNavigating = true;
-                    loader.classList.add('active');
-                    setTimeout(() => {
-                        logoutBtn.closest('form').submit();
-                    }, 300);
+                    startProgress();
+                    setTimeout(() => { logoutBtn.closest('form').submit(); }, 80);
                 }
             });
-            
-            // Handle form submissions for outlet switching
+
+            // Handle form submissions (outlet switching, etc.)
             document.addEventListener('submit', function(e) {
                 const form = e.target;
                 if (form.querySelector('input[name="outlet_id"]')) {
-                    if (isNavigating) return;
-                    
-                    isNavigating = true;
-                    loader.classList.add('active');
+                    startProgress();
                 }
             });
-            
-            // Handle back/forward navigation and initial load
+
+            // ── Page lifecycle ──
             window.addEventListener('load', function() {
                 const foucMask = document.getElementById('fouc-mask');
                 const contentWrapper = document.getElementById('app-content-wrapper');
-                
-                // 1. Remove display:none constraint
+
                 if (foucMask) foucMask.remove();
-                
-                // 2. Small delay to ensure styles are applied
+
+                // Complete the progress bar if it was running, then reveal content
+                if (isNavigating) {
+                    completeProgress();
+                }
+
                 setTimeout(() => {
-                    // 3. Hide Loader
-                    loader.classList.remove('active');
-                    
-                    // 4. Fade In Content
                     if (contentWrapper) contentWrapper.classList.add('ready');
-                    
-                    // 5. Restore scroll
                     document.body.style.overflow = '';
-                    isNavigating = false;
-                }, 400); 
+                }, 100);
             });
 
             window.addEventListener('pageshow', function(e) {
                 if (e.persisted) {
+                    // Back/Forward cache: reset everything
+                    if (simulationTimer) clearTimeout(simulationTimer);
                     loader.classList.remove('active');
+                    bar.style.transition = 'none';
+                    bar.style.width = '0%';
+                    isNavigating = false;
+
                     const contentWrapper = document.getElementById('app-content-wrapper');
                     if (contentWrapper) contentWrapper.classList.add('ready');
                     document.body.style.overflow = '';
-                    isNavigating = false;
                 }
             });
-            
-            // Prevent loader from staying visible if navigation is cancelled
+
+            // On beforeunload, start the bar if not already running
             window.addEventListener('beforeunload', function() {
                 if (!isNavigating) {
-                    loader.classList.add('active');
+                    startProgress();
                 }
             });
         })();
