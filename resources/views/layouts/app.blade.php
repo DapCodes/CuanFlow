@@ -287,9 +287,12 @@
                         <div class="flex items-center min-w-0 flex-1">
                             @if(auth()->check() && auth()->user()->outlet_id && auth()->user()->outlet)
                                 @php
-                                    $userOutlets = auth()->user()->isOwner()
-                                        ? auth()->user()->outletsOwned->where('is_active', true)->sortBy('name')
-                                        : collect([auth()->user()->outlet])->filter(fn($o) => $o && $o->is_active);
+                                    $user = auth()->user();
+                                    $hasMultiOutletFeature = app(\App\Services\FeatureAccessService::class)->checkAccess($user, 'multi_outlet')['can_access'];
+
+                                    $userOutlets = $user->isOwner()
+                                        ? $user->outletsOwned->where('is_active', true)->sortBy('name')
+                                        : collect([$user->outlet])->filter(fn($o) => $o && $o->is_active);
 
                                     $hasMultipleOutlets = $userOutlets->count() > 1;
                                 @endphp
@@ -366,6 +369,21 @@
                                                         </button>
                                                     </form>
                                                 @endforeach
+
+                                                @if($hasMultiOutletFeature)
+                                                    <div class="px-2 py-1 mt-1 border-t border-gray-100">
+                                                        <a href="{{ route('outlets.create') }}" 
+                                                           class="flex items-center space-x-3 px-2 py-2 hover:bg-emerald-50 rounded-lg transition-colors group">
+                                                            <div class="h-8 w-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all border border-emerald-100">
+                                                                <i class="fa-solid fa-plus text-xs"></i>
+                                                            </div>
+                                                            <div class="flex-1 min-w-0">
+                                                                <p class="text-sm font-bold text-emerald-600 truncate">Tambah Outlet</p>
+                                                                <p class="text-[10px] text-gray-500 truncate">Buka cabang baru</p>
+                                                            </div>
+                                                        </a>
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
                                     @else

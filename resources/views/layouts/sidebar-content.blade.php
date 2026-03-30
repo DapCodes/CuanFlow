@@ -567,6 +567,19 @@
             </li>
             @endcan
 
+            @if($hasMultiOutlet)
+            <li>
+                <a href="{{ route('outlets.create') }}"
+                   title="Tambah Outlet"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('outlets.create') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
+                    {{-- Plus Circle --}}
+                    <i class="ph-light ph-plus-circle w-5 text-center text-lg {{ request()->routeIs('outlets.create') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Tambah Outlet</span>
+                </a>
+            </li>
+            @endif
+
             @canAccessFeature('landing_page')
             @can('lihat landing page')
             <li>
