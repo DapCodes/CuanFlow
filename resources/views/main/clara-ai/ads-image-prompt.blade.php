@@ -229,7 +229,7 @@ function imagePromptApp() {
                 const res = await fetch('{{ route("clara-ai.generate") }}', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-                    body: JSON.stringify({ mode: 'ads_image', prompt: this.prompt, tone: this.tone, language: this.language })
+                    body: JSON.stringify({ mode: 'ads_image_prompt', prompt: this.prompt, tone: this.tone, language: this.language })
                 });
                 const data = await res.json();
                 if (data.success) { 

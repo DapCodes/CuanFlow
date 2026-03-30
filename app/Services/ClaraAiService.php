@@ -16,6 +16,21 @@ class ClaraAiService
 
     private $baseUrl = 'https://openrouter.ai/api/v1';
 
+    private array $modelPool = [
+        'google/gemma-3-12b-it:free',      
+        'meta-llama/llama-3.3-70b-instruct:free',
+        'nvidia/nemotron-3-super-120b-a12b:free', 
+        'stepfun/step-3.5-flash:free',       
+        'google/gemma-3-4b-it:free',         
+        'openrouter/free',                   
+    ];
+
+    private array $modelVisionPool = [
+        'nvidia/nemotron-nano-12b-v2-vl:free', 
+        'google/gemma-3n-e4b-it:free',         
+        'openrouter/free',                     
+    ];
+
     public function __construct()
     {
         $this->apiKey = config('services.clara.key');
@@ -49,14 +64,9 @@ class ClaraAiService
                 ];
             }
 
-            $attempts = 0;
-            $maxAttempts = 2;
-            $currentModel = 'arcee-ai/trinity-mini:free';
             $httpResponse = null;
 
-            while ($attempts < $maxAttempts) {
-                $attempts++;
-
+            foreach ($this->modelPool as $modelIndex => $currentModel) {
                 $httpResponse = Http::withHeaders([
                     'Authorization' => 'Bearer '.$this->apiKey,
                     'Content-Type' => 'application/json',
@@ -68,49 +78,46 @@ class ClaraAiService
                     'max_tokens' => 2000,
                 ]);
 
-                \Log::info("Clara AI Attempt $attempts status", [
+                \Log::info('Clara AI attempt', [
+                    'model_index' => $modelIndex,
                     'model' => $currentModel,
                     'status' => $httpResponse->status(),
                 ]);
 
+                // 429 atau 5xx — coba model berikutnya
+                if ($httpResponse->status() === 429 || $httpResponse->serverError()) {
+                    \Log::warning('Clara AI rate limit/server error, rotating model', [
+                        'model' => $currentModel,
+                        'status' => $httpResponse->status(),
+                    ]);
+                    sleep(1);
+                    continue;
+                }
+
                 if ($httpResponse->successful()) {
                     $data = $httpResponse->json();
 
-                    // Jika ada error dari provider (sering terjadi di model free)
+                    // Provider error (model overload, dll) — coba model berikutnya
                     if (isset($data['error'])) {
-                        \Log::warning('Clara AI provider error on model '.$currentModel, ['error' => $data['error']]);
-
-                        if ($attempts < $maxAttempts) {
-                            $currentModel = 'google/gemma-3-12b-it:free'; // Fallback ke Gemini yang lebih stabil
-
-                            continue;
-                        }
-
-                        return [
-                            'success' => false,
-                            'message' => 'Maaf, Clara AI sedang sangat sibuk. Silakan coba lagi sebentar lagi.',
-                        ];
+                        \Log::warning('Clara AI provider error, rotating model', [
+                            'model' => $currentModel,
+                            'error' => $data['error'],
+                        ]);
+                        sleep(1);
+                        continue;
                     }
 
                     if (! isset($data['choices'][0]['message']['content'])) {
                         \Log::error('Invalid response structure', ['data' => $data]);
-
-                        return [
-                            'success' => false,
-                            'message' => 'Format response tidak valid.',
-                        ];
+                        continue;
                     }
 
                     $aiResponse = $data['choices'][0]['message']['content'];
                     $cleanResponse = $this->cleanAiResponse($aiResponse);
 
                     if (trim($cleanResponse) === '') {
-                        \Log::warning('Empty AI response', ['raw' => $aiResponse]);
-
-                        return [
-                            'success' => false,
-                            'message' => 'Maaf, Clara AI tidak bisa menjawab saat ini. Coba ubah pertanyaannya.',
-                        ];
+                        \Log::warning('Empty AI response', ['model' => $currentModel, 'raw' => $aiResponse]);
+                        continue;
                     }
 
                     $session->addMessage('assistant', $cleanResponse);
@@ -122,28 +129,20 @@ class ClaraAiService
                     ];
                 }
 
-                // Jika status code bukan 2xx (e.g. 429 atau 5xx)
-                if ($attempts < $maxAttempts) {
-                    $currentModel = 'google/gemma-3-12b-it:free';
-                    sleep(1); // Jeda sebelum retry
-
-                    continue;
-                }
+                // Error lain yang tidak tertangani — skip ke model berikutnya
+                \Log::warning('Clara AI unexpected error, rotating model', [
+                    'model' => $currentModel,
+                    'status' => $httpResponse->status(),
+                ]);
             }
 
-            return [
-                'success' => false,
-                'message' => 'Maaf, terjadi kesalahan saat menghubungi Clara AI. Status: '.$httpResponse->status(),
-            ];
-
-            \Log::error('Clara AI request failed', [
-                'status' => $httpResponse->status(),
-                'body' => $httpResponse->body(),
+            \Log::error('Clara AI all models exhausted', [
+                'last_status' => $httpResponse?->status(),
             ]);
 
             return [
                 'success' => false,
-                'message' => 'Maaf, terjadi kesalahan saat menghubungi Clara AI. Status: '.$httpResponse->status(),
+                'message' => 'Maaf, semua server Clara AI sedang sibuk. Silakan coba lagi dalam beberapa menit.',
             ];
         } catch (\Exception $e) {
             \Log::error('Clara AI Exception', [
@@ -181,7 +180,6 @@ class ClaraAiService
         $response = preg_replace('/^#{1,6}\s+/m', '', $response);
 
         // 5. Hapus markdown code blocks (```code```) tapi simpan isinya
-        // Sebelumnya dihapus total, sekarang cuma buang ``` di luar
         $response = preg_replace('/```(.*?)```/s', '$1', $response);
 
         // 6. Hapus inline code `code`
@@ -659,7 +657,7 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
      */
     public function generate(string $mode, string $userPrompt, int $userId, array $options = []): array
     {
-        $validModes = ['video_prompt', 'affiliate_script', 'ads_image_prompt', 'kalkulaba'];
+        $validModes = ['video_prompt', 'affiliate_script', 'ads_image', 'ads_image_prompt', 'kalkulaba'];
 
         if (! in_array($mode, $validModes)) {
             return [
@@ -687,6 +685,7 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
             $result = match ($mode) {
                 'video_prompt' => $this->generateVideoPrompt($outletData, $enrichedPrompt, $tone, $language),
                 'affiliate_script' => $this->generateAffiliateScript($outletData, $enrichedPrompt, $tone, $language),
+                'ads_image' => $this->generateAdsImagePrompt($outletData, $enrichedPrompt, $tone, $language),
                 'ads_image_prompt' => $this->generateAdsImagePrompt($outletData, $enrichedPrompt, $tone, $language),
                 'kalkulaba' => $this->generateKalkulaba($outletData, $cleanPrompt, $tone, $language, $options),
             };
@@ -976,7 +975,7 @@ IMPORTANT for cost_analysis.breakdown:
 
         // Build messages with multimodal support for image analysis
         if (!empty($imageBase64)) {
-            // Use multimodal format with base64 image for vision models
+            // Use multimodal format with base64 image for vision model
             $userContent = [
                 ['type' => 'text', 'text' => $userPrompt],
                 [
@@ -990,8 +989,9 @@ IMPORTANT for cost_analysis.breakdown:
                 ['role' => 'user', 'content' => $userContent],
             ];
 
-            // Force vision-capable model for image analysis
-            return $this->callAIWithModel($messages, 'openrouter/free');
+            // Gunakan model vision gratis: NVIDIA Nemotron Nano 2 VL
+            // dengan fallback ke openrouter/free (auto-pilih model vision gratis)
+            return $this->callAIVision($messages);
         }
 
         $messages = [
@@ -1097,7 +1097,7 @@ IMPORTANT for cost_analysis.breakdown:
     }
 
     /**
-     * Call AI API with retry and fallback logic.
+     * Call AI API (teks only) dengan rotasi pool model untuk handle 429.
      */
     private function callAI(array $messages): array
     {
@@ -1108,14 +1108,9 @@ IMPORTANT for cost_analysis.breakdown:
             ];
         }
 
-        $attempts = 0;
-        $maxAttempts = 2;
-        $currentModel = 'arcee-ai/trinity-mini:free';
         $httpResponse = null;
 
-        while ($attempts < $maxAttempts) {
-            $attempts++;
-
+        foreach ($this->modelPool as $modelIndex => $currentModel) {
             $httpResponse = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
@@ -1127,28 +1122,37 @@ IMPORTANT for cost_analysis.breakdown:
                 'max_tokens' => 6000,
             ]);
 
+            \Log::info('Clara AI Studio attempt', [
+                'model_index' => $modelIndex,
+                'model' => $currentModel,
+                'status' => $httpResponse->status(),
+            ]);
+
+            // 429 atau 5xx — rotasi ke model berikutnya
+            if ($httpResponse->status() === 429 || $httpResponse->serverError()) {
+                \Log::warning('Clara AI Studio rate limit/server error, rotating', [
+                    'model' => $currentModel,
+                    'status' => $httpResponse->status(),
+                ]);
+                sleep(1);
+                continue;
+            }
+
             if ($httpResponse->successful()) {
                 $responseData = $httpResponse->json();
 
                 if (isset($responseData['error'])) {
-                    \Log::warning('Clara AI Studio provider error on model ' . $currentModel, ['error' => $responseData['error']]);
-
-                    if ($attempts < $maxAttempts) {
-                        $currentModel = 'google/gemma-3-12b-it:free';
-                        continue;
-                    }
-
-                    return [
-                        'success' => false,
-                        'message' => 'Clara AI sedang sibuk. Silakan coba lagi sebentar lagi.',
-                    ];
+                    \Log::warning('Clara AI Studio provider error, rotating', [
+                        'model' => $currentModel,
+                        'error' => $responseData['error'],
+                    ]);
+                    sleep(1);
+                    continue;
                 }
 
                 if (! isset($responseData['choices'][0]['message']['content'])) {
-                    return [
-                        'success' => false,
-                        'message' => 'Format response AI tidak valid.',
-                    ];
+                    \Log::warning('Clara AI Studio invalid response structure, rotating', ['model' => $currentModel]);
+                    continue;
                 }
 
                 $content = $responseData['choices'][0]['message']['content'];
@@ -1156,10 +1160,8 @@ IMPORTANT for cost_analysis.breakdown:
                 $content = trim($content);
 
                 if ($content === '') {
-                    return [
-                        'success' => false,
-                        'message' => 'AI tidak dapat menghasilkan konten. Coba ubah prompt Anda.',
-                    ];
+                    \Log::warning('Clara AI Studio empty content, rotating', ['model' => $currentModel]);
+                    continue;
                 }
 
                 return [
@@ -1168,23 +1170,28 @@ IMPORTANT for cost_analysis.breakdown:
                 ];
             }
 
-            if ($attempts < $maxAttempts) {
-                $currentModel = 'google/gemma-3-12b-it:free';
-                sleep(1);
-                continue;
-            }
+            \Log::warning('Clara AI Studio unexpected error, rotating', [
+                'model' => $currentModel,
+                'status' => $httpResponse->status(),
+            ]);
         }
 
         return [
             'success' => false,
-            'message' => 'Gagal menghubungi AI. Status: ' . ($httpResponse ? $httpResponse->status() : 'unknown'),
+            'message' => 'Gagal menghubungi AI. Semua server sedang sibuk. Silakan coba lagi dalam beberapa menit.',
         ];
     }
 
     /**
-     * Call AI API with a specific model (no fallback). Used for vision/multimodal.
+     * Call AI Vision API untuk analisis gambar/foto.
+     * Merotasi modelVisionPool saat kena 429 / provider error.
+     *
+     * Pool (gratis, per Maret 2026):
+     *  1. nvidia/nemotron-nano-12b-v2-vl:free — unggul OCR & multimodal
+     *  2. google/gemma-3n-e4b-it:free         — multimodal (teks+vision+audio)
+     *  3. openrouter/free                      — auto-router, last resort
      */
-    private function callAIWithModel(array $messages, string $model): array
+    private function callAIVision(array $messages): array
     {
         if (! $this->apiKey) {
             return [
@@ -1193,56 +1200,75 @@ IMPORTANT for cost_analysis.breakdown:
             ];
         }
 
-        $httpResponse = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey,
-            'Content-Type' => 'application/json',
-            'HTTP-Referer' => config('app.url'),
-            'X-Title' => 'CuanFlow POS - Kalkulaba AI',
-        ])->timeout(180)->post($this->baseUrl . '/chat/completions', [
-            'model' => $model,
-            'messages' => $messages,
-            'max_tokens' => 8000,
-        ]);
+        $httpResponse = null;
 
-        if ($httpResponse->successful()) {
-            $responseData = $httpResponse->json();
+        foreach ($this->modelVisionPool as $modelIndex => $currentModel) {
+            \Log::info("Clara AI Vision attempt {$modelIndex}", ['model' => $currentModel]);
 
-            if (isset($responseData['error'])) {
-                \Log::warning('Kalkulaba AI vision model error', ['error' => $responseData['error']]);
+            $httpResponse = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+                'HTTP-Referer' => config('app.url'),
+                'X-Title' => 'CuanFlow POS - Kalkulaba Vision',
+            ])->timeout(180)->post($this->baseUrl . '/chat/completions', [
+                'model' => $currentModel,
+                'messages' => $messages,
+                'max_tokens' => 8000,
+            ]);
+
+            // 429 atau 5xx — rotasi ke model berikutnya
+            if ($httpResponse->status() === 429 || $httpResponse->serverError()) {
+                \Log::warning('Clara AI Vision rate limit/server error, rotating', [
+                    'model' => $currentModel,
+                    'status' => $httpResponse->status(),
+                ]);
+                sleep(1);
+                continue;
+            }
+
+            if ($httpResponse->successful()) {
+                $responseData = $httpResponse->json();
+
+                if (isset($responseData['error'])) {
+                    \Log::warning('Clara AI Vision provider error, rotating', [
+                        'model' => $currentModel,
+                        'error' => $responseData['error'],
+                    ]);
+                    sleep(1);
+                    continue;
+                }
+
+                if (! isset($responseData['choices'][0]['message']['content'])) {
+                    \Log::warning('Clara AI Vision invalid response structure, rotating', ['model' => $currentModel]);
+                    continue;
+                }
+
+                $content = $responseData['choices'][0]['message']['content'];
+                $content = preg_replace('/<think>.*?<\/think>/s', '', $content);
+                $content = trim($content);
+
+                if ($content === '') {
+                    \Log::warning('Clara AI Vision empty content, rotating', ['model' => $currentModel]);
+                    continue;
+                }
+
+                \Log::info('Clara AI Vision success', ['model' => $currentModel]);
 
                 return [
-                    'success' => false,
-                    'message' => 'AI vision model sedang sibuk. Silakan coba lagi.',
+                    'success' => true,
+                    'content' => $content,
                 ];
             }
 
-            if (! isset($responseData['choices'][0]['message']['content'])) {
-                return [
-                    'success' => false,
-                    'message' => 'Format response AI tidak valid.',
-                ];
-            }
-
-            $content = $responseData['choices'][0]['message']['content'];
-            $content = preg_replace('/<think>.*?<\/think>/s', '', $content);
-            $content = trim($content);
-
-            if ($content === '') {
-                return [
-                    'success' => false,
-                    'message' => 'AI tidak dapat menghasilkan konten. Coba ubah prompt Anda.',
-                ];
-            }
-
-            return [
-                'success' => true,
-                'content' => $content,
-            ];
+            \Log::warning('Clara AI Vision unexpected error, rotating', [
+                'model' => $currentModel,
+                'status' => $httpResponse->status(),
+            ]);
         }
 
         return [
             'success' => false,
-            'message' => 'Gagal menghubungi AI vision. Status: ' . $httpResponse->status(),
+            'message' => 'Gagal menghubungi AI vision. Semua server sedang sibuk. Silakan coba lagi dalam beberapa menit.',
         ];
     }
 }

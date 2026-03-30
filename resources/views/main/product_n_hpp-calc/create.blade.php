@@ -726,7 +726,7 @@
                                 <span id="summaryOutputQty" class="font-semibold text-gray-900">1</span>
                             </div>
                             <div class="bg-white rounded-lg p-4 flex justify-between items-center shadow-sm">
-                                <span class="font-bold text-gray-900">HPP per 1 {{ $units->first()->name ?? 'unit' }}:</span>
+                                <span class="font-bold text-gray-900">HPP per 1 unit (Gram/Pcs/Box)</span>
                                 <span id="summaryHppPerUnit" class="text-2xl font-bold text-cuan-green">Rp 0</span>
                             </div>
                         </div>
@@ -844,7 +844,7 @@
                             <p class="text-xs text-gray-500 mt-1">Harga khusus untuk agen/reseller (boleh kosong).</p>
                         </div>
 
-                        <div>
+                        <div hidden>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Harga Promo
                             </label>

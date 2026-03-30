@@ -130,6 +130,7 @@
                             class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-1 focus:ring-cuan-green focus:border-cuan-green"
                             :disabled="loading">
                         <textarea x-model="productDescription" rows="2" placeholder="Deskripsi singkat produk..."
+                            required
                             maxlength="500"
                             class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:ring-1 focus:ring-cuan-green focus:border-cuan-green"
                             :disabled="loading"></textarea>
@@ -146,7 +147,7 @@
                     </div>
 
                     {{-- Dynamic Cost Inputs --}}
-                    <div class="border-b border-gray-100">
+                    <div class="border-b border-gray-100" hidden>
                         <button @click="showCosts = !showCosts" class="w-full px-5 py-3 bg-gray-50 flex items-center justify-between cursor-pointer select-none">
                             <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">
                                 Pengeluaran Tambahan

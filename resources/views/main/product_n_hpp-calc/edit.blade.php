@@ -709,7 +709,7 @@
                                 </div>
 
                                 {{-- Harga promo --}}
-                                <div class="space-y-4">
+                                <div class="space-y-4" hidden>
                                     <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Harga Promo</label>
                                     <div class="relative">
                                         <input type="number" step="0.01" name="promo_price" value="{{ old('promo_price', $product->promo_price) }}"
