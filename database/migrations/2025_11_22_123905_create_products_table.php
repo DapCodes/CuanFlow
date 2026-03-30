@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 30)->unique();
+            $table->string('code', 30);
             $table->string('name');
             $table->string('barcode', 50)->nullable()->index();
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
@@ -28,6 +28,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->boolean('is_sellable')->default(true);
             $table->boolean('track_stock')->default(true);
+            $table->unique(['outlet_id', 'code']);
             $table->timestamps();
             $table->softDeletes();
         });

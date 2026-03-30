@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('raw_materials', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 30)->unique();
+            $table->string('code', 30);
             $table->string('name');
             $table->string('barcode', 50)->nullable()->index();
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->unique(['outlet_id', 'code']);
             $table->timestamps();
             $table->softDeletes();
         });
