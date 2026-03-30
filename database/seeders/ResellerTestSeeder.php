@@ -66,16 +66,18 @@ class ResellerTestSeeder extends Seeder
             ]
         );
 
-        // 4. Create Approved Reseller Application to Outlet ID 1
-        ResellerApplication::updateOrCreate(
-            ['customer_id' => $customer->id, 'outlet_id' => 1],
-            [
-                'description' => 'I want to be a reseller of your products.',
-                'status' => 'approved',
-                'processed_by' => 1, // Assume admin with ID 1 exists
-                'processed_at' => now(),
-            ]
-        );
+        // 4. Create Approved Reseller Application to Outlet IDs 1, 2, and 3
+        foreach ([1, 2, 3] as $outletId) {
+            ResellerApplication::updateOrCreate(
+                ['customer_id' => $customer->id, 'outlet_id' => $outletId],
+                [
+                    'description' => 'I want to be a reseller of your products.',
+                    'status' => 'approved',
+                    'processed_by' => 1, // Assume admin with ID 1 exists
+                    'processed_at' => now(),
+                ]
+            );
+        }
 
         // 5. Add PLATINUM Subscription (1 Month)
         $platinumTier = SubscriptionTier::where('name', 'Platinum')->first();
