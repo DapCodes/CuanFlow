@@ -407,7 +407,7 @@ class ProductWithRecipeSeeder extends Seeder
         echo 'Total produk: '.count($productsData)."\n";
         echo "========================================\n\n";
 
-        // ============ SEEDER DISKON ============
+        // ============ SEEDER DISKON ============ 
         echo "Memulai seeding diskon...\n";
 
         $discountsData = [

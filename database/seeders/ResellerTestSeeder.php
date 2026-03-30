@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Outlet;
-use App\Models\Customer;
+use App\Models\Customer; 
 use App\Models\ResellerApplication;
 use App\Models\UserSubscription;
 use App\Models\SubscriptionTier;
