@@ -138,31 +138,36 @@ class ProductWithRecipeSeeder extends Seeder
             Product::whereIn('code', $codes)->where('outlet_id', $targetOutletId)->forceDelete();
 
             foreach ($productsData as $productData) {
-                // Hitung HPP dari resep dengan detail per bahan
                 $rawMaterialCost = 0;
                 $calculationDetails = [];
+                $totalHpp = 0;
+                $hppPerUnit = 0;
+                $outputQuantity = 1;
+                $additionalCost = 0;
 
-                foreach ($productData['recipe']['items'] as $item) {
-                    $rawMaterial = $rawMaterials->get($item['code']);
-                    if ($rawMaterial) {
-                        $itemCost = $rawMaterial->purchase_price * $item['quantity'];
-                        $rawMaterialCost += $itemCost;
+                if (isset($productData['recipe'])) {
+                    foreach ($productData['recipe']['items'] as $item) {
+                        $rawMaterial = $rawMaterials->get($item['code']);
+                        if ($rawMaterial) {
+                            $itemCost = $rawMaterial->purchase_price * $item['quantity'];
+                            $rawMaterialCost += $itemCost;
 
-                        $calculationDetails[] = [
-                            'raw_material_code' => $rawMaterial->code,
-                            'raw_material_name' => $rawMaterial->name,
-                            'quantity' => $item['quantity'],
-                            'unit' => DB::table('units')->where('id', $rawMaterial->unit_id)->value('abbreviation'),
-                            'unit_price' => round($rawMaterial->purchase_price, 2),
-                            'total_cost' => round($itemCost, 2),
-                        ];
+                            $calculationDetails[] = [
+                                'raw_material_code' => $rawMaterial->code,
+                                'raw_material_name' => $rawMaterial->name,
+                                'quantity' => $item['quantity'],
+                                'unit' => DB::table('units')->where('id', $rawMaterial->unit_id)->value('abbreviation'),
+                                'unit_price' => round($rawMaterial->purchase_price, 2),
+                                'total_cost' => round($itemCost, 2),
+                            ];
+                        }
                     }
-                }
 
-                $additionalCost = $rawMaterialCost * 0.15;
-                $totalHpp = $rawMaterialCost + $additionalCost;
-                $outputQuantity = $productData['recipe']['output_quantity'];
-                $hppPerUnit = $totalHpp / $outputQuantity;
+                    $additionalCost = $rawMaterialCost * 0.15;
+                    $totalHpp = $rawMaterialCost + $additionalCost;
+                    $outputQuantity = $productData['recipe']['output_quantity'];
+                    $hppPerUnit = $totalHpp / $outputQuantity;
+                }
 
                 $selling_price = $productData['selling_price'];
                 $margin_percent = $totalHpp > 0 ? (($selling_price - $totalHpp) / $selling_price) * 100 : 0;
@@ -192,60 +197,62 @@ class ProductWithRecipeSeeder extends Seeder
 
                 $createdProducts[$productData['code']] = $product->id;
 
-                // Buat resep
-                $recipe = Recipe::create([
-                    'product_id' => $product->id,
-                    'name' => $productData['recipe']['name'],
-                    'output_quantity' => $outputQuantity,
-                    'instructions' => $productData['recipe']['instructions'],
-                    'estimated_time_minutes' => $productData['recipe']['estimated_time_minutes'],
-                    'is_active' => true,
-                    'is_default' => true,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                if (isset($productData['recipe'])) {
+                    // Buat resep
+                    $recipe = Recipe::create([
+                        'product_id' => $product->id,
+                        'name' => $productData['recipe']['name'],
+                        'output_quantity' => $outputQuantity,
+                        'instructions' => $productData['recipe']['instructions'],
+                        'estimated_time_minutes' => $productData['recipe']['estimated_time_minutes'],
+                        'is_active' => true,
+                        'is_default' => true,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
 
-                // Buat recipe items
-                $sortOrder = 1;
-                foreach ($productData['recipe']['items'] as $item) {
-                    $rawMaterial = $rawMaterials->get($item['code']);
-                    if ($rawMaterial) {
-                        RecipeItem::create([
-                            'recipe_id' => $recipe->id,
-                            'raw_material_id' => $rawMaterial->id,
-                            'quantity' => $item['quantity'],
-                            'sort_order' => $sortOrder++,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+                    // Buat recipe items
+                    $sortOrder = 1;
+                    foreach ($productData['recipe']['items'] as $item) {
+                        $rawMaterial = $rawMaterials->get($item['code']);
+                        if ($rawMaterial) {
+                            RecipeItem::create([
+                                'recipe_id' => $recipe->id,
+                                'raw_material_id' => $rawMaterial->id,
+                                'quantity' => $item['quantity'],
+                                'sort_order' => $sortOrder++,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
                     }
-                }
 
-                // Buat HPP Calculation
-                HppCalculation::create([
-                    'product_id' => $product->id,
-                    'recipe_id' => $recipe->id,
-                    'raw_material_cost' => round($rawMaterialCost, 2),
-                    'additional_cost' => round($additionalCost, 2),
-                    'total_hpp' => round($totalHpp, 2),
-                    'hpp_per_unit' => round($hppPerUnit, 2),
-                    'output_quantity' => $outputQuantity,
-                    'calculation_details' => json_encode([
-                        'materials' => $calculationDetails,
-                        'summary' => [
-                            'total_raw_material_cost' => round($rawMaterialCost, 2),
-                            'additional_cost_percentage' => 15,
-                            'additional_cost' => round($additionalCost, 2),
-                            'total_hpp' => round($totalHpp, 2),
-                            'output_quantity' => $outputQuantity,
-                            'hpp_per_unit' => round($hppPerUnit, 2),
-                        ],
-                    ]),
-                    'notes' => 'HPP calculation generated by seeder. Additional cost includes electricity, gas, and labor (15% of raw material cost).',
-                    'calculated_by' => null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                    // Buat HPP Calculation
+                    HppCalculation::create([
+                        'product_id' => $product->id,
+                        'recipe_id' => $recipe->id,
+                        'raw_material_cost' => round($rawMaterialCost, 2),
+                        'additional_cost' => round($additionalCost, 2),
+                        'total_hpp' => round($totalHpp, 2),
+                        'hpp_per_unit' => round($hppPerUnit, 2),
+                        'output_quantity' => $outputQuantity,
+                        'calculation_details' => json_encode([
+                            'materials' => $calculationDetails,
+                            'summary' => [
+                                'total_raw_material_cost' => round($rawMaterialCost, 2),
+                                'additional_cost_percentage' => 15,
+                                'additional_cost' => round($additionalCost, 2),
+                                'total_hpp' => round($totalHpp, 2),
+                                'output_quantity' => $outputQuantity,
+                                'hpp_per_unit' => round($hppPerUnit, 2),
+                            ],
+                        ]),
+                        'notes' => 'HPP calculation generated by seeder. Additional cost includes electricity, gas, and labor (15% of raw material cost).',
+                        'calculated_by' => null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
 
                 // Initialize Product Stock
                 $productStock = ProductStock::create([
@@ -256,162 +263,164 @@ class ProductWithRecipeSeeder extends Seeder
                     'updated_at' => now(),
                 ]);
 
-                // SEEDING PRODUKSI & STOCK MOVEMENTS (COMPLEXITY ENHANCEMENT)
-                $isIntegerUnit = in_array($productData['unit_abbreviation'], ['pcs', 'pack', 'box', 'btr', 'sct', 'lsn']);
+                // SEEDING PRODUKSI & STOCK MOVEMENTS (Hanya jika ada resep)
+                if (isset($productData['recipe'])) {
+                    $isIntegerUnit = in_array($productData['unit_abbreviation'], ['pcs', 'pack', 'box', 'btr', 'sct', 'lsn']);
 
-                // Create a randomized history for each product (3-6 batches)
-                $batchCount = rand(3, 6);
-                for ($i = 0; $i < $batchCount; $i++) {
-                    // $i = 0 is latest, $i = batchCount-1 is oldest
-                    $daysAgo = $i * (rand(1, 2));
-                    $multiplier = rand(5, 15);
-                    $wastePercent = rand(0, 500) / 100; // 0% to 5%
+                    // Create a randomized history for each product (3-6 batches)
+                    $batchCount = rand(3, 6);
+                    for ($i = 0; $i < $batchCount; $i++) {
+                        // $i = 0 is latest, $i = batchCount-1 is oldest
+                        $daysAgo = $i * (rand(1, 2));
+                        $multiplier = rand(5, 15);
+                        $wastePercent = rand(0, 500) / 100; // 0% to 5%
 
-                    $plannedQty = $recipe->output_quantity * $multiplier;
-                    $wasteQty = ($plannedQty * $wastePercent) / 100;
-                    $actualQty = $plannedQty - $wasteQty;
-
-                    // Round based on unit type
-                    if ($isIntegerUnit) {
-                        $plannedQty = ceil($plannedQty);
-                        $wasteQty = floor($wasteQty);
+                        $plannedQty = $recipe->output_quantity * $multiplier;
+                        $wasteQty = ($plannedQty * $wastePercent) / 100;
                         $actualQty = $plannedQty - $wasteQty;
-                    } else {
-                        $plannedQty = round($plannedQty, 2);
-                        $wasteQty = round($wasteQty, 4);
-                        $actualQty = round($actualQty, 4);
-                    }
 
-                    $isOldest = ($i === $batchCount - 1);
-                    $isLatest = ($i === 0);
+                        // Round based on unit type
+                        if ($isIntegerUnit) {
+                            $plannedQty = ceil($plannedQty);
+                            $wasteQty = floor($wasteQty);
+                            $actualQty = $plannedQty - $wasteQty;
+                        } else {
+                            $plannedQty = round($plannedQty, 2);
+                            $wasteQty = round($wasteQty, 4);
+                            $actualQty = round($actualQty, 4);
+                        }
 
-                    $status = ($isLatest && rand(1, 10) > 8) ? 'in_progress' : 'completed';
-                    $isDisposed = ($isOldest && $status === 'completed' && rand(1, 10) > 6);
+                        $isOldest = ($i === $batchCount - 1);
+                        $isLatest = ($i === 0);
 
-                    $prodDate = now()->subDays($daysAgo)->subHours(rand(1, 12));
+                        $status = ($isLatest && rand(1, 10) > 8) ? 'in_progress' : 'completed';
+                        $isDisposed = ($isOldest && $status === 'completed' && rand(1, 10) > 6);
 
-                    // 1. Buat Record Produksi
-                    $production = Production::create([
-                        'batch_number' => 'BATCH-'.Str::upper(Str::random(8)),
-                        'outlet_id' => $targetOutletId,
-                        'product_id' => $product->id,
-                        'recipe_id' => $recipe->id,
-                        'planned_quantity' => $plannedQty,
-                        'actual_quantity' => $status === 'completed' ? $plannedQty : null,
-                        'waste_quantity' => $status === 'completed' ? ($isDisposed ? $plannedQty : $wasteQty) : 0,
-                        'status' => $status,
-                        'is_disposed' => $isDisposed,
-                        'started_at' => (clone $prodDate)->subMinutes($recipe->estimated_time_minutes * $multiplier),
-                        'completed_at' => $status === 'completed' ? $prodDate : null,
-                        'expired_at' => ($status === 'completed' && $product->shelf_life_days) ? (clone $prodDate)->addDays($product->shelf_life_days)->endOfDay() : null,
-                        'total_material_cost' => round($rawMaterialCost * $multiplier, 2),
-                        'total_additional_cost' => round($additionalCost * $multiplier, 2),
-                        'total_cost' => round($totalHpp * $multiplier, 2),
-                        'notes' => $isDisposed ? 'Historical batch - already disposed (expired).' : 'Historical production batch generated by seeder.',
-                        'created_by' => $adminId,
-                        'completed_by' => $status === 'completed' ? $adminId : null,
-                        'created_at' => $prodDate,
-                        'updated_at' => $prodDate,
-                    ]);
+                        $prodDate = now()->subDays($daysAgo)->subHours(rand(1, 12));
 
-                    // 2. Buat Production Items & Stock Movement Out untuk Bahan Baku
-                    foreach ($productData['recipe']['items'] as $item) {
-                        $rawMaterial = $rawMaterials->get($item['code']);
-                        if ($rawMaterial) {
-                            $usageQty = $item['quantity'] * $multiplier;
-                            $rmUnit = DB::table('units')->where('id', $rawMaterial->unit_id)->value('abbreviation');
-                            $isRmInteger = in_array($rmUnit, ['pcs', 'pack', 'box', 'btr', 'sct']);
+                        // 1. Buat Record Produksi
+                        $production = Production::create([
+                            'batch_number' => 'BATCH-'.Str::upper(Str::random(8)),
+                            'outlet_id' => $targetOutletId,
+                            'product_id' => $product->id,
+                            'recipe_id' => $recipe->id,
+                            'planned_quantity' => $plannedQty,
+                            'actual_quantity' => $status === 'completed' ? $plannedQty : null,
+                            'waste_quantity' => $status === 'completed' ? ($isDisposed ? $plannedQty : $wasteQty) : 0,
+                            'status' => $status,
+                            'is_disposed' => $isDisposed,
+                            'started_at' => (clone $prodDate)->subMinutes($recipe->estimated_time_minutes * $multiplier),
+                            'completed_at' => $status === 'completed' ? $prodDate : null,
+                            'expired_at' => ($status === 'completed' && $product->shelf_life_days) ? (clone $prodDate)->addDays($product->shelf_life_days)->endOfDay() : null,
+                            'total_material_cost' => round($rawMaterialCost * $multiplier, 2),
+                            'total_additional_cost' => round($additionalCost * $multiplier, 2),
+                            'total_cost' => round($totalHpp * $multiplier, 2),
+                            'notes' => $isDisposed ? 'Historical batch - already disposed (expired).' : 'Historical production batch generated by seeder.',
+                            'created_by' => $adminId,
+                            'completed_by' => $status === 'completed' ? $adminId : null,
+                            'created_at' => $prodDate,
+                            'updated_at' => $prodDate,
+                        ]);
 
-                            if ($isRmInteger) {
-                                $usageQty = ceil($usageQty);
-                            } else {
-                                $usageQty = round($usageQty, 4);
-                            }
+                        // 2. Buat Production Items & Stock Movement Out untuk Bahan Baku
+                        foreach ($productData['recipe']['items'] as $item) {
+                            $rawMaterial = $rawMaterials->get($item['code']);
+                            if ($rawMaterial) {
+                                $usageQty = $item['quantity'] * $multiplier;
+                                $rmUnit = DB::table('units')->where('id', $rawMaterial->unit_id)->value('abbreviation');
+                                $isRmInteger = in_array($rmUnit, ['pcs', 'pack', 'box', 'btr', 'sct']);
 
-                            // Production Item
-                            ProductionItem::create([
-                                'production_id' => $production->id,
-                                'raw_material_id' => $rawMaterial->id,
-                                'planned_quantity' => $usageQty,
-                                'actual_quantity' => $status === 'completed' ? $usageQty : null,
-                                'unit_price' => $rawMaterial->purchase_price,
-                                'total_price' => $rawMaterial->purchase_price * $usageQty,
-                            ]);
+                                if ($isRmInteger) {
+                                    $usageQty = ceil($usageQty);
+                                } else {
+                                    $usageQty = round($usageQty, 4);
+                                }
 
-                            // Stock Movement Out (Bahan Baku)
-                            if ($status === 'completed' || $status === 'in_progress') {
-                                $rmStock = RawMaterialStock::where('raw_material_id', $rawMaterial->id)
-                                    ->where('outlet_id', $targetOutletId)
-                                    ->first();
+                                // Production Item
+                                ProductionItem::create([
+                                    'production_id' => $production->id,
+                                    'raw_material_id' => $rawMaterial->id,
+                                    'planned_quantity' => $usageQty,
+                                    'actual_quantity' => $status === 'completed' ? $usageQty : null,
+                                    'unit_price' => $rawMaterial->purchase_price,
+                                    'total_price' => $rawMaterial->purchase_price * $usageQty,
+                                ]);
 
-                                if ($rmStock) {
-                                    $qtyBefore = $rmStock->quantity;
-                                    $rmStock->decrement('quantity', $usageQty);
+                                // Stock Movement Out (Bahan Baku)
+                                if ($status === 'completed' || $status === 'in_progress') {
+                                    $rmStock = RawMaterialStock::where('raw_material_id', $rawMaterial->id)
+                                        ->where('outlet_id', $targetOutletId)
+                                        ->first();
 
-                                    // --- FIFO Consumption from Batches for Seeder ---
-                                    $needed = $usageQty;
-                                    $batches = PurchaseItem::where('raw_material_id', $rawMaterial->id)
-                                        ->whereHas('purchase', function ($q) use ($targetOutletId) {
-                                            $q->where('outlet_id', $targetOutletId);
-                                        })
-                                        ->where('remaining_quantity', '>', 0)
-                                        ->orderByRaw('expired_at IS NULL, expired_at ASC')
-                                        ->orderBy('created_at', 'ASC')
-                                        ->get();
+                                    if ($rmStock) {
+                                        $qtyBefore = $rmStock->quantity;
+                                        $rmStock->decrement('quantity', $usageQty);
 
-                                    foreach ($batches as $batch) {
-                                        if ($needed <= 0) {
-                                            break;
+                                        // --- FIFO Consumption from Batches for Seeder ---
+                                        $needed = $usageQty;
+                                        $batches = PurchaseItem::where('raw_material_id', $rawMaterial->id)
+                                            ->whereHas('purchase', function ($q) use ($targetOutletId) {
+                                                $q->where('outlet_id', $targetOutletId);
+                                            })
+                                            ->where('remaining_quantity', '>', 0)
+                                            ->orderByRaw('expired_at IS NULL, expired_at ASC')
+                                            ->orderBy('created_at', 'ASC')
+                                            ->get();
+
+                                        foreach ($batches as $batch) {
+                                            if ($needed <= 0) {
+                                                break;
+                                            }
+                                            $consume = min($batch->remaining_quantity, $needed);
+                                            $batch->decrement('remaining_quantity', $consume);
+                                            $needed -= $consume;
                                         }
-                                        $consume = min($batch->remaining_quantity, $needed);
-                                        $batch->decrement('remaining_quantity', $consume);
-                                        $needed -= $consume;
-                                    }
 
-                                    StockMovement::create([
-                                        'outlet_id' => $targetOutletId,
-                                        'stockable_type' => RawMaterial::class,
-                                        'stockable_id' => $rawMaterial->id,
-                                        'type' => 'out',
-                                        'quantity' => $usageQty,
-                                        'quantity_before' => $qtyBefore,
-                                        'quantity_after' => $qtyBefore - $usageQty,
-                                        'unit_price' => $rawMaterial->purchase_price,
-                                        'reference_type' => Production::class,
-                                        'reference_id' => $production->id,
-                                        'notes' => 'Usage for production batch '.$production->batch_number,
-                                        'created_by' => $adminId,
-                                        'created_at' => $prodDate,
-                                    ]);
+                                        StockMovement::create([
+                                            'outlet_id' => $targetOutletId,
+                                            'stockable_type' => RawMaterial::class,
+                                            'stockable_id' => $rawMaterial->id,
+                                            'type' => 'out',
+                                            'quantity' => $usageQty,
+                                            'quantity_before' => $qtyBefore,
+                                            'quantity_after' => $qtyBefore - $usageQty,
+                                            'unit_price' => $rawMaterial->purchase_price,
+                                            'reference_type' => Production::class,
+                                            'reference_id' => $production->id,
+                                            'notes' => 'Usage for production batch '.$production->batch_number,
+                                            'created_by' => $adminId,
+                                            'created_at' => $prodDate,
+                                        ]);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // 3. Stock Movement In untuk Produk Jadi (Hanya jika COMPLETED, TIDAK DISPOSED, dan IS_STOCK TRUE)
-                    if ($status === 'completed' && ! $isDisposed && ($productData['is_stock'] ?? true)) {
-                        $qtyBeforeProd = $productStock->quantity;
-                        // $productStock->increment('quantity', $actualQty); // Stock increment disabled by user request to keep stock at 0
+                        // 3. Stock Movement In untuk Produk Jadi (Hanya jika COMPLETED, TIDAK DISPOSED, dan IS_STOCK TRUE)
+                        if ($status === 'completed' && ! $isDisposed && ($productData['is_stock'] ?? true)) {
+                            $qtyBeforeProd = $productStock->quantity;
+                            // $productStock->increment('quantity', $actualQty); // Stock increment disabled by user request to keep stock at 0
 
-                        StockMovement::create([
-                            'outlet_id' => $targetOutletId,
-                            'stockable_type' => Product::class,
-                            'stockable_id' => $product->id,
-                            'type' => 'production',
-                            'quantity' => 0, // Changed from $actualQty to 0
-                            'quantity_before' => $qtyBeforeProd,
-                            'quantity_after' => $qtyBeforeProd, // No change
-                            'unit_price' => round($production->total_cost / ($actualQty ?: 1), 2),
-                            'reference_type' => Production::class,
-                            'reference_id' => $production->id,
-                            'notes' => 'Production entry batch '.$production->batch_number.' (Stock set to 0 by Seeder)',
-                            'created_by' => $adminId,
-                            'created_at' => $prodDate,
-                        ]);
+                            StockMovement::create([
+                                'outlet_id' => $targetOutletId,
+                                'stockable_type' => Product::class,
+                                'stockable_id' => $product->id,
+                                'type' => 'production',
+                                'quantity' => 0, // Changed from $actualQty to 0
+                                'quantity_before' => $qtyBeforeProd,
+                                'quantity_after' => $qtyBeforeProd, // No change
+                                'unit_price' => round($production->total_cost / ($actualQty ?: 1), 2),
+                                'reference_type' => Production::class,
+                                'reference_id' => $production->id,
+                                'notes' => 'Production entry batch '.$production->batch_number.' (Stock set to 0 by Seeder)',
+                                'created_by' => $adminId,
+                                'created_at' => $prodDate,
+                            ]);
+                        }
                     }
                 }
 
-                echo "✓ Produk '{$product->name}' berhasil dibuat dengan riwayat produksi untuk Outlet ID {$targetOutletId}!\n";
+                echo "✓ Produk '{$product->name}' berhasil dibuat" . (isset($productData['recipe']) ? " dengan riwayat produksi" : " (produk instant)") . " untuk Outlet ID {$targetOutletId}!\n";
             }
 
             // ============ SEEDER DISKON ============ 
