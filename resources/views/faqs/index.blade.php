@@ -170,7 +170,12 @@
                                         <h3 class="text-base md:text-lg font-black text-gray-900 mb-2 leading-snug pr-8 tracking-tight">
                                             {{ $faq->question }}
                                         </h3>
+                                        <!-- detail button -->
                                         <div class="flex items-center gap-2">
+                                            <a href="{{ route('faqs.show', $faq->id) }}" class="inline-flex items-center px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100 bg-emerald-50 text-emerald-600">
+                                                <i class="fas fa-eye text-[8px] mr-2"></i>
+                                                Detail
+                                            </a>
                                             <span class="inline-flex items-center px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100 bg-emerald-50 text-emerald-600">
                                                 <i class="fas {{ $typeIcons[$faq->type] ?? 'fa-question' }} text-[8px] mr-2"></i>
                                                 {{ $faq->getTypeLabel() }}
