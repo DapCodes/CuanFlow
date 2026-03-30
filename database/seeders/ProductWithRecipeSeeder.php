@@ -104,13 +104,26 @@ class ProductWithRecipeSeeder extends Seeder
                 'shelf_life_days' => 365,
                 'is_stock' => true, // Inventory based
                 'description' => 'Air mineral botol dingin',
+            ],
+            [
+                'code' => 'CHUKA',
+                'name' => 'Chuka Idako',
+                'barcode' => 'CHUKA',
+                'category_slug' => 'makanan',
+                'unit_abbreviation' => 'pcs',
+                'selling_price' => 50000.00,
+                'reseller_price' => 49000.00,
+                'min_stock' => 10,
+                'shelf_life_days' => 365,
+                'is_stock' => true, // Inventory based
+                'description' => 'Chuka Idako dingin',
                 'recipe' => [
-                    'name' => 'Resell Air Mineral',
+                    'name' => 'Resell Chuka Idako',
                     'output_quantity' => 1,
                     'estimated_time_minutes' => 1,
                     'instructions' => 'Ambil dari kulkas, serahkan ke pembeli.',
                     'items' => [
-                        ['code' => 'RM027', 'quantity' => 1], // Air Mineral 600ml (HPP 3000)
+                        ['code' => 'RM019', 'quantity' => 100], 
                     ],
                 ],
             ],
