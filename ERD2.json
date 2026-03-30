@@ -1,0 +1,2904 @@
+
+Enum "additional_costs_cost_type_enum"{
+    "fixed" "per_unit" "percentage"
+}
+
+Enum "admin_landing_sections_background_type_enum"{
+    "color" "image" "gradient"
+}
+
+Enum "ai_chat_messages_role_enum"{
+    "user" "assistant" "system"
+}
+
+Enum "ai_insights_type_enum"{
+    "sales_trend" "stock_prediction" "product_recommendation" "anomaly" "general"
+}
+
+Enum "ai_insights_severity_enum"{
+    "info" "warning" "critical"
+}
+
+Enum "backup_logs_type_enum"{
+    "full" "database" "files"
+}
+
+Enum "backup_logs_status_enum"{
+    "completed" "failed"
+}
+
+Enum "cash_registers_status_enum"{
+    "open" "closed"
+}
+
+Enum "categories_type_enum"{
+    "raw_material" "product"
+}
+
+Enum "customers_type_enum"{
+    "regular" "reseller" "vip"
+}
+
+Enum "customer_debts_status_enum"{
+    "unpaid" "partial" "paid"
+}
+
+Enum "debt_payments_payment_method_enum"{
+    "cash" "qris" "transfer"
+}
+
+Enum "discounts_type_enum"{
+    "percentage" "fixed" "buy_x_get_y"
+}
+
+Enum "expenses_type_enum"{
+    "income" "expense"
+}
+
+Enum "expenses_payment_method_enum"{
+    "cash" "transfer" "card"
+}
+
+Enum "faqs_type_enum"{
+    "general" "pos" "product" "finance" "report" "account"
+}
+
+Enum "faqs_priority_enum"{
+    "low" "medium" "high"
+}
+
+Enum "offline_sync_queues_status_enum"{
+    "pending" "processing" "completed" "failed"
+}
+
+Enum "payment_transactions_status_enum"{
+    "pending" "success" "failed" "refunded"
+}
+
+Enum "productions_status_enum"{
+    "planned" "in_progress" "completed" "cancelled"
+}
+
+Enum "purchases_payment_status_enum"{
+    "unpaid" "partial" "paid"
+}
+
+Enum "purchases_status_enum"{
+    "draft" "ordered" "received" "partial_received" "cancelled"
+}
+
+Enum "report_schedules_report_type_enum"{
+    "daily_sales" "weekly_sales" "monthly_sales" "stock_report" "profit_report" "custom"
+}
+
+Enum "report_schedules_frequency_enum"{
+    "daily" "weekly" "monthly"
+}
+
+Enum "report_schedules_format_enum"{
+    "pdf" "excel"
+}
+
+Enum "reseller_applications_status_enum"{
+    "pending" "approved" "rejected"
+}
+
+Enum "reseller_products_status_enum"{
+    "pending" "accepted" "rejected"
+}
+
+Enum "sales_payment_method_enum"{
+    "cash" "qris" "transfer" "card" "debt" "split"
+}
+
+Enum "sales_service_type_enum"{
+    "dine_in" "take_away"
+}
+
+Enum "sales_payment_status_enum"{
+    "pending" "paid" "partial" "cancelled" "refunded"
+}
+
+Enum "sales_status_enum"{
+    "draft" "completed" "cancelled" "refunded"
+}
+
+Enum "sale_items_production_status_enum"{
+    "pending" "waiting" "completed"
+}
+
+Enum "sale_payments_payment_method_enum"{
+    "cash" "qris" "transfer" "card"
+}
+
+Enum "stock_movements_type_enum"{
+    "in" "out" "adjustment" "transfer" "production" "sale" "waste" "return"
+}
+
+Enum "stock_notifications_type_enum"{
+    "low_stock" "out_of_stock" "expiring_soon" "expired"
+}
+
+Enum "stock_opnames_type_enum"{
+    "raw_material" "product" "all"
+}
+
+Enum "stock_opnames_status_enum"{
+    "draft" "in_progress" "completed" "cancelled"
+}
+
+Enum "stock_transfers_status_enum"{
+    "draft" "pending" "in_transit" "received" "cancelled"
+}
+
+Enum "tables_status_enum"{
+    "available" "occupied" "reserved" "maintenance"
+}
+
+Enum "tasks_priority_enum"{
+    "low" "medium" "high"
+}
+
+Enum "trial_verification_requests_status_enum"{
+    "pending" "approved" "rejected"
+}
+
+Enum "user_subscriptions_status_enum"{
+    "trial" "active" "expired" "cancelled" "pending_verification"
+}
+
+Enum "withdrawals_status_enum"{
+    "pending" "approved" "rejected" "paid" "cancelled"
+}
+
+Table "activity_log"{
+    "id" bigint(20) [pk, not null
+    ]
+  "log_name" varchar(255)
+  "description" text [not null
+    ]
+  "subject_type" varchar(255)
+  "event" varchar(255)
+  "subject_id" bigint(20)
+  "causer_type" varchar(255)
+  "causer_id" bigint(20)
+  "properties" longtext [default: NULL
+    ]
+  "ip_address" varchar(45)
+  "user_agent" text
+  "url" text
+  "outlet_id" bigint(20)
+  "batch_uuid" char(36)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "additional_costs"{
+    "id" bigint(20) [pk, not null
+    ]
+  "recipe_id" bigint(20) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "cost_type" additional_costs_cost_type_enum [not null
+    ]
+  "amount" decimal(15,
+    2) [not null
+    ]
+  "notes" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "admin_landing_ctas"{
+    "id" bigint(20) [pk, not null
+    ]
+  "landing_page_id" bigint(20) [not null
+    ]
+  "headline" varchar(255)
+  "description" text
+  "button_text" varchar(100) [not null, default: 'Mulai Sekarang'
+    ]
+  "button_link" varchar(500)
+  "button_color" varchar(7) [not null, default: '#658C58'
+    ]
+  "secondary_button_text" varchar(100)
+  "secondary_button_link" varchar(500)
+  "background_image" varchar(255)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "admin_landing_pages"{
+    "id" bigint(20) [pk, not null
+    ]
+  "title" varchar(255) [not null, default: 'Flow – All in One Business App'
+    ]
+  "tagline" varchar(255) [default: 'One ecosystem to run your business smarter'
+    ]
+  "slug" varchar(100) [not null
+    ]
+  "primary_color" varchar(7) [not null, default: '#658C58'
+    ]
+  "secondary_color" varchar(7) [not null, default: '#31694E'
+    ]
+  "accent_color" varchar(7) [not null, default: '#F0E491'
+    ]
+  "font_family" varchar(100) [not null, default: 'Inter'
+    ]
+  "meta_title" varchar(255)
+  "meta_description" text
+  "logo" varchar(255)
+  "favicon" varchar(255)
+  "is_active" tinyint(1) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "admin_landing_sections"{
+    "id" bigint(20) [pk, not null
+    ]
+  "landing_page_id" bigint(20) [not null
+    ]
+  "section_key" varchar(50) [not null
+    ]
+  "title" varchar(255)
+  "subtitle" varchar(255)
+  "description" text
+  "background_type" admin_landing_sections_background_type_enum [not null, default: 'color'
+    ]
+  "background_value" varchar(500)
+  "extra_settings" longtext [default: NULL
+    ]
+  "order" int(11) [not null, default: 0
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "admin_landing_section_items"{
+    "id" bigint(20) [pk, not null
+    ]
+  "landing_section_id" bigint(20) [not null
+    ]
+  "title" varchar(255)
+  "description" text
+  "icon" varchar(100)
+  "image" varchar(255)
+  "extra_data" longtext [default: NULL
+    ]
+  "order" int(11) [not null, default: 0
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "advertisements"{
+    "id" bigint(20) [pk, not null
+    ]
+  "title" varchar(255) [not null
+    ]
+  "description" text
+  "banner" varchar(255) [not null
+    ]
+  "content" longtext
+  "url" varchar(255)
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "start_date" datetime
+  "end_date" datetime
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "ai_chat_messages"{
+    "id" bigint(20) [pk, not null
+    ]
+  "ai_chat_session_id" bigint(20) [not null
+    ]
+  "role" ai_chat_messages_role_enum [not null
+    ]
+  "content" text [not null
+    ]
+  "metadata" longtext [default: NULL
+    ]
+  "tokens_used" int(11)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "ai_chat_sessions"{
+    "id" bigint(20) [pk, not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "outlet_id" bigint(20)
+  "title" varchar(255)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "ai_insights"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "type" ai_insights_type_enum [not null
+    ]
+  "title" varchar(255) [not null
+    ]
+  "content" text [not null
+    ]
+  "data" longtext [default: NULL
+    ]
+  "severity" ai_insights_severity_enum [not null, default: 'info'
+    ]
+  "is_read" tinyint(1) [not null, default: 0
+    ]
+  "is_dismissed" tinyint(1) [not null, default: 0
+    ]
+  "insight_date" datetime [not null
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "backup_logs"{
+    "id" bigint(20) [pk, not null
+    ]
+  "filename" varchar(255) [not null
+    ]
+  "disk" varchar(255) [not null, default: 'local'
+    ]
+  "path" varchar(255) [not null
+    ]
+  "size" bigint(20) [not null
+    ]
+  "type" backup_logs_type_enum [not null
+    ]
+  "status" backup_logs_status_enum [not null
+    ]
+  "error_message" text
+  "created_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "banned_ips"{
+    "id" bigint(20) [pk, not null
+    ]
+  "ip_address" varchar(45) [not null
+    ]
+  "reason" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "business_points"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255)
+  "category" varchar(255) [not null
+    ]
+  "sub_category" varchar(255)
+  "latitude" decimal(10,
+    7) [not null
+    ]
+  "longitude" decimal(11,
+    7) [not null
+    ]
+  "raw_tags" longtext [default: NULL
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "cache"{
+    "key" varchar(255) [pk, not null
+    ]
+  "value" mediumtext [not null
+    ]
+  "expiration" int(11) [not null
+    ]
+}
+
+Table "cache_locks"{
+    "key" varchar(255) [pk, not null
+    ]
+  "owner" varchar(255) [not null
+    ]
+  "expiration" int(11) [not null
+    ]
+}
+
+Table "cash_registers"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "opening_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "closing_amount" decimal(15,
+    2)
+  "expected_amount" decimal(15,
+    2)
+  "difference" decimal(15,
+    2)
+  "total_transactions" int(11) [not null, default: 0
+    ]
+  "total_sales" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_cash" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_qris" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_transfer" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "opened_at" datetime [not null
+    ]
+  "closed_at" datetime
+  "status" cash_registers_status_enum [not null, default: 'open'
+    ]
+  "notes" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "categories"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "slug" varchar(255) [not null
+    ]
+  "type" categories_type_enum [not null
+    ]
+  "description" text
+  "icon" varchar(255)
+  "sort_order" int(11) [not null, default: 0
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "color_palettes"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "slug" varchar(255) [not null
+    ]
+  "color_yellow" varchar(255) [not null
+    ]
+  "color_olive" varchar(255) [not null
+    ]
+  "color_green" varchar(255) [not null
+    ]
+  "color_dark" varchar(255) [not null
+    ]
+  "is_default" tinyint(1) [not null, default: 0
+    ]
+  "sort_order" int(11) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "customers"{
+    "id" bigint(20) [pk, not null
+    ]
+  "code" varchar(20) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "phone" varchar(20)
+  "email" varchar(255) [not null
+    ]
+  "address" text
+  "type" customers_type_enum [not null, default: 'regular'
+    ]
+  "credit_limit" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_debt" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "points" int(11) [not null, default: 0
+    ]
+  "birth_date" date
+  "notes" text
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "customer_debts"{
+    "id" bigint(20) [pk, not null
+    ]
+  "customer_id" bigint(20) [not null
+    ]
+  "sale_id" bigint(20) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "amount" decimal(15,
+    2) [not null
+    ]
+  "paid_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "remaining_amount" decimal(15,
+    2) [not null
+    ]
+  "due_date" date
+  "status" customer_debts_status_enum [not null, default: 'unpaid'
+    ]
+  "notes" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "customer_discounts"{
+    "id" bigint(20) [pk, not null
+    ]
+  "customer_id" bigint(20) [not null
+    ]
+  "discount_id" bigint(20) [not null
+    ]
+  "secret_code" varchar(255) [not null
+    ]
+  "is_used" tinyint(1) [not null, default: 0
+    ]
+  "used_at" timestamp
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "daily_summaries"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "summary_date" date [not null
+    ]
+  "total_transactions" int(11) [not null, default: 0
+    ]
+  "total_sales" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_discount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_tax" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "net_sales" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "cash_sales" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "qris_sales" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "transfer_sales" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "debt_sales" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_hpp" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "gross_profit" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_expenses" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "net_profit" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "products_sold" int(11) [not null, default: 0
+    ]
+  "top_products" longtext [default: NULL
+    ]
+  "hourly_sales" longtext [default: NULL
+    ]
+  "total_customers" int(11) [not null, default: 0
+    ]
+  "new_customers" int(11) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "debt_payments"{
+    "id" bigint(20) [pk, not null
+    ]
+  "customer_debt_id" bigint(20) [not null
+    ]
+  "amount" decimal(15,
+    2) [not null
+    ]
+  "payment_method" debt_payments_payment_method_enum [not null
+    ]
+  "outlet_payment_link_id" bigint(20)
+  "reference_number" varchar(255)
+  "notes" text
+  "received_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "discounts"{
+    "id" bigint(20) [pk, not null
+    ]
+  "code" varchar(30) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "type" discounts_type_enum [not null
+    ]
+  "value" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "min_purchase" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "max_discount" decimal(15,
+    2)
+  "buy_quantity" int(11)
+  "get_quantity" int(11)
+  "product_id" bigint(20)
+  "category_id" bigint(20)
+  "outlet_id" bigint(20)
+  "start_date" datetime
+  "end_date" datetime
+  "usage_limit" int(11)
+  "used_count" int(11) [not null, default: 0
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "is_voucher" tinyint(1) [not null, default: 0
+    ]
+  "is_public" tinyint(1) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "expenses"{
+    "id" bigint(20) [pk, not null
+    ]
+  "type" expenses_type_enum [not null, default: 'expense'
+    ]
+  "expense_number" varchar(50) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "expense_category_id" bigint(20) [not null
+    ]
+  "amount" decimal(15,
+    2) [not null
+    ]
+  "expense_date" date [not null
+    ]
+  "description" varchar(255) [not null
+    ]
+  "receipt_image" varchar(255)
+  "payment_method" expenses_payment_method_enum [not null, default: 'cash'
+    ]
+  "reference_number" varchar(255)
+  "notes" text
+  "created_by" bigint(20)
+  "approved_by" bigint(20)
+  "status" varchar(255) [not null, default: 'pending'
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "expense_categories"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "code" varchar(20) [not null
+    ]
+  "description" text
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "failed_jobs"{
+    "id" bigint(20) [pk, not null
+    ]
+  "uuid" varchar(255) [not null
+    ]
+  "connection" text [not null
+    ]
+  "queue" text [not null
+    ]
+  "payload" longtext [not null
+    ]
+  "exception" longtext [not null
+    ]
+  "failed_at" timestamp [not null, default: `current_timestamp()`
+    ]
+}
+
+Table "faqs"{
+    "id" bigint(20) [pk, not null
+    ]
+  "question" varchar(255) [not null
+    ]
+  "answer" text [not null
+    ]
+  "type" faqs_type_enum [not null, default: 'general'
+    ]
+  "priority" faqs_priority_enum [not null, default: 'medium'
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "view_count" int(11) [not null, default: 0
+    ]
+  "helpful_count" int(11) [not null, default: 0
+    ]
+  "not_helpful_count" int(11) [not null, default: 0
+    ]
+  "order" int(11) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "faq_votes"{
+    "id" bigint(20) [pk, not null
+    ]
+  "faq_id" bigint(20) [not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "is_helpful" tinyint(1) [not null
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "features"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null, note: 'Slug identifier: pos, sales_management'
+    ]
+  "display_name" varchar(255) [not null
+    ]
+  "description" text
+  "category" varchar(255) [note: 'Sales, Inventory, Finance, etc.'
+    ]
+  "icon" varchar(255)
+  "route_name" varchar(255) [note: 'Laravel route name for access control'
+    ]
+  "sort_order" int(11) [not null, default: 0
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "grid_areas"{
+    "id" bigint(20) [pk, not null
+    ]
+  "center_lat" decimal(10,
+    7) [not null
+    ]
+  "center_lng" decimal(11,
+    7) [not null
+    ]
+  "total_businesses" int(11) [not null, default: 0
+    ]
+  "category_diversity" int(11) [not null, default: 0
+    ]
+  "competition_score" decimal(10,
+    4) [not null, default: 0.0000
+    ]
+  "demand_score" decimal(10,
+    4) [not null, default: 0.0000
+    ]
+  "opportunity_score" decimal(10,
+    4) [not null, default: 0.0000
+    ]
+  "ai_classification" varchar(255)
+  "ai_analysis" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "hpp_calculations"{
+    "id" bigint(20) [pk, not null
+    ]
+  "product_id" bigint(20) [not null
+    ]
+  "recipe_id" bigint(20)
+  "raw_material_cost" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "additional_cost" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_hpp" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "hpp_per_unit" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "output_quantity" decimal(15,
+    4) [not null, default: 1.0000
+    ]
+  "calculation_details" longtext [default: NULL
+    ]
+  "notes" text
+  "calculated_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "jobs"{
+    "id" bigint(20) [pk, not null
+    ]
+  "queue" varchar(255) [not null
+    ]
+  "payload" longtext [not null
+    ]
+  "attempts" tinyint(3) [not null
+    ]
+  "reserved_at" int(10)
+  "available_at" int(10) [not null
+    ]
+  "created_at" int(10) [not null
+    ]
+}
+
+Table "job_batches"{
+    "id" varchar(255) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "total_jobs" int(11) [not null
+    ]
+  "pending_jobs" int(11) [not null
+    ]
+  "failed_jobs" int(11) [not null
+    ]
+  "failed_job_ids" longtext [not null
+    ]
+  "options" mediumtext
+  "cancelled_at" int(11)
+  "created_at" int(11) [not null
+    ]
+  "finished_at" int(11)
+}
+
+Table "landing_pages"{
+    "id" bigint(20) [pk, not null
+    ]
+  "template_id" int(11) [not null, default: 1
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "hero_title" varchar(255) [default: 'Selamat Datang'
+    ]
+  "hero_subtitle" varchar(255) [default: 'Ke Toko Kami'
+    ]
+  "hero_image" varchar(255)
+  "about_image" varchar(255)
+  "primary_color" varchar(255) [not null, default: '#4F46E5'
+    ]
+  "secondary_color" varchar(255) [not null, default: '#1F2937'
+    ]
+  "font_heading" varchar(255) [not null, default: 'Inter'
+    ]
+  "font_body" varchar(255) [not null, default: 'Inter'
+    ]
+  "about_text" text
+  "vision_text" text
+  "mission_text" text
+  "tagline_text" text
+  "services_section" text
+  "testimonials_section" text
+  "selected_testimonial_ids" longtext [default: NULL
+    ]
+  "gallery_images" text
+  "cta_text" text
+  "cta_button_text" text
+  "selected_product_ids" longtext [default: NULL
+    ]
+  "social_media" longtext [default: NULL
+    ]
+  "whatsapp_number" varchar(255)
+  "footer_text" varchar(255)
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "landing_page_visits"{
+    "id" bigint(20) [pk, not null
+    ]
+  "landing_page_id" bigint(20) [not null
+    ]
+  "ip_address" varchar(45)
+  "user_agent" varchar(255)
+  "visited_at" timestamp [not null, default: `current_timestamp()`
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "login_histories"{
+    "id" bigint(20) [pk, not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "ip_address" varchar(45) [not null
+    ]
+  "app_name" varchar(20) [not null
+    ]
+  "user_agent" text
+  "created_at" timestamp [not null, default: `current_timestamp()`
+    ]
+}
+
+Table "login_lockouts"{
+    "id" bigint(20) [pk, not null
+    ]
+  "ip_address" varchar(255) [not null
+    ]
+  "email" varchar(255)
+  "attempts" int(11) [not null, default: 0
+    ]
+  "locked_until" timestamp
+  "last_attempt_at" timestamp
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "migrations"{
+    "id" int(10) [pk, not null
+    ]
+  "migration" varchar(255) [not null
+    ]
+  "batch" int(11) [not null
+    ]
+}
+
+Table "model_has_permissions"{
+    "permission_id" bigint(20) [not null
+    ]
+  "model_type" varchar(255) [not null
+    ]
+  "model_id" bigint(20) [not null
+    ]
+
+  Indexes {
+    (permission_id, model_id, model_type) [pk
+        ]
+    }
+}
+
+Table "model_has_roles"{
+    "role_id" bigint(20) [not null
+    ]
+  "model_type" varchar(255) [not null
+    ]
+  "model_id" bigint(20) [not null
+    ]
+
+  Indexes {
+    (role_id, model_id, model_type) [pk
+        ]
+    }
+}
+
+Table "offline_sync_queues"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "entity_type" varchar(255) [not null
+    ]
+  "action" varchar(255) [not null
+    ]
+  "payload" longtext [not null
+    ]
+  "local_id" varchar(255)
+  "synced_id" bigint(20)
+  "status" offline_sync_queues_status_enum [not null, default: 'pending'
+    ]
+  "error_message" text
+  "retry_count" int(11) [not null, default: 0
+    ]
+  "synced_at" timestamp
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "outlets"{
+    "id" bigint(20) [pk, not null
+    ]
+  "owner_id" bigint(20)
+  "code" varchar(20) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "address" text
+  "latitude" decimal(10,
+    8)
+  "longitude" decimal(11,
+    8)
+  "phone" varchar(20)
+  "email" varchar(255)
+  "logo" varchar(255)
+  "settings" longtext [default: NULL
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "accepts_reseller" tinyint(1) [not null, default: 0
+    ]
+  "has_table_system" tinyint(1) [not null, default: 0, note: 'Indicates if outlet uses table management system (e.g., coffee shop)'
+    ]
+  "auto_production" tinyint(1) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "outlet_payment_links"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "payment_method_id" bigint(20) [not null
+    ]
+  "account_number" varchar(255)
+  "account_name" varchar(255)
+  "qr_image" varchar(255)
+  "notes" text
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "outlet_policies"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "title" varchar(255) [not null
+    ]
+  "content" text [not null
+    ]
+  "category" varchar(255)
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "password_reset_tokens"{
+    "email" varchar(255) [pk, not null
+    ]
+  "token" varchar(255) [not null
+    ]
+  "created_at" timestamp
+}
+
+Table "payment_methods"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "code" varchar(255) [not null
+    ]
+  "icon" varchar(255)
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "payment_transactions"{
+    "id" bigint(20) [pk, not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "subscription_id" bigint(20)
+  "tier_id" bigint(20) [not null
+    ]
+  "plan_id" bigint(20)
+  "transaction_id" varchar(255) [not null, note: 'Midtrans order ID'
+    ]
+  "amount" decimal(15,
+    2) [not null
+    ]
+  "status" payment_transactions_status_enum [not null, default: 'pending'
+    ]
+  "payment_method" varchar(255)
+  "payment_response" longtext [default: NULL, note: 'Full Midtrans response'
+    ]
+  "paid_at" timestamp
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "permissions"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "guard_name" varchar(255) [not null
+    ]
+  "permission_category_id" bigint(20)
+  "description" varchar(255)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "permission_categories"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "slug" varchar(255) [not null
+    ]
+  "description" varchar(255)
+  "icon" varchar(255)
+  "color" varchar(255)
+  "order" int(11) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "personal_access_tokens"{
+    "id" bigint(20) [pk, not null
+    ]
+  "tokenable_type" varchar(255) [not null
+    ]
+  "tokenable_id" bigint(20) [not null
+    ]
+  "name" text [not null
+    ]
+  "token" varchar(64) [not null
+    ]
+  "abilities" text
+  "last_used_at" timestamp
+  "expires_at" timestamp
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "productions"{
+    "id" bigint(20) [pk, not null
+    ]
+  "batch_number" varchar(255) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "product_id" bigint(20) [not null
+    ]
+  "recipe_id" bigint(20)
+  "planned_quantity" decimal(15,
+    4) [not null
+    ]
+  "actual_quantity" decimal(15,
+    4)
+  "waste_quantity" decimal(15,
+    4) [not null, default: 0.0000
+    ]
+  "status" productions_status_enum [not null, default: 'planned'
+    ]
+  "is_disposed" tinyint(1) [not null, default: 0
+    ]
+  "started_at" datetime
+  "completed_at" datetime
+  "expired_at" date
+  "total_material_cost" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_additional_cost" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_cost" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "notes" text
+  "created_by" bigint(20)
+  "completed_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "production_items"{
+    "id" bigint(20) [pk, not null
+    ]
+  "production_id" bigint(20) [not null
+    ]
+  "raw_material_id" bigint(20) [not null
+    ]
+  "planned_quantity" decimal(15,
+    6) [not null
+    ]
+  "actual_quantity" decimal(15,
+    6)
+  "unit_price" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "total_price" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "products"{
+    "id" bigint(20) [pk, not null
+    ]
+  "code" varchar(30) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "barcode" varchar(50)
+  "category_id" bigint(20)
+  "supplier_id" bigint(20)
+  "unit_id" bigint(20) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "hpp" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "selling_price" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "reseller_price" decimal(15,
+    2)
+  "promo_price" decimal(15,
+    2)
+  "margin_percent" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "min_stock" decimal(15,
+    4) [not null, default: 0.0000
+    ]
+  "shelf_life_days" int(11)
+  "image" varchar(255)
+  "description" text
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "is_sellable" tinyint(1) [not null, default: 1
+    ]
+  "track_stock" tinyint(1) [not null, default: 1
+    ]
+  "is_stock" tinyint(1) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "product_reviews"{
+    "id" bigint(20) [pk, not null
+    ]
+  "sale_item_id" bigint(20) [not null
+    ]
+  "product_id" bigint(20) [not null
+    ]
+  "rating" int(11) [not null
+    ]
+  "comment" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "product_sales_targets"{
+    "id" bigint(20) [pk, not null
+    ]
+  "product_id" bigint(20) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "monthly_target_revenue" decimal(15,
+    2) [not null
+    ]
+  "hpp_per_unit" decimal(15,
+    2) [not null
+    ]
+  "selling_price" decimal(15,
+    2) [not null
+    ]
+  "daily_sales_target" int(11) [not null
+    ]
+  "monthly_sales_target" int(11) [not null
+    ]
+  "daily_revenue_target" decimal(15,
+    2) [not null
+    ]
+  "profit_per_unit" decimal(15,
+    2) [not null
+    ]
+  "monthly_profit_target" decimal(15,
+    2) [not null
+    ]
+  "sales_pattern" longtext [default: NULL
+    ]
+  "target_start_date" date [not null
+    ]
+  "target_end_date" date
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_by" bigint(20) [not null
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "product_stocks"{
+    "id" bigint(20) [pk, not null
+    ]
+  "product_id" bigint(20) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "quantity" decimal(15,
+    4) [not null, default: 0.0000
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "purchases"{
+    "id" bigint(20) [pk, not null
+    ]
+  "purchase_number" varchar(50) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "supplier_id" bigint(20)
+  "subtotal" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "discount_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "tax_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "shipping_cost" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "grand_total" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "paid_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "payment_status" purchases_payment_status_enum [not null, default: 'unpaid'
+    ]
+  "status" purchases_status_enum [not null, default: 'draft'
+    ]
+  "purchase_date" date [not null
+    ]
+  "expected_date" date
+  "received_date" date
+  "notes" text
+  "invoice_number" varchar(255)
+  "created_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "purchase_items"{
+    "id" bigint(20) [pk, not null
+    ]
+  "purchase_id" bigint(20) [not null
+    ]
+  "raw_material_id" bigint(20)
+  "product_id" bigint(20)
+  "quantity" decimal(15,
+    4) [not null
+    ]
+  "received_quantity" decimal(15,
+    4) [not null, default: 0.0000
+    ]
+  "remaining_quantity" decimal(16,
+    4) [not null, default: 0.0000
+    ]
+  "is_disposed" tinyint(1) [not null, default: 0
+    ]
+  "unit_price" decimal(15,
+    2) [not null
+    ]
+  "discount_percent" decimal(8,
+    4) [not null, default: 0.0000
+    ]
+  "discount_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "subtotal" decimal(15,
+    2) [not null
+    ]
+  "expired_at" date
+  "batch_number" varchar(255)
+  "notes" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "raw_materials"{
+    "id" bigint(20) [pk, not null
+    ]
+  "code" varchar(30) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "barcode" varchar(50)
+  "category_id" bigint(20)
+  "outlet_id" bigint(20)
+  "unit_id" bigint(20) [not null
+    ]
+  "supplier_id" bigint(20)
+  "purchase_price" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "min_stock" decimal(15,
+    4) [not null, default: 0.0000
+    ]
+  "shelf_life_days" int(11)
+  "image" varchar(255)
+  "description" text
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "raw_material_stocks"{
+    "id" bigint(20) [pk, not null
+    ]
+  "raw_material_id" bigint(20) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "quantity" decimal(15,
+    4) [not null, default: 0.0000
+    ]
+  "avg_purchase_price" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "recipes"{
+    "id" bigint(20) [pk, not null
+    ]
+  "product_id" bigint(20) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "output_quantity" decimal(15,
+    4) [not null, default: 1.0000
+    ]
+  "instructions" text
+  "estimated_time_minutes" int(11)
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "is_default" tinyint(1) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "recipe_items"{
+    "id" bigint(20) [pk, not null
+    ]
+  "recipe_id" bigint(20) [not null
+    ]
+  "raw_material_id" bigint(20) [not null
+    ]
+  "quantity" decimal(15,
+    6) [not null
+    ]
+  "notes" text
+  "sort_order" int(11) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "report_schedules"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20)
+  "name" varchar(255) [not null
+    ]
+  "report_type" report_schedules_report_type_enum [not null
+    ]
+  "frequency" report_schedules_frequency_enum [not null
+    ]
+  "day_of_week" varchar(255)
+  "day_of_month" int(11)
+  "send_time" time [not null, default: '08: 00: 00'
+    ]
+  "recipients" longtext [not null
+    ]
+  "format" report_schedules_format_enum [not null, default: 'pdf'
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "last_sent_at" timestamp
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "reseller_applications"{
+    "id" bigint(20) [pk, not null
+    ]
+  "customer_id" bigint(20) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "description" text
+  "document_path" varchar(255)
+  "status" reseller_applications_status_enum [not null, default: 'pending'
+    ]
+  "processed_by" bigint(20)
+  "processed_at" timestamp
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "reseller_products"{
+    "id" bigint(20) [pk, not null
+    ]
+  "reseller_outlet_id" bigint(20) [not null
+    ]
+  "source_outlet_id" bigint(20) [not null
+    ]
+  "source_product_id" bigint(20) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "purchase_price" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "selling_price" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "stock" decimal(15,
+    4) [not null, default: 0.0000
+    ]
+  "status" reseller_products_status_enum [not null, default: 'pending'
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "roles"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "guard_name" varchar(255) [not null
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "role_has_permissions"{
+    "permission_id" bigint(20) [not null
+    ]
+  "role_id" bigint(20) [not null
+    ]
+
+  Indexes {
+    (permission_id, role_id) [pk
+        ]
+    }
+}
+
+Table "sales"{
+    "id" bigint(20) [pk, not null
+    ]
+  "invoice_number" varchar(50) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "customer_id" bigint(20)
+  "customer_name" varchar(255)
+  "cashier_id" bigint(20) [not null
+    ]
+  "subtotal" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "discount_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "tax_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "tax_percent" decimal(5,
+    2) [not null, default: 0.00
+    ]
+  "grand_total" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "paid_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "change_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "payment_method" sales_payment_method_enum [not null, default: 'cash'
+    ]
+  "service_type" sales_service_type_enum [not null, default: 'take_away'
+    ]
+  "table_id" bigint(20)
+  "outlet_payment_link_id" bigint(20)
+  "payment_status" sales_payment_status_enum [not null, default: 'pending'
+    ]
+  "midtrans_order_id" varchar(255)
+  "midtrans_transaction_id" varchar(255)
+  "midtrans_payment_type" varchar(255)
+  "midtrans_response" longtext [default: NULL
+    ]
+  "notes" text
+  "customer_notes" text
+  "status" sales_status_enum [not null, default: 'draft'
+    ]
+  "is_synced" tinyint(1) [not null, default: 1
+    ]
+  "completed_at" datetime
+  "refunded_at" datetime
+  "is_reported" tinyint(1) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "sale_items"{
+    "id" bigint(20) [pk, not null
+    ]
+  "sale_id" bigint(20) [not null
+    ]
+  "product_id" bigint(20) [not null
+    ]
+  "product_name" varchar(255) [not null
+    ]
+  "quantity" decimal(15,
+    4) [not null
+    ]
+  "production_status" sale_items_production_status_enum [not null, default: 'pending'
+    ]
+  "served_at" timestamp
+  "unit_price" decimal(15,
+    2) [not null
+    ]
+  "discount_percent" decimal(8,
+    4) [not null, default: 0.0000
+    ]
+  "discount_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "subtotal" decimal(15,
+    2) [not null
+    ]
+  "hpp" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "profit" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "notes" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "sale_payments"{
+    "id" bigint(20) [pk, not null
+    ]
+  "sale_id" bigint(20) [not null
+    ]
+  "payment_method" sale_payments_payment_method_enum [not null
+    ]
+  "amount" decimal(15,
+    2) [not null
+    ]
+  "reference_number" varchar(255)
+  "midtrans_transaction_id" varchar(255)
+  "payment_details" longtext [default: NULL
+    ]
+  "received_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "sessions"{
+    "id" varchar(255) [pk, not null
+    ]
+  "user_id" bigint(20)
+  "ip_address" varchar(45)
+  "user_agent" text
+  "payload" longtext [not null
+    ]
+  "last_activity" int(11) [not null
+    ]
+}
+
+Table "settings"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20)
+  "group" varchar(50) [not null
+    ]
+  "key" varchar(255) [not null
+    ]
+  "value" text
+  "type" varchar(20) [not null, default: 'string'
+    ]
+  "description" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "stock_movements"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "stockable_type" varchar(255) [not null
+    ]
+  "stockable_id" bigint(20) [not null
+    ]
+  "type" stock_movements_type_enum [not null
+    ]
+  "quantity" decimal(15,
+    4) [not null
+    ]
+  "quantity_before" decimal(15,
+    4) [not null
+    ]
+  "quantity_after" decimal(15,
+    4) [not null
+    ]
+  "unit_price" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "reference_type" varchar(255)
+  "reference_id" bigint(20)
+  "notes" text
+  "expired_at" date
+  "batch_number" varchar(255)
+  "created_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "stock_notifications"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "stockable_type" varchar(255) [not null
+    ]
+  "stockable_id" bigint(20) [not null
+    ]
+  "type" stock_notifications_type_enum [not null
+    ]
+  "title" varchar(255) [not null
+    ]
+  "message" text [not null
+    ]
+  "current_stock" decimal(15,
+    4)
+  "min_stock" decimal(15,
+    4)
+  "days_until_expiry" int(11)
+  "is_read" tinyint(1) [not null, default: 0
+    ]
+  "is_sent_email" tinyint(1) [not null, default: 0
+    ]
+  "is_sent_wa" tinyint(1) [not null, default: 0
+    ]
+  "read_at" datetime
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "stock_notification_reads"{
+    "id" bigint(20) [pk, not null
+    ]
+  "stock_notification_id" bigint(20) [not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "read_at" timestamp [not null, default: `current_timestamp()`
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "stock_opnames"{
+    "id" bigint(20) [pk, not null
+    ]
+  "opname_number" varchar(50) [not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "type" stock_opnames_type_enum [not null
+    ]
+  "status" stock_opnames_status_enum [not null, default: 'draft'
+    ]
+  "started_at" datetime
+  "completed_at" datetime
+  "notes" text
+  "created_by" bigint(20)
+  "approved_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "stock_opname_items"{
+    "id" bigint(20) [pk, not null
+    ]
+  "stock_opname_id" bigint(20) [not null
+    ]
+  "stockable_type" varchar(255) [not null
+    ]
+  "stockable_id" bigint(20) [not null
+    ]
+  "system_quantity" decimal(15,
+    4) [not null
+    ]
+  "physical_quantity" decimal(15,
+    4)
+  "difference" decimal(15,
+    4)
+  "notes" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "stock_transfers"{
+    "id" bigint(20) [pk, not null
+    ]
+  "transfer_number" varchar(50) [not null
+    ]
+  "from_outlet_id" bigint(20) [not null
+    ]
+  "to_outlet_id" bigint(20) [not null
+    ]
+  "status" stock_transfers_status_enum [not null, default: 'draft'
+    ]
+  "sent_at" datetime
+  "received_at" datetime
+  "notes" text
+  "created_by" bigint(20)
+  "received_by" bigint(20)
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "stock_transfer_items"{
+    "id" bigint(20) [pk, not null
+    ]
+  "stock_transfer_id" bigint(20) [not null
+    ]
+  "stockable_type" varchar(255) [not null
+    ]
+  "stockable_id" bigint(20) [not null
+    ]
+  "batch_number" varchar(255)
+  "expired_at" date
+  "quantity" decimal(15,
+    4) [not null
+    ]
+  "received_quantity" decimal(15,
+    4)
+  "notes" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "subscription_plans"{
+    "id" bigint(20) [pk, not null
+    ]
+  "tier_id" bigint(20) [not null
+    ]
+  "duration_months" int(11) [note: '1,
+        3,
+        6,
+        12,
+        null for unlimited'
+    ]
+  "price" decimal(15,
+    2) [not null
+    ]
+  "discount_percentage" decimal(5,
+    2) [not null, default: 0.00
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "is_unlimited" tinyint(1) [not null, default: 0, note: 'Lifetime/special subscription'
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "subscription_settings"{
+    "id" bigint(20) [pk, not null
+    ]
+  "trial_duration_days" int(11) [not null, default: 30
+    ]
+  "grace_period_days" int(11) [not null, default: 7
+    ]
+  "enable_trial" tinyint(1) [not null, default: 1
+    ]
+  "require_trial_verification" tinyint(1) [not null, default: 1
+    ]
+  "auto_renew_default" tinyint(1) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "subscription_tiers"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null, note: 'silver, gold, platinum'
+    ]
+  "display_name" varchar(255) [not null
+    ]
+  "description" text
+  "price" decimal(15,
+    2) [not null, default: 0.00, note: 'Base monthly price'
+    ]
+  "max_outlets" int(11) [note: 'null = unlimited'
+    ]
+  "trial_duration_days" int(11) [default: 30
+    ]
+  "sort_order" int(11) [not null, default: 0
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "features_list" longtext [default: NULL, note: 'Quick reference JSON'
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "suppliers"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20)
+  "code" varchar(20) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "contact_person" varchar(255)
+  "phone" varchar(20)
+  "email" varchar(255)
+  "address" text
+  "notes" text
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "tables"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "table_number" varchar(20) [not null, note: 'Nomor meja, e.g.,
+        1,
+        2, A1, VIP-01'
+    ]
+  "code" varchar(50) [note: 'Kode unik untuk QR atau referensi'
+    ]
+  "name" varchar(255) [note: 'Nama meja (opsional), e.g., Meja Teras, Meja VIP'
+    ]
+  "capacity" int(11) [not null, default: 4, note: 'Kapasitas orang per meja'
+    ]
+  "location" varchar(255) [note: 'Lokasi meja, e.g., Indoor, Outdoor, Lantai 2'
+    ]
+  "status" tables_status_enum [not null, default: 'available'
+    ]
+  "notes" text
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "tasks"{
+    "id" bigint(20) [pk, not null
+    ]
+  "title" varchar(255) [not null
+    ]
+  "description" text
+  "status_id" bigint(20) [not null
+    ]
+  "priority" tasks_priority_enum [not null, default: 'medium'
+    ]
+  "deadline" datetime
+  "created_by" bigint(20) [not null
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+  "deleted_at" timestamp
+}
+
+Table "task_activities"{
+    "id" bigint(20) [pk, not null
+    ]
+  "task_id" bigint(20) [not null
+    ]
+  "user_id" bigint(20)
+  "action" varchar(255) [not null
+    ]
+  "field" varchar(255)
+  "old_value" text
+  "new_value" text
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "task_assignments"{
+    "id" bigint(20) [pk, not null
+    ]
+  "task_id" bigint(20) [not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "task_labels"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "color" varchar(7) [not null, default: '#6B7280'
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "task_label_assignments"{
+    "id" bigint(20) [pk, not null
+    ]
+  "task_id" bigint(20) [not null
+    ]
+  "label_id" bigint(20) [not null
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "task_statuses"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "slug" varchar(255) [not null
+    ]
+  "color" varchar(7) [not null, default: '#6B7280'
+    ]
+  "order" int(11) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "terms_and_conditions"{
+    "id" bigint(20) [pk, not null
+    ]
+  "content" longtext
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "testimonials"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20) [not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "role" varchar(255)
+  "content" text [not null
+    ]
+  "rating" int(11) [not null, default: 5
+    ]
+  "image" varchar(255)
+  "is_published" tinyint(1) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "tier_features"{
+    "id" bigint(20) [pk, not null
+    ]
+  "tier_id" bigint(20) [not null
+    ]
+  "feature_id" bigint(20) [not null
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "trial_verification_requests"{
+    "id" bigint(20) [pk, not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "outlet_name" varchar(255) [not null
+    ]
+  "business_type" varchar(255)
+  "photo_store_front_path" varchar(255) [not null
+    ]
+  "photo_products_path" longtext
+  "business_description" text
+  "status" trial_verification_requests_status_enum [not null, default: 'pending'
+    ]
+  "admin_notes" text
+  "reviewed_by" bigint(20)
+  "reviewed_at" timestamp
+  "ip_address" varchar(255)
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "units"{
+    "id" bigint(20) [pk, not null
+    ]
+  "name" varchar(255) [not null
+    ]
+  "abbreviation" varchar(10) [not null
+    ]
+  "base_unit_id" bigint(20)
+  "conversion_factor" decimal(15,
+    6) [not null, default: 1.000000
+    ]
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "users"{
+    "id" bigint(20) [pk, not null
+    ]
+  "outlet_id" bigint(20)
+  "name" varchar(255) [not null
+    ]
+  "email" varchar(255) [not null
+    ]
+  "phone" varchar(20)
+  "email_verified_at" timestamp
+  "password" varchar(255) [not null
+    ]
+  "google_id" varchar(255)
+  "google_avatar" varchar(255)
+  "remember_token" varchar(100)
+  "created_at" timestamp
+  "updated_at" timestamp
+  "avatar" varchar(255)
+  "is_active" tinyint(1) [not null, default: 1
+    ]
+  "last_login_at" timestamp
+  "last_seen_at" timestamp
+  "deleted_at" timestamp
+  "daily_chat_quota" int(11) [not null, default: 3
+    ]
+  "last_chat_reset_date" date
+  "color_palette_id" bigint(20)
+}
+
+Table "user_subscriptions"{
+    "id" bigint(20) [pk, not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "tier_id" bigint(20) [not null
+    ]
+  "plan_id" bigint(20)
+  "status" user_subscriptions_status_enum [not null, default: 'pending_verification'
+    ]
+  "started_at" timestamp
+  "expires_at" timestamp
+  "is_trial" tinyint(1) [not null, default: 0
+    ]
+  "trial_ends_at" timestamp
+  "auto_renew" tinyint(1) [not null, default: 0
+    ]
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "user_withdraw_locks"{
+    "id" bigint(20) [pk, not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "attempts" tinyint(3) [not null, default: 0
+    ]
+  "locked_until" timestamp
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Table "withdrawals"{
+    "id" bigint(20) [pk, not null
+    ]
+  "user_id" bigint(20) [not null
+    ]
+  "outlet_id" bigint(20)
+  "payment_method_id" bigint(20)
+  "amount" decimal(15,
+    2) [not null
+    ]
+  "tax_percent" decimal(5,
+    2) [not null, default: 0.00
+    ]
+  "tax_amount" decimal(15,
+    2) [not null, default: 0.00
+    ]
+  "net_amount" decimal(15,
+    2) [not null, note: 'Amount after tax deduction'
+    ]
+  "payment_method" varchar(255) [not null
+    ]
+  "account_number" varchar(255) [not null
+    ]
+  "account_name" varchar(255) [not null
+    ]
+  "status" withdrawals_status_enum [not null, default: 'pending'
+    ]
+  "accepted_by_owner" tinyint(1) [default: 0
+    ]
+  "proof_image" varchar(255)
+  "admin_note" text
+  "processed_by" bigint(20)
+  "processed_at" timestamp
+  "created_at" timestamp
+  "updated_at" timestamp
+}
+
+Ref "additional_costs_recipe_id_foreign": "recipes"."id" < "additional_costs"."recipe_id"[delete: cascade]
+
+Ref "admin_landing_ctas_landing_page_id_foreign": "admin_landing_pages"."id" < "admin_landing_ctas"."landing_page_id"[delete: cascade]
+
+Ref "admin_landing_sections_landing_page_id_foreign": "admin_landing_pages"."id" < "admin_landing_sections"."landing_page_id"[delete: cascade]
+
+Ref "admin_landing_section_items_landing_section_id_foreign": "admin_landing_sections"."id" < "admin_landing_section_items"."landing_section_id"[delete: cascade]
+
+Ref "ai_chat_messages_ai_chat_session_id_foreign": "ai_chat_sessions"."id" < "ai_chat_messages"."ai_chat_session_id"[delete: cascade]
+
+Ref "ai_chat_sessions_outlet_id_foreign": "outlets"."id" < "ai_chat_sessions"."outlet_id"[delete: set null]
+
+Ref "ai_chat_sessions_user_id_foreign": "users"."id" < "ai_chat_sessions"."user_id"[delete: cascade]
+
+Ref "ai_insights_outlet_id_foreign": "outlets"."id" < "ai_insights"."outlet_id"[delete: cascade]
+
+Ref "backup_logs_created_by_foreign": "users"."id" < "backup_logs"."created_by"[delete: set null]
+
+Ref "cash_registers_outlet_id_foreign": "outlets"."id" < "cash_registers"."outlet_id"[delete: cascade]
+
+Ref "cash_registers_user_id_foreign": "users"."id" < "cash_registers"."user_id"[delete: cascade]
+
+Ref "customer_debts_customer_id_foreign": "customers"."id" < "customer_debts"."customer_id"[delete: cascade]
+
+Ref "customer_debts_outlet_id_foreign": "outlets"."id" < "customer_debts"."outlet_id"[delete: cascade]
+
+Ref "customer_debts_sale_id_foreign": "sales"."id" < "customer_debts"."sale_id"[delete: cascade]
+
+Ref "customer_discounts_customer_id_foreign": "customers"."id" < "customer_discounts"."customer_id"[delete: cascade]
+
+Ref "customer_discounts_discount_id_foreign": "discounts"."id" < "customer_discounts"."discount_id"[delete: cascade]
+
+Ref "daily_summaries_outlet_id_foreign": "outlets"."id" < "daily_summaries"."outlet_id"[delete: cascade]
+
+Ref "debt_payments_customer_debt_id_foreign": "customer_debts"."id" < "debt_payments"."customer_debt_id"[delete: cascade]
+
+Ref "debt_payments_outlet_payment_link_id_foreign": "outlet_payment_links"."id" < "debt_payments"."outlet_payment_link_id"[delete: set null]
+
+Ref "debt_payments_received_by_foreign": "users"."id" < "debt_payments"."received_by"[delete: set null]
+
+Ref "discounts_category_id_foreign": "categories"."id" < "discounts"."category_id"[delete: set null]
+
+Ref "discounts_outlet_id_foreign": "outlets"."id" < "discounts"."outlet_id"[delete: set null]
+
+Ref "discounts_product_id_foreign": "products"."id" < "discounts"."product_id"[delete: set null]
+
+Ref "expenses_approved_by_foreign": "users"."id" < "expenses"."approved_by"[delete: set null]
+
+Ref "expenses_created_by_foreign": "users"."id" < "expenses"."created_by"[delete: set null]
+
+Ref "expenses_expense_category_id_foreign": "expense_categories"."id" < "expenses"."expense_category_id"[delete: cascade]
+
+Ref "expenses_outlet_id_foreign": "outlets"."id" < "expenses"."outlet_id"[delete: cascade]
+
+Ref "faq_votes_faq_id_foreign": "faqs"."id" < "faq_votes"."faq_id"[delete: cascade]
+
+Ref "faq_votes_user_id_foreign": "users"."id" < "faq_votes"."user_id"[delete: cascade]
+
+Ref "hpp_calculations_calculated_by_foreign": "users"."id" < "hpp_calculations"."calculated_by"[delete: set null]
+
+Ref "hpp_calculations_product_id_foreign": "products"."id" < "hpp_calculations"."product_id"[delete: cascade]
+
+Ref "hpp_calculations_recipe_id_foreign": "recipes"."id" < "hpp_calculations"."recipe_id"[delete: set null]
+
+Ref "landing_pages_outlet_id_foreign": "outlets"."id" < "landing_pages"."outlet_id"[delete: cascade]
+
+Ref "landing_page_visits_landing_page_id_foreign": "landing_pages"."id" < "landing_page_visits"."landing_page_id"[delete: cascade]
+
+Ref "login_histories_user_id_foreign": "users"."id" < "login_histories"."user_id"[delete: cascade]
+
+Ref "model_has_permissions_permission_id_foreign": "permissions"."id" < "model_has_permissions"."permission_id"[delete: cascade]
+
+Ref "model_has_roles_role_id_foreign": "roles"."id" < "model_has_roles"."role_id"[delete: cascade]
+
+Ref "offline_sync_queues_outlet_id_foreign": "outlets"."id" < "offline_sync_queues"."outlet_id"[delete: cascade]
+
+Ref "offline_sync_queues_user_id_foreign": "users"."id" < "offline_sync_queues"."user_id"[delete: cascade]
+
+Ref "outlets_owner_id_foreign": "users"."id" < "outlets"."owner_id"[delete: set null]
+
+Ref "outlet_payment_links_outlet_id_foreign": "outlets"."id" < "outlet_payment_links"."outlet_id"[delete: cascade]
+
+Ref "outlet_payment_links_payment_method_id_foreign": "payment_methods"."id" < "outlet_payment_links"."payment_method_id"[delete: cascade]
+
+Ref "outlet_policies_created_by_foreign": "users"."id" < "outlet_policies"."created_by"[delete: set null]
+
+Ref "outlet_policies_outlet_id_foreign": "outlets"."id" < "outlet_policies"."outlet_id"[delete: cascade]
+
+Ref "payment_transactions_plan_id_foreign": "subscription_plans"."id" < "payment_transactions"."plan_id"[delete: set null]
+
+Ref "payment_transactions_subscription_id_foreign": "user_subscriptions"."id" < "payment_transactions"."subscription_id"[delete: set null]
+
+Ref "payment_transactions_tier_id_foreign": "subscription_tiers"."id" < "payment_transactions"."tier_id"[delete: cascade]
+
+Ref "payment_transactions_user_id_foreign": "users"."id" < "payment_transactions"."user_id"[delete: cascade]
+
+Ref "permissions_permission_category_id_foreign": "permission_categories"."id" < "permissions"."permission_category_id"[delete: set null]
+
+Ref "productions_completed_by_foreign": "users"."id" < "productions"."completed_by"[delete: set null]
+
+Ref "productions_created_by_foreign": "users"."id" < "productions"."created_by"[delete: set null]
+
+Ref "productions_outlet_id_foreign": "outlets"."id" < "productions"."outlet_id"[delete: cascade]
+
+Ref "productions_product_id_foreign": "products"."id" < "productions"."product_id"[delete: cascade]
+
+Ref "productions_recipe_id_foreign": "recipes"."id" < "productions"."recipe_id"[delete: set null]
+
+Ref "production_items_production_id_foreign": "productions"."id" < "production_items"."production_id"[delete: cascade]
+
+Ref "production_items_raw_material_id_foreign": "raw_materials"."id" < "production_items"."raw_material_id"[delete: cascade]
+
+Ref "products_category_id_foreign": "categories"."id" < "products"."category_id"[delete: set null]
+
+Ref "products_outlet_id_foreign": "outlets"."id" < "products"."outlet_id"
+
+Ref "products_supplier_id_foreign": "suppliers"."id" < "products"."supplier_id"[delete: set null]
+
+Ref "products_unit_id_foreign": "units"."id" < "products"."unit_id"
+
+Ref "product_reviews_product_id_foreign": "products"."id" < "product_reviews"."product_id"[delete: cascade]
+
+Ref "product_reviews_sale_item_id_foreign": "sale_items"."id" < "product_reviews"."sale_item_id"[delete: cascade]
+
+Ref "product_sales_targets_created_by_foreign": "users"."id" < "product_sales_targets"."created_by"
+
+Ref "product_sales_targets_outlet_id_foreign": "outlets"."id" < "product_sales_targets"."outlet_id"[delete: cascade]
+
+Ref "product_sales_targets_product_id_foreign": "products"."id" < "product_sales_targets"."product_id"[delete: cascade]
+
+Ref "product_stocks_outlet_id_foreign": "outlets"."id" < "product_stocks"."outlet_id"[delete: cascade]
+
+Ref "product_stocks_product_id_foreign": "products"."id" < "product_stocks"."product_id"[delete: cascade]
+
+Ref "purchases_created_by_foreign": "users"."id" < "purchases"."created_by"[delete: set null]
+
+Ref "purchases_outlet_id_foreign": "outlets"."id" < "purchases"."outlet_id"[delete: cascade]
+
+Ref "purchases_supplier_id_foreign": "suppliers"."id" < "purchases"."supplier_id"[delete: set null]
+
+Ref "purchase_items_product_id_foreign": "products"."id" < "purchase_items"."product_id"[delete: set null]
+
+Ref "purchase_items_purchase_id_foreign": "purchases"."id" < "purchase_items"."purchase_id"[delete: cascade]
+
+Ref "purchase_items_raw_material_id_foreign": "raw_materials"."id" < "purchase_items"."raw_material_id"[delete: cascade]
+
+Ref "raw_materials_category_id_foreign": "categories"."id" < "raw_materials"."category_id"[delete: set null]
+
+Ref "raw_materials_outlet_id_foreign": "outlets"."id" < "raw_materials"."outlet_id"[delete: set null]
+
+Ref "raw_materials_supplier_id_foreign": "suppliers"."id" < "raw_materials"."supplier_id"[delete: set null]
+
+Ref "raw_materials_unit_id_foreign": "units"."id" < "raw_materials"."unit_id"
+
+Ref "raw_material_stocks_outlet_id_foreign": "outlets"."id" < "raw_material_stocks"."outlet_id"[delete: cascade]
+
+Ref "raw_material_stocks_raw_material_id_foreign": "raw_materials"."id" < "raw_material_stocks"."raw_material_id"[delete: cascade]
+
+Ref "recipes_product_id_foreign": "products"."id" < "recipes"."product_id"[delete: cascade]
+
+Ref "recipe_items_raw_material_id_foreign": "raw_materials"."id" < "recipe_items"."raw_material_id"[delete: cascade]
+
+Ref "recipe_items_recipe_id_foreign": "recipes"."id" < "recipe_items"."recipe_id"[delete: cascade]
+
+Ref "report_schedules_outlet_id_foreign": "outlets"."id" < "report_schedules"."outlet_id"[delete: cascade]
+
+Ref "reseller_applications_customer_id_foreign": "customers"."id" < "reseller_applications"."customer_id"[delete: cascade]
+
+Ref "supplier_applications_outlet_id_foreign": "outlets"."id" < "reseller_applications"."outlet_id"[delete: cascade]
+
+Ref "supplier_applications_processed_by_foreign": "users"."id" < "reseller_applications"."processed_by"[delete: set null]
+
+Ref "reseller_products_reseller_outlet_id_foreign": "outlets"."id" < "reseller_products"."reseller_outlet_id"[delete: cascade]
+
+Ref "reseller_products_source_outlet_id_foreign": "outlets"."id" < "reseller_products"."source_outlet_id"[delete: cascade]
+
+Ref "reseller_products_source_product_id_foreign": "products"."id" < "reseller_products"."source_product_id"[delete: cascade]
+
+Ref "role_has_permissions_permission_id_foreign": "permissions"."id" < "role_has_permissions"."permission_id"[delete: cascade]
+
+Ref "role_has_permissions_role_id_foreign": "roles"."id" < "role_has_permissions"."role_id"[delete: cascade]
+
+Ref "sales_cashier_id_foreign": "users"."id" < "sales"."cashier_id"[delete: cascade]
+
+Ref "sales_customer_id_foreign": "customers"."id" < "sales"."customer_id"[delete: set null]
+
+Ref "sales_outlet_id_foreign": "outlets"."id" < "sales"."outlet_id"[delete: cascade]
+
+Ref "sales_outlet_payment_link_id_foreign": "outlet_payment_links"."id" < "sales"."outlet_payment_link_id"[delete: set null]
+
+Ref "sales_table_id_foreign": "tables"."id" < "sales"."table_id"[delete: set null]
+
+Ref "sale_items_product_id_foreign": "products"."id" < "sale_items"."product_id"[delete: cascade]
+
+Ref "sale_items_sale_id_foreign": "sales"."id" < "sale_items"."sale_id"[delete: cascade]
+
+Ref "sale_payments_received_by_foreign": "users"."id" < "sale_payments"."received_by"[delete: set null]
+
+Ref "sale_payments_sale_id_foreign": "sales"."id" < "sale_payments"."sale_id"[delete: cascade]
+
+Ref "settings_outlet_id_foreign": "outlets"."id" < "settings"."outlet_id"[delete: cascade]
+
+Ref "stock_movements_created_by_foreign": "users"."id" < "stock_movements"."created_by"[delete: set null]
+
+Ref "stock_movements_outlet_id_foreign": "outlets"."id" < "stock_movements"."outlet_id"[delete: cascade]
+
+Ref "stock_notifications_outlet_id_foreign": "outlets"."id" < "stock_notifications"."outlet_id"[delete: cascade]
+
+Ref "stock_notification_reads_stock_notification_id_foreign": "stock_notifications"."id" < "stock_notification_reads"."stock_notification_id"[delete: cascade]
+
+Ref "stock_notification_reads_user_id_foreign": "users"."id" < "stock_notification_reads"."user_id"[delete: cascade]
+
+Ref "stock_opnames_approved_by_foreign": "users"."id" < "stock_opnames"."approved_by"[delete: set null]
+
+Ref "stock_opnames_created_by_foreign": "users"."id" < "stock_opnames"."created_by"[delete: set null]
+
+Ref "stock_opnames_outlet_id_foreign": "outlets"."id" < "stock_opnames"."outlet_id"[delete: cascade]
+
+Ref "stock_opname_items_stock_opname_id_foreign": "stock_opnames"."id" < "stock_opname_items"."stock_opname_id"[delete: cascade]
+
+Ref "stock_transfers_created_by_foreign": "users"."id" < "stock_transfers"."created_by"[delete: set null]
+
+Ref "stock_transfers_from_outlet_id_foreign": "outlets"."id" < "stock_transfers"."from_outlet_id"[delete: cascade]
+
+Ref "stock_transfers_received_by_foreign": "users"."id" < "stock_transfers"."received_by"[delete: set null]
+
+Ref "stock_transfers_to_outlet_id_foreign": "outlets"."id" < "stock_transfers"."to_outlet_id"[delete: cascade]
+
+Ref "stock_transfer_items_stock_transfer_id_foreign": "stock_transfers"."id" < "stock_transfer_items"."stock_transfer_id"[delete: cascade]
+
+Ref "subscription_plans_tier_id_foreign": "subscription_tiers"."id" < "subscription_plans"."tier_id"[delete: cascade]
+
+Ref "suppliers_outlet_id_foreign": "outlets"."id" < "suppliers"."outlet_id"[delete: cascade]
+
+Ref "tables_outlet_id_foreign": "outlets"."id" < "tables"."outlet_id"[delete: cascade]
+
+Ref "tasks_created_by_foreign": "users"."id" < "tasks"."created_by"[delete: cascade]
+
+Ref "tasks_status_id_foreign": "task_statuses"."id" < "tasks"."status_id"
+
+Ref "task_activities_task_id_foreign": "tasks"."id" < "task_activities"."task_id"[delete: cascade]
+
+Ref "task_activities_user_id_foreign": "users"."id" < "task_activities"."user_id"[delete: set null]
+
+Ref "task_assignments_task_id_foreign": "tasks"."id" < "task_assignments"."task_id"[delete: cascade]
+
+Ref "task_assignments_user_id_foreign": "users"."id" < "task_assignments"."user_id"[delete: cascade]
+
+Ref "task_label_assignments_label_id_foreign": "task_labels"."id" < "task_label_assignments"."label_id"[delete: cascade]
+
+Ref "task_label_assignments_task_id_foreign": "tasks"."id" < "task_label_assignments"."task_id"[delete: cascade]
+
+Ref "testimonials_outlet_id_foreign": "outlets"."id" < "testimonials"."outlet_id"[delete: cascade]
+
+Ref "tier_features_feature_id_foreign": "features"."id" < "tier_features"."feature_id"[delete: cascade]
+
+Ref "tier_features_tier_id_foreign": "subscription_tiers"."id" < "tier_features"."tier_id"[delete: cascade]
+
+Ref "trial_verification_requests_reviewed_by_foreign": "users"."id" < "trial_verification_requests"."reviewed_by"[delete: set null]
+
+Ref "trial_verification_requests_user_id_foreign": "users"."id" < "trial_verification_requests"."user_id"[delete: cascade]
+
+Ref "units_base_unit_id_foreign": "units"."id" < "units"."base_unit_id"[delete: set null]
+
+Ref "users_color_palette_id_foreign": "color_palettes"."id" < "users"."color_palette_id"[delete: set null]
+
+Ref "users_outlet_id_foreign": "outlets"."id" < "users"."outlet_id"[delete: set null]
+
+Ref "user_subscriptions_plan_id_foreign": "subscription_plans"."id" < "user_subscriptions"."plan_id"[delete: set null]
+
+Ref "user_subscriptions_tier_id_foreign": "subscription_tiers"."id" < "user_subscriptions"."tier_id"[delete: cascade]
+
+Ref "user_subscriptions_user_id_foreign": "users"."id" < "user_subscriptions"."user_id"[delete: cascade]
+
+Ref "user_withdraw_locks_user_id_foreign": "users"."id" < "user_withdraw_locks"."user_id"[delete: cascade]
+
+Ref "withdrawals_outlet_id_foreign": "outlets"."id" < "withdrawals"."outlet_id"[delete: set null]
+
+Ref "withdrawals_payment_method_id_foreign": "payment_methods"."id" < "withdrawals"."payment_method_id"[delete: set null]
+
+Ref "withdrawals_processed_by_foreign": "users"."id" < "withdrawals"."processed_by"[delete: set null]
+
+Ref "withdrawals_user_id_foreign": "users"."id" < "withdrawals"."user_id"[delete: cascade]
+
+Records migrations(id, migration, batch) {
+    1, '0001_01_01_000000_create_users_table',
+    1
+  2, '0001_01_01_000001_create_cache_table',
+    1
+  3, '0001_01_01_000002_create_jobs_table',
+    1
+  4, '2025_11_22_123901_create_permission_tables',
+    1
+  5, '2025_11_22_123902_create_categories_table',
+    1
+  6, '2025_11_22_123903_create_outlets_table',
+    1
+  7, '2025_11_22_123903_create_suppliers_table',
+    1
+  8, '2025_11_22_123903_create_units_table',
+    1
+  9, '2025_11_22_123904_create_raw_materials_table',
+    1
+  10, '2025_11_22_123905_create_activity_log_table',
+    1
+  11, '2025_11_22_123905_create_products_table',
+    1
+  12, '2025_11_22_123905_create_raw_material_stocks_table',
+    1
+  13, '2025_11_22_123905_create_stock_movements_table',
+    1
+  14, '2025_11_22_123906_add_event_column_to_activity_log_table',
+    1
+  15, '2025_11_22_123906_create_product_stocks_table',
+    1
+  16, '2025_11_22_123906_create_recipes_table',
+    1
+  17, '2025_11_22_123907_add_batch_uuid_column_to_activity_log_table',
+    1
+  18, '2025_11_22_123907_create_additional_costs_table',
+    1
+  19, '2025_11_22_123907_create_hpp_calculations_table',
+    1
+  20, '2025_11_22_123907_create_productions_table',
+    1
+  21, '2025_11_22_123907_create_recipe_items_table',
+    1
+  22, '2025_11_22_123908_create_customers_table',
+    1
+  23, '2025_11_22_123908_create_discounts_table',
+    1
+  24, '2025_11_22_123908_create_production_items_table',
+    1
+  25, '2025_11_22_123908_create_sales_table',
+    1
+  26, '2025_11_22_123909_create_customer_debts_table',
+    1
+  27, '2025_11_22_123909_create_purchases_table',
+    1
+  28, '2025_11_22_123909_create_sale_items_table',
+    1
+  29, '2025_11_22_123909_create_sale_payments_table',
+    1
+  30, '2025_11_22_123910_create_cash_registers_table',
+    1
+  31, '2025_11_22_123910_create_debt_payments_table',
+    1
+  32, '2025_11_22_123910_create_purchase_items_table',
+    1
+  33, '2025_11_22_123910_create_stock_opnames_table',
+    1
+  34, '2025_11_22_123911_create_stock_opname_items_table',
+    1
+  35, '2025_11_22_123911_create_stock_transfers_table',
+    1
+  36, '2025_11_22_123912_create_expense_categories_table',
+    1
+  37, '2025_11_22_123912_create_expenses_table',
+    1
+  38, '2025_11_22_123912_create_stock_transfer_items_table',
+    1
+  39, '2025_11_22_123914_create_settings_table',
+    1
+  40, '2025_11_22_123914_create_stock_notifications_table',
+    1
+  41, '2025_11_22_123915_create_ai_chat_sessions_table',
+    1
+  42, '2025_11_22_123916_create_ai_chat_messages_table',
+    1
+  43, '2025_11_22_123916_create_ai_insights_table',
+    1
+  44, '2025_11_22_123917_create_offline_sync_queues_table',
+    1
+  45, '2025_11_22_123918_create_daily_summaries_table',
+    1
+  46, '2025_11_22_123918_create_report_schedules_table',
+    1
+  47, '2025_11_22_123920_create_backup_logs_table',
+    1
+  48, '2025_11_22_124233_add_fields_to_users_table',
+    1
+  49, '2025_11_26_080925_create_product_sales_targets_table',
+    1
+  50, '2025_11_26_162038_add_owner_id_to_outlets_table',
+    1
+  51, '2025_12_03_134302_add_chat_quota_to_users_table',
+    1
+  52, '2025_12_15_213131_create_personal_access_tokens_table',
+    1
+  53, '2026_01_02_200134_create_faqs_table',
+    1
+  54, '2026_01_04_194219_create_payment_methods_table',
+    1
+  55, '2026_01_07_231721_create_outlet_policies_table',
+    1
+  56, '2026_01_08_130001_add_has_table_system_to_outlets_table',
+    1
+  57, '2026_01_08_130002_create_tables_table',
+    1
+  58, '2026_01_08_135645_add_service_type_to_sales_table',
+    1
+  59, '2026_01_08_152342_create_landing_pages_table',
+    1
+  60, '2026_01_08_154551_add_is_active_to_landing_pages_table',
+    1
+  61, '2026_01_08_160500_add_additional_sections_to_landing_pages_table',
+    1
+  62, '2026_01_08_162900_add_about_image_to_landing_pages_table',
+    1
+  63, '2026_01_08_192513_create_testimonials_table',
+    1
+  64, '2026_01_08_192527_add_selected_testimonial_ids_to_landing_pages_table',
+    1
+  65, '2026_01_08_195616_create_landing_page_visits_table',
+    1
+  66, '2026_01_08_203731_add_template_and_fonts_to_landing_pages_table',
+    1
+  67, '2026_01_09_181800_create_permission_categories_table',
+    1
+  68, '2026_01_09_210000_create_withdrawals_table',
+    1
+  69, '2026_01_09_210001_create_user_withdraw_locks_table',
+    1
+  70, '2026_01_09_214244_update_withdrawals_table_for_new_flow',
+    1
+  71, '2026_01_10_093342_add_is_disposed_to_productions_table',
+    1
+  72, '2026_01_10_113949_add_remaining_quantity_to_purchase_items_table',
+    1
+  73, '2026_01_10_150000_create_task_statuses_table',
+    1
+  74, '2026_01_10_150001_create_task_labels_table',
+    1
+  75, '2026_01_10_150002_create_tasks_table',
+    1
+  76, '2026_01_10_150003_create_task_assignments_table',
+    1
+  77, '2026_01_10_150004_create_task_label_assignments_table',
+    1
+  78, '2026_01_10_150005_create_task_activities_table',
+    1
+  79, '2026_01_11_102618_add_outlet_payment_link_id_to_debt_payments_table',
+    1
+  80, '2026_01_11_154628_create_supplier_applications_table',
+    1
+  81, '2026_01_11_155931_add_document_path_to_supplier_applications_table',
+    1
+  82, '2026_01_11_161258_rename_supplier_applications_to_reseller_applications_table',
+    1
+  83, '2026_01_11_161815_change_reseller_applications_to_use_customer_id',
+    1
+  84, '2026_01_12_143632_add_accepted_by_owner_to_withdrawals_table',
+    1
+  85, '2026_01_13_073456_add_type_to_expenses_table',
+    1
+  86, '2026_01_18_190000_create_admin_landing_pages_table',
+    1
+  87, '2026_01_18_190100_create_admin_landing_sections_table',
+    1
+  88, '2026_01_18_190200_create_admin_landing_section_items_table',
+    1
+  89, '2026_01_18_190300_create_admin_landing_ctas_table',
+    1
+  90, '2026_01_19_000000_create_faq_votes_table',
+    1
+  91, '2026_01_20_185808_create_terms_and_conditions_table',
+    1
+  92, '2026_01_27_123901_add_accepts_reseller_to_outlets_table',
+    1
+  93, '2026_02_01_000001_create_features_table',
+    1
+  94, '2026_02_01_000002_create_subscription_tiers_table',
+    1
+  95, '2026_02_01_000003_create_subscription_plans_table',
+    1
+  96, '2026_02_01_000004_create_tier_features_table',
+    1
+  97, '2026_02_01_000005_create_subscription_settings_table',
+    1
+  98, '2026_02_01_000006_create_user_subscriptions_table',
+    1
+  99, '2026_02_01_000007_create_payment_transactions_table',
+    1
+  100, '2026_02_01_000008_create_trial_verification_requests_table',
+    1
+  101, '2026_02_01_063500_add_google_oauth_fields_to_users_table',
+    1
+  102, '2026_02_02_210829_rename_columns_in_trial_verification_requests_table',
+    1
+  103, '2026_02_11_200703_add_is_stock_to_products_table',
+    1
+  104, '2026_02_11_202448_add_production_status_to_sale_items_table',
+    1
+  105, '2026_02_13_160055_add_auto_production_to_outlets_table',
+    1
+  106, '2026_02_13_162552_create_login_lockouts_table',
+    1
+  107, '2026_02_17_054200_create_login_histories_table',
+    1
+  108, '2026_02_17_054201_create_banned_ips_table',
+    1
+  109, '2026_02_18_000001_add_metadata_to_activity_log_table',
+    1
+  110, '2026_02_18_181200_create_stock_notification_reads_table',
+    1
+  111, '2026_02_18_225838_add_last_seen_at_to_users_table',
+    1
+  112, '2026_02_19_000234_add_is_public_to_discounts_table',
+    1
+  113, '2026_02_19_000922_create_customer_discounts_table',
+    1
+  114, '2026_02_19_150031_create_product_reviews_table',
+    1
+  115, '2026_03_10_210207_add_batch_info_to_stock_transfer_items',
+    1
+  116, '2026_03_15_151506_add_customer_name_to_sales_table',
+    1
+  117, '2026_03_17_043039_add_supplier_id_to_products_and_product_id_to_purchase_items',
+    1
+  118, '2026_03_17_045549_add_outlet_id_to_suppliers_table',
+    1
+  119, '2026_03_17_113500_create_business_points_table',
+    1
+  120, '2026_03_17_113501_create_grid_areas_table',
+    1
+  121, '2026_03_19_125000_create_reseller_products_table',
+    1
+  122, '2026_03_19_125500_add_reseller_outlet_id_to_customers_table',
+    1
+  123, '2026_03_24_164257_create_color_palettes_table',
+    1
+  124, '2026_03_24_164258_add_color_palette_id_to_users_table',
+    1
+  125, '2026_03_26_193120_create_advertisements_table',
+    1
+  126, '2026_03_27_060000_remove_reseller_outlet_id_from_customers_table',
+    1
+}
+
+Records sessions(id, user_id, ip_address, user_agent, payload, last_activity) {
+  '1XHpzgzus8o5x5F96LuCkljsi1gVsEMhYWIIU4j4',
+    null, '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoialk5QnM4dTU5WjQwbGsyUWZjakZrOTZVeXllM2t2dVZvS3g1QjQ3dCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=',
+    1774842843
+}
+
+Records task_labels(id, name, color, created_at, updated_at) {
+    1, 'Urgent', '#EF4444', '2026-03-30 03: 53: 53', '2026-03-30 03: 53: 53'
+  2, 'Bug', '#F97316', '2026-03-30 03: 53: 53', '2026-03-30 03: 53: 53'
+  3, 'Feature', '#8B5CF6', '2026-03-30 03: 53: 53', '2026-03-30 03: 53: 53'
+  4, 'Improvement', '#06B6D4', '2026-03-30 03: 53: 53', '2026-03-30 03: 53: 53'
+  5, 'Documentation', '#84CC16', '2026-03-30 03: 53: 53', '2026-03-30 03: 53: 53'
+}
+
+Records task_statuses(id, name, slug, color, order, created_at, updated_at) {
+    1, 'Menunggu', 'menunggu', '#EAB308',
+    1, '2026-03-30 03: 53: 53', '2026-03-30 03: 53: 53'
+  2, 'Sedang Berlangsung', 'sedang-berlangsung', '#3B82F6',
+    2, '2026-03-30 03: 53: 53', '2026-03-30 03: 53: 53'
+  3, 'Selesai', 'selesai', '#10B981',
+    3, '2026-03-30 03: 53: 53', '2026-03-30 03: 53: 53'
+}
