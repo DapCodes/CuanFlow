@@ -79,7 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('employee.locked');
 });
 
-Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect'])->group(function () {
+Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect', 'check.maintenance'])->group(function () {
 
     // ---------------------------------------------------------------------
     // Subscription & Billing

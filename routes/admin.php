@@ -168,6 +168,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/terms', [App\Http\Controllers\Admin\TermAndConditionController::class, 'edit'])->name('admin.terms.edit');
     Route::put('/terms', [App\Http\Controllers\Admin\TermAndConditionController::class, 'update'])->name('admin.terms.update');
 
+    // Maintenance Management
+    Route::prefix('maintenance')->name('admin.maintenance.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\MaintenanceController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Admin\MaintenanceController::class, 'toggle'])->name('toggle');
+        Route::get('/history', [\App\Http\Controllers\Admin\MaintenanceController::class, 'history'])->name('history');
+        Route::get('/broadcast', [\App\Http\Controllers\Admin\MaintenanceController::class, 'broadcast'])->name('broadcast');
+        Route::post('/broadcast', [\App\Http\Controllers\Admin\MaintenanceController::class, 'sendBroadcast'])->name('broadcast.send');
+        Route::delete('/session/{sessionId}', [\App\Http\Controllers\Admin\MaintenanceController::class, 'terminateSession'])->name('session.terminate');
+    });
+
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('admin.profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('admin.profile.update');

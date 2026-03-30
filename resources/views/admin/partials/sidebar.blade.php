@@ -241,6 +241,48 @@
                 </a>
             </li>
 
+            <!-- Maintenance -->
+            <li x-data="{ open: {{ request()->routeIs('admin.maintenance.*') ? 'true' : 'false' }} }">
+                <button @click="open = !open" 
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-gray-500 hover:bg-gray-50 hover:text-gray-900 {{ request()->routeIs('admin.maintenance.*') ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-sm shadow-emerald-100/50' : '' }}">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-screwdriver-wrench w-5 text-center text-lg {{ request()->routeIs('admin.maintenance.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                        <span class="text-sm">Maintenance</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-[10px] transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+                
+                <ul x-show="open" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    style="display: none;"
+                    class="mt-1 ml-4 space-y-1 border-l border-gray-100 pl-4 py-2">
+                    
+                    <li>
+                        <a href="{{ route('admin.maintenance.index') }}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.maintenance.index') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                            <i class="fas fa-users-viewfinder w-4 text-center {{ request()->routeIs('admin.maintenance.index') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                            <span>Online Users</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.maintenance.broadcast') }}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.maintenance.broadcast') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                            <i class="fas fa-paper-plane w-4 text-center {{ request()->routeIs('admin.maintenance.broadcast') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                            <span>Kirim Pengumuman</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.maintenance.history') }}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.maintenance.history') ? 'text-emerald-600 bg-emerald-50/50 font-semibold' : 'text-gray-500 hover:text-emerald-600 hover:bg-gray-50' }}">
+                            <i class="fas fa-history w-4 text-center {{ request()->routeIs('admin.maintenance.history') ? 'text-emerald-500' : 'text-gray-300' }}"></i>
+                            <span>Riwayat</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
             <!-- Section Label -->
             <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Konten</p>
 
