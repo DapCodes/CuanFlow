@@ -49,19 +49,7 @@
 
     <!-- Active Users Table -->
     <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-        <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-users-viewfinder text-blue-600 text-sm"></i>
-                </div>
-                <h3 class="font-bold text-gray-900">User Sedang Online ({{ $activeUsers->count() }})</h3>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Realtime Data</span>
-            </div>
-        </div>
-
+    
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
