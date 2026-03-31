@@ -89,6 +89,10 @@
                 extend: {
                     colors: {
                         ...window.__CUAN_PALETTE__,
+                        primary: {
+                            DEFAULT: '{{ $activePalette->color_green }}',
+                            ...window.__CUAN_GREEN_SCALE__
+                        },
                         green: window.__CUAN_GREEN_SCALE__,
                         emerald: window.__CUAN_GREEN_SCALE__,
                         lime: window.__CUAN_GREEN_SCALE__,
