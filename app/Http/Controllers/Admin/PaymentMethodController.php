@@ -24,7 +24,15 @@ class PaymentMethodController extends Controller
 
         $paymentMethods = $query->orderBy('name')->paginate(15);
 
-        return view('admin.master.payment-methods.index', compact('paymentMethods'));
+        // Stats
+        $stats = [
+            'total_methods' => PaymentMethod::count(),
+            'active_methods' => PaymentMethod::where('is_active', true)->count(),
+            'inactive_methods' => PaymentMethod::where('is_active', false)->count(),
+            'connected_outlets' => PaymentMethod::has('outletPaymentLinks')->count(),
+        ];
+
+        return view('admin.master.payment-methods.index', compact('paymentMethods', 'stats'));
     }
 
     public function create()
