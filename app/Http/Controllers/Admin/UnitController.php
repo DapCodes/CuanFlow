@@ -10,11 +10,28 @@ class UnitController extends Controller
 {
     public function index()
     {
-        $units = Unit::withCount(['rawMaterials', 'products'])
-            ->latest()
-            ->paginate(15);
+        $query = Unit::withCount(['rawMaterials', 'products']);
 
-        return view('admin.master.units.index', compact('units'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('abbreviation', 'like', "%{$search}%");
+            });
+        }
+
+        $units = $query->latest()->paginate(15);
+
+        // Stats
+        $stats = [
+            'total_units' => Unit::count(),
+            'base_units' => Unit::whereNull('base_unit_id')->count(),
+            'derived_units' => Unit::whereNotNull('base_unit_id')->count(),
+            'active_units' => Unit::where('is_active', true)->count(),
+        ];
+
+        return view('admin.master.units.index', compact('units', 'stats'));
     }
 
     public function create()
