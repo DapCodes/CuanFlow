@@ -11,12 +11,30 @@ class SubscriptionPlanController extends Controller
 {
     public function index()
     {
-        $plans = SubscriptionPlan::with('tier')
+        $query = SubscriptionPlan::with('tier')
             ->orderBy('tier_id')
-            ->orderBy('duration_months')
-            ->get();
+            ->orderBy('duration_months');
 
-        return view('admin.subscription.plans.index', compact('plans'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->whereHas('tier', function($q) use ($search) {
+                $q->where('display_name', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        $plans = $query->get();
+
+        // Stats
+        $stats = [
+            'total_plans' => SubscriptionPlan::count(),
+            'active_plans' => SubscriptionPlan::where('is_active', true)->count(),
+            'max_discount' => (int)SubscriptionPlan::max('discount_percentage'),
+            'avg_price' => round(SubscriptionPlan::avg('price') ?? 0, 0),
+        ];
+
+        return view('admin.subscription.plans.index', compact('plans', 'stats'));
     }
 
     public function create()
