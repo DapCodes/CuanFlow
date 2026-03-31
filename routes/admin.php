@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TrialVerificationController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\CpuMonitoringController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -177,6 +178,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('/broadcast', [\App\Http\Controllers\Admin\MaintenanceController::class, 'sendBroadcast'])->name('broadcast.send');
         Route::delete('/session/{sessionId}', [\App\Http\Controllers\Admin\MaintenanceController::class, 'terminateSession'])->name('session.terminate');
     });
+
+    // CPU Monitoring
+    Route::get('/cpu-monitoring', [CpuMonitoringController::class, 'index'])->name('admin.cpu-monitoring.index');
+    Route::get('/api/cpu-usage', [CpuMonitoringController::class, 'getUsage'])->name('admin.cpu-monitoring.api');
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('admin.profile.edit');

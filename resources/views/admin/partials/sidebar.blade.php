@@ -283,6 +283,15 @@
                 </ul>
             </li>
 
+            <!-- CPU Monitoring -->
+            <li>
+                <a href="{{ route('admin.cpu-monitoring.index') }}" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('admin.cpu-monitoring.*') ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-sm shadow-emerald-100/50' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fas fa-microchip w-5 text-center text-lg {{ request()->routeIs('admin.cpu-monitoring.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">CPU Monitoring</span>
+                </a>
+            </li>
+
             <!-- Section Label -->
             <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2 mt-6">Konten</p>
 
