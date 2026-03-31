@@ -10,11 +10,28 @@ class ExpenseCategoryController extends Controller
 {
     public function index()
     {
-        $categories = ExpenseCategory::withCount('expenses')
-            ->latest()
-            ->paginate(15);
+        $query = ExpenseCategory::withCount('expenses');
 
-        return view('admin.master.expense-categories.index', compact('categories'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        $categories = $query->latest()->paginate(15);
+
+        // Stats
+        $stats = [
+            'total_categories' => ExpenseCategory::count(),
+            'active_categories' => ExpenseCategory::where('is_active', true)->count(),
+            'inactive_categories' => ExpenseCategory::where('is_active', false)->count(),
+            'used_categories' => ExpenseCategory::has('expenses')->count(),
+        ];
+
+        return view('admin.master.expense-categories.index', compact('categories', 'stats'));
     }
 
     public function create()
