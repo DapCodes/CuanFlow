@@ -14,16 +14,39 @@ class SubscriptionPaymentController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status');
+        $query = PaymentTransaction::with(['user', 'tier', 'plan']);
 
-        $payments = PaymentTransaction::with(['user', 'tier', 'plan'])
-            ->when($status, function ($q) use ($status) {
-                return $q->where('status', $status);
-            })
-            ->latest()
+        // Status filter
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('transaction_id', 'like', "%{$search}%")
+                  ->orWhere('external_id', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($qu) use ($search) {
+                      $qu->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $payments = $query->latest()
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.subscription.payments.index', compact('payments', 'status'));
+        // Stats
+        $stats = [
+            'total_revenue' => PaymentTransaction::where('status', 'success')->sum('amount'),
+            'successful_count' => PaymentTransaction::where('status', 'success')->count(),
+            'pending_count' => PaymentTransaction::where('status', 'pending')->count(),
+            'monthly_revenue' => PaymentTransaction::where('status', 'success')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('amount'),
+        ];
+
+        return view('admin.subscription.payments.index', compact('payments', 'status', 'stats'));
     }
 
     /**
