@@ -11,11 +11,27 @@ class PermissionCategoryController extends Controller
 {
     public function index()
     {
-        $categories = PermissionCategory::withCount('permissions')
-            ->orderBy('name')
-            ->paginate(15);
+        $query = PermissionCategory::withCount('permissions');
 
-        return view('admin.master.permission-categories.index', compact('categories'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhere('slug', 'like', "%{$search}%");
+        }
+
+        $categories = $query->orderBy('name')->paginate(15);
+
+        // Stats
+        $stats = [
+            'total_categories' => PermissionCategory::count(),
+            'total_assigned_permissions' => \Spatie\Permission\Models\Permission::whereNotNull('permission_category_id')->count(),
+            'empty_categories' => PermissionCategory::doesntHave('permissions')->count(),
+            'recent' => PermissionCategory::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return view('admin.master.permission-categories.index', compact('categories', 'stats'));
     }
 
     public function create()
