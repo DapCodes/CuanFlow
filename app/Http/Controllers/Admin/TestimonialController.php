@@ -11,9 +11,29 @@ class TestimonialController extends Controller
 {
     public function index()
     {
-        $testimonials = Testimonial::with('outlet')->latest()->paginate(15);
+        $query = Testimonial::with('outlet');
 
-        return view('admin.master.testimonials.index', compact('testimonials'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('content', 'like', "%{$search}%")
+                  ->orWhere('role', 'like', "%{$search}%");
+            });
+        }
+
+        $testimonials = $query->latest()->paginate(15);
+
+        // Stats
+        $stats = [
+            'total_testimonials' => Testimonial::count(),
+            'published' => Testimonial::where('is_published', true)->count(),
+            'draft' => Testimonial::where('is_published', false)->count(),
+            'avg_rating' => round(Testimonial::avg('rating') ?? 0, 1),
+        ];
+
+        return view('admin.master.testimonials.index', compact('testimonials', 'stats'));
     }
 
     public function create()
