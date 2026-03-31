@@ -97,20 +97,19 @@ class ActivityLogController extends Controller
      */
     public function archives()
     {
-        // Currently the command saves as 'database' type, but we might want to distinguish.
-        // For now let's just show all completed backups.
-        $archives = BackupLog::orderByDesc('created_at')
+        $archives = BackupLog::whereIn('type', ['database', 'activity_log'])
+            ->orderByDesc('created_at')
             ->paginate(20);
 
         return view('admin.activity-logs.archives', compact('archives'));
     }
 
     /**
-     * View the content of a JSON archive.
+     * View JSON content of an archive.
      */
     public function viewArchive($id)
     {
-        $backup = BackupLog::findOrFail($id);
+        $backup = BackupLog::whereIn('type', ['database', 'activity_log'])->findOrFail($id);
 
         if (! Storage::exists($backup->path)) {
             return back()->with('error', 'File arsip tidak ditemukan.');
@@ -135,7 +134,7 @@ class ActivityLogController extends Controller
      */
     public function downloadArchive($id)
     {
-        $backup = BackupLog::where('type', 'database')->findOrFail($id);
+        $backup = BackupLog::whereIn('type', ['database', 'activity_log'])->findOrFail($id);
 
         if (! Storage::exists($backup->path)) {
             return back()->with('error', 'File arsip tidak ditemukan.');
