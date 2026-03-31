@@ -10,9 +10,29 @@ class SubscriptionFeatureController extends Controller
 {
     public function index()
     {
-        $features = Feature::orderBy('category')->orderBy('sort_order')->get();
+        $query = Feature::orderBy('category')->orderBy('sort_order');
 
-        return view('admin.subscription.features.index', compact('features'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('display_name', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhere('category', 'like', "%{$search}%");
+            });
+        }
+
+        $features = $query->get();
+
+        // Stats
+        $stats = [
+            'total_features' => Feature::count(),
+            'active_features' => Feature::where('is_active', true)->count(),
+            'inactive_features' => Feature::where('is_active', false)->count(),
+            'categories_count' => Feature::distinct('category')->count(),
+        ];
+
+        return view('admin.subscription.features.index', compact('features', 'stats'));
     }
 
     public function create()
