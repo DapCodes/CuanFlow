@@ -21,13 +21,38 @@ class PermissionController extends Controller implements HasMiddleware
 
     public function index()
     {
-        $permissionCategories = PermissionCategory::with(['permissions' => function ($query) {
-            $query->orderBy('name');
-        }])->ordered()->get();
+        $categoryQuery = PermissionCategory::query()
+            ->with(['permissions' => function ($query) {
+                if (request('search')) {
+                    $search = request('search');
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                }
+                $query->orderBy('name');
+            }])->ordered();
 
-        $totalPermissions = Permission::count();
+        if (request()->filled('category')) {
+            $categoryQuery->where('id', request('category'));
+        }
 
-        return view('admin.master.permissions.index', compact('permissionCategories', 'totalPermissions'));
+        $permissionCategories = $categoryQuery->get();
+
+        // If searching, only keep categories that have matching permissions
+        if (request('search')) {
+            $permissionCategories = $permissionCategories->filter(function($category) {
+                return $category->permissions->count() > 0;
+            });
+        }
+
+        // Stats
+        $stats = [
+            'total_permissions' => Permission::count(),
+            'total_categories' => PermissionCategory::count(),
+            'uncategorized' => Permission::whereNull('permission_category_id')->count(),
+            'recent' => Permission::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return view('admin.master.permissions.index', compact('permissionCategories', 'stats'));
     }
 
     public function create()
