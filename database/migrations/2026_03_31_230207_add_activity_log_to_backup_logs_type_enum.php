@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,7 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('backup_logs', function (Blueprint $table) {
-            //
+            // Using raw SQL because Laravel's change() doesn't support ENUM modifications well across all drivers
+            DB::statement("ALTER TABLE backup_logs MODIFY COLUMN type ENUM('full', 'database', 'files', 'activity_log')");
         });
     }
 
@@ -22,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('backup_logs', function (Blueprint $table) {
-            //
+            DB::statement("ALTER TABLE backup_logs MODIFY COLUMN type ENUM('full', 'database', 'files')");
         });
     }
 };
