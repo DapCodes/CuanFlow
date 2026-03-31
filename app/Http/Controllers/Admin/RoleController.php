@@ -23,9 +23,31 @@ class RoleController extends Controller implements HasMiddleware
 
     public function index()
     {
-        $roles = Role::withCount('permissions')->latest()->paginate(15);
+        $query = Role::query()->withCount('permissions');
 
-        return view('admin.master.roles.index', compact('roles'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('guard_name', 'like', "%{$search}%");
+        }
+
+        // Filter Guard
+        if (request()->filled('guard')) {
+            $query->where('guard_name', request('guard'));
+        }
+
+        $roles = $query->latest()->paginate(15);
+
+        // Stats
+        $stats = [
+            'total_roles' => Role::count(),
+            'total_permissions' => Permission::count(),
+            'roles_without_permissions' => Role::doesntHave('permissions')->count(),
+            'total_guards' => Role::distinct('guard_name')->count('guard_name'),
+        ];
+
+        return view('admin.master.roles.index', compact('roles', 'stats'));
     }
 
     public function create()
