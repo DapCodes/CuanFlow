@@ -44,43 +44,78 @@
         </div>
     </div>
 
+    {{-- KONTEN UTAMA --}}
+    <x-card-container class="!p-0 overflow-hidden border border-gray-200 shadow-sm bg-white rounded-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-left">Pelanggan & Outlet</th>
+                        <th class="px-6 py-4 text-left">Tipe Bisnis</th>
+                        <th class="px-6 py-4 text-left">Tanggal</th>
+                        <th class="px-6 py-4 text-left">Berkas</th>
+                        <th class="px-6 py-4 text-center">Status</th>
+                        <th class="px-6 py-4 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($requests as $req)
+                    <tr class="hover:bg-gray-50 transition-colors group">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">
+                                    {{ substr($req->user->name ?? '?', 0, 1) }}
+                                </div> {{-- Close icon wrapper --}}
                                 <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ $req->user->name ?? 'Unknown User' }}</div>
-                                    <div class="text-sm text-gray-500">{{ $req->outlet_name }}</div>
+                                    <div class="text-sm font-medium text-gray-900 leading-tight uppercase font-black uppercase tracking-tight">{{ $req->user->name ?? 'Unknown User' }}</div>
+                                    <div class="text-xs text-gray-500 italic mt-0.5">{{ $req->outlet_name }}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                             {{ $req->business_type ?? '-' }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-6 py-4 whitespace-nowrap text-[10px] font-black uppercase tracking-widest text-emerald-500 italic">
                             {{ $req->created_at->format('d M Y H:i') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex space-x-2">
                                 @if($req->photo_store_front_path)
-                                    <a href="{{ Storage::url($req->photo_store_front_path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline">Depan</a>
+                                    <a href="{{ Storage::url($req->photo_store_front_path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline text-[10px] font-black italic">Depan</a>
                                 @endif
                                 @if($req->photo_products_path)
-                                    <a href="{{ Storage::url($req->photo_products_path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline">Produk</a>
+                                    <a href="{{ Storage::url($req->photo_products_path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 underline text-[10px] font-black italic">Produk</a>
                                 @endif
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                {{ $req->status === 'approved' ? 'bg-green-100 text-green-800' : 
-                                  ($req->status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                {{ ucfirst($req->status) }}
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            @php
+                                $badgeStyle = match($req->status) {
+                                    'approved' => 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-emerald-100/50',
+                                    'rejected' => 'bg-rose-50 text-rose-600 border-rose-100 shadow-rose-100/50',
+                                    'pending' => 'bg-amber-50 text-amber-600 border-amber-100 shadow-amber-100/50',
+                                    default => 'bg-gray-50 text-gray-400 border-gray-200'
+                                };
+                            @endphp
+                            <span class="inline-flex items-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest {{ $badgeStyle }} border shadow-sm">
+                                {{ strtoupper($req->status) }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{{ route('admin.subscription-trial-requests.show', $req) }}" class="text-indigo-600 hover:text-indigo-900">Detail</a>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                             <a href="{{ route('admin.subscription-trial-requests.show', $req) }}" 
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 hover:bg-gray-900 hover:text-white hover:border-gray-900 text-gray-600 text-[11px] font-bold rounded-lg transition-all">
+                                <i class="fas fa-search-dollar text-[10px]"></i>
+                                Detail
+                            </a>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-10 text-center text-gray-500">
-                            Tidak ada permintaan trial saat ini.
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                             <div class="flex flex-col items-center gap-2">
+                                <i class="fas fa-id-card-clip text-4xl text-gray-200"></i>
+                                <p class="font-medium">Belum ada permintaan trial</p>
+                            </div>
                         </td>
                     </tr>
                 @endforelse
@@ -89,6 +124,6 @@
         <div class="px-6 py-4 border-t border-gray-200">
             {{ $requests->links() }}
         </div>
-    </div>
+    </x-card-container>
 </div>
 @endsection
