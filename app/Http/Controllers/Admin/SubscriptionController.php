@@ -14,16 +14,40 @@ class SubscriptionController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status');
+        $query = UserSubscription::with(['user', 'tier', 'plan']);
 
-        $subscriptions = UserSubscription::with(['user', 'tier', 'plan'])
-            ->when($status, function ($q) use ($status) {
-                return $q->where('status', $status);
-            })
-            ->latest()
+        // Status filter
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user', function($qu) use ($search) {
+                    $qu->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                })->orWhereHas('tier', function($qt) use ($search) {
+                    $qt->where('display_name', 'like', "%{$search}%")
+                      ->orWhere('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $subscriptions = $query->latest()
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.subscription.index', compact('subscriptions', 'status'));
+        // Stats
+        $stats = [
+            'total' => UserSubscription::count(),
+            'active' => UserSubscription::where('status', 'active')->count(),
+            'trial' => UserSubscription::where('status', 'trial')->count(),
+            'expired' => UserSubscription::where('status', 'expired')->count(),
+        ];
+
+        return view('admin.subscription.index', compact('subscriptions', 'status', 'stats'));
     }
 
     /**
