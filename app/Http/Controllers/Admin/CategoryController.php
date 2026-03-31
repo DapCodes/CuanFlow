@@ -25,7 +25,15 @@ class CategoryController extends Controller
 
         $categories = $query->orderBy('sort_order')->orderBy('name')->paginate(15);
 
-        return view('admin.master.categories.index', compact('categories'));
+        // Stats
+        $stats = [
+            'total_categories' => Category::count(),
+            'product_categories' => Category::where('type', 'product')->count(),
+            'raw_material_categories' => Category::where('type', 'raw_material')->count(),
+            'active_categories' => Category::where('is_active', true)->count(),
+        ];
+
+        return view('admin.master.categories.index', compact('categories', 'stats'));
     }
 
     public function create()
