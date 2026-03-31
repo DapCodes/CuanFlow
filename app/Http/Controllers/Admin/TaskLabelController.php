@@ -10,11 +10,25 @@ class TaskLabelController extends Controller
 {
     public function index()
     {
-        $labels = TaskLabel::withCount('tasks')
-            ->orderBy('name')
-            ->paginate(15);
+        $query = TaskLabel::withCount('tasks');
 
-        return view('admin.master.task-labels.index', compact('labels'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $labels = $query->orderBy('name')->paginate(15);
+
+        // Stats
+        $stats = [
+            'total_labels' => TaskLabel::count(),
+            'used_labels' => TaskLabel::has('tasks')->count(),
+            'empty_labels' => TaskLabel::doesntHave('tasks')->count(),
+            'recent' => TaskLabel::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return view('admin.master.task-labels.index', compact('labels', 'stats'));
     }
 
     public function create()
