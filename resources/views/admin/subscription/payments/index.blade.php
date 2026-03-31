@@ -140,19 +140,44 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($payments as $payment)
-                            <p class="text-sm font-bold text-gray-900">{{ $payment->user->name }}</p>
-                            <p class="text-[10px] text-gray-400">{{ $payment->user->email }}</p>
+                    <tr class="hover:bg-gray-50 transition-colors group">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center gap-4">
+                                <div class="w-11 h-11 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-emerald-400 shadow-lg group-hover:scale-105 transition-transform duration-300">
+                                    <i class="fas fa-file-invoice text-xs"></i>
+                                </div>
+                                <div class="max-w-[200px]">
+                                    <p class="font-black text-gray-900 text-[10px] font-mono leading-tight truncate">{{ $payment->transaction_id }}</p>
+                                    <p class="text-[9px] font-black uppercase tracking-widest text-emerald-500 mt-1 italic">{{ $payment->created_at->format('d M Y, H:i') }} WIB</p>
+                                </div>
+                            </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="text-xs font-semibold text-gray-700">{{ $payment->tier->display_name }}</span>
-                            <span class="block text-[10px] text-gray-400">{{ $payment->plan->duration_months }} Bulan</span>
+                        <td class="px-6 py-5">
+                            <div class="flex flex-col gap-1">
+                                <p class="font-black text-gray-900 uppercase tracking-tight text-xs">{{ $payment->user->name ?? 'User Terhapus' }}</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 shadow-sm">{{ $payment->tier->display_name ?? 'Unknown Tier' }}</span>
+                                    <span class="text-[10px] font-bold text-gray-400 italic">({{ $payment->plan->duration_months ?? 0 }} bln)</span>
+                                </div>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 text-sm font-bold text-gray-900">
-                           Rp {{ number_format($payment->amount, 0, ',', '.') }}
+                        <td class="px-6 py-5">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-black text-gray-900 italic tracking-tight uppercase">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                                <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 mt-0.5 whitespace-nowrap">Gross Amount</span>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest border {{ $payment->status_badge }}">
-                                {{ $payment->status }}
+                        <td class="px-6 py-5 text-center">
+                            @php
+                                $badgeStyle = match($payment->status) {
+                                    'success' => 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-emerald-100/50',
+                                    'pending' => 'bg-amber-50 text-amber-600 border-amber-100 shadow-amber-100/50',
+                                    'failed', 'expired' => 'bg-rose-50 text-rose-600 border-rose-100 shadow-rose-100/50',
+                                    default => 'bg-gray-50 text-gray-400 border-gray-200'
+                                };
+                            @endphp
+                            <span class="inline-flex items-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest {{ $badgeStyle }} border shadow-sm">
+                                {{ strtoupper($payment->status) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right">
