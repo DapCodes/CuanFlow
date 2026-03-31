@@ -12,11 +12,33 @@ class AdminManagementController extends Controller
 {
     public function index()
     {
-        $admins = User::role('admin')
-            ->latest()
-            ->paginate(15);
+        $query = User::role('admin');
 
-        return view('admin.master.admins.index', compact('admins'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Status
+        if (request()->filled('status')) {
+            $query->where('is_active', request('status') == 'active');
+        }
+
+        $admins = $query->latest()->paginate(15);
+
+        // Stats
+        $stats = [
+            'total_admins' => User::role('admin')->count(),
+            'active_admins' => User::role('admin')->where('is_active', true)->count(),
+            'inactive_admins' => User::role('admin')->where('is_active', false)->count(),
+            'recent' => User::role('admin')->where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return view('admin.master.admins.index', compact('admins', 'stats'));
     }
 
     public function create()
