@@ -14,11 +14,33 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('roles')
-            ->latest()
-            ->paginate(15);
+        $query = User::with('roles');
 
-        return view('admin.master.users.index', compact('users'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Status
+        if (request()->filled('status')) {
+            $query->where('is_active', request('status') == 'active');
+        }
+
+        $users = $query->latest()->paginate(15);
+
+        // Stats
+        $stats = [
+            'total_users' => User::count(),
+            'active_users' => User::where('is_active', true)->count(),
+            'inactive_users' => User::where('is_active', false)->count(),
+            'recent' => User::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return view('admin.master.users.index', compact('users', 'stats'));
     }
 
     public function create()
