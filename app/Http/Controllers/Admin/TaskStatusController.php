@@ -11,9 +11,25 @@ class TaskStatusController extends Controller
 {
     public function index()
     {
-        $statuses = TaskStatus::ordered()->get();
+        $query = TaskStatus::withCount('tasks')->ordered();
 
-        return view('admin.master.task-statuses.index', compact('statuses'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $statuses = $query->get();
+
+        // Stats
+        $stats = [
+            'total_statuses' => TaskStatus::count(),
+            'used_statuses' => TaskStatus::has('tasks')->count(),
+            'empty_statuses' => TaskStatus::doesntHave('tasks')->count(),
+            'recent' => TaskStatus::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return view('admin.master.task-statuses.index', compact('statuses', 'stats'));
     }
 
     public function create()
