@@ -1,134 +1,144 @@
 @extends('admin.layouts.app')
 
+@section('title', 'Arsip Log')
+
 @section('breadcrumb')
-<a href="{{ route('admin.security.activity-logs.index') }}" class="flex items-center hover:text-emerald-600 transition-colors">
-    <i class="fas fa-chevron-right text-gray-300 mx-2 text-xs"></i>
-    <span class="text-sm font-medium text-gray-500">Activity Log</span>
-</a>
-<i class="fas fa-chevron-right text-gray-300 mx-2 text-xs"></i>
-<span class="text-emerald-600 font-medium text-sm">Arsip Backup</span>
+<li class="flex items-center gap-2">
+    <i class="fas fa-chevron-right text-[10px] text-gray-300"></i>
+    <a href="{{ route('admin.security.activity-logs.index') }}" class="text-gray-500 hover:text-emerald-600 transition-colors text-sm font-medium">Activity Log</a>
+</li>
+<li class="flex items-center gap-2">
+    <i class="fas fa-chevron-right text-[10px] text-gray-300"></i>
+    <span class="text-emerald-600 font-semibold tracking-wide text-sm">Arsip Backup</span>
+</li>
 @endsection
 
 @section('content')
-<div class="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-black text-gray-900 tracking-tight">Arsip Activity Log</h1>
-            <p class="text-gray-500 text-sm mt-2 flex items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Koleksi file JSON berisi riwayat aktivitas yang telah dipindahkan dari database utama.
-            </p>
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm shadow-emerald-100/50">
+                <i class="fas fa-box-archive text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Arsip Activity Log</h1>
+                <p class="text-sm text-gray-500 mt-0.5 font-medium">Koleksi riwayat log yang telah dipindahkan dari database utama</p>
+            </div>
         </div>
-        <a href="{{ route('admin.security.activity-logs.index') }}" class="group flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm">
-            <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
-            Kembali ke Log Aktif
+        <a href="{{ route('admin.security.activity-logs.index') }}" 
+           class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 shadow-sm">
+            <i class="fas fa-arrow-left text-xs text-gray-400"></i>
+            <span>Kembali ke Log Aktif</span>
         </a>
     </div>
 
-    <!-- Stats Row -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-blue-50/50 border border-blue-100 rounded-[2rem] p-6 relative overflow-hidden group">
-            <i class="fas fa-database absolute -right-4 -top-4 text-6xl text-blue-500/10 group-hover:rotate-12 transition-transform"></i>
-            <p class="text-[10px] font-black text-blue-600/60 uppercase tracking-widest mb-1">Total Arsip</p>
-            <p class="text-3xl font-black text-blue-900">{{ $archives->total() }}</p>
+    <!-- Statistik Singkat -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total File Arsip</p>
+                    <p class="mt-1 text-2xl font-semibold text-gray-900">{{ number_format($archives->total()) }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100">
+                    <i class="fas fa-file-invoice text-blue-500 text-lg"></i>
+                </div>
+            </div>
         </div>
-        <div class="bg-emerald-50/50 border border-emerald-100 rounded-[2rem] p-6 relative overflow-hidden group">
-            <i class="fas fa-hdd absolute -right-4 -top-4 text-6xl text-emerald-500/10 group-hover:rotate-12 transition-transform"></i>
-            <p class="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Tipe Backup</p>
-            <p class="text-3xl font-black text-emerald-900">JSON Format</p>
+        <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Format Backup</p>
+                    <p class="mt-1 text-2xl font-semibold text-emerald-600">JSON</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                    <i class="fas fa-file-code text-emerald-500 text-lg"></i>
+                </div>
+            </div>
         </div>
-        <div class="bg-amber-50/50 border border-amber-100 rounded-[2rem] p-6 relative overflow-hidden group">
-            <i class="fas fa-shield-halved absolute -right-4 -top-4 text-6xl text-amber-500/10 group-hover:rotate-12 transition-transform"></i>
-            <p class="text-[10px] font-black text-amber-600/60 uppercase tracking-widest mb-1">Masa Simpan</p>
-            <p class="text-3xl font-black text-amber-900">Permanen</p>
+        <div class="bg-white border border-gray-200 rounded-xl px-4 py-3.5 flex items-center gap-3 bg-blue-50/30 border-blue-100">
+            <i class="fas fa-info-circle text-blue-500"></i>
+            <p class="text-xs text-blue-700 leading-normal">Log yang telah diarsipkan dihapus dari database untuk menjaga performa aplikasi tetap cepat.</p>
         </div>
     </div>
 
-    <!-- Archives Table -->
-    <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+    <!-- Tabel Arsip -->
+    <section class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-gray-50/50 text-gray-400 font-bold uppercase tracking-widest text-[10px] border-b border-gray-100">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-[11px] text-gray-500 uppercase font-bold border-b border-gray-200">
                     <tr>
-                        <th class="px-8 py-5">Informasi File</th>
-                        <th class="px-8 py-5">Ukuran</th>
-                        <th class="px-8 py-5">Dibuat Oleh</th>
-                        <th class="px-8 py-5">Status</th>
-                        <th class="px-8 py-5 text-right">Manajemen</th>
+                        <th class="px-6 py-4">Informasi File</th>
+                        <th class="px-6 py-4">Ukuran</th>
+                        <th class="px-6 py-4">Dibuat Oleh</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
+                <tbody class="divide-y divide-gray-100">
                     @forelse($archives as $archive)
-                    <tr class="hover:bg-gray-50/50 transition-all duration-200 group">
-                        <td class="px-8 py-5 whitespace-nowrap">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-emerald-50 group-hover:text-emerald-500 transition-colors">
-                                    <i class="fas fa-file-code"></i>
-                                </div>
-                                <div>
-                                    <div class="text-gray-900 font-bold font-mono text-xs">{{ $archive->filename }}</div>
-                                    <div class="text-[11px] text-gray-400 font-medium">{{ $archive->created_at->format('d M Y, H:i') }}</div>
-                                </div>
-                            </div>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-gray-900 text-sm font-mono truncate max-w-xs">{{ $archive->filename }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5 uppercase tracking-tighter">{{ $archive->created_at->isoFormat('D MMM Y, HH:mm') }}</p>
                         </td>
-                        <td class="px-8 py-5 whitespace-nowrap">
-                            <span class="px-3 py-1 bg-gray-100 rounded-full text-[10px] font-black text-gray-600 uppercase tracking-tight">
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 bg-gray-50 border border-gray-100 rounded text-[10px] font-bold text-gray-600">
                                 {{ $archive->getSizeForHumans() }}
                             </span>
                         </td>
-                        <td class="px-8 py-5 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap">
                             @if($archive->createdBy)
                                 <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">
+                                    <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-600">
                                         {{ substr($archive->createdBy->name, 0, 1) }}
                                     </div>
-                                    <span class="text-xs font-bold text-gray-700">{{ $archive->createdBy->name }}</span>
+                                    <span class="text-xs font-semibold text-gray-700">{{ $archive->createdBy->name }}</span>
                                 </div>
                             @else
-                                <span class="text-xs font-medium text-gray-400 italic">System Auto</span>
+                                <span class="text-xs font-medium text-gray-400 italic">System</span>
                             @endif
                         </td>
-                        <td class="px-8 py-5 whitespace-nowrap">
+                        <td class="px-6 py-4">
                             @if($archive->status === 'completed')
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-800">
-                                    <div class="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></div> Selesai
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
+                                    <i class="fas fa-check-circle text-[8px]"></i> Selesai
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-red-100 text-red-800">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
                                     <i class="fas fa-times-circle text-[8px]"></i> Gagal
                                 </span>
                             @endif
                         </td>
-                        <td class="px-8 py-5 text-right">
-                            @if($archive->status === 'completed')
-                            <div class="flex items-center justify-end gap-3">
-                                <a href="{{ route('admin.security.activity-logs.archives.view', $archive->id) }}" 
-                                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[11px] font-black uppercase tracking-wider hover:bg-blue-100 transition-all">
-                                    <i class="fas fa-eye"></i> View
-                                </a>
-                                <a href="{{ route('admin.security.activity-logs.archives.download', $archive->id) }}" 
-                                   class="inline-flex items-center justify-center w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-all">
-                                    <i class="fas fa-download"></i>
-                                </a>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-center gap-2">
+                                @if($archive->status === 'completed')
+                                    <a href="{{ route('admin.security.activity-logs.archives.view', $archive->id) }}" 
+                                       class="inline-flex items-center justify-center w-8 h-8 text-blue-500 hover:bg-blue-50 rounded-lg transition-all" 
+                                       title="Lihat JSON">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </a>
+                                    <a href="{{ route('admin.security.activity-logs.archives.download', $archive->id) }}" 
+                                       class="inline-flex items-center justify-center w-8 h-8 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all" 
+                                       title="Download File">
+                                        <i class="fas fa-download text-sm"></i>
+                                    </a>
+                                @else
+                                    <span class="text-[10px] text-gray-400 italic">No Action</span>
+                                @endif
                             </div>
-                            @else
-                            <div class="text-xs text-red-400 font-medium italic" title="{{ $archive->error_message }}">
-                                Terjadi kesalahan
-                            </div>
-                            @endif
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-8 py-20 text-center">
-                            <div class="flex flex-col items-center justify-center gap-4">
-                                <div class="w-24 h-24 bg-gray-50 rounded-[2.5rem] flex items-center justify-center text-gray-200">
-                                    <i class="fas fa-box-open text-4xl"></i>
+                        <td colspan="5" class="px-6 py-16 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-dashed border-gray-200">
+                                    <i class="fas fa-box-open text-2xl text-gray-300"></i>
                                 </div>
-                                <div>
-                                    <p class="text-lg font-black text-gray-900">Belum ada arsip</p>
-                                    <p class="text-sm text-gray-400">Arsip akan muncul setelah Anda melakukan manual backup.</p>
-                                </div>
+                                <p class="text-gray-500 font-medium">Belum ada arsip log</p>
+                                <p class="text-xs text-gray-400 mt-1">Lakukan backup manual untuk membuat arsip</p>
                             </div>
                         </td>
                     </tr>
@@ -136,12 +146,12 @@
                 </tbody>
             </table>
         </div>
-        
+
         @if($archives->hasPages())
-        <div class="px-8 py-6 border-t border-gray-50 bg-gray-50/20">
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
             {{ $archives->links() }}
         </div>
         @endif
-    </div>
+    </section>
 </div>
 @endsection
