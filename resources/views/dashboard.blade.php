@@ -880,7 +880,7 @@
     data-step="1"
     data-title="Kasir Pintar (POS)"
     data-intro="<strong>Catat penjualan dengan cepat.</strong> Ini adalah jantung bisnis Anda. Masukkan pesanan, pilih metode pembayaran, dan cetak nota dalam hitungan detik.">
-    <div class="menu-icon relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-500 to-red-400 rounded-xl flex items-center justify-center mx-auto mb-2">
+    <div class="menu-icon relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #F44336;">
       @if(isset($isPosOpen) && $isPosOpen)
         <span class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2
             h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full
@@ -889,7 +889,6 @@
             group-hover:opacity-100 group-hover:scale-110"
           title="POS sedang buka" aria-label="POS sedang buka"></span>
       @endif
-      {{-- Storefront: tampilan toko yang ikonik --}}
       <i class="ph-light ph-storefront text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Point of Sale</span>
@@ -902,8 +901,7 @@
     class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
     data-title="Produk Reseller"
     data-intro="<strong>Barang siap jual dari pusat.</strong> Terima dan kelola stok barang yang Anda beli dari outlet pusat di sini.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Package: paket produk dari pusat --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #1E88E5;">
       <i class="ph-light ph-package text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Produk Reseller</span>
@@ -917,8 +915,7 @@
     data-step="2"
     data-title="Riwayat Penjualan"
     data-intro="<strong>Pantau semua transaksi.</strong> Lihat daftar nota yang keluar, cek histori pesanan pelanggan, atau batalkan transaksi jika terjadi kesalahan.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Receipt: struk/nota transaksi --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #E91E8C;">
       <i class="ph-light ph-receipt text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Penjualan</span>
@@ -933,8 +930,7 @@
     data-step="3"
     data-title="Promo & Diskon"
     data-intro="<strong>Menangkan hati pelanggan.</strong> Buat berbagai promo menarik seperti diskon persentase atau 'Beli 1 Gratis 1' untuk meningkatkan omzet Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-red-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Ticket: kupon/voucher diskon --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #AB47BC;">
       <i class="ph-light ph-ticket text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Diskon</span>
@@ -949,8 +945,7 @@
     data-step="4"
     data-title="Arus Kas (Keuangan)"
     data-intro="<strong>Kesehatan finansial outlet.</strong> Pantau seluruh uang masuk dan keluar. Pastikan saldo kas Anda selalu cocok dengan kondisi di lapangan.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Trend Up: grafik keuangan naik --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #7E57C2;">
       <i class="ph-light ph-trend-up text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Keuangan</span>
@@ -965,8 +960,7 @@
     data-step="5"
     data-title="Pemasukan Lain"
     data-intro="<strong>Catat uang masuk tambahan.</strong> Masukkan pendapatan di luar hasil jualan kasir agar laporan keuangan Anda tetap akurat dan jujur.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Coins: uang koin pemasukan --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #26A69A;">
       <i class="ph-light ph-coins text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pemasukan Lain</span>
@@ -981,8 +975,7 @@
     data-step="6"
     data-title="Biaya Operasional"
     data-intro="<strong>Catat pengeluaran Anda.</strong> Masukkan biaya listrik, sewa, gaji, hingga belanja kecil lainnya untuk mengetahui sisa untung bersih Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Money Wavy: uang keluar/pengeluaran --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #FFA726;">
       <i class="ph-light ph-money-wavy text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Biaya Ops</span>
@@ -997,8 +990,7 @@
     data-step="7"
     data-title="Tarik Saldo"
     data-intro="<strong>Ambil dana Anda.</strong> Ajukan penarikan saldo hasil pembayaran nontunai ke rekening bank atau dompet digital pribadi Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Bank: penarikan ke rekening bank --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #43A047;">
       <i class="ph-light ph-bank text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Penarikan Saldo</span>
@@ -1013,8 +1005,7 @@
     data-step="7.5"
     data-title="Ringkasan Invoice"
     data-intro="<strong>Pantau tagihan & transaksi.</strong> Lihat ringkasan terbaru dari penjualan, pemasukan, pengeluaran, dan piutang dalam satu tampilan cepat.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-400 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Invoice: dokumen tagihan --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #1E88E5;">
       <i class="ph-light ph-invoice text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Daftar Invoice</span>
@@ -1029,8 +1020,7 @@
     data-step="8"
     data-title="Metode Pembayaran"
     data-intro="<strong>Atur opsi pembayaran.</strong> Hubungkan dompet digital atau rekening bank Anda agar pelanggan bisa membayar dengan QRIS atau transfer.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Scan: scan QRIS untuk pembayaran --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #8E24AA;">
       <i class="ph-light ph-scan text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Metode Pembayaran</span>
@@ -1045,8 +1035,7 @@
     data-step="9"
     data-title="Manajemen Tugas"
     data-intro="<strong>Kerja tim makin kompak.</strong> Berikan tugas ke pegawai, pantau progresnya, dan pastikan tidak ada pekerjaan yang terlewat.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Clipboard Text: daftar tugas tim --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #546E7A;">
       <i class="ph-light ph-clipboard-text text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Manajemen Tugas</span>
@@ -1065,8 +1054,7 @@
     data-step="10"
     data-title="Dashboard Statistik"
     data-intro="<strong>Lihat ringkasan usaha.</strong> Tampilkan grafik pertumbuhan omzet dan keuntungan dalam tampilan visual yang mudah dibaca siapa saja.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Chart Bar: grafik batang statistik --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #039BE5;">
       <i class="ph-light ph-chart-bar text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Dashboard & Statistik</span>
@@ -1081,8 +1069,7 @@
     data-step="11"
     data-title="Laporan Lengkap"
     data-intro="<strong>Dokumen evaluasi bisnis.</strong> Unduh laporan detail harian hingga bulanan untuk dibenahi atau dibagikan ke partner bisnis Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- File Magnifying Glass: cari dan analisis laporan --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #1976D2;">
       <i class="ph-light ph-file-magnifying-glass text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Laporan Keseluruhan</span>
@@ -1101,8 +1088,7 @@
     data-step="12"
     data-title="Menu & Resep"
     data-intro="<strong>Atur menu jualan Anda.</strong> Masukkan resep rahasia Anda di sini, sistem akan menghitung biaya produksi (HPP) secara otomatis.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-green-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Bowl Steam: makanan berkuah/produk kuliner --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #FB8C00;">
       <i class="ph-light ph-bowl-steam text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Produk & Resep</span>
@@ -1117,8 +1103,7 @@
     data-step="13"
     data-title="Stok Bahan Baku"
     data-intro="<strong>Jangan sampai kehabisan.</strong> Pantau stok mentah di gudang. Sistem akan memberi tanda jika ada bahan yang perlu segera dibeli.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Warehouse: gudang penyimpanan bahan baku --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #7CB342;">
       <i class="ph-light ph-warehouse text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Bahan Baku</span>
@@ -1133,8 +1118,7 @@
     data-step="14"
     data-title="Daftar Pemasok"
     data-intro="<strong>Hubungi supplier dengan mudah.</strong> Simpan kontak pemasok langganan agar Anda tidak repot mencari nomor saat stok habis.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Truck: pengiriman dari pemasok --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #C0B400;">
       <i class="ph-light ph-truck text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pemasok</span>
@@ -1149,8 +1133,7 @@
     data-step="15"
     data-title="Lamaran Reseller"
     data-intro="<strong>Perluas jaringan Anda.</strong> Kelola dan seleksi calon mitra reseller yang ingin ikut memasarkan produk Anda di sini.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Users Three: jaringan mitra --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #F4511E;">
       <i class="ph-light ph-users-three text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Lamaran Reseller</span>
@@ -1165,8 +1148,7 @@
     data-step="16"
     data-title="Proses Produksi"
     data-intro="<strong>Pantau pembuatan barang.</strong> Catat kapan bahan baku diolah menjadi produk siap jual agar hitungan stok tetap sinkron.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Factory: fasilitas produksi --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00ACC1;">
       <i class="ph-light ph-factory text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Produksi</span>
@@ -1181,8 +1163,7 @@
     data-step="17"
     data-title="Cek Stok (Opname)"
     data-intro="<strong>Audit fisik barang.</strong> Cocokkan jumlah stok asli di rak dengan data di sistem untuk mencegah kerugian atau kehilangan.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-green-700 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Clipboard List: audit/checklist stok --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #388E3C;">
       <i class="ph-light ph-list-checks text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Stock Opname</span>
@@ -1197,8 +1178,7 @@
     data-step="18"
     data-title="Mutasi Stok"
     data-intro="<strong>Pindah barang antar outlet.</strong> Catat pengiriman bahan atau produk ke cabang lain agar stok pusat dan cabang tetap terpantau.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Arrows Left Right: mutasi dua arah antar outlet --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #1E88E5;">
       <i class="ph-light ph-arrows-left-right text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Transfer Stok</span>
@@ -1229,8 +1209,7 @@
     data-step="19"
     data-title="Identitas Outlet"
     data-intro="<strong>Data utama toko Anda.</strong> Lengkapi nama, alamat, dan logo toko Anda agar muncul di nota belanja dan dipercaya pelanggan.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Buildings: bangunan/outlet fisik --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #E53935;">
       <i class="ph-light ph-buildings text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Informasi Outlet</span>
@@ -1244,8 +1223,7 @@
     data-step="20"
     data-title="Website (Landing Page)"
     data-intro="<strong>Go Digital dengan CuanFlow.</strong> Buat halaman website katalog sederhana untuk toko Anda agar menarik lebih banyak pelanggan online.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Globe Simple: website/online presence --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #3949AB;">
       <i class="ph-light ph-globe-simple text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Landing Page</span>
@@ -1260,8 +1238,7 @@
     data-step="21"
     data-title="Ulasan Pelanggan"
     data-intro="<strong>Kumpulkan kata positif.</strong> Simpan dan tampilkan ulasan terbaik dari pelanggan Anda di website untuk menambah kepercayaan pembeli baru.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Star Half: rating bintang setengah (review) --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #8E24AA;">
       <i class="ph-light ph-star-half text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Testimoni</span>
@@ -1276,8 +1253,7 @@
     data-step="22"
     data-title="Tim & Hak Akses"
     data-intro="<strong>Kelola karyawan Anda.</strong> Daftarkan tim Anda dan tentukan tugas mereka di aplikasi agar operasional lebih tertib dan terkontrol.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Identification Card: ID karyawan + hak akses --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #43A047;">
       <i class="ph-light ph-identification-card text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pegawai & Hak Akses</span>
@@ -1292,8 +1268,7 @@
     data-step="23"
     data-title="Pelanggan & Piutang"
     data-intro="<strong>Hubungan pelanggan.</strong> Simpan database pelanggan setia dan pantau catatan piutang (bon) agar tidak ada yang terlewat ditagih.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Hand Coins: tagih piutang dengan tangan --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00897B;">
       <i class="ph-light ph-hand-coins text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pelanggan & Piutang</span>
@@ -1308,8 +1283,7 @@
     data-step="24"
     data-title="Sistem Antrian Meja"
     data-intro="<strong>Atur operasional cafe/resto.</strong> Kelola nomor meja dan pantau mana yang sedang terisi atau kosong secara real-time dari kasir.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Table: meja makan di restoran/cafe --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #F4511E;">
       <i class="ph-light ph-table text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Kelola Meja</span>
@@ -1328,8 +1302,7 @@
     data-step="25"
     data-title="Lampu Hijau Bisnis"
     data-intro="<strong>Saran cerdas dari data.</strong> Lihat produk yang paling laku dan dapatkan saran kapan harus menambah stok berdasarkan analisa otomatis kami.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-violet-400 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Sparkle: kilau AI insight yang cerdas --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #5E35B1;">
       <i class="ph-light ph-sparkle text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Insight</span>
@@ -1344,7 +1317,7 @@
     data-step="26"
     data-title="Asisten Clara AI"
     data-intro="<strong>Asisten pribadi Anda.</strong> Tanya Clara apa saja tentang jualan Anda hari ini atau cari ide promo baru melalui obrolan santai.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #3949AB;">
       <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-2" alt="" style="position:relative;z-index:3">
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Clara AI</span>
@@ -1358,8 +1331,7 @@
     data-step="100"
     data-title="Peta Cuan Lokasi"
     data-intro="<strong>Analisis lokasi berbasis AI.</strong> Temukan area bisnis berpotensi tinggi untuk membuka cabang baru berdasarkan peta sebaran usaha.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-400 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Map Trifold: peta lokasi terlipat --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #43A047;">
       <i class="ph-light ph-map-trifold text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Peta Cuan Lokasi</span>
@@ -1373,8 +1345,7 @@
     data-step="101"
     data-title="Video Prompt AI"
     data-intro="<strong>Generate prompt video sinematik.</strong> Buat prompt detail untuk tools AI video seperti Runway, Sora, dan Pika berdasarkan data produk Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-violet-500 to-purple-700 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Video Camera: produksi konten video AI --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #283593;">
       <i class="ph-light ph-video-camera text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Video Prompt AI</span>
@@ -1385,8 +1356,7 @@
     data-step="102"
     data-title="Script Generator AI"
     data-intro="<strong>Generate script affiliate.</strong> Buat script jualan high-converting untuk TikTok, Instagram, dan YouTube dengan data bisnis Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Microphone Stage: panggung konten kreator --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #E64A19;">
       <i class="ph-light ph-microphone-stage text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Script Generator AI</span>
@@ -1397,8 +1367,7 @@
     data-step="103"
     data-title="Image Prompt AI"
     data-intro="<strong>Generate prompt gambar iklan.</strong> Buat prompt untuk Midjourney, DALL·E, dan SDXL yang disesuaikan dengan produk dan brand Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-sky-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Image Square: frame gambar iklan --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00838F;">
       <i class="ph-light ph-image-square text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Image Prompt AI</span>
@@ -1409,8 +1378,7 @@
     data-step="104"
     data-title="Kalkulaba AI"
     data-intro="<strong>Kalkulator laba pintar.</strong> Hitung HPP, strategi harga, dan target profit secara otomatis dengan bantuan AI.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Percent: simbol kalkulasi margin/laba --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #388E3C;">
       <i class="ph-light ph-percent text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Kalkulaba AI</span>
@@ -1429,8 +1397,7 @@
     data-step="27"
     data-title="SOP & Kebijakan"
     data-intro="<strong>Aturan kerja tim.</strong> Simpan panduan kerja atau peraturan outlet di sini agar semua pegawai memiliki pemahaman yang sama.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Notepad: buku catatan SOP --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #546E7A;">
       <i class="ph-light ph-notepad text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Kebijakan Outlet</span>
@@ -1445,8 +1412,7 @@
     data-step="28"
     data-title="Kelola Akun"
     data-intro="<strong>Keamanan profil.</strong> Ubah data diri, ganti kata sandi, atau perbarui kontak Anda untuk menjaga keamanan akses sistem.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-500 to-gray-700 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Shield Check: keamanan akun terverifikasi --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #455A64;">
       <i class="ph-light ph-shield-check text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pengaturan Akun</span>
@@ -1459,8 +1425,7 @@
     data-step="31"
     data-title="Notifikasi & Peringatan"
     data-intro="<strong>Pantau info terbaru.</strong> Lihat catatan stok menipis, jadwal kedaluwarsa, atau pengumuman penting lainnya di sini agar bisnis tetap lancar.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-rose-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-2 relative">
-      {{-- Bell Ringing: notifikasi aktif berbunyi --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2 relative" style="background: #E53935;">
       <i class="ph-light ph-bell-ringing text-4xl sm:text-5xl text-white"></i>
       @if(isset($unreadStockCount) && $unreadStockCount > 0)
       <span class="absolute -top-1.5 -right-1.5 flex h-5 w-5" style="z-index:10">
@@ -1481,8 +1446,7 @@
     data-step="29"
     data-title="Pusat Bantuan"
     data-intro="<strong>Panduan Lengkap.</strong> Temukan jawaban dari pertanyaan yang sering diajukan atau pelajari cara menggunakan fitur CuanFlow di sini.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Lifebuoy: pelampung bantuan darurat --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00897B;">
       <i class="ph-light ph-lifebuoy text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Bantuan & FAQ</span>
@@ -1496,8 +1460,7 @@
     data-step="30"
     data-title="Kelola Langganan"
     data-intro="<strong>Atur paket Anda.</strong> Perbarui langganan, lihat riwayat pembayaran, atau ganti paket fitur sesuai kebutuhan bisnis Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-2">
-      {{-- Diamond: premium / berlian langganan --}}
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #FB8C00;">
       <i class="ph-light ph-diamond text-4xl sm:text-5xl text-white"></i>
     </div>
     <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Kelola Langganan</span>
@@ -1505,6 +1468,7 @@
   @endif
 
 </div>
+
 <!-- Modal Sapaan Selamat Datang (tambahkan sebelum modal noOutlet) -->
 <div id="welcomeTourModal" class="hidden modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
   <div class="absolute inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-effect"></div>

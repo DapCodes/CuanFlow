@@ -207,6 +207,6 @@
             {{ $payments->links() }}
         </div>
         @endif
-    </div>
+    </x-card-container>
 </div>
 @endsection
