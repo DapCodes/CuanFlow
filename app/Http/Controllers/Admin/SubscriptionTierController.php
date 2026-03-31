@@ -11,11 +11,30 @@ class SubscriptionTierController extends Controller
 {
     public function index()
     {
-        $tiers = SubscriptionTier::withCount(['subscriptions', 'plans'])
-            ->orderBy('sort_order')
-            ->get();
+        $query = SubscriptionTier::withCount(['subscriptions', 'plans'])
+            ->orderBy('sort_order');
 
-        return view('admin.subscription.tiers.index', compact('tiers'));
+        // Search
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('display_name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $tiers = $query->get();
+
+        // Stats
+        $stats = [
+            'total_tiers' => SubscriptionTier::count(),
+            'active_tiers' => SubscriptionTier::where('is_active', true)->count(),
+            'inactive_tiers' => SubscriptionTier::where('is_active', false)->count(),
+            'total_subscriptions' => \App\Models\UserSubscription::where('status', 'active')->count(),
+        ];
+
+        return view('admin.subscription.tiers.index', compact('tiers', 'stats'));
     }
 
     public function create()
