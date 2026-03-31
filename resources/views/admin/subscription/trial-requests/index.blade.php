@@ -1,55 +1,49 @@
 @extends('admin.layouts.app')
 
 @section('title', 'Permintaan Trial')
+@section('page-title', 'Verifikasi Bisnis')
+
+@section('breadcrumb')
+<li class="flex items-center gap-2">
+    <i class="fas fa-chevron-right text-[10px] text-gray-300"></i>
+    <span class="text-emerald-600 font-semibold tracking-wide text-sm">Permintaan Trial</span>
+</li>
+@endsection
 
 @section('content')
-<div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Permintaan Trial</h1>
-            <p class="text-gray-500 mt-1">Verifikasi pengajuan uji coba gratis dari pengguna baru.</p>
+<div class="px-4 lg:px-6 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm shadow-emerald-100/50">
+                <i class="fas fa-id-card-clip text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight uppercase">Permintaan Trial</h1>
+                <p class="text-sm text-gray-500 mt-0.5 font-medium italic">Verifikasi pendaftaran akun bisnis dan aktivasi uji coba gratis</p>
+            </div>
         </div>
         
         <!-- Filter Tabs -->
-        <div class="bg-white rounded-lg p-1 flex space-x-1 border border-gray-200">
+        <div class="bg-white rounded-2xl p-1.5 flex gap-1.5 border border-gray-200 shadow-sm">
+            @php
+                $tabClasses = "px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 active:scale-95 whitespace-nowrap";
+            @endphp
             <a href="{{ route('admin.subscription-trial-requests.index', ['status' => 'pending']) }}" 
-               class="px-4 py-2 rounded-md text-sm font-medium transition {{ $status == 'pending' ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-gray-600 hover:bg-gray-50' }}">
+               class="{{ $tabClasses }} {{ $status == 'pending' ? 'bg-amber-100 text-amber-700 shadow-sm shadow-amber-100/50' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600' }}">
                Menunggu
             </a>
             <a href="{{ route('admin.subscription-trial-requests.index', ['status' => 'approved']) }}" 
-               class="px-4 py-2 rounded-md text-sm font-medium transition {{ $status == 'approved' ? 'bg-green-100 text-green-700 shadow-sm' : 'text-gray-600 hover:bg-gray-50' }}">
+               class="{{ $tabClasses }} {{ $status == 'approved' ? 'bg-emerald-100 text-emerald-700 shadow-sm shadow-emerald-100/50' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600' }}">
                Disetujui
             </a>
-             <a href="{{ route('admin.subscription-trial-requests.index', ['status' => 'rejected']) }}" 
-               class="px-4 py-2 rounded-md text-sm font-medium transition {{ $status == 'rejected' ? 'bg-red-100 text-red-700 shadow-sm' : 'text-gray-600 hover:bg-gray-50' }}">
+            <a href="{{ route('admin.subscription-trial-requests.index', ['status' => 'rejected']) }}" 
+               class="{{ $tabClasses }} {{ $status == 'rejected' ? 'bg-rose-100 text-rose-700 shadow-sm shadow-rose-100/50' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600' }}">
                Ditolak
             </a>
         </div>
     </div>
 
-    <!-- Trial Requests Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User / Outlet</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Bisnis</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pengajuan</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Foto</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($requests as $req)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <span class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-                                        {{ substr($req->user->name ?? 'U', 0, 1) }}
-                                    </span>
-                                </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $req->user->name ?? 'Unknown User' }}</div>
                                     <div class="text-sm text-gray-500">{{ $req->outlet_name }}</div>

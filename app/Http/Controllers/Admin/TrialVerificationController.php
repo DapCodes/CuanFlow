@@ -11,16 +11,39 @@ class TrialVerificationController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status', 'pending');
+        $query = TrialVerificationRequest::with('user');
 
-        $requests = TrialVerificationRequest::with('user')
-            ->when($status, function ($q) use ($status) {
-                return $q->where('status', $status);
-            })
-            ->latest()
+        // Status filter
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('outlet_name', 'like', "%{$search}%")
+                  ->orWhere('business_type', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($qu) use ($search) {
+                      $qu->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $requests = $query->latest()
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.subscription.trial-requests.index', compact('requests', 'status'));
+        // Stats
+        $stats = [
+            'total_requests' => TrialVerificationRequest::count(),
+            'pending_requests' => TrialVerificationRequest::where('status', 'pending')->count(),
+            'approved_requests' => TrialVerificationRequest::where('status', 'approved')->count(),
+            'recent' => TrialVerificationRequest::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return view('admin.subscription.trial-requests.index', compact('requests', 'status', 'stats'));
     }
 
     public function show(TrialVerificationRequest $trialRequest)
