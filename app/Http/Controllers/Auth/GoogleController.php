@@ -31,6 +31,12 @@ class GoogleController extends Controller
                 ->first();
 
             if ($user) {
+                // Prevent admin from logging in via user portal
+                if ($user->hasRole('admin')) {
+                    return redirect()->route('login')
+                        ->with('error', 'Akun admin tidak diizinkan masuk melalui login pengguna. Silakan gunakan portal admin.');
+                }
+
                 // Update google_id and google_avatar if not set
                 if (! $user->google_id) {
                     $user->google_id = $googleUser->getId();

@@ -32,6 +32,18 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+
+        // Check if the user has the admin role
+        if ($request->user()->hasRole('admin')) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')
+                ->withInput($request->only('email', 'remember'))
+                ->withErrors(['email' => 'Halaman ini khusus untuk pengguna. Silakan login melalui portal admin.']);
+        }
+
         $request->session()->regenerate();
 
         // Track login history
