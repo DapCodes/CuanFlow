@@ -35,7 +35,15 @@ class FaqController extends Controller implements HasMiddleware
 
         $faqs = $query->latest()->paginate(15);
 
-        return view('admin.master.faqs.index', compact('faqs'));
+        // Stats
+        $stats = [
+            'total_faqs' => Faq::count(),
+            'active_faqs' => Faq::where('is_active', true)->count(),
+            'types_count' => Faq::distinct('type')->count(),
+            'recent' => Faq::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return view('admin.master.faqs.index', compact('faqs', 'stats'));
     }
 
     public function create()
