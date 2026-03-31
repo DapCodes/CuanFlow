@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             // ProductStockSeeder::class,
             TermsAndConditionSeeder::class,
             ResellerTestSeeder::class,
+            ColorPaletteSeeder::class,
         ]);
 
         // Buat Akun Admin
