@@ -184,9 +184,10 @@ class StockNotificationService
         $userId = auth()->id();
 
         $notifications = StockNotification::where('outlet_id', $outletId)
-            ->where('is_read', false) // Still filter by globally "active" notifications
+            ->where('is_read', false) 
+            ->unreadBy($userId)
             ->with(['readByUsers' => function ($q) {
-                $q->select('users.id', 'users.name', 'avatar'); // For avatars
+                $q->select('users.id', 'users.name', 'avatar');
             }])
             ->latest()
             ->limit($limit)

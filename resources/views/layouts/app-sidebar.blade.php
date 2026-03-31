@@ -465,7 +465,7 @@
 
                                     <div class="max-h-[380px] overflow-y-auto custom-scrollbar p-2">
                                         @forelse($navStockNotifications as $noti)
-                                        <a href="{{ route('stock-notifications.index') }}" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1 {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
+                                        <a href="{{ route('stock-notifications.index') }}" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1">
                                             <div class="flex gap-4">
                                                 <div class="h-10 w-10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-all duration-300 shadow-sm border 
                                                     {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
@@ -582,7 +582,7 @@
 
                                     <div class="max-h-[350px] overflow-y-auto custom-scrollbar">
                                         @forelse($navStockNotifications as $noti)
-                                        <a href="{{ route('stock-notifications.index') }}" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 group {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
+                                        <a href="{{ route('stock-notifications.index') }}" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 group">
                                             <div class="flex gap-3">
                                                 <div class="h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 border 
                                                     {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
@@ -722,7 +722,7 @@
 
                                 <div class="max-h-[380px] overflow-y-auto custom-scrollbar p-2">
                                     @forelse($navStockNotifications as $noti)
-                                    <a href="{{ route('stock-notifications.index') }}" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1 {{ $noti->is_read_by_me ? 'opacity-50' : '' }}">
+                                    <a href="{{ route('stock-notifications.index') }}" class="block p-3 hover:bg-gray-50 rounded-2xl transition-all group mb-1">
                                         <div class="flex gap-4">
                                             <div class="h-10 w-10 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-all duration-300 shadow-sm border 
                                                 {{ in_array($noti->type, ['out_of_stock', 'expired']) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100' }}">
