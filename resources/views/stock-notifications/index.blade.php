@@ -118,7 +118,7 @@
                                 <div class="read-btn-container ml-auto">
                                     @unless($notification->is_read_by_me)
                                     <button onclick="readNotification({{ $notification->id }})" class="px-4 py-2 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-black transition-all active:scale-95">
-                                        Baca Sekarang
+                                        Tandai Sudah Dibaca
                                     </button>
                                     @endunless
                                 </div>
