@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Activity as SpatieActivity;
 
 class Activity extends SpatieActivity
@@ -79,11 +80,14 @@ class Activity extends SpatieActivity
      */
     public function getEventBadgeAttribute(): array
     {
-        return match ($this->event ?? $this->description) {
-            'created' => ['label' => 'Created', 'color' => 'emerald'],
-            'updated' => ['label' => 'Updated', 'color' => 'blue'],
-            'deleted' => ['label' => 'Deleted', 'color' => 'red'],
-            default => ['label' => ucfirst($this->event ?? $this->description), 'color' => 'gray'],
+        $event = $this->event ?? $this->description;
+        
+        return match (true) {
+            $event === 'created' => ['label' => 'Created', 'color' => 'emerald'],
+            $event === 'updated' => ['label' => 'Updated', 'color' => 'blue'],
+            $event === 'deleted' => ['label' => 'Deleted', 'color' => 'red'],
+            Str::contains(strtolower($event), ['error', 'failed']) => ['label' => 'Error/Failed', 'color' => 'red'],
+            default => ['label' => ucfirst($this->event ?? 'Activity'), 'color' => 'gray'],
         };
     }
 
