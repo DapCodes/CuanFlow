@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ArchiveActivityLogs extends Command
 {
-    protected $signature = 'log:archive {--days=30 : Archive logs older than this many days}';
+    protected $signature = 'log:archive {--days=30 : Archive logs older than this many days} {--user-id= : The user ID who performed the manual backup}';
 
     protected $description = 'Archive old activity logs to a JSON file and register in backup_logs';
 
@@ -71,9 +71,9 @@ class ArchiveActivityLogs extends Command
                 'disk' => 'local',
                 'path' => $path,
                 'size' => $fileSize,
-                'type' => 'database',
+                'type' => 'activity_log',
                 'status' => 'completed',
-                'created_by' => null,
+                'created_by' => $this->option('user-id'),
             ]);
 
             $this->info("Backup log entry created (ID: {$backup->id})");
@@ -93,10 +93,10 @@ class ArchiveActivityLogs extends Command
                 'disk' => 'local',
                 'path' => $path ?? '',
                 'size' => 0,
-                'type' => 'database',
+                'type' => 'activity_log',
                 'status' => 'failed',
                 'error_message' => $e->getMessage(),
-                'created_by' => null,
+                'created_by' => $this->option('user-id'),
             ]);
 
             $this->error('❌ Archive failed: '.$e->getMessage());

@@ -7,6 +7,7 @@ use App\Models\Activity;
 use App\Models\BackupLog;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 
 class ActivityLogController extends Controller
@@ -64,6 +65,24 @@ class ActivityLogController extends Controller
     }
 
     /**
+     * Perform a manual backup of all activity logs.
+     */
+    public function backup()
+    {
+        try {
+            // We use the existing command but with 0 days to backup everything
+            Artisan::call('log:archive', [
+                '--days' => 0,
+                '--user-id' => auth()->id()
+            ]);
+            
+            return back()->with('success', 'Log aktivitas berhasil di-backup ke format JSON dan dibersihkan dari database.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal melakukan backup: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Show a specific activity log detail.
      */
     public function show($id)
@@ -78,11 +97,37 @@ class ActivityLogController extends Controller
      */
     public function archives()
     {
-        $archives = BackupLog::where('type', 'database')
-            ->orderByDesc('created_at')
+        // Currently the command saves as 'database' type, but we might want to distinguish.
+        // For now let's just show all completed backups.
+        $archives = BackupLog::orderByDesc('created_at')
             ->paginate(20);
 
         return view('admin.activity-logs.archives', compact('archives'));
+    }
+
+    /**
+     * View the content of a JSON archive.
+     */
+    public function viewArchive($id)
+    {
+        $backup = BackupLog::findOrFail($id);
+
+        if (! Storage::exists($backup->path)) {
+            return back()->with('error', 'File arsip tidak ditemukan.');
+        }
+
+        try {
+            $content = Storage::get($backup->path);
+            $json = json_decode($content, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return back()->with('error', 'Format file JSON tidak valid.');
+            }
+
+            return view('admin.activity-logs.view-archive', compact('backup', 'json'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal membaca file arsip: ' . $e->getMessage());
+        }
     }
 
     /**

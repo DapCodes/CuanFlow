@@ -156,10 +156,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('banned-ips', [BannedIpController::class, 'index'])->name('banned-ips.index');
         Route::delete('banned-ips/{bannedIp}', [BannedIpController::class, 'destroy'])->name('banned-ips.destroy');
 
-        // Activity Logs
         Route::prefix('activity-logs')->name('activity-logs.')->group(function () {
             Route::get('/', [ActivityLogController::class, 'index'])->name('index');
+            Route::post('/backup', [ActivityLogController::class, 'backup'])->name('backup');
             Route::get('/archives', [ActivityLogController::class, 'archives'])->name('archives');
+            Route::get('/archives/{id}/view', [ActivityLogController::class, 'viewArchive'])->name('archives.view');
             Route::get('/archives/{id}/download', [ActivityLogController::class, 'downloadArchive'])->name('archives.download');
             Route::get('/{id}', [ActivityLogController::class, 'show'])->name('show');
         });
