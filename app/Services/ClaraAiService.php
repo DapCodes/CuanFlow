@@ -196,7 +196,10 @@ class ClaraAiService
         $lines = array_map('trim', $lines);
         $response = implode("\n", $lines);
 
-        // 10. Final trim
+        // 10. Hapus simbol yang tidak diinginkan user (\\ dan // berlebih)
+        $response = str_replace(['\\', '//'], '', $response);
+
+        // 11. Final trim
         return trim($response);
     }
 
@@ -694,13 +697,20 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
                 return $result;
             }
 
+            $finalResult = $result['content'];
+
+            // Clean response unless it's JSON mode (kalkulaba)
+            if ($mode !== 'kalkulaba') {
+                $finalResult = $this->cleanAiResponse($finalResult);
+            }
+
             return [
                 'success' => true,
                 'mode' => $mode,
-                'result' => $result['content'],
+                'result' => $finalResult,
                 'data_used' => [
                     'outlet_name' => $outletData['outlet_name'],
-                    'products_count' => $outletData['products']->count(),
+                    'products_count' => count($outletData['products']),
                     'top_products' => $outletData['top_products']->pluck('name')->toArray(),
                 ],
             ];
@@ -739,16 +749,16 @@ BUSINESS CONTEXT for {$data['outlet_name']}:
 YOUR TASK:
 Generate a structured, highly optimized video production prompt based on the user's request. Your output MUST include ALL of the following sections clearly labeled:
 
-1. **SCENE BREAKDOWN** — Describe each scene in detail (Scene 1, Scene 2, etc.)
-2. **CAMERA MOVEMENT** — Specific camera techniques (dolly, crane, tracking shot, close-up, wide, etc.)
-3. **LIGHTING** — Lighting setup (golden hour, studio, neon, natural, cinematic, etc.)
-4. **MOOD & TONE** — Overall emotional atmosphere
-5. **SUBJECT DETAILS** — Detailed description of the main subject/product
-6. **ENVIRONMENT** — Background, setting, location details
-7. **STYLE REFERENCE** — Visual style (commercial, documentary, cinematic, social media, etc.)
-8. **AI VIDEO TOOL KEYWORDS** — Comma-separated keywords optimized for AI video tools
+1. SCENE BREAKDOWN — Deskripsikan setiap adegan secara detail (Adegan 1, Adegan 2, dst)
+2. CAMERA MOVEMENT — Teknik kamera spesifik (dolly, crane, tracking shot, close-up, wide, dll)
+3. LIGHTING — Pengaturan pencahayaan (golden hour, studio, neon, natural, cinematic, dll)
+4. MOOD & TONE — Suasana emosional secara keseluruhan
+5. SUBJECT DETAILS — Deskripsi detail tentang subjek/produk utama
+6. ENVIRONMENT — Latar belakang, setting, detail lokasi
+7. STYLE REFERENCE — Gaya visual (komersial, dokumenter, cinematic, media sosial, dll)
+8. AI VIDEO TOOL KEYWORDS — Kata kunci yang dipisahkan koma untuk tools video AI
 
-Make the prompt extremely detailed and visual. Each scene should be a paragraph of description. Think like a film director.
+Buatlah prompt yang sangat detail dan visual. Setiap adegan harus berupa paragraf deskripsi. Berpikirlah seperti seorang sutradara film. JANGAN gunakan simbol markdown seperti **, __, #, atau simbol teknis seperti \\ dan // dalam respons.
 
 REMINDER: {$langInstruction}";
 
@@ -788,16 +798,16 @@ BUSINESS CONTEXT for {$data['outlet_name']}:
 YOUR TASK:
 Generate a complete, high-converting affiliate/promotional script based on the user's request. Your output MUST include ALL of the following sections clearly labeled:
 
-1. **HOOK** (0-3 seconds) — An attention-grabbing opening line that stops the scroll. Use curiosity, controversy, or shock value.
-2. **PROBLEM STATEMENT** — Identify and amplify the pain point the target audience faces.
-3. **PRODUCT INTRODUCTION** — Naturally introduce the product/brand as the solution. Include specific details from the business data.
-4. **BENEFITS** — List 3-5 compelling benefits as bullet points. Use specific numbers and results when possible.
-5. **SOCIAL PROOF** — Add credibility elements (bestseller data, customer count, ratings, testimonials framework).
-6. **CALL TO ACTION (CTA)** — Clear, urgent, compelling action step.
-7. **PLATFORM ADAPTATIONS:**
-   - **TikTok Version** (15-30 sec script)
-   - **Instagram Reels Version** (30-60 sec script)
-   - **YouTube Shorts Version** (30-60 sec script)
+1. HOOK (0-3 detik) — Pembukaan yang menarik perhatian.
+2. PROBLEM STATEMENT — Identifikasi masalah yang dihadapi audiens.
+3. PRODUCT INTRODUCTION — Perkenalkan produk/brand sebagai solusi.
+4. BENEFITS — Daftar keuntungan dalam poin-poin singkat.
+5. SOCIAL PROOF — Tambahkan elemen kredibilitas (data terlaris, jumlah pelanggan, dll).
+6. CALL TO ACTION (CTA) — Langkah tindakan yang jelas dan mendesak.
+7. PLATFORM ADAPTATIONS:
+   - Versi TikTok (skrip 15-30 detik)
+   - Versi Instagram Reels (skrip 30-60 detik)
+   - Versi YouTube Shorts (skrip 30-60 detik)
 
 Each version should feel native to the platform. Use real product names and pricing from the business data.
 
@@ -833,18 +843,18 @@ BUSINESS CONTEXT for {$data['outlet_name']}:
 YOUR TASK:
 Generate highly optimized image generation prompts for advertising materials based on the user's request. Your output MUST include ALL of the following sections clearly labeled:
 
-1. **VISUAL COMPOSITION** — Layout, framing, rule of thirds, focal point placement.
-2. **SUBJECT & FOCUS** — Detailed description of the main subject/product appearance.
-3. **BACKGROUND** — Background environment, props, setting details.
-4. **LIGHTING** — Specific lighting setup (studio, natural, dramatic, flat lay, etc.)
-5. **COLOR GRADING** — Color palette, mood, saturation, contrast.
-6. **BRANDING STYLE** — Visual brand identity direction (minimal, luxury, street, artisan, etc.)
-7. **MARKETING ANGLE** — Choose one: luxury, urgency, discount, exclusivity, lifestyle, FOMO, social proof.
-8. **TEXT OVERLAY SUGGESTION** — Headline text, subtext, CTA text, font style recommendation.
-9. **READY-TO-USE PROMPTS:**
-   - **Midjourney Prompt** — Full prompt with parameters (--ar, --style, --v)
-   - **DALL·E 3 Prompt** — Optimized natural language prompt
-   - **SDXL Prompt** — Prompt with positive/negative prompt structure
+1. VISUAL COMPOSITION — Tata letak, framing, focal point.
+2. SUBJECT & FOCUS — Deskripsi detail subjek/produk.
+3. BACKGROUND — Lingkungan latar belakang, properti, detail setting.
+4. LIGHTING — Pengaturan cahaya (studio, natural, dramatik, dll).
+5. COLOR GRADING — Palet warna, mood, saturasi, kontras.
+6. BRANDING STYLE — Arah identitas visual brand (minimalis, mewah, dll).
+7. MARKETING ANGLE — Sudut pandang pemasaran.
+8. TEXT OVERLAY SUGGESTION — Headline, subtext, CTA, dan rekomendasi font.
+9. READY-TO-USE PROMPTS:
+   - Midjourney Prompt — Prompt lengkap dengan parameter (--ar, --v)
+   - DALL·E 3 Prompt — Prompt bahasa natural yang dioptimalkan
+   - SDXL Prompt — Prompt dengan struktur positif/negatif
 
 Each prompt should be production-ready and specifically reference the business/product context.
 
@@ -969,9 +979,9 @@ IMPORTANT for cost_analysis.breakdown:
 - Keep calculations logical and realistic for small businesses
 - Do NOT hallucinate extreme numbers
 - If data is missing, estimate intelligently based on Indonesian market prices
-- RESPONSE MUST BE ONLY THE JSON OBJECT.
-- NO MARKDOWN, NO CODE BLOCKS, NO 'Here is the JSON', NO 'I hope this helps'.
-- JUST THE RAW JSON STARTING WITH { AND ENDING WITH }.";
+- NO MARKDOWN, NO BOLD (**), NO ITALIC (*), NO HEADERS (#).
+- JANGAN gunakan simbol \\ atau // dalam nilai teks.
+- RESPONSE MUST BE ONLY THE JSON OBJECT starting with { and ending with }.";
 
         // Build messages with multimodal support for image analysis
         if (!empty($imageBase64)) {
