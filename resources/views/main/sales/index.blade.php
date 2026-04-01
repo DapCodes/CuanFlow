@@ -145,7 +145,7 @@
                                         <tr>
                                             <th class="px-4 py-3 text-left">Invoice</th>
                                             <th class="px-4 py-3 text-left">Waktu</th>
-                                            <th class="px-4 py-3 text-left">Pelanggan</th>
+                                            <th class="px-4 py-3 text-left">Kasir</th>
                                             <th class="px-4 py-3 text-left">Metode</th>
                                             <th class="px-4 py-3 text-right">Diskon</th>
                                             <th class="px-4 py-3 text-right">Total</th>
