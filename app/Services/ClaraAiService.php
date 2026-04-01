@@ -980,7 +980,6 @@ IMPORTANT for cost_analysis.breakdown:
 - Do NOT hallucinate extreme numbers
 - If data is missing, estimate intelligently based on Indonesian market prices
 - NO MARKDOWN, NO BOLD (**), NO ITALIC (*), NO HEADERS (#).
-- JANGAN gunakan simbol \\ atau // dalam nilai teks.
 - RESPONSE MUST BE ONLY THE JSON OBJECT starting with { and ending with }.";
 
         // Build messages with multimodal support for image analysis
