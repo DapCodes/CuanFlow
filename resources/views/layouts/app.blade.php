@@ -255,7 +255,7 @@
             }">
             <!-- Navbar Grid -->
             <!-- Navbar Grid (For Grid mode) -->
-            <nav id="main-navbar" x-cloak x-show="currentLayout === 'grid' && !isFullScreen" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
+            <nav id="main-navbar" x-cloak x-show="currentLayout === 'grid' && !isFullScreen" class="bg-white border-b border-gray-200 sticky top-0 z-40" x-data="{ mobileOpen: false, notiOpen: false }">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16 items-center">
                         
