@@ -21,31 +21,31 @@ return new class extends Migration
         // Insert default labels
         DB::table('task_labels')->insert([
             [
-                'name' => 'Urgent',
+                'name' => 'Penjualan',
                 'color' => '#EF4444', // Red
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Bug',
+                'name' => 'Stok dan Produksi',
                 'color' => '#F97316', // Orange
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Feature',
+                'name' => 'Pemasaran',
                 'color' => '#8B5CF6', // Purple
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Improvement',
+                'name' => 'Finansial',
                 'color' => '#06B6D4', // Cyan
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Documentation',
+                'name' => 'Lainnya',
                 'color' => '#84CC16', // Lime
                 'created_at' => now(),
                 'updated_at' => now(),
