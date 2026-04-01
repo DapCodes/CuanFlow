@@ -240,7 +240,7 @@
                             <div class="flex items-center gap-2">
                                 <p class="text-[10px] font-black text-gray-800 uppercase tracking-widest">Hasil Analisis Kalkulaba</p>
                             </div>
-                            <button @click="copyRawJson()"
+                            <button @click="copyRawJson()" hidden
                                 class="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gray-600 hover:text-cuan-green hover:border-cuan-green transition-all shadow-sm">
                                 <i class="fas mr-1" :class="copied ? 'fa-check text-cuan-green' : 'fa-copy'"></i>
                                 <span x-text="copied ? 'Tersalin!' : 'Salin JSON'"></span>
@@ -367,7 +367,7 @@
                     </div>
 
                     {{-- Raw Output (Collapsible) --}}
-                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" hidden>
                         <button @click="showRaw = !showRaw" class="w-full px-5 py-3 bg-gray-50 flex items-center justify-between">
                             <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Raw AI Response</p>
                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs transition-transform" :class="{ 'rotate-180': showRaw }"></i>
