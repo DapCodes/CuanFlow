@@ -277,7 +277,7 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect', '
     // ---------------------------------------------------------------------
 
     // POS Interface
-    Route::get('/pos', [PointOfSaleController::class, 'index'])->name('pos.index');
+    Route::get('/pos', [PointOfSaleController::class, 'index'])->name('pos.index')->middleware('feature.access:pos');
     Route::get('/pos/check-register', [PointOfSaleController::class, 'checkCashRegister'])->name('cash-register.check');
     Route::post('/pos/start-register', [PointOfSaleController::class, 'startCashRegister'])->name('cash-register.start');
     Route::get('/cash-register/check-sales', [PointOfSaleController::class, 'checkSales'])->name('cash-register.check-sales');
