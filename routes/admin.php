@@ -164,6 +164,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             Route::get('/archives/{id}/download', [ActivityLogController::class, 'downloadArchive'])->name('archives.download');
             Route::get('/{id}', [ActivityLogController::class, 'show'])->name('show');
         });
+
+        Route::prefix('error-logs')->name('error-logs.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'index'])->name('index');
+            Route::post('/clear', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'clear'])->name('clear');
+        });
     });
 
     // Terms & Conditions Management
