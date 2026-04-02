@@ -42,9 +42,9 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-5">
                             <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 border border-teal-100 shadow-sm">
+                                <!-- <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 border border-teal-100 shadow-sm">
                                     <i class="ph-light ph-{{ $feature->icon ?? 'star' }} text-lg"></i>
-                                </div>
+                                </div> -->
                                 <div>
                                     <p class="font-black text-gray-900 leading-tight tracking-tight">{{ $feature->display_name }}</p>
                                     <p class="text-[10px] font-medium text-gray-400 mt-0.5 italic">{{ $feature->description ?? 'Tidak ada deskripsi' }}</p>

@@ -118,7 +118,7 @@
             <table class="w-full text-sm">
                 <thead class="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                     <tr>
-                        <th class="px-6 py-4 text-left">Representasi Fitur</th>
+                        <!-- <th class="px-6 py-4 text-left">Representasi Fitur</th> -->
                         <th class="px-6 py-4 text-left">Grup Kategori</th>
                         <th class="px-6 py-4 text-center">Status</th>
                         <th class="px-6 py-4 text-center">Order</th>

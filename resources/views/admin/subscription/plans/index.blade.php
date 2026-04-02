@@ -131,9 +131,9 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-5 whitespace-nowrap">
                             <div class="flex items-center gap-4">
-                                <div class="w-11 h-11 rounded-xl bg-gray-900 text-emerald-400 flex items-center justify-center shadow-lg font-black text-xs uppercase border border-gray-800">
+                                <!-- <div class="w-11 h-11 rounded-xl bg-gray-900 text-emerald-400 flex items-center justify-center shadow-lg font-black text-xs uppercase border border-gray-800">
                                     {{ substr($plan->tier->name, 0, 1) }}
-                                </div>
+                                </div> -->
                                 <div>
                                     <p class="font-black text-gray-900 leading-tight uppercase tracking-tight">{{ $plan->tier->display_name }}</p>
                                     <p class="text-[9px] font-black uppercase tracking-widest text-emerald-500 mt-1 italic">{{ $plan->tier->name }}</p>
