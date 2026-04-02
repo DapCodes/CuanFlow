@@ -42,6 +42,16 @@ class FeatureAccessService
      */
     public function canAccess(User $user, string $featureName): bool
     {
+        // Global Feature Flag check
+        $isActiveGlobally = Cache::remember("feature_flag_{$featureName}_active", 300, function () use ($featureName) {
+            $feature = Feature::where('name', $featureName)->first();
+            return $feature ? $feature->is_active : true; // Default to true if not in DB to prevent locking out new unseeded features
+        });
+
+        if (! $isActiveGlobally) {
+            return false;
+        }
+
         // Admins always have access
         if ($user->hasRole('admin')) {
             return true;

@@ -42,10 +42,15 @@ class CheckFeatureAccess
         }
 
         // Check if feature exists and is active
-        $feature = Feature::where('name', $featureName)->where('is_active', true)->first();
+        $feature = Feature::where('name', $featureName)->first();
 
         if (! $feature) {
             abort(404, 'Fitur tidak ditemukan.');
+        }
+
+        if (! $feature->is_active) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Fitur tersebut tidak dapat di buka dalam tahap perbaikan.');
         }
 
         // Use the centralized service for access check
