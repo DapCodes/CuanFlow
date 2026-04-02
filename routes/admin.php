@@ -168,6 +168,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::prefix('error-logs')->name('error-logs.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'index'])->name('index');
             Route::post('/clear', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'clear'])->name('clear');
+            Route::post('/backup', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'backup'])->name('backup');
+            Route::get('/archives', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'archives'])->name('archives');
+            Route::get('/archives/{id}/view', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'viewArchive'])->name('archives.view');
+            Route::get('/archives/{id}/download', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'downloadArchive'])->name('archives.download');
         });
     });
 
