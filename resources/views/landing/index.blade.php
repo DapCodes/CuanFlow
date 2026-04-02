@@ -152,7 +152,7 @@
                     </table>
                 </div>
 
-                {{-- Preview Section --}}
+                <!-- {{-- Preview Section --}}
                 <div class="p-8 bg-gray-50/30 border-t border-gray-100">
                     <div class="flex items-center justify-between mb-6">
                         <div>
@@ -233,7 +233,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
             @else
                 <div class="p-20 text-center">
