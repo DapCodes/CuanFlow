@@ -252,6 +252,21 @@
                 </a>
             </li>
 
+            <!-- Queue Monitoring -->
+            <li>
+                <a href="{{ route('admin.security.queue.index') }}" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('admin.security.queue.*') ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-sm shadow-emerald-100/50' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fas fa-network-wired w-5 text-center text-lg {{ request()->routeIs('admin.security.queue.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Queue Monitor</span>
+                    @php
+                        $failedQueueCount = \Illuminate\Support\Facades\DB::table('failed_jobs')->count();
+                    @endphp
+                    @if($failedQueueCount > 0)
+                        <span class="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 text-[9px] font-bold leading-none text-white bg-red-500 rounded-full shadow-sm shadow-red-200">{{ $failedQueueCount }}</span>
+                    @endif
+                </a>
+            </li>
+
             <!-- Maintenance -->
             <li x-data="{ open: {{ request()->routeIs('admin.maintenance.*') ? 'true' : 'false' }} }">
                 <button @click="open = !open" 
