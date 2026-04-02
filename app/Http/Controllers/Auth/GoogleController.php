@@ -26,25 +26,44 @@ class GoogleController extends Controller
             $googleUser = Socialite::driver('google')->stateless()->user();
 
             if (Auth::check()) {
-                // Use binding process: check if google account is already attached to another user
-                $existingUser = User::where('google_id', $googleUser->getId())
-                    ->where('id', '!=', Auth::id())
+                $user = Auth::user();
+
+                // Check if google account is already attached to another user
+                $existingGoogleUser = User::where('google_id', $googleUser->getId())
+                    ->where('id', '!=', $user->id)
                     ->first();
 
-                if ($existingUser) {
+                if ($existingGoogleUser) {
                     return redirect()->route('profile.edit', ['tab' => 'security'])
                         ->with('error', 'Akun Google ini sudah digunakan oleh pengguna lain.');
                 }
 
-                $user = Auth::user();
+                // Check if the google email is used by another user
+                $existingEmailUser = User::where('email', $googleUser->getEmail())
+                    ->where('id', '!=', $user->id)
+                    ->first();
+
+                if ($existingEmailUser) {
+                    return redirect()->route('profile.edit', ['tab' => 'security'])
+                        ->with('error', 'Email dari akun Google ini ('.$googleUser->getEmail().') sudah terdaftar pada pengguna lain.');
+                }
+
                 $user->google_id = $googleUser->getId();
+                $user->email = $googleUser->getEmail(); // Change user's email to bound Google email
+
                 if (! $user->google_avatar || $user->google_avatar !== $googleUser->getAvatar()) {
                     $user->google_avatar = $googleUser->getAvatar();
                 }
+                
+                // If the app has verified email, we can auto-verify it since Google verified it
+                if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail) {
+                    $user->email_verified_at = now();
+                }
+
                 $user->save();
 
                 return redirect()->route('profile.edit', ['tab' => 'security'])
-                    ->with('status', 'Akun Google berhasil dihubungkan.');
+                    ->with('status', 'Akun Google berhasil dihubungkan dan email telah diperbarui.');
             }
 
             // Find existing user by google_id or email
