@@ -84,6 +84,7 @@
             @endforeach
         };
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -101,12 +102,40 @@
         }
     </script>
     
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('theme_mode');
+                if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) {}
+        })();
+    </script>
+
     <style>
         [x-cloak] { display: none !important; }
         body {
             font-family: 'Satoshi', sans-serif;
             background-color: #f9fafb;
         }
+
+        /* Auto Dark Mode Global Overrides */
+        html.dark body { background-color: #0f172a !important; color: #f8fafc !important; }
+        html.dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+        html.dark .text-gray-900, html.dark .text-gray-800 { color: #f8fafc !important; }
+        html.dark .text-gray-700, html.dark .text-gray-600 { color: #e2e8f0 !important; }
+        html.dark .text-gray-500 { color: #94a3b8 !important; }
+        html.dark .bg-gray-50, html.dark .bg-\[\#f9fafb\] { background-color: #0f172a !important; }
+        html.dark .border-gray-200, html.dark .border-gray-100 { border-color: #334155 !important; }
+        html.dark .border-b, html.dark .border-r, html.dark .border-l, html.dark .border-t, html.dark .border { border-color: #334155; }
+        html.dark .bg-gray-100 { background-color: #334155 !important; }
+        html.dark .hover\:bg-gray-50:hover { background-color: #334155 !important; }
+        html.dark .hover\:bg-gray-100:hover { background-color: #475569 !important; }
+        html.dark input, html.dark textarea, html.dark select { background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important; }
+        html.dark .shadow-sm { box-shadow: none !important; }
 
         /* ── Top Progress Bar (YouTube/GitHub style) ── */
         .global-page-loader {

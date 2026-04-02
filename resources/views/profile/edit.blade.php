@@ -353,6 +353,26 @@
                         activePaletteId: {{ auth()->user()->color_palette_id ?? 'null' }},
                         saving: false,
                         saved: false,
+                        appTheme: localStorage.getItem('theme_mode') || 'light',
+                        
+                        init() {
+                            this.applyTheme(this.appTheme);
+                        },
+
+                        applyTheme(mode) {
+                            if (mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                                document.documentElement.classList.add('dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
+                            }
+                        },
+
+                        updateTheme(mode) {
+                            if (this.appTheme === mode) return;
+                            this.appTheme = mode;
+                            localStorage.setItem('theme_mode', mode);
+                            this.applyTheme(mode);
+                        },
                         
                         selectPalette(id, palette) {
                             if (this.activePaletteId === id || this.saving) return;
@@ -372,15 +392,53 @@
                             .then(r => r.json())
                             .then(data => {
                                 if (data.success) {
-                                    // Update CSS custom properties for instant live preview
-                                    const root = document.documentElement;
-                                    // Re-inject Tailwind palette (works for CDN)
-                                    window.__CUAN_PALETTE__ = data.palette;
-
-                                    // Dynamically update CSS variables used in inline styles
-                                    // Also store in localStorage so loader spinner uses new colour on next page
-                                    localStorage.setItem('cuan_palette', JSON.stringify(data.palette));
+                                    const base = data.palette.color_green;
                                     
+                                    const mixHex = (hex, mixWith, weight) => {
+                                        hex = hex.replace('#', ''); mixWith = mixWith.replace('#', '');
+                                        const r = Math.round(parseInt(hex.substr(0, 2), 16) * (1 - weight) + parseInt(mixWith.substr(0, 2), 16) * weight);
+                                        const g = Math.round(parseInt(hex.substr(2, 2), 16) * (1 - weight) + parseInt(mixWith.substr(2, 2), 16) * weight);
+                                        const b = Math.round(parseInt(hex.substr(4, 2), 16) * (1 - weight) + parseInt(mixWith.substr(4, 2), 16) * weight);
+                                        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).padStart(6, '0');
+                                    };
+                                    
+                                    const newGreenScale = {
+                                        50: mixHex(base, '#ffffff', 0.95),
+                                        100: mixHex(base, '#ffffff', 0.87),
+                                        200: mixHex(base, '#ffffff', 0.75),
+                                        300: mixHex(base, '#ffffff', 0.60),
+                                        400: mixHex(base, '#ffffff', 0.40),
+                                        500: base,
+                                        600: mixHex(base, '#000000', 0.18),
+                                        700: mixHex(base, '#000000', 0.34),
+                                        800: mixHex(base, '#000000', 0.52),
+                                        900: mixHex(base, '#000000', 0.68),
+                                        950: mixHex(base, '#000000', 0.80),
+                                    };
+
+                                    const newPalette = {
+                                        'cuan-yellow': data.palette.color_yellow,
+                                        'cuan-olive':  data.palette.color_olive,
+                                        'cuan-green':  data.palette.color_green,
+                                        'cuan-dark':   data.palette.color_dark,
+                                    };
+
+                                    tailwind.config.theme.extend.colors = {
+                                        ...tailwind.config.theme.extend.colors,
+                                        ...newPalette,
+                                        primary: { DEFAULT: data.palette.color_green, ...newGreenScale },
+                                        green: newGreenScale,
+                                        emerald: newGreenScale,
+                                        lime: newGreenScale,
+                                    };
+
+                                    const oldScript = document.querySelector('script[src=\'https://cdn.tailwindcss.com\']');
+                                    if (oldScript) {
+                                        const newScript = document.createElement('script');
+                                        newScript.src = 'https://cdn.tailwindcss.com';
+                                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                                    }
+
                                     this.saving = false;
                                     this.saved = true;
                                     setTimeout(() => this.saved = false, 2500);
@@ -469,6 +527,71 @@
 
                             {{-- Divider --}}
                             <div class="border-t border-gray-100 mb-10"></div>
+                            
+                            {{-- Theme Mode Selector --}}
+                            <div class="mb-10">
+                                <h3 class="text-[11px] font-black uppercase text-gray-400 tracking-[0.2em] mb-5 flex items-center gap-2">
+                                    <i class="fas fa-moon opacity-50"></i> Tema Tampilan
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {{-- Light --}}
+                                    <div @click="updateTheme('light')" 
+                                         class="relative group cursor-pointer rounded-3xl border-2 transition-all p-4"
+                                         :class="appTheme === 'light' ? 'border-gray-900 bg-gray-50 shadow-xl' : 'border-gray-100 hover:border-gray-300'">
+                                        <div class="aspect-video bg-white rounded-2xl mb-4 overflow-hidden relative shadow-inner border border-gray-100 flex items-center justify-center">
+                                            <i class="fas fa-sun text-4xl text-amber-500 hover:rotate-45 transition-transform duration-500"></i>
+                                            <div x-show="appTheme === 'light'" class="absolute inset-0 bg-gray-900/5 flex items-center justify-center">
+                                                <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center mt-2">
+                                            <div>
+                                                <h3 class="text-sm font-black text-gray-900">Terang</h3>
+                                            </div>
+                                            <span x-show="appTheme === 'light'" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg">Aktif</span>
+                                        </div>
+                                    </div>
+
+                                    {{-- Dark --}}
+                                    <div @click="updateTheme('dark')" 
+                                         class="relative group cursor-pointer rounded-3xl border-2 transition-all p-4"
+                                         :class="appTheme === 'dark' ? 'border-gray-900 bg-gray-50 shadow-xl' : 'border-gray-100 hover:border-gray-300'">
+                                        <div class="aspect-video bg-[#0f172a] rounded-2xl mb-4 overflow-hidden relative shadow-inner flex items-center justify-center">
+                                            <i class="fas fa-moon text-4xl text-blue-300 hover:-rotate-12 transition-transform duration-500"></i>
+                                            <div x-show="appTheme === 'dark'" class="absolute inset-0 bg-white/5 flex items-center justify-center">
+                                                <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center mt-2">
+                                            <div>
+                                                <h3 class="text-sm font-black text-gray-900">Gelap</h3>
+                                            </div>
+                                            <span x-show="appTheme === 'dark'" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg">Aktif</span>
+                                        </div>
+                                    </div>
+
+                                    {{-- System --}}
+                                    <div @click="updateTheme('system')" 
+                                         class="relative group cursor-pointer rounded-3xl border-2 transition-all p-4"
+                                         :class="appTheme === 'system' ? 'border-gray-900 bg-gray-50 shadow-xl' : 'border-gray-100 hover:border-gray-300'">
+                                        <div class="aspect-video bg-gradient-to-r from-gray-100 to-gray-800 rounded-2xl mb-4 overflow-hidden relative shadow-inner flex items-center justify-center">
+                                            <i class="fas fa-desktop text-4xl text-gray-400 group-hover:scale-110 transition-transform duration-500"></i>
+                                            <div x-show="appTheme === 'system'" class="absolute inset-0 bg-gray-900/10 flex items-center justify-center">
+                                                <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-check text-gray-900"></i></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center mt-2">
+                                            <div>
+                                                <h3 class="text-sm font-black text-gray-900">Bawaan Sistem</h3>
+                                            </div>
+                                            <span x-show="appTheme === 'system'" class="text-[10px] font-black uppercase tracking-widest text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg">Aktif</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Divider --}}
+                            <div class="border-t border-gray-100 mb-10"></div>
 
                             {{-- Color Palette Selector --}}
                             <div>
@@ -536,9 +659,9 @@
                                     @endforeach
                                 </div>
 
-                                <p class="text-[10px] text-gray-400 font-medium mt-5 flex items-center gap-1.5">
-                                    <i class="fas fa-info-circle"></i>
-                                    Perubahan warna akan aktif sepenuhnya saat Anda berpindah halaman berikutnya.
+                                 <p class="text-[10px] text-gray-400 font-medium mt-5 flex items-center gap-1.5 cursor-help" title="Warna akan diperbarui secara otomatis tanpa me-refresh halaman">
+                                    <i class="fas fa-magic text-emerald-500"></i>
+                                    Berkat fitur Live Preview, setiap warna akan segera diaplikasikan secara *real-time* ke seluruh aplikasi.
                                 </p>
                             </div>
                         </div>
