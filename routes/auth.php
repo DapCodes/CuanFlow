@@ -12,6 +12,18 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
+// Google OAuth Routes
+Route::get('auth/google', [GoogleController::class, 'redirect'])
+    ->name('auth.google');
+
+Route::get('auth/google/callback', [GoogleController::class, 'callback'])
+    ->name('auth.google.callback');
+
+Route::middleware('auth')->group(function () {
+    Route::post('auth/google/unlink', [GoogleController::class, 'unlink'])
+        ->name('auth.google.unlink');
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
@@ -29,12 +41,7 @@ Route::middleware('guest')->group(function () {
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->name('password.email');
 
-    // Google OAuth Routes
-    Route::get('auth/google', [GoogleController::class, 'redirect'])
-        ->name('auth.google');
 
-    Route::get('auth/google/callback', [GoogleController::class, 'callback'])
-        ->name('auth.google.callback');
 
     Route::get('auth/google/complete-profile', [GoogleController::class, 'completeProfile'])
         ->name('auth.google.complete');

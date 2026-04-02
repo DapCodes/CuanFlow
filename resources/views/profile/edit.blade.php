@@ -345,6 +345,48 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Google Account Binding --}}
+                    <div class="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden mt-6">
+                        <div class="p-6 md:p-8 lg:p-10">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl shadow-sm border border-red-100/50">
+                                    <i class="fab fa-google"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-black text-gray-900">Tautan Akun Google</h2>
+                                    <p class="text-xs text-gray-500 font-medium mt-0.5">Hubungkan akun Google untuk login yang lebih cepat dan aman.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                                <div class="flex items-center gap-4">
+                                    <i class="fab fa-google text-2xl {{ auth()->user()->google_id ? 'text-red-500' : 'text-gray-400' }}"></i>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900">Google</p>
+                                        <p class="text-[11px] font-medium text-gray-500">
+                                            {{ auth()->user()->google_id ? 'Terhubung' : 'Belum terhubung' }}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    @if(auth()->user()->google_id)
+                                        <form action="{{ route('auth.google.unlink') }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="px-6 py-2.5 bg-white border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-all text-[11px] font-black uppercase tracking-wider shadow-sm">
+                                                Putuskan
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('auth.google') }}" class="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all text-[11px] font-black uppercase tracking-wider shadow-sm">
+                                            Hubungkan
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
                 
                 {{-- Appearance Tab Content --}}

@@ -25,6 +25,28 @@ class GoogleController extends Controller
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
 
+            if (Auth::check()) {
+                // Use binding process: check if google account is already attached to another user
+                $existingUser = User::where('google_id', $googleUser->getId())
+                    ->where('id', '!=', Auth::id())
+                    ->first();
+
+                if ($existingUser) {
+                    return redirect()->route('profile.edit', ['tab' => 'security'])
+                        ->with('error', 'Akun Google ini sudah digunakan oleh pengguna lain.');
+                }
+
+                $user = Auth::user();
+                $user->google_id = $googleUser->getId();
+                if (! $user->google_avatar || $user->google_avatar !== $googleUser->getAvatar()) {
+                    $user->google_avatar = $googleUser->getAvatar();
+                }
+                $user->save();
+
+                return redirect()->route('profile.edit', ['tab' => 'security'])
+                    ->with('status', 'Akun Google berhasil dihubungkan.');
+            }
+
             // Find existing user by google_id or email
             $user = User::where('google_id', $googleUser->getId())
                 ->orWhere('email', $googleUser->getEmail())
@@ -141,5 +163,25 @@ class GoogleController extends Controller
         Auth::login($user);
 
         return redirect()->route('dashboard')->with('success', 'Registrasi berhasil! Selamat datang di CuanFlow.');
+    }
+
+    /**
+     * Unlink Google Account.
+     */
+    public function unlink()
+    {
+        $user = Auth::user();
+        
+        // Prevent unlink if no password is set (just in case)
+        if (empty($user->password)) {
+            return redirect()->route('profile.edit', ['tab' => 'security'])
+                ->with('error', 'Anda harus memiliki kata sandi sebelum memutuskan tautan Google.');
+        }
+
+        $user->google_id = null;
+        $user->save();
+
+        return redirect()->route('profile.edit', ['tab' => 'security'])
+            ->with('status', 'Tautan akun Google berhasil diputuskan.');
     }
 }
