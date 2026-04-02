@@ -98,3 +98,99 @@
     </x-card-container>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    document.querySelectorAll('.feature-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const url = this.dataset.url;
+            const knob = this.querySelector('.toggle-knob');
+            const label = this.closest('div').querySelector('.toggle-label');
+            const isCurrentlyActive = this.dataset.active === 'true';
+
+            // Disable to prevent double-click
+            this.disabled = true;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const nowActive = data.is_active;
+
+                    // Update toggle appearance
+                    this.dataset.active = nowActive ? 'true' : 'false';
+                    this.setAttribute('aria-checked', nowActive ? 'true' : 'false');
+                    this.title = nowActive ? 'Klik untuk menonaktifkan' : 'Klik untuk mengaktifkan';
+
+                    if (nowActive) {
+                        this.classList.remove('bg-gray-200');
+                        this.classList.add('bg-emerald-500');
+                        knob.classList.remove('translate-x-1');
+                        knob.classList.add('translate-x-6');
+                        label.textContent = 'Aktif';
+                        label.classList.remove('text-gray-400');
+                        label.classList.add('text-emerald-600');
+                    } else {
+                        this.classList.remove('bg-emerald-500');
+                        this.classList.add('bg-gray-200');
+                        knob.classList.remove('translate-x-6');
+                        knob.classList.add('translate-x-1');
+                        label.textContent = 'Nonaktif';
+                        label.classList.remove('text-emerald-600');
+                        label.classList.add('text-gray-400');
+                    }
+
+                    showToast(data.message, nowActive ? 'success' : 'warning');
+                } else {
+                    showToast('Gagal mengubah status fitur.', 'error');
+                }
+            })
+            .catch(() => {
+                showToast('Terjadi kesalahan. Coba lagi.', 'error');
+            })
+            .finally(() => {
+                this.disabled = false;
+            });
+        });
+    });
+
+    function showToast(message, type = 'success') {
+        const colors = {
+            success: 'bg-emerald-500',
+            warning: 'bg-amber-500',
+            error:   'bg-red-500',
+        };
+        const icons = {
+            success: 'fa-check-circle',
+            warning: 'fa-exclamation-circle',
+            error:   'fa-times-circle',
+        };
+
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl text-white text-sm font-semibold ${colors[type]} transform translate-y-4 opacity-0 transition-all duration-300`;
+        toast.innerHTML = `<i class="fas ${icons[type]}"></i><span>${message}</span>`;
+        document.body.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-y-4', 'opacity-0');
+        });
+
+        setTimeout(() => {
+            toast.classList.add('translate-y-4', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+});
+</script>
+@endpush
+
