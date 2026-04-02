@@ -177,6 +177,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             Route::get('/archives/{id}/view', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'viewArchive'])->name('archives.view');
             Route::get('/archives/{id}/download', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'downloadArchive'])->name('archives.download');
         });
+
+        Route::prefix('queue')->name('queue.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'index'])->name('index');
+            Route::post('/retry-all', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'retryAll'])->name('retry-all');
+            Route::post('/flush', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'flush'])->name('flush');
+            Route::post('/{id}/retry', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'retry'])->name('retry');
+            Route::delete('/{id}', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'destroy'])->name('destroy');
+        });
     });
 
     // Terms & Conditions Management
