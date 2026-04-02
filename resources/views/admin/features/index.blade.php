@@ -60,16 +60,24 @@
                             </span>
                         </td>
                         <td class="px-6 py-5 text-center">
-                            <form action="{{ route('admin.features.toggle', $feature) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="focus:outline-none transition-transform active:scale-95 group">
-                                    @if($feature->is_active)
-                                        <span class="inline-flex items-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-green-50 text-green-600 border border-green-100 group-hover:bg-red-600 group-hover:text-white transition-all" title="Klik untuk menonaktifkan">Aktif</span>
-                                    @else
-                                        <span class="inline-flex items-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 group-hover:bg-green-600 group-hover:text-white transition-all" title="Klik untuk mengaktifkan">Nonaktif</span>
-                                    @endif
+                            {{-- Toggle Switch --}}
+                            <div class="flex items-center justify-center gap-3">
+                                <button
+                                    type="button"
+                                    class="feature-toggle relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed {{ $feature->is_active ? 'bg-emerald-500' : 'bg-gray-200' }}"
+                                    data-id="{{ $feature->id }}"
+                                    data-url="{{ route('admin.features.toggle', $feature) }}"
+                                    data-active="{{ $feature->is_active ? 'true' : 'false' }}"
+                                    title="{{ $feature->is_active ? 'Klik untuk menonaktifkan' : 'Klik untuk mengaktifkan' }}"
+                                    aria-checked="{{ $feature->is_active ? 'true' : 'false' }}"
+                                    role="switch"
+                                >
+                                    <span class="toggle-knob inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-300 {{ $feature->is_active ? 'translate-x-6' : 'translate-x-1' }}"></span>
                                 </button>
-                            </form>
+                                <span class="toggle-label text-[10px] font-black uppercase tracking-widest w-14 text-left {{ $feature->is_active ? 'text-emerald-600' : 'text-gray-400' }}">
+                                    {{ $feature->is_active ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            </div>
                         </td>
                     </tr>
                     @empty
