@@ -65,15 +65,6 @@
                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                             <p class="text-[10px] text-gray-500 italic mt-1">Waktu tambahan saat langganan berakhir sebelum akses diputus.</p>
                         </div>
-
-                        <label class="flex items-center gap-3 cursor-pointer p-3 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
-                            <input type="checkbox" name="auto_renew_default" value="1" {{ $settings->auto_renew_default ? 'checked' : '' }}
-                                   class="w-5 h-5 text-indigo-600 rounded-lg focus:ring-indigo-500 border-gray-300">
-                            <div>
-                                <p class="text-sm font-bold text-gray-700">Auto-Renew Default</p>
-                                <p class="text-[10px] text-gray-500">Otomatis aktifkan perpanjangan untuk pelanggan baru</p>
-                            </div>
-                        </label>
                     </div>
                 </div>
             </div>
