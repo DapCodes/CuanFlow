@@ -70,13 +70,19 @@ class FeaturesSeeder extends Seeder
         ];
 
         foreach ($features as $feature) {
-            Feature::updateOrCreate(
-                ['name' => $feature['name']],
-                array_merge($feature, [
+            $existing = Feature::where('name', $feature['name'])->first();
+            
+            if ($existing) {
+                // Keep existing is_active status
+                $existing->update(array_merge($feature, [
+                    'description' => null,
+                ]));
+            } else {
+                Feature::create(array_merge($feature, [
                     'description' => null,
                     'is_active' => true,
-                ])
-            );
+                ]));
+            }
         }
     }
 }

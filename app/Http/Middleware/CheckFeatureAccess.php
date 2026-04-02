@@ -31,17 +31,12 @@ class CheckFeatureAccess
             return redirect()->route('login');
         }
 
-        // Admins bypass all checks
-        if ($user->hasRole('admin')) {
-            return $next($request);
-        }
-
         // If no specific feature is specified, just proceed
         if (! $featureName) {
             return $next($request);
         }
 
-        // Check if feature exists and is active
+        // Check if feature exists and is active globally
         $feature = Feature::where('name', $featureName)->first();
 
         if (! $feature) {
@@ -51,6 +46,11 @@ class CheckFeatureAccess
         if (! $feature->is_active) {
             return redirect()->route('dashboard')
                 ->with('error', 'Fitur tersebut tidak dapat di buka dalam tahap perbaikan.');
+        }
+
+        // Admins bypass subscription/billing checks
+        if ($user->hasRole('admin')) {
+            return $next($request);
         }
 
         // Use the centralized service for access check

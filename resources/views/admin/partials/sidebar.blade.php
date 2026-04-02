@@ -43,7 +43,7 @@
             </li>
             
             <!-- Data Master (Collapsible) -->
-            <li x-data="{ open: {{ request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*') || request()->routeIs('admin.permission-categories.*') || request()->routeIs('admin.users.*') || request()->routeIs('admin.units.*') || request()->routeIs('admin.expense-categories.*') || request()->routeIs('admin.faqs.*') || request()->routeIs('admin.categories.*') || request()->routeIs('admin.payment-methods.*') || request()->routeIs('admin.task-statuses.*') || request()->routeIs('admin.task-labels.*') || request()->routeIs('admin.testimonials.*') ? 'true' : 'false' }} }">
+            <li x-data="{ open: {{ request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*') || request()->routeIs('admin.permission-categories.*') || request()->routeIs('admin.features.*') || request()->routeIs('admin.users.*') || request()->routeIs('admin.units.*') || request()->routeIs('admin.expense-categories.*') || request()->routeIs('admin.faqs.*') || request()->routeIs('admin.categories.*') || request()->routeIs('admin.payment-methods.*') || request()->routeIs('admin.task-statuses.*') || request()->routeIs('admin.task-labels.*') || request()->routeIs('admin.testimonials.*') ? 'true' : 'false' }} }">
                 <button @click="open = !open" 
                         class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group text-gray-500 hover:bg-gray-50 hover:text-gray-900">
                     <div class="flex items-center gap-3">
@@ -67,6 +67,8 @@
                             ['route' => 'admin.permission-categories.index', 'icon' => 'fa-layer-group', 'label' => 'Kat. Permission', 'pattern' => 'admin.permission-categories.*'],
                             ['route' => 'admin.users.index', 'icon' => 'fa-users', 'label' => 'Users', 'pattern' => 'admin.users.*'],
                             ['route' => 'admin.admins.index', 'icon' => 'fa-user-cog', 'label' => 'Admins', 'pattern' => 'admin.admins.*'],
+                            ['type' => 'divider', 'label' => 'Sistem'],
+                            ['route' => 'admin.features.index', 'icon' => 'fa-toggle-on', 'label' => 'Feature Flags', 'pattern' => 'admin.features.*'],
                             ['type' => 'divider', 'label' => 'Bisnis'],
                             ['route' => 'admin.categories.index', 'icon' => 'fa-folder-open', 'label' => 'Kategori', 'pattern' => 'admin.categories.*'],
                             ['route' => 'admin.units.index', 'icon' => 'fa-ruler', 'label' => 'Units', 'pattern' => 'admin.units.*'],

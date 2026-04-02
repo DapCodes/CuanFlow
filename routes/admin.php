@@ -57,6 +57,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('outlets', OutletController::class)->only(['index', 'show'])->names('admin.outlets');
     Route::post('outlets/{outlet}/toggle-status', [OutletController::class, 'toggleStatus'])->name('admin.outlets.toggle-status');
 
+    // Feature Flags Management
+    Route::get('/features', [\App\Http\Controllers\Admin\FeatureFlagController::class, 'index'])->name('admin.features.index');
+    Route::post('/features/{feature}/toggle', [\App\Http\Controllers\Admin\FeatureFlagController::class, 'toggle'])->name('admin.features.toggle');
+
     // Data Master
     Route::resource('roles', RoleController::class)->names('admin.roles');
     Route::resource('advertisements', \App\Http\Controllers\Admin\AdvertisementController::class)->names('admin.advertisements');
