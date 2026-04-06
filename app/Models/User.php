@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'name', 'email', 'password', 'outlet_id', 'phone', 'avatar', 'color_palette_id', 'is_active', 'last_login_at',
         'google_id', 'google_avatar', 'email_verified_at', 'last_seen_at', 'budget_target',
+        'telegram_id', 'telegram_link_token', 'telegram_linked_at',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -36,6 +37,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'last_login_at' => 'datetime',
         'last_seen_at' => 'datetime',
+        'telegram_linked_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
     ];

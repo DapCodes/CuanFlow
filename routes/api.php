@@ -74,3 +74,19 @@ Route::prefix('v1')->group(function () {
 
 Route::post('/payment/midtrans/notification', [PaymentController::class, 'handleMidtransNotification'])
     ->name('payment.midtrans.notification');
+
+// =========================================================================
+// Telegram Bot Webhook
+// =========================================================================
+Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramController::class, 'handleWebhook'])
+    ->name('telegram.webhook');
+
+// Telegram webhook management (protected, for admin use)
+Route::prefix('telegram')->group(function () {
+    Route::get('/set-webhook', [\App\Http\Controllers\TelegramController::class, 'setWebhook'])
+        ->name('telegram.set-webhook');
+    Route::get('/remove-webhook', [\App\Http\Controllers\TelegramController::class, 'removeWebhook'])
+        ->name('telegram.remove-webhook');
+    Route::get('/webhook-info', [\App\Http\Controllers\TelegramController::class, 'getWebhookInfo'])
+        ->name('telegram.webhook-info');
+});

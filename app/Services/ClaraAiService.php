@@ -562,6 +562,148 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
         return implode("\n", $formatted);
     }
 
+    // =====================================================================
+    // TELEGRAM — Transaction Parsing via AI
+    // =====================================================================
+
+    /**
+     * Parse a free-text message into a structured transaction.
+     *
+     * @param  string  $text  The raw message from the user (e.g., "Makan siang 25rb")
+     * @return array{success: bool, data?: array{type: string, amount: int, note: string}, message?: string}
+     */
+    public function parseTransaction(string $text): array
+    {
+        $text = trim($text);
+
+        if ($text === '') {
+            return [
+                'success' => false,
+                'message' => 'Pesan kosong.',
+            ];
+        }
+
+        $systemPrompt = 'Kamu adalah parser transaksi keuangan. Tugas kamu adalah mengekstrak data transaksi dari pesan pengguna dalam Bahasa Indonesia.
+
+ATURAN PARSING:
+1. Tentukan TIPE transaksi:
+   - "income" jika pesan mengandung kata: gaji, dapat, terima, transfer masuk, penghasilan, pendapatan, profit, bonus, komisi, freelance, bayaran, honor, pemasukan, income, masuk, diterima, cashback
+   - "expense" jika pesan mengandung kata: beli, bayar, makan, ongkos, bensin, listrik, pulsa, belanja, cicilan, sewa, parkir, tiket, pengeluaran, expense, keluar, habis, buat, biaya
+
+2. Ekstrak JUMLAH (amount) dalam Rupiah:
+   - "25rb" atau "25ribu" = 25000
+   - "1.5jt" atau "1,5juta" atau "1.5 juta" = 1500000
+   - "100k" = 100000
+   - "50000" = 50000
+   - "Rp 25.000" = 25000
+   - Selalu konversi ke angka bulat (integer)
+
+3. Ekstrak CATATAN (note):
+   - Deskripsi singkat tentang transaksi
+   - Hilangkan kata-kata yang sudah menjadi tipe (pemasukan/pengeluaran) dan jumlah
+   - Gunakan kata-kata sisa sebagai catatan yang ringkas
+
+4. Jika kamu tidak bisa menentukan tipe, default ke "expense"
+5. Jika kamu tidak bisa menentukan jumlah, kembalikan amount = 0
+
+RESPONSE FORMAT:
+Kamu WAJIB membalas HANYA dengan JSON valid berikut, tanpa teks tambahan:
+{"type": "income/expense", "amount": <angka_integer>, "note": "<catatan_singkat>"}
+
+CONTOH:
+Input: "Makan siang 25rb"
+Output: {"type": "expense", "amount": 25000, "note": "Makan siang"}
+
+Input: "Dapat gaji 5 juta"
+Output: {"type": "income", "amount": 5000000, "note": "Gaji"}
+
+Input: "Bayar listrik 350 ribu"
+Output: {"type": "expense", "amount": 350000, "note": "Bayar listrik"}
+
+Input: "Terima transfer 1.5jt dari klien"
+Output: {"type": "income", "amount": 1500000, "note": "Transfer dari klien"}
+
+Input: "pengeluaran beli kopi 15rb"
+Output: {"type": "expense", "amount": 15000, "note": "Beli kopi"}
+
+Input: "pemasukan freelance 500rb"
+Output: {"type": "income", "amount": 500000, "note": "Freelance"}
+
+PENTING: Jawab HANYA dengan JSON. Jangan tambahkan teks, markdown, atau penjelasan apapun.';
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $text],
+        ];
+
+        $result = $this->callAI($messages);
+
+        if (! $result['success']) {
+            return [
+                'success' => false,
+                'message' => $result['message'] ?? 'Gagal menghubungi AI.',
+            ];
+        }
+
+        $content = $result['content'];
+
+        // Clean potential markdown wrapper
+        $content = preg_replace('/```json\s*/i', '', $content);
+        $content = preg_replace('/```\s*/', '', $content);
+        $content = trim($content);
+
+        // Extract JSON from response (in case AI adds extra text)
+        if (preg_match('/\{[^}]+\}/', $content, $matches)) {
+            $content = $matches[0];
+        }
+
+        $parsed = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($parsed)) {
+            \Log::warning('Telegram parseTransaction: invalid JSON from AI', [
+                'raw' => $result['content'],
+                'cleaned' => $content,
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Gagal memparse respons AI.',
+            ];
+        }
+
+        // Validate required fields
+        $type = $parsed['type'] ?? 'expense';
+        $amount = (int) ($parsed['amount'] ?? 0);
+        $note = $parsed['note'] ?? 'Transaksi';
+
+        if (! in_array($type, ['income', 'expense'])) {
+            $type = 'expense';
+        }
+
+        if ($amount <= 0) {
+            return [
+                'success' => false,
+                'message' => 'Tidak dapat menentukan jumlah transaksi.',
+            ];
+        }
+
+        \Log::info('Telegram parseTransaction success', [
+            'input' => $text,
+            'type' => $type,
+            'amount' => $amount,
+            'note' => $note,
+        ]);
+
+        return [
+            'success' => true,
+            'data' => [
+                'type' => $type,
+                'amount' => $amount,
+                'note' => $note,
+            ],
+        ];
+    }
+
     public function generateInsightIfNeededOnOnline(int $outletId): void
     {
         // 1. Cek: sudah ada insight < 24 jam?
