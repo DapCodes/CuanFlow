@@ -39,6 +39,7 @@ class ProfileController extends Controller
             // Customer fields
             'address' => ['nullable', 'string'],
             'birth_date' => ['nullable', 'date', 'before:today'],
+            'budget_target' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         try {
@@ -58,6 +59,10 @@ class ProfileController extends Controller
             }
             if ($request->filled('password')) {
                 $user->password = Hash::make($data['password']);
+            }
+
+            if ($request->has('budget_target')) {
+                $user->budget_target = $data['budget_target'];
             }
 
             if ($request->hasFile('avatar')) {

@@ -24,6 +24,7 @@ class ProfileResource extends JsonResource
                 'phone' => $this->phone,
                 'role' => $this->getRoleNames()->first(),
                 'avatar_url' => $this->avatar_url,
+                'budget_target' => (float) $this->budget_target,
                 'email_verified_at' => optional($this->email_verified_at)->toISOString(),
                 'created_at' => optional($this->created_at)->toISOString(),
             ],

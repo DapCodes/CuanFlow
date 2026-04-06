@@ -188,6 +188,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(PaymentTransaction::class);
     }
 
+    public function mobileCashFlows(): HasMany
+    {
+        return $this->hasMany(MobileCashFlow::class);
+    }
+
     // =========================================================================
     // Subscription Helper Methods
     // =========================================================================

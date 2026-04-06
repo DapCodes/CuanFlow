@@ -50,6 +50,9 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/vouchers/claim', [\App\Http\Controllers\Api\VoucherClaimController::class, 'claim']);
         Route::get('/vouchers/my-vouchers', [\App\Http\Controllers\Api\VoucherClaimController::class, 'myVouchers']);
+
+        // Mobile Cash Flow
+        Route::apiResource('mobile-cash-flow', \App\Http\Controllers\Api\MobileCashFlowController::class);
     });
     // Voucher Claims
     Route::get('/vouchers/available', [\App\Http\Controllers\Api\VoucherClaimController::class, 'availableVouchers']);
