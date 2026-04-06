@@ -7,8 +7,12 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
-class VerifyEmailNotification extends BaseVerifyEmail
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
 {
+    use Queueable;
     /**
      * Get the mail representation of the notification.
      */
