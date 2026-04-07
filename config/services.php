@@ -59,7 +59,7 @@ return [
 
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
-        'bot_username' => env('TELEGRAM_BOT_USERNAME', 'CuanFlowBot'),
+        'bot_username' => env('TELEGRAM_BOT_USERNAME', 'cuanflow_bot'),
         'webhook_url' => env('TELEGRAM_WEBHOOK_URL'),
     ],
 
