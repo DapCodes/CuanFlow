@@ -15,11 +15,14 @@ class TelegramController extends Controller
 {
     private ?string $botToken;
 
+    private ?string $botUsername;
+
     private ?string $apiBase;
 
     public function __construct()
     {
         $this->botToken = config('services.telegram.bot_token');
+        $this->botUsername = config('services.telegram.bot_username');
         $this->apiBase = $this->botToken ? "https://api.telegram.org/bot{$this->botToken}" : null;
     }
 
@@ -122,10 +125,12 @@ class TelegramController extends Controller
         if ($token !== '') {
             $user = User::where('telegram_link_token', $token)->first();
 
-            if ($user) {
+            // Check if token exists and hasn't expired
+            if ($user && ($user->telegram_token_expires_at && $user->telegram_token_expires_at->isFuture())) {
                 $user->update([
                     'telegram_id' => $telegramId,
                     'telegram_link_token' => null,
+                    'telegram_token_expires_at' => null,
                     'telegram_linked_at' => now(),
                 ]);
 
@@ -190,7 +195,8 @@ class TelegramController extends Controller
 
         $user = User::where('telegram_link_token', $token)->first();
 
-        if (! $user) {
+        // Check if token exists and hasn't expired
+        if (! $user || ($user->telegram_token_expires_at && $user->telegram_token_expires_at->isPast())) {
             $this->sendMessage($chatId,
                 "❌ Token tidak valid atau sudah kadaluarsa.\n" .
                 "Silakan generate token baru dari aplikasi CuanFlow."
@@ -201,6 +207,7 @@ class TelegramController extends Controller
         $user->update([
             'telegram_id' => $telegramId,
             'telegram_link_token' => null,
+            'telegram_token_expires_at' => null,
             'telegram_linked_at' => now(),
         ]);
 
@@ -504,6 +511,33 @@ class TelegramController extends Controller
         return response()->json([
             'ok' => $response->successful(),
             'telegram_response' => $response->json(),
+        ]);
+    }
+
+    /**
+     * Generate a new Telegram link token for the authenticated user.
+     * Accessible via API: GET /api/v1/telegram/token
+     */
+    public function generateLinkToken(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $token = Str::random(32);
+
+        $user->update([
+            'telegram_link_token' => $token,
+            'telegram_token_expires_at' => now()->addHours(2), // Berlaku 2 jam
+        ]);
+
+        $botUsername = $this->botUsername ?? 'CuanFlowBot';
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'token' => $token,
+                'expires_at' => $user->telegram_token_expires_at->toIso8601String(),
+                'deep_link' => "https://t.me/{$botUsername}?start={$token}",
+                'instructions' => "Kirim /link {$token} ke bot Telegram kami atau klik link di atas. Berlaku selama 2 jam."
+            ]
         ]);
     }
 

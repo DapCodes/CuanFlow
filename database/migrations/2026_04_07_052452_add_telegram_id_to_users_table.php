@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('telegram_id')->nullable()->unique()->after('google_avatar');
             $table->string('telegram_link_token')->nullable()->unique()->after('telegram_id');
-            $table->timestamp('telegram_linked_at')->nullable()->after('telegram_link_token');
+            $table->timestamp('telegram_token_expires_at')->nullable()->after('telegram_link_token');
+            $table->timestamp('telegram_linked_at')->nullable()->after('telegram_token_expires_at');
         });
     }
 

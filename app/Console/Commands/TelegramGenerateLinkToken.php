@@ -32,7 +32,10 @@ class TelegramGenerateLinkToken extends Command
         }
 
         $token = Str::random(32);
-        $user->update(['telegram_link_token' => $token]);
+        $user->update([
+            'telegram_link_token' => $token,
+            'telegram_token_expires_at' => now()->addHours(2),
+        ]);
 
         $this->newLine();
         $this->info('✅ Telegram Link Token Generated!');
@@ -41,6 +44,7 @@ class TelegramGenerateLinkToken extends Command
             ['User', $user->name],
             ['Email', $user->email],
             ['Token', $token],
+            ['Expires At', $user->telegram_token_expires_at->format('d M Y H:i')],
         ]);
         $this->newLine();
 

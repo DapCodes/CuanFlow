@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\OutletApiController;
 use App\Http\Controllers\Api\ResellerApplicationApiController;
 use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\TelegramController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -26,6 +27,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/email/verify/{id}/{hash}', EmailVerifyController::class)
         ->middleware(['signed', 'throttle:6,1'])
         ->name('api.verification.verify');
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [LogoutController::class, 'logout']);
         Route::get('/profile', [\App\Http\Controllers\Api\ProfileController::class, 'show']);
@@ -53,7 +55,11 @@ Route::prefix('v1')->group(function () {
 
         // Mobile Cash Flow
         Route::apiResource('mobile-cash-flow', \App\Http\Controllers\Api\MobileCashFlowController::class);
+
+        // Telegram Account Linking
+        Route::get('/telegram/token', [TelegramController::class, 'generateLinkToken']);
     });
+
     // Voucher Claims
     Route::get('/vouchers/available', [\App\Http\Controllers\Api\VoucherClaimController::class, 'availableVouchers']);
 
@@ -78,15 +84,16 @@ Route::post('/payment/midtrans/notification', [PaymentController::class, 'handle
 // =========================================================================
 // Telegram Bot Webhook
 // =========================================================================
-Route::post('/telegram/webhook', [\App\Http\Controllers\TelegramController::class, 'handleWebhook'])
+Route::post('/telegram/webhook', [TelegramController::class, 'handleWebhook'])
     ->name('telegram.webhook');
 
 // Telegram webhook management (protected, for admin use)
 Route::prefix('telegram')->group(function () {
-    Route::get('/set-webhook', [\App\Http\Controllers\TelegramController::class, 'setWebhook'])
+    Route::get('/set-webhook', [TelegramController::class, 'setWebhook'])
         ->name('telegram.set-webhook');
-    Route::get('/remove-webhook', [\App\Http\Controllers\TelegramController::class, 'removeWebhook'])
+    Route::get('/remove-webhook', [TelegramController::class, 'removeWebhook'])
         ->name('telegram.remove-webhook');
-    Route::get('/webhook-info', [\App\Http\Controllers\TelegramController::class, 'getWebhookInfo'])
+    Route::get('/webhook-info', [TelegramController::class, 'getWebhookInfo'])
         ->name('telegram.webhook-info');
 });
+
