@@ -25,6 +25,15 @@ class ProfileResource extends JsonResource
                 'role' => $this->getRoleNames()->first(),
                 'avatar_url' => $this->avatar_url,
                 'budget_target' => (float) $this->budget_target,
+                'telegram_id' => $this->telegram_id,
+                'telegram_linked_at' => optional($this->telegram_linked_at)->toISOString(),
+                'is_telegram_linked' => (bool) $this->telegram_id,
+                'telegram_link_token' => $this->telegram_link_token,
+                'telegram_token_expires_at' => optional($this->telegram_token_expires_at)->toISOString(),
+                'telegram_bot_username' => config('services.telegram.bot_username', 'cuanflow_bot'),
+                'telegram_deep_link' => $this->telegram_link_token 
+                    ? "https://t.me/" . config('services.telegram.bot_username', 'cuanflow_bot') . "?start=" . $this->telegram_link_token
+                    : null,
                 'email_verified_at' => optional($this->email_verified_at)->toISOString(),
                 'created_at' => optional($this->created_at)->toISOString(),
             ],
