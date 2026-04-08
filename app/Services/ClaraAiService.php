@@ -563,8 +563,124 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
     }
 
     // =====================================================================
-    // TELEGRAM — Transaction Parsing via AI
+    // TELEGRAM — Transaction Parsing & Chatbot via AI
     // =====================================================================
+
+    /**
+     * Parse a free-text message into a structured transaction OR chat reply.
+     *
+     * @param  User  $user  The user making the request
+     * @param  string  $text  The raw message
+     * @return array{success: bool, data?: array, message?: string}
+     */
+    public function handleTelegramChatOrTransaction(User $user, string $text): array
+    {
+        $text = trim($text);
+
+        if ($text === '') {
+            return [
+                'success' => false,
+                'message' => 'Pesan kosong.',
+            ];
+        }
+
+        // Get 30 days financial data for context
+        $startDate = now()->subDays(30)->toDateString();
+        $transactions = \App\Models\MobileCashFlow::where('user_id', $user->id)
+            ->where('date', '>=', $startDate)
+            ->orderBy('date', 'desc')
+            ->limit(15)
+            ->get();
+            
+        $income30d = $transactions->where('type', 'income')->sum('amount');
+        $expense30d = $transactions->where('type', 'expense')->sum('amount');
+        
+        $txHistory = "";
+        foreach($transactions as $tx) {
+            $type = $tx->type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+            $txHistory .= "- {$tx->date}: [{$type}] Rp " . number_format($tx->amount, 0, ',', '.') . " ({$tx->note})\n";
+        }
+        
+        if ($txHistory === "") {
+            $txHistory = "Belum ada transaksi 30 hari terakhir.";
+        }
+
+        $systemPrompt = 'Kamu adalah asisten keuangan pribadi bernama CuanFlow Bot.
+Tugas kamu adalah menentukan apakah pesan dari pengguna berupa perintah mencatat transaksi baru, ATAU pertanyaan (chat) tentang keuangannya.
+
+ATURAN:
+1. JIKA MENCATAT TRANSAKSI (contoh: "makan 25rb", "gajian 5jt", "bayar listrik 150000"):
+   Set intent="record", ekstrak type ("income" atau "expense"), amount (dalam Rupiah, angka bulat), dan note.
+   
+2. JIKA BERTANYA KEUANGAN (contoh: "berapa pengeluaran saya?", "uang sisa berapa minggu ini?", "apa transaksi terakhir?"):
+   Set intent="chat". Berikan jawaban yang ramah, informatif, rapi, dan to the point menggunakan DATA KEUANGAN di bawah ini. JANGAN gunakan emoji berlebihan. JANGAN gunakan format markdown.
+
+DATA KEUANGAN PENGGUNA (30 Hari Terakhir):
+Total Pemasukan: Rp '.number_format($income30d, 0, ',', '.').'
+Total Pengeluaran: Rp '.number_format($expense30d, 0, ',', '.').'
+Sisa/Saldo: Rp '.number_format($income30d - $expense30d, 0, ',', '.').'
+
+15 Transaksi Terakhir (Paling baru ke paling lama):
+'.$txHistory.'
+
+FORMAT OUTPUT (WAJIB JSON VALID):
+Balas hanya dengan JSON valid tanpa tambahan teks lainnya. 
+Jika intent=record:
+{"intent": "record", "type": "expense", "amount": 25000, "note": "Makan siang"}
+
+Jika intent=chat:
+{"intent": "chat", "reply": "Total pengeluaran Anda 30 hari terakhir adalah Rp 150.000 dengan transaksi terakhir berupa Makan siang sebesar Rp 25.000."}';
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $text],
+        ];
+
+        $result = $this->callAI($messages);
+
+        if (! $result['success']) {
+            return [
+                'success' => false,
+                'message' => $result['message'] ?? 'Gagal menghubungi AI.',
+            ];
+        }
+
+        $content = $result['content'];
+
+        // Clean potential markdown wrapper
+        $content = preg_replace('/```json\s*/i', '', $content);
+        $content = preg_replace('/```\s*/', '', $content);
+        $content = trim($content);
+
+        // Extract JSON from response 
+        if (preg_match('/\{.*\}/s', $content, $matches)) {
+            $content = $matches[0];
+        }
+
+        $parsed = json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($parsed)) {
+            \Log::warning('Telegram handleTelegramChatOrTransaction: invalid JSON from AI', [
+                'raw' => $result['content'],
+                'cleaned' => $content,
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Gagal memparse respons AI.',
+            ];
+        }
+
+        \Log::info('Telegram intent parsed success', [
+            'input' => $text,
+            'intent' => $parsed['intent'] ?? 'unknown',
+        ]);
+
+        return [
+            'success' => true,
+            'data' => $parsed,
+        ];
+    }
 
     /**
      * Parse a free-text message into a structured transaction.

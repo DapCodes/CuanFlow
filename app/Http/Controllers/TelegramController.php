@@ -488,27 +488,34 @@ class TelegramController extends Controller
         // Show "typing" indicator
         $this->sendChatAction($chatId, 'typing');
 
-        // Parse transaction via Clara AI
+        // Parse transaction or chat via Clara AI
         $claraService = app(ClaraAiService::class);
-        $parseResult  = $claraService->parseTransaction($text);
+        $parseResult  = $claraService->handleTelegramChatOrTransaction($user, $text);
 
         if (! $parseResult['success']) {
             $this->sendMessage(
                 $chatId,
-                "Maaf, saya tidak bisa memahami transaksi dari pesan tersebut.\n\n" .
+                "Maaf, saya tidak bisa memahami pertanyaan atau transaksi dari pesan tersebut.\n\n" .
                 "Coba format yang lebih jelas, contoh:\n" .
                 "<i>\"Makan siang 25rb\"</i>\n" .
-                "<i>\"Dapat gaji 5 juta\"</i>\n" .
-                "Atau gunakan <code>/income</code> / <code>/expense</code>.",
+                "Atau tanyakan, <i>\"Berapa pengeluaran saya minggu ini?\"</i>",
                 $this->mainKeyboard
             );
             return;
         }
 
         $data = $parseResult['data'];
+        $intent = $data['intent'] ?? 'record';
 
-        // Validate parsed data
-        if (! in_array($data['type'], ['income', 'expense'])) {
+        // Jika user bertanya, langsung balas dengan jawaban dari AI
+        if ($intent === 'chat') {
+            $reply = $data['reply'] ?? 'Maaf, saya tidak mengerti maksud Anda.';
+            $this->sendMessage($chatId, $reply, $this->mainKeyboard);
+            return;
+        }
+
+        // Validate parsed data untuk intent = record
+        if (! isset($data['type']) || ! in_array($data['type'], ['income', 'expense'])) {
             $this->sendMessage($chatId, "Tipe transaksi tidak valid. Gunakan format yang lebih jelas.", $this->mainKeyboard);
             return;
         }
