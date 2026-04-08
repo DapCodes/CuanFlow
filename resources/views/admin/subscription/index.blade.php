@@ -165,10 +165,12 @@
                                 <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest inline-block w-fit text-white {{ $sub->tier->badge_color ?? 'bg-gray-600' }} shadow-sm">
                                     {{ $sub->tier->display_name }}
                                 </span>
-                                <div class="flex items-center gap-2 text-xs font-bold text-gray-900">
-                                    <i class="far fa-calendar-times text-gray-300"></i>
-                                    <span>Hingga: {{ ($sub->is_trial ? $sub->trial_ends_at : $sub->expires_at)?->format('d/m/Y') ?? 'Unlimited' }}</span>
-                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center gap-2 text-xs font-bold text-gray-900">
+                                <i class="far fa-calendar-times text-gray-300"></i>
+                                <span>Hingga: {{ ($sub->is_trial ? $sub->trial_ends_at : $sub->expires_at)?->format('d/m/Y') ?? 'Unlimited' }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 text-center">
