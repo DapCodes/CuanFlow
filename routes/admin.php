@@ -144,6 +144,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
         // User Subscriptions
         Route::get('users', [App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('users.index');
+        Route::get('users/search', [App\Http\Controllers\Admin\SubscriptionController::class, 'searchUsers'])->name('users.search');
+        Route::post('users/store', [App\Http\Controllers\Admin\SubscriptionController::class, 'store'])->name('users.store');
         Route::get('users/{subscription}', [App\Http\Controllers\Admin\SubscriptionController::class, 'show'])->name('users.show');
         Route::post('users/{subscription}/status', [App\Http\Controllers\Admin\SubscriptionController::class, 'updateStatus'])->name('users.status');
 

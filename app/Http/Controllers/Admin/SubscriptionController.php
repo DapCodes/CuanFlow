@@ -47,7 +47,9 @@ class SubscriptionController extends Controller
             'expired' => UserSubscription::where('status', 'expired')->count(),
         ];
 
-        return view('admin.subscription.index', compact('subscriptions', 'status', 'stats'));
+        $allPlans = \App\Models\SubscriptionPlan::with('tier')->active()->get();
+
+        return view('admin.subscription.index', compact('subscriptions', 'status', 'stats', 'allPlans'));
     }
 
     /**
@@ -73,5 +75,52 @@ class SubscriptionController extends Controller
         $subscription->update($validated);
 
         return back()->with('success', 'Status langganan berhasil diperbarui.');
+    }
+
+    public function searchUsers(Request $request)
+    {
+        $search = $request->query('query');
+        
+        if (!$search) {
+            return response()->json([]);
+        }
+
+        $users = \App\Models\User::where('name', 'like', "%{$search}%")
+            ->orWhere('email', 'like', "%{$search}%")
+            ->limit(10)
+            ->get(['id', 'name', 'email']);
+
+        return response()->json($users);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+            'plan_id' => ['required', 'exists:subscription_plans,id'],
+        ]);
+
+        $plan = \App\Models\SubscriptionPlan::with('tier')->findOrFail($validated['plan_id']);
+        
+        $startedAt = \Carbon\Carbon::now();
+        $expiresAt = $plan->calculateExpiryDate($startedAt);
+
+        // Cancel existing active subscriptions for this user to avoid conflicts
+        \App\Models\UserSubscription::where('user_id', $validated['user_id'])
+            ->whereIn('status', [\App\Models\UserSubscription::STATUS_ACTIVE, \App\Models\UserSubscription::STATUS_TRIAL])
+            ->update(['status' => \App\Models\UserSubscription::STATUS_CANCELLED]);
+
+        \App\Models\UserSubscription::create([
+            'user_id' => $validated['user_id'],
+            'tier_id' => $plan->tier_id,
+            'plan_id' => $plan->id,
+            'status' => \App\Models\UserSubscription::STATUS_ACTIVE,
+            'started_at' => $startedAt,
+            'expires_at' => $expiresAt,
+            'is_trial' => false,
+            'auto_renew' => false,
+        ]);
+
+        return back()->with('success', 'Pelanggan berhasil ditambahkan.');
     }
 }
