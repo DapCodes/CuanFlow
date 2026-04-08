@@ -19,11 +19,34 @@ class TelegramController extends Controller
 
     private ?string $apiBase;
 
+    // Quick reply keyboard untuk user yang sudah terhubung
+    private array $mainKeyboard = [
+        'keyboard' => [
+            ['📊 Ringkasan Bulan Ini', '📋 Status Akun'],
+            ['➕ Catat Pemasukan', '➖ Catat Pengeluaran'],
+            ['❓ Bantuan'],
+        ],
+        'resize_keyboard'   => true,
+        'one_time_keyboard' => false,
+        'input_field_placeholder' => 'Ketik transaksi atau pilih menu...',
+    ];
+
+    // Keyboard untuk user yang belum terhubung
+    private array $guestKeyboard = [
+        'keyboard' => [
+            ['/start'],
+            ['❓ Bantuan'],
+        ],
+        'resize_keyboard'   => true,
+        'one_time_keyboard' => false,
+        'input_field_placeholder' => 'Hubungkan akun CuanFlow kamu...',
+    ];
+
     public function __construct()
     {
-        $this->botToken = config('services.telegram.bot_token');
+        $this->botToken    = config('services.telegram.bot_token');
         $this->botUsername = config('services.telegram.bot_username');
-        $this->apiBase = $this->botToken ? "https://api.telegram.org/bot{$this->botToken}" : null;
+        $this->apiBase     = $this->botToken ? "https://api.telegram.org/bot{$this->botToken}" : null;
     }
 
     /**
@@ -45,17 +68,20 @@ class TelegramController extends Controller
             return response()->json(['ok' => true]);
         }
 
-        $message = $update['message'];
-        $chatId = $message['chat']['id'];
-        $text = trim($message['text'] ?? '');
+        $message    = $update['message'];
+        $chatId     = $message['chat']['id'];
+        $text       = trim($message['text'] ?? '');
         $telegramId = (string) $message['from']['id'];
-        $firstName = $message['from']['first_name'] ?? 'User';
+        $firstName  = $message['from']['first_name'] ?? 'User';
 
         if ($text === '') {
             return response()->json(['ok' => true]);
         }
 
         try {
+            // Map quick reply button text ke command
+            $text = $this->mapQuickReply($text);
+
             // Handle commands
             if (Str::startsWith($text, '/')) {
                 $this->handleCommand($chatId, $telegramId, $firstName, $text);
@@ -66,14 +92,29 @@ class TelegramController extends Controller
         } catch (\Exception $e) {
             Log::error('Telegram webhook error', [
                 'chat_id' => $chatId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'error'   => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
             ]);
 
-            $this->sendMessage($chatId, "⚠️ Terjadi kesalahan internal. Silakan coba lagi nanti.");
+            $this->sendMessage($chatId, "Terjadi kesalahan internal. Silakan coba lagi nanti.");
         }
 
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Map teks quick reply button ke slash command.
+     */
+    private function mapQuickReply(string $text): string
+    {
+        return match ($text) {
+            '📊 Ringkasan Bulan Ini' => '/summary',
+            '📋 Status Akun'         => '/status',
+            '➕ Catat Pemasukan'     => '/income_prompt',
+            '➖ Catat Pengeluaran'   => '/expense_prompt',
+            '❓ Bantuan'             => '/help',
+            default                  => $text,
+        };
     }
 
     /**
@@ -81,20 +122,22 @@ class TelegramController extends Controller
      */
     private function handleCommand(string $chatId, string $telegramId, string $firstName, string $text): void
     {
-        $parts = explode(' ', $text, 2);
-        $command = strtolower($parts[0]);
+        $parts    = explode(' ', $text, 2);
+        $command  = strtolower($parts[0]);
         $argument = $parts[1] ?? '';
 
         match ($command) {
-            '/start'   => $this->commandStart($chatId, $telegramId, $firstName, $argument),
-            '/link'    => $this->commandLink($chatId, $telegramId, $argument),
-            '/unlink'  => $this->commandUnlink($chatId, $telegramId),
-            '/status'  => $this->commandStatus($chatId, $telegramId),
-            '/income'  => $this->handleTransactionMessage($chatId, $telegramId, $firstName, "pemasukan {$argument}"),
-            '/expense' => $this->handleTransactionMessage($chatId, $telegramId, $firstName, "pengeluaran {$argument}"),
-            '/help'    => $this->commandHelp($chatId),
-            '/summary' => $this->commandSummary($chatId, $telegramId),
-            default    => $this->sendMessage($chatId, "❓ Perintah tidak dikenali. Ketik /help untuk melihat daftar perintah."),
+            '/start'          => $this->commandStart($chatId, $telegramId, $firstName, $argument),
+            '/link'           => $this->commandLink($chatId, $telegramId, $argument),
+            '/unlink'         => $this->commandUnlink($chatId, $telegramId),
+            '/status'         => $this->commandStatus($chatId, $telegramId),
+            '/income'         => $this->handleTransactionMessage($chatId, $telegramId, $firstName, "pemasukan {$argument}"),
+            '/income_prompt'  => $this->commandIncomePrompt($chatId),
+            '/expense'        => $this->handleTransactionMessage($chatId, $telegramId, $firstName, "pengeluaran {$argument}"),
+            '/expense_prompt' => $this->commandExpensePrompt($chatId),
+            '/help'           => $this->commandHelp($chatId),
+            '/summary'        => $this->commandSummary($chatId, $telegramId),
+            default           => $this->sendMessage($chatId, "Perintah tidak dikenali. Ketik /help untuk melihat daftar perintah yang tersedia.", $this->mainKeyboard),
         };
     }
 
@@ -107,16 +150,11 @@ class TelegramController extends Controller
         $existingUser = User::where('telegram_id', $telegramId)->first();
 
         if ($existingUser) {
-            $this->sendMessage($chatId,
-                "👋 Selamat datang kembali, {$existingUser->name}!\n\n" .
-                "Akun Telegram kamu sudah terhubung dengan CuanFlow.\n" .
-                "Langsung kirim pesan untuk mencatat transaksi.\n\n" .
-                "Contoh:\n" .
-                "• \"Makan siang 25rb\"\n" .
-                "• \"Dapat gaji 5 juta\"\n" .
-                "• /income freelance 500rb\n" .
-                "• /expense bensin 50rb\n\n" .
-                "Ketik /help untuk bantuan lengkap."
+            $this->sendMessage(
+                $chatId,
+                "Selamat datang kembali, <b>{$existingUser->name}</b>!\n\n" .
+                "Akun kamu sudah terhubung dengan CuanFlow. Langsung kirim pesan untuk mencatat transaksi, atau pilih menu di bawah.",
+                $this->mainKeyboard
             );
             return;
         }
@@ -128,45 +166,49 @@ class TelegramController extends Controller
             // Check if token exists and hasn't expired
             if ($user && ($user->telegram_token_expires_at && $user->telegram_token_expires_at->isFuture())) {
                 $user->update([
-                    'telegram_id' => $telegramId,
-                    'telegram_link_token' => null,
+                    'telegram_id'               => $telegramId,
+                    'telegram_link_token'       => null,
                     'telegram_token_expires_at' => null,
-                    'telegram_linked_at' => now(),
+                    'telegram_linked_at'        => now(),
                 ]);
 
-                $this->sendMessage($chatId,
-                    "✅ Berhasil! Akun Telegram kamu sekarang terhubung dengan:\n\n" .
-                    "👤 Nama: {$user->name}\n" .
-                    "📧 Email: {$user->email}\n\n" .
-                    "Sekarang kamu bisa langsung mencatat pengeluaran dan pemasukan melalui chat ini!\n\n" .
-                    "Contoh:\n" .
-                    "• \"Makan siang 25rb\"\n" .
-                    "• \"Dapat gaji 5 juta\"\n\n" .
-                    "Ketik /help untuk bantuan lengkap."
+                $this->sendMessage(
+                    $chatId,
+                    "Akun berhasil terhubung!\n\n" .
+                    "<b>Nama:</b> {$user->name}\n" .
+                    "<b>Email:</b> {$user->email}\n\n" .
+                    "Sekarang kamu bisa langsung mencatat pengeluaran dan pemasukan melalui chat ini. " .
+                    "Cukup kirim pesan seperti <i>\"Makan siang 25rb\"</i> atau <i>\"Dapat gaji 5 juta\"</i>, " .
+                    "dan AI akan otomatis mendeteksinya.",
+                    $this->mainKeyboard
                 );
                 return;
             }
 
-            $this->sendMessage($chatId,
-                "❌ Token tidak valid atau sudah kadaluarsa.\n\n" .
-                "Silakan generate token baru melalui aplikasi CuanFlow, lalu kirim:\n" .
-                "/link [token_kamu]"
+            $this->sendMessage(
+                $chatId,
+                "Token tidak valid atau sudah kedaluwarsa.\n\n" .
+                "Silakan buka aplikasi CuanFlow dan minta token baru, lalu kirim:\n" .
+                "<code>/link [token_kamu]</code>",
+                $this->guestKeyboard
             );
             return;
         }
 
         // No token — show welcome & linking instructions
-        $this->sendMessage($chatId,
-            "👋 Halo {$firstName}! Selamat datang di CuanFlow Bot! 🚀\n\n" .
-            "Bot ini membantu kamu mencatat pengeluaran dan pemasukan langsung dari Telegram.\n\n" .
-            "📌 Untuk memulai, hubungkan akun CuanFlow kamu:\n\n" .
-            "1️⃣ Buka aplikasi CuanFlow\n" .
-            "2️⃣ Masuk ke menu Profil → Hubungkan Telegram\n" .
-            "3️⃣ Salin token yang muncul\n" .
-            "4️⃣ Kirim perintah berikut di sini:\n\n" .
-            "/link [token_kamu]\n\n" .
-            "Contoh: /link abc123def456\n\n" .
-            "Ketik /help untuk melihat semua perintah."
+        $this->sendMessage(
+            $chatId,
+            "Halo, <b>{$firstName}</b>! Selamat datang di CuanFlow Bot.\n\n" .
+            "Bot ini membantu kamu mencatat pengeluaran dan pemasukan langsung dari Telegram menggunakan kecerdasan buatan.\n\n" .
+            "<b>Cara memulai:</b>\n" .
+            "1. Buka aplikasi CuanFlow\n" .
+            "2. Masuk ke menu Profil lalu pilih Hubungkan Telegram\n" .
+            "3. Salin token yang muncul\n" .
+            "4. Kirim perintah berikut di sini:\n\n" .
+            "<code>/link [token_kamu]</code>\n\n" .
+            "Contoh: <code>/link abc123def456</code>\n\n" .
+            "Ketik /help untuk melihat semua perintah yang tersedia.",
+            $this->guestKeyboard
         );
     }
 
@@ -176,9 +218,11 @@ class TelegramController extends Controller
     private function commandLink(string $chatId, string $telegramId, string $token): void
     {
         if ($token === '') {
-            $this->sendMessage($chatId,
-                "⚠️ Cara penggunaan: /link [token]\n\n" .
-                "Dapatkan token dari menu Profil → Hubungkan Telegram di aplikasi CuanFlow."
+            $this->sendMessage(
+                $chatId,
+                "Cara penggunaan: <code>/link [token]</code>\n\n" .
+                "Dapatkan token dari menu <b>Profil → Hubungkan Telegram</b> di aplikasi CuanFlow.",
+                $this->guestKeyboard
             );
             return;
         }
@@ -186,9 +230,11 @@ class TelegramController extends Controller
         // Check if telegram already linked to another account
         $alreadyLinked = User::where('telegram_id', $telegramId)->first();
         if ($alreadyLinked) {
-            $this->sendMessage($chatId,
-                "ℹ️ Telegram kamu sudah terhubung dengan akun: {$alreadyLinked->name} ({$alreadyLinked->email}).\n\n" .
-                "Untuk menghubungkan ke akun lain, lepas dulu koneksi dengan /unlink"
+            $this->sendMessage(
+                $chatId,
+                "Akun Telegram kamu sudah terhubung dengan <b>{$alreadyLinked->name}</b> ({$alreadyLinked->email}).\n\n" .
+                "Untuk mengganti akun, lepaskan koneksi terlebih dahulu dengan perintah /unlink.",
+                $this->mainKeyboard
             );
             return;
         }
@@ -197,26 +243,29 @@ class TelegramController extends Controller
 
         // Check if token exists and hasn't expired
         if (! $user || ($user->telegram_token_expires_at && $user->telegram_token_expires_at->isPast())) {
-            $this->sendMessage($chatId,
-                "❌ Token tidak valid atau sudah kadaluarsa.\n" .
-                "Silakan generate token baru dari aplikasi CuanFlow."
+            $this->sendMessage(
+                $chatId,
+                "Token tidak valid atau sudah kedaluwarsa.\n" .
+                "Silakan buka aplikasi CuanFlow dan minta token baru.",
+                $this->guestKeyboard
             );
             return;
         }
 
         $user->update([
-            'telegram_id' => $telegramId,
-            'telegram_link_token' => null,
+            'telegram_id'               => $telegramId,
+            'telegram_link_token'       => null,
             'telegram_token_expires_at' => null,
-            'telegram_linked_at' => now(),
+            'telegram_linked_at'        => now(),
         ]);
 
-        $this->sendMessage($chatId,
-            "✅ Berhasil terhubung!\n\n" .
-            "👤 {$user->name}\n" .
-            "📧 {$user->email}\n\n" .
-            "Sekarang kirim pesan untuk mencatat transaksi.\n" .
-            "Contoh: \"Beli kopi 15rb\" atau /income gajian 5jt"
+        $this->sendMessage(
+            $chatId,
+            "Akun berhasil terhubung!\n\n" .
+            "<b>Nama:</b> {$user->name}\n" .
+            "<b>Email:</b> {$user->email}\n\n" .
+            "Sekarang kirim pesan untuk mencatat transaksi. Contoh: <i>\"Beli kopi 15rb\"</i> atau <code>/income gajian 5jt</code>",
+            $this->mainKeyboard
         );
     }
 
@@ -228,18 +277,20 @@ class TelegramController extends Controller
         $user = User::where('telegram_id', $telegramId)->first();
 
         if (! $user) {
-            $this->sendMessage($chatId, "ℹ️ Akun Telegram kamu belum terhubung dengan CuanFlow.");
+            $this->sendMessage($chatId, "Akun Telegram kamu belum terhubung dengan CuanFlow.", $this->guestKeyboard);
             return;
         }
 
         $user->update([
-            'telegram_id' => null,
+            'telegram_id'        => null,
             'telegram_linked_at' => null,
         ]);
 
-        $this->sendMessage($chatId,
-            "🔓 Koneksi Telegram berhasil dilepas dari akun {$user->name}.\n\n" .
-            "Untuk menghubungkan kembali, gunakan /link [token]"
+        $this->sendMessage(
+            $chatId,
+            "Koneksi Telegram berhasil dilepas dari akun <b>{$user->name}</b>.\n\n" .
+            "Untuk menghubungkan kembali, gunakan perintah <code>/link [token]</code>.",
+            $this->guestKeyboard
         );
     }
 
@@ -251,16 +302,18 @@ class TelegramController extends Controller
         $user = User::where('telegram_id', $telegramId)->first();
 
         if (! $user) {
-            $this->sendMessage($chatId,
-                "❌ Belum terhubung.\n\n" .
-                "Gunakan /link [token] untuk menghubungkan akun CuanFlow."
+            $this->sendMessage(
+                $chatId,
+                "Akun belum terhubung.\n\n" .
+                "Gunakan <code>/link [token]</code> untuk menghubungkan akun CuanFlow kamu.",
+                $this->guestKeyboard
             );
             return;
         }
 
         // Get this month's summary
         $monthStart = now()->startOfMonth();
-        $monthEnd = now()->endOfMonth();
+        $monthEnd   = now()->endOfMonth();
 
         $income = MobileCashFlow::where('user_id', $user->id)
             ->where('type', 'income')
@@ -272,15 +325,20 @@ class TelegramController extends Controller
             ->whereBetween('date', [$monthStart, $monthEnd])
             ->sum('amount');
 
-        $this->sendMessage($chatId,
-            "📊 Status Akun CuanFlow\n\n" .
-            "👤 Nama: {$user->name}\n" .
-            "📧 Email: {$user->email}\n" .
-            "🔗 Terhubung sejak: " . ($user->telegram_linked_at ? $user->telegram_linked_at->format('d M Y H:i') : '-') . "\n\n" .
-            "💰 Ringkasan Bulan Ini (" . now()->format('F Y') . "):\n" .
-            "📈 Pemasukan: Rp " . number_format($income, 0, ',', '.') . "\n" .
-            "📉 Pengeluaran: Rp " . number_format($expense, 0, ',', '.') . "\n" .
-            "💵 Selisih: Rp " . number_format($income - $expense, 0, ',', '.')
+        $balance     = $income - $expense;
+        $balanceSign = $balance >= 0 ? '+' : '';
+
+        $this->sendMessage(
+            $chatId,
+            "<b>Status Akun CuanFlow</b>\n\n" .
+            "<b>Nama:</b> {$user->name}\n" .
+            "<b>Email:</b> {$user->email}\n" .
+            "<b>Terhubung sejak:</b> " . ($user->telegram_linked_at ? $user->telegram_linked_at->format('d M Y H:i') : '-') . "\n\n" .
+            "<b>Ringkasan " . now()->translatedFormat('F Y') . ":</b>\n" .
+            "Pemasukan    : Rp " . number_format($income, 0, ',', '.') . "\n" .
+            "Pengeluaran  : Rp " . number_format($expense, 0, ',', '.') . "\n" .
+            "Saldo bersih : {$balanceSign}Rp " . number_format($balance, 0, ',', '.'),
+            $this->mainKeyboard
         );
     }
 
@@ -292,12 +350,16 @@ class TelegramController extends Controller
         $user = User::where('telegram_id', $telegramId)->first();
 
         if (! $user) {
-            $this->sendMessage($chatId, "❌ Akun belum terhubung. Gunakan /link [token] untuk menghubungkan.");
+            $this->sendMessage(
+                $chatId,
+                "Akun belum terhubung. Gunakan <code>/link [token]</code> untuk menghubungkan akun CuanFlow kamu.",
+                $this->guestKeyboard
+            );
             return;
         }
 
         $monthStart = now()->startOfMonth();
-        $monthEnd = now()->endOfMonth();
+        $monthEnd   = now()->endOfMonth();
 
         $income = MobileCashFlow::where('user_id', $user->id)
             ->where('type', 'income')
@@ -316,23 +378,27 @@ class TelegramController extends Controller
 
         $transactionList = '';
         foreach ($recentTransactions as $tx) {
-            $icon = $tx->type === 'income' ? '📈' : '📉';
-            $typeLabel = $tx->type === 'income' ? '+' : '-';
-            $transactionList .= "{$icon} {$typeLabel}Rp " . number_format($tx->amount, 0, ',', '.') . " — {$tx->note} ({$tx->date})\n";
+            $sign             = $tx->type === 'income' ? '+' : '-';
+            $formattedAmount  = number_format($tx->amount, 0, ',', '.');
+            $transactionList .= "{$sign}Rp {$formattedAmount}  {$tx->note}  ({$tx->date})\n";
         }
 
         if ($transactionList === '') {
             $transactionList = "Belum ada transaksi bulan ini.\n";
         }
 
-        $this->sendMessage($chatId,
-            "📊 Ringkasan Keuangan — " . now()->format('F Y') . "\n\n" .
-            "📈 Total Pemasukan: Rp " . number_format($income, 0, ',', '.') . "\n" .
-            "📉 Total Pengeluaran: Rp " . number_format($expense, 0, ',', '.') . "\n" .
-            "💵 Saldo Bersih: Rp " . number_format($income - $expense, 0, ',', '.') . "\n\n" .
-            "📝 5 Transaksi Terakhir:\n" .
-            $transactionList . "\n" .
-            "Ketik /help untuk bantuan lebih lanjut."
+        $balance     = $income - $expense;
+        $balanceSign = $balance >= 0 ? '+' : '';
+
+        $this->sendMessage(
+            $chatId,
+            "<b>Ringkasan Keuangan — " . now()->translatedFormat('F Y') . "</b>\n\n" .
+            "Pemasukan   : Rp " . number_format($income, 0, ',', '.') . "\n" .
+            "Pengeluaran : Rp " . number_format($expense, 0, ',', '.') . "\n" .
+            "Saldo bersih: {$balanceSign}Rp " . number_format($balance, 0, ',', '.') . "\n\n" .
+            "<b>5 Transaksi Terakhir:</b>\n" .
+            "<code>" . $transactionList . "</code>",
+            $this->mainKeyboard
         );
     }
 
@@ -341,28 +407,64 @@ class TelegramController extends Controller
      */
     private function commandHelp(string $chatId): void
     {
-        $this->sendMessage($chatId,
-            "📚 Panduan CuanFlow Bot\n\n" .
-            "🔗 Manajemen Akun:\n" .
-            "/start — Mulai & info bot\n" .
-            "/link [token] — Hubungkan akun CuanFlow\n" .
-            "/unlink — Lepas koneksi akun\n" .
-            "/status — Cek status & ringkasan\n\n" .
-            "💰 Catat Transaksi:\n" .
-            "/income [keterangan] — Catat pemasukan\n" .
+        $this->sendMessage(
+            $chatId,
+            "<b>Panduan CuanFlow Bot</b>\n\n" .
+            "<b>Manajemen Akun:</b>\n" .
+            "/start       — Mulai dan lihat info bot\n" .
+            "/link [token]— Hubungkan akun CuanFlow\n" .
+            "/unlink      — Lepas koneksi akun\n" .
+            "/status      — Cek status dan ringkasan\n\n" .
+            "<b>Catat Transaksi:</b>\n" .
+            "/income [keterangan]  — Catat pemasukan\n" .
             "/expense [keterangan] — Catat pengeluaran\n" .
-            "/summary — Ringkasan keuangan bulan ini\n\n" .
-            "📝 Cara Cepat (tanpa command):\n" .
-            "Cukup kirim pesan biasa, AI akan otomatis mendeteksi:\n\n" .
-            "Contoh Pengeluaran:\n" .
-            "• \"Makan siang 25rb\"\n" .
-            "• \"Bayar listrik 350 ribu\"\n" .
-            "• \"Beli bensin 50000\"\n\n" .
-            "Contoh Pemasukan:\n" .
-            "• \"Dapat gaji 5 juta\"\n" .
-            "• \"Terima transfer 1.5jt dari klien\"\n" .
-            "• \"Freelance 500rb\"\n\n" .
-            "💡 Tips: Bot akan mengkonfirmasi setiap transaksi yang dicatat."
+            "/summary              — Ringkasan bulan ini\n\n" .
+            "<b>Cara Cepat (tanpa command):</b>\n" .
+            "Cukup kirim pesan biasa, AI akan otomatis mendeteksi jenis transaksinya.\n\n" .
+            "Contoh pengeluaran:\n" .
+            "<i>\"Makan siang 25rb\"</i>\n" .
+            "<i>\"Bayar listrik 350 ribu\"</i>\n\n" .
+            "Contoh pemasukan:\n" .
+            "<i>\"Dapat gaji 5 juta\"</i>\n" .
+            "<i>\"Terima transfer 1.5jt dari klien\"</i>\n\n" .
+            "Bot akan mengkonfirmasi setiap transaksi yang berhasil dicatat.",
+            $this->mainKeyboard
+        );
+    }
+
+    /**
+     * Prompt panduan mencatat pemasukan.
+     */
+    private function commandIncomePrompt(string $chatId): void
+    {
+        $this->sendMessage(
+            $chatId,
+            "<b>Catat Pemasukan</b>\n\n" .
+            "Kirim pesan dengan format:\n" .
+            "<code>/income [keterangan dan jumlah]</code>\n\n" .
+            "Atau cukup ketik langsung, contoh:\n" .
+            "<i>\"Dapat gaji 5 juta\"</i>\n" .
+            "<i>\"Terima transfer 1.5jt dari klien\"</i>\n" .
+            "<i>\"Freelance 500rb\"</i>",
+            $this->mainKeyboard
+        );
+    }
+
+    /**
+     * Prompt panduan mencatat pengeluaran.
+     */
+    private function commandExpensePrompt(string $chatId): void
+    {
+        $this->sendMessage(
+            $chatId,
+            "<b>Catat Pengeluaran</b>\n\n" .
+            "Kirim pesan dengan format:\n" .
+            "<code>/expense [keterangan dan jumlah]</code>\n\n" .
+            "Atau cukup ketik langsung, contoh:\n" .
+            "<i>\"Makan siang 25rb\"</i>\n" .
+            "<i>\"Bayar listrik 350 ribu\"</i>\n" .
+            "<i>\"Beli bensin 50000\"</i>",
+            $this->mainKeyboard
         );
     }
 
@@ -374,9 +476,11 @@ class TelegramController extends Controller
         $user = User::where('telegram_id', $telegramId)->first();
 
         if (! $user) {
-            $this->sendMessage($chatId,
-                "⚠️ Akun Telegram kamu belum terhubung dengan CuanFlow.\n\n" .
-                "Kirim /start untuk melihat cara menghubungkan akun."
+            $this->sendMessage(
+                $chatId,
+                "Akun Telegram kamu belum terhubung dengan CuanFlow.\n\n" .
+                "Kirim /start untuk melihat cara menghubungkan akun.",
+                $this->guestKeyboard
             );
             return;
         }
@@ -386,16 +490,17 @@ class TelegramController extends Controller
 
         // Parse transaction via Clara AI
         $claraService = app(ClaraAiService::class);
-        $parseResult = $claraService->parseTransaction($text);
+        $parseResult  = $claraService->parseTransaction($text);
 
         if (! $parseResult['success']) {
-            $this->sendMessage($chatId,
-                "🤔 Maaf, saya tidak bisa memahami transaksi dari pesan tersebut.\n\n" .
+            $this->sendMessage(
+                $chatId,
+                "Maaf, saya tidak bisa memahami transaksi dari pesan tersebut.\n\n" .
                 "Coba format yang lebih jelas, contoh:\n" .
-                "• \"Makan siang 25rb\"\n" .
-                "• \"Dapat gaji 5 juta\"\n" .
-                "• /income freelance 500rb\n" .
-                "• /expense bensin 50rb"
+                "<i>\"Makan siang 25rb\"</i>\n" .
+                "<i>\"Dapat gaji 5 juta\"</i>\n" .
+                "Atau gunakan <code>/income</code> / <code>/expense</code>.",
+                $this->mainKeyboard
             );
             return;
         }
@@ -404,62 +509,71 @@ class TelegramController extends Controller
 
         // Validate parsed data
         if (! in_array($data['type'], ['income', 'expense'])) {
-            $this->sendMessage($chatId, "⚠️ Tipe transaksi tidak valid. Gunakan format yang lebih jelas.");
+            $this->sendMessage($chatId, "Tipe transaksi tidak valid. Gunakan format yang lebih jelas.", $this->mainKeyboard);
             return;
         }
 
         if ($data['amount'] <= 0) {
-            $this->sendMessage($chatId, "⚠️ Jumlah harus lebih dari 0. Coba lagi dengan menyebutkan jumlahnya.");
+            $this->sendMessage($chatId, "Jumlah harus lebih dari 0. Coba lagi dengan menyebutkan nominalnya.", $this->mainKeyboard);
             return;
         }
 
         // Save to database
         $cashFlow = MobileCashFlow::create([
             'user_id' => $user->id,
-            'type' => $data['type'],
-            'amount' => $data['amount'],
-            'note' => $data['note'] ?? 'Transaksi via Telegram',
-            'date' => now()->toDateString(),
+            'type'    => $data['type'],
+            'amount'  => $data['amount'],
+            'note'    => $data['note'] ?? 'Transaksi via Telegram',
+            'date'    => now()->toDateString(),
         ]);
 
         // Send confirmation
-        $typeLabel = $data['type'] === 'income' ? '📈 Pemasukan' : '📉 Pengeluaran';
-        $typeEmoji = $data['type'] === 'income' ? '💚' : '💸';
+        $typeLabel       = $data['type'] === 'income' ? 'Pemasukan' : 'Pengeluaran';
         $formattedAmount = number_format($data['amount'], 0, ',', '.');
 
-        $this->sendMessage($chatId,
-            "{$typeEmoji} Transaksi Berhasil Dicatat!\n\n" .
-            "📋 Tipe: {$typeLabel}\n" .
-            "💰 Jumlah: Rp {$formattedAmount}\n" .
-            "📝 Catatan: {$data['note']}\n" .
-            "📅 Tanggal: " . now()->format('d M Y') . "\n\n" .
-            "Ketik /summary untuk melihat ringkasan bulan ini."
+        $this->sendMessage(
+            $chatId,
+            "<b>Transaksi Berhasil Dicatat</b>\n\n" .
+            "<b>Jenis:</b> {$typeLabel}\n" .
+            "<b>Jumlah:</b> Rp {$formattedAmount}\n" .
+            "<b>Catatan:</b> {$data['note']}\n" .
+            "<b>Tanggal:</b> " . now()->format('d M Y') . "\n\n" .
+            "Gunakan menu <b>Ringkasan Bulan Ini</b> untuk melihat rekap keuangan kamu.",
+            $this->mainKeyboard
         );
 
         Log::info('Telegram transaction recorded', [
-            'user_id' => $user->id,
+            'user_id'      => $user->id,
             'cash_flow_id' => $cashFlow->id,
-            'type' => $data['type'],
-            'amount' => $data['amount'],
+            'type'         => $data['type'],
+            'amount'       => $data['amount'],
         ]);
     }
 
     /**
      * Send a text message to a Telegram chat.
+     *
+     * @param  array|null  $replyMarkup  Telegram reply_markup object (e.g. ReplyKeyboardMarkup)
      */
-    private function sendMessage(string $chatId, string $text): void
+    private function sendMessage(string $chatId, string $text, ?array $replyMarkup = null): void
     {
-        $response = Http::post("{$this->apiBase}/sendMessage", [
-            'chat_id' => $chatId,
-            'text' => $text,
+        $payload = [
+            'chat_id'    => $chatId,
+            'text'       => $text,
             'parse_mode' => 'HTML',
-        ]);
+        ];
+
+        if ($replyMarkup !== null) {
+            $payload['reply_markup'] = json_encode($replyMarkup);
+        }
+
+        $response = Http::post("{$this->apiBase}/sendMessage", $payload);
 
         if (! $response->successful()) {
             Log::error('Telegram sendMessage failed', [
                 'chat_id' => $chatId,
-                'status' => $response->status(),
-                'body' => $response->body(),
+                'status'  => $response->status(),
+                'body'    => $response->body(),
             ]);
         }
     }
@@ -471,7 +585,7 @@ class TelegramController extends Controller
     {
         Http::post("{$this->apiBase}/sendChatAction", [
             'chat_id' => $chatId,
-            'action' => $action,
+            'action'  => $action,
         ]);
     }
 
@@ -485,18 +599,18 @@ class TelegramController extends Controller
 
         if (! $webhookUrl) {
             return response()->json([
-                'ok' => false,
+                'ok'      => false,
                 'message' => 'TELEGRAM_WEBHOOK_URL not configured in .env',
             ]);
         }
 
         $response = Http::post("{$this->apiBase}/setWebhook", [
-            'url' => $webhookUrl,
+            'url'             => $webhookUrl,
             'allowed_updates' => ['message'],
         ]);
 
         return response()->json([
-            'ok' => $response->successful(),
+            'ok'                => $response->successful(),
             'telegram_response' => $response->json(),
         ]);
     }
@@ -509,7 +623,7 @@ class TelegramController extends Controller
         $response = Http::post("{$this->apiBase}/deleteWebhook");
 
         return response()->json([
-            'ok' => $response->successful(),
+            'ok'                => $response->successful(),
             'telegram_response' => $response->json(),
         ]);
     }
@@ -520,24 +634,24 @@ class TelegramController extends Controller
      */
     public function generateLinkToken(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user  = $request->user();
         $token = Str::random(32);
 
         $user->update([
-            'telegram_link_token' => $token,
-            'telegram_token_expires_at' => now()->addHours(2), // Berlaku 2 jam
+            'telegram_link_token'       => $token,
+            'telegram_token_expires_at' => now()->addHours(2),
         ]);
 
         $botUsername = $this->botUsername ?? 'CuanFlowBot';
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'token' => $token,
-                'expires_at' => $user->telegram_token_expires_at->toIso8601String(),
-                'deep_link' => "https://t.me/{$botUsername}?start={$token}",
-                'instructions' => "Kirim /link {$token} ke bot Telegram kami atau klik link di atas. Berlaku selama 2 jam."
-            ]
+            'data'    => [
+                'token'        => $token,
+                'expires_at'   => $user->telegram_token_expires_at->toIso8601String(),
+                'deep_link'    => "https://t.me/{$botUsername}?start={$token}",
+                'instructions' => "Kirim /link {$token} ke bot Telegram kami atau klik link di atas. Berlaku selama 2 jam.",
+            ],
         ]);
     }
 
