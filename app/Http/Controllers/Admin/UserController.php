@@ -57,7 +57,8 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'is_active' => ['boolean'],
+            'is_active' => ['nullable', 'boolean'],
+            'is_verified' => ['nullable', 'boolean'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['exists:roles,name'],
             'permissions' => ['nullable', 'array'],
@@ -69,7 +70,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'is_active' => $request->boolean('is_active', true),
-            'email_verified_at' => now(), // Auto verify for admin-created users
+            'email_verified_at' => $request->boolean('is_verified', true) ? now() : null,
         ]);
 
         if (! empty($validated['roles'])) {
@@ -107,7 +108,8 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'password' => ['nullable', 'confirmed', Password::defaults()],
-            'is_active' => ['boolean'],
+            'is_active' => ['nullable', 'boolean'],
+            'is_verified' => ['nullable', 'boolean'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['exists:roles,name'],
             'permissions' => ['nullable', 'array'],
@@ -117,8 +119,16 @@ class UserController extends Controller
         $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'is_active' => $request->boolean('is_active', true),
+            'is_active' => $request->boolean('is_active'),
         ];
+
+        if ($request->boolean('is_verified')) {
+            if (!$user->email_verified_at) {
+                $data['email_verified_at'] = now();
+            }
+        } else {
+            $data['email_verified_at'] = null;
+        }
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($validated['password']);

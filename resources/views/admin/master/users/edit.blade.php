@@ -80,11 +80,17 @@
                 </div>
             </div>
             
-            <div>
+            <div class="flex flex-col md:flex-row gap-5">
                 <label class="flex items-center gap-3 cursor-pointer">
                     <input type="checkbox" name="is_active" value="1" class="w-5 h-5 text-cuan-green border-gray-300 rounded"
                            {{ old('is_active', $user->is_active) ? 'checked' : '' }}>
                     <span class="text-sm text-gray-700">Aktifkan user</span>
+                </label>
+                
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="is_verified" value="1" class="w-5 h-5 text-cuan-green border-gray-300 rounded"
+                           {{ old('is_verified', $user->email_verified_at) ? 'checked' : '' }}>
+                    <span class="text-sm text-gray-700">User Terverifikasi</span>
                 </label>
             </div>
         </div>
