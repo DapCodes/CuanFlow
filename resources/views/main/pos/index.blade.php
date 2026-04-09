@@ -19,6 +19,15 @@
             color: #111827;
         }
 
+        /* Responsive Scroll for Mobile/Tablet */
+        @media (max-width: 1024px) {
+            html, body {
+                height: auto;
+                overflow: auto;
+                overflow-x: hidden;
+            }
+        }
+
         body {
             background-color: #f5f5f7;
         }
@@ -29,6 +38,14 @@
             display: flex;
             flex-direction: column;
             transition: height 0.3s ease-in-out;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                height: auto !important;
+                min-height: calc(100vh - 64px);
+                overflow: visible !important;
+            }
         }
 
         body.pos-fullscreen main {
@@ -145,6 +162,13 @@
             transform: translateY(-50%);
             font-size: 0.85rem;
             color: #9ca3af;
+        }
+
+        @media (max-width: 640px) {
+            .search-box {
+                max-width: none !important;
+                width: 100%;
+            }
         }
 
         .filter-select {
@@ -584,7 +608,23 @@
 
             .order-panel {
                 height: auto;
-                max-height: 80vh;
+                max-height: none; /* Allow full height on mobile if stacked */
+                margin-bottom: 3rem; /* Extra space to ensure footer is reachable */
+            }
+            
+            .products-toolbar .flex.gap-2.justify-between {
+                flex-direction: column;
+                gap: 0.75rem !important;
+            }
+            
+            .products-toolbar .flex.gap-2.w-full.max-w-xl {
+                flex-direction: column;
+                max-width: none;
+            }
+            
+            #customerSearchContainer {
+                max-width: none !important;
+                width: 100%;
             }
         }
 
@@ -769,17 +809,8 @@
         /* ===================== RESPONSIVE ===================== */
         @media (max-width: 1024px) {
 
-            html,
-            body {
-                overflow: auto;
-                /* Allow scroll on tablet/mobile */
-            }
-
-            main {
-                height: auto;
-                overflow: visible;
-            }
-
+            /* Redundant blocks removed and consolidated into main media queries above for cleaner code and correct override priority */
+            
             .pos-container {
                 height: auto;
                 overflow: visible;
@@ -791,8 +822,9 @@
                 flex-direction: column;
                 gap: 1rem;
                 padding: 0.85rem;
-                height: auto;
-                overflow: visible;
+                height: auto !important;
+                overflow: visible !important;
+                min-height: min-content;
             }
 
             .product-grid {
