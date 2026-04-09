@@ -509,7 +509,11 @@ class SaleController extends Controller
 
             DB::commit();
 
-            event(new \App\Events\ProductionOrderRefunded($sale));
+            try {
+                event(new \App\Events\ProductionOrderRefunded($sale));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Pusher error in SaleController@refund: ' . $e->getMessage());
+            }
 
             return response()->json(['success' => true, 'message' => 'Refund berhasil. Stok telah dikembalikan.']);
         } catch (\Exception $e) {

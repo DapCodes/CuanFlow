@@ -1040,7 +1040,11 @@ class PointOfSaleController extends Controller
                 }
             }
 
-            event(new NewProductionOrder($sale, 'kitchen-bell'));
+            try {
+                event(new NewProductionOrder($sale, 'kitchen-bell'));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Pusher error in PointOfSaleController@notifyKitchen: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,

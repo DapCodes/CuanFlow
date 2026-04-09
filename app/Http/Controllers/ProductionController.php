@@ -845,7 +845,11 @@ class ProductionController extends Controller
             ->count();
 
         if ($pendingCount === 0) {
-            event(new ProductionCompleted($sale));
+            try {
+                event(new ProductionCompleted($sale));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Pusher error in ProductionController@checkAndFireProductionCompleted: ' . $e->getMessage());
+            }
         }
     }
 
@@ -1322,7 +1326,11 @@ class ProductionController extends Controller
 
             DB::commit();
 
-            event(new \App\Events\ProductionOrderRefunded($sale));
+            try {
+                event(new \App\Events\ProductionOrderRefunded($sale));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Pusher error in ProductionController@refundSaleAjax: ' . $e->getMessage());
+            }
 
             return response()->json(['success' => true, 'message' => 'Transaksi berhasil di-refund']);
         } catch (\Exception $e) {
