@@ -60,7 +60,11 @@ class LoginController extends Controller
                 'last_seen_at' => now(),
             ])->save();
 
-            broadcast(new UserPresenceChanged($user, 'online'));
+            try {
+                broadcast(new UserPresenceChanged($user, 'online'));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Pusher broadcast error in LoginController: ' . $e->getMessage());
+            }
 
             // Track login history
             LoginHistory::create([

@@ -16,7 +16,11 @@ class UserPresenceSubscriber
     {
         if ($event->user) {
             $event->user->update(['last_seen_at' => now()]);
-            broadcast(new UserPresenceChanged($event->user, 'online'));
+            try {
+                broadcast(new UserPresenceChanged($event->user, 'online'));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Pusher broadcast error in UserPresenceSubscriber@handleUserLogin: ' . $e->getMessage());
+            }
         }
     }
 
@@ -28,7 +32,11 @@ class UserPresenceSubscriber
         if ($event->user) {
             $user = $event->user;
             $user->update(['last_seen_at' => null]);
-            broadcast(new UserPresenceChanged($user, 'offline'));
+            try {
+                broadcast(new UserPresenceChanged($user, 'offline'));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Pusher broadcast error in UserPresenceSubscriber@handleUserLogout: ' . $e->getMessage());
+            }
         }
     }
 

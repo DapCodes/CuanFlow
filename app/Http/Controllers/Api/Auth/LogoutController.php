@@ -14,7 +14,11 @@ class LogoutController extends Controller
         $user->currentAccessToken()->delete();
 
         $user->update(['last_seen_at' => null]);
-        broadcast(new UserPresenceChanged($user, 'offline'));
+        try {
+            broadcast(new UserPresenceChanged($user, 'offline'));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Pusher broadcast error in LogoutController: ' . $e->getMessage());
+        }
 
         return response()->json(['message' => 'Logout berhasil']);
     }
