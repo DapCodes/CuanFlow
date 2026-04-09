@@ -335,8 +335,11 @@ class FinanceController extends Controller
                 'notes' => 'nullable|string',
             ]);
 
+            $isOwner = auth()->user()->hasRole('owner');
+
             $expense = Expense::create([
-                'expense_number' => $this->generateExpenseNumber(),
+                'type' => 'income',
+                'expense_number' => null, // Ditangani oleh boot model Expense
                 'outlet_id' => auth()->user()->outlet_id,
                 'expense_category_id' => ExpenseCategory::firstOrCreate(
                     ['code' => 'OTHER_INCOME'],
@@ -349,12 +352,15 @@ class FinanceController extends Controller
                 'reference_number' => $validated['reference_number'] ?? null,
                 'notes' => $validated['notes'] ?? null,
                 'created_by' => auth()->id(),
-                'status' => 'approved',
+                'status' => $isOwner ? 'approved' : 'pending',
+                'approved_by' => $isOwner ? auth()->id() : null,
             ]);
 
+            $message = 'Pemasukan berhasil dicatat';
+            if (!$isOwner) $message .= ' dan menunggu persetujuan (Pending)';
             return response()->json([
                 'success' => true,
-                'message' => 'Pemasukan berhasil dicatat',
+                'message' => $message,
                 'data' => $expense,
             ]);
         } catch (\Exception $e) {
@@ -388,11 +394,14 @@ class FinanceController extends Controller
                 $receiptPath = $request->file('receipt_image')->store('receipts', 'public');
             }
 
+            $isOwner = auth()->user()->hasRole('owner');
+
             $expense = Expense::create([
-                'expense_number' => $this->generateExpenseNumber(),
+                'type' => 'expense',
+                'expense_number' => null, // Ditangani oleh boot model Expense
                 'outlet_id' => auth()->user()->outlet_id,
                 'expense_category_id' => $validated['expense_category_id'],
-                'amount' => $validated['amount'],
+                'amount' => abs($validated['amount']),
                 'expense_date' => $validated['expense_date'],
                 'description' => $validated['description'],
                 'payment_method' => $validated['payment_method'],
@@ -400,12 +409,16 @@ class FinanceController extends Controller
                 'notes' => $validated['notes'] ?? null,
                 'receipt_image' => $receiptPath,
                 'created_by' => auth()->id(),
-                'status' => 'approved',
+                'status' => $isOwner ? 'approved' : 'pending',
+                'approved_by' => $isOwner ? auth()->id() : null,
             ]);
+
+            $message = 'Pengeluaran berhasil dicatat';
+            if (!$isOwner) $message .= ' dan menunggu persetujuan (Pending)';
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pengeluaran berhasil dicatat',
+                'message' => $message,
                 'data' => $expense,
             ]);
         } catch (\Exception $e) {
@@ -542,8 +555,11 @@ class FinanceController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $isOwner = auth()->user()->hasRole('owner');
+
         Expense::create([
-            'expense_number' => $this->generateExpenseNumber(),
+            'type' => 'income',
+            'expense_number' => null,
             'outlet_id' => auth()->user()->outlet_id,
             'expense_category_id' => ExpenseCategory::firstOrCreate(
                 ['code' => 'OTHER_INCOME'],
@@ -556,10 +572,14 @@ class FinanceController extends Controller
             'reference_number' => $validated['reference_number'] ?? null,
             'notes' => $validated['notes'] ?? null,
             'created_by' => auth()->id(),
-            'status' => 'approved',
+            'status' => $isOwner ? 'approved' : 'pending',
+            'approved_by' => $isOwner ? auth()->id() : null,
         ]);
 
-        return redirect()->route('finance.index')->with('success', 'Pemasukan berhasil ditambahkan');
+        $message = 'Pemasukan berhasil ditambahkan';
+        if (!$isOwner) $message .= ' dan menunggu persetujuan';
+
+        return redirect()->route('finance.index')->with('success', $message);
     }
 
     public function editIncome(Expense $expense)
@@ -644,11 +664,14 @@ class FinanceController extends Controller
             $validated['receipt_image'] = $request->file('receipt_image')->store('receipts', 'public');
         }
 
+        $isOwner = auth()->user()->hasRole('owner');
+
         Expense::create([
-            'expense_number' => $this->generateExpenseNumber(),
+            'type' => 'expense',
+            'expense_number' => null,
             'outlet_id' => auth()->user()->outlet_id,
             'expense_category_id' => $validated['expense_category_id'],
-            'amount' => $validated['amount'],
+            'amount' => abs($validated['amount']),
             'expense_date' => $validated['expense_date'],
             'description' => $validated['description'],
             'payment_method' => $validated['payment_method'],
@@ -656,10 +679,14 @@ class FinanceController extends Controller
             'notes' => $validated['notes'] ?? null,
             'receipt_image' => $validated['receipt_image'] ?? null,
             'created_by' => auth()->id(),
-            'status' => 'approved',
+            'status' => $isOwner ? 'approved' : 'pending',
+            'approved_by' => $isOwner ? auth()->id() : null,
         ]);
 
-        return redirect()->route('finance.index')->with('success', 'Pengeluaran berhasil ditambahkan');
+        $message = 'Pengeluaran berhasil ditambahkan';
+        if (!$isOwner) $message .= ' dan menunggu persetujuan';
+
+        return redirect()->route('finance.index')->with('success', $message);
     }
 
     public function editExpense(Expense $expense)
