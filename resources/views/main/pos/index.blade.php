@@ -51,6 +51,11 @@
 
         body.pos-fullscreen main {
             height: 100vh !important;
+            min-height: 100vh !important;
+        }
+
+        body.pos-fullscreen .pos-container {
+            height: 100vh !important;
         }
 
         /* Override wrapper div in app-sidebar to be full height and full width for POS */
@@ -696,6 +701,10 @@
                 overflow: visible !important;
             }
 
+            body.pos-fullscreen main {
+                min-height: 100vh !important;
+            }
+
             .order-panel {
                 order: 2;
                 margin-top: 0.5rem;
@@ -707,6 +716,10 @@
                 grid-template-columns: 1fr 320px;
                 height: calc(100vh - 64px) !important;
                 overflow: hidden !important;
+            }
+
+            body.pos-fullscreen .pos-main {
+                height: 100vh !important;
             }
             
             .products-content, .order-items {
