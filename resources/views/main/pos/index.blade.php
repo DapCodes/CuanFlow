@@ -38,6 +38,7 @@
             display: flex;
             flex-direction: column;
             transition: height 0.3s ease-in-out;
+            position: relative;
         }
 
         @media (max-width: 1024px) {
@@ -85,6 +86,7 @@
             padding: 0.75rem;
             overflow: hidden;
             min-height: 0;
+            width: 100%;
         }
 
         .pos-main.layout-swapped {
@@ -381,8 +383,18 @@
         }
 
         .order-item-price {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: #6b7280;
+            font-weight: 500;
+        }
+
+        @media (max-width: 640px) {
+            .order-item-name {
+                font-size: 0.9rem;
+            }
+            .order-item-price {
+                font-size: 0.8rem;
+            }
         }
 
         .qty-controls {
@@ -431,8 +443,21 @@
             outline: none;
         }
 
+        @media (max-width: 640px) {
+            .qty-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+            }
+            .qty-input {
+                width: 44px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+        }
+
         .order-footer {
-            padding: 0.8rem 1rem 0.9rem;
+            padding: 0.8rem 1rem 1.5rem; /* Increased bottom padding for mobile safety */
             border-top: 1px solid #e5e7eb;
             flex-shrink: 0;
             background-color: #f9fafb;
@@ -599,17 +624,48 @@
             transform: rotate(180deg);
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 1024px) and (orientation: portrait) {
             .pos-main {
                 grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            .order-panel {
+                order: 2;
+                margin-top: 0.5rem;
+            }
+        }
+
+        @media (max-width: 1024px) and (orientation: landscape) {
+            .pos-main {
+                grid-template-columns: 1fr 320px;
+                height: calc(100vh - 64px) !important;
+                overflow: hidden !important;
+            }
+            
+            .products-content, .order-items {
+                overflow-y: auto;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .pos-main {
                 padding: 0.5rem;
                 gap: 0.5rem;
             }
 
             .order-panel {
                 height: auto;
-                max-height: none; /* Allow full height on mobile if stacked */
-                margin-bottom: 3rem; /* Extra space to ensure footer is reachable */
+                max-height: none;
+                margin-bottom: 4rem; /* Safe area for mobile navigation */
+            }
+
+            .btn-primary {
+                padding: 0.85rem;
+                font-size: 0.95rem;
             }
             
             .products-toolbar .flex.gap-2.justify-between {
@@ -808,27 +864,36 @@
 
         /* ===================== RESPONSIVE ===================== */
         @media (max-width: 1024px) {
-
-            /* Redundant blocks removed and consolidated into main media queries above for cleaner code and correct override priority */
-            
             .pos-container {
                 height: auto;
                 overflow: visible;
-                padding-bottom: 2rem;
-            }
-
-            .pos-main {
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
-                padding: 0.85rem;
-                height: auto !important;
-                overflow: visible !important;
-                min-height: min-content;
+                padding-bottom: 1rem;
             }
 
             .product-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .order-header,
+            .order-footer {
+                padding-inline: 0.75rem;
+            }
+            
+            .order-item {
+                padding: 0.85rem; /* Even larger padding for touch */
+                gap: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .order-item-name {
+                font-size: 0.95rem; /* Slightly larger */
+                margin-bottom: 0.2rem;
             }
         }
 
