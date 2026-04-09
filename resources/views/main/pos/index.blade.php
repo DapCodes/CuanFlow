@@ -58,6 +58,24 @@
             height: 100vh !important;
         }
 
+        @media (max-width: 1024px) {
+            body.pos-fullscreen {
+                overflow: auto !important;
+            }
+
+            body.pos-fullscreen main {
+                height: auto !important;
+                min-height: 100vh !important;
+                overflow: visible !important;
+            }
+
+            body.pos-fullscreen .pos-container,
+            body.pos-fullscreen .order-panel {
+                height: auto !important;
+                overflow: visible !important;
+            }
+        }
+
         /* Override wrapper div in app-sidebar to be full height and full width for POS */
         main>div {
             height: 100% !important;
@@ -703,6 +721,8 @@
 
             body.pos-fullscreen main {
                 min-height: 100vh !important;
+                height: auto !important;
+                overflow: visible !important;
             }
 
             .order-panel {
@@ -719,11 +739,24 @@
             }
 
             body.pos-fullscreen .pos-main {
-                height: 100vh !important;
+                height: auto !important;
+                overflow: visible !important;
             }
-            
+
+            body.pos-fullscreen main {
+                height: auto !important;
+                min-height: 100vh !important;
+                overflow: visible !important;
+            }
+
             .products-content, .order-items {
                 overflow-y: auto;
+            }
+
+            body.pos-fullscreen .products-content, 
+            body.pos-fullscreen .order-items {
+                overflow-y: visible !important;
+                max-height: none !important;
             }
         }
 
