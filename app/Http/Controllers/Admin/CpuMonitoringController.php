@@ -151,6 +151,7 @@ class CpuMonitoringController extends Controller
     private function getUptime()
     {
         if (PHP_OS_FAMILY === 'Linux') {
+            // Method 1: Try reading /proc/uptime
             $str = @file_get_contents('/proc/uptime');
             if ($str !== false) {
                 $num = (float)$str;
@@ -159,6 +160,19 @@ class CpuMonitoringController extends Controller
                 $hours = $num % 24; $num = (int)($num / 24);
                 $days = $num;
                 return "$days Hari, $hours Jam, $mins Menit";
+            }
+
+            // Method 2: Try shell_exec as fallback
+            if (function_exists('shell_exec')) {
+                $uptime = @shell_exec('uptime -p');
+                if ($uptime) {
+                    $uptime = str_ireplace(
+                        ['up ', ' days', ' day', ' hours', ' hour', ' minutes', ' minute', ','],
+                        ['', ' Hari', ' Hari', ' Jam', ' Jam', ' Menit', ' Menit', ''],
+                        trim($uptime)
+                    );
+                    return $uptime;
+                }
             }
         }
         return "N/A";
