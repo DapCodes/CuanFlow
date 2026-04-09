@@ -1087,7 +1087,8 @@
         #saleDetailModal,
         #debtPaymentModal,
         #tableManagementModal,
-        #financeModal {
+        #financeModal,
+        #scannerModal {
             backdrop-filter: blur(2px);
         }
 
@@ -1095,7 +1096,8 @@
         .modal-content,
         #startSalesModal>div,
         #paymentSuccessModal>div,
-        #openingAmountModal>div {
+        #openingAmountModal>div,
+        #scannerModal>div {
             display: flex;
             flex-direction: column;
             max-height: 90vh;
@@ -1139,7 +1141,8 @@
             /* Small - Start Sales, Payment Success, Opening Amount */
             #startSalesModal>div,
             #paymentSuccessModal>div,
-            #openingAmountModal>div {
+            #openingAmountModal>div,
+            #scannerModal>div {
                 max-width: 420px;
                 width: 90vw;
             }
@@ -1158,7 +1161,8 @@
             #saleDetailModal,
             #debtPaymentModal,
             #tableManagementModal,
-            #financeModal {
+            #financeModal,
+            #scannerModal {
                 padding: 0 !important;
             }
 
@@ -1171,7 +1175,8 @@
             #saleDetailModal .modal-content,
             #debtPaymentModal .modal-content,
             #tableManagementModal .modal-content,
-            #financeModal .modal-content {
+            #financeModal .modal-content,
+            #scannerModal>div {
                 width: 100vw !important;
                 max-width: 100vw !important;
                 height: 100vh !important;
@@ -1195,6 +1200,7 @@
             #calculatorModal>div,
             #productSettingsModal>div,
             #debtPaymentModal>div,
+            #scannerModal>div,
             #tableManagementModal .modal-content {
                 overflow: hidden;
                 padding: 0;
@@ -2276,9 +2282,9 @@
         <!-- Modal: Scanner -->
         <div id="scannerModal"
             class="hidden fixed inset-0 bg-black bg-opacity-75 z-[60] flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden">
+            <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-xl w-full flex flex-col overflow-hidden">
                 <div
-                    class="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50">
+                    class="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50 flex-shrink-0">
                     <div class="flex items-center gap-3 flex-shrink-0">
                         <h3 class="font-bold text-gray-900 hidden sm:block">Scan Barcode</h3>
                     </div>
@@ -2294,13 +2300,13 @@
                     </div>
 
                     <button onclick="closeScanner()"
-                        class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all">
+                        class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all flex-shrink-0">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
 
-                <div class="p-0 relative bg-black flex justify-center items-center" style="min-height: 300px;">
-                    <div id="reader" class="w-full max-w-md"></div>
+                <div class="p-0 relative bg-black flex flex-1 justify-center items-center overflow-hidden" style="min-height: 300px;">
+                    <div id="reader" class="w-full h-full object-cover"></div>
                     <!-- Overlay visual for scanning area -->
                     <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
                         <div class="w-64 h-64 border-2 border-cuan-green border-dashed rounded-2xl opacity-30"></div>
@@ -2312,7 +2318,7 @@
                 </div>
 
                 <div
-                    class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-500">
+                    class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-500 flex-shrink-0">
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                         Kamera Aktif
