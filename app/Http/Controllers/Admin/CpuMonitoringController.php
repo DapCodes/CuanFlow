@@ -117,16 +117,31 @@ class CpuMonitoringController extends Controller
      */
     private function getDiskUsage()
     {
-        $disktotal = disk_total_space('/');
-        $diskfree = disk_free_space('/');
-        $diskused = $disktotal - $diskfree;
-        $diskpercent = ($diskused / $disktotal) * 100;
+        try {
+            $path = base_path();
+            $disktotal = @disk_total_space($path) ?: 0;
+            $diskfree = @disk_free_space($path) ?: 0;
+            
+            if ($disktotal > 0) {
+                $diskused = $disktotal - $diskfree;
+                $diskpercent = ($diskused / $disktotal) * 100;
+
+                return [
+                    'total' => round($disktotal / (1024 * 1024 * 1024), 2), // GB
+                    'used' => round($diskused / (1024 * 1024 * 1024), 2),   // GB
+                    'free' => round($diskfree / (1024 * 1024 * 1024), 2),   // GB
+                    'percentage' => (int) $diskpercent,
+                ];
+            }
+        } catch (\Exception $e) {
+            // Fall through to default
+        }
 
         return [
-            'total' => round($disktotal / (1024 * 1024 * 1024), 2), // GB
-            'used' => round($diskused / (1024 * 1024 * 1024), 2),   // GB
-            'free' => round($diskfree / (1024 * 1024 * 1024), 2),   // GB
-            'percentage' => (int) $diskpercent,
+            'total' => 0,
+            'used' => 0,
+            'free' => 0,
+            'percentage' => 0,
         ];
     }
 
