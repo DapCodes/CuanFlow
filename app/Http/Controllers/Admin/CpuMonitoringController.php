@@ -81,8 +81,8 @@ class CpuMonitoringController extends Controller
      */
     private function getMemoryUsage()
     {
-        if (PHP_OS_FAMILY === 'Linux') {
-            $free = shell_exec('free -m');
+        if (PHP_OS_FAMILY === 'Linux' && function_exists('shell_exec')) {
+            $free = @shell_exec('free -m');
             if ($free) {
                 $free = (string) trim($free);
                 $free_arr = explode("\n", $free);
