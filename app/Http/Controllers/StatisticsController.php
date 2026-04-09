@@ -144,8 +144,9 @@ class StatisticsController extends Controller
         $sales = Sale::where('outlet_id', $outletId)
             ->completed()
             ->whereBetween('created_at', [$startDate, $endDate])
+            ->with('items')
             ->get();
-        $grossProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+        $grossProfit = $sales->sum(fn (Sale $s) => $s->getTotalProfit());
 
         // Total Expenses & Other Income
         $expensesBaseQuery = Expense::where('outlet_id', $outletId)

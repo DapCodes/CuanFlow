@@ -982,7 +982,7 @@ class PointOfSaleController extends Controller
             ->with(['stocks', 'defaultRecipe.items.rawMaterial.stocks'])
             ->get();
 
-        $stocks = $products->map(function ($product) use ($outletId) {
+        $stocks = $products->map(function (Product $product) use ($outletId) {
             if (! $product->is_stock) {
                 $estStock = $product->getEstimatedStockPortions($outletId);
             } else {

@@ -149,7 +149,7 @@ class FinanceController extends Controller
         $sales = Sale::where('outlet_id', $outletId)
             ->completed()
             ->whereBetween('created_at', [$startOfDay, $endOfDay])
-            ->with(['customer', 'cashier'])
+            ->with(['customer', 'cashier', 'items'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -166,15 +166,16 @@ class FinanceController extends Controller
             ->where('status', 'approved')
             ->sum('amount'));
 
-        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+        $dailyProfit = $sales->sum(fn (Sale $s) => $s->getTotalProfit());
         $dailyNetIncome = $dailyRevenue - $dailyExpenses;
 
         // All-time summary
         $allTimeRevenue = $totalRevenue;
         $allTimeProfit = Sale::where('outlet_id', $outletId)
             ->completed()
+            ->with('items')
             ->get()
-            ->sum(fn ($s) => $s->getTotalProfit());
+            ->sum(fn (Sale $s) => $s->getTotalProfit());
         $allTimeNetIncome = $totalNetIncome;
 
         // ==================== CASH REGISTERS ====================
@@ -777,7 +778,7 @@ class FinanceController extends Controller
         $sales = Sale::where('outlet_id', $outletId)
             ->completed()
             ->whereBetween('created_at', [$startOfDay, $endOfDay])
-            ->with(['cashier'])
+            ->with(['cashier', 'items'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -786,7 +787,7 @@ class FinanceController extends Controller
         $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
         $totalRevenue = $sales->sum('grand_total');
 
-        $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+        $dailyProfit = $sales->sum(fn (Sale $s) => $s->getTotalProfit());
         $dailyExpenses = Expense::where('outlet_id', $outletId)
             ->whereBetween('expense_date', [$startOfDay, $endOfDay])
             ->where('amount', '>', 0)

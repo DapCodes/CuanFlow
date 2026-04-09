@@ -38,7 +38,7 @@ class SaleController extends Controller
                 $salesQuery->where('cashier_id', auth()->id());
             }
 
-            $sales = $salesQuery->with(['customer', 'cashier'])
+            $sales = $salesQuery->with(['customer', 'cashier', 'items'])
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -58,7 +58,7 @@ class SaleController extends Controller
             $qrisTotal = $sales->where('payment_method', 'qris')->sum('grand_total');
             $transferTotal = $sales->where('payment_method', 'transfer')->sum('grand_total');
             $totalRevenue = $sales->sum('grand_total');
-            $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+            $dailyProfit = $sales->sum(fn (Sale $s) => $s->getTotalProfit());
 
             $dailyExpenses = Expense::where('outlet_id', $outletId)
                 ->whereBetween('expense_date', [$startOfDay, $endOfDay])
@@ -78,7 +78,7 @@ class SaleController extends Controller
             if (! auth()->user()->can('lihat semua penjualan') && ! auth()->user()->hasRole('kasir')) {
                 $allTimeProfitQuery->where('cashier_id', auth()->id());
             }
-            $allTimeProfit = $allTimeProfitQuery->get()->sum(fn ($s) => $s->getTotalProfit());
+            $allTimeProfit = $allTimeProfitQuery->with('items')->get()->sum(fn (Sale $s) => $s->getTotalProfit());
 
             $allTimeExpenses = Expense::where('outlet_id', $outletId)
                 ->where('amount', '>', 0)
@@ -282,7 +282,7 @@ class SaleController extends Controller
                 $salesQuery->where('cashier_id', auth()->id());
             }
 
-            $sales = $salesQuery->with(['cashier', 'customer', 'debt'])
+            $sales = $salesQuery->with(['cashier', 'customer', 'debt', 'items'])
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -295,7 +295,7 @@ class SaleController extends Controller
             $debtPaid = $debtSales->sum('paid_amount');
 
             $totalRevenue = $sales->sum('grand_total');
-            $dailyProfit = $sales->sum(fn ($s) => $s->getTotalProfit());
+            $dailyProfit = $sales->sum(fn (Sale $s) => $s->getTotalProfit());
             $dailyExpenses = Expense::where('outlet_id', $outletId)
                 ->whereBetween('expense_date', [$startOfDay, $endOfDay])
                 ->where('amount', '>', 0)
@@ -312,7 +312,7 @@ class SaleController extends Controller
             return [
                 'selectedDate' => $selectedDate,
                 'highlightId' => $highlightId,
-                'sales' => $sales->map(fn ($s) => [
+                'sales' => $sales->map(fn (Sale $s) => [
                     'id' => $s->id,
                     'invoice_number' => $s->invoice_number,
                     'time' => $s->created_at->format('H:i'),
