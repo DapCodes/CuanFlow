@@ -133,6 +133,9 @@
         </div>
     </div>
 
+    <!-- Vite -->
+    @vite(['resources/js/app.js'])
+
     @stack('scripts')
 </body>
 
