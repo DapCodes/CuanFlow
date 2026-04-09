@@ -111,7 +111,8 @@ out body;
 OVERPASS;
 
         try {
-            $response = Http::timeout(200)
+            $response = Http::withoutVerifying()
+                ->timeout(200)
                 ->retry(3, 5000)
                 ->asForm()
                 ->post($this->overpassUrl, [

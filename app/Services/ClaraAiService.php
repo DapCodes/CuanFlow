@@ -74,7 +74,7 @@ class ClaraAiService
             $httpResponse = null;
 
             foreach ($this->modelPool as $modelIndex => $currentModel) {
-                $httpResponse = Http::withHeaders([
+                $httpResponse = Http::withoutVerifying()->withHeaders([
                     'Authorization' => 'Bearer ' . $this->apiKey,
                     'Content-Type' => 'application/json',
                     'HTTP-Referer' => config('app.url'),
@@ -1391,7 +1391,7 @@ IMPORTANT for cost_analysis.breakdown:
         $httpResponse = null;
 
         foreach ($this->modelPool as $modelIndex => $currentModel) {
-            $httpResponse = Http::withHeaders([
+            $httpResponse = Http::withoutVerifying()->withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
                 'HTTP-Referer' => config('app.url'),
@@ -1485,7 +1485,7 @@ IMPORTANT for cost_analysis.breakdown:
         foreach ($this->modelVisionPool as $modelIndex => $currentModel) {
             \Log::info("Clara AI Vision attempt {$modelIndex}", ['model' => $currentModel]);
 
-            $httpResponse = Http::withHeaders([
+            $httpResponse = Http::withoutVerifying()->withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
                 'HTTP-Referer' => config('app.url'),

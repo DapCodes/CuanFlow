@@ -861,7 +861,7 @@ class ProductHppController extends Controller
                 ->where('outlet_id', Auth::user()->outlet_id)
                 ->where('is_active', true)
                 ->get()
-                ->map(function ($rm) {
+                ->map(function (\App\Models\RawMaterial $rm) {
                     return [
                         'id' => $rm->id,
                         'name' => $rm->name,
@@ -897,7 +897,7 @@ class ProductHppController extends Controller
             ]);
 
             // Panggil AI API dengan timeout lebih lama
-            $response = Http::timeout(120)
+            $response = Http::withoutVerifying()->timeout(120)
                 ->withHeaders([
                     'Authorization' => 'Bearer '.config('services.clara.key'),
                     'Content-Type' => 'application/json',

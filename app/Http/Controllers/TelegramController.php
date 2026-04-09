@@ -574,7 +574,7 @@ class TelegramController extends Controller
             $payload['reply_markup'] = json_encode($replyMarkup);
         }
 
-        $response = Http::post("{$this->apiBase}/sendMessage", $payload);
+        $response = Http::withoutVerifying()->post("{$this->apiBase}/sendMessage", $payload);
 
         if (! $response->successful()) {
             Log::error('Telegram sendMessage failed', [
@@ -590,7 +590,7 @@ class TelegramController extends Controller
      */
     private function sendChatAction(string $chatId, string $action = 'typing'): void
     {
-        Http::post("{$this->apiBase}/sendChatAction", [
+        Http::withoutVerifying()->post("{$this->apiBase}/sendChatAction", [
             'chat_id' => $chatId,
             'action'  => $action,
         ]);
@@ -611,7 +611,7 @@ class TelegramController extends Controller
             ]);
         }
 
-        $response = Http::post("{$this->apiBase}/setWebhook", [
+        $response = Http::withoutVerifying()->post("{$this->apiBase}/setWebhook", [
             'url'             => $webhookUrl,
             'allowed_updates' => ['message'],
         ]);
@@ -627,7 +627,7 @@ class TelegramController extends Controller
      */
     public function removeWebhook(): JsonResponse
     {
-        $response = Http::post("{$this->apiBase}/deleteWebhook");
+        $response = Http::withoutVerifying()->post("{$this->apiBase}/deleteWebhook");
 
         return response()->json([
             'ok'                => $response->successful(),
@@ -667,7 +667,7 @@ class TelegramController extends Controller
      */
     public function getWebhookInfo(): JsonResponse
     {
-        $response = Http::get("{$this->apiBase}/getWebhookInfo");
+        $response = Http::withoutVerifying()->get("{$this->apiBase}/getWebhookInfo");
 
         return response()->json($response->json());
     }

@@ -26,7 +26,7 @@ class TelegramSetWebhook extends Command
 
         // Show webhook info
         if ($this->option('info')) {
-            $response = Http::get("{$apiBase}/getWebhookInfo");
+            $response = Http::withoutVerifying()->get("{$apiBase}/getWebhookInfo");
             $data = $response->json();
 
             $this->info('📡 Current Webhook Info:');
@@ -45,7 +45,7 @@ class TelegramSetWebhook extends Command
 
         // Remove webhook
         if ($this->option('remove')) {
-            $response = Http::post("{$apiBase}/deleteWebhook");
+            $response = Http::withoutVerifying()->post("{$apiBase}/deleteWebhook");
             $data = $response->json();
 
             if ($data['ok'] ?? false) {
@@ -73,7 +73,7 @@ class TelegramSetWebhook extends Command
 
         $this->info("Setting webhook to: {$webhookUrl}");
 
-        $response = Http::post("{$apiBase}/setWebhook", [
+        $response = Http::withoutVerifying()->post("{$apiBase}/setWebhook", [
             'url' => $webhookUrl,
             'allowed_updates' => ['message'],
         ]);
