@@ -4535,6 +4535,12 @@
             const estStock = parseFloat(el.dataset.estimatedStock || 0);
             const isProduced = el.dataset.isProduced === 'true';
 
+            // Check stock availability
+            if (estStock <= 0) {
+                showToast('error', 'Stok tidak cukup!');
+                return;
+            }
+
             // If item already in cart, increment quantity automatically (+1)
             if (cart[productId]) {
                 incrementQty(productId);
