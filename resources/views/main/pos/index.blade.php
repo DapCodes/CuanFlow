@@ -389,11 +389,70 @@
         }
 
         @media (max-width: 640px) {
+            .order-items {
+                padding: 1rem;
+            }
+
+            .order-item {
+                padding: 0.85rem 1rem;
+                gap: 0.75rem;
+                margin-bottom: 0.75rem;
+                border-radius: 12px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            }
+
             .order-item-name {
+                font-size: 1rem;
+                margin-bottom: 0.2rem;
+                white-space: normal;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                line-height: 1.2;
+            }
+
+            .order-item-price {
+                font-size: 0.875rem;
+            }
+
+            .summary-row {
+                font-size: 0.95rem;
+                margin-bottom: 0.4rem;
+            }
+
+            .summary-total {
+                font-size: 1.25rem;
+                padding-top: 0.75rem;
+                margin-top: 0.75rem;
+            }
+
+            .order-footer {
+                padding: 1.25rem 1rem 2rem;
+            }
+
+            .discount-item-name {
                 font-size: 0.9rem;
             }
-            .order-item-price {
+
+            .discount-item-detail {
                 font-size: 0.8rem;
+            }
+
+            .discount-summary-btn .text-xs {
+                font-size: 0.85rem !important;
+            }
+
+            .discount-summary-btn .text-[10px] {
+                font-size: 0.7rem !important;
+            }
+
+            .discount-item-remove i {
+                font-size: 0.9rem !important;
+            }
+
+            .order-item .text-\[10px\] {
+                font-size: 0.75rem !important;
             }
         }
 
@@ -445,14 +504,18 @@
 
         @media (max-width: 640px) {
             .qty-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 1rem;
+                width: 38px;
+                height: 38px;
+                font-size: 1.25rem;
             }
             .qty-input {
-                width: 44px;
-                height: 32px;
-                font-size: 0.9rem;
+                width: 52px;
+                height: 38px;
+                font-size: 1.05rem;
+            }
+            .order-item .text-red-500 i {
+                font-size: 1.15rem;
+                padding-left: 0.5rem;
             }
         }
 
