@@ -343,7 +343,7 @@
                         </div>
                         <p class="text-xs font-bold text-gray-900 uppercase">Transfer</p>
                     </div>
-                    <div @if(config('app.env') === 'productions') onclick="Swal.fire({title: 'Informasi', text: 'Midtrans sedang dalam penanganan (maintenance). Silakan pilih metode pembayaran lain.', icon: 'info', customClass: {popup: 'rounded-3xl'}})" @else onclick="selectPaymentMethod('qris')" @endif class="payment-method-card border border-gray-200 rounded-2xl p-5 text-center group" data-method="qris">
+                    <div @if(config('app.env') === 'production') onclick="Swal.fire({title: 'Informasi', text: 'Midtrans sedang dalam penanganan (maintenance). Silakan pilih metode pembayaran lain.', icon: 'info', customClass: {popup: 'rounded-3xl'}})" @else onclick="selectPaymentMethod('qris')" @endif class="payment-method-card border border-gray-200 rounded-2xl p-5 text-center group" data-method="qris">
                         <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                             <i class="fas fa-qrcode text-amber-500 text-lg"></i>
                         </div>

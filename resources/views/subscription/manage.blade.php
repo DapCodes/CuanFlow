@@ -507,7 +507,7 @@
             }
 
             function callPaymentAPI(url, planId) {
-                @if(config('app.env') === 'productions')
+                @if(config('app.env') === 'production')
                     Swal.fire({
                         title: 'Informasi',
                         text: 'Metode pembayaran Midtrans sedang dalam penanganan (maintenance). Silakan hubungi admin untuk aktivasi manual.',

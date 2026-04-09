@@ -1965,7 +1965,7 @@
                             @endcan
 
                             @can('proses pembayaran digital')
-                                <div class="payment-method" @if(config('app.env') === 'productions')
+                                <div class="payment-method" @if(config('app.env') === 'production')
                                     onclick="Swal.fire({title: 'Informasi', text: 'Midtrans sedang dalam penanganan (maintenance). Silakan pilih metode pembayaran lain.', icon: 'info', customClass: {popup: 'rounded-3xl'}})"
                                 @else onclick="setUIState('midtrans')" @endif>
                                     <div class="payment-icon">
@@ -2127,7 +2127,7 @@
                         </div>
                         <p class="text-sm text-gray-600 mb-4">Klik tombol di bawah untuk membuka Snap (QRIS / E-Wallet /
                             VA).</p>
-                        <button id="btn-process-midtrans" @if(config('app.env') === 'productions')
+                        <button id="btn-process-midtrans" @if(config('app.env') === 'production')
                             onclick="Swal.fire({title: 'Informasi', text: 'Midtrans sedang dalam penanganan (maintenance). Silakan pilih metode pembayaran lain.', icon: 'info', customClass: {popup: 'rounded-3xl'}})"
                         @else onclick="openMidtransPayment()" @endif class="btn-primary">
                             <i class="fas fa-qrcode"></i>
