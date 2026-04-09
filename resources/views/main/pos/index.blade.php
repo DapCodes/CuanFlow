@@ -1705,7 +1705,7 @@
                         @endcan
 
                         @can('proses pembayaran digital')
-                        <div class="payment-method" onclick="setUIState('midtrans')">
+                        <div class="payment-method" @if(config('app.env') === 'production') onclick="Swal.fire({title: 'Informasi', text: 'Midtrans sedang dalam penanganan (maintenance). Silakan pilih metode pembayaran lain.', icon: 'info', customClass: {popup: 'rounded-3xl'}})" @else onclick="setUIState('midtrans')" @endif>
                             <div class="payment-icon">
                                 <i class="fas fa-qrcode"></i>
                             </div>
@@ -1842,7 +1842,7 @@
                         <p class="text-2xl font-bold text-purple-600" id="midtransTotal">Rp 0</p>
                     </div>
                     <p class="text-sm text-gray-600 mb-4">Klik tombol di bawah untuk membuka Snap (QRIS / E-Wallet / VA).</p>
-                    <button id="btn-process-midtrans" onclick="openMidtransPayment()" class="btn-primary">
+                    <button id="btn-process-midtrans" @if(config('app.env') === 'production') onclick="Swal.fire({title: 'Informasi', text: 'Midtrans sedang dalam penanganan (maintenance). Silakan pilih metode pembayaran lain.', icon: 'info', customClass: {popup: 'rounded-3xl'}})" @else onclick="openMidtransPayment()" @endif class="btn-primary">
                         <i class="fas fa-qrcode"></i>
                         Bayar via Midtrans
                     </button>

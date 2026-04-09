@@ -70,6 +70,16 @@
         var payButton = document.getElementById('pay-button');
         if (payButton) {
             payButton.addEventListener('click', function () {
+                @if(config('app.env') === 'production')
+                    Swal.fire({
+                        title: 'Informasi',
+                        text: 'Metode pembayaran Midtrans sedang dalam penanganan (maintenance). Silakan hubungi admin untuk aktivasi manual.',
+                        icon: 'info',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                    return;
+                @endif
+
                 window.snap.pay('{{ $snapToken }}', {
                     onSuccess: function(result){
                         window.location.href = "{{ route('subscription.payment.finish') }}";

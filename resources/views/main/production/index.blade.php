@@ -746,6 +746,12 @@
         if (!PUSHER_KEY || PUSHER_KEY === 'your-app-key') return;
 
         const pusher = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER, forceTLS: true });
+        
+        // Suppress Pusher errors from showing up in UI
+        pusher.connection.bind('error', function(err) {
+            console.error('Pusher connection error:', err);
+        });
+
         const channel = pusher.subscribe('production.outlet.' + OUTLET_ID);
 
         // Sound Notification
