@@ -17,18 +17,25 @@ class ClaraAiService
     private $baseUrl = 'https://openrouter.ai/api/v1';
 
     private array $modelPool = [
-        'google/gemma-3-12b-it:free',      
-        'meta-llama/llama-3.3-70b-instruct:free',
-        'nvidia/nemotron-3-super-120b-a12b:free', 
-        'stepfun/step-3.5-flash:free',       
-        'google/gemma-3-4b-it:free',         
-        'openrouter/free',                   
+        // 'google/gemma-3-12b-it:free',      
+        // 'meta-llama/llama-3.3-70b-instruct:free',
+        // 'nvidia/nemotron-3-super-120b-a12b:free', 
+        // 'stepfun/step-3.5-flash:free',       
+        // 'google/gemma-3-4b-it:free',         
+        // 'openrouter/free',        
+        // 'z-ai/glm-4.5-air:free',
+        'nvidia/nemotron-nano-12b-v2-vl:free',
+        'arcee-ai/trinity-mini:free',
+        'arcee-ai/trinity-large-preview:free',
     ];
 
     private array $modelVisionPool = [
-        'nvidia/nemotron-nano-12b-v2-vl:free', 
-        'google/gemma-3n-e4b-it:free',         
-        'openrouter/free',                     
+        // 'nvidia/nemotron-nano-12b-v2-vl:free',
+        // 'google/gemma-3n-e4b-it:free',
+        // 'openrouter/free',
+        // 'arcee-ai/trinity-large-preview:free',
+        // 'google/gemma-4-26b-a4b-it:free',
+        'google/gemma-4-31b-it:free',
     ];
 
     public function __construct()
@@ -57,7 +64,7 @@ class ClaraAiService
                 'user_message' => $userMessage,
             ]);
 
-            if (! $this->apiKey) {
+            if (!$this->apiKey) {
                 return [
                     'success' => false,
                     'message' => 'API Key Clara AI belum dikonfigurasi. Silakan hubungi administrator.',
@@ -68,15 +75,15 @@ class ClaraAiService
 
             foreach ($this->modelPool as $modelIndex => $currentModel) {
                 $httpResponse = Http::withHeaders([
-                    'Authorization' => 'Bearer '.$this->apiKey,
+                    'Authorization' => 'Bearer ' . $this->apiKey,
                     'Content-Type' => 'application/json',
                     'HTTP-Referer' => config('app.url'),
                     'X-Title' => 'CuanFlow POS',
-                ])->timeout(120)->post($this->baseUrl.'/chat/completions', [
-                    'model' => $currentModel,
-                    'messages' => $messages,
-                    'max_tokens' => 2000,
-                ]);
+                ])->timeout(120)->post($this->baseUrl . '/chat/completions', [
+                            'model' => $currentModel,
+                            'messages' => $messages,
+                            'max_tokens' => 2000,
+                        ]);
 
                 \Log::info('Clara AI attempt', [
                     'model_index' => $modelIndex,
@@ -107,7 +114,7 @@ class ClaraAiService
                         continue;
                     }
 
-                    if (! isset($data['choices'][0]['message']['content'])) {
+                    if (!isset($data['choices'][0]['message']['content'])) {
                         \Log::error('Invalid response structure', ['data' => $data]);
                         continue;
                     }
@@ -152,7 +159,7 @@ class ClaraAiService
 
             return [
                 'success' => false,
-                'message' => 'Error: '.$e->getMessage(),
+                'message' => 'Error: ' . $e->getMessage(),
             ];
         }
     }
@@ -306,16 +313,16 @@ ATURAN DATA:
 - Jika tidak ada data, katakan dengan jelas
 
 DATA BISNIS SAAT INI:
-Pendapatan hari ini: Rp ".number_format($contextData['today_revenue'], 0, ',', '.').'
+Pendapatan hari ini: Rp " . number_format($contextData['today_revenue'], 0, ',', '.') . '
 
 Ringkasan penjualan 7 hari terakhir:
-'.$this->formatSalesSummary($contextData['sales_summary']).'
+' . $this->formatSalesSummary($contextData['sales_summary']) . '
 
 5 Produk terlaris minggu ini:
-'.$this->formatTopProducts($contextData['top_products']).'
+' . $this->formatTopProducts($contextData['top_products']) . '
 
 Produk dengan stok menipis:
-'.$this->formatLowStock($contextData['low_stock']).'
+' . $this->formatLowStock($contextData['low_stock']) . '
 
 CONTOH RESPONS YANG BENAR:
 User: "Berapa pendapatan hari ini?"
@@ -383,26 +390,32 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
         }
 
         // Jika tidak ada trigger keyword, cek apakah ada hal penting dalam response
-        if (! $insightType) {
-            if (stripos($aiResponse, 'penting') !== false ||
+        if (!$insightType) {
+            if (
+                stripos($aiResponse, 'penting') !== false ||
                 stripos($aiResponse, 'perhatian') !== false ||
-                stripos($aiResponse, 'segera') !== false) {
+                stripos($aiResponse, 'segera') !== false
+            ) {
                 $insightType = 'general';
             }
         }
 
-        if (! $insightType) {
+        if (!$insightType) {
             return; // Tidak perlu generate insight
         }
 
         // Tentukan severity
         $severity = 'info';
-        if (stripos($aiResponse, 'segera') !== false ||
+        if (
+            stripos($aiResponse, 'segera') !== false ||
             stripos($aiResponse, 'kritis') !== false ||
-            stripos($aiResponse, 'bahaya') !== false) {
+            stripos($aiResponse, 'bahaya') !== false
+        ) {
             $severity = 'critical';
-        } elseif (stripos($aiResponse, 'perhatian') !== false ||
-                  stripos($aiResponse, 'warning') !== false) {
+        } elseif (
+            stripos($aiResponse, 'perhatian') !== false ||
+            stripos($aiResponse, 'warning') !== false
+        ) {
             $severity = 'warning';
         }
 
@@ -449,10 +462,10 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
 
         // Tambahkan konteks jika ada
         if ($contextData['low_stock']->count() > 0 && $type === 'stock_prediction') {
-            return $baseTitle.' - '.$contextData['low_stock']->count().' Produk Stok Menipis';
+            return $baseTitle . ' - ' . $contextData['low_stock']->count() . ' Produk Stok Menipis';
         }
 
-        return $baseTitle.' - '.now()->format('d M Y');
+        return $baseTitle . ' - ' . now()->format('d M Y');
     }
 
     /**
@@ -468,8 +481,8 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
                 'outlet_id' => $outletId,
                 'type' => 'sales_trend',
                 'title' => 'Ringkasan Penjualan Hari Ini',
-                'content' => 'Pendapatan hari ini: Rp '.number_format($contextData['today_revenue'], 0, ',', '.').
-                            '. Total transaksi 7 hari terakhir bisa dicek di dashboard penjualan.',
+                'content' => 'Pendapatan hari ini: Rp ' . number_format($contextData['today_revenue'], 0, ',', '.') .
+                    '. Total transaksi 7 hari terakhir bisa dicek di dashboard penjualan.',
                 'data' => [
                     'today_revenue' => $contextData['today_revenue'],
                     'top_products' => $contextData['top_products']->toArray(),
@@ -486,8 +499,8 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
                 'outlet_id' => $outletId,
                 'type' => 'stock_prediction',
                 'title' => 'Peringatan Stok Menipis',
-                'content' => "Terdapat {$contextData['low_stock']->count()} produk dengan stok menipis: ".
-                            $contextData['low_stock']->pluck('name')->join(', '),
+                'content' => "Terdapat {$contextData['low_stock']->count()} produk dengan stok menipis: " .
+                    $contextData['low_stock']->pluck('name')->join(', '),
                 'data' => ['products' => $contextData['low_stock']->toArray()],
                 'severity' => 'warning',
                 'insight_date' => now(),
@@ -542,7 +555,7 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
         $formatted = [];
         foreach ($topProducts as $index => $product) {
             $revenue = number_format($product->total_revenue, 0, ',', '.');
-            $formatted[] = ($index + 1).". {$product->name}: {$product->total_sold} terjual (Rp {$revenue})";
+            $formatted[] = ($index + 1) . ". {$product->name}: {$product->total_sold} terjual (Rp {$revenue})";
         }
 
         return implode("\n", $formatted);
@@ -591,16 +604,16 @@ Berikan insight yang actionable, singkat, dan mudah dipahami.';
             ->orderBy('date', 'desc')
             ->limit(15)
             ->get();
-            
+
         $income30d = $transactions->where('type', 'income')->sum('amount');
         $expense30d = $transactions->where('type', 'expense')->sum('amount');
-        
+
         $txHistory = "";
-        foreach($transactions as $tx) {
+        foreach ($transactions as $tx) {
             $type = $tx->type === 'income' ? 'Pemasukan' : 'Pengeluaran';
             $txHistory .= "- {$tx->date}: [{$type}] Rp " . number_format($tx->amount, 0, ',', '.') . " ({$tx->note})\n";
         }
-        
+
         if ($txHistory === "") {
             $txHistory = "Belum ada transaksi 30 hari terakhir.";
         }
@@ -616,12 +629,12 @@ ATURAN:
    Set intent="chat". Berikan jawaban yang ramah, informatif, rapi, dan to the point menggunakan DATA KEUANGAN di bawah ini. JANGAN gunakan emoji berlebihan. JANGAN gunakan format markdown.
 
 DATA KEUANGAN PENGGUNA (30 Hari Terakhir):
-Total Pemasukan: Rp '.number_format($income30d, 0, ',', '.').'
-Total Pengeluaran: Rp '.number_format($expense30d, 0, ',', '.').'
-Sisa/Saldo: Rp '.number_format($income30d - $expense30d, 0, ',', '.').'
+Total Pemasukan: Rp ' . number_format($income30d, 0, ',', '.') . '
+Total Pengeluaran: Rp ' . number_format($expense30d, 0, ',', '.') . '
+Sisa/Saldo: Rp ' . number_format($income30d - $expense30d, 0, ',', '.') . '
 
 15 Transaksi Terakhir (Paling baru ke paling lama):
-'.$txHistory.'
+' . $txHistory . '
 
 FORMAT OUTPUT (WAJIB JSON VALID):
 Balas hanya dengan JSON valid tanpa tambahan teks lainnya. 
@@ -638,7 +651,7 @@ Jika intent=chat:
 
         $result = $this->callAI($messages);
 
-        if (! $result['success']) {
+        if (!$result['success']) {
             return [
                 'success' => false,
                 'message' => $result['message'] ?? 'Gagal menghubungi AI.',
@@ -659,7 +672,7 @@ Jika intent=chat:
 
         $parsed = json_decode($content, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($parsed)) {
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($parsed)) {
             \Log::warning('Telegram handleTelegramChatOrTransaction: invalid JSON from AI', [
                 'raw' => $result['content'],
                 'cleaned' => $content,
@@ -754,7 +767,7 @@ PENTING: Jawab HANYA dengan JSON. Jangan tambahkan teks, markdown, atau penjelas
 
         $result = $this->callAI($messages);
 
-        if (! $result['success']) {
+        if (!$result['success']) {
             return [
                 'success' => false,
                 'message' => $result['message'] ?? 'Gagal menghubungi AI.',
@@ -775,7 +788,7 @@ PENTING: Jawab HANYA dengan JSON. Jangan tambahkan teks, markdown, atau penjelas
 
         $parsed = json_decode($content, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($parsed)) {
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($parsed)) {
             \Log::warning('Telegram parseTransaction: invalid JSON from AI', [
                 'raw' => $result['content'],
                 'cleaned' => $content,
@@ -792,7 +805,7 @@ PENTING: Jawab HANYA dengan JSON. Jangan tambahkan teks, markdown, atau penjelas
         $amount = (int) ($parsed['amount'] ?? 0);
         $note = $parsed['note'] ?? 'Transaksi';
 
-        if (! in_array($type, ['income', 'expense'])) {
+        if (!in_array($type, ['income', 'expense'])) {
             $type = 'expense';
         }
 
@@ -858,7 +871,7 @@ PENTING: Jawab HANYA dengan JSON. Jangan tambahkan teks, markdown, atau penjelas
         $user = User::findOrFail($userId);
         $outletId = $user->outlet_id;
 
-        if (! $outletId) {
+        if (!$outletId) {
             return ['error' => 'User tidak memiliki outlet.'];
         }
 
@@ -920,7 +933,7 @@ PENTING: Jawab HANYA dengan JSON. Jangan tambahkan teks, markdown, atau penjelas
     {
         $validModes = ['video_prompt', 'affiliate_script', 'ads_image', 'ads_image_prompt', 'kalkulaba'];
 
-        if (! in_array($mode, $validModes)) {
+        if (!in_array($mode, $validModes)) {
             return [
                 'success' => false,
                 'message' => 'Mode tidak valid. Pilih: video_prompt, affiliate_script, atau ads_image_prompt.',
@@ -951,7 +964,7 @@ PENTING: Jawab HANYA dengan JSON. Jangan tambahkan teks, markdown, atau penjelas
                 'kalkulaba' => $this->generateKalkulaba($outletData, $cleanPrompt, $tone, $language, $options),
             };
 
-            if (! $result['success']) {
+            if (!$result['success']) {
                 return $result;
             }
 
@@ -1187,11 +1200,11 @@ PRODUCT TO ANALYZE:
 - Name: {$productName}
 - Description: {$productDescription}
 - Business Type: {$businessType}" .
-($imageUrl && !$imageBase64 ? "\n- Image URL: {$imageUrl}" : '') .
-"\n- Target Profit: Rp " . number_format($targetProfit, 0, ',', '.') .
-$costContext .
-$advancedInstruction .
-$imageInstruction . "
+            ($imageUrl && !$imageBase64 ? "\n- Image URL: {$imageUrl}" : '') .
+            "\n- Target Profit: Rp " . number_format($targetProfit, 0, ',', '.') .
+            $costContext .
+            $advancedInstruction .
+            $imageInstruction . "
 
 YOUR TASK — Follow these steps precisely:
 
@@ -1368,7 +1381,7 @@ IMPORTANT for cost_analysis.breakdown:
      */
     private function callAI(array $messages): array
     {
-        if (! $this->apiKey) {
+        if (!$this->apiKey) {
             return [
                 'success' => false,
                 'message' => 'API Key Clara AI belum dikonfigurasi. Silakan hubungi administrator.',
@@ -1384,10 +1397,10 @@ IMPORTANT for cost_analysis.breakdown:
                 'HTTP-Referer' => config('app.url'),
                 'X-Title' => 'CuanFlow POS - AI Studio',
             ])->timeout(120)->post($this->baseUrl . '/chat/completions', [
-                'model' => $currentModel,
-                'messages' => $messages,
-                'max_tokens' => 6000,
-            ]);
+                        'model' => $currentModel,
+                        'messages' => $messages,
+                        'max_tokens' => 6000,
+                    ]);
 
             \Log::info('Clara AI Studio attempt', [
                 'model_index' => $modelIndex,
@@ -1417,7 +1430,7 @@ IMPORTANT for cost_analysis.breakdown:
                     continue;
                 }
 
-                if (! isset($responseData['choices'][0]['message']['content'])) {
+                if (!isset($responseData['choices'][0]['message']['content'])) {
                     \Log::warning('Clara AI Studio invalid response structure, rotating', ['model' => $currentModel]);
                     continue;
                 }
@@ -1460,7 +1473,7 @@ IMPORTANT for cost_analysis.breakdown:
      */
     private function callAIVision(array $messages): array
     {
-        if (! $this->apiKey) {
+        if (!$this->apiKey) {
             return [
                 'success' => false,
                 'message' => 'API Key Clara AI belum dikonfigurasi. Silakan hubungi administrator.',
@@ -1478,10 +1491,10 @@ IMPORTANT for cost_analysis.breakdown:
                 'HTTP-Referer' => config('app.url'),
                 'X-Title' => 'CuanFlow POS - Kalkulaba Vision',
             ])->timeout(180)->post($this->baseUrl . '/chat/completions', [
-                'model' => $currentModel,
-                'messages' => $messages,
-                'max_tokens' => 8000,
-            ]);
+                        'model' => $currentModel,
+                        'messages' => $messages,
+                        'max_tokens' => 8000,
+                    ]);
 
             // 429 atau 5xx — rotasi ke model berikutnya
             if ($httpResponse->status() === 429 || $httpResponse->serverError()) {
@@ -1505,7 +1518,7 @@ IMPORTANT for cost_analysis.breakdown:
                     continue;
                 }
 
-                if (! isset($responseData['choices'][0]['message']['content'])) {
+                if (!isset($responseData['choices'][0]['message']['content'])) {
                     \Log::warning('Clara AI Vision invalid response structure, rotating', ['model' => $currentModel]);
                     continue;
                 }
