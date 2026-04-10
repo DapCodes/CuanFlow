@@ -17,25 +17,18 @@ class ClaraAiService
     private $baseUrl = 'https://openrouter.ai/api/v1';
 
     private array $modelPool = [
-        // 'google/gemma-3-12b-it:free',      
         // 'meta-llama/llama-3.3-70b-instruct:free',
-        // 'nvidia/nemotron-3-super-120b-a12b:free', 
-        // 'stepfun/step-3.5-flash:free',       
-        // 'google/gemma-3-4b-it:free',         
-        // 'openrouter/free',        
-        // 'z-ai/glm-4.5-air:free',
-        'nvidia/nemotron-nano-12b-v2-vl:free',
-        'arcee-ai/trinity-mini:free',
-        'arcee-ai/trinity-large-preview:free',
+        // 'google/gemma-3-12b-it:free',
+        // 'deepseek/deepseek-r1:free',
+        // 'qwen/qwen-2.5-72b-instruct:free',
+        // 'nousresearch/hermes-3-llama-3.1-405b:free',
+        'openrouter/free',
     ];
 
     private array $modelVisionPool = [
-        // 'nvidia/nemotron-nano-12b-v2-vl:free',
-        // 'google/gemma-3n-e4b-it:free',
-        // 'openrouter/free',
-        // 'arcee-ai/trinity-large-preview:free',
+        'openrouter/free',
+        // 'nvidia/nemotron-nano-2-vl:free',
         // 'google/gemma-4-26b-a4b-it:free',
-        'google/gemma-4-31b-it:free',
     ];
 
     public function __construct()
@@ -137,9 +130,10 @@ class ClaraAiService
                 }
 
                 // Error lain yang tidak tertangani — skip ke model berikutnya
-                \Log::warning('Clara AI unexpected error, rotating model', [
+                \Log::warning('Clara AI attempt failed', [
                     'model' => $currentModel,
                     'status' => $httpResponse->status(),
+                    'response' => $httpResponse->body(),
                 ]);
             }
 
@@ -203,8 +197,10 @@ class ClaraAiService
         $lines = array_map('trim', $lines);
         $response = implode("\n", $lines);
 
-        // 10. Hapus simbol yang tidak diinginkan user (\\ dan // berlebih)
-        $response = str_replace(['\\', '//'], '', $response);
+        // 10. Hapus simbol yang tidak diinginkan user (tapi jangan hapus // dalam URL)
+        // $response = str_replace(['\\', '//'], '', $response); 
+        // Sepertinya user tidak ingin backslash berlebih
+        $response = str_replace('\\', '', $response);
 
         // 11. Final trim
         return trim($response);

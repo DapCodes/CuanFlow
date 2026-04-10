@@ -87,10 +87,10 @@
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
 
                     {{-- Image Upload --}}
-                    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50">
+                    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50" hidden>
                         <p class="text-[10px] font-black text-gray-600 uppercase tracking-widest">Foto Produk</p>
                     </div>
-                    <div class="p-4 border-b border-gray-100">
+                    <div class="p-4 border-b border-gray-100" hidden>
                         <template x-if="!imagePreview">
                             <div class="dropzone rounded-xl p-6 text-center cursor-pointer"
                                 :class="{ 'dragover': isDragging }"
