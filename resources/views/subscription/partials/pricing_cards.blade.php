@@ -82,12 +82,12 @@
             </ul>
 
             <div class="mt-auto pt-6 border-t border-gray-100">
-                <form action="{{ route('subscription.select-plan') }}" method="POST">
-                    @csrf
+                <form action="{{ route('subscription.payment') }}" method="GET">
+
                     <div class="mb-4">
                         <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Pilih Durasi Paket</label>
                         <div class="relative group">
-                            <select name="plan_id" class="appearance-none w-full bg-gray-50 border-none text-sm font-bold text-gray-800 py-3.5 pl-4 pr-10 rounded-xl focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
+                            <select name="plan" class="appearance-none w-full bg-gray-50 border-none text-sm font-bold text-gray-800 py-3.5 pl-4 pr-10 rounded-xl focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
                                 @foreach($tier->plans as $plan)
                                     <option value="{{ $plan->id }}">
                                         {{ $plan->duration_months ?? '1' }} Bulan — Rp {{ number_format($plan->price, 0, ',', '.') }} 
