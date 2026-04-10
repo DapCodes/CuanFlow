@@ -53,6 +53,20 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/run-queue', function (\Illuminate\Http\Request $request) {
+    if ($request->key !== 'RAHASIA123') {
+        abort(403);
+    }
+
+    \Artisan::call('queue:work', [
+        '--stop-when-empty' => true,
+        '--tries' => 3,
+        '--sleep' => 3,
+    ]);
+
+    return 'Queue executed';
+});
+
 // Landing Page
 Route::get('/flow', [FlowLandingController::class, 'index'])->name('flow.index');
 Route::get('/flow/{slug}', [FlowLandingController::class, 'show'])->name('flow.show');
