@@ -3504,6 +3504,9 @@
                 const productName = (card.dataset.productName || '').toLowerCase();
                 const productCode = (card.dataset.productCode || '').toLowerCase();
                 const productCategory = card.dataset.category || '';
+                const productId = parseInt(card.dataset.productId);
+
+                let shouldShow = true;
 
                 const matchesSearch = !searchTerm ||
                     productName.includes(searchTerm) ||
@@ -3511,7 +3514,27 @@
 
                 const matchesCategory = !categoryId || productCategory == categoryId;
 
-                if (matchesSearch && matchesCategory) {
+                if (!matchesSearch || !matchesCategory) {
+                    shouldShow = false;
+                }
+
+                // Check if manually hidden
+                if (shouldShow && productSettings.hiddenProducts.includes(productId)) {
+                    shouldShow = false;
+                }
+
+                // Check out of stock filter
+                if (shouldShow && productSettings.hideOutOfStock) {
+                    const stockEl = card.querySelector('.product-stock .stock-qty');
+                    if (stockEl) {
+                        const stockQty = parseInt(stockEl.textContent.replace(/\./g, '')) || 0;
+                        if (stockQty <= 0) {
+                            shouldShow = false;
+                        }
+                    }
+                }
+
+                if (shouldShow) {
                     card.style.display = '';
                     visibleCount++;
                 } else {
@@ -7154,14 +7177,30 @@
 
             const productGrid = document.getElementById('productGrid');
             const productCards = Array.from(document.querySelectorAll('.product-card'));
+            
+            const searchTerm = document.getElementById('searchProduct')?.value.toLowerCase() || '';
+            const categoryId = document.getElementById('filterCategory')?.value || '';
 
             // Apply filters
             productCards.forEach(card => {
                 const productId = parseInt(card.dataset.productId);
+                const productName = (card.dataset.productName || '').toLowerCase();
+                const productCode = (card.dataset.productCode || '').toLowerCase();
+                const productCategory = card.dataset.category || '';
                 let shouldShow = true;
 
+                const matchesSearch = !searchTerm ||
+                    productName.includes(searchTerm) ||
+                    productCode.includes(searchTerm);
+
+                const matchesCategory = !categoryId || productCategory == categoryId;
+
+                if (!matchesSearch || !matchesCategory) {
+                    shouldShow = false;
+                }
+
                 // Check if manually hidden
-                if (productSettings.hiddenProducts.includes(productId)) {
+                if (shouldShow && productSettings.hiddenProducts.includes(productId)) {
                     shouldShow = false;
                 }
 
@@ -7206,7 +7245,7 @@
 
             // Update empty state
             const visibleCount = visibleCards.length;
-            updateEmptyState(productGrid, visibleCount, '', '');
+            updateEmptyState(productGrid, visibleCount, searchTerm, categoryId);
 
             showToast('success', 'Pengaturan produk diterapkan');
         }
