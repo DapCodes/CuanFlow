@@ -11,6 +11,7 @@ use App\Models\ResellerApplication;
 use App\Models\ResellerProduct;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
+use App\Models\TrialVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -781,6 +782,15 @@ class PaymentController extends Controller
                     // Link transaction to subscription
                     $transaction->update(['subscription_id' => $subscription->id]);
                 }
+
+                // Reject any pending trial verification requests for this user
+                TrialVerificationRequest::where('user_id', $user->id)
+                    ->where('status', 'pending')
+                    ->update([
+                        'status' => 'rejected',
+                        'admin_notes' => 'Otomatis ditolak karena pengguna telah membeli paket langganan.',
+                        'reviewed_at' => now(),
+                    ]);
 
                 // Clear Cache
                 $user->clearSubscriptionCache();
