@@ -50,8 +50,12 @@ use Illuminate\Support\Facades\Route;
 // =========================================================================
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect('/welcome');
 });
+
+Route::get('/welcome', function () {
+    return view('landingpage.index');
+})->name('welcome');
 
 Route::get('/run-queue', function (\Illuminate\Http\Request $request) {
     if ($request->key !== 'RAHASIA123') {
