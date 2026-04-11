@@ -338,7 +338,13 @@
   @media (max-width: 768px) {
     .features-section { padding: 40px 0 60px; }
     .arc-orbit { height: 420px; }
-    .feat-card { width: 190px !important; padding: 18px 15px; border-radius: 16px; }
+      .feat-card {
+    position: absolute !important;
+    width: 260px !important;
+    min-width: 260px !important;
+    /* Hapus: opacity: 0; */  
+    margin: 0 !important;
+  }
     .feat-card-icon { width: 32px; height: 32px; font-size: 12px; margin-bottom: 8px; }
     .feat-card h4 { font-size: 0.8rem; }
     .feat-card p { font-size: 0.7rem; }
@@ -542,16 +548,18 @@
   }
 
   /* ── FEATURES ARC SECTION ── */
-  .features-section {
-    padding: 80px 0 100px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-    background: var(--paper);
-    position: relative;
-  }
+.features-section {
+  padding: 80px 0 100px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--paper);
+  background-size: cover; /* tambah ini */
+  position: relative;
+  
+}
 
   .features-section::before {
     content: '';
@@ -566,7 +574,7 @@
   .section-label {
     text-align: center;
     margin-bottom: 30px;
-    padding: 0 5%;
+    padding: 60px 5% 0; /* ubah dari: padding: 0 5% */
     position: relative;
     z-index: 1;
   }
@@ -617,6 +625,15 @@
     height: 460px;
     transform: translateX(-50%);
   }
+
+  /* #arc-cards-wrapper {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+#arc-cards-wrapper.ready {
+  opacity: 1;
+} */
 
   .feat-card {
     position: absolute;
@@ -1192,13 +1209,13 @@
        overflow: hidden;
        padding-bottom: 60px;
     }
-    .arc-orbit {
-      height: 500px !important;
-      overflow: hidden;
-      width: 100vw;
-      margin-left: calc(-50vw + 50%);
-      position: relative;
-    }
+  .arc-orbit {
+    height: 360px !important; /* turun dari 420px karena card sudah naik */
+    overflow: hidden;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    position: relative;
+  }
     .arc-track-svg { display: none; }
     .arc-cards-wrapper {
       position: absolute !important;
@@ -1609,10 +1626,7 @@
   const scrollProgress = document.getElementById('scroll-progress');
   
   window.addEventListener('scroll', () => {
-    // Nav shift
     nav.classList.toggle('scrolled', window.scrollY > 60);
-    
-    // Progress bar
     const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
     const progress = (window.scrollY / totalHeight) * 100;
     scrollProgress.style.width = progress + '%';
@@ -1666,7 +1680,7 @@
     });
   });
 
-  // ── ARC CARD POSITIONING & INTERACTIVE SCROLL ──
+  // ── ARC CARD POSITIONING ──
   function getBezierPoint(t, curve) {
     const { p0, p1, p2 } = curve;
     const x = (1-t)*(1-t)*p0.x + 2*(1-t)*t*p1.x + t*t*p2.x;
@@ -1677,130 +1691,147 @@
     return { x, y, angle };
   }
 
-  function getCurve() {
-     const w = window.innerWidth;
-     const isMobile = w < 768;
-     
-     if (isMobile) {
-       // Wide reach for mobile to ensure cards animate across the entire screen
-       return {
-         p0: { x: -w * 1.5, y: 240 },
-         p1: { x: 0, y: -20 },
-         p2: { x: w * 1.5, y: 240 }
-       };
-     } else {
-       return {
-         p0: { x: -w * 0.5, y: 220 },
-         p1: { x: 0, y: -160 },
-         p2: { x: w * 0.5, y: 220 }
-       };
-     }
-  }
+function getCurve() {
+  const vw = window.innerWidth;
+  const isMobile = vw < 768;
 
-  // ── GSAP + AOS INIT ──
+  const halfSpread = isMobile ? vw * 1.3 : vw * 0.52;
+  const arcHeight  = isMobile ? 120 : 240;  // naik dari 80 → 120
+  const baseY      = isMobile ? 140 : 160;  // naik dari 180 → 140
+
+  return {
+    p0: { x: -halfSpread, y: baseY },
+    p1: { x: 0,           y: baseY - arcHeight },
+    p2: { x:  halfSpread, y: baseY }
+  };
+}
+
   document.addEventListener('DOMContentLoaded', () => {
     gsap.registerPlugin(ScrollTrigger);
     AOS.init({ once: true, easing: 'ease-out-cubic', offset: 60 });
 
-    const cards = Array.from(document.querySelectorAll('.feat-card'));
-    const isMobile = () => window.innerWidth < 768;
-
+    const cards  = Array.from(document.querySelectorAll('.feat-card'));
+    const isMob  = () => window.innerWidth < 768;
     const wrapper = document.getElementById('arc-cards-wrapper');
-    wrapper.style.cssText = 'position: absolute; top: 0; left: 50%; width: 0; height: 0;';
-    
-    // Set base positioning styles
+
+    // Wrapper jadi titik tengah orbit — posisi 0,0 = tengah layar
+    wrapper.style.cssText = `
+      position: absolute;
+      top: 0; left: 50%;
+      width: 0; height: 0;
+      overflow: visible;
+    `;
+
     cards.forEach(card => {
-       card.style.position = 'absolute';
-       card.style.margin = '0';
-       card.style.transformOrigin = 'center center';
-       card.style.willChange = 'transform, opacity';
+      card.style.position        = 'absolute';
+      card.style.margin          = '0';
+      card.style.transformOrigin = 'center center';
+      card.style.willChange      = 'transform, opacity';
     });
 
     const state = { progress: 0, hoverIndex: -1 };
-    
+
     function renderCards(progress) {
-       const curve = getCurve();
-       const n = cards.length;
-       const mobile = isMobile();
-       
-       // Increase Spread Factor for more gap between cards
-       const spreadFactor = mobile ? 1.8 : 1.2;
-       
-       cards.forEach((card, i) => {
-          const relativeOffset = i / (n - 1);
-          // Movement formula tuned for better visual centering as you scroll
-          const t = 0.5 + (relativeOffset - 0.5) * spreadFactor - (progress - 0.5) * 3.5;
-          
-          if (t > 1.8 || t < -0.8) {
-             card.style.opacity = 0;
-             card.style.pointerEvents = 'none';
-             card.style.visibility = 'hidden';
-          } else {
-             const { x, y, angle } = getBezierPoint(t, curve);
-             card.style.visibility = 'visible';
-             
-             const distCenter = Math.abs(t - 0.5);
-             
-             // Opacity Falloff (Focus)
-             let op = 1;
-             if (mobile) {
-               op = Math.max(0, 1 - Math.pow(distCenter * 2.2, 1.2)); 
-             } else {
-               op = Math.max(0, 1 - Math.pow(distCenter * 1.8, 1.5));
-             }
-             
-             // Perspective Scale
-             const scaleFocus = mobile ? 1.12 : 1.15;
-             const scaleFalloff = mobile ? 0.6 : 0.7;
-             const scale = scaleFocus - Math.pow(distCenter, 1.1) * scaleFalloff;
-             
-             card.style.opacity = op;
-             card.style.pointerEvents = op > 0.4 ? 'auto' : 'none';
-             
-             // Dynamic card width
-             const cardWidth = mobile ? 190 : 240;
-             card.style.left = `${x - (cardWidth/2)}px`;
-             card.style.top = `${y}px`;
-             
-             const tilt = angle * (mobile ? 0.05 : 0.35);
-             const isHovered = state.hoverIndex === i;
-             const hoverScale = isHovered ? 1.06 : 1;
-             
-             card.style.transform = `rotate(${tilt}deg) scale(${scale * hoverScale})`;
-             card.style.zIndex = isHovered ? 1000 : Math.round(scale * 100);
-          }
-       });
+      const curve      = getCurve();
+      const n          = cards.length;
+      const mobile     = isMob();
+      const cardWidth  = mobile ? 190 : 240;
+      const spread     = mobile ? 1.9 : 1.3;
+
+      cards.forEach((card, i) => {
+        const relOff = i / (n - 1);                         // 0..1
+        const t      = 0.5 + (relOff - 0.5) * spread       // spread kartu
+                     - (progress - 0.5) * 3.8;             // scroll shift
+
+        if (t > 1.8 || t < -0.8) {
+          card.style.opacity        = '0';
+          card.style.pointerEvents  = 'none';
+          card.style.visibility     = 'hidden';
+          return;
+        }
+
+        const { x, y, angle } = getBezierPoint(t, curve);
+        card.style.visibility = 'visible';
+
+        const distCenter   = Math.abs(t - 0.5);
+        const op           = Math.max(0, 1 - Math.pow(distCenter * (mobile ? 2.2 : 1.8), mobile ? 1.2 : 1.5));
+        const scalePeak    = mobile ? 1.1 : 1.15;
+        const scaleDrop    = mobile ? 0.55 : 0.65;
+        const scale        = scalePeak - Math.pow(distCenter, 1.1) * scaleDrop;
+        const tilt         = angle * (mobile ? 0.04 : 0.35);
+        const hoverBonus   = state.hoverIndex === i ? 1.06 : 1;
+
+        card.style.opacity       = String(op);
+        card.style.pointerEvents = op > 0.4 ? 'auto' : 'none';
+        // x,y dari wrapper yang ada di center — offset setengah lebar kartu
+        card.style.left      = `${x - cardWidth / 2}px`;
+        card.style.top       = `${y}px`;
+        card.style.transform = `rotate(${tilt}deg) scale(${scale * hoverBonus})`;
+        card.style.zIndex    = state.hoverIndex === i ? '1000' : String(Math.round(scale * 100));
+        card.style.width     = `${cardWidth}px`;
+      });
     }
 
-    // Add Hover Listeners
     cards.forEach((card, i) => {
-       card.addEventListener('mouseenter', () => {
-          state.hoverIndex = i;
-          renderCards(state.progress);
-       });
-       card.addEventListener('mouseleave', () => {
-          state.hoverIndex = -1;
-          renderCards(state.progress);
-       });
+      card.addEventListener('mouseenter', () => { state.hoverIndex = i; renderCards(state.progress); });
+      card.addEventListener('mouseleave', () => { state.hoverIndex = -1; renderCards(state.progress); });
     });
 
-    renderCards(0);
-    window.addEventListener('resize', () => renderCards(state.progress));
+// Render awal di progress 0.1
+renderCards(0.1);
 
-    // Pin the features section with buttery smooth scrub
-    ScrollTrigger.create({
-       trigger: '.features-section',
-       pin: true,
-       start: 'top top',
-       end: '+=2500', 
-       scrub: 1.2, // Premium weighted scrub for smoother feel
-       onUpdate: (self) => {
-          state.progress = self.progress;
-          renderCards(self.progress);
-       }
-    });
+// Pre-render cards 300px sebelum section masuk viewport
+const featSection = document.querySelector('.features-section');
+const preRenderObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      renderCards(0.1);
+      preRenderObserver.disconnect();
+    }
+  });
+}, { rootMargin: '300px 0px 0px 0px' });
+preRenderObserver.observe(featSection);
 
-    // ── HERO FLOAT WIDGETS ──
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => renderCards(state.progress), 80);
+});
+
+ScrollTrigger.create({
+  trigger: '.features-section',
+  pin: true,
+  start: 'top top',
+  end: '+=2500',
+  scrub: 1.2,
+  invalidateOnRefresh: true,
+  onEnter: () => {
+    // Paksa render ulang saat section tepat masuk viewport
+    const p = 0.17;
+    state.progress = p;
+    renderCards(p);
+  },
+  onUpdate: (self) => {
+    const minProgress = 0.17;
+    const p = minProgress + self.progress * (1 - minProgress);
+    state.progress = p;
+    renderCards(p);
+
+    const shift = p * 60;
+    document.querySelector('.features-section').style.backgroundPosition = `center ${shift}px`;
+    const labelShift = p * -20;
+    document.querySelector('.section-label').style.transform = `translateY(${labelShift}px)`;
+  }
+});
+
+// ScrollTrigger.refresh();
+// requestAnimationFrame(() => {
+//   requestAnimationFrame(() => {
+//     document.getElementById('arc-cards-wrapper').classList.add('ready');
+//   });
+// });
+
+    // ── HERO ANIMATIONS ──
     gsap.from('.hero-visual .float-w', {
       y: 20, opacity: 0, duration: 0.8,
       stagger: 0.18, ease: 'power3.out', delay: 0.6
@@ -1811,7 +1842,6 @@
       scale: 0.85, opacity: 0, duration: 0.7, ease: 'back.out(1.7)', delay: 0.8
     });
 
-    // ── PRODUCT MOCKUPS ──
     gsap.from('.product-section.cuanflow .desktop-mockup', {
       scrollTrigger: { trigger: '.product-section.cuanflow', start: 'top 75%' },
       y: 48, opacity: 0, duration: 1, ease: 'power3.out'
