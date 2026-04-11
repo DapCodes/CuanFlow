@@ -1258,7 +1258,7 @@
       </li>
       <li><a href="#ecosystem">Ekosistem</a></li>
     </ul>
-    <a href="#" class="nav-cta dt-only">Mulai Sekarang</a>
+    <a href="#ecosystem" class="nav-cta dt-only">Mulai Sekarang</a>
     <button class="hamburger" id="ham" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -1493,7 +1493,7 @@
         <li><i class="fa-solid fa-check"></i> Manajemen Karyawan</li>
         <li><i class="fa-solid fa-check"></i> AI Assistant (Clara)</li>
       </ul>
-      <a href="#" class="btn-primary">
+      <a href="{{ route('login') }}" class="btn-primary">
         <i class="fa-solid fa-arrow-right"></i> Coba CuanFlow
       </a>
     </div>
@@ -1550,7 +1550,7 @@
   <h2 data-aos="fade-up">Siap Bergabung dengan<br><em>Ekosistem Flow?</em></h2>
   <p data-aos="fade-up" data-aos-delay="80">Kelola bisnis lebih efisien dengan CuanFlow atau jelajahi kuliner terdekat lewat JajanFlow. Pilih solusi yang tepat untuk Anda.</p>
   <div class="cta-btns" data-aos="fade-up" data-aos-delay="160">
-    <a href="#cuanflow" class="cta-btn-white">
+    <a href="{{ route('login') }}" class="cta-btn-white">
       <i class="fa-solid fa-chart-line"></i> Coba CuanFlow
     </a>
     <a href="#jajanflow" class="cta-btn-outline">
@@ -1587,18 +1587,18 @@
     <div>
       <h5>Hukum</h5>
       <ul class="footer-links">
-        <li><a href="#">Kebijakan Privasi</a></li>
-        <li><a href="#">Syarat & Ketentuan</a></li>
-        <li><a href="#">Kebijakan Cookie</a></li>
+        <li><a href="{{ route('legal.terms') }}">Kebijakan Privasi</a></li>
+        <li><a href="{{ route('legal.terms') }}">Syarat & Ketentuan</a></li>
+        <li><a href="{{ route('legal.terms') }}">Kebijakan Cookie</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
     <span>&copy; 2026 Flow Ecosystem. Hak cipta dilindungi undang-undang.</span>
     <div class="footer-socials">
-      <a href="#">Twitter</a>
-      <a href="#">Instagram</a>
-      <a href="#">LinkedIn</a>
+      <a href="https://github.com/DapCodes" target="_blank">GitHub</a>
+      <a href="https://instagram.com/d4pfft" target="_blank">Instagram</a>
+      <a href="https://www.linkedin.com/in/daffa-ramadhann/" target="_blank">LinkedIn</a>
     </div>
   </div>
 </footer>
