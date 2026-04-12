@@ -350,31 +350,37 @@
                 const marker = L.marker(pos, { icon: icon });
                 
                 const popupContent = `
-                    <div class="p-1 min-w-[220px] md:min-w-[240px]">
-                        <div class="flex items-center gap-2 mb-2 pb-2 border-b border-gray-50">
-                             <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shrink-0"></div>
-                             <div class="text-[10px] font-black uppercase text-gray-400 tracking-wider truncate flex-grow" title="${sale.outlet_name}">${sale.outlet_name}</div>
+                    <div class="p-2 min-w-[260px] md:min-w-[300px]">
+                        <div class="flex items-center gap-3 mb-3 pb-3 border-b border-gray-100/80">
+                             <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shrink-0"></div>
+                             <div class="text-[11px] font-black uppercase text-gray-400 tracking-wider truncate flex-grow" title="${sale.outlet_name}">${sale.outlet_name}</div>
                         </div>
-                        <div class="text-[9px] font-black uppercase tracking-widest text-gray-300 mb-0.5">Nomor Invoice</div>
-                        <div class="font-black text-gray-900 mb-3 text-base tracking-tight">${sale.invoice_number}</div>
-                        <div class="grid grid-cols-2 gap-3 bg-gray-50/50 p-3 rounded-2xl mb-3 border border-gray-100/50">
-                            <div class="overflow-hidden">
-                                <div class="text-[9px] font-black uppercase text-gray-400 mb-1">Total</div>
-                                <div class="text-xs font-black text-emerald-600 truncate">${idrFormatter.format(sale.grand_total)}</div>
+                        
+                        <div class="space-y-1 mb-4">
+                            <div class="text-[10px] font-black uppercase tracking-widest text-gray-300">Nomor Invoice</div>
+                            <div class="font-black text-gray-900 text-lg md:text-xl tracking-tight leading-none">${sale.invoice_number}</div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 bg-gray-50/80 p-4 rounded-2xl mb-4 border border-gray-100">
+                             <div class="space-y-1">
+                                <div class="text-[10px] font-black uppercase text-gray-400">Total</div>
+                                <div class="text-sm font-black text-emerald-600">${idrFormatter.format(sale.grand_total)}</div>
                             </div>
-                            <div class="overflow-hidden">
-                                <div class="text-[9px] font-black uppercase text-gray-400 mb-1">Kasir</div>
-                                <div class="text-xs font-black text-gray-700 truncate" title="${sale.cashier_name}">${sale.cashier_name}</div>
+                            <div class="space-y-1 overflow-hidden">
+                                <div class="text-[10px] font-black uppercase text-gray-400">Kasir</div>
+                                <div class="text-sm font-black text-gray-800 truncate" title="${sale.cashier_name}">${sale.cashier_name}</div>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between text-[9px] text-gray-400 font-bold italic px-1">
-                            <span><i class="ph-fill ph-calendar-blank mr-1 opacity-50"></i> ${sale.created_at}</span>
+
+                        <div class="flex items-center justify-between text-[10px] text-gray-400 font-bold italic px-1 opacity-80">
+                            <span><i class="ph-fill ph-calendar-blank mr-1.5 align-middle"></i> ${sale.created_at}</span>
                         </div>
                     </div>
                 `;
 
                 marker.bindPopup(popupContent, {
-                    maxWidth: 300,
+                    minWidth: 280,
+                    maxWidth: 350,
                     className: 'custom-map-popup'
                 });
                 markerCluster.addLayer(marker);
@@ -409,19 +415,19 @@
                 const header = document.createElement('div');
                 header.className = 'kasir-item p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors';
                 header.innerHTML = `
-                    <div class="flex items-center gap-3 overflow-hidden">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-inner shrink-0" style="background-color: ${cashier.color || '#10b981'}">
+                    <div class="flex items-center gap-4 overflow-hidden">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-inner shrink-0" style="background-color: ${cashier.color || '#10b981'}">
                             ${cashier.name.substring(0, 2).toUpperCase()}
                         </div>
                         <div class="overflow-hidden">
-                            <div class="text-[11px] font-black text-gray-900 truncate max-w-[140px]" title="${cashier.name}">${cashier.name}</div>
-                            <div class="flex items-center gap-1.5 mt-0.5 overflow-hidden">
-                                <span class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md uppercase shrink-0">${cashier.total_sales} Trx</span>
-                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter truncate max-w-[90px]" title="${cashier.outlet_name}">${cashier.outlet_name}</span>
+                            <div class="text-[12px] font-black text-gray-900 truncate max-w-[150px]" title="${cashier.name}">${cashier.name}</div>
+                            <div class="flex items-center gap-2 mt-1 overflow-hidden">
+                                <span class="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase shrink-0">${cashier.total_sales} Trx</span>
+                                <span class="text-[10px] font-black text-gray-400 uppercase tracking-tighter truncate max-w-[100px]" title="${cashier.outlet_name}">${cashier.outlet_name}</span>
                             </div>
                         </div>
                     </div>
-                    <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors arrow-icon shrink-0">
+                    <div class="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors arrow-icon shrink-0">
                         <i class="ph ph-caret-down font-bold"></i>
                     </div>
                 `;
