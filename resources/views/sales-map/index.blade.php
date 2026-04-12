@@ -182,6 +182,9 @@
         const outletLat = {{ auth()->user()->outlet->latitude ?? 'null' }};
         const outletLng = {{ auth()->user()->outlet->longitude ?? 'null' }};
 
+        let userMarker;
+        let outletMarker;
+
         // Initialize Map
         function initMap() {
             // Default: Indonesia Center
@@ -191,23 +194,52 @@
 
             map = L.map('sales-map').setView([defaultLat, defaultLng], defaultZoom);
             
-            // Try to get user GPS
+            // 1. Plot Outlet Marker if exists
+            if (outletLat && outletLng) {
+                const outletIcon = L.divIcon({
+                    html: `<div class="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-lg shadow-lg border-2 border-white">
+                             <i class="ph-fill ph-storefront text-white text-lg"></i>
+                           </div>`,
+                    className: '',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+                outletMarker = L.marker([outletLat, outletLng], { icon: outletIcon })
+                    .addTo(map)
+                    .bindPopup('<div class="font-bold text-sm">Lokasi Outlet: {{ auth()->user()->outlet->name }}</div>');
+            }
+
+            // 2. Try to get user GPS & Plot User Marker
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
-                        // User allowed GPS
-                        map.setView([position.coords.latitude, position.coords.longitude], 12);
-                        statusEl.innerHTML += ' <span class="text-xs text-gray-400 font-normal">(Lokasi GPS Aktif)</span>';
+                        const uLat = position.coords.latitude;
+                        const uLng = position.coords.longitude;
+                        
+                        const userIcon = L.divIcon({
+                            html: `<div class="relative flex items-center justify-center">
+                                     <div class="absolute w-6 h-6 bg-blue-500 rounded-full animate-ping opacity-25"></div>
+                                     <div class="relative w-4 h-4 bg-blue-600 border-2 border-white rounded-full shadow-md"></div>
+                                   </div>`,
+                            className: '',
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
+                        });
+                        
+                        userMarker = L.marker([uLat, uLng], { icon: userIcon })
+                            .addTo(map)
+                            .bindPopup('<div class="font-bold text-sm text-blue-600">Lokasi Anda Sekarang</div>');
+
+                        map.setView([uLat, uLng], 12);
+                        statusEl.innerHTML += ' <span class="text-xs text-gray-400 font-normal">(GPS Terdeteksi)</span>';
                     }, 
                     function(error) {
-                        // GPS Declined or Error, Use Outlet coords
                         if (outletLat && outletLng) {
                             map.setView([outletLat, outletLng], 13);
                         }
                     }
                 );
             } else if (outletLat && outletLng) {
-                // Browser doesn't support geolocation, use outlet
                 map.setView([outletLat, outletLng], 13);
             }
             
