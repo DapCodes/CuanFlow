@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminLandingPageController;
 use App\Http\Controllers\Admin\AdminLandingSectionController;
 use App\Http\Controllers\Admin\AdminManagementController;
 use App\Http\Controllers\Admin\AdminWithdrawController;
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\BannedIpController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -206,6 +207,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // CPU Monitoring
     Route::get('/cpu-monitoring', [CpuMonitoringController::class, 'index'])->name('admin.cpu-monitoring.index');
     Route::get('/api/cpu-usage', [CpuMonitoringController::class, 'getUsage'])->name('admin.cpu-monitoring.api');
+
+    // Backup Manager
+    Route::prefix('backups')->name('admin.backups.')->group(function () {
+        Route::get('/', [BackupController::class, 'index'])->name('index');
+        Route::post('/run', [BackupController::class, 'run'])->name('run');
+        Route::delete('/{backup}', [BackupController::class, 'destroy'])->name('destroy');
+        Route::get('/{backup}/download', [BackupController::class, 'download'])->name('download');
+        Route::post('/{backup}/retry', [BackupController::class, 'retry'])->name('retry');
+    });
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('admin.profile.edit');

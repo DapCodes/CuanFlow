@@ -35,6 +35,19 @@ Schedule::command('ai:generate-insights')
     ->dailyAt('08:00')
     ->timezone('Asia/Jakarta');
 
+// Schedule: Automated backup setiap hari jam 2 pagi WIB
+Schedule::command('backup:run')
+    ->dailyAt(config('cuanflow-backup.scheduled_time', '02:00'))
+    ->timezone(config('cuanflow-backup.timezone', 'Asia/Jakarta'))
+    ->withoutOverlapping()
+    ->onOneServer();
+
+// Schedule: Cleanup backup lama setiap Minggu jam 3 pagi WIB
+Schedule::command('backup:clean')
+    ->weeklyOn(0, '03:00')
+    ->timezone(config('cuanflow-backup.timezone', 'Asia/Jakarta'))
+    ->withoutOverlapping();
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');

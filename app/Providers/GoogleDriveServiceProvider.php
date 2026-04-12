@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Storage;
+
+/**
+ * Registers the Google Drive filesystem driver
+ * using the masbug/flysystem-google-drive-ext package.
+ */
+class GoogleDriveServiceProvider extends ServiceProvider
+{
+    public function boot(): void
+    {
+        try {
+            Storage::extend('google', function ($app, $config) {
+                $options = [];
+
+                if (!empty($config['teamDriveId'] ?? null)) {
+                    $options['teamDriveId'] = $config['teamDriveId'];
+                }
+
+                $client = new \Google\Client();
+                $client->setClientId($config['clientId']);
+                $client->setClientSecret($config['clientSecret']);
+                $client->refreshToken($config['refreshToken']);
+
+                $service = new \Google\Service\Drive($client);
+                
+                // Add support for Shared Drives (optional for OAuth2 but good to have)
+                $options['supportsAllDrives'] = true;
+                $options['supportsTeamDrives'] = true;
+
+                $adapter = new \Masbug\Flysystem\GoogleDriveAdapter(
+                    $service,
+                    $config['folder'] ?? null,
+                    $options
+                );
+
+                return new \Illuminate\Filesystem\FilesystemAdapter(
+                    new \League\Flysystem\Filesystem($adapter),
+                    $adapter,
+                    $config
+                );
+            });
+        } catch (\Exception $e) {
+            // Silently fail if Google Drive is not configured
+            // This prevents errors when the package/credentials are not set up
+        }
+    }
+}
