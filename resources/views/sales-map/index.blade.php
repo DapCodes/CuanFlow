@@ -101,7 +101,7 @@
         </section>
 
         <!-- Banner Info Premium (Responsive) -->
-        <div class="group bg-white border border-gray-100 rounded-2xl p-3 md:p-4 flex gap-3 md:gap-4 shadow-sm hover:shadow-md transition-all border-l-4 border-l-emerald-500">
+        <div class="group bg-white border border-gray-100 rounded-2xl p-3 md:p-4 flex gap-3 md:gap-4 shadow-sm hover:shadow-md transition-all">
             <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                 <i class="ph-fill ph-info text-emerald-600 text-xl md:text-2xl"></i>
             </div>

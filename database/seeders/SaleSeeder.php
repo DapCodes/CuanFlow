@@ -28,18 +28,28 @@ class SaleSeeder extends Seeder
             return;
         }
 
-        DB::transaction(function () use ($products, $targetOutletId, $adminId) {
+        $outlet = \App\Models\Outlet::find($targetOutletId);
+        $baseLat = $outlet->latitude ?? -6.2088;
+        $baseLng = $outlet->longitude ?? 106.8456;
+        
+        // Find other employees to make the map sidebar interesting
+        $cashierIds = User::role(['kasir', 'produksi'])->where('outlet_id', $targetOutletId)->pluck('id')->toArray();
+        if (empty($cashierIds)) $cashierIds = [$adminId];
+
+        DB::transaction(function () use ($products, $targetOutletId, $adminId, $baseLat, $baseLng, $cashierIds) {
             // Create 30-50 historical sales
             $saleCount = rand(30, 50);
 
             for ($i = 0; $i < $saleCount; $i++) {
                 $daysAgo = rand(0, 5); // Recent sales
                 $saleDate = now()->subDays($daysAgo)->subHours(rand(0, 23))->subMinutes(rand(0, 59));
+                
+                // Randomly pick a cashier
+                $currentCashierId = $cashierIds[array_rand($cashierIds)];
 
                 // Randomly pick 1-3 products for this sale
                 $itemsToSellSelection = $products->random(min(rand(1, 3), $products->count()));
                 $validItems = [];
-
                 foreach ($itemsToSellSelection as $product) {
                     if (! $product->is_stock) {
                         // Non-stock items (like Takoyaki) don't need inventory check
@@ -76,13 +86,15 @@ class SaleSeeder extends Seeder
                 // 1. Create Sale Record
                 $sale = Sale::create([
                     'outlet_id' => $targetOutletId,
-                    'cashier_id' => $adminId,
+                    'cashier_id' => $currentCashierId,
                     'tax_percent' => 0,
                     'tax_amount' => 0,
                     'discount_amount' => 0,
                     'payment_method' => rand(1, 10) > 7 ? 'transfer' : 'cash',
                     'payment_status' => 'paid',
                     'status' => 'completed',
+                    'latitude' => $baseLat + (rand(-300, 300) / 10000), // Random offset ~3km
+                    'longitude' => $baseLng + (rand(-300, 300) / 10000),
                     'completed_at' => $saleDate,
                     'created_at' => $saleDate,
                     'updated_at' => $saleDate,
