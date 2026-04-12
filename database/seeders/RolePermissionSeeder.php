@@ -15,11 +15,11 @@ class RolePermissionSeeder extends Seeder
         // Clear cache
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Hapus data lama
+        // Hapus data lama (Hanya untuk definisi, jangan hapus relasi user ke role!)
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('role_has_permissions')->truncate();
-        DB::table('model_has_roles')->truncate();
-        DB::table('model_has_permissions')->truncate();
+        // DB::table('model_has_roles')->truncate(); // JANGAN DI-TRUNCATE: User akan kehilangan Role-nya
+        // DB::table('model_has_permissions')->truncate(); // JANGAN DI-TRUNCATE
         DB::table('permissions')->truncate();
         DB::table('roles')->truncate();
         DB::table('permission_categories')->truncate();
@@ -347,6 +347,7 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'lihat invoice', 'category' => 'laporan', 'description' => 'Melihat daftar ringkasan invoice'],
             ['name' => 'ekspor laporan pdf', 'category' => 'laporan', 'description' => 'Mengekspor laporan ke PDF'],
             ['name' => 'ekspor laporan excel', 'category' => 'laporan', 'description' => 'Mengekspor laporan ke Excel'],
+            ['name' => 'lihat peta transaksi', 'category' => 'laporan', 'description' => 'Melihat peta interaktif transaksi penjualan'],
 
             // Produk & Resep
             ['name' => 'lihat produk', 'category' => 'produk', 'description' => 'Melihat daftar produk'],
@@ -571,7 +572,7 @@ class RolePermissionSeeder extends Seeder
             'lihat statistik', 'ekspor statistik', 'lihat grafik penjualan',
             'lihat grafik produk terlaris', 'lihat grafik kategori', 'lihat grafik per jam',
             // Laporan
-            'lihat laporan', 'lihat invoice', 'ekspor laporan pdf', 'ekspor laporan excel',
+            'lihat laporan', 'lihat invoice', 'ekspor laporan pdf', 'ekspor laporan excel', 'lihat peta transaksi',
             // Produk
             'lihat produk', 'buat produk', 'edit produk', 'lihat detail produk',
             'aktifkan nonaktifkan produk', 'generate kode produk', 'generate barcode produk',

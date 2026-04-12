@@ -67,6 +67,7 @@ class FeaturesSeeder extends Seeder
             ['name' => 'image_ai', 'display_name' => 'Image Prompt AI', 'category' => 'Premium', 'icon' => 'image', 'route_name' => 'clara-ai.ads-image-prompt', 'sort_order' => 98],
             ['name' => 'kalkulaba_ai', 'display_name' => 'Kalkulaba AI', 'category' => 'Premium', 'icon' => 'calculator', 'route_name' => 'clara-ai.kalkulaba', 'sort_order' => 99],
             ['name' => 'reseller_products', 'display_name' => 'Produk Reseller', 'category' => 'Premium', 'icon' => 'box', 'route_name' => 'reseller-products.index', 'sort_order' => 100],
+            ['name' => 'track_transaction_location', 'display_name' => 'Track Lokasi Transaksi', 'category' => 'Premium', 'icon' => 'map-pin', 'route_name' => null, 'sort_order' => 101],
         ];
 
         foreach ($features as $feature) {

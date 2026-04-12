@@ -31,6 +31,53 @@ class PaymentController extends Controller
     }
 
     /**
+     * Check if the outlet owner has Platinum subscription and capture location data.
+     * This works for any role (cashier, supervisor, etc.) by checking the outlet's owner.
+     * Returns [latitude, longitude] or [null, null] if not eligible or data missing.
+     */
+    private function captureLocationIfPlatinum(Request $request, $outletId): array
+    {
+        try {
+            $outlet = \App\Models\Outlet::with('owner.subscription.tier')->find($outletId);
+
+            if (!$outlet || !$outlet->owner) {
+                return [null, null];
+            }
+
+            $owner = $outlet->owner;
+            $subscription = $owner->subscription;
+
+            if (!$subscription || !$subscription->isActive()) {
+                return [null, null];
+            }
+
+            $tierName = $subscription->tier?->name;
+
+            if ($tierName !== 'platinum') {
+                return [null, null];
+            }
+
+            $latitude = $request->input('latitude');
+            $longitude = $request->input('longitude');
+
+            // Validate coordinate ranges
+            if ($latitude !== null && $longitude !== null) {
+                $lat = (float) $latitude;
+                $lng = (float) $longitude;
+
+                if ($lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                    return [$lat, $lng];
+                }
+            }
+
+            return [null, null];
+        } catch (\Exception $e) {
+            \Log::warning('Location capture failed: ' . $e->getMessage());
+            return [null, null];
+        }
+    }
+
+    /**
      * PERBAIKAN: Reduce stock dengan memperhitungkan free items dari BOGO
      */
     private function reduceStock($cart, $discountPlan = null)
@@ -268,6 +315,9 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
+            // Capture location if Platinum
+            [$latitude, $longitude] = $this->captureLocationIfPlatinum($request, auth()->user()->outlet_id);
+
             $sale = $this->createSaleWithDiscount($cart, $summary, $discountPlan, [
                 'payment_method' => 'cash',
                 'paid_amount' => $request->paid_amount,
@@ -277,6 +327,8 @@ class PaymentController extends Controller
                 'payment_status' => 'paid',
                 'status' => 'completed',
                 'completed_at' => now(),
+                'latitude' => $latitude,
+                'longitude' => $longitude,
             ]);
 
             // Mark table as occupied if dine-in
@@ -379,6 +431,9 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
+            // Capture location if Platinum
+            [$latitude, $longitude] = $this->captureLocationIfPlatinum($request, auth()->user()->outlet_id);
+
             $sale = $this->createSaleWithDiscount($cart, $summary, $discountPlan, [
                 'payment_method' => 'transfer', // Tetap 'transfer' atau bisa diubah jadi 'card' jika diperlukan
                 'outlet_payment_link_id' => $request->outlet_payment_link_id, // Simpan ID link
@@ -389,6 +444,8 @@ class PaymentController extends Controller
                 'status' => 'completed',
                 'notes' => 'Transfer via '.$request->transfer_method,
                 'completed_at' => now(),
+                'latitude' => $latitude,
+                'longitude' => $longitude,
             ]);
 
             // Mark table as occupied if dine-in
@@ -480,6 +537,9 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
+            // Capture location if Platinum (save on draft, available when settled)
+            [$latitude, $longitude] = $this->captureLocationIfPlatinum($request, auth()->user()->outlet_id);
+
             $sale = $this->createSaleWithDiscount($cart, $summary, $discountPlan, [
                 'payment_method' => 'qris',
                 'payment_status' => 'pending',
@@ -487,6 +547,8 @@ class PaymentController extends Controller
                 'service_type' => $request->service_type ?? 'take_away',
                 'table_id' => $request->table_id,
                 'paid_amount' => 0,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
             ]);
 
             // FIX: Use SALE prefix to distinguish from DEBT payments

@@ -36,6 +36,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\SaleMapController;
 use App\Http\Controllers\SubscriptionPaymentController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TaskController;
@@ -478,6 +479,12 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect', '
         Route::get('/ajax-data', [ReportController::class, 'ajaxData'])->name('ajax-data');
         Route::get('/export-pdf', [ReportController::class, 'exportPdf'])->name('export-pdf');
         Route::get('/export-excel', [ReportController::class, 'exportExcel'])->name('export-excel');
+    });
+
+    // Sales Map (Interactive Transaction Map)
+    Route::prefix('sales-map')->name('sales-map.')->middleware(['permission:lihat peta transaksi', 'feature.access:track_transaction_location'])->group(function () {
+        Route::get('/', [SaleMapController::class, 'index'])->name('index');
+        Route::get('/data', [SaleMapController::class, 'getData'])->name('data');
     });
 
     // Invoices summary (feature: invoice_list)

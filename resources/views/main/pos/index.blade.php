@@ -3373,11 +3373,45 @@
         let currentCustomer = @json($selectedCustomer);
         let customerSearchTimeout = null;
 
+        // ==================== GEOLOCATION TRACKING ====================
+        let currentLatitude = null;
+        let currentLongitude = null;
+
+        /**
+         * Silently capture device location for Platinum transaction tracking.
+         * Will not prompt user or block any operation if GPS is unavailable.
+         */
+        function initGeolocation() {
+            if (!navigator.geolocation) return;
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    currentLatitude = position.coords.latitude;
+                    currentLongitude = position.coords.longitude;
+                    console.log('[Location] Captured:', currentLatitude, currentLongitude);
+                },
+                function(error) {
+                    // Silently fail - location is optional
+                    console.log('[Location] Not available:', error.message);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+            );
+        }
+
+        /**
+         * Refresh location periodically (every 5 minutes) for accuracy.
+         */
+        function startLocationRefresh() {
+            initGeolocation();
+            setInterval(initGeolocation, 300000); // Refresh every 5 minutes
+        }
+
         document.addEventListener('DOMContentLoaded', async function () {
             try {
                 // Run all initialization tasks
                 loadCalcHistory();
                 loadProductSettings();
+                startLocationRefresh(); // Initialize GPS tracking for Platinum
 
                 // Wait for all async tasks
                 await Promise.all([
@@ -5325,7 +5359,9 @@
                 body: JSON.stringify({
                     paid_amount: paid,
                     service_type: selectedServiceType,
-                    table_id: selectedTableId
+                    table_id: selectedTableId,
+                    latitude: currentLatitude,
+                    longitude: currentLongitude
                 })
             })
                 .then(r => r.json())
@@ -6186,6 +6222,8 @@
             // Add service type and table id
             data.service_type = selectedServiceType;
             data.table_id = selectedTableId;
+            data.latitude = currentLatitude;
+            data.longitude = currentLongitude;
 
             // Show loading
             Swal.fire({
@@ -6440,7 +6478,9 @@
                     outlet_payment_link_id: cardId,
                     reference_number: ref,
                     service_type: selectedServiceType,
-                    table_id: selectedTableId
+                    table_id: selectedTableId,
+                    latitude: currentLatitude,
+                    longitude: currentLongitude
                 })
             })
                 .then(r => r.json())
@@ -6505,7 +6545,9 @@
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({
                     service_type: selectedServiceType,
-                    table_id: selectedTableId
+                    table_id: selectedTableId,
+                    latitude: currentLatitude,
+                    longitude: currentLongitude
                 })
             })
                 .then(r => r.json())

@@ -21,7 +21,7 @@ class Sale extends Model
         'paid_amount', 'change_amount', 'payment_method', 'payment_status',
         'outlet_payment_link_id', 'service_type', 'table_id',
         'midtrans_order_id', 'midtrans_transaction_id', 'midtrans_payment_type', 'midtrans_response',
-        'notes', 'customer_notes', 'status', 'is_synced', 'completed_at',
+        'notes', 'customer_notes', 'latitude', 'longitude', 'status', 'is_synced', 'completed_at',
     ];
 
     public function table(): BelongsTo

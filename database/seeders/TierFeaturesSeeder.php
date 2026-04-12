@@ -58,6 +58,7 @@ class TierFeaturesSeeder extends Seeder
             'script_ai',
             'image_ai',
             'kalkulaba_ai',
+            'track_transaction_location',
         ];
 
         // Get tiers

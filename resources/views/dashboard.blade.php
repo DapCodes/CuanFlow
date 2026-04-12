@@ -1077,6 +1077,21 @@
   @endcan
   @endcanAccessFeature
 
+  @canAccessFeature('track_transaction_location')
+  @can('lihat peta transaksi')
+  <a href="{{ route('sales-map.index') }}"
+    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
+    data-step="12"
+    data-title="Peta Transaksi"
+    data-intro="<strong>Pelacakan operasional real-time.</strong> Pantau koordinat transaksi serta rute perjalanan staf dan kasir Anda di atas peta interaktif.">
+    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00897B;">
+      <i class="ph-light ph-map-pin-line text-4xl sm:text-5xl text-white"></i>
+    </div>
+    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Peta Transaksi</span>
+  </a>
+  @endcan
+  @endcanAccessFeature
+
   <!-- ══════════════════════════════════ -->
   <!-- PRODUK & INVENTORI                -->
   <!-- ══════════════════════════════════ -->
@@ -2765,6 +2780,12 @@ document.addEventListener('DOMContentLoaded', function() {
     @canAccessFeature('reports')
     @can('lihat laporan')
     { label: 'Laporan Keseluruhan', keywords: ['laporan', 'report', 'keuangan', 'pdf', 'excel'], url: "{{ route('reports.index') }}", type: 'Menu' },
+    @endcan
+    @endcanAccessFeature
+
+    @canAccessFeature('track_transaction_location')
+    @can('lihat peta transaksi')
+    { label: 'Peta Transaksi', keywords: ['peta', 'rute', 'lokasi', 'kasir', 'transaksi', 'map'], url: "{{ route('sales-map.index') }}", type: 'Menu' },
     @endcan
     @endcanAccessFeature
 

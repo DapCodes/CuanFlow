@@ -17,6 +17,50 @@ use Illuminate\Support\Facades\DB;
 class DebtPaymentController extends Controller
 {
     /**
+     * Check if the outlet owner has Platinum subscription and capture location data.
+     */
+    private function captureLocationIfPlatinum(Request $request, $outletId): array
+    {
+        try {
+            $outlet = \App\Models\Outlet::with('owner.subscription.tier')->find($outletId);
+
+            if (!$outlet || !$outlet->owner) {
+                return [null, null];
+            }
+
+            $owner = $outlet->owner;
+            $subscription = $owner->subscription;
+
+            if (!$subscription || !$subscription->isActive()) {
+                return [null, null];
+            }
+
+            $tierName = $subscription->tier?->name;
+
+            if ($tierName !== 'platinum') {
+                return [null, null];
+            }
+
+            $latitude = $request->input('latitude');
+            $longitude = $request->input('longitude');
+
+            if ($latitude !== null && $longitude !== null) {
+                $lat = (float) $latitude;
+                $lng = (float) $longitude;
+
+                if ($lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                    return [$lat, $lng];
+                }
+            }
+
+            return [null, null];
+        } catch (\Exception $e) {
+            \Log::warning('Location capture failed in Debt: ' . $e->getMessage());
+            return [null, null];
+        }
+    }
+
+    /**
      * Search customer by name or phone with debounce
      */
     public function searchCustomer(Request $request)
@@ -166,6 +210,8 @@ class DebtPaymentController extends Controller
             }
 
             // Create sale
+            [$latitude, $longitude] = $this->captureLocationIfPlatinum($request, auth()->user()->outlet_id);
+
             $sale = $this->createSaleWithDebt($cart, $summary, $discountPlan, $customer, [
                 'payment_method' => 'debt',
                 'paid_amount' => $request->paid_amount,
@@ -175,6 +221,8 @@ class DebtPaymentController extends Controller
                 'status' => 'completed',
                 'completed_at' => now(),
                 'notes' => $request->notes,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
             ]);
 
             // SYNC RESELLER PRODUCTS

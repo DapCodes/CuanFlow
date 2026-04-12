@@ -328,6 +328,21 @@
             @endcan
             @endcanAccessFeature
 
+            @canAccessFeature('track_transaction_location')
+            @can('lihat peta transaksi')
+            <li>
+                <a href="{{ route('sales-map.index') }}"
+                   title="Peta Transaksi"
+                   class="flex items-center rounded-xl group {{ request()->routeIs('sales-map.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}"
+                   :class="sidebarCollapsed ? 'justify-center p-2.5' : 'px-4 py-2.5 gap-3'">
+                    {{-- Path / Map Route --}}
+                    <i class="ph-light ph-map-pin-line w-5 text-center text-lg {{ request()->routeIs('sales-map.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span x-show="!sidebarCollapsed" class="text-sm whitespace-nowrap">Peta Transaksi</span>
+                </a>
+            </li>
+            @endcan
+            @endcanAccessFeature
+
             <!-- ══ PRODUK & STOK ══ -->
             <p x-show="!sidebarCollapsed" class="px-4 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-2 mt-6 whitespace-nowrap">Produk & Stok</p>
             <div x-show="sidebarCollapsed" class="h-4"></div>
