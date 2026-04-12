@@ -122,7 +122,7 @@
                     <div id="sales-map" class="w-full h-[400px] md:h-[650px] rounded-[1rem] md:rounded-[1.5rem] z-10 border border-gray-50"></div>
                     
                     <!-- Floating Overlays -->
-                    <div class="absolute top-4 right-4 md:top-6 md:right-6 z-[1000] flex flex-col gap-2">
+                    <div class="absolute top-4 right-4 md:top-6 md:right-6 z-10 flex flex-col gap-2">
                         <button id="reset-map-btn" 
                                 class="bg-white/90 backdrop-blur-md p-2.5 md:p-3.5 rounded-xl md:rounded-2xl shadow-2xl border border-gray-200 text-gray-700 hover:text-emerald-600 hover:bg-white transition-all active:scale-95 group/btn"
                                 title="Reset Tampilan Peta">
@@ -130,7 +130,7 @@
                         </button>
                     </div>
                     
-                    <div class="absolute bottom-4 left-4 md:bottom-6 md:left-6 z-[1000]">
+                    <div class="absolute bottom-4 left-4 md:bottom-6 md:left-6 z-10">
                         <div id="map-status" class="bg-white/90 backdrop-blur-md px-3 py-2 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl shadow-2xl border border-gray-200 text-[8px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] text-gray-600 flex items-center gap-2 md:gap-3">
                             <span class="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
