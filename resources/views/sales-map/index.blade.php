@@ -74,25 +74,25 @@
         
         {{-- HEADER HALAMAN --}}
         <section class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
+            <div class="space-y-1">
                 <h1 class="text-xl md:text-2xl font-black text-gray-900 leading-tight">
                     Peta Analisis Transaksi
                 </h1>
-                <p class="mt-1 text-sm text-gray-500 font-medium">
-                    Visualisasi sebaran transaksi dan rute operasional tim lapangan Anda.
+                <p class="text-[10px] md:text-sm text-gray-500 font-medium leading-relaxed">
+                    Pantau sebaran lokasi transaksi dan rute tim lapangan.
                 </p>
             </div>
             
-            <div class="flex flex-wrap items-center gap-3">
-                <form id="filterForm" class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                    <div class="flex items-center gap-2">
+            <div class="w-full md:w-auto">
+                <form id="filterForm" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                    <div class="flex items-center gap-2 flex-grow">
                         <input type="date" id="start_date" name="start_date" value="{{ request('start_date', now()->format('Y-m-d')) }}" 
-                               class="w-full sm:w-40 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
-                        <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest">S/D</span>
+                               class="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
+                        <span class="text-gray-400 font-black text-[9px] uppercase tracking-tighter shrink-0">S/D</span>
                         <input type="date" id="end_date" name="end_date" value="{{ request('end_date', now()->format('Y-m-d')) }}"
-                               class="w-full sm:w-40 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
+                               class="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
                     </div>
-                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-cuan-green px-5 py-2.5 text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95">
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-cuan-green px-6 py-2.5 text-xs md:text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95 whitespace-nowrap">
                         <i class="ph-bold ph-funnel"></i>
                         <span>Filter</span>
                     </button>
@@ -100,30 +100,44 @@
             </div>
         </section>
 
+        <!-- Banner Info Premium (Responsive) -->
+        <div class="group bg-white border border-gray-100 rounded-2xl p-3 md:p-4 flex gap-3 md:gap-4 shadow-sm hover:shadow-md transition-all border-l-4 border-l-emerald-500">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i class="ph-fill ph-info text-emerald-600 text-xl md:text-2xl"></i>
+            </div>
+            <div>
+                <h4 class="font-black text-gray-900 text-[10px] md:text-sm mb-0.5 md:mb-1 uppercase tracking-tight">Wawasan Geospasial</h4>
+                <p class="text-gray-500 text-[9px] md:text-xs font-medium leading-relaxed">
+                    Klik marker untuk detail. Pilih Karyawan di sidebar bawah untuk visualisasi Rute AI.
+                </p>
+            </div>
+        </div>
+
         {{-- MAIN INTERFACE --}}
-        <div class="grid grid-cols-12 gap-6">
+        <div class="grid grid-cols-12 gap-4 md:gap-6">
             
             <!-- Map (75%) -->
             <div class="col-span-12 lg:col-span-9 space-y-4">
-                <div class="bg-white p-2 rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden relative group">
-                    <div id="sales-map" class="w-full h-[650px] rounded-[1.5rem] z-10 border border-gray-50"></div>
+                <div class="bg-white p-1.5 md:p-2 rounded-[1.5rem] md:rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden relative group">
+                    <div id="sales-map" class="w-full h-[400px] md:h-[650px] rounded-[1rem] md:rounded-[1.5rem] z-10 border border-gray-50"></div>
                     
                     <!-- Floating Overlays -->
-                    <div class="absolute top-6 right-6 z-[1000] flex flex-col gap-2">
+                    <div class="absolute top-4 right-4 md:top-6 md:right-6 z-[1000] flex flex-col gap-2">
                         <button id="reset-map-btn" 
-                                class="bg-white/90 backdrop-blur-md p-3.5 rounded-2xl shadow-2xl border border-gray-200 text-gray-700 hover:text-emerald-600 hover:bg-white transition-all active:scale-95 group/btn"
+                                class="bg-white/90 backdrop-blur-md p-2.5 md:p-3.5 rounded-xl md:rounded-2xl shadow-2xl border border-gray-200 text-gray-700 hover:text-emerald-600 hover:bg-white transition-all active:scale-95 group/btn"
                                 title="Reset Tampilan Peta">
-                            <i class="ph-bold ph-arrows-out text-xl group-hover/btn:scale-110 transition-transform"></i>
+                            <i class="ph-bold ph-arrows-out text-base md:text-xl group-hover/btn:scale-110 transition-transform"></i>
                         </button>
                     </div>
                     
-                    <div class="absolute bottom-6 left-6 z-[1000]">
-                        <div id="map-status" class="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl shadow-2xl border border-gray-200 text-[10px] font-black uppercase tracking-[0.15em] text-gray-600 flex items-center gap-3">
-                            <span class="relative flex h-2.5 w-2.5">
+                    <div class="absolute bottom-4 left-4 md:bottom-6 md:left-6 z-[1000]">
+                        <div id="map-status" class="bg-white/90 backdrop-blur-md px-3 py-2 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl shadow-2xl border border-gray-200 text-[8px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] text-gray-600 flex items-center gap-2 md:gap-3">
+                            <span class="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 bg-emerald-500"></span>
                             </span>
-                            Sistem Peta Terhubung
+                            <span class="hidden sm:inline">Sistem Peta Terhubung</span>
+                            <span class="sm:hidden">Sistem Peta</span>
                         </div>
                     </div>
                 </div>
@@ -131,22 +145,19 @@
 
             <!-- Sidebar (25%) -->
             <div class="col-span-12 lg:col-span-3">
-                <div class="bg-white rounded-[2rem] shadow-xl border border-gray-100 flex flex-col h-[666px] overflow-hidden">
-                    <div class="p-6 border-b border-gray-50 bg-gray-50/30">
-                        <h3 class="font-black text-gray-900 uppercase tracking-widest text-[11px] flex items-center gap-2">
+                <div class="bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl border border-gray-100 flex flex-col h-[450px] md:h-[666px] overflow-hidden">
+                    <div class="p-4 md:p-6 border-b border-gray-50 bg-gray-50/30">
+                        <h3 class="font-black text-gray-900 uppercase tracking-widest text-[10px] md:text-[11px] flex items-center gap-2">
                             <i class="ph-fill ph-users-three text-emerald-600 text-lg"></i>
                             Tim Lapangan
                         </h3>
-                        <p class="text-[9px] text-gray-400 font-black mt-1 uppercase tracking-tighter">Berdasarkan Aktivitas Penjualan</p>
+                        <p class="text-[8px] md:text-[9px] text-gray-400 font-black mt-1 uppercase tracking-tighter">Berdasarkan Aktivitas</p>
                     </div>
                     
-                    <div id="cashier-list" class="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                    <div id="cashier-list" class="flex-grow overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-3 custom-scrollbar">
                         {{-- AJAX Loaded --}}
                         <div class="flex flex-col items-center justify-center h-full text-gray-400 py-10 opacity-50">
-                            <div class="w-12 h-12 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center mb-4">
-                                <i class="ph ph-spinner animate-spin text-xl"></i>
-                            </div>
-                            <p class="text-[10px] font-black uppercase tracking-widest">Sinkronisasi...</p>
+                            <i class="ph ph-spinner animate-spin text-xl"></i>
                         </div>
                     </div>
                 </div>
