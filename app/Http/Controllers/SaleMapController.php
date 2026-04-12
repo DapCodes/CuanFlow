@@ -66,8 +66,6 @@ class SaleMapController extends Controller
             });
 
         // Group active cashiers from the list of all sales for the sidebar
-        // We do a separate query so the sidebar shows ALL cashiers matching the date
-        // regardless of the current selectedCashierId filter.
         $allSalesCashiersQuery = Sale::where('outlet_id', $outletId)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
@@ -75,14 +73,21 @@ class SaleMapController extends Controller
             ->whereIn('payment_status', ['paid', 'partial', 'pending'])
             ->select('cashier_id', DB::raw('count(*) as total_sales'))
             ->groupBy('cashier_id')
-            ->with('cashier:id,name,color_palette')
+            ->with(['cashier' => function($q) {
+                $q->select('id', 'name', 'color_palette_id')->with('colorPalette');
+            }])
             ->get();
             
         $cashiers = $allSalesCashiersQuery->map(function ($stat) {
+            $color = '#10b981'; // Default emerald
+            if ($stat->cashier) {
+                $color = $stat->cashier->getActivePalette()->color_green;
+            }
+            
             return [
                 'id' => $stat->cashier_id,
                 'name' => $stat->cashier ? $stat->cashier->name : 'Unknown',
-                'color' => $stat->cashier ? $stat->cashier->color_palette : '#10b981',
+                'color' => $color,
                 'total_sales' => $stat->total_sales,
             ];
         });
