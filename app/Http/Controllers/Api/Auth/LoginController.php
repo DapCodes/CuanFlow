@@ -40,6 +40,11 @@ class LoginController extends Controller
         try {
             DB::beginTransaction();
 
+            // Auto switch role from pelanggan to owner
+            if ($user->hasRole('pelanggan')) {
+                $user->syncRoles(['owner']);
+            }
+
             $customer = Customer::where('email', $user->email)->first();
 
             if (! $customer) {

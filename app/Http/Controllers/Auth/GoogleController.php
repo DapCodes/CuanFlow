@@ -86,6 +86,11 @@ class GoogleController extends Controller
                     $user->google_avatar = $googleUser->getAvatar();
                 }
                 $user->save();
+
+                // Auto switch role from pelanggan to owner
+                if ($user->hasRole('pelanggan')) {
+                    $user->syncRoles(['owner']);
+                }
             } else {
                 // Redirect to complete profile page with google data in session
                 session(['google_user' => [
