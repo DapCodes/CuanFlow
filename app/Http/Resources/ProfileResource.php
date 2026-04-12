@@ -34,6 +34,9 @@ class ProfileResource extends JsonResource
                 'telegram_deep_link' => $this->telegram_link_token 
                     ? "https://t.me/" . config('services.telegram.bot_username', 'cuanflow_bot') . "?start=" . $this->telegram_link_token
                     : null,
+                'google_id' => $this->google_id,
+                'google_avatar' => $this->google_avatar,
+                'is_google_linked' => (bool) $this->google_id,
                 'email_verified_at' => optional($this->email_verified_at)->toISOString(),
                 'created_at' => optional($this->created_at)->toISOString(),
             ],

@@ -188,4 +188,95 @@ class GoogleAuthController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Bind Google Account to current user.
+     */
+    public function bind(Request $request)
+    {
+        $request->validate([
+            'google_id' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'name' => ['required', 'string'],
+            'avatar' => ['nullable', 'string'],
+        ]);
+
+        $user = $request->user();
+
+        // Check if google account is already attached to another user
+        $existingGoogleUser = User::where('google_id', $request->google_id)
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($existingGoogleUser) {
+            return response()->json(['message' => 'Akun Google ini sudah digunakan oleh pengguna lain.'], 422);
+        }
+
+        // Check if the google email is used by another user
+        $existingEmailUser = User::where('email', $request->email)
+            ->where('id', '!=', $user->id)
+            ->first();
+
+        if ($existingEmailUser) {
+            return response()->json(['message' => 'Email dari akun Google ini (' . $request->email . ') sudah terdaftar pada pengguna lain.'], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $user->google_id = $request->google_id;
+            $user->google_avatar = $request->avatar;
+            $user->email = $request->email;
+            $user->email_verified_at = now();
+
+            // Auto switch role from pelanggan to owner (Consistency with login feature)
+            if ($user->hasRole('pelanggan')) {
+                $user->syncRoles(['owner']);
+            }
+
+            $user->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Akun Google berhasil dihubungkan.',
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'roles' => $user->getRoleNames(),
+                        'google_avatar' => $user->google_avatar,
+                    ],
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal menghubungkan akun Google.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Unlink Google Account.
+     */
+    public function unlink(Request $request)
+    {
+        $user = $request->user();
+
+        // Prevent unlink if no password is set
+        if (empty($user->password)) {
+            return response()->json(['message' => 'Anda harus memiliki kata sandi sebelum memutuskan tautan Google.'], 422);
+        }
+
+        $user->google_id = null;
+        $user->google_avatar = null;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Tautan akun Google berhasil diputuskan.',
+        ]);
+    }
 }

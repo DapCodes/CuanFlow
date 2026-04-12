@@ -36,6 +36,10 @@ Route::prefix('v1')->group(function () {
             ->middleware('throttle:6,1')
             ->name('api.verification.send');
 
+        // Google Bind/Unlink
+        Route::post('/auth/google/bind', [GoogleAuthController::class, 'bind']);
+        Route::post('/auth/google/unlink', [GoogleAuthController::class, 'unlink']);
+
         // Reseller Applications
         Route::get('/reseller-applications', [ResellerApplicationApiController::class, 'index']);
         Route::post('/reseller-applications', [ResellerApplicationApiController::class, 'store']);
