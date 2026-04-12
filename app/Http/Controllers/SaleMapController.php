@@ -10,12 +10,33 @@ use Illuminate\Support\Facades\DB;
 
 class SaleMapController extends Controller
 {
+    protected $featureAccess;
+
+    public function __construct(\App\Services\FeatureAccessService $featureAccess)
+    {
+        $this->featureAccess = $featureAccess;
+    }
+
     /**
      * Display the sales map interface.
      */
     public function index()
     {
-        return view('sales-map.index');
+        $user = auth()->user();
+        $canMultiOutlet = $this->featureAccess->canAccess($user, 'multi_outlet');
+        $accessibleOutlets = collect();
+
+        if ($canMultiOutlet) {
+            $ownerId = $user->outlet?->owner_id;
+            if ($ownerId) {
+                $accessibleOutlets = \App\Models\Outlet::where('owner_id', $ownerId)->where('is_active', true)->get();
+            }
+        }
+
+        return view('sales-map.index', [
+            'canMultiOutlet' => $canMultiOutlet,
+            'accessibleOutlets' => $accessibleOutlets
+        ]);
     }
 
     /**
@@ -23,7 +44,23 @@ class SaleMapController extends Controller
      */
     public function getData(Request $request)
     {
-        $outletId = auth()->user()->outlet_id;
+        $user = auth()->user();
+        $canMultiOutlet = $this->featureAccess->canAccess($user, 'multi_outlet');
+        $ownerId = $user->outlet?->owner_id;
+        
+        // Determine which outlets we are looking at
+        $requestedOutletId = $request->input('outlet_id');
+        $targetOutletIds = [$user->outlet_id]; // Default to current outlet
+
+        if ($canMultiOutlet && $ownerId) {
+            $accessibleOutletIds = \App\Models\Outlet::where('owner_id', $ownerId)->pluck('id')->toArray();
+            
+            if ($requestedOutletId === 'all') {
+                $targetOutletIds = $accessibleOutletIds;
+            } elseif ($requestedOutletId && in_array($requestedOutletId, $accessibleOutletIds)) {
+                $targetOutletIds = [$requestedOutletId];
+            }
+        }
 
         $startDateStr = $request->input('start_date', Carbon::today()->toDateString());
         $endDateStr = $request->input('end_date', Carbon::today()->toDateString());
@@ -37,12 +74,12 @@ class SaleMapController extends Controller
         }
 
         // Fetch sales with lat, lng that are not null, filtered by date
-        $salesQuery = Sale::with('cashier')
-            ->where('outlet_id', $outletId)
+        $salesQuery = Sale::with(['cashier', 'outlet'])
+            ->whereIn('outlet_id', $targetOutletIds)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->whereIn('payment_status', ['paid', 'partial', 'pending']) // Include relevant statuses
+            ->whereIn('payment_status', ['paid', 'partial', 'pending'])
             ->orderBy('created_at', 'asc');
 
         // Fetch user IDs if we want to filter specific cashier
@@ -62,11 +99,12 @@ class SaleMapController extends Controller
                     'longitude' => (float) $sale->longitude,
                     'cashier_name' => $sale->cashier ? $sale->cashier->name : 'Unknown',
                     'cashier_id' => $sale->cashier_id,
+                    'outlet_name' => $sale->outlet ? $sale->outlet->name : 'Unknown',
                 ];
             });
 
-        // Group active cashiers from the list of all sales for the sidebar
-        $allSalesCashiersQuery = Sale::where('outlet_id', $outletId)
+        // Group active cashiers
+        $allSalesCashiersQuery = Sale::whereIn('outlet_id', $targetOutletIds)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -74,12 +112,12 @@ class SaleMapController extends Controller
             ->select('cashier_id', DB::raw('count(*) as total_sales'))
             ->groupBy('cashier_id')
             ->with(['cashier' => function($q) {
-                $q->select('id', 'name', 'color_palette_id')->with('colorPalette');
+                $q->select('id', 'name', 'color_palette_id', 'outlet_id')->with(['colorPalette', 'outlet']);
             }])
             ->get();
             
         $cashiers = $allSalesCashiersQuery->map(function ($stat) {
-            $color = '#10b981'; // Default emerald
+            $color = '#10b981';
             if ($stat->cashier) {
                 $color = $stat->cashier->getActivePalette()->color_green;
             }
@@ -89,13 +127,22 @@ class SaleMapController extends Controller
                 'name' => $stat->cashier ? $stat->cashier->name : 'Unknown',
                 'color' => $color,
                 'total_sales' => $stat->total_sales,
+                'outlet_name' => ($stat->cashier && $stat->cashier->outlet) ? $stat->cashier->outlet->name : '-',
             ];
         });
+
+        // Get the "context" name for the UI
+        $contextName = 'Semua Outlet';
+        if (count($targetOutletIds) === 1) {
+            $outlet = \App\Models\Outlet::find($targetOutletIds[0]);
+            $contextName = $outlet ? $outlet->name : 'Outlet';
+        }
 
         return response()->json([
             'success' => true,
             'sales' => $sales,
-            'cashiers' => $cashiers
+            'cashiers' => $cashiers,
+            'context_name' => $contextName
         ]);
     }
 }

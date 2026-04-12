@@ -84,17 +84,32 @@
             </div>
             
             <div class="w-full md:w-auto">
-                <form id="filterForm" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                <form id="filterForm" class="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
+                    @if($canMultiOutlet)
+                    <div class="relative">
+                        <select name="outlet_id" id="outlet_id" 
+                                class="w-full md:w-48 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs md:text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm appearance-none pr-8 cursor-pointer">
+                            <option value="all">Semua Outlet</option>
+                            @foreach($accessibleOutlets as $outlet)
+                                <option value="{{ $outlet->id }}" {{ request('outlet_id') == $outlet->id ? 'selected' : '' }}>
+                                    {{ $outlet->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <i class="ph-bold ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+                    </div>
+                    @endif
+
                     <div class="flex items-center gap-2 flex-grow">
                         <input type="date" id="start_date" name="start_date" value="{{ request('start_date', now()->format('Y-m-d')) }}" 
-                               class="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
+                               class="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs md:text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
                         <span class="text-gray-400 font-black text-[9px] uppercase tracking-tighter shrink-0">S/D</span>
                         <input type="date" id="end_date" name="end_date" value="{{ request('end_date', now()->format('Y-m-d')) }}"
-                               class="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
+                               class="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs md:text-sm focus:ring-4 focus:ring-cuan-green/10 focus:border-cuan-green transition-all font-bold text-gray-700 shadow-sm">
                     </div>
                     <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-cuan-green px-6 py-2.5 text-xs md:text-sm font-black text-white hover:bg-cuan-dark transition-all shadow-lg shadow-cuan-green/20 active:scale-95 whitespace-nowrap">
                         <i class="ph-bold ph-funnel"></i>
-                        <span>Filter</span>
+                        <span>Filter Data</span>
                     </button>
                 </form>
             </div>
@@ -106,9 +121,9 @@
                 <i class="ph-fill ph-info text-emerald-600 text-xl md:text-2xl"></i>
             </div>
             <div>
-                <h4 class="font-black text-gray-900 text-[10px] md:text-sm mb-0.5 md:mb-1 uppercase tracking-tight">Wawasan Geospasial</h4>
+                <h4 class="font-black text-gray-900 text-[10px] md:text-sm mb-0.5 md:mb-1 uppercase tracking-tight">Wawasan Geospasial Multi-Cabang</h4>
                 <p class="text-gray-500 text-[9px] md:text-xs font-medium leading-relaxed">
-                    Klik marker untuk detail. Pilih Karyawan di sidebar bawah untuk visualisasi Rute AI.
+                    Atur filter untuk melihat sebaran performa tiap cabang. Rute AI akan secara cerdas menghubungkan titik transaksi per karyawan.
                 </p>
             </div>
         </div>
@@ -136,8 +151,8 @@
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 bg-emerald-500"></span>
                             </span>
-                            <span class="hidden sm:inline">Sistem Peta Terhubung</span>
-                            <span class="sm:hidden">Sistem Peta</span>
+                            <span class="hidden sm:inline">Sistem Koordinat Terhubung</span>
+                            <span class="sm:hidden">Terhubung</span>
                         </div>
                     </div>
                 </div>
@@ -147,11 +162,11 @@
             <div class="col-span-12 lg:col-span-3">
                 <div class="bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl border border-gray-100 flex flex-col h-[450px] md:h-[666px] overflow-hidden">
                     <div class="p-4 md:p-6 border-b border-gray-50 bg-gray-50/30">
-                        <h3 class="font-black text-gray-900 uppercase tracking-widest text-[10px] md:text-[11px] flex items-center gap-2">
+                        <h3 class="font-black text-gray-900 uppercase tracking-[0.05em] text-[10px] md:text-[11px] flex items-center gap-2">
                             <i class="ph-fill ph-users-three text-emerald-600 text-lg"></i>
-                            Tim Lapangan
+                            <span id="sidebar-context-title">Pekerja Lapangan</span>
                         </h3>
-                        <p class="text-[8px] md:text-[9px] text-gray-400 font-black mt-1 uppercase tracking-tighter">Berdasarkan Aktivitas</p>
+                        <p id="sidebar-context-subtitle" class="text-[8px] md:text-[9px] text-gray-400 font-black mt-1 uppercase tracking-tighter">Memuat Data...</p>
                     </div>
                     
                     <div id="cashier-list" class="flex-grow overflow-y-auto p-3 md:p-4 space-y-2 md:space-y-3 custom-scrollbar">
@@ -281,9 +296,22 @@
                 const data = await response.json();
                 
                 if (data.success) {
+                    // Update UI Context Labels
+                    const titleEl = document.getElementById('sidebar-context-title');
+                    const subtitleEl = document.getElementById('sidebar-context-subtitle');
+                    
+                    if (titleEl) {
+                        titleEl.innerText = data.context_name === 'Semua Outlet' 
+                            ? 'Seluruh Pekerja Lapangan' 
+                            : `Pekerja: ${data.context_name}`;
+                    }
+                    if (subtitleEl) {
+                        subtitleEl.innerText = `${data.sales.length} Transaksi Terdeteksi`;
+                    }
+
                     renderMarkers(data.sales);
                     renderCashierList(data.cashiers);
-                    statusEl.innerHTML = `<span class="relative flex h-2 w-2 mr-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span> ${data.sales.length} Transaksi Terdeteksi`;
+                    statusEl.innerHTML = `<span class="relative flex h-2 w-2 mr-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span> Terkoneksi: ${data.context_name}`;
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -303,7 +331,6 @@
             sales.forEach(sale => {
                 const pos = [sale.latitude, sale.longitude];
                 
-                // Custom Pin HTML
                 const htmlPin = `
                     <div class="relative flex items-center justify-center marker-sale-${sale.id}">
                         <div class="absolute w-8 h-8 bg-emerald-500/20 rounded-full animate-pulse dot-pulse"></div>
@@ -323,10 +350,14 @@
                 const marker = L.marker(pos, { icon: icon });
                 
                 const popupContent = `
-                    <div class="p-1">
-                        <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Invoice</div>
-                        <div class="font-black text-gray-900 mb-2">${sale.invoice_number}</div>
-                        <div class="grid grid-cols-2 gap-4">
+                    <div class="p-1 min-w-[150px]">
+                        <div class="flex items-center gap-1.5 mb-2">
+                             <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                             <div class="text-[9px] font-black uppercase text-gray-500 tracking-wider">${sale.outlet_name}</div>
+                        </div>
+                        <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5"Invoice</div>
+                        <div class="font-black text-gray-900 mb-3 text-sm">${sale.invoice_number}</div>
+                        <div class="grid grid-cols-2 gap-4 bg-gray-50 p-2 rounded-xl mb-2">
                             <div>
                                 <div class="text-[9px] font-black uppercase text-gray-400">Total</div>
                                 <div class="text-xs font-bold text-emerald-600">${idrFormatter.format(sale.grand_total)}</div>
@@ -336,8 +367,8 @@
                                 <div class="text-xs font-bold text-gray-700">${sale.cashier_name}</div>
                             </div>
                         </div>
-                        <div class="mt-2 pt-2 border-t border-gray-100 text-[9px] text-gray-400 italic">
-                            ${sale.created_at}
+                        <div class="pt-2 border-t border-gray-100 text-[9px] text-gray-400 italic">
+                            <i class="ph ph-calendar-blank mr-1"></i> ${sale.created_at}
                         </div>
                     </div>
                 `;
@@ -345,7 +376,7 @@
                 marker.bindPopup(popupContent);
                 markerCluster.addLayer(marker);
                 
-                allMarkers[sale.id] = marker; // Save to dictionary
+                allMarkers[sale.id] = marker; 
                 bounds.extend(pos);
             });
 
@@ -380,8 +411,11 @@
                             ${cashier.name.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                            <div class="text-xs font-black text-gray-900 truncate max-w-[120px]">${cashier.name}</div>
-                            <div class="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">${cashier.total_sales} Transaksi</div>
+                            <div class="text-[11px] font-black text-gray-900 truncate max-w-[120px]">${cashier.name}</div>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md uppercase">${cashier.total_sales} Trx</span>
+                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter truncate max-w-[80px]">${cashier.outlet_name}</span>
+                            </div>
                         </div>
                     </div>
                     <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors arrow-icon">
