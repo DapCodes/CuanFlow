@@ -35,7 +35,7 @@
 
         .kasir-item:hover, .kasir-item.active {
             background-color: #f3f4f6;
-            border-left: 4px solid #10b981;
+            /* border-left: 4px solid #10b981; */
         }
 
         .kasir-item.active {
@@ -176,6 +176,10 @@
         let map;
         let markerCluster;
         let routeLayer;
+        let allMarkers = {}; // Store markers by sale ID for quick access
+        let activeHighlightedMarker = null;
+        let activeHighlightedSales = []; // Store current active cashier's sales
+        
         const statusEl = document.getElementById('map-status');
         const cashierListContainer = document.getElementById('cashier-list');
         const filterForm = document.getElementById('filterForm');
@@ -283,13 +287,15 @@
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                statusEl.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500 mr-1"></i> Gagal Memuat Data';
+                statusEl.innerHTML = '<i class="ph ph-warning text-red-500 mr-1"></i> Gagal Memuat Data';
             }
         }
 
         // Plot markers to map
         function renderMarkers(sales) {
             markerCluster.clearLayers();
+            allMarkers = {};
+            if (activeHighlightedMarker) activeHighlightedMarker = null;
             if (routeLayer) map.removeLayer(routeLayer);
 
             const bounds = L.latLngBounds();
@@ -299,9 +305,9 @@
                 
                 // Custom Pin HTML
                 const htmlPin = `
-                    <div class="relative flex items-center justify-center">
-                        <div class="absolute w-8 h-8 bg-emerald-500/20 rounded-full animate-pulse"></div>
-                        <div class="relative bg-white border-2 border-emerald-500 w-5 h-5 rounded-full shadow-lg flex items-center justify-center">
+                    <div class="relative flex items-center justify-center marker-sale-${sale.id}">
+                        <div class="absolute w-8 h-8 bg-emerald-500/20 rounded-full animate-pulse dot-pulse"></div>
+                        <div class="relative bg-white border-2 border-emerald-500 w-5 h-5 rounded-full shadow-lg flex items-center justify-center dot-core">
                             <div class="w-2 h-2 bg-emerald-600 rounded-full"></div>
                         </div>
                     </div>
@@ -338,6 +344,8 @@
 
                 marker.bindPopup(popupContent);
                 markerCluster.addLayer(marker);
+                
+                allMarkers[sale.id] = marker; // Save to dictionary
                 bounds.extend(pos);
             });
 
@@ -361,11 +369,12 @@
             }
 
             cashiers.forEach(cashier => {
-                const item = document.createElement('div');
-                item.className = 'kasir-item p-4 rounded-2xl border border-gray-100 bg-white shadow-sm flex items-center justify-between group active:scale-95 transition-all';
-                item.dataset.id = cashier.id;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'cashier-accordion-wrapper border border-gray-100 rounded-2xl overflow-hidden active-shadow-sm transition-all shadow-sm bg-white mb-2';
                 
-                item.innerHTML = `
+                const header = document.createElement('div');
+                header.className = 'kasir-item p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors';
+                header.innerHTML = `
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-inner" style="background-color: ${cashier.color || '#10b981'}">
                             ${cashier.name.substring(0, 2).toUpperCase()}
@@ -375,23 +384,53 @@
                             <div class="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">${cashier.total_sales} Transaksi</div>
                         </div>
                     </div>
-                    <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                        <i class="ph ph-caret-right font-bold"></i>
+                    <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors arrow-icon">
+                        <i class="ph ph-caret-down font-bold"></i>
                     </div>
                 `;
                 
-                item.onclick = () => selectCashier(cashier.id, item);
-                cashierListContainer.appendChild(item);
+                const body = document.createElement('div');
+                body.className = 'cashier-transactions hidden border-t border-gray-50 bg-gray-50/20';
+                body.innerHTML = `<div class="p-3 space-y-2" id="tx-list-${cashier.id}">
+                                    <div class="flex justify-center py-4"><i class="ph ph-spinner animate-spin text-emerald-500"></i></div>
+                                  </div>`;
+                
+                header.onclick = () => toggleCashierAccordion(cashier.id, wrapper, header, body);
+                
+                wrapper.appendChild(header);
+                wrapper.appendChild(body);
+                cashierListContainer.appendChild(wrapper);
             });
         }
 
-        // Handle cashier selection and routing
-        async function selectCashier(id, element) {
-            // UI Toggle
-            document.querySelectorAll('.kasir-item').forEach(el => el.classList.remove('active', 'border-emerald-500', 'bg-emerald-50/50'));
-            element.classList.add('active', 'border-emerald-500', 'bg-emerald-50/50');
+        async function toggleCashierAccordion(id, wrapper, header, body) {
+            const isOpening = body.classList.contains('hidden');
+            
+            // Close all others first
+            document.querySelectorAll('.cashier-transactions').forEach(el => {
+                if (el !== body) el.classList.add('hidden');
+            });
+            document.querySelectorAll('.cashier-accordion-wrapper').forEach(el => {
+                if (el !== wrapper) el.classList.remove('ring-2', 'ring-emerald-500/20', 'border-emerald-500');
+            });
+            document.querySelectorAll('.arrow-icon i').forEach(i => i.className = 'ph ph-caret-down font-bold');
 
-            // Fetch specific data for routing
+            if (isOpening) {
+                body.classList.remove('hidden');
+                wrapper.classList.add('ring-2', 'ring-emerald-500/20', 'border-emerald-500');
+                header.querySelector('.arrow-icon i').className = 'ph ph-caret-up font-bold';
+                
+                // Fetch transactions for this cashier and draw route
+                await selectCashier(id, body);
+            } else {
+                body.classList.add('hidden');
+                wrapper.classList.remove('ring-2', 'ring-emerald-500/20', 'border-emerald-500');
+                if (routeLayer) map.removeLayer(routeLayer);
+                resetAllMarkerHighlights();
+            }
+        }
+
+        async function selectCashier(id, bodyElement) {
             const formData = new FormData(filterForm);
             formData.append('cashier_id', id);
             const params = new URLSearchParams(formData).toString();
@@ -400,16 +439,99 @@
                 const response = await fetch(`{{ route('sales-map.data') }}?${params}`);
                 const data = await response.json();
                 
-                if (data.success && data.sales.length > 1) {
-                    drawRoute(data.sales);
-                } else {
-                    if (routeLayer) map.removeLayer(routeLayer);
-                    if (data.sales.length === 1) {
-                        map.setView([data.sales[0].latitude, data.sales[0].longitude], 16);
+                if (data.success) {
+                    activeHighlightedSales = data.sales;
+                    
+                    // Render Transaction List under the accordion
+                    const txList = bodyElement.querySelector(`#tx-list-${id}`);
+                    txList.innerHTML = '';
+                    
+                    data.sales.forEach(sale => {
+                        const txItem = document.createElement('div');
+                        txItem.className = 'p-3 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-emerald-300 transition-all flex justify-between items-center group/tx shadow-sm tx-item-row';
+                        txItem.dataset.id = sale.id;
+                        txItem.innerHTML = `
+                            <div>
+                                <div class="text-[10px] font-black text-gray-900 group-hover/tx:text-emerald-700">${sale.invoice_number}</div>
+                                <div class="text-[8px] font-bold text-gray-400 lowercase">${sale.created_at}</div>
+                            </div>
+                            <div class="text-[10px] font-black text-emerald-600">${idrFormatter.format(sale.grand_total)}</div>
+                        `;
+                        txItem.onclick = (e) => {
+                            e.stopPropagation();
+                            highlightSalePoint(sale.id, true);
+                        };
+                        txList.appendChild(txItem);
+                    });
+
+                    if (data.sales.length > 1) {
+                        drawRoute(data.sales);
+                    } else if (data.sales.length === 1) {
+                        if (routeLayer) map.removeLayer(routeLayer);
+                        highlightSalePoint(data.sales[0].id, true);
                     }
                 }
             } catch (error) {
-                console.error('Error fetching route:', error);
+                console.error('Error fetching cashier detail:', error);
+            }
+        }
+
+        function highlightSalePoint(saleId, zoom = false) {
+            resetAllMarkerHighlights();
+            
+            const marker = allMarkers[saleId];
+            if (!marker) return;
+
+            // Highlight the sidebar item
+            document.querySelectorAll('.tx-item-row').forEach(el => {
+                if (el.dataset.id == saleId) {
+                    el.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-50', 'border-emerald-500');
+                    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    el.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-50', 'border-emerald-500');
+                }
+            });
+
+            // Update Marker UI
+            const element = document.querySelector(`.marker-sale-${saleId}`);
+            if (element) {
+                element.querySelector('.dot-pulse').classList.remove('bg-emerald-500/20');
+                element.querySelector('.dot-pulse').classList.add('bg-amber-500/40', 'h-12', 'w-12');
+                element.querySelector('.dot-core').classList.remove('border-emerald-500');
+                element.querySelector('.dot-core').classList.add('border-amber-500', 'ring-4', 'ring-amber-200');
+                element.querySelector('.dot-core div').classList.remove('bg-emerald-600');
+                element.querySelector('.dot-core div').classList.add('bg-amber-600');
+            }
+
+            activeHighlightedMarker = marker;
+            
+            if (zoom) {
+                map.setView(marker.getLatLng(), 18);
+                marker.openPopup();
+            }
+
+            // Also change route highlight
+            if (routeLayer) {
+                routeLayer.setStyle({ color: '#10b981', weight: 8, opacity: 0.9, dashArray: null });
+            }
+        }
+
+        function resetAllMarkerHighlights() {
+            // Reset Sidebar
+            document.querySelectorAll('.tx-item-row').forEach(el => el.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-50', 'border-emerald-500'));
+            
+            // Reset all markers in Cluster
+            Object.keys(allMarkers).forEach(id => {
+                const element = document.querySelector(`.marker-sale-${id}`);
+                if (element) {
+                    element.querySelector('.dot-pulse').className = 'absolute w-8 h-8 bg-emerald-500/20 rounded-full animate-pulse dot-pulse';
+                    element.querySelector('.dot-core').className = 'relative bg-white border-2 border-emerald-500 w-5 h-5 rounded-full shadow-lg flex items-center justify-center dot-core';
+                    element.querySelector('.dot-core div').className = 'w-2 h-2 bg-emerald-600 rounded-full';
+                }
+            });
+            
+            if (routeLayer) {
+                routeLayer.setStyle({ color: '#3b82f6', weight: 5, opacity: 0.7, dashArray: '10, 10' });
             }
         }
 
@@ -425,7 +547,7 @@
             const coords = sampledSales.map(s => `${s.longitude},${s.latitude}`).join(';');
             const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
 
-            statusEl.innerHTML = '<i class="ph ph-path animate-pulse text-blue-500 mr-2"></i> Menghitung Rute AI...';
+            statusEl.innerHTML = '<i class="ph-bold ph-path animate-pulse text-blue-500 mr-2"></i> Menghitung Rute...';
 
             try {
                 const response = await fetch(url);
@@ -449,7 +571,6 @@
                 }
             } catch (error) {
                 console.error('Routing error:', error);
-                statusEl.innerHTML = '<i class="ph ph-warning text-amber-500 mr-2"></i> Rute Layanan Sedang Sibuk';
                 
                 // Fallback: simple polyline
                 const simpleCoords = sales.map(s => [s.latitude, s.longitude]);
@@ -468,9 +589,9 @@
             });
 
             resetBtn.addEventListener('click', function() {
-                // Clear selection
-                document.querySelectorAll('.kasir-item').forEach(el => el.classList.remove('active', 'border-emerald-500', 'bg-emerald-50/50'));
                 if (routeLayer) map.removeLayer(routeLayer);
+                document.querySelectorAll('.cashier-transactions').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.cashier-accordion-wrapper').forEach(el => el.classList.remove('ring-2', 'ring-emerald-500/20', 'border-emerald-500'));
                 fetchMapData();
             });
         });
