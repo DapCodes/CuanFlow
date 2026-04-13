@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\TrialVerificationController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CpuMonitoringController;
+use App\Http\Controllers\Admin\DebtSettingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -188,6 +189,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             Route::post('/{id}/retry', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'retry'])->name('retry');
             Route::delete('/{id}', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'destroy'])->name('destroy');
         });
+    });
+    
+    // Debt Settings
+    Route::prefix('debt-settings')->name('admin.debt-settings.')->group(function () {
+        Route::get('/', [DebtSettingController::class, 'index'])->name('index');
+        Route::post('/', [DebtSettingController::class, 'update'])->name('update');
     });
 
     // Terms & Conditions Management

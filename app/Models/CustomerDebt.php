@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use App\Models\Setting;
 
 class CustomerDebt extends Model
 {
@@ -27,6 +29,8 @@ class CustomerDebt extends Model
         'remaining_amount' => 'decimal:2',
         'due_date' => 'date',
     ];
+
+    protected $appends = ['is_overdue', 'days_overdue', 'late_fee', 'total_plus_fee'];
 
     public function customer()
     {
@@ -108,5 +112,33 @@ class CustomerDebt extends Model
         }
 
         return now()->diffInDays($this->due_date);
+    }
+
+    /**
+     * Get late fee amount
+     */
+    public function getLateFeeAttribute()
+    {
+        if (! $this->isOverdue()) {
+            return 0;
+        }
+
+        // Get percentage from settings
+        $percentage = Setting::getValue('debt', 'late_fee_percentage', 5, $this->outlet_id);
+
+        return ($this->remaining_amount * $percentage) / 100;
+    }
+
+    /**
+     * Get total amount including late fee
+     */
+    public function getTotalPlusFeeAttribute()
+    {
+        return $this->remaining_amount + $this->late_fee;
+    }
+
+    public function getIsOverdueAttribute()
+    {
+        return $this->isOverdue();
     }
 }

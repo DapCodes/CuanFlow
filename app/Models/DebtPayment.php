@@ -21,9 +21,12 @@ class DebtPayment extends Model
             ->setDescriptionForEvent(fn (string $eventName) => "Debt payment #{$this->id} was {$eventName}");
     }
 
-    protected $fillable = ['customer_debt_id', 'amount', 'payment_method', 'reference_number', 'notes', 'received_by', 'outlet_payment_link_id'];
+    protected $fillable = ['customer_debt_id', 'amount', 'late_fee', 'payment_method', 'reference_number', 'notes', 'received_by', 'outlet_payment_link_id'];
 
-    protected $casts = ['amount' => 'decimal:2'];
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'late_fee' => 'decimal:2',
+    ];
 
     public function customerDebt(): BelongsTo
     {

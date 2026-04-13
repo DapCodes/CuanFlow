@@ -228,8 +228,10 @@ class CustomerDebtController extends Controller implements HasMiddleware
                 'remaining_amount' => (float) $debt->remaining_amount,
                 'due_date' => $debt->due_date ? $debt->due_date->format('Y-m-d') : null,
                 'status' => $debt->status,
-                'is_overdue' => $debt->isOverdue(),
+                'is_overdue' => $debt->is_overdue,
                 'days_overdue' => $debt->days_overdue,
+                'late_fee' => (float) $debt->late_fee,
+                'total_plus_fee' => (float) $debt->total_plus_fee,
                 'created_at' => $debt->created_at->format('Y-m-d H:i'),
                 'notes' => $debt->notes,
             ];
@@ -252,8 +254,10 @@ class CustomerDebtController extends Controller implements HasMiddleware
      */
     public function payDebt(Request $request, CustomerDebt $debt)
     {
+        $maxAmount = $debt->total_plus_fee;
+        
         $request->validate([
-            'amount' => 'required|numeric|min:1|max:'.$debt->remaining_amount,
+            'amount' => 'required|numeric|min:1|max:'.$maxAmount,
             'payment_method' => 'required|in:cash,transfer,qris',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
@@ -269,24 +273,31 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
         DB::beginTransaction();
         try {
-            $amount = (float) $request->amount;
+            $totalAmountPaid = (float) $request->amount;
+            
+            // Calculate how much of this is late fee
+            $lateFeePart = 0;
+            if ($debt->late_fee > 0) {
+                // If payment is more than the debt, the rest is late fee
+                // But wait, if partial payment, do we pay debt first or fee first?
+                // Usually debt first. Let's say user pays the whole debt + fee.
+                if ($totalAmountPaid > $debt->remaining_amount) {
+                    $lateFeePart = $totalAmountPaid - $debt->remaining_amount;
+                }
+            }
+
+            $debtAmountPart = $totalAmountPaid - $lateFeePart;
             $referenceNumber = $request->reference_number;
 
-            // PREVENT DUPLICATE: Check if this payment (especially for qris/transfer) has been recorded
+            // PREVENT DUPLICATE
             if ($referenceNumber) {
                 $exists = DebtPayment::where('reference_number', $referenceNumber)->exists();
                 if ($exists) {
                     DB::rollBack();
-
                     return response()->json([
                         'success' => true,
                         'message' => 'Pembayaran sudah tercatat sebelumnya',
-                        'debt' => [
-                            'id' => $debt->id,
-                            'paid_amount' => $debt->paid_amount,
-                            'remaining_amount' => $debt->remaining_amount,
-                            'status' => $debt->status,
-                        ],
+                        'debt' => $debt
                     ]);
                 }
             }
@@ -294,7 +305,8 @@ class CustomerDebtController extends Controller implements HasMiddleware
             // Create payment record
             DebtPayment::create([
                 'customer_debt_id' => $debt->id,
-                'amount' => $amount,
+                'amount' => $totalAmountPaid,
+                'late_fee' => $lateFeePart,
                 'payment_method' => $request->payment_method,
                 'reference_number' => $request->reference_number,
                 'notes' => $request->notes,
@@ -303,14 +315,13 @@ class CustomerDebtController extends Controller implements HasMiddleware
             ]);
 
             // Update debt amounts
-            $debt->paid_amount += $amount;
-            $debt->remaining_amount -= $amount;
+            $debt->paid_amount += $debtAmountPart;
+            $debt->remaining_amount -= $debtAmountPart;
 
             if ($debt->remaining_amount <= 0) {
                 $debt->status = 'paid';
                 $debt->remaining_amount = 0;
 
-                // Update sale payment status if fully paid
                 if ($debt->sale) {
                     $debt->sale->update(['payment_status' => 'paid']);
                 }
@@ -321,19 +332,14 @@ class CustomerDebtController extends Controller implements HasMiddleware
             $debt->save();
 
             // Update customer total debt
-            $debt->customer->decrement('total_debt', $amount);
+            $debt->customer->decrement('total_debt', $debtAmountPart);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Pembayaran berhasil dicatat',
-                'debt' => [
-                    'id' => $debt->id,
-                    'paid_amount' => $debt->paid_amount,
-                    'remaining_amount' => $debt->remaining_amount,
-                    'status' => $debt->status,
-                ],
+                'debt' => $debt
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -351,8 +357,10 @@ class CustomerDebtController extends Controller implements HasMiddleware
      */
     public function createMidtransToken(Request $request, CustomerDebt $debt)
     {
+        $maxAmount = $debt->total_plus_fee;
+
         $request->validate([
-            'amount' => 'required|numeric|min:1|max:'.$debt->remaining_amount,
+            'amount' => 'required|numeric|min:1|max:'.$maxAmount,
         ]);
 
         if ($debt->status === 'paid') {
@@ -453,6 +461,10 @@ class CustomerDebtController extends Controller implements HasMiddleware
                 'remaining_amount' => (float) $debt->remaining_amount,
                 'due_date' => $debt->due_date ? $debt->due_date->format('Y-m-d') : null,
                 'status' => $debt->status,
+                'is_overdue' => $debt->is_overdue,
+                'days_overdue' => $debt->days_overdue,
+                'late_fee' => (float) $debt->late_fee,
+                'total_plus_fee' => (float) $debt->total_plus_fee,
                 'notes' => $debt->notes,
                 'created_at' => $debt->created_at->format('Y-m-d H:i'),
                 'payments' => $debt->payments->map(function ($payment) {

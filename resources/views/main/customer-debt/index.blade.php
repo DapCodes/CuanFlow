@@ -305,9 +305,17 @@
                         <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Utang</p>
                         <p id="modalTotal" class="font-bold text-gray-900 mt-1">-</p>
                     </div>
+                    <div id="modalLateFeeRow" class="hidden">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-amber-500">Denda Keterlambatan</p>
+                        <p id="modalLateFee" class="font-bold text-amber-600 mt-1">-</p>
+                    </div>
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-red-400">Sisa Pembayaran</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-red-400">Sisa Tagihan Pokok</p>
                         <p id="modalRemaining" class="font-black text-red-600 text-lg mt-1">-</p>
+                    </div>
+                    <div id="modalTotalPlusFeeRow" class="hidden">
+                         <p class="text-[10px] font-black uppercase tracking-widest text-red-600 font-black">Total Harus Bayar</p>
+                        <p id="modalTotalPlusFee" class="font-black text-red-700 text-xl mt-1">-</p>
                     </div>
                 </div>
             </div>
@@ -910,9 +918,19 @@ function renderDebtTable(debts, pagination) {
                 <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">${d.customer_phone || '-'}</div>
             </td>
             <td class="px-6 py-5 text-gray-600 text-xs font-medium">${d.created_at}</td>
-            <td class="px-6 py-5 font-black text-gray-900">${formatRupiah(d.amount)}</td>
+            <td class="px-6 py-5 font-black text-gray-900">
+                <div class="flex flex-col">
+                    <span>${formatRupiah(d.amount)}</span>
+                    ${d.late_fee > 0 ? `<span class="text-[9px] text-amber-600 font-bold uppercase tracking-widest">+ ${formatRupiah(d.late_fee)} (Denda)</span>` : ''}
+                </div>
+            </td>
             <td class="px-6 py-5 text-cuan-green font-black">${formatRupiah(d.paid_amount)}</td>
-            <td class="px-6 py-5 font-black text-red-600">${formatRupiah(d.remaining_amount)}</td>
+            <td class="px-6 py-5 font-black text-red-600">
+                <div class="flex flex-col">
+                    <span>${formatRupiah(d.remaining_amount)}</span>
+                    ${d.late_fee > 0 ? `<span class="text-[9px] text-red-400 font-black uppercase tracking-tighter">Total: ${formatRupiah(d.total_plus_fee)}</span>` : ''}
+                </div>
+            </td>
             <td class="px-6 py-5">
                 ${d.due_date 
                     ? `<div class="flex flex-col"><span class="${d.is_overdue ? 'text-red-600 font-black' : 'text-gray-600 font-bold'} text-xs">${d.due_date}</span>${d.is_overdue ? `<span class="text-[9px] font-black uppercase text-red-400 tracking-tighter mt-0.5">lewat ${d.days_overdue} hari</span>` : ''}</div>`
@@ -1207,8 +1225,21 @@ function openPaymentModal(debt) {
     document.getElementById('modalTotal').textContent = formatRupiah(debt.amount);
     document.getElementById('modalRemaining').textContent = formatRupiah(debt.remaining_amount);
     
+    const lateFeeRow = document.getElementById('modalLateFeeRow');
+    const totalPlusFeeRow = document.getElementById('modalTotalPlusFeeRow');
+    
+    if (debt.late_fee > 0) {
+        document.getElementById('modalLateFee').textContent = formatRupiah(debt.late_fee);
+        document.getElementById('modalTotalPlusFee').textContent = formatRupiah(debt.total_plus_fee);
+        lateFeeRow.classList.remove('hidden');
+        totalPlusFeeRow.classList.remove('hidden');
+    } else {
+        lateFeeRow.classList.add('hidden');
+        totalPlusFeeRow.classList.add('hidden');
+    }
+
     document.getElementById('paymentAmount').value = '';
-    document.getElementById('paymentAmount').max = debt.remaining_amount;
+    document.getElementById('paymentAmount').max = debt.total_plus_fee;
     document.getElementById('referenceNumber').value = '';
     document.getElementById('paymentNotes').value = '';
     
@@ -1263,7 +1294,7 @@ function closePaymentModal() {
 
 function setPaymentAmount(percent) {
     if (!currentDebt) return;
-    const amount = Math.floor(currentDebt.remaining_amount * percent);
+    const amount = Math.floor(currentDebt.total_plus_fee * percent);
     document.getElementById('paymentAmount').value = amount;
 }
 
@@ -1407,8 +1438,8 @@ function processPayment() {
         return;
     }
     
-    if (amount > currentDebt.remaining_amount) {
-        Swal.fire('Error', 'Jumlah pembayaran melebihi sisa utang', 'error');
+    if (amount > currentDebt.total_plus_fee) {
+        Swal.fire('Error', 'Jumlah pembayaran melebihi total tagihan (termasuk denda)', 'error');
         return;
     }
     
