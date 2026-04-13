@@ -33,6 +33,11 @@ class ExpenseCategorySeeder extends Seeder
                 'name' => 'Pemasukan Lainnya',
                 'description' => 'Pendapatan di luar penjualan utama',
             ],
+            [
+                'code' => '+LATE_FEE',
+                'name' => 'Denda / Jatuh Tempo',
+                'description' => 'Pendapatan dari denda keterlambatan piutang',
+            ],
 
             // ======================
             // PENGELUARAN (-)

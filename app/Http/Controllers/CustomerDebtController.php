@@ -6,6 +6,8 @@ use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\DebtPayment;
 use App\Models\ResellerApplication;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -330,6 +332,23 @@ class CustomerDebtController extends Controller implements HasMiddleware
             }
 
             $debt->save();
+
+            // Record Late Fee as Income if exists
+            if ($lateFeePart > 0) {
+                $category = ExpenseCategory::where('code', '+LATE_FEE')->first();
+                if ($category) {
+                    Expense::create([
+                        'outlet_id' => $debt->outlet_id,
+                        'expense_category_id' => $category->id,
+                        'amount' => -$lateFeePart, // Negative for income as per user request
+                        'expense_date' => now(),
+                        'description' => "Denda Keterlambatan Piutang - " . ($debt->sale->invoice_number ?? 'N/A'),
+                        'type' => 'income',
+                        'status' => 'approved',
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+            }
 
             // Update customer total debt
             $debt->customer->decrement('total_debt', $debtAmountPart);

@@ -7,6 +7,8 @@ use App\Http\Resources\DebtPaymentResource;
 use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\DebtPayment;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Midtrans\Config;
@@ -101,8 +103,10 @@ class DebtPaymentApiController extends Controller
             ], 400);
         }
 
+        $maxAmount = $debt->total_plus_fee;
+
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:1|max:'.$debt->remaining_amount,
+            'amount' => 'required|numeric|min:1|max:'.$maxAmount,
             'payment_method' => 'required|in:cash,transfer,qris',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
@@ -110,12 +114,23 @@ class DebtPaymentApiController extends Controller
 
         DB::beginTransaction();
         try {
-            $amount = (float) $validated['amount'];
+            $totalAmountPaid = (float) $validated['amount'];
+
+            // Calculate how much of this is late fee
+            $lateFeePart = 0;
+            if ($debt->late_fee > 0) {
+                if ($totalAmountPaid > $debt->remaining_amount) {
+                    $lateFeePart = $totalAmountPaid - $debt->remaining_amount;
+                }
+            }
+
+            $debtAmountPart = $totalAmountPaid - $lateFeePart;
 
             // Create payment record
             $payment = DebtPayment::create([
                 'customer_debt_id' => $debt->id,
-                'amount' => $amount,
+                'amount' => $totalAmountPaid,
+                'late_fee' => $lateFeePart,
                 'payment_method' => $validated['payment_method'],
                 'reference_number' => $validated['reference_number'] ?? null,
                 'notes' => $validated['notes'] ?? null,
@@ -123,8 +138,8 @@ class DebtPaymentApiController extends Controller
             ]);
 
             // Update debt amounts
-            $debt->paid_amount += $amount;
-            $debt->remaining_amount -= $amount;
+            $debt->paid_amount += $debtAmountPart;
+            $debt->remaining_amount -= $debtAmountPart;
 
             // Update status
             if ($debt->remaining_amount <= 0) {
@@ -141,8 +156,24 @@ class DebtPaymentApiController extends Controller
 
             $debt->save();
 
+            // Record Late Fee as Income
+            if ($lateFeePart > 0) {
+                $category = ExpenseCategory::where('code', '+LATE_FEE')->first();
+                if ($category) {
+                    Expense::create([
+                        'outlet_id' => $debt->outlet_id,
+                        'expense_category_id' => $category->id,
+                        'amount' => -$lateFeePart,
+                        'expense_date' => now(),
+                        'description' => "Denda Keterlambatan Piutang (API) - " . ($debt->sale->invoice_number ?? 'N/A'),
+                        'type' => 'income',
+                        'status' => 'approved',
+                    ]);
+                }
+            }
+
             // Update customer total debt
-            $customer->decrement('total_debt', $amount);
+            $customer->decrement('total_debt', $debtAmountPart);
 
             DB::commit();
 
@@ -152,12 +183,7 @@ class DebtPaymentApiController extends Controller
                 'data' => [
                     'payment_id' => $payment->id,
                     'amount' => (float) $payment->amount,
-                    'debt' => [
-                        'id' => $debt->id,
-                        'paid_amount' => (float) $debt->paid_amount,
-                        'remaining_amount' => (float) $debt->remaining_amount,
-                        'status' => $debt->status,
-                    ],
+                    'debt' => $debt,
                     'customer' => [
                         'id' => $customer->id,
                         'total_debt' => (float) $customer->total_debt,
@@ -209,8 +235,10 @@ class DebtPaymentApiController extends Controller
             ], 400);
         }
 
+        $maxAmount = $debt->total_plus_fee;
+
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:1|max:'.$debt->remaining_amount,
+            'amount' => 'required|numeric|min:1|max:'.$maxAmount,
         ]);
 
         try {
