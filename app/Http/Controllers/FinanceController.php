@@ -139,7 +139,12 @@ class FinanceController extends Controller
         $totalRevenue = $allTimeTotalSales + $allTimeOtherIncomeTotal;
 
         // Net Income (Saldo Bersih)
-        $totalNetIncome = $totalRevenue - $allTimeExpenses;
+        // PIUTANG: Hitung total piutang yang belum dibayar
+        $totalUnpaidDebt = \App\Models\CustomerDebt::where('outlet_id', $outletId)
+            ->where('status', '!=', 'paid')
+            ->sum('remaining_amount');
+
+        $totalNetIncome = $totalRevenue - $allTimeExpenses - $totalUnpaidDebt; // Kurangi dengan piutang yang belum cair
         $cashNetIncome = $allTimeCashSales + ($allTimeExpenseSummary->cash_other_income ?? 0) - ($allTimeExpenseSummary->cash_spent ?? 0);
         $midtransNetIncome = $allTimeQrisSales + ($allTimeExpenseSummary->midtrans_other_income ?? 0) - ($allTimeExpenseSummary->midtrans_spent ?? 0);
         $transferNetIncome = $allTimeTransferSales + ($allTimeExpenseSummary->transfer_other_income ?? 0) - ($allTimeExpenseSummary->transfer_spent ?? 0);
@@ -221,7 +226,7 @@ class FinanceController extends Controller
             'totalRevenue', 'totalNetIncome', 'cashNetIncome', 'midtransNetIncome', 'transferNetIncome',
             'sales', 'salesList', 'cashTotal', 'qrisTotal', 'transferTotal',
             'dailyProfit', 'dailyNetIncome',
-            'allTimeRevenue', 'allTimeProfit', 'allTimeExpenses', 'allTimeNetIncome',
+            'allTimeRevenue', 'allTimeProfit', 'allTimeExpenses', 'allTimeNetIncome', 'totalUnpaidDebt',
             'cashRegisters', 'expenses', 'expenseCategories',
             'expensePeriod', 'expenseStartDate', 'expenseEndDate',
             'filterMonth', 'filterYear'

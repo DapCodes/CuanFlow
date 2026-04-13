@@ -59,14 +59,15 @@
             <div class="lg:col-span-5 h-full">
                 <x-card-container class="relative overflow-hidden h-full p-0 flex flex-col">
                     {{-- Carousel Container --}}
-                    <div id="balanceCarousel" class="relative flex-grow transition-transform duration-500 ease-in-out flex" style="width: 300%;">
-<div class="w-1/3 p-8 flex flex-col justify-between bg-gradient-to-br from-blue-600 to-blue-700 text-white relative h-full">
+                    <div id="balanceCarousel" class="relative flex-grow transition-transform duration-500 ease-in-out flex" style="width: 400%;">
+                        {{-- SLIDE 1: TOTAL (Projected) --}}
+                        <div class="w-1/4 p-8 flex flex-col justify-between bg-gradient-to-br from-blue-600 to-blue-700 text-white relative h-full">
                             <div class="absolute top-0 right-0 opacity-10 p-4">
                                 <i class="fas fa-globe text-9xl"></i>
                             </div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-6">
-                                    <span class="px-3 py-1 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">Semua Metode</span>
+                                    <span class="px-3 py-1 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">Arus Kas Bersih</span>
                                     <i class="fas fa-wallet text-2xl opacity-50"></i>
                                 </div>
                                 <h4 class="text-sm font-medium opacity-80 mb-2 uppercase tracking-wide">Saldo Kas Bersih</h4>
@@ -74,20 +75,19 @@
                                     <span class="text-2xl font-normal opacity-70 mr-1">Rp</span>{{ number_format($totalNetIncome, 0, ',', '.') }}
                                 </div>
                                 <p class="mt-4 text-sm opacity-80 leading-relaxed">
-                                    Gabungan seluruh pendapatan dari Cash, QRIS, dan Transfer setalah dikurangi biaya pengeluaran.
+                                    Total uang yang <b>benar-benar diterima</b> (Cash, QRIS, Transfer) setelah dikurangi pengeluaran dan piutang yang belum dibayar.
                                 </p>
                             </div>
                             <div class="relative z-10 mt-8 pt-6 border-t border-white/20 flex items-center justify-between">
-                                <span class="text-xs opacity-60 italic">All-time record</span>
-                                <div class="flex gap-2 text-xs">
-                                    <div class="bg-white/10 px-2 py-1 rounded">R: Rp {{ number_format($totalRevenue/1000, 0) }}k</div>
-                                    <div class="bg-white/10 px-2 py-1 rounded">E: Rp {{ number_format($allTimeExpenses/1000, 0) }}k</div>
+                                <span class="text-xs opacity-60 italic">Realized Income</span>
+                                <div class="flex gap-2 text-xs text-blue-100/70">
+                                    <span>P: Rp {{ number_format($totalUnpaidDebt/1000, 0) }}k</span>
                                 </div>
                             </div>
                         </div>
 
                         {{-- SLIDE 2: TUNAI --}}
-                        <div class="w-1/3 p-8 flex flex-col justify-between bg-gradient-to-br from-emerald-600 to-emerald-700 text-white relative h-full">
+                        <div class="w-1/4 p-8 flex flex-col justify-between bg-gradient-to-br from-emerald-600 to-emerald-700 text-white relative h-full">
                             <div class="absolute top-0 right-0 opacity-10 p-4">
                                 <i class="fas fa-money-bill-wave text-9xl"></i>
                             </div>
@@ -101,21 +101,16 @@
                                     <span class="text-2xl font-normal opacity-70 mr-1">Rp</span>{{ number_format($cashNetIncome, 0, ',', '.') }}
                                 </div>
                                 <p class="mt-4 text-sm opacity-80 leading-relaxed">
-                                    Total uang fisik yang tersedia di laci kasir setelah dikurangi biaya operasional tunai.
+                                    Total uang fisik yang tersedia di laci kasir setelah dikurangi pengeluaran operasional.
                                 </p>
                             </div>
-                            <div class="relative z-10 mt-8 pt-6 border-t border-white/20 flex items-center justify-between">
-                                <span class="text-xs opacity-60 italic">Physical cash on hand</span>
-                                <div class="flex gap-1">
-                                     <span class="w-2 h-2 rounded-full bg-white opacity-50"></span>
-                                     <span class="w-2 h-2 rounded-full bg-white"></span>
-                                     <span class="w-2 h-2 rounded-full bg-white opacity-50"></span>
-                                </div>
+                            <div class="relative z-10 mt-8 pt-6 border-t border-white/20 flex items-center justify-between text-xs opacity-60 italic">
+                                Physical cash on hand
                             </div>
                         </div>
 
                         {{-- SLIDE 3: MIDTRANS --}}
-                        <div class="w-1/3 p-8 flex flex-col justify-between bg-gradient-to-br from-purple-600 to-purple-700 text-white relative h-full">
+                        <div class="w-1/4 p-8 flex flex-col justify-between bg-gradient-to-br from-purple-600 to-purple-700 text-white relative h-full">
                             <div class="absolute top-0 right-0 opacity-10 p-4">
                                 <i class="fas fa-file-invoice-dollar text-9xl"></i>
                             </div>
@@ -129,15 +124,39 @@
                                     <span class="text-2xl font-normal opacity-70 mr-1">Rp</span>{{ number_format($midtransNetIncome, 0, ',', '.') }}
                                 </div>
                                 <p class="mt-4 text-sm opacity-80 leading-relaxed">
-                                    Akumulasi pendapatan yang diproses melalui gateway Midtrans. Saldo ini mencakup seluruh transaksi nontunai (QRIS & E-Wallet).
+                                    Akumulasi pendapatan yang diproses melalui gateway Midtrans (QRIS & E-Wallet).
+                                </p>
+                            </div>
+                            <div class="relative z-10 mt-8 pt-6 border-t border-white/20 flex items-center justify-between text-xs opacity-60 italic">
+                                Total digital settlement
+                            </div>
+                        </div>
+
+                        {{-- SLIDE 4: PIUTANG --}}
+                        <div class="w-1/4 p-8 flex flex-col justify-between bg-gradient-to-br from-orange-600 to-orange-700 text-white relative h-full">
+                            <div class="absolute top-0 right-0 opacity-10 p-4">
+                                <i class="fas fa-user-clock text-9xl"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-6">
+                                    <span class="px-3 py-1 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">Piutang (Debt)</span>
+                                    <i class="fas fa-hand-holding-usd text-2xl opacity-50"></i>
+                                </div>
+                                <h4 class="text-sm font-medium opacity-80 mb-2 uppercase tracking-wide">Piutang Belum Dibayar</h4>
+                                <div class="text-4xl md:text-5xl font-bold tracking-tight">
+                                    <span class="text-2xl font-normal opacity-70 mr-1">Rp</span>{{ number_format($totalUnpaidDebt, 0, ',', '.') }}
+                                </div>
+                                <p class="mt-4 text-sm opacity-80 leading-relaxed">
+                                    Total piutang pelanggan yang belum dibayar. Jumlah ini mengurangi saldo kas bersih Anda hingga tagihan dilunasi.
                                 </p>
                             </div>
                             <div class="relative z-10 mt-8 pt-6 border-t border-white/20 flex items-center justify-between">
-                                <span class="text-xs opacity-60 italic">Midtrans payment settlement</span>
+                                <span class="text-xs opacity-60 italic">Awaited payments</span>
                                 <div class="flex gap-1">
                                      <span class="w-2 h-2 rounded-full bg-white opacity-50"></span>
                                      <span class="w-2 h-2 rounded-full bg-white opacity-50"></span>
-                                     <span class="w-2 h-2 rounded-full bg-white font-bold"></span>
+                                     <span class="w-2 h-2 rounded-full bg-white opacity-50"></span>
+                                     <span class="w-2 h-2 rounded-full bg-white"></span>
                                 </div>
                             </div>
                         </div>
@@ -156,6 +175,7 @@
                     {{-- Indicators --}}
                     <div class="absolute top-6 left-8 flex items-center gap-1.5 z-20">
                         <div class="carousel-dot w-6 h-1.5 rounded-full bg-white transition-all duration-300"></div>
+                        <div class="carousel-dot w-1.5 h-1.5 rounded-full bg-white/30 transition-all duration-300"></div>
                         <div class="carousel-dot w-1.5 h-1.5 rounded-full bg-white/30 transition-all duration-300"></div>
                         <div class="carousel-dot w-1.5 h-1.5 rounded-full bg-white/30 transition-all duration-300"></div>
                     </div>
@@ -386,7 +406,7 @@
 <script>
     // CAROUSEL LOGIC
     let currentSlide = 0;
-    const totalSlides = 3;
+    const totalSlides = 4;
     const carouselEl = document.getElementById('balanceCarousel');
     const dots = document.querySelectorAll('.carousel-dot');
 
@@ -396,7 +416,7 @@
     }
 
     function updateCarousel() {
-        const offset = -(currentSlide * (100 / 3));
+        const offset = -(currentSlide * (100 / 4));
         carouselEl.style.transform = `translateX(${offset}%)`;
         
         // Update dots
