@@ -242,6 +242,69 @@
             50% { transform: translateY(-10px); }
         }
         .animate-float { animation: float 3s ease-in-out infinite; }
+
+        /* Loading Overlay */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .loader-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: var(--primary);
+            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+
+        .loader-ring:nth-child(2) {
+            width: 70%;
+            height: 70%;
+            border-top-color: var(--secondary);
+            animation: spin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 24px;
+            font-weight: 800;
+            color: #1f2937;
+            letter-spacing: 0.1em;
+            text-align: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.98); }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -838,6 +901,34 @@
                 statusText.innerText = 'Sembunyikan Panel';
             }
         }
+
+        // ========== LOADING STATE ON SAVE ==========
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            // Check if form is valid before showing loader
+            if (this.checkValidity()) {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                
+                // Disable submit buttons to prevent double clicks
+                this.querySelectorAll('button[type="submit"]').forEach(btn => {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Memproses...';
+                    btn.classList.add('opacity-80', 'cursor-not-allowed');
+                });
+            }
+        });
     </script>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader-container">
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <i class="fas fa-cloud-upload-alt text-primary text-3xl animate-bounce"></i>
+        </div>
+        <div class="loading-text">
+            <p class="uppercase text-xs font-black">Menyimpan Perubahan</p>
+            <p class="text-[10px] text-gray-400 mt-1 font-medium italic">Mohon tunggu sebentar...</p>
+        </div>
+    </div>
 </body>
 </html>
