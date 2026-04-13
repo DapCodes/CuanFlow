@@ -19,6 +19,10 @@ class CustomerDebtResource extends JsonResource
             'due_date' => $this->due_date ? $this->due_date->format('Y-m-d') : null,
             'status' => $this->status,
             'notes' => $this->notes,
+            'is_overdue' => (bool) $this->is_overdue,
+            'days_overdue' => (int) $this->days_overdue,
+            'late_fee' => (float) $this->late_fee,
+            'total_plus_fee' => (float) $this->total_plus_fee,
             'created_at' => $this->created_at->toISOString(),
         ];
     }
