@@ -768,25 +768,6 @@ class PaymentController extends Controller
                 }
                 $debtAmountPart = $amount - $lateFeePart;
 
-                // Record as Income in Expense table
-                if ($debtAmountPart > 0) {
-                    $saleCategory = \App\Models\ExpenseCategory::where('code', '+SALE')->first();
-                    if ($saleCategory) {
-                        \App\Models\Expense::create([
-                            'outlet_id' => $debt->outlet_id,
-                            'expense_category_id' => $saleCategory->id,
-                            'amount' => -$debtAmountPart,
-                            'expense_date' => now(),
-                            'description' => "Pembayaran Piutang (Midtrans) - " . ($debt->sale->invoice_number ?? 'N/A'),
-                            'type' => 'income',
-                            'status' => 'approved',
-                            'payment_method' => 'qris',
-                            'reference_number' => $notification->transaction_id,
-                            'created_by' => null, // Processed by system
-                        ]);
-                    }
-                }
-
                 if ($lateFeePart > 0) {
                     $category = \App\Models\ExpenseCategory::where('code', '+LATE_FEE')->first();
                     if ($category) {
