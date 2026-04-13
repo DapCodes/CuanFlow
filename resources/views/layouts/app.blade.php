@@ -15,6 +15,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="shortcut icon" href="{{ asset('assets/image/logo.svg') }}" type="image/x-icon">
     <title>@yield('title', 'CuanFlow')</title>
     
     <!-- Preload Critical Resources -->
@@ -29,9 +30,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 
-    {{-- favicon --}}
-    <link rel="shortcut icon" href="{{ asset('assets/image/logo.svg') }}" type="image/x-icon">
-    
     <!-- Satoshi Font - Optimized with font-display: swap -->
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -954,18 +952,25 @@
             });
 
             // ── Page lifecycle ──
-            window.addEventListener('load', function() {
+            document.addEventListener('DOMContentLoaded', function() {
                 const contentWrapper = document.getElementById('app-content-wrapper');
 
-                // Complete progress bar
-                completeProgress();
+                // Complete progress bar (smoothly)
+                setTimeout(() => {
+                    completeProgress();
+                }, 200);
 
-                // Reveal content after Alpine.js is fully initialized
+                // Reveal content as soon as DOM is ready, don't wait for all images/resources
                 requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        if (contentWrapper) contentWrapper.classList.add('ready');
-                    });
+                    if (contentWrapper) contentWrapper.classList.add('ready');
                 });
+            });
+
+            // Fallback: ensure shown anyway on full load
+            window.addEventListener('load', function() {
+                const contentWrapper = document.getElementById('app-content-wrapper');
+                completeProgress();
+                if (contentWrapper) contentWrapper.classList.add('ready');
             });
 
             window.addEventListener('pageshow', function(e) {

@@ -182,7 +182,7 @@
             </div>
 
             {{-- TAB CONTENT: DEBT --}}
-            <div id="contentDebt" class="tab-content hidden">
+            <div id="contentDebt" class="tab-content hidden" style="display: none;">
                 {{-- Toolbar --}}
                 <div class="px-6 py-5 border-b border-gray-100 bg-white space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
                     <div class="flex-1">
@@ -233,7 +233,7 @@
             </div>
 
             {{-- TAB CONTENT: SUPPLIER --}}
-            <div id="contentSupplier" class="tab-content hidden">
+            <div id="contentSupplier" class="tab-content hidden" style="display: none;">
                 {{-- Toolbar --}}
                 <div class="px-6 py-5 border-b border-gray-100 bg-white">
                     <input type="text" id="searchSupplier" placeholder="Cari nama atau telepon supplier..."
@@ -273,7 +273,7 @@
 </main>
 
 {{-- PAYMENT MODAL --}}
-<div id="paymentModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(8px);">
+<div id="paymentModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 transition-all duration-300" style="display: none; backdrop-filter: blur(8px);">
     <div class="bg-white rounded-[2rem] shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto transform transition-all scale-100 opacity-100 border border-gray-100">
         {{-- Header --}}
         <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
@@ -432,7 +432,7 @@
 </div>
 
 {{-- HISTORY MODAL --}}
-<div id="historyModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(8px);">
+<div id="historyModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 transition-all duration-300" style="display: none; backdrop-filter: blur(8px);">
     <div class="bg-white rounded-[2rem] shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-100">
         {{-- Header --}}
         <div class="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
@@ -479,7 +479,7 @@
 </div>
 
 {{-- SUPPLIER DETAIL MODAL --}}
-<div id="supplierDetailModal" class="hidden fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 transition-all duration-500" style="backdrop-filter: blur(8px);">
+<div id="supplierDetailModal" class="hidden fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 transition-all duration-500" style="display: none; backdrop-filter: blur(8px);">
     <div class="relative bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col transform transition-all border border-gray-100">
         
         {{-- Fixed Close Button --}}
@@ -566,7 +566,7 @@
 
 @section('modals')
 {{-- PAYMENT SUCCESS MODAL --}}
-<div id="paymentSuccessModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(12px);">
+<div id="paymentSuccessModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-all duration-300" style="display: none; backdrop-filter: blur(12px);">
     <div class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 text-center transform transition-all border border-gray-100">
         
         
@@ -705,8 +705,14 @@
         activeBtn.classList.remove('text-gray-500', 'border-gray-200', 'bg-white');
 
         // Show Content
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-        document.getElementById('content' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+            content.style.display = 'none';
+        });
+        
+        const activeContent = document.getElementById('content' + tab.charAt(0).toUpperCase() + tab.slice(1));
+        activeContent.classList.remove('hidden');
+        activeContent.style.display = 'block';
 
         // Load Data
         if (tab === 'customer') loadCustomers();
@@ -1068,6 +1074,7 @@ function openSupplierDetail(s) {
     }
     
     modal.classList.remove('hidden');
+    modal.style.display = 'flex';
     setTimeout(() => {
         modal.querySelector('div').classList.remove('scale-95', 'opacity-0');
         modal.querySelector('div').classList.add('scale-100', 'opacity-100');
@@ -1080,6 +1087,7 @@ function closeSupplierDetail() {
     modal.querySelector('div').classList.remove('scale-100', 'opacity-100');
     setTimeout(() => {
         modal.classList.add('hidden');
+        modal.style.display = 'none';
     }, 200);
 }
 
@@ -1253,6 +1261,7 @@ function openPaymentModal(debt) {
     document.querySelectorAll('.transfer-method-card').forEach(c => c.classList.remove('border-teal-400', 'bg-teal-50', 'ring-2', 'ring-teal-200'));
 
     document.getElementById('paymentModal').classList.remove('hidden');
+    document.getElementById('paymentModal').style.display = 'flex';
 }
 
 function selectTransferMethod(element, linkId, methodName, accNumber, accName, qrImage) {
@@ -1288,6 +1297,7 @@ function selectTransferMethod(element, linkId, methodName, accNumber, accName, q
 
 function closePaymentModal() {
     document.getElementById('paymentModal').classList.add('hidden');
+    document.getElementById('paymentModal').style.display = 'none';
 }
 
 function setPaymentAmount(percent) {
@@ -1312,6 +1322,7 @@ function openHistoryModal(customerId) {
     const nameEl = document.getElementById('historyCustomerName');
     
     modal.classList.remove('hidden');
+    modal.style.display = 'flex';
     nameEl.textContent = 'Memuat data...';
     tbody.innerHTML = `
         <tr>
@@ -1400,6 +1411,7 @@ function openHistoryModal(customerId) {
 
 function closeHistoryModal() {
     document.getElementById('historyModal').classList.add('hidden');
+    document.getElementById('historyModal').style.display = 'none';
 }
 
 function getStatusBadgeClass(status) {
@@ -1662,6 +1674,7 @@ function showPaymentSuccessModal(debt, amountPaid) {
     document.getElementById('successDebt').textContent = formatRupiah(debt.remaining_amount);
     
     modal.classList.remove('hidden');
+    modal.style.display = 'flex';
     setTimeout(() => {
         modal.firstElementChild.classList.remove('scale-95', 'opacity-0');
         modal.firstElementChild.classList.add('scale-100', 'opacity-100');
@@ -1681,6 +1694,7 @@ function closePaymentSuccessModal() {
     modal.firstElementChild.classList.remove('scale-100', 'opacity-100');
     setTimeout(() => {
         modal.classList.add('hidden');
+        modal.style.display = 'none';
     }, 300);
 }
 
