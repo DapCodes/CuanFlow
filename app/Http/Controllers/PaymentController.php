@@ -780,7 +780,7 @@ class PaymentController extends Controller
                             'description' => "Denda Keterlambatan Piutang (Midtrans) - " . ($debt->sale->invoice_number ?? 'N/A'),
                             'type' => 'income',
                             'status' => 'approved',
-                            'payment_method' => 'qris',
+                            'payment_method' => 'transfer',
                             'reference_number' => $notification->transaction_id,
                             'created_by' => null,
                         ]);
