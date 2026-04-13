@@ -89,7 +89,7 @@ class ExpenseCategorySeeder extends Seeder
             ],
         ];
         foreach ($cats as $c) {
-            ExpenseCategory::create($c);
+            ExpenseCategory::updateOrCreate(['code' => $c['code']], $c);
         }
     }
 }
