@@ -568,9 +568,7 @@
 {{-- PAYMENT SUCCESS MODAL --}}
 <div id="paymentSuccessModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 transition-all duration-300" style="backdrop-filter: blur(12px);">
     <div class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-10 text-center transform transition-all border border-gray-100">
-        <div class="w-24 h-24 bg-cuan-green rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-cuan-green/20 animate-bounce">
-            <i class="fas fa-check text-4xl text-white"></i>
-        </div>
+        
         
         <h3 class="text-2xl font-black text-gray-900 mb-2">Pembayaran Berhasil!</h3>
         <p class="text-gray-400 text-sm mb-8">Terima kasih, pembayaran telah berhasil diproses dan dicatat ke dalam sistem.</p>
@@ -1463,6 +1461,19 @@ function processCashTransferPayment(amount) {
         outlet_payment_link_id: document.getElementById('selectedOutletPaymentLinkId').value,
     };
     
+    // Show Loading Modal
+    Swal.fire({
+        title: 'Memproses...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    const btn = document.getElementById('btnProcessPayment');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+
     fetch(`/customer-debts/${currentDebt.id}/pay`, {
         method: 'POST',
         headers: {
@@ -1471,9 +1482,12 @@ function processCashTransferPayment(amount) {
         },
         body: JSON.stringify(data),
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) throw new Error('Network response was not ok');
+        return r.json();
+    })
     .then(response => {
-        const btn = document.getElementById('btnProcessPayment');
+        Swal.close();
         btn.disabled = false;
         btn.innerHTML = 'Konfirmasi Pembayaran';
         
@@ -1493,6 +1507,7 @@ function processCashTransferPayment(amount) {
         }
     })
     .catch(err => {
+        Swal.close();
         console.error('Payment error:', err);
         const btn = document.getElementById('btnProcessPayment');
         btn.disabled = false;
@@ -1549,7 +1564,10 @@ function processMidtransPayment(amount) {
                             notes: 'Pembayaran via Midtrans QRIS',
                         }),
                     })
-                    .then(r => r.json())
+                    .then(r => {
+                        if (!r.ok) throw new Error('Response failed');
+                        return r.json();
+                    })
                     .then(payResp => {
                         Swal.close();
                         if (payResp.success) {
@@ -1567,6 +1585,19 @@ function processMidtransPayment(amount) {
                                 window.location.reload();
                             });
                         }
+                    })
+                    .catch(err => {
+                        Swal.close();
+                        console.error('Final payment sync failed:', err);
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Pencatatan Gagal',
+                            text: 'Pembayaran QRIS Anda berhasil, namun gagal terhubung ke sistem untuk pencatatan. Silakan refresh halaman atau hubungi Support.',
+                            confirmButtonColor: '#658C58',
+                            customClass: {
+                                popup: 'rounded-3xl border-none shadow-2xl'
+                            }
+                        });
                     });
                 },
                 onPending: function(result) {

@@ -333,6 +333,25 @@ class CustomerDebtController extends Controller implements HasMiddleware
 
             $debt->save();
 
+            // Record Debt Payment as Income in Expense table
+            if ($debtAmountPart > 0) {
+                $saleCategory = ExpenseCategory::where('code', '+SALE')->first();
+                if ($saleCategory) {
+                    Expense::create([
+                        'outlet_id' => $debt->outlet_id,
+                        'expense_category_id' => $saleCategory->id,
+                        'amount' => -$debtAmountPart,
+                        'expense_date' => now(),
+                        'description' => "Pembayaran Piutang - " . ($debt->sale->invoice_number ?? 'N/A'),
+                        'type' => 'income',
+                        'status' => 'approved',
+                        'payment_method' => $request->payment_method,
+                        'reference_number' => $request->reference_number,
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+            }
+
             // Record Late Fee as Income if exists
             if ($lateFeePart > 0) {
                 $category = ExpenseCategory::where('code', '+LATE_FEE')->first();
@@ -340,11 +359,13 @@ class CustomerDebtController extends Controller implements HasMiddleware
                     Expense::create([
                         'outlet_id' => $debt->outlet_id,
                         'expense_category_id' => $category->id,
-                        'amount' => -$lateFeePart, // Negative for income as per user request
+                        'amount' => -$lateFeePart,
                         'expense_date' => now(),
                         'description' => "Denda Keterlambatan Piutang - " . ($debt->sale->invoice_number ?? 'N/A'),
                         'type' => 'income',
                         'status' => 'approved',
+                        'payment_method' => $request->payment_method,
+                        'reference_number' => $request->reference_number,
                         'created_by' => auth()->id(),
                     ]);
                 }

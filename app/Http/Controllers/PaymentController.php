@@ -714,7 +714,7 @@ class PaymentController extends Controller
         $parts = explode('-', $notification->order_id);
         $debtId = $parts[1] ?? null;
 
-        $debt = \App\Models\CustomerDebt::find($debtId);
+        $debt = \App\Models\CustomerDebt::with('sale')->find($debtId);
         if (! $debt) {
             return response()->json(['message' => 'Debt not found'], 404);
         }
@@ -758,6 +758,52 @@ class PaymentController extends Controller
 
                 $debt->save();
                 $debt->customer->decrement('total_debt', $amount);
+
+                // Calculate Late Fee Part for recording
+                $lateFeePart = 0;
+                if ($debt->late_fee > 0) {
+                    if ($amount > $debt->remaining_amount) {
+                        $lateFeePart = $amount - $debt->remaining_amount;
+                    }
+                }
+                $debtAmountPart = $amount - $lateFeePart;
+
+                // Record as Income in Expense table
+                if ($debtAmountPart > 0) {
+                    $saleCategory = \App\Models\ExpenseCategory::where('code', '+SALE')->first();
+                    if ($saleCategory) {
+                        \App\Models\Expense::create([
+                            'outlet_id' => $debt->outlet_id,
+                            'expense_category_id' => $saleCategory->id,
+                            'amount' => -$debtAmountPart,
+                            'expense_date' => now(),
+                            'description' => "Pembayaran Piutang (Midtrans) - " . ($debt->sale->invoice_number ?? 'N/A'),
+                            'type' => 'income',
+                            'status' => 'approved',
+                            'payment_method' => 'qris',
+                            'reference_number' => $notification->transaction_id,
+                            'created_by' => null, // Processed by system
+                        ]);
+                    }
+                }
+
+                if ($lateFeePart > 0) {
+                    $category = \App\Models\ExpenseCategory::where('code', '+LATE_FEE')->first();
+                    if ($category) {
+                        \App\Models\Expense::create([
+                            'outlet_id' => $debt->outlet_id,
+                            'expense_category_id' => $category->id,
+                            'amount' => -$lateFeePart,
+                            'expense_date' => now(),
+                            'description' => "Denda Keterlambatan Piutang (Midtrans) - " . ($debt->sale->invoice_number ?? 'N/A'),
+                            'type' => 'income',
+                            'status' => 'approved',
+                            'payment_method' => 'qris',
+                            'reference_number' => $notification->transaction_id,
+                            'created_by' => null,
+                        ]);
+                    }
+                }
 
                 DB::commit();
 
