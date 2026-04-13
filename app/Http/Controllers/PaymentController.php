@@ -732,17 +732,27 @@ class PaymentController extends Controller
 
                 $amount = (float) ($notification->gross_amount ?? 0);
 
+                // Calculate Late Fee Part BEFORE updating debt balance
+                $lateFeePart = 0;
+                if ($debt->late_fee > 0) {
+                    if ($amount > $debt->remaining_amount) {
+                        $lateFeePart = $amount - $debt->remaining_amount;
+                    }
+                }
+                $debtAmountPart = $amount - $lateFeePart;
+
                 \App\Models\DebtPayment::create([
                     'customer_debt_id' => $debt->id,
                     'amount' => $amount,
+                    'late_fee' => $lateFeePart,
                     'payment_method' => 'qris',
                     'reference_number' => $notification->transaction_id,
                     'notes' => 'Midtrans - '.$notification->payment_type,
                     'received_by' => null,
                 ]);
 
-                $debt->paid_amount += $amount;
-                $debt->remaining_amount -= $amount;
+                $debt->paid_amount += $debtAmountPart;
+                $debt->remaining_amount -= $debtAmountPart;
 
                 if ($debt->remaining_amount <= 0) {
                     $debt->status = 'paid';
@@ -757,16 +767,7 @@ class PaymentController extends Controller
                 }
 
                 $debt->save();
-                $debt->customer->decrement('total_debt', $amount);
-
-                // Calculate Late Fee Part for recording
-                $lateFeePart = 0;
-                if ($debt->late_fee > 0) {
-                    if ($amount > $debt->remaining_amount) {
-                        $lateFeePart = $amount - $debt->remaining_amount;
-                    }
-                }
-                $debtAmountPart = $amount - $lateFeePart;
+                $debt->customer->decrement('total_debt', $debtAmountPart);
 
                 if ($lateFeePart > 0) {
                     $category = \App\Models\ExpenseCategory::where('code', '+LATE_FEE')->first();
