@@ -47,6 +47,8 @@ class ProfileResource extends JsonResource
                 'points' => (int) $customer->points,
                 'total_debt' => (float) $customer->total_debt,
                 'credit_limit' => (float) $customer->credit_limit,
+                'late_fee_percentage' => (float) \App\Models\Setting::getValue('debt', 'late_fee_percentage', 5, $this->outlet_id),
+                'is_overdue' => $customer->unpaidDebts()->where('due_date', '<', now()->toDateTimeString())->exists(),
                 'address' => $customer->address,
                 'birth_date' => $customer->birth_date ? $customer->birth_date->format('Y-m-d') : null,
                 'is_active' => (bool) $customer->is_active,
