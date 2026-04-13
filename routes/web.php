@@ -15,6 +15,7 @@ use App\Http\Controllers\FlowLandingController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\Main\StockTransferController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OutletInformationController;
@@ -55,7 +56,18 @@ Route::get('/', function () {
 });
 
 Route::get('/welcome', function () {
-    return view('landingpage.index');
+    $totalUsersCount = \App\Models\User::count();
+    $latestOwners = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'owner');
+        })
+        ->latest()
+        ->take(5)
+        ->get();
+        
+    return view('landingpage.index', [
+        'totalUsersCount' => $totalUsersCount,
+        'latestOwners' => $latestOwners
+    ]);
 })->name('welcome');
 
 Route::get('/run-queue', function (\Illuminate\Http\Request $request) {

@@ -1350,15 +1350,24 @@
           <span class="fw-val">Semua-dalam-Satu</span>
         </div>
       </div>
-<br>      <div class="avatar-widget">
+      <div class="avatar-widget">
         <div class="avatar-stack">
-          <div class="av-img">AR</div>
-          <div class="av-img">BK</div>
-          <div class="av-img">CS</div>
-          <div class="av-img">DM</div>
-          <div class="av-img">+</div>
+          @foreach($latestOwners ?? [] as $owner)
+            @if(($owner->avatar ?? null) || ($owner->google_avatar ?? null))
+                <img src="{{ $owner->avatar_url }}" class="av-img" title="{{ $owner->name }}" alt="{{ $owner->name }}">
+            @else
+                @php
+                    $nameParts = explode(' ', $owner->name ?? 'User');
+                    $initials = mb_substr($nameParts[0], 0, 1) . (isset($nameParts[1]) ? mb_substr($nameParts[1], 0, 1) : '');
+                @endphp
+                <div class="av-img" title="{{ $owner->name ?? 'User' }}">{{ strtoupper($initials) }}</div>
+            @endif
+          @endforeach
+          @if(($totalUsersCount ?? 0) > 5)
+            <div class="av-img">+</div>
+          @endif
         </div>
-        <span>500+ UMKM Bergabung</span>
+        <span>{{ number_format($totalUsersCount ?? 0, 0, ',', '.') }}+ UMKM Bergabung</span>
       </div>
     </div>
   </div>
