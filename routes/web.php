@@ -79,10 +79,21 @@ Route::get('/career', function () {
     return view('landingpage.career', compact('careers'));
 })->name('career');
 
+Route::get('/career/{slug}', function ($slug) {
+    $career = \App\Models\Career::where('slug', $slug)->where('is_active', true)->firstOrFail();
+    return view('landingpage.career-show', compact('career'));
+})->name('career.show');
+
 Route::get('/blog', function () {
     $blogs = \App\Models\Blog::where('is_published', true)->orderBy('created_at', 'desc')->get();
     return view('landingpage.blog', compact('blogs'));
 })->name('blog');
+
+Route::get('/blog/{slug}', function ($slug) {
+    $blog = \App\Models\Blog::where('slug', $slug)->where('is_published', true)->firstOrFail();
+    $blog->increment('views'); // Counter increase for views tracking
+    return view('landingpage.blog-show', compact('blog'));
+})->name('blog.show');
 
 Route::get('/contact', function () {
     return view('landingpage.contact');
