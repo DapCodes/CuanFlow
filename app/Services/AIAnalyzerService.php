@@ -99,7 +99,7 @@ PROMPT;
                 'HTTP-Referer' => config('app.url'),
                 'X-Title' => 'CuanFlow Heatmap',
             ])->timeout(120)->post($this->baseUrl . '/chat/completions', [
-                'model' => 'arcee-ai/trinity-mini:free',
+                'model' => 'openrouter/free',
                 'messages' => [
                     ['role' => 'system', 'content' => 'You are a business analyst. Respond only in valid JSON arrays.'],
                     ['role' => 'user', 'content' => $prompt],

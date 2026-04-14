@@ -903,7 +903,7 @@ class ProductHppController extends Controller
                     'Content-Type' => 'application/json',
                 ])
                 ->post('https://openrouter.ai/api/v1/chat/completions', [
-                    'model' => 'arcee-ai/trinity-mini:free',
+                    'model' => 'openrouter/free',
                     'messages' => [
                         [
                             'role' => 'system',
