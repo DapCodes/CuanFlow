@@ -12,10 +12,35 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class BlogController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $blogs = Blog::orderBy('created_at', 'desc')->paginate(10);
-        return view('admin.blogs.index', compact('blogs'));
+        $stats = [
+            'total' => Blog::count(),
+            'published' => Blog::where('is_published', true)->count(),
+            'draft' => Blog::where('is_published', false)->count(),
+            'total_views' => Blog::sum('views'),
+        ];
+
+        $query = Blog::query();
+
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('category', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'published') {
+                $query->where('is_published', true);
+            } elseif ($request->status === 'draft') {
+                $query->where('is_published', false);
+            }
+        }
+
+        $blogs = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+
+        return view('admin.blogs.index', compact('blogs', 'stats'));
     }
 
     public function create()
