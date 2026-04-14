@@ -75,11 +75,13 @@ Route::get('/about', function () {
 })->name('about');
 
 Route::get('/career', function () {
-    return view('landingpage.career');
+    $careers = \App\Models\Career::where('is_active', true)->orderBy('created_at', 'desc')->get();
+    return view('landingpage.career', compact('careers'));
 })->name('career');
 
 Route::get('/blog', function () {
-    return view('landingpage.blog');
+    $blogs = \App\Models\Blog::where('is_published', true)->orderBy('created_at', 'desc')->get();
+    return view('landingpage.blog', compact('blogs'));
 })->name('blog');
 
 Route::get('/contact', function () {

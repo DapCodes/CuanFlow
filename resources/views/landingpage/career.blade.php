@@ -21,32 +21,20 @@
         </div>
         
         <div style="display: flex; flex-direction: column; gap: 16px; max-width: 800px; margin: 0 auto;">
-            <!-- Job 1 -->
-            <div data-aos="fade-up" style="background: var(--white); border-radius: 20px; padding: 32px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; transition: transform 0.3s; cursor: pointer;">
+            @forelse($careers as $index => $career)
+            <!-- Job {{ $index + 1 }} -->
+            <div data-aos="fade-up" data-aos-delay="{{ $index * 100 }}" style="background: var(--white); border-radius: 20px; padding: 32px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; transition: transform 0.3s; cursor: pointer;">
                 <div>
-                    <h4 style="font-family: var(--serif); font-size: 1.2rem; margin-bottom: 8px; border-radius: 24px;">Senior Backend Developer</h4>
-                    <p style="font-size: 0.85rem; color: var(--ink-3);"><i class="fas fa-map-marker-alt mr-2"></i> Jakarta / Remote • Penuh Waktu</p>
+                    <h4 style="font-family: var(--serif); font-size: 1.2rem; margin-bottom: 8px;">{{ $career->title }}</h4>
+                    <p style="font-size: 0.85rem; color: var(--ink-3);"><i class="fas fa-map-marker-alt mr-2"></i> {{ $career->location }} • {{ $career->type }}</p>
                 </div>
                 <a href="#" style="padding: 10px 20px; background: var(--paper); border-radius: 100px; text-decoration: none; font-size: 0.85rem; font-weight: 500; color: var(--accent);">Lamar Sekarang</a>
             </div>
-            
-            <!-- Job 2 -->
-            <div data-aos="fade-up" data-aos-delay="100" style="background: var(--white); border-radius: 20px; padding: 32px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; transition: transform 0.3s; cursor: pointer;">
-                <div>
-                    <h4 style="font-family: var(--serif); font-size: 1.2rem; margin-bottom: 8px;">Product Designer (UI/UX)</h4>
-                    <p style="font-size: 0.85rem; color: var(--ink-3);"><i class="fas fa-map-marker-alt mr-2"></i> Bandung / Remote • Penuh Waktu</p>
-                </div>
-                <a href="#" style="padding: 10px 20px; background: var(--paper); border-radius: 100px; text-decoration: none; font-size: 0.85rem; font-weight: 500; color: var(--accent);">Lamar Sekarang</a>
+            @empty
+            <div style="text-align: center; padding: 40px 0;">
+                <p style="color: var(--ink-3); font-size: 1.1rem; font-weight: 300;">Belum ada posisi terbuka saat ini. Pantau terus ya!</p>
             </div>
-
-            <!-- Job 3 -->
-            <div data-aos="fade-up" data-aos-delay="200" style="background: var(--white); border-radius: 20px; padding: 32px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; transition: transform 0.3s; cursor: pointer;">
-                <div>
-                    <h4 style="font-family: var(--serif); font-size: 1.2rem; margin-bottom: 8px;">Growth Marketing Manager</h4>
-                    <p style="font-size: 0.85rem; color: var(--ink-3);"><i class="fas fa-map-marker-alt mr-2"></i> Hybrid • Penuh Waktu</p>
-                </div>
-                <a href="#" style="padding: 10px 20px; background: var(--paper); border-radius: 100px; text-decoration: none; font-size: 0.85rem; font-weight: 500; color: var(--accent);">Lamar Sekarang</a>
-            </div>
+            @endforelse
         </div>
 
         <div style="text-align: center; margin-top: 60px;">

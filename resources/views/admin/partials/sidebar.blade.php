@@ -314,12 +314,21 @@
                 </a>
             </li>
 
-            <!-- Landing Pages -->
-            <li hidden>
-                <a href="{{ route('admin.landing-pages.index') }}"
-                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('admin.landing-pages.*') ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-sm shadow-emerald-100/50' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <i class="fas fa-globe w-5 text-center text-lg {{ request()->routeIs('admin.landing-pages.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
-                    <span class="text-sm">Landing Pages</span>
+            <!-- Manajemen Blog -->
+            <li>
+                <a href="{{ route('admin.blogs.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('admin.blogs.*') ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-sm shadow-emerald-100/50' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fas fa-newspaper w-5 text-center text-lg {{ request()->routeIs('admin.blogs.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Manajemen Blog</span>
+                </a>
+            </li>
+
+            <!-- Manajemen Karir -->
+            <li>
+                <a href="{{ route('admin.careers.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ request()->routeIs('admin.careers.*') ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-sm shadow-emerald-100/50' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
+                    <i class="fas fa-briefcase w-5 text-center text-lg {{ request()->routeIs('admin.careers.*') ? 'text-emerald-600' : 'text-gray-400 group-hover:text-emerald-500' }}"></i>
+                    <span class="text-sm">Manajemen Karir</span>
                 </a>
             </li>
 

@@ -67,6 +67,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('roles', RoleController::class)->names('admin.roles');
     Route::resource('advertisements', \App\Http\Controllers\Admin\AdvertisementController::class)->names('admin.advertisements');
     Route::post('advertisements/{advertisement}/toggle-status', [\App\Http\Controllers\Admin\AdvertisementController::class, 'toggleStatus'])->name('admin.advertisements.toggle-status');
+
+    // Blogs
+    Route::resource('blogs', \App\Http\Controllers\Admin\BlogController::class)->names('admin.blogs');
+    Route::post('blogs/{blog}/toggle-status', [\App\Http\Controllers\Admin\BlogController::class, 'toggleStatus'])->name('admin.blogs.toggle-status');
+
+    // Careers
+    Route::resource('careers', \App\Http\Controllers\Admin\CareerController::class)->names('admin.careers');
+    Route::post('careers/{career}/toggle-status', [\App\Http\Controllers\Admin\CareerController::class, 'toggleStatus'])->name('admin.careers.toggle-status');
     Route::resource('permissions', PermissionController::class)->names('admin.permissions');
     Route::resource('permission-categories', PermissionCategoryController::class)->names('admin.permission-categories');
     Route::resource('task-statuses', TaskStatusController::class)->names('admin.task-statuses');
