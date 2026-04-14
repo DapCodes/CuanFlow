@@ -37,6 +37,8 @@ class DatabaseSeeder extends Seeder
             TermsAndConditionSeeder::class,
             ResellerTestSeeder::class,
             ColorPaletteSeeder::class,
+            BlogSeeder::class,
+            CareerSeeder::class,
         ]);
 
         // Buat Akun Admin
