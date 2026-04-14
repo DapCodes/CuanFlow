@@ -246,17 +246,22 @@
     </div>
 
     {{-- Scanner Modal --}}
-    <div id="scannerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm hidden px-4">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl relative">
-            <button type="button" id="closeScanner" class="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors">
+    <div id="scannerModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/90 backdrop-blur-md hidden px-4">
+        <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl relative border border-gray-100">
+            <button type="button" id="closeScanner" class="absolute -top-4 -right-4 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center text-gray-400 hover:text-red-500 transition-all border border-gray-100 z-[110]">
                 <i class="fas fa-times text-xl"></i>
             </button>
-            <div class="text-center mb-6">
-                <i class="fas fa-barcode text-cuan-green text-3xl mb-3 block"></i>
-                <h3 class="text-xl font-black text-gray-900">Scan Barcode</h3>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Arahkan kamera ke barcode produk</p>
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-cuan-green/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-barcode text-cuan-green text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900">Scan Barcode</h3>
+                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-2 px-6">Dekatkan kamera ke barcode produk untuk memindai otomatis</p>
             </div>
-            <div id="reader" class="w-full aspect-square bg-gray-50 rounded-2xl overflow-hidden border-2 border-dashed border-gray-100 shadow-inner"></div>
+            <div class="relative group">
+                <div id="reader" class="w-full aspect-square bg-gray-100 rounded-[2rem] overflow-hidden border-2 border-gray-50 shadow-inner relative z-0"></div>
+                <div class="absolute inset-0 pointer-events-none border-[3px] border-emerald-500/30 rounded-[2rem] z-10 animate-pulse"></div>
+            </div>
         </div>
     </div>
 </main>
@@ -265,6 +270,15 @@
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
+    #reader video {
+        object-fit: cover !important;
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 1.8rem !important;
+    }
+    #reader canvas {
+        display: none !important;
+    }
     .select2-container--default .select2-selection--single {
         border-radius: 0.75rem !important;
         border: 1px solid #e5e7eb !important;
@@ -332,22 +346,51 @@ $(document).ready(function() {
         $('#scannerModal').removeClass('hidden');
         if (!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("reader");
         
-        html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
+        const config = { 
+            fps: 15, 
+            qrbox: function(viewfinderWidth, viewfinderHeight) {
+                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                const qrboxSize = Math.floor(minEdge * 0.7);
+                return {
+                    width: qrboxSize,
+                    height: qrboxSize
+                };
+            },
+            aspectRatio: 1.0
+        };
+
+        html5QrcodeScanner.start({ facingMode: "environment" }, config, 
             (decodedText) => {
                 $('#barcode').val(decodedText);
                 closeScanner();
-                Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Barcode terdeteksi!', timer: 1000, showConfirmButton: false });
+                Swal.fire({ 
+                    icon: 'success', 
+                    title: 'Berhasil', 
+                    text: 'Barcode ' + decodedText + ' berhasil terbaca', 
+                    timer: 2000, 
+                    showConfirmButton: false,
+                    customClass: { popup: 'rounded-3xl border-none shadow-2xl' }
+                });
             }, 
             (errorMessage) => {}
         ).catch(err => {
-            alert('Gagal mengakses kamera: ' + err);
+            console.error(err);
             closeScanner();
+            Swal.fire({ icon: 'error', title: 'Akses Gagal', text: 'Kamera tidak dapat diakses atau sedang digunakan.', customClass: { popup: 'rounded-3xl' } });
         });
     });
 
-    function closeScanner() {
+    async function closeScanner() {
         $('#scannerModal').addClass('hidden');
-        if (html5QrcodeScanner) html5QrcodeScanner.stop();
+        if (html5QrcodeScanner) {
+            try {
+                if (html5QrcodeScanner.isScanning) {
+                    await html5QrcodeScanner.stop();
+                }
+            } catch (err) {
+                console.warn('Error stopping scanner:', err);
+            }
+        }
     }
 
     $('#closeScanner, #scannerModal').on('click', function(e) {
