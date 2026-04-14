@@ -172,6 +172,38 @@
     </footer>
 
     <script>
+        // Initialize AOS
+        AOS.init({ once: true, easing: 'ease-out-cubic', duration: 800 });
+
+        // GSAP Animations
+        document.addEventListener('DOMContentLoaded', () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+            
+            tl.from('.page-hero .eyebrow', { y: 20, opacity: 0, duration: 0.8, delay: 0.2 })
+              .from('.page-hero h1', { y: 30, opacity: 0, duration: 1 }, '-=0.6')
+              .from('.page-hero p', { y: 20, opacity: 0, duration: 0.8 }, '-=0.7')
+              .from('.navbar', { y: -20, opacity: 0, duration: 0.8 }, '-=1');
+
+            // Scroll animations for sections
+            gsap.utils.toArray('section').forEach(section => {
+                if (section.classList.contains('page-hero')) return;
+                
+                gsap.from(section, {
+                    scrollTrigger: {
+                        trigger: section,
+                        start: 'top 85%',
+                    },
+                    y: 40,
+                    opacity: 0,
+                    duration: 1,
+                    ease: 'power2.out'
+                });
+            });
+        });
+
+        // Navbar Scroll Effect
         const nav = document.getElementById('nav');
         const scrollProgress = document.getElementById('scroll-progress');
         
