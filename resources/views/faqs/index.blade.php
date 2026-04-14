@@ -95,11 +95,11 @@
             </p>
         </section>
 
-        <section class="max-w-5xl mx-auto overflow-x-auto no-scrollbar">
-            <div class="flex flex-wrap gap-2 justify-center pb-2">
+        <section class="max-w-5xl mx-auto overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+            <div class="flex flex-nowrap md:flex-wrap gap-2 md:justify-center pb-2 min-w-max md:min-w-0">
                 <button onclick="filterByCategory('')" 
                         data-category=""
-                        class="category-tag category-btn px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-cuan-green bg-cuan-green text-white shadow-lg shadow-emerald-100 transition-all active">
+                        class="category-tag category-btn px-5 md:px-6 py-2 md:py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-cuan-green bg-cuan-green text-white shadow-lg shadow-emerald-100 transition-all active">
                     Semua
                 </button>
                 
@@ -117,7 +117,7 @@
                 @foreach($categories as $cat)
                 <button onclick="filterByCategory('{{ $cat['id'] }}')" 
                         data-category="{{ $cat['id'] }}"
-                        class="category-tag category-btn px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-gray-200 bg-white text-gray-400 hover:border-cuan-green hover:text-cuan-green transition-all shadow-sm">
+                        class="category-tag category-btn px-5 md:px-6 py-2 md:py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-gray-200 bg-white text-gray-400 hover:border-cuan-green hover:text-cuan-green transition-all shadow-sm">
                     <i class="fas {{ $cat['icon'] }} mr-2"></i>
                     {{ $cat['label'] }}
                 </button>
@@ -164,32 +164,32 @@
                              data-type="{{ $faq->type }}">
                             
                             {{-- FAQ Header --}}
-                            <div class="faq-header px-5 md:px-6 py-4 md:py-5" onclick="toggleFaq(this)">
+                            <div class="faq-header px-4 md:px-6 py-4 md:py-5" onclick="toggleFaq(this)">
                                 <div class="flex items-start justify-between gap-3">
-                                    <div class="flex-1">
-                                        <h3 class="text-base md:text-lg font-black text-gray-900 mb-2 leading-snug pr-8 tracking-tight">
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-base md:text-lg font-black text-gray-900 mb-2.5 leading-snug tracking-tight break-words pr-2">
                                             {{ $faq->question }}
                                         </h3>
                                         <!-- detail button -->
-                                        <div class="flex items-center gap-2">
-                                            <a href="{{ route('faqs.show', $faq->id) }}" class="inline-flex items-center px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100 bg-emerald-50 text-emerald-600">
+                                        <div class="flex flex-wrap items-center gap-2 mt-auto">
+                                            <a href="{{ route('faqs.show', $faq->id) }}" class="inline-flex items-center px-3 md:px-4 py-1.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
                                                 <i class="fas fa-eye text-[8px] mr-2"></i>
                                                 Detail
                                             </a>
-                                            <span class="inline-flex items-center px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100 bg-emerald-50 text-emerald-600">
+                                            <span class="inline-flex items-center px-3 md:px-4 py-1.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-emerald-100 bg-emerald-50 text-emerald-600">
                                                 <i class="fas {{ $typeIcons[$faq->type] ?? 'fa-question' }} text-[8px] mr-2"></i>
                                                 {{ $faq->getTypeLabel() }}
                                             </span>
                                             @if($faq->priority === 'high')
-                                                <span class="inline-flex items-center px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-amber-100 bg-amber-50 text-amber-600">
+                                                <span class="inline-flex items-center px-3 md:px-4 py-1.5 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-amber-100 bg-amber-50 text-amber-600">
                                                     <i class="fas fa-star text-[8px] mr-2"></i>
                                                     Penting
                                                 </span>
                                             @endif
                                         </div>
                                     </div>
-                                    <div class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100">
-                                        <i class="fas fa-chevron-down faq-icon text-gray-500 text-sm"></i>
+                                    <div class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 border border-gray-100">
+                                        <i class="fas fa-chevron-down faq-icon text-gray-400 text-xs md:text-sm"></i>
                                     </div>
                                 </div>
                             </div>
@@ -204,7 +204,7 @@
                                     {{-- Helpful Buttons --}}
                                     <div class="pt-5 border-t border-gray-200">
                                         <p class="text-sm font-medium text-gray-700 mb-3">Apakah jawaban ini membantu?</p>
-                                        <div class="flex items-center gap-3">
+                                        <div class="flex flex-wrap items-center gap-2 md:gap-3">
                                             @php
                                                 $userVote = $faq->currentUserVote;
                                                 $isHelpful = $userVote && $userVote->is_helpful;
@@ -214,10 +214,10 @@
                                             @can('tandai faq membantu')
                                             <button onclick="markHelpful({{ $faq->id }}, event, this)" 
                                                     id="btn-helpful-{{ $faq->id }}"
-                                                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-sm {{ $isHelpful ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300' }}">
+                                                    class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-xs md:text-sm {{ $isHelpful ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300' }}">
                                                 <i class="fas fa-thumbs-up"></i>
-                                                <span>Ya, Membantu</span>
-                                                <span class="px-2 py-0.5 rounded-md {{ $isHelpful ? 'bg-emerald-200 text-emerald-800' : 'bg-emerald-100 text-emerald-700' }} text-xs font-bold" id="helpful-{{ $faq->id }}">
+                                                <span class="whitespace-nowrap">Ya, Membantu</span>
+                                                <span class="px-2 py-0.5 rounded-md {{ $isHelpful ? 'bg-emerald-200 text-emerald-800' : 'bg-emerald-100 text-emerald-700' }} text-[10px] md:text-xs font-bold" id="helpful-{{ $faq->id }}">
                                                     {{ $faq->helpful_count }}
                                                 </span>
                                             </button>
@@ -226,10 +226,10 @@
                                             @can('tandai faq tidak membantu')
                                             <button onclick="markNotHelpful({{ $faq->id }}, event, this)" 
                                                     id="btn-not-helpful-{{ $faq->id }}"
-                                                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-sm {{ $isNotHelpful ? 'bg-gray-100 border-gray-400 text-gray-800' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300' }}">
+                                                    class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all font-medium text-xs md:text-sm {{ $isNotHelpful ? 'bg-gray-100 border-gray-400 text-gray-800' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300' }}">
                                                 <i class="fas fa-thumbs-down"></i>
-                                                <span>Tidak</span>
-                                                <span class="px-2 py-0.5 rounded-md {{ $isNotHelpful ? 'bg-gray-300 text-gray-800' : 'bg-gray-100 text-gray-700' }} text-xs font-bold" id="not-helpful-{{ $faq->id }}">
+                                                <span class="whitespace-nowrap">Tidak</span>
+                                                <span class="px-2 py-0.5 rounded-md {{ $isNotHelpful ? 'bg-gray-300 text-gray-800' : 'bg-gray-100 text-gray-700' }} text-[10px] md:text-xs font-bold" id="not-helpful-{{ $faq->id }}">
                                                     {{ $faq->not_helpful_count }}
                                                 </span>
                                             </button>
