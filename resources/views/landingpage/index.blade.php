@@ -16,6 +16,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
 <link rel="shortcut icon" href="{{ asset('assets/image/logo.svg') }}" type="image/x-icon">
 
+{{-- Preload font to prevent delay/jeda --}}
+<link rel="preload" href="{{ asset('landingstatic/GreatVibes-Regular.ttf') }}" as="font" type="font/ttf" crossorigin>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
@@ -26,6 +29,7 @@
     src: url('{{ asset('landingstatic/GreatVibes-Regular.ttf') }}') format('truetype');
     font-weight: normal;
     font-style: normal;
+    font-display: swap;
   }
 
   :root {
@@ -137,7 +141,7 @@
     border-radius: 8px;
   }
 
-  .nav-links a:hover { 
+  .nav-links a:hover, .nav-links a.active { 
     color: var(--accent); 
     background: var(--accent-light);
   }
@@ -1256,25 +1260,13 @@
 <!-- ── NAVBAR ── -->
 <nav id="nav">
   <div class="nav-inner">
-    <a href="#" class="nav-logo"><img src="{{ asset('landingstatic/logo.png') }}" alt="Flow" style="height:36px; width:auto; display:block;"></a>
+    <a href="{{ route('welcome') }}" class="nav-logo"><img src="{{ asset('landingstatic/logo.png') }}" alt="Flow" style="height:36px; width:auto; display:block;"></a>
     <ul class="nav-links">
-      <li><a href="#">Beranda</a></li>
-      <li><a href="#features">Fitur</a></li>
-      <li><a href="#why">Mengapa Kami</a></li>
-      <li class="nav-dd-parent">
-        <span class="nav-dd-trigger">Produk <i class="fa-solid fa-chevron-down"></i></span>
-        <div class="nav-dropdown">
-          <a href="#cuanflow">
-            <div class="dd-icon-box"><i class="fa-solid fa-chart-line"></i></div>
-            <div class="dd-label"><span>CuanFlow</span><span>Manajemen Bisnis · B2B</span></div>
-          </a>
-          <a href="#jajanflow">
-            <div class="dd-icon-box"><i class="fa-solid fa-location-dot"></i></div>
-            <div class="dd-label"><span>JajanFlow</span><span>Platform Konsumen · B2C</span></div>
-          </a>
-        </div>
-      </li>
-      <li><a href="#ecosystem">Ekosistem</a></li>
+      <li><a href="{{ route('welcome') }}" class="{{ request()->routeIs('welcome') ? 'active' : '' }}">Beranda</a></li>
+      <li><a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">Tentang Kami</a></li>
+      <li><a href="{{ route('blog') }}" class="{{ request()->routeIs('blog') ? 'active' : '' }}">Blog</a></li>
+      <li><a href="{{ route('career') }}" class="{{ request()->routeIs('career') ? 'active' : '' }}">Karir</a></li>
+      <li><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">Hubungi Kami</a></li>
     </ul>
     <a href="#ecosystem" class="nav-cta dt-only">Mulai Sekarang</a>
     <button class="hamburger" id="ham" aria-label="Menu">
@@ -1590,7 +1582,7 @@
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <a href="#" class="nav-logo"><img src="{{ asset('landingstatic/logo.png') }}" alt="Flow" style="height:36px; width:auto; display:block; filter: brightness(0) invert(1);"></a>
+      <a href="{{ route('welcome') }}" class="nav-logo"><img src="{{ asset('landingstatic/logo.png') }}" alt="Flow" style="height:36px; width:auto; display:block; filter: brightness(0) invert(1);"></a>
       <p>Ekosistem digital terbaik yang menjembatani operasional bisnis yang kuat dan pengalaman konsumen yang mulus di seluruh Indonesia.</p>
     </div>
     <div>
@@ -1605,10 +1597,10 @@
     <div>
       <h5>Perusahaan</h5>
       <ul class="footer-links">
-        <li><a href="#">Tentang Kami</a></li>
-        <li><a href="#">Karir</a></li>
-        <li><a href="#">Blog</a></li>
-        <li><a href="#">Hubungi Kami</a></li>
+        <li><a href="{{ route('about') }}">Tentang Kami</a></li>
+        <li><a href="{{ route('career') }}">Karir</a></li>
+        <li><a href="{{ route('blog') }}">Blog</a></li>
+        <li><a href="{{ route('contact') }}">Hubungi Kami</a></li>
       </ul>
     </div>
     <div>

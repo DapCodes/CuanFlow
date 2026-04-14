@@ -70,6 +70,22 @@ Route::get('/welcome', function () {
     ]);
 })->name('welcome');
 
+Route::get('/about', function () {
+    return view('landingpage.about');
+})->name('about');
+
+Route::get('/career', function () {
+    return view('landingpage.career');
+})->name('career');
+
+Route::get('/blog', function () {
+    return view('landingpage.blog');
+})->name('blog');
+
+Route::get('/contact', function () {
+    return view('landingpage.contact');
+})->name('contact');
+
 Route::get('/run-queue', function (\Illuminate\Http\Request $request) {
     if ($request->key !== 'RAHASIA123') {
         abort(403);
