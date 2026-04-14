@@ -348,7 +348,11 @@ $(document).ready(function() {
         }
     }
 
-    $('#closeScanner, #scannerModal').on('click', function(e) {
+    $('#closeScanner').on('click', function() {
+        closeScanner();
+    });
+
+    $('#scannerModal').on('click', function(e) {
         if (e.target === this) closeScanner();
     });
 });
