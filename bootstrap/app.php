@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Append activity log context middleware to web group
         $middleware->appendToGroup('web', \App\Http\Middleware\LogActivityContext::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackUserPresence::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckUserActive::class);
 
         // Exclude CSRF untuk route Midtrans notification
         $middleware->validateCsrfTokens(except: [

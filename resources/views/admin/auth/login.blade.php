@@ -204,6 +204,9 @@
         @if ($errors->any())
             window.addEventListener('DOMContentLoaded', () => showAlert('error', 'Login Gagal', '{{ $errors->first() }}'));
         @endif
+        @if (session('account_suspended'))
+            window.addEventListener('DOMContentLoaded', () => showAlert('error', 'Akun Dinonaktifkan', '{{ session("account_suspended") }}'));
+        @endif
     </script>
 </body>
 </html>

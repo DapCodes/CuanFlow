@@ -344,6 +344,9 @@
         @if (session('error_google'))
             window.addEventListener('DOMContentLoaded', () => showAlert('warning', 'Akun Tidak Ditemukan', 'Email atau kata sandi tidak cocok.'));
         @endif
+        @if (session('account_suspended'))
+            window.addEventListener('DOMContentLoaded', () => showAlert('error', 'Akun Dinonaktifkan', '{{ session("account_suspended") }}'));
+        @endif
     </script>
 </body>
 </html>
