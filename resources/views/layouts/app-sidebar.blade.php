@@ -431,16 +431,93 @@
                                 </div>
 
                                 <!-- Mobile outlet display -->
-                                <a href="{{ route('dashboard') }}" class="sm:hidden flex items-center space-x-2 min-w-0">
-                                    @if(auth()->user()->outlet->logo)
-                                        <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
-                                            alt="{{ auth()->user()->outlet->name }}"
-                                            class="h-9 w-9 object-contain rounded-lg">
+                                <div class="sm:hidden relative" x-data="{ open: false }">
+                                    <button @click="open = !open" class="flex items-center space-x-2 min-w-0 active:bg-gray-50 px-2 py-1 rounded-lg transition-colors">
+                                        @if(auth()->user()->outlet->logo)
+                                            <img src="{{ Storage::url(auth()->user()->outlet->logo) }}"
+                                                alt="{{ auth()->user()->outlet->name }}"
+                                                class="h-9 w-9 object-contain rounded-lg">
+                                        @endif
+                                        <div class="flex items-center space-x-1.5 min-w-0">
+                                            <span class="text-base font-bold text-gray-900 truncate max-w-[150px]">
+                                                {{ auth()->user()->outlet->name }}
+                                            </span>
+                                            @if($hasMultipleOutlets)
+                                                <i class="fa-solid fa-chevron-down text-[10px] text-gray-500 transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                                            @endif
+                                        </div>
+                                    </button>
+
+                                    @if($hasMultipleOutlets)
+                                        <div x-show="open"
+                                            @click.away="open = false"
+                                            x-transition:enter="transition ease-out duration-100"
+                                            x-transition:enter-start="transform opacity-0 scale-95"
+                                            x-transition:enter-end="transform opacity-100 scale-100"
+                                            x-transition:leave="transition ease-in duration-75"
+                                            x-transition:leave-start="transform opacity-100 scale-100"
+                                            x-transition:leave-end="transform opacity-0 scale-95"
+                                            class="fixed md:absolute inset-x-4 md:inset-x-auto md:left-0 top-[70px] md:top-auto md:mt-2 w-auto md:w-72 bg-white rounded-2xl shadow-xl py-2 border border-gray-100 z-50 ring-1 ring-black/5"
+                                            style="display:none;">
+
+                                            <div class="px-4 py-2 border-b border-gray-50">
+                                                <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">Pilih Outlet</p>
+                                            </div>
+
+                                            <div class="max-h-[300px] overflow-y-auto custom-scrollbar">
+                                                @foreach($userOutlets as $outlet)
+                                                    <form method="POST" action="{{ route('change.outlet') }}">
+                                                        @csrf
+                                                        <input type="hidden" name="outlet_id" value="{{ $outlet->id }}">
+
+                                                        <button type="submit"
+                                                            class="w-full text-left block px-4 py-3 active:bg-cuan-yellow/10 transition
+                                                            {{ auth()->user()->outlet_id == $outlet->id ? 'bg-cuan-yellow/5' : '' }}">
+                                                            <div class="flex items-center space-x-3">
+                                                                @if($outlet->logo)
+                                                                    <img src="{{ Storage::url($outlet->logo) }}"
+                                                                        alt="{{ $outlet->name }}"
+                                                                        class="h-8 w-8 object-contain rounded-lg">
+                                                                @else
+                                                                    <div class="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-xs border border-gray-200">
+                                                                        {{ substr($outlet->name, 0, 1) }}
+                                                                    </div>
+                                                                @endif
+
+                                                                <div class="flex-1 min-w-0">
+                                                                    <p class="text-sm font-bold text-gray-900 truncate">
+                                                                        {{ $outlet->name }}
+                                                                    </p>
+                                                                    <p class="text-[10px] text-gray-500 truncate">
+                                                                        {{ $outlet->business_category }}
+                                                                    </p>
+                                                                </div>
+
+                                                                @if(auth()->user()->outlet_id == $outlet->id)
+                                                                    <i class="fa-solid fa-circle-check text-cuan-green text-sm"></i>
+                                                                @endif
+                                                            </div>
+                                                        </button>
+                                                    </form>
+                                                @endforeach
+                                            </div>
+
+                                            @if($hasMultiOutletFeature)
+                                                <div class="px-2 py-2 mt-1 border-t border-gray-50 bg-gray-50/50">
+                                                    <a href="{{ route('outlets.create') }}" 
+                                                       class="flex items-center space-x-3 px-3 py-2.5 bg-white border border-gray-100 rounded-xl hover:bg-emerald-50 transition-all group shadow-sm">
+                                                        <div class="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                                            <i class="fa-solid fa-plus text-xs"></i>
+                                                        </div>
+                                                        <div class="flex-1 min-w-0 text-left">
+                                                            <p class="text-[11px] font-black uppercase tracking-wider text-emerald-600">Tambah Outlet</p>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </div>
                                     @endif
-                                    <span class="text-base font-bold text-gray-900 truncate">
-                                        {{ auth()->user()->outlet->name }}
-                                    </span>
-                                </a>
+                                </div>
 
                             @else
                                 <!-- No Outlet -->
