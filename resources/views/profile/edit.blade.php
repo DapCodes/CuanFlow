@@ -14,8 +14,8 @@
 
 @section('content')
 <main class="flex-grow py-8 px-4 bg-[#f9fafb] shadow-sm md:shadow-none" x-data="{ 
-    activeTab: '{{ request('tab') ?? (session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() || request()->reset_token || ($errors->any() && !session('status')) ? 'security' : 'profile') }}',
-    showResetModal: {{ request()->reset_token || ($errors->any() && !session('status')) ? 'true' : 'false' }},
+    activeTab: '{{ request('tab') ?? (session('status') === 'password-updated' || $errors->updatePassword->isNotEmpty() || request()->reset_token || old('token') ? 'security' : 'profile') }}',
+    showResetModal: {{ (request()->reset_token || old('token')) && $errors->updatePassword->isEmpty() ? 'true' : 'false' }},
     appLayout: localStorage.getItem('app_layout') || 'grid',
     updateLayout(choice) {
         if (this.appLayout === choice) return;
