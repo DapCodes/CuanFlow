@@ -33,12 +33,23 @@
 
 ---
 
-## Tech Stack
+## 🚀 Tech Stack & Integrations
 
-- **Backend**: Laravel 12.x (PHP 8.2+)
-- **Frontend**: Tailwind CSS 4.0, Alpine.js, Blade Templates
-- **Database**: MySQL
-- **Integrations**: Midtrans (Payment), Gemini (AI), Maatwebsite Excel, Spatie Activitylog, Spatie Backup
+> 📖 **Dokumentasi Lengkap:** Untuk detail seluruh daftar pustaka (_library_) yang digunakan beserta penjelasannya, silakan cek file [**TECH.md**](TECH.md).
+
+Berikut adalah daftar teknologi dan library utama yang menggerakkan sistem CuanFlow:
+
+| Teknologi / Library | Kategori | Deskripsi Library | Contoh Penggunaan di CuanFlow |
+| :--- | :---: | :--- | :--- |
+| ![Laravel](https://img.shields.io/badge/Laravel_12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white) | Framework | Framework PHP terstruktur berbasis MVC backend. | Fondasi utama sistem backend, routing web/API, ORM Eloquent. |
+| ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) | Database | Sistem penyimpan data rasional (_RDBMS_). | Menyimpan semua data produk, transaksi kasir, dan akun user. |
+| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white) | Frontend UI | _Utility-first_ framework CSS canggih. | Styling seluruh tampilan dashboard, komponen alert, dan form. |
+| ![Alpine.js](https://img.shields.io/badge/Alpine.js-8BC0D0?style=for-the-badge&logo=alpinedotjs&logoColor=white) | Interactivity | Minimal JS framework reaktif untuk interaktivitas file Blade. | Mengatur state dropdown menu kasir, _modal_, dan animasi navigasi. |
+| ![Midtrans](https://img.shields.io/badge/Midtrans_PHP-001020?style=for-the-badge) | Payment | Solusi _Payment Gateway_ lengkap di Indonesia. | Integrasi halaman pelunasan hutang pelanggan (_debt payment_). |
+| ![Gemini AI](https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=google&logoColor=white) | Integrasi AI | Model kecerdasan buatan dari Google via API. | Fitur chatbot Clara AI dan generate ide produk/resep (otomasi). |
+| ![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white) & ![ApexCharts](https://img.shields.io/badge/Apex-111?style=for-the-badge) | Analytics | Library JavaScript pengubah data menjadi grafik visual. | Merender metrik penjualan, laporan top item, & grafik CPU Monitor. |
+| ![Spatie](https://img.shields.io/badge/Spatie_Packages-F2F2F2?style=for-the-badge&logo=php&logoColor=black) | Security & Utils | Paket esensial keamanan & otomasi dari Spatie. | Memanajemen control _Roles & Permission_ antar kasir/owner, Backup. |
+| ![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white) | Maps | Library visualisasi Peta (Maps) ringan. | Digunakan pada fitur Sales Map untuk melacak letak titik transaksi. |
 
 ---
 
