@@ -15,7 +15,7 @@
 
 <section class="py-120">
     <div class="container">
-        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px;">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1.2fr] gap-10 lg:gap-20">
             <div data-aos="fade-right">
                 <h2 style="font-family: var(--serif); font-size: 2.5rem; margin-bottom: 32px;">Kontak Kami</h2>
                 
@@ -56,7 +56,7 @@
 
             <div data-aos="fade-left" style="background: var(--white); border-radius: 32px; padding: 48px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 40px 100px rgba(0,0,0,0.03);">
                 <form action="#" method="POST" style="display: flex; flex-direction: column; gap: 24px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <label style="font-weight: 500; font-size: 0.85rem; color: var(--ink-2);">Nama Lengkap</label>
                             <input type="text" placeholder="John Doe" style="padding: 14px 18px; border-radius: 12px; border: 1.5px solid var(--paper-2); background: var(--paper); outline: none; transition: border-color 0.3s;">

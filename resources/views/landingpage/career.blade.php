@@ -23,13 +23,13 @@
         <div style="display: flex; flex-direction: column; gap: 16px; max-width: 800px; margin: 0 auto;">
             @forelse($careers as $index => $career)
             <!-- Job {{ $index + 1 }} -->
-            <a href="{{ route('career.show', $career->slug) }}" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}" style="background: var(--white); border-radius: 20px; padding: 32px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; transition: transform 0.3s; text-decoration: none; color: inherit; cursor: pointer;" class="hover:-translate-y-1 hover:shadow-lg hover:border-transparent group">
+            <a href="{{ route('career.show', $career->slug) }}" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}" style="background: var(--white); border-radius: 20px; padding: 32px; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.3s; text-decoration: none; color: inherit; cursor: pointer;" class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:-translate-y-1 hover:shadow-lg hover:border-transparent group">
                 <div>
                     <h4 style="font-family: var(--serif); font-size: 1.2rem; margin-bottom: 8px; color: var(--ink);" class="group-hover:text-[var(--accent)] transition-colors">{{ $career->title }}</h4>
                     <p style="font-size: 0.85rem; color: var(--ink-3); margin: 0;"><i class="fas fa-map-marker-alt mr-2 group-hover:text-[var(--accent)] transition-colors"></i> {{ $career->location }} • {{ $career->type }}</p>
                 </div>
                 <!-- Call to Action simulated button -->
-                <span style="padding: 10px 20px; background: var(--paper); border-radius: 100px; font-size: 0.85rem; font-weight: 600; color: var(--accent); transition: background-color 0.3s;" class="group-hover:bg-[#EAF3EB]">Lihat Detail</span>
+                <span style="padding: 10px 20px; background: var(--paper); border-radius: 100px; font-size: 0.85rem; font-weight: 600; color: var(--accent); transition: background-color 0.3s; white-space: nowrap; text-align: center;" class="group-hover:bg-[#EAF3EB] shrink-0 self-start sm:self-auto">Lihat Detail</span>
             </a>
             @empty
             <div style="text-align: center; padding: 40px 0;">

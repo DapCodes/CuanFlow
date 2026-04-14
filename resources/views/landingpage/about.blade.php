@@ -15,7 +15,7 @@
 
 <section class="py-120">
     <div class="container">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
             <div data-aos="fade-right">
                 <h2 style="font-family: var(--serif); font-size: 2.5rem; margin-bottom: 24px;">Siapa Kami?</h2>
                 <p style="color: var(--ink-2); margin-bottom: 20px; font-size: 1.05rem;">Flow adalah ekosistem digital revolusioner di Indonesia yang menggabungkan kekuatan manajemen operasional bisnis (CuanFlow) dengan pengalaman belanja konsumen yang menyenangkan (JajanFlow).</p>

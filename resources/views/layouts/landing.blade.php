@@ -87,9 +87,29 @@
       }
       @media (max-width: 767px) {
         .nav-links { display: none; }
+        .nav-cta { display: none; }
+        .hamburger { display: flex !important; }
         .footer-grid { grid-template-columns: 1fr; gap: 40px; }
         .footer-bottom { flex-direction: column; gap: 20px; text-align: center; }
       }
+
+      /* Hamburger */
+      .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 6px; z-index: 910; }
+      .hamburger span { width: 22px; height: 2px; background: var(--ink); border-radius: 2px; transition: all 0.35s cubic-bezier(0.23,1,0.32,1); display: block; }
+      .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+      .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+      .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+      /* Mobile Drawer */
+      .mob-overlay { position: fixed; inset: 0; background: rgba(26,26,26,0.45); backdrop-filter: blur(4px); z-index: 895; opacity: 0; visibility: hidden; transition: opacity 0.35s, visibility 0.35s; }
+      .mob-overlay.open { opacity: 1; visibility: visible; }
+      .mob-drawer { position: fixed; top: 0; right: 0; width: min(320px, 88vw); height: 100dvh; background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-left: 1px solid var(--glass-border); z-index: 896; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.23,1,0.32,1); padding: 100px 28px 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+      .mob-drawer.open { transform: translateX(0); }
+      .mob-drawer a { display: block; text-decoration: none; color: var(--ink); font-size: 1rem; font-weight: 400; padding: 12px 14px; border-radius: 10px; transition: background 0.2s; }
+      .mob-drawer a:hover { background: var(--paper); }
+      .mob-divider { height: 1px; background: rgba(0,0,0,0.07); margin: 10px 0; }
+      .mob-cta { display: block; text-align: center; background: var(--ink); color: var(--white) !important; padding: 13px 22px; border-radius: 100px; font-weight: 500; margin-top: 14px; }
+      .mob-cta:hover { background: var(--accent) !important; }
 
       /* SHARED COMPONENTS */
       .section-header { text-align: center; margin-bottom: 60px; }
@@ -121,8 +141,24 @@
                 <li><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">Hubungi Kami</a></li>
             </ul>
             <a href="{{ route('login') }}" class="nav-cta">Mulai Sekarang</a>
+            
+            <button class="hamburger" id="hamburger" aria-label="Toggle Menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
+
+    <!-- Mobile Overlay & Drawer -->
+    <div class="mob-overlay" id="mob-overlay"></div>
+    <div class="mob-drawer" id="mob-drawer">
+        <a href="{{ route('welcome') }}">Beranda</a>
+        <a href="{{ route('about') }}">Tentang Kami</a>
+        <a href="{{ route('blog') }}">Blog</a>
+        <a href="{{ route('career') }}">Karir</a>
+        <a href="{{ route('contact') }}">Hubungi Kami</a>
+        <div class="mob-divider"></div>
+        <a href="{{ route('login') }}" class="mob-cta">Mulai Sekarang</a>
+    </div>
 
     @yield('content')
 
@@ -213,6 +249,21 @@
             const progress = (window.scrollY / totalHeight) * 100;
             scrollProgress.style.width = progress + '%';
         }, { passive: true });
+
+        // Mobile Menu
+        const hamburger = document.getElementById('hamburger');
+        const mobDrawer = document.getElementById('mob-drawer');
+        const mobOverlay = document.getElementById('mob-overlay');
+
+        if(hamburger && mobDrawer && mobOverlay) {
+            function toggleMenu() {
+                hamburger.classList.toggle('open');
+                mobDrawer.classList.toggle('open');
+                mobOverlay.classList.toggle('open');
+            }
+            hamburger.addEventListener('click', toggleMenu);
+            mobOverlay.addEventListener('click', toggleMenu);
+        }
 
         AOS.init({ once: true, easing: 'ease-out-cubic', duration: 800 });
     </script>
