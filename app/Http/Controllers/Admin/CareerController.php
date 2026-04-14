@@ -9,10 +9,35 @@ use Illuminate\Support\Str;
 
 class CareerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $careers = Career::orderBy('created_at', 'desc')->paginate(10);
-        return view('admin.careers.index', compact('careers'));
+        $stats = [
+            'total' => Career::count(),
+            'active' => Career::where('is_active', true)->count(),
+            'inactive' => Career::where('is_active', false)->count(),
+        ];
+
+        $query = Career::query();
+
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('location', 'like', '%' . $request->search . '%')
+                  ->orWhere('type', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
+        $careers = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+
+        return view('admin.careers.index', compact('careers', 'stats'));
     }
 
     public function create()
