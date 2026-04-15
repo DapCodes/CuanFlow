@@ -2,6 +2,22 @@
 
 @section('title', 'Hubungi Kami — Flow Ecosystem')
 
+@push('styles')
+<style>
+    .contact-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .contact-item { display: flex; gap: 20px; }
+    @media (max-width: 992px) {
+        .contact-grid { grid-template-columns: 1fr; gap: 60px; margin-top: 30px; }
+    }
+    @media (max-width: 768px) {
+        .form-grid { grid-template-columns: 1fr; gap: 16px; }
+        .contact-item { margin-bottom: 24px; }
+        .contact-card { padding: 32px !important; margin-top: 20px; }
+    }
+</style>
+@endpush
+
 @section('content')
 <section class="page-hero">
     <div class="container" data-aos="fade-up">
@@ -15,12 +31,12 @@
 
 <section class="py-120">
     <div class="container">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1.2fr] gap-10 lg:gap-20">
+        <div class="contact-grid">
             <div data-aos="fade-right">
                 <h2 style="font-family: var(--serif); font-size: 2.5rem; margin-bottom: 32px;">Kontak Kami</h2>
                 
                 <div style="display: flex; flex-direction: column; gap: 40px;">
-                    <div style="display: flex; gap: 20px;">
+                    <div class="contact-item">
                         <div style="width: 52px; height: 52px; border-radius: 14px; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
                             <i class="fas fa-paper-plane"></i>
                         </div>
@@ -31,7 +47,7 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 20px;">
+                    <div class="contact-item">
                         <div style="width: 52px; height: 52px; border-radius: 14px; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
                             <i class="fab fa-whatsapp"></i>
                         </div>
@@ -42,7 +58,7 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 20px;">
+                    <div class="contact-item">
                         <div style="width: 52px; height: 52px; border-radius: 14px; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
                             <i class="fas fa-map-marker-alt"></i>
                         </div>
@@ -54,9 +70,9 @@
                 </div>
             </div>
 
-            <div data-aos="fade-left" style="background: var(--white); border-radius: 32px; padding: 48px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 40px 100px rgba(0,0,0,0.03);">
+            <div data-aos="fade-left" class="contact-card" style="background: var(--white); border-radius: 32px; padding: 48px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 40px 100px rgba(0,0,0,0.03);">
                 <form action="#" method="POST" style="display: flex; flex-direction: column; gap: 24px;">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="form-grid">
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <label style="font-weight: 500; font-size: 0.85rem; color: var(--ink-2);">Nama Lengkap</label>
                             <input type="text" placeholder="John Doe" style="padding: 14px 18px; border-radius: 12px; border: 1.5px solid var(--paper-2); background: var(--paper); outline: none; transition: border-color 0.3s;">

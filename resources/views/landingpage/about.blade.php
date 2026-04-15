@@ -2,6 +2,16 @@
 
 @section('title', 'Tentang Kami — Flow Ecosystem')
 
+@push('styles')
+<style>
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    @media (max-width: 768px) {
+        .about-grid { grid-template-columns: 1fr; gap: 40px; margin-top: 40px; }
+        .about-text { margin-bottom: 24px; }
+    }
+</style>
+@endpush
+
 @section('content')
 <section class="page-hero">
     <div class="container" data-aos="fade-up">
@@ -15,8 +25,8 @@
 
 <section class="py-120">
     <div class="container">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
-            <div data-aos="fade-right">
+        <div class="about-grid">
+            <div data-aos="fade-right" class="about-text">
                 <h2 style="font-family: var(--serif); font-size: 2.5rem; margin-bottom: 24px;">Siapa Kami?</h2>
                 <p style="color: var(--ink-2); margin-bottom: 20px; font-size: 1.05rem;">Flow adalah ekosistem digital revolusioner di Indonesia yang menggabungkan kekuatan manajemen operasional bisnis (CuanFlow) dengan pengalaman belanja konsumen yang menyenangkan (JajanFlow).</p>
                 <p style="color: var(--ink-2); font-size: 1.05rem;">Lahir dari kebutuhan akan integrasi yang lebih baik, kami hadir untuk memastikan setiap transaksi bukan sekadar angka, tapi sebuah cerita sukses.</p>
