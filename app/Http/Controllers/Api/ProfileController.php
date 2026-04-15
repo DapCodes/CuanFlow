@@ -46,6 +46,7 @@ class ProfileController extends Controller
             \Illuminate\Support\Facades\DB::beginTransaction();
 
             $oldEmail = $user->email;
+            $emailChanged = false;
 
             // Update User
             if ($request->has('name')) {
@@ -53,6 +54,10 @@ class ProfileController extends Controller
             }
             if ($request->has('email')) {
                 $user->email = $data['email'];
+                if ($user->isDirty('email')) {
+                    $user->email_verified_at = null;
+                    $emailChanged = true;
+                }
             }
             if ($request->has('phone')) {
                 $user->phone = $data['phone'];
@@ -106,6 +111,10 @@ class ProfileController extends Controller
             }
 
             \Illuminate\Support\Facades\DB::commit();
+
+            if ($emailChanged) {
+                $user->sendEmailVerificationNotification();
+            }
 
             return response()->json([
                 'message' => 'Profil berhasil diperbarui.',
