@@ -645,679 +645,139 @@
   </div>
 
 
-<div class="flex justify-center p-4">
+<div class="db font-satoshi min-h-screen pb-20">
+  {{-- Premium Fonts --}}
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400&display=swap" rel="stylesheet">
 
+  <style>
+    .font-satoshi { font-family: 'Satoshi', sans-serif; }
 
-<style>
-  .menu-card .menu-icon {
-    position: relative;
-    overflow: hidden;
-  }
+    /* ══════════════════════════════════ */
+    /* MINIMALIST SCROLLBAR               */
+    /* ══════════════════════════════════ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.05); border-radius: 10px; transition: all 0.3s; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.2); }
 
-  /* Glass shimmer layer */
-  .menu-card .menu-icon::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(
-      135deg,
-      rgba(255,255,255,0.30) 0%,
-      rgba(255,255,255,0.08) 50%,
-      rgba(255,255,255,0.00) 100%
-    );
-    z-index: 1;
-    pointer-events: none;
-  }
+    /* For Firefox */
+    * { scrollbar-width: thin; scrollbar-color: rgba(0, 0, 0, 0.05) transparent; }
+    
+    /* ══════════════════════════════════ */
+    /* DASHBOARD GRID                     */
+    /* ══════════════════════════════════ */
+    .section-label { padding: 32px 0 16px; font-size: 13px; font-weight: 800; color: #1e293b; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; }
+    .main-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 24px; }
+    @media (max-width: 992px) { .main-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) { .main-grid { grid-template-columns: 1fr; } }
 
-  /* Inner glass border highlight */
-  .menu-card .menu-icon::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    border: 1px solid rgba(255,255,255,0.40);
-    z-index: 2;
-    pointer-events: none;
-  }
+    /* Category Card */
+    .main-card { 
+      border-radius: 24px; border: 1px solid rgba(0, 0, 0, 0.05); background: white;
+      padding: 24px; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column;
+    }
+    .main-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.06); border-color: #7c3aed20; }
+    
+    .card-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+    .card-icon.sell { background: #fee2e2; color: #ef4444; }
+    .card-icon.money { background: #ede9fe; color: #7c3aed; }
+    .card-icon.products { background: #ffedd5; color: #f97316; }
+    .card-icon.ai { background: #f5f3ff; color: #8b5cf6; }
+    .card-icon.more { background: #f1f5f9; color: #64748b; }
+    
+    .card-title { font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+    .card-desc { font-size: 13px; color: #64748b; line-height: 1.5; height: 3em; overflow: hidden; opacity: 0.8; }
+    .card-meta { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 18px; border-top: 1px solid #f8fafc; }
+    .card-arrow { width: 28px; height: 28px; border-radius: 50%; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 10px; transition: 0.3s; }
+    .main-card:hover .card-arrow { background: #0f172a; color: white; transform: rotate(-45deg); }
 
-  /* Icon itself stays above glass layer */
-  .menu-card .menu-icon i,
-  .menu-card .menu-icon img {
-    position: relative;
-    z-index: 3;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.18));
-  }
+    /* ══════════════════════════════════ */
+    /* PREMIUM DRAWER                     */
+    /* ══════════════════════════════════ */
+    .folder-overlay { display: none; position: fixed; inset: 0; z-index: 1000; align-items: flex-end; justify-content: center; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); }
+    .folder-active { display: flex !important; }
 
-  /* Subtle lift on hover */
-  .menu-card:hover .menu-icon {
-    transform: translateY(-2px);
-    transition: transform 0.25s ease;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.10) !important;
-  }
+    .drawer { 
+      background: white; border-radius: 40px 40px 0 0; padding: 45px 35px; 
+      width: 100%; max-width: 820px; max-height: 85vh; overflow-y: auto; position: relative;
+      box-shadow: 0 -20px 60px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.7);
+    }
+    @media (min-width: 640px) { .folder-overlay { align-items: center; padding: 20px; } .drawer { border-radius: 40px; } }
+    .drawer-header { display: flex; align-items: center; gap: 24px; margin-bottom: 35px; border-bottom: 1px solid #f1f5f9; padding-bottom: 25px; }
+    
+    .drawer-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 640px) { .drawer-items { grid-template-columns: repeat(2, 1fr); } }
 
-  .menu-card .menu-icon {
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06);
-  }
-</style>
+    .ditem { 
+      display: flex; flex-direction: column; background: #fcfcfd; border: 1px solid #f1f5f9; 
+      border-radius: 28px; padding: 24px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none !important;
+    }
+    .ditem:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.06); border-color: #7c3aed30; background: white; }
+    .ditem-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 18px; }
+    .ditem-label { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    .ditem-desc { font-size: 11px; color: #94a3b8; line-height: 1.5; }
 
-<div id="menuGrid" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-6 max-w-8xl w-full">
+    .close-btn { margin-left: auto; width: 44px; height: 44px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+    .close-btn:hover { background: #ef4444; color: white; transform: rotate(90deg); }
 
-  <!-- ══════════════════════════════════ -->
-  <!-- OPERASIONAL UTAMA                 -->
-  <!-- ══════════════════════════════════ -->
+    /* ══════════════════════════════════ */
+    /* DYNAMIC FAB (LIGHT MODE)           */
+    /* ══════════════════════════════════ */
+    .fab { 
+      position: fixed; bottom: 35px; right: 35px; 
+      background: rgba(255, 255, 255, 0.9); 
+      backdrop-filter: blur(10px);
+      color: #0f172a; border-radius: 60px; height: 60px; min-width: 60px;
+      display: flex; align-items: center; justify-content: center; padding: 0 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1000; overflow: hidden; white-space: nowrap; text-decoration: none !important;
+    .fab i { font-size: 24px; color: #34d399; }
 
-  @canAccessFeature('pos')
-  @can('akses pos')
-  <a href="{{ route('pos.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300 relative"
-    data-step="1"
-    data-title="Kasir Pintar (POS)"
-    data-intro="<strong>Catat penjualan dengan cepat.</strong> Ini adalah jantung bisnis Anda. Masukkan pesanan, pilih metode pembayaran, dan cetak nota dalam hitungan detik.">
-    <div class="menu-icon relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #F44336;">
-      @if(isset($isPosOpen) && $isPosOpen)
-        <span class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2
-            h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full
-            bg-emerald-400 ring-2 ring-white/80 shadow-sm z-10
-            transition-all duration-300 opacity-90 scale-95
-            group-hover:opacity-100 group-hover:scale-110"
-          title="POS sedang buka" aria-label="POS sedang buka"></span>
-      @endif
-      <i class="ph-light ph-storefront text-4xl sm:text-5xl text-white"></i>
+    @media (max-width: 640px) { .fab { bottom: 25px; right: 25px; height: 54px; min-width: 54px; } .fab-text { display: none; } }
+  </style>
+
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="section-label flex items-center gap-2">
+       <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+       DAFTAR LAYANAN CUANFLOW
     </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Point of Sale</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @if(isset($isReseller) && $isReseller)
-  <a href="{{ route('reseller-products.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-title="Produk Reseller"
-    data-intro="<strong>Barang siap jual dari pusat.</strong> Terima dan kelola stok barang yang Anda beli dari outlet pusat di sini.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #1E88E5;">
-      <i class="ph-light ph-package text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Produk Reseller</span>
-  </a>
-  @endif
-
-  @canAccessFeature('sales_management')
-  @can('lihat penjualan')
-  <a href="{{ route('sales.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="2"
-    data-title="Riwayat Penjualan"
-    data-intro="<strong>Pantau semua transaksi.</strong> Lihat daftar nota yang keluar, cek histori pesanan pelanggan, atau batalkan transaksi jika terjadi kesalahan.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #E91E8C;">
-      <i class="ph-light ph-receipt text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Penjualan</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('discount_management')
-  @can('lihat diskon')
-  <a href="{{ route('discounts.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="3"
-    data-title="Promo & Diskon"
-    data-intro="<strong>Menangkan hati pelanggan.</strong> Buat berbagai promo menarik seperti diskon persentase atau 'Beli 1 Gratis 1' untuk meningkatkan omzet Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #AB47BC;">
-      <i class="ph-light ph-ticket text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Diskon</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('finance_management')
-  @can('lihat keuangan')
-  <a href="{{ route('finance.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="4"
-    data-title="Arus Kas (Keuangan)"
-    data-intro="<strong>Kesehatan finansial outlet.</strong> Pantau seluruh uang masuk dan keluar. Pastikan saldo kas Anda selalu cocok dengan kondisi di lapangan.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #7E57C2;">
-      <i class="ph-light ph-trend-up text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Keuangan</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('other_income')
-  @can('buat pemasukan')
-  <a href="{{ route('expenses.index', ['type' => 'income']) }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="5"
-    data-title="Pemasukan Lain"
-    data-intro="<strong>Catat uang masuk tambahan.</strong> Masukkan pendapatan di luar hasil jualan kasir agar laporan keuangan Anda tetap akurat dan jujur.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #26A69A;">
-      <i class="ph-light ph-coins text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pemasukan Lain</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('operational_costs')
-  @can('buat pengeluaran')
-  <a href="{{ route('expenses.index', ['type' => 'expense']) }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="6"
-    data-title="Biaya Operasional"
-    data-intro="<strong>Catat pengeluaran Anda.</strong> Masukkan biaya listrik, sewa, gaji, hingga belanja kecil lainnya untuk mengetahui sisa untung bersih Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #FFA726;">
-      <i class="ph-light ph-money-wavy text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Biaya Ops</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('balance_withdrawal')
-  @can('buat penarikan')
-  <a href="{{ route('withdraw.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="7"
-    data-title="Tarik Saldo"
-    data-intro="<strong>Ambil dana Anda.</strong> Ajukan penarikan saldo hasil pembayaran nontunai ke rekening bank atau dompet digital pribadi Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #43A047;">
-      <i class="ph-light ph-bank text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Penarikan Saldo</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('invoice_list')
-  @can('lihat invoice')
-  <a href="{{ route('invoices.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="7.5"
-    data-title="Ringkasan Invoice"
-    data-intro="<strong>Pantau tagihan & transaksi.</strong> Lihat ringkasan terbaru dari penjualan, pemasukan, pengeluaran, dan piutang dalam satu tampilan cepat.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #1E88E5;">
-      <i class="ph-light ph-invoice text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Daftar Invoice</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('payment_methods')
-  @can('lihat metode pembayaran')
-  <a href="{{ route('outlet-payment-links.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="8"
-    data-title="Metode Pembayaran"
-    data-intro="<strong>Atur opsi pembayaran.</strong> Hubungkan dompet digital atau rekening bank Anda agar pelanggan bisa membayar dengan QRIS atau transfer.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #8E24AA;">
-      <i class="ph-light ph-scan text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Metode Pembayaran</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('task_management')
-  @can('tasks.view')
-  <a href="{{ route('tasks.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="9"
-    data-title="Manajemen Tugas"
-    data-intro="<strong>Kerja tim makin kompak.</strong> Berikan tugas ke pegawai, pantau progresnya, dan pastikan tidak ada pekerjaan yang terlewat.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #546E7A;">
-      <i class="ph-light ph-clipboard-text text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Manajemen Tugas</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  <!-- ══════════════════════════════════ -->
-  <!-- MONITORING & ANALISIS             -->
-  <!-- ══════════════════════════════════ -->
-
-  @canAccessFeature('dashboard')
-  @can('lihat statistik')
-  <a href="{{ route('statistics.index') }}"
-    class="menu-card nav-link group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="10"
-    data-title="Dashboard Statistik"
-    data-intro="<strong>Lihat ringkasan usaha.</strong> Tampilkan grafik pertumbuhan omzet dan keuntungan dalam tampilan visual yang mudah dibaca siapa saja.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #039BE5;">
-      <i class="ph-light ph-chart-bar text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Dashboard & Statistik</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('reports')
-  @can('lihat laporan')
-  <a href="{{ route('reports.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="11"
-    data-title="Laporan Lengkap"
-    data-intro="<strong>Dokumen evaluasi bisnis.</strong> Unduh laporan detail harian hingga bulanan untuk dibenahi atau dibagikan ke partner bisnis Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #1976D2;">
-      <i class="ph-light ph-file-magnifying-glass text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Laporan Keseluruhan</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('track_transaction_location')
-  @can('lihat peta transaksi')
-  <a href="{{ route('sales-map.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="12"
-    data-title="Peta Transaksi"
-    data-intro="<strong>Pelacakan operasional real-time.</strong> Pantau koordinat transaksi serta rute perjalanan staf dan kasir Anda di atas peta interaktif.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00897B;">
-      <i class="ph-light ph-map-pin-line text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Peta Transaksi</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  <!-- ══════════════════════════════════ -->
-  <!-- PRODUK & INVENTORI                -->
-  <!-- ══════════════════════════════════ -->
-
-  @canAccessFeature('products_recipes')
-  @can('lihat produk')
-  <a href="{{ route('products-hpp.index') }}"
-    class="menu-card nav-link group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="12"
-    data-title="Menu & Resep"
-    data-intro="<strong>Atur menu jualan Anda.</strong> Masukkan resep rahasia Anda di sini, sistem akan menghitung biaya produksi (HPP) secara otomatis.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #FB8C00;">
-      <i class="ph-light ph-bowl-steam text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Produk & Resep</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('raw_materials')
-  @can('lihat bahan baku')
-  <a href="{{ route('raw-materials.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="13"
-    data-title="Stok Bahan Baku"
-    data-intro="<strong>Jangan sampai kehabisan.</strong> Pantau stok mentah di gudang. Sistem akan memberi tanda jika ada bahan yang perlu segera dibeli.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #7CB342;">
-      <i class="ph-light ph-warehouse text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Bahan Baku</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('suppliers')
-  @can('lihat supplier')
-  <a href="{{ route('raw-materials.suppliers') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="14"
-    data-title="Daftar Pemasok"
-    data-intro="<strong>Hubungi supplier dengan mudah.</strong> Simpan kontak pemasok langganan agar Anda tidak repot mencari nomor saat stok habis.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #C0B400;">
-      <i class="ph-light ph-truck text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pemasok</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('reseller_app')
-  @can('lihat reseller applications')
-  <a href="{{ route('reseller-applications.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="15"
-    data-title="Lamaran Reseller"
-    data-intro="<strong>Perluas jaringan Anda.</strong> Kelola dan seleksi calon mitra reseller yang ingin ikut memasarkan produk Anda di sini.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #F4511E;">
-      <i class="ph-light ph-users-three text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Lamaran Reseller</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('production')
-  @can('lihat produksi')
-  <a href="{{ route('production.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="16"
-    data-title="Proses Produksi"
-    data-intro="<strong>Pantau pembuatan barang.</strong> Catat kapan bahan baku diolah menjadi produk siap jual agar hitungan stok tetap sinkron.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00ACC1;">
-      <i class="ph-light ph-factory text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Produksi</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('stock_opname')
-  @can('lihat stock opname')
-  <a href="{{ route('stock-opname.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="17"
-    data-title="Cek Stok (Opname)"
-    data-intro="<strong>Audit fisik barang.</strong> Cocokkan jumlah stok asli di rak dengan data di sistem untuk mencegah kerugian atau kehilangan.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #388E3C;">
-      <i class="ph-light ph-list-checks text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Stock Opname</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('stock_transfer')
-  @can('lihat stock transfer')
-  <a href="{{ route('stock-transfers.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="18"
-    data-title="Mutasi Stok"
-    data-intro="<strong>Pindah barang antar outlet.</strong> Catat pengiriman bahan atau produk ke cabang lain agar stok pusat dan cabang tetap terpantau.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #1E88E5;">
-      <i class="ph-light ph-arrows-left-right text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Transfer Stok</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  <!-- ══════════════════════════════════ -->
-  <!-- PENGATURAN BISNIS                 -->
-  <!-- ══════════════════════════════════ -->
-
-  @can('lihat outlet')
-  @php
-      $authServices = app(\App\Services\FeatureAccessService::class);
-      $hasMultiOutlet = $authServices->checkAccess(auth()->user(), 'multi_outlet')['can_access'];
-      $outletUrl = route('outlets.index');
-      if (!$hasMultiOutlet) {
-          $singleOutlet = auth()->user()->hasRole('owner')
-              ? auth()->user()->outletsOwned()->first()
-              : auth()->user()->outlet;
-          if ($singleOutlet) {
-              $outletUrl = route('outlets.show', $singleOutlet->id);
-          }
-      }
-  @endphp
-  <a href="{{ $outletUrl }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="19"
-    data-title="Identitas Outlet"
-    data-intro="<strong>Data utama toko Anda.</strong> Lengkapi nama, alamat, dan logo toko Anda agar muncul di nota belanja dan dipercaya pelanggan.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #E53935;">
-      <i class="ph-light ph-buildings text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Informasi Outlet</span>
-  </a>
-  @endcan
-
-  @canAccessFeature('landing_page')
-  @can('lihat landing page')
-  <a href="{{ route('landing-pages.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="20"
-    data-title="Website (Landing Page)"
-    data-intro="<strong>Go Digital dengan CuanFlow.</strong> Buat halaman website katalog sederhana untuk toko Anda agar menarik lebih banyak pelanggan online.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #3949AB;">
-      <i class="ph-light ph-globe-simple text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Landing Page</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('testimonials')
-  @can('lihat testimoni')
-  <a href="{{ route('testimonials.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="21"
-    data-title="Ulasan Pelanggan"
-    data-intro="<strong>Kumpulkan kata positif.</strong> Simpan dan tampilkan ulasan terbaik dari pelanggan Anda di website untuk menambah kepercayaan pembeli baru.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #8E24AA;">
-      <i class="ph-light ph-star-half text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Testimoni</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('employee_management')
-  @can('lihat pegawai')
-  <a href="{{ route('employees.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="22"
-    data-title="Tim & Hak Akses"
-    data-intro="<strong>Kelola karyawan Anda.</strong> Daftarkan tim Anda dan tentukan tugas mereka di aplikasi agar operasional lebih tertib dan terkontrol.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #43A047;">
-      <i class="ph-light ph-identification-card text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pegawai & Hak Akses</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('customer_management')
-  @can('lihat pelanggan')
-  <a href="{{ route('customer-debts.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="23"
-    data-title="Pelanggan & Piutang"
-    data-intro="<strong>Hubungan pelanggan.</strong> Simpan database pelanggan setia dan pantau catatan piutang (bon) agar tidak ada yang terlewat ditagih.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00897B;">
-      <i class="ph-light ph-hand-coins text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pelanggan & Piutang</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('table_management')
-  @can('lihat meja')
-  <a href="{{ route('tables.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="24"
-    data-title="Sistem Antrian Meja"
-    data-intro="<strong>Atur operasional cafe/resto.</strong> Kelola nomor meja dan pantau mana yang sedang terisi atau kosong secara real-time dari kasir.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #F4511E;">
-      <i class="ph-light ph-table text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Kelola Meja</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  <!-- ══════════════════════════════════ -->
-  <!-- AI & INSIGHT                      -->
-  <!-- ══════════════════════════════════ -->
-
-  @canAccessFeature('ai_insights')
-  @can('lihat ai insights')
-  <a href="{{ route('ai-insights.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="25"
-    data-title="Lampu Hijau Bisnis"
-    data-intro="<strong>Saran cerdas dari data.</strong> Lihat produk yang paling laku dan dapatkan saran kapan harus menambah stok berdasarkan analisa otomatis kami.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #5E35B1;">
-      <i class="ph-light ph-sparkle text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Insight</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('clara_ai')
-  @can('akses clara ai')
-  <a href="{{ route('clara-ai.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="26"
-    data-title="Asisten Clara AI"
-    data-intro="<strong>Asisten pribadi Anda.</strong> Tanya Clara apa saja tentang jualan Anda hari ini atau cari ide promo baru melalui obrolan santai.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #3949AB;">
-      <img src="{{ asset('assets/image/clara-ai.png') }}" class="p-2" alt="" style="position:relative;z-index:3">
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Clara AI</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('ai_insights')
-  <a href="{{ route('opportunity-map.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="100"
-    data-title="Peta Cuan Lokasi"
-    data-intro="<strong>Analisis lokasi berbasis AI.</strong> Temukan area bisnis berpotensi tinggi untuk membuka cabang baru berdasarkan peta sebaran usaha.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #43A047;">
-      <i class="ph-light ph-map-trifold text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Peta Cuan Lokasi</span>
-  </a>
-  @endcanAccessFeature
-
-  @canAccessFeature('clara_ai')
-  @can('akses clara ai')
-  <a href="{{ route('clara-ai.video-prompt') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="101"
-    data-title="Video Prompt AI"
-    data-intro="<strong>Generate prompt video sinematik.</strong> Buat prompt detail untuk tools AI video seperti Runway, Sora, dan Pika berdasarkan data produk Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #283593;">
-      <i class="ph-light ph-video-camera text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Video Prompt AI</span>
-  </a>
-
-  <a href="{{ route('clara-ai.affiliate-script') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="102"
-    data-title="Script Generator AI"
-    data-intro="<strong>Generate script affiliate.</strong> Buat script jualan high-converting untuk TikTok, Instagram, dan YouTube dengan data bisnis Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #E64A19;">
-      <i class="ph-light ph-microphone-stage text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Script Generator AI</span>
-  </a>
-
-  <a href="{{ route('clara-ai.ads-image-prompt') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="103"
-    data-title="Image Prompt AI"
-    data-intro="<strong>Generate prompt gambar iklan.</strong> Buat prompt untuk Midjourney, DALL·E, dan SDXL yang disesuaikan dengan produk dan brand Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00838F;">
-      <i class="ph-light ph-image-square text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Image Prompt AI</span>
-  </a>
-
-  <a href="{{ route('clara-ai.kalkulaba') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="104"
-    data-title="Kalkulaba AI"
-    data-intro="<strong>Kalkulator laba pintar.</strong> Hitung HPP, strategi harga, dan target profit secara otomatis dengan bantuan AI.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #388E3C;">
-      <i class="ph-light ph-percent text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Kalkulaba AI</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  <!-- ══════════════════════════════════ -->
-  <!-- BANTUAN & PENGATURAN              -->
-  <!-- ══════════════════════════════════ -->
-
-  @canAccessFeature('outlet_policies')
-  @can('lihat kebijakan outlet')
-  <a href="{{ route('outlet-policies.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="27"
-    data-title="SOP & Kebijakan"
-    data-intro="<strong>Aturan kerja tim.</strong> Simpan panduan kerja atau peraturan outlet di sini agar semua pegawai memiliki pemahaman yang sama.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #546E7A;">
-      <i class="ph-light ph-notepad text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Kebijakan Outlet</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  @canAccessFeature('account_settings')
-  @can('edit profil')
-  <a href="{{ route('profile.edit') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="28"
-    data-title="Kelola Akun"
-    data-intro="<strong>Keamanan profil.</strong> Ubah data diri, ganti kata sandi, atau perbarui kontak Anda untuk menjaga keamanan akses sistem.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #455A64;">
-      <i class="ph-light ph-shield-check text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Pengaturan Akun</span>
-  </a>
-  @endcan
-  @endcanAccessFeature
-
-  <a href="{{ route('stock-notifications.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="31"
-    data-title="Notifikasi & Peringatan"
-    data-intro="<strong>Pantau info terbaru.</strong> Lihat catatan stok menipis, jadwal kedaluwarsa, atau pengumuman penting lainnya di sini agar bisnis tetap lancar.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2 relative" style="background: #E53935;">
-      <i class="ph-light ph-bell-ringing text-4xl sm:text-5xl text-white"></i>
-      @if(isset($unreadStockCount) && $unreadStockCount > 0)
-      <span class="absolute -top-1.5 -right-1.5 flex h-5 w-5" style="z-index:10">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-5 w-5 bg-red-500 border-2 border-white text-[10px] text-white items-center justify-center font-bold">
-            {{ $unreadStockCount }}
-          </span>
-      </span>
+    
+    <div id="menuGrid" class="main-grid">
+      @if(isset($categories) && $categories->count() > 0)
+        @php
+            $sortedCategories = $categories->sortBy(function($cat) {
+                return $cat->slug === 'ai-tools' ? 7.5 : $cat->sort_order;
+            });
+        @endphp
+        @foreach($sortedCategories as $category)
+          @include('components.menu.category-group', [
+            'category' => $category,
+            'isPosOpen' => $isPosOpen ?? false,
+            'isReseller' => $isReseller ?? false,
+            'unreadStockCount' => $unreadStockCount ?? 0,
+          ])
+        @endforeach
       @endif
     </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Notifikasi</span>
-  </a>
+    <div class="pb-24"></div>
+  </div>
 
-  @canAccessFeature('help_faq')
-  @can('lihat faq')
-  <a href="{{ route('faqs.index') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="29"
-    data-title="Pusat Bantuan"
-    data-intro="<strong>Panduan Lengkap.</strong> Temukan jawaban dari pertanyaan yang sering diajukan atau pelajari cara menggunakan fitur CuanFlow di sini.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #00897B;">
-      <i class="ph-light ph-lifebuoy text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Bantuan & FAQ</span>
+  {{-- New Dynamic FAB --}}
+  <a href="{{ route('pos.index') }}" class="fab group">
+    <i class="ph-bold ph-shopping-cart-simple"></i>
+    <!-- <span class="fab-text">Transaksi Baru</span> -->
   </a>
-  @endcan
-  @endcanAccessFeature
-
-  @if(auth()->user()->hasRole('owner') && auth()->user()->subscription)
-  <a href="{{ route('subscription.manage') }}"
-    class="menu-card group block text-center p-2 rounded-lg transition-all duration-300"
-    data-step="30"
-    data-title="Kelola Langganan"
-    data-intro="<strong>Atur paket Anda.</strong> Perbarui langganan, lihat riwayat pembayaran, atau ganti paket fitur sesuai kebutuhan bisnis Anda.">
-    <div class="menu-icon w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center mx-auto mb-2" style="background: #FB8C00;">
-      <i class="ph-light ph-diamond text-4xl sm:text-5xl text-white"></i>
-    </div>
-    <span class="inline-flex items-center h-10 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">Kelola Langganan</span>
-  </a>
-  @endif
-
 </div>
+
+
+
+
+
+
+
 
 <!-- Modal Sapaan Selamat Datang (tambahkan sebelum modal noOutlet) -->
 <div id="welcomeTourModal" class="hidden modal-backdrop fixed inset-0 z-50 flex items-center justify-center">
@@ -2552,4 +2012,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     })();
 </script>
+<script src="{{ asset('assets/js/menu-categories.js') }}"></script>
 @endpush

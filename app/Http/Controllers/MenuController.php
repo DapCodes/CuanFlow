@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AiInsight;
 use App\Models\CashRegister;
 use App\Models\Customer;
+use App\Models\FeatureCategory;
 use App\Services\StockNotificationService;
 
 class MenuController extends Controller
@@ -47,6 +48,11 @@ class MenuController extends Controller
             ? Customer::where('email', $user->email)->where('type', 'reseller')->exists()
             : false;
 
-        return view('dashboard', compact('unreadInsights', 'isPosOpen', 'isReseller'));
+        // Load feature categories with eager-loaded active items (avoid N+1)
+        $categories = FeatureCategory::with(['featureItems' => function ($query) {
+            $query->active();
+        }])->active()->get();
+
+        return view('dashboard', compact('unreadInsights', 'isPosOpen', 'isReseller', 'categories'));
     }
 }
