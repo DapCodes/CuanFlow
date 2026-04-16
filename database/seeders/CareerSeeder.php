@@ -53,7 +53,7 @@ class CareerSeeder extends Seeder
         ];
 
         foreach ($careers as $career) {
-            $career['slug'] = Str::slug($career['title']) . '-' . uniqid();
+            $career['slug'] = Str::slug($career['title']).'-'.uniqid();
             Career::create($career);
         }
     }

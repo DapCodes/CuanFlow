@@ -45,8 +45,8 @@ class RunBackupJob implements ShouldQueue
     public int $timeout = 600;
 
     /**
-     * @param string $type     Backup type: 'full', 'database', or 'files'
-     * @param int|null $triggeredBy  User ID who triggered, null for scheduler
+     * @param  string  $type  Backup type: 'full', 'database', or 'files'
+     * @param  int|null  $triggeredBy  User ID who triggered, null for scheduler
      */
     public function __construct(
         protected string $type = 'full',

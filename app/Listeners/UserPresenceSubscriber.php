@@ -6,6 +6,7 @@ use App\Events\UserPresenceChanged;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Facades\Log;
 
 class UserPresenceSubscriber
 {
@@ -19,7 +20,7 @@ class UserPresenceSubscriber
             try {
                 broadcast(new UserPresenceChanged($event->user, 'online'));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Pusher broadcast error in UserPresenceSubscriber@handleUserLogin: ' . $e->getMessage());
+                Log::error('Pusher broadcast error in UserPresenceSubscriber@handleUserLogin: '.$e->getMessage());
             }
         }
     }
@@ -35,7 +36,7 @@ class UserPresenceSubscriber
             try {
                 broadcast(new UserPresenceChanged($user, 'offline'));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Pusher broadcast error in UserPresenceSubscriber@handleUserLogout: ' . $e->getMessage());
+                Log::error('Pusher broadcast error in UserPresenceSubscriber@handleUserLogout: '.$e->getMessage());
             }
         }
     }

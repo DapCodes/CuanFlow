@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Discount;
 use App\Models\Product;
+use App\Models\ProductStock;
 use Illuminate\Support\Collection;
 
 class DiscountService
@@ -426,7 +427,7 @@ class DiscountService
         $plan['free_item_quota'] = $freeQty;
 
         $plan['free_item_candidates'] = collect($eligibleItems)->map(function ($item) {
-            $stock = \App\Models\ProductStock::where('product_id', $item['product_id'])
+            $stock = ProductStock::where('product_id', $item['product_id'])
                 ->where('outlet_id', auth()->user()->outlet_id)
                 ->first();
 
@@ -481,7 +482,7 @@ class DiscountService
                 $totalNeeded = $qtyInCart + $qty;
 
                 if ($itemInCart && ($itemInCart['track_stock'] ?? true)) {
-                    $stock = \App\Models\ProductStock::where('product_id', $productId)
+                    $stock = ProductStock::where('product_id', $productId)
                         ->where('outlet_id', auth()->user()->outlet_id)
                         ->first();
 
@@ -494,7 +495,7 @@ class DiscountService
                 }
 
                 // 2. Build Item Data
-                $product = \App\Models\Product::find($productId);
+                $product = Product::find($productId);
                 if ($product) {
                     $result[] = [
                         'product_id' => $productId,

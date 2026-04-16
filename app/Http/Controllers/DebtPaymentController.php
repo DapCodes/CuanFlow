@@ -5,12 +5,18 @@ namespace App\Http\Controllers;
 use App\Events\NewProductionOrder;
 use App\Models\Customer;
 use App\Models\CustomerDebt;
+use App\Models\CustomerDiscount;
 use App\Models\DebtPayment;
-use App\Models\Sale;
-use App\Models\SaleItem;
+use App\Models\Discount;
+use App\Models\Outlet;
+use App\Models\Product;
 use App\Models\ResellerApplication;
 use App\Models\ResellerProduct;
-use App\Models\Product;
+use App\Models\Sale;
+use App\Models\SaleItem;
+use App\Models\Table;
+use App\Models\User;
+use App\Services\DiscountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,16 +28,16 @@ class DebtPaymentController extends Controller
     private function captureLocationIfPlatinum(Request $request, $outletId): array
     {
         try {
-            $outlet = \App\Models\Outlet::with('owner.subscription.tier')->find($outletId);
+            $outlet = Outlet::with('owner.subscription.tier')->find($outletId);
 
-            if (!$outlet || !$outlet->owner) {
+            if (! $outlet || ! $outlet->owner) {
                 return [null, null];
             }
 
             $owner = $outlet->owner;
             $subscription = $owner->subscription;
 
-            if (!$subscription || !$subscription->isActive()) {
+            if (! $subscription || ! $subscription->isActive()) {
                 return [null, null];
             }
 
@@ -55,7 +61,8 @@ class DebtPaymentController extends Controller
 
             return [null, null];
         } catch (\Exception $e) {
-            \Log::warning('Location capture failed in Debt: ' . $e->getMessage());
+            \Log::warning('Location capture failed in Debt: '.$e->getMessage());
+
             return [null, null];
         }
     }
@@ -161,7 +168,7 @@ class DebtPaymentController extends Controller
             // Update cart item prices if customer is reseller
             if ($customer->type === 'reseller') {
                 foreach ($cart as $key => $item) {
-                    $product = \App\Models\Product::find($item['product_id']);
+                    $product = Product::find($item['product_id']);
                     if ($product && $product->reseller_price) {
                         $cart[$key]['unit_price'] = (float) $product->reseller_price;
                     }
@@ -169,7 +176,7 @@ class DebtPaymentController extends Controller
             } else {
                 // If regular customer, ensure we use selling price
                 foreach ($cart as $key => $item) {
-                    $product = \App\Models\Product::find($item['product_id']);
+                    $product = Product::find($item['product_id']);
                     if ($product) {
                         $cart[$key]['unit_price'] = (float) $product->selling_price;
                     }
@@ -177,7 +184,7 @@ class DebtPaymentController extends Controller
             }
 
             // Re-apply discount plan if customer changed or to ensure it's up to date
-            $discountService = app(\App\Services\DiscountService::class);
+            $discountService = app(DiscountService::class);
             $subtotal = collect($cart)->sum(fn ($item) => $item['unit_price'] * $item['quantity']);
 
             // Find automatic (non-voucher) candidates for this specific customer
@@ -230,7 +237,7 @@ class DebtPaymentController extends Controller
 
             // Mark table as occupied if dine-in
             if ($request->service_type === 'dine_in' && $request->table_id) {
-                \App\Models\Table::find($request->table_id)->update(['status' => 'occupied']);
+                Table::find($request->table_id)->update(['status' => 'occupied']);
             }
 
             // Create customer debt record
@@ -270,7 +277,7 @@ class DebtPaymentController extends Controller
             // Increment discount usage
             if ($discountPlan) {
                 if (isset($discountPlan['customer_discount_id'])) {
-                    $cd = \App\Models\CustomerDiscount::find($discountPlan['customer_discount_id']);
+                    $cd = CustomerDiscount::find($discountPlan['customer_discount_id']);
                     if ($cd) {
                         $cd->update([
                             'is_used' => true,
@@ -428,7 +435,7 @@ class DebtPaymentController extends Controller
     private function reduceStock($cart, $discountPlan = null)
     {
         foreach ($cart as $item) {
-            $product = \App\Models\Product::find($item['product_id']);
+            $product = Product::find($item['product_id']);
             if (! $product || ! $product->track_stock) {
                 continue;
             }
@@ -455,7 +462,7 @@ class DebtPaymentController extends Controller
 
     private function incrementDiscountUsage($discountId)
     {
-        $discount = \App\Models\Discount::find($discountId);
+        $discount = Discount::find($discountId);
         if ($discount) {
             $discount->incrementUsage();
         }
@@ -569,10 +576,14 @@ class DebtPaymentController extends Controller
      */
     private function syncResellerProducts(Sale $sale)
     {
-        if (!$sale->customer_id) return 0;
+        if (! $sale->customer_id) {
+            return 0;
+        }
 
         $customer = Customer::find($sale->customer_id);
-        if (!$customer || $customer->type !== 'reseller') return 0;
+        if (! $customer || $customer->type !== 'reseller') {
+            return 0;
+        }
 
         // Verify approved reseller application for the selling outlet
         $isVerified = ResellerApplication::where('customer_id', $sale->customer_id)
@@ -580,21 +591,27 @@ class DebtPaymentController extends Controller
             ->where('status', 'approved')
             ->exists();
 
-        if (!$isVerified) return 0;
+        if (! $isVerified) {
+            return 0;
+        }
 
         // Find the reseller's own outlet from their user account
-        $userAccount = \App\Models\User::where('email', $customer->email)
+        $userAccount = User::where('email', $customer->email)
             ->orWhere('phone', $customer->phone)
             ->first();
 
-        if (!$userAccount || !$userAccount->outlet_id) return 0;
+        if (! $userAccount || ! $userAccount->outlet_id) {
+            return 0;
+        }
 
         $resellerOutletId = $userAccount->outlet_id;
 
         $syncedCount = 0;
         foreach ($sale->items as $item) {
             $product = Product::find($item->product_id);
-            if (!$product) continue;
+            if (! $product) {
+                continue;
+            }
 
             // Increment stock if already exists, else create
             $resellerProduct = ResellerProduct::where('reseller_outlet_id', $resellerOutletId)
@@ -623,7 +640,7 @@ class DebtPaymentController extends Controller
 
         // Set flag on sale object for response
         $sale->has_reseller_sync = ($syncedCount > 0);
-        
+
         return $syncedCount;
     }
 }

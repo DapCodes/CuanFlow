@@ -28,8 +28,8 @@ class ProfileController extends Controller implements HasMiddleware
     public function edit(Request $request): View
     {
         return view('profile.edit', [
-            'user'           => $request->user(),
-            'colorPalettes'  => ColorPalette::orderBy('sort_order')->get(),
+            'user' => $request->user(),
+            'colorPalettes' => ColorPalette::orderBy('sort_order')->get(),
         ]);
     }
 

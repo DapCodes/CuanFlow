@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Activity as SpatieActivity;
 
@@ -21,7 +22,7 @@ class Activity extends SpatieActivity
         return $this->belongsTo(Outlet::class);
     }
 
-    public function causer(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    public function causer(): MorphTo
     {
         return $this->morphTo()->withTrashed();
     }
@@ -81,7 +82,7 @@ class Activity extends SpatieActivity
     public function getEventBadgeAttribute(): array
     {
         $event = $this->event ?? $this->description;
-        
+
         return match (true) {
             $event === 'created' => ['label' => 'Created', 'color' => 'emerald'],
             $event === 'updated' => ['label' => 'Updated', 'color' => 'blue'],

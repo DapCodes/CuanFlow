@@ -7,10 +7,12 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 
 class TaskAssignedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+
     public function __construct(public Task $task) {}
 
     public function via(object $notifiable): array
@@ -34,7 +36,7 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
             ->line('• Status: '.$this->task->status->name);
 
         if ($this->task->description) {
-            $mailMessage->line('Deskripsi: '.\Illuminate\Support\Str::limit($this->task->description, 100));
+            $mailMessage->line('Deskripsi: '.Str::limit($this->task->description, 100));
         }
 
         return $mailMessage

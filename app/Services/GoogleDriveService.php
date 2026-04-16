@@ -33,29 +33,30 @@ class GoogleDriveService
 
         Log::info('[GoogleDriveService] Configuration check (OAuth2)', [
             'enabled' => $enabled,
-            'client_id_set' => !empty($clientId),
-            'refresh_token_set' => !empty($refreshToken),
+            'client_id_set' => ! empty($clientId),
+            'refresh_token_set' => ! empty($refreshToken),
             'folder_id' => $folderId,
         ]);
 
         return $enabled
-            && !empty($clientId)
-            && !empty($clientSecret)
-            && !empty($refreshToken)
-            && !empty($folderId);
+            && ! empty($clientId)
+            && ! empty($clientSecret)
+            && ! empty($refreshToken)
+            && ! empty($folderId);
     }
 
     /**
      * Upload a file to Google Drive.
      *
-     * @param string $localPath Absolute path to the local file
-     * @param string $remoteName Filename to use on Google Drive
+     * @param  string  $localPath  Absolute path to the local file
+     * @param  string  $remoteName  Filename to use on Google Drive
      * @return string|null Google Drive file ID on success, null on failure
      */
     public function upload(string $localPath, string $remoteName): ?string
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             Log::warning('[GoogleDriveService] Google Drive is not configured. Skipping upload.');
+
             return null;
         }
 
@@ -63,7 +64,7 @@ class GoogleDriveService
             $disk = Storage::disk($this->diskName);
             $stream = fopen($localPath, 'rb');
 
-            if (!$stream) {
+            if (! $stream) {
                 throw new \RuntimeException("Cannot open file for upload: {$localPath}");
             }
 
@@ -73,7 +74,7 @@ class GoogleDriveService
                 fclose($stream);
             }
 
-            if (!$success) {
+            if (! $success) {
                 // If put returns false, it usually means a Service Account Quota issue
                 throw new \RuntimeException("Google Drive upload failed. This is typically due to Service Account storage quota (0MB) or folder permissions. Tip: Use a Shared Drive or ensure the Service Account email has 'Editor' access to the folder.");
             }
@@ -98,13 +99,14 @@ class GoogleDriveService
     /**
      * Delete a file from Google Drive.
      *
-     * @param string $remoteName Remote filename or file ID
+     * @param  string  $remoteName  Remote filename or file ID
      * @return bool True if deleted successfully
      */
     public function delete(string $remoteName): bool
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             Log::warning('[GoogleDriveService] Google Drive not configured. Skipping delete.');
+
             return false;
         }
 
@@ -132,6 +134,7 @@ class GoogleDriveService
                 'file' => $remoteName,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -139,29 +142,30 @@ class GoogleDriveService
     /**
      * Download a file from Google Drive to a local path.
      *
-     * @param string $remoteName Remote filename
-     * @param string $localPath Local path to save the file
+     * @param  string  $remoteName  Remote filename
+     * @param  string  $localPath  Local path to save the file
      * @return bool True if downloaded successfully
      */
     public function download(string $remoteName, string $localPath): bool
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return false;
         }
 
         try {
             $disk = Storage::disk($this->diskName);
 
-            if (!$disk->exists($remoteName)) {
+            if (! $disk->exists($remoteName)) {
                 Log::warning('[GoogleDriveService] File not found for download', [
                     'file' => $remoteName,
                 ]);
+
                 return false;
             }
 
             $stream = $disk->readStream($remoteName);
 
-            if (!$stream) {
+            if (! $stream) {
                 throw new \RuntimeException("Cannot read stream from Google Drive: {$remoteName}");
             }
 
@@ -185,6 +189,7 @@ class GoogleDriveService
                 'file' => $remoteName,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -196,17 +201,19 @@ class GoogleDriveService
      */
     public function listFiles(): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return [];
         }
 
         try {
             $disk = Storage::disk($this->diskName);
+
             return $disk->files();
         } catch (\Exception $e) {
             Log::error('[GoogleDriveService] Failed to list files', [
                 'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
@@ -216,7 +223,7 @@ class GoogleDriveService
      */
     public function exists(string $remoteName): bool
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return false;
         }
 

@@ -51,11 +51,11 @@ class TelegramGenerateLinkToken extends Command
         $botToken = config('services.telegram.bot_token');
         $botUsername = 'your_bot'; // User should replace this
 
-        $this->info("📌 User can link their account by:");
+        $this->info('📌 User can link their account by:');
         $this->line("   1. Sending this command to the bot: /link {$token}");
         $this->line("   2. Or opening this deep link: https://t.me/{$botUsername}?start={$token}");
         $this->newLine();
-        $this->warn("⚠️  Token is single-use. It will be cleared after successful linking.");
+        $this->warn('⚠️  Token is single-use. It will be cleared after successful linking.');
 
         return self::SUCCESS;
     }

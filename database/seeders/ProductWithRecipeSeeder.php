@@ -149,7 +149,7 @@ class ProductWithRecipeSeeder extends Seeder
                     'estimated_time_minutes' => 1,
                     'instructions' => 'Ambil dari kulkas, serahkan ke pembeli.',
                     'items' => [
-                        ['code' => 'RM019', 'quantity' => 100], 
+                        ['code' => 'RM019', 'quantity' => 100],
                     ],
                 ],
             ],
@@ -498,10 +498,10 @@ class ProductWithRecipeSeeder extends Seeder
                     }
                 }
 
-                echo "✓ Produk '{$product->name}' berhasil dibuat" . (isset($productData['recipe']) ? " dengan riwayat produksi" : " (produk instant)") . " untuk Outlet ID {$targetOutletId}!\n";
+                echo "✓ Produk '{$product->name}' berhasil dibuat".(isset($productData['recipe']) ? ' dengan riwayat produksi' : ' (produk instant)')." untuk Outlet ID {$targetOutletId}!\n";
             }
 
-            // ============ SEEDER DISKON ============ 
+            // ============ SEEDER DISKON ============
             $discountsData = [
                 [
                     'code' => 'DISC-TAKO10-'.$targetOutletId,

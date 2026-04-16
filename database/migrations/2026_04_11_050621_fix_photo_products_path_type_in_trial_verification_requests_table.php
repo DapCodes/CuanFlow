@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -13,8 +14,8 @@ return new class extends Migration
     {
         // For MariaDB/MySQL, dropping the JSON check constraint if it survived the rename
         try {
-            \Illuminate\Support\Facades\DB::statement('ALTER TABLE trial_verification_requests DROP CONSTRAINT IF EXISTS additional_proof');
-        } catch (\Exception $e) {
+            DB::statement('ALTER TABLE trial_verification_requests DROP CONSTRAINT IF EXISTS additional_proof');
+        } catch (Exception $e) {
             // Silence is golden
         }
 

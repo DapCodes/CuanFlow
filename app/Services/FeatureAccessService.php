@@ -45,6 +45,7 @@ class FeatureAccessService
         // Global Feature Flag check
         $isActiveGlobally = Cache::remember("feature_flag_{$featureName}_active", 300, function () use ($featureName) {
             $feature = Feature::where('name', $featureName)->first();
+
             return $feature ? $feature->is_active : true; // Default to true if not in DB to prevent locking out new unseeded features
         });
 

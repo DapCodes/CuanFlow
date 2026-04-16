@@ -4,14 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Events\NewProductionOrder;
 use App\Models\Customer;
+use App\Models\CustomerDebt;
+use App\Models\CustomerDiscount;
+use App\Models\DebtPayment;
 use App\Models\Discount;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
+use App\Models\Outlet;
+use App\Models\PaymentTransaction;
 use App\Models\Product;
-use App\Models\Sale;
+use App\Models\ProductStock;
 use App\Models\ResellerApplication;
 use App\Models\ResellerProduct;
+use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
+use App\Models\Table;
 use App\Models\TrialVerificationRequest;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -38,16 +49,16 @@ class PaymentController extends Controller
     private function captureLocationIfPlatinum(Request $request, $outletId): array
     {
         try {
-            $outlet = \App\Models\Outlet::with('owner.subscription.tier')->find($outletId);
+            $outlet = Outlet::with('owner.subscription.tier')->find($outletId);
 
-            if (!$outlet || !$outlet->owner) {
+            if (! $outlet || ! $outlet->owner) {
                 return [null, null];
             }
 
             $owner = $outlet->owner;
             $subscription = $owner->subscription;
 
-            if (!$subscription || !$subscription->isActive()) {
+            if (! $subscription || ! $subscription->isActive()) {
                 return [null, null];
             }
 
@@ -72,7 +83,8 @@ class PaymentController extends Controller
 
             return [null, null];
         } catch (\Exception $e) {
-            \Log::warning('Location capture failed: ' . $e->getMessage());
+            \Log::warning('Location capture failed: '.$e->getMessage());
+
             return [null, null];
         }
     }
@@ -128,7 +140,7 @@ class PaymentController extends Controller
                 }
             } else {
                 // Create stock record if missing (0 qty)
-                \App\Models\ProductStock::firstOrCreate([
+                ProductStock::firstOrCreate([
                     'product_id' => $pid,
                     'outlet_id' => auth()->user()->outlet_id,
                 ], ['quantity' => 0]);
@@ -333,7 +345,7 @@ class PaymentController extends Controller
 
             // Mark table as occupied if dine-in
             if ($request->service_type === 'dine_in' && $request->table_id) {
-                \App\Models\Table::find($request->table_id)->update(['status' => 'occupied']);
+                Table::find($request->table_id)->update(['status' => 'occupied']);
             }
 
             SalePayment::create([
@@ -450,7 +462,7 @@ class PaymentController extends Controller
 
             // Mark table as occupied if dine-in
             if ($request->service_type === 'dine_in' && $request->table_id) {
-                \App\Models\Table::find($request->table_id)->update(['status' => 'occupied']);
+                Table::find($request->table_id)->update(['status' => 'occupied']);
             }
 
             $sale->load('items');
@@ -663,7 +675,7 @@ class PaymentController extends Controller
 
                 // Mark table as occupied if dine-in
                 if ($sale->service_type === 'dine_in' && $sale->table_id) {
-                    \App\Models\Table::find($sale->table_id)->update(['status' => 'occupied']);
+                    Table::find($sale->table_id)->update(['status' => 'occupied']);
                 }
 
                 $this->createOrUpdateSalePayment($sale, $notification);
@@ -685,7 +697,8 @@ class PaymentController extends Controller
                             if (isset($notesInfo['discount_plan']) || isset($notesInfo['discount_id'])) {
                                 $hasDiscount = true;
                             }
-                        } catch (\Exception $e) {}
+                        } catch (\Exception $e) {
+                        }
                     }
 
                     if ($sale->discount_amount > 0 || $hasDiscount) {
@@ -714,7 +727,7 @@ class PaymentController extends Controller
         $parts = explode('-', $notification->order_id);
         $debtId = $parts[1] ?? null;
 
-        $debt = \App\Models\CustomerDebt::with('sale')->find($debtId);
+        $debt = CustomerDebt::with('sale')->find($debtId);
         if (! $debt) {
             return response()->json(['message' => 'Debt not found'], 404);
         }
@@ -723,7 +736,7 @@ class PaymentController extends Controller
             DB::beginTransaction();
             try {
                 // Check duplicate INSIDE transaction block for robustness
-                $exists = \App\Models\DebtPayment::where('reference_number', $notification->transaction_id)->exists();
+                $exists = DebtPayment::where('reference_number', $notification->transaction_id)->exists();
                 if ($exists) {
                     DB::rollBack();
 
@@ -741,7 +754,7 @@ class PaymentController extends Controller
                 }
                 $debtAmountPart = $amount - $lateFeePart;
 
-                \App\Models\DebtPayment::create([
+                DebtPayment::create([
                     'customer_debt_id' => $debt->id,
                     'amount' => $amount,
                     'late_fee' => $lateFeePart,
@@ -770,14 +783,14 @@ class PaymentController extends Controller
                 $debt->customer->decrement('total_debt', $debtAmountPart);
 
                 if ($lateFeePart > 0) {
-                    $category = \App\Models\ExpenseCategory::where('code', '+LATE_FEE')->first();
+                    $category = ExpenseCategory::where('code', '+LATE_FEE')->first();
                     if ($category) {
-                        \App\Models\Expense::create([
+                        Expense::create([
                             'outlet_id' => $debt->outlet_id,
                             'expense_category_id' => $category->id,
                             'amount' => -$lateFeePart,
                             'expense_date' => now(),
-                            'description' => "Denda Keterlambatan Piutang (Midtrans) - " . ($debt->sale->invoice_number ?? 'N/A'),
+                            'description' => 'Denda Keterlambatan Piutang (Midtrans) - '.($debt->sale->invoice_number ?? 'N/A'),
                             'type' => 'income',
                             'status' => 'approved',
                             'payment_method' => 'transfer',
@@ -804,7 +817,7 @@ class PaymentController extends Controller
 
     private function handleSubscriptionNotification($notification)
     {
-        $transaction = \App\Models\PaymentTransaction::where('transaction_id', $notification->order_id)->first();
+        $transaction = PaymentTransaction::where('transaction_id', $notification->order_id)->first();
         if (! $transaction) {
             return response()->json(['message' => 'Transaction not found'], 404);
         }
@@ -830,7 +843,7 @@ class PaymentController extends Controller
 
                     if ($subscription) {
                         // Calculate new expiry: if currently valid, add to expires_at; if expired/past, add to now()
-                        $currentExpiry = $subscription->expires_at ? \Carbon\Carbon::parse($subscription->expires_at) : now();
+                        $currentExpiry = $subscription->expires_at ? Carbon::parse($subscription->expires_at) : now();
                         $newExpiry = $currentExpiry->isFuture() ? $currentExpiry->addMonths($plan->duration_months) : now()->addMonths($plan->duration_months);
 
                         $subscription->update([
@@ -1075,7 +1088,7 @@ class PaymentController extends Controller
 
         // SYNC RESELLER PRODUCTS
         if ($sale->status === 'completed' || $sale->payment_method === 'debt') {
-             $this->syncResellerProducts($sale);
+            $this->syncResellerProducts($sale);
         }
 
         return $sale->fresh();
@@ -1086,10 +1099,14 @@ class PaymentController extends Controller
      */
     private function syncResellerProducts(Sale $sale)
     {
-        if (!$sale->customer_id) return 0;
+        if (! $sale->customer_id) {
+            return 0;
+        }
 
         $customer = Customer::find($sale->customer_id);
-        if (!$customer || $customer->type !== 'reseller') return 0;
+        if (! $customer || $customer->type !== 'reseller') {
+            return 0;
+        }
 
         // Verify approved reseller application for the selling outlet
         $isVerified = ResellerApplication::where('customer_id', $sale->customer_id)
@@ -1097,21 +1114,27 @@ class PaymentController extends Controller
             ->where('status', 'approved')
             ->exists();
 
-        if (!$isVerified) return 0;
+        if (! $isVerified) {
+            return 0;
+        }
 
         // Find the reseller's own outlet from their user account
-        $userAccount = \App\Models\User::where('email', $customer->email)
+        $userAccount = User::where('email', $customer->email)
             ->orWhere('phone', $customer->phone)
             ->first();
 
-        if (!$userAccount || !$userAccount->outlet_id) return 0;
+        if (! $userAccount || ! $userAccount->outlet_id) {
+            return 0;
+        }
 
         $resellerOutletId = $userAccount->outlet_id;
 
         $syncedCount = 0;
         foreach ($sale->items as $item) {
             $product = Product::find($item->product_id);
-            if (!$product) continue;
+            if (! $product) {
+                continue;
+            }
 
             // Increment stock if already exists, else create
             $resellerProduct = ResellerProduct::where('reseller_outlet_id', $resellerOutletId)
@@ -1140,7 +1163,7 @@ class PaymentController extends Controller
 
         // Set flag on sale object for response
         $sale->has_reseller_sync = ($syncedCount > 0);
-        
+
         return $syncedCount;
     }
 
@@ -1186,7 +1209,7 @@ class PaymentController extends Controller
 
         // Handle Personal Voucher (CustomerDiscount)
         if (isset($discountPlan['customer_discount_id'])) {
-            $cd = \App\Models\CustomerDiscount::find($discountPlan['customer_discount_id']);
+            $cd = CustomerDiscount::find($discountPlan['customer_discount_id']);
             if ($cd) {
                 $cd->update([
                     'is_used' => true,

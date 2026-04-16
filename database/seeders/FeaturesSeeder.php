@@ -72,7 +72,7 @@ class FeaturesSeeder extends Seeder
 
         foreach ($features as $feature) {
             $existing = Feature::where('name', $feature['name'])->first();
-            
+
             if ($existing) {
                 // Keep existing is_active status
                 $existing->update(array_merge($feature, [

@@ -34,13 +34,13 @@ class ColorPalette extends Model
     {
         return static::where('is_default', true)->first()
             ?? static::orderBy('sort_order')->firstOrNew([
-                'name'         => 'CuanFlow Classic',
-                'slug'         => 'cuanflow-classic',
+                'name' => 'CuanFlow Classic',
+                'slug' => 'cuanflow-classic',
                 'color_yellow' => '#F0E491',
-                'color_olive'  => '#BBC863',
-                'color_green'  => '#658C58',
-                'color_dark'   => '#31694E',
-                'is_default'   => true,
+                'color_olive' => '#BBC863',
+                'color_green' => '#658C58',
+                'color_dark' => '#31694E',
+                'is_default' => true,
             ]);
     }
 
@@ -51,9 +51,9 @@ class ColorPalette extends Model
     {
         return [
             'cuan-yellow' => $this->color_yellow,
-            'cuan-olive'  => $this->color_olive,
-            'cuan-green'  => $this->color_green,
-            'cuan-dark'   => $this->color_dark,
+            'cuan-olive' => $this->color_olive,
+            'cuan-green' => $this->color_green,
+            'cuan-dark' => $this->color_dark,
         ];
     }
 }

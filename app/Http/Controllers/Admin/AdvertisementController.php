@@ -12,6 +12,7 @@ class AdvertisementController extends Controller
     public function index()
     {
         $advertisements = Advertisement::orderBy('created_at', 'desc')->paginate(10);
+
         return view('admin.advertisements.index', compact('advertisements'));
     }
 
@@ -95,7 +96,8 @@ class AdvertisementController extends Controller
 
     public function toggleStatus(Advertisement $advertisement)
     {
-        $advertisement->update(['is_active' => !$advertisement->is_active]);
+        $advertisement->update(['is_active' => ! $advertisement->is_active]);
+
         return back()->with('success', 'Status iklan berhasil diubah.');
     }
 }

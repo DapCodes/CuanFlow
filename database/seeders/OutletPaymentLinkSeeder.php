@@ -21,7 +21,7 @@ class OutletPaymentLinkSeeder extends Seeder
                     'outlet_id' => $outletId,
                     'payment_method_id' => $paymentMethodId,
                     'account_number' => '1234567890',
-                    'account_name' => 'Outlet ' . $outletId . ' Account ' . $paymentMethodId,
+                    'account_name' => 'Outlet '.$outletId.' Account '.$paymentMethodId,
                     'notes' => 'Seeded payment link for testing',
                     'is_active' => true,
                 ]);

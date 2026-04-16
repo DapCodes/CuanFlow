@@ -3,16 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Events\ProductionCompleted;
+use App\Events\ProductionOrderRefunded;
 use App\Models\Product;
 use App\Models\Production;
 use App\Models\ProductStock;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\RawMaterialStock;
+use App\Models\Sale;
+use App\Models\SaleItem;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ProductionController extends Controller
@@ -28,7 +32,7 @@ class ProductionController extends Controller
         $warningDays = 7;
 
         // 1. Fetch Sales with Pending Made-to-Order Items
-        $pendingSales = \App\Models\Sale::where('outlet_id', $outletId)
+        $pendingSales = Sale::where('outlet_id', $outletId)
             ->where('status', 'completed') // Consider both completed sales and active orders if applicable
             ->whereHas('items', function ($q) {
                 $q->where('production_status', 'pending')
@@ -236,7 +240,7 @@ class ProductionController extends Controller
         ]);
     }
 
-    public function preparation(\App\Models\SaleItem $saleItem)
+    public function preparation(SaleItem $saleItem)
     {
         if (! auth()->user()->can('buat produksi')) {
             abort(403);
@@ -476,7 +480,7 @@ class ProductionController extends Controller
                 // Find pending sale items for this product and mark as completed
                 $qtyToFulfill = $validated['planned_quantity'];
 
-                $pendingItemsQuery = \App\Models\SaleItem::where('product_id', $product->id)
+                $pendingItemsQuery = SaleItem::where('product_id', $product->id)
                     ->whereHas('sale', function ($q) use ($outletId) {
                         $q->where('outlet_id', $outletId)
                             ->where('status', 'completed');
@@ -539,7 +543,7 @@ class ProductionController extends Controller
 
             // Fire realtime notification if all items in any affected sale are completed
             if (! empty($validated['sale_item_id'])) {
-                $affectedSaleItem = \App\Models\SaleItem::find($validated['sale_item_id']);
+                $affectedSaleItem = SaleItem::find($validated['sale_item_id']);
                 if ($affectedSaleItem) {
                     $this->checkAndFireProductionCompleted($affectedSaleItem->sale);
                 }
@@ -547,7 +551,7 @@ class ProductionController extends Controller
                 // Check all affected sales from the pending items we just processed
                 $affectedSaleIds = $pendingItems->pluck('sale_id')->unique();
                 foreach ($affectedSaleIds as $sId) {
-                    $s = \App\Models\Sale::find($sId);
+                    $s = Sale::find($sId);
                     if ($s) {
                         $this->checkAndFireProductionCompleted($s);
                     }
@@ -647,7 +651,7 @@ class ProductionController extends Controller
         $outletId = auth()->user()->outlet_id;
         $userId = auth()->id();
 
-        $sale = \App\Models\Sale::where('id', $validated['sale_id'])
+        $sale = Sale::where('id', $validated['sale_id'])
             ->where('outlet_id', $outletId)
             ->firstOrFail();
 
@@ -832,7 +836,7 @@ class ProductionController extends Controller
      * Check if all non-stock (made-to-order) items in a sale are completed.
      * If so, fire the ProductionCompleted event for realtime POS notification.
      */
-    private function checkAndFireProductionCompleted(\App\Models\Sale $sale)
+    private function checkAndFireProductionCompleted(Sale $sale)
     {
         // Reload fresh to get current state
         $sale->loadMissing('items.product');
@@ -848,7 +852,7 @@ class ProductionController extends Controller
             try {
                 event(new ProductionCompleted($sale));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Pusher error in ProductionController@checkAndFireProductionCompleted: ' . $e->getMessage());
+                Log::error('Pusher error in ProductionController@checkAndFireProductionCompleted: '.$e->getMessage());
             }
         }
     }
@@ -1236,10 +1240,10 @@ class ProductionController extends Controller
         $items = [];
 
         if ($request->sale_item_id) {
-            $si = \App\Models\SaleItem::with('product.defaultRecipe.items.rawMaterial')->findOrFail($request->sale_item_id);
+            $si = SaleItem::with('product.defaultRecipe.items.rawMaterial')->findOrFail($request->sale_item_id);
             $items[] = $si;
         } elseif ($request->sale_id) {
-            $sale = \App\Models\Sale::with('items.product.defaultRecipe.items.rawMaterial')->findOrFail($request->sale_id);
+            $sale = Sale::with('items.product.defaultRecipe.items.rawMaterial')->findOrFail($request->sale_id);
             $items = $sale->items->filter(fn ($i) => $i->production_status === 'pending' && $i->product && ! $i->product->is_stock);
         }
 
@@ -1295,7 +1299,7 @@ class ProductionController extends Controller
     {
         $saleId = $request->sale_id;
         if (! $saleId && $request->sale_item_id) {
-            $si = \App\Models\SaleItem::findOrFail($request->sale_item_id);
+            $si = SaleItem::findOrFail($request->sale_item_id);
             $saleId = $si->sale_id;
         }
 
@@ -1303,7 +1307,7 @@ class ProductionController extends Controller
             return response()->json(['success' => false, 'message' => 'Sale ID tidak ditemukan'], 400);
         }
 
-        $sale = \App\Models\Sale::where('outlet_id', auth()->user()->outlet_id)->findOrFail($saleId);
+        $sale = Sale::where('outlet_id', auth()->user()->outlet_id)->findOrFail($saleId);
 
         DB::beginTransaction();
         try {
@@ -1327,9 +1331,9 @@ class ProductionController extends Controller
             DB::commit();
 
             try {
-                event(new \App\Events\ProductionOrderRefunded($sale));
+                event(new ProductionOrderRefunded($sale));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Pusher error in ProductionController@refundSaleAjax: ' . $e->getMessage());
+                Log::error('Pusher error in ProductionController@refundSaleAjax: '.$e->getMessage());
             }
 
             return response()->json(['success' => true, 'message' => 'Transaksi berhasil di-refund']);

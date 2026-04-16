@@ -35,7 +35,7 @@ class BackupSuccessNotification extends Notification
             ->line("📁 **Tipe:** {$this->backup->type}")
             ->line("📦 **Ukuran:** {$this->backup->getSizeForHumans()}")
             ->line("💾 **Disk:** {$this->backup->disk}")
-            ->line("🔒 **Terenkripsi:** " . ($this->backup->is_encrypted ? 'Ya' : 'Tidak'))
+            ->line('🔒 **Terenkripsi:** '.($this->backup->is_encrypted ? 'Ya' : 'Tidak'))
             ->line("⏱ **Durasi:** {$this->duration} detik")
             ->line("📅 **Waktu:** {$this->backup->created_at->format('d M Y H:i:s')}")
             ->salutation('Salam, Sistem Backup CuanFlow');

@@ -7,8 +7,6 @@ use App\Models\Blog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 
 class BlogController extends Controller
 {
@@ -24,9 +22,9 @@ class BlogController extends Controller
         $query = Blog::query();
 
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('category', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('category', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -60,31 +58,20 @@ class BlogController extends Controller
 
         if ($request->hasFile('thumbnail')) {
             $file = $request->file('thumbnail');
-            $filename = uniqid('blog_') . '.webp';
-            $path = 'blogs/' . $filename;
-            
-            // Ensure directory exists
-            if (!Storage::disk('public')->exists('blogs')) {
-                Storage::disk('public')->makeDirectory('blogs');
-            }
 
-            // Compress & resize image using Intervention Image
-            $manager = new ImageManager(new Driver());
-            $image = $manager->read($file);
-            $image->scaleDown(width: 1200);
-            
-            // Save as compressed webp
-            $image->toWebp(quality: 80)->save(storage_path('app/public/' . $path));
-            
+            // Simpan langsung tanpa manipulasi
+            $path = $file->store('blogs', 'public');
+
             $validated['thumbnail'] = $path;
         }
 
-        $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid();
+        $validated['slug'] = Str::slug($validated['title']).'-'.uniqid();
         $validated['is_published'] = $request->has('is_published');
 
         Blog::create($validated);
 
-        return redirect()->route('admin.blogs.index')->with('success', 'Blog berhasil ditambahkan.');
+        return redirect()->route('admin.blogs.index')
+            ->with('success', 'Blog berhasil ditambahkan.');
     }
 
     public function edit(Blog $blog)
@@ -103,32 +90,26 @@ class BlogController extends Controller
         ]);
 
         if ($request->hasFile('thumbnail')) {
+            // Hapus thumbnail lama
             if ($blog->thumbnail) {
                 Storage::disk('public')->delete($blog->thumbnail);
             }
-            
-            $file = $request->file('thumbnail');
-            $filename = uniqid('blog_') . '.webp';
-            $path = 'blogs/' . $filename;
-            
-            if (!Storage::disk('public')->exists('blogs')) {
-                Storage::disk('public')->makeDirectory('blogs');
-            }
 
-            $manager = new ImageManager(new Driver());
-            $image = $manager->read($file);
-            $image->scaleDown(width: 1200);
-            $image->toWebp(quality: 80)->save(storage_path('app/public/' . $path));
-            
+            $file = $request->file('thumbnail');
+
+            // Simpan langsung
+            $path = $file->store('blogs', 'public');
+
             $validated['thumbnail'] = $path;
         }
 
-        $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid();
+        $validated['slug'] = Str::slug($validated['title']).'-'.uniqid();
         $validated['is_published'] = $request->has('is_published');
 
         $blog->update($validated);
 
-        return redirect()->route('admin.blogs.index')->with('success', 'Blog berhasil diperbarui.');
+        return redirect()->route('admin.blogs.index')
+            ->with('success', 'Blog berhasil diperbarui.');
     }
 
     public function destroy(Blog $blog)
@@ -143,7 +124,8 @@ class BlogController extends Controller
 
     public function toggleStatus(Blog $blog)
     {
-        $blog->update(['is_published' => !$blog->is_published]);
+        $blog->update(['is_published' => ! $blog->is_published]);
+
         return back()->with('success', 'Status publikasi berhasil diubah.');
     }
 }

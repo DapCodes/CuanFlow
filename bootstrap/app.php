@@ -1,9 +1,21 @@
 <?php
 
+use App\Http\Middleware\CheckBannedIp;
+use App\Http\Middleware\CheckFeatureAccess;
+use App\Http\Middleware\CheckMaintenance;
+use App\Http\Middleware\CheckOutletLimit;
+use App\Http\Middleware\CheckSubscription;
+use App\Http\Middleware\CheckUserActive;
+use App\Http\Middleware\LogActivityContext;
+use App\Http\Middleware\RedirectAdmin;
+use App\Http\Middleware\TrackUserPresence;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,12 +35,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // Global middleware: block banned IPs
-        $middleware->prepend(\App\Http\Middleware\CheckBannedIp::class);
+        $middleware->prepend(CheckBannedIp::class);
 
         // Append activity log context middleware to web group
-        $middleware->appendToGroup('web', \App\Http\Middleware\LogActivityContext::class);
-        $middleware->appendToGroup('web', \App\Http\Middleware\TrackUserPresence::class);
-        $middleware->appendToGroup('web', \App\Http\Middleware\CheckUserActive::class);
+        $middleware->appendToGroup('web', LogActivityContext::class);
+        $middleware->appendToGroup('web', TrackUserPresence::class);
+        $middleware->appendToGroup('web', CheckUserActive::class);
 
         // Exclude CSRF untuk route Midtrans notification
         $middleware->validateCsrfTokens(except: [
@@ -36,14 +48,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-            'subscription.check' => \App\Http\Middleware\CheckSubscription::class,
-            'feature.access' => \App\Http\Middleware\CheckFeatureAccess::class,
-            'limit.outlet' => \App\Http\Middleware\CheckOutletLimit::class,
-            'admin.redirect' => \App\Http\Middleware\RedirectAdmin::class,
-            'check.maintenance' => \App\Http\Middleware\CheckMaintenance::class,
+            'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'subscription.check' => CheckSubscription::class,
+            'feature.access' => CheckFeatureAccess::class,
+            'limit.outlet' => CheckOutletLimit::class,
+            'admin.redirect' => RedirectAdmin::class,
+            'check.maintenance' => CheckMaintenance::class,
         ]);
     })
     ->withSchedule(function ($schedule) {

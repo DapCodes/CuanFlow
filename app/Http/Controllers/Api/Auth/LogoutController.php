@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Events\UserPresenceChanged;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class LogoutController extends Controller
 {
@@ -17,7 +18,7 @@ class LogoutController extends Controller
         try {
             broadcast(new UserPresenceChanged($user, 'offline'));
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Pusher broadcast error in LogoutController: ' . $e->getMessage());
+            Log::error('Pusher broadcast error in LogoutController: '.$e->getMessage());
         }
 
         return response()->json(['message' => 'Logout berhasil']);

@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Models\RawMaterial;
 use App\Models\StockNotification;
+use App\Services\StockNotificationService;
 use Illuminate\Http\Request;
 
 class StockNotificationController extends Controller
@@ -17,16 +20,16 @@ class StockNotificationController extends Controller
         $type = $request->query('type', 'all');
 
         // Check stock first to ensure data is fresh
-        app(\App\Services\StockNotificationService::class)->checkAllStock($outletId);
+        app(StockNotificationService::class)->checkAllStock($outletId);
 
         $query = StockNotification::where('outlet_id', $outletId)
             ->where('is_read', false);
 
         // Apply type filter
         if ($type === 'product') {
-            $query->where('stockable_type', \App\Models\Product::class);
+            $query->where('stockable_type', Product::class);
         } elseif ($type === 'stock') {
-            $query->where('stockable_type', \App\Models\RawMaterial::class);
+            $query->where('stockable_type', RawMaterial::class);
         }
 
         // Join with reads to handle 'unread' filter and sorting

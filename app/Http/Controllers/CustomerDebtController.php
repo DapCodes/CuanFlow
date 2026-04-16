@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\DebtPayment;
-use App\Models\ResellerApplication;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Models\OutletPaymentLink;
+use App\Models\ResellerApplication;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -96,7 +97,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
         ];
 
         // Payment methods
-        $outletPaymentLinks = \App\Models\OutletPaymentLink::where('outlet_id', $outletId)
+        $outletPaymentLinks = OutletPaymentLink::where('outlet_id', $outletId)
             ->where('is_active', true)
             ->with('paymentMethod')
             ->get();
@@ -257,7 +258,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
     public function payDebt(Request $request, CustomerDebt $debt)
     {
         $maxAmount = $debt->total_plus_fee;
-        
+
         $request->validate([
             'amount' => 'required|numeric|min:1|max:'.$maxAmount,
             'payment_method' => 'required|in:cash,transfer,qris',
@@ -276,7 +277,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
         DB::beginTransaction();
         try {
             $totalAmountPaid = (float) $request->amount;
-            
+
             // Calculate how much of this is late fee
             $lateFeePart = 0;
             if ($debt->late_fee > 0) {
@@ -296,10 +297,11 @@ class CustomerDebtController extends Controller implements HasMiddleware
                 $exists = DebtPayment::where('reference_number', $referenceNumber)->exists();
                 if ($exists) {
                     DB::rollBack();
+
                     return response()->json([
                         'success' => true,
                         'message' => 'Pembayaran sudah tercatat sebelumnya',
-                        'debt' => $debt
+                        'debt' => $debt,
                     ]);
                 }
             }
@@ -342,7 +344,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
                         'expense_category_id' => $category->id,
                         'amount' => -$lateFeePart,
                         'expense_date' => now(),
-                        'description' => "Denda Keterlambatan Piutang - " . ($debt->sale->invoice_number ?? 'N/A'),
+                        'description' => 'Denda Keterlambatan Piutang - '.($debt->sale->invoice_number ?? 'N/A'),
                         'type' => 'income',
                         'status' => 'approved',
                         'payment_method' => $request->payment_method,
@@ -360,7 +362,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
             return response()->json([
                 'success' => true,
                 'message' => 'Pembayaran berhasil dicatat',
-                'debt' => $debt
+                'debt' => $debt,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -513,7 +515,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
     {
         $outletId = auth()->user()->outlet_id;
 
-        $query = \App\Models\ResellerApplication::with(['customer'])
+        $query = ResellerApplication::with(['customer'])
             ->where('outlet_id', $outletId)
             ->where('status', 'approved');
 
@@ -563,7 +565,7 @@ class CustomerDebtController extends Controller implements HasMiddleware
     /**
      * Cancel reseller contract
      */
-    public function cancelContract(\App\Models\ResellerApplication $application)
+    public function cancelContract(ResellerApplication $application)
     {
         $outletId = auth()->user()->outlet_id;
 

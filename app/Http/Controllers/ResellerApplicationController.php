@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ResellerApplication;
 use Illuminate\Http\Request;
 
 class ResellerApplicationController extends Controller
@@ -17,9 +18,9 @@ class ResellerApplicationController extends Controller
 
         // Strict isolation: if no outlet, show nothing
         if (! $outletId) {
-            $query = \App\Models\ResellerApplication::whereRaw('1 = 0');
+            $query = ResellerApplication::whereRaw('1 = 0');
         } else {
-            $query = \App\Models\ResellerApplication::where('outlet_id', $outletId);
+            $query = ResellerApplication::where('outlet_id', $outletId);
         }
 
         // Stats
@@ -61,7 +62,7 @@ class ResellerApplicationController extends Controller
             $path = $request->file('document')->store('reseller_docs', 'public');
         }
 
-        \App\Models\ResellerApplication::create([
+        ResellerApplication::create([
             'customer_id' => $request->customer_id,
             'outlet_id' => $request->outlet_id,
             'description' => $request->description,
@@ -72,7 +73,7 @@ class ResellerApplicationController extends Controller
         return back()->with('success', 'Lamaran reseller berhasil dikirim.');
     }
 
-    public function update(Request $request, \App\Models\ResellerApplication $reseller_application)
+    public function update(Request $request, ResellerApplication $reseller_application)
     {
         $user = auth()->user();
         if (! $user->can('kelola reseller applications') || ! $user->outlet_id || $reseller_application->outlet_id !== $user->outlet_id) {

@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
+use App\Models\Customer;
 use App\Models\Outlet;
-use App\Models\Customer; 
 use App\Models\ResellerApplication;
-use App\Models\UserSubscription;
-use App\Models\SubscriptionTier;
 use App\Models\SubscriptionPlan;
+use App\Models\SubscriptionTier;
+use App\Models\User;
+use App\Models\UserSubscription;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 

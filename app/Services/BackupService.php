@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\BackupLog;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
@@ -23,7 +22,7 @@ class BackupService
     {
         $this->tempPath = config('cuanflow-backup.temp_path', storage_path('app/backup-temp'));
 
-        if (!is_dir($this->tempPath)) {
+        if (! is_dir($this->tempPath)) {
             mkdir($this->tempPath, 0755, true);
         }
     }
@@ -55,14 +54,14 @@ class BackupService
         $dbConfig = config('cuanflow-backup.database');
         $connection = config("database.connections.{$dbConfig['connection']}");
 
-        $dumpFile = $this->tempPath . '/db_dump_' . now()->format('Y-m-d_H-i-s') . '.sql';
+        $dumpFile = $this->tempPath.'/db_dump_'.now()->format('Y-m-d_H-i-s').'.sql';
 
         $command = sprintf(
             'mysqldump --host=%s --port=%s --user=%s %s %s %s > %s 2>&1',
             escapeshellarg($connection['host'] ?? '127.0.0.1'),
             escapeshellarg($connection['port'] ?? '3306'),
             escapeshellarg($connection['username'] ?? 'root'),
-            !empty($connection['password']) ? '--password=' . escapeshellarg($connection['password']) : '',
+            ! empty($connection['password']) ? '--password='.escapeshellarg($connection['password']) : '',
             $dbConfig['use_single_transaction'] ? '--single-transaction' : '',
             escapeshellarg($connection['database']),
             escapeshellarg($dumpFile)
@@ -70,7 +69,7 @@ class BackupService
 
         $result = Process::timeout(300)->run($command);
 
-        if (!file_exists($dumpFile) || filesize($dumpFile) === 0) {
+        if (! file_exists($dumpFile) || filesize($dumpFile) === 0) {
             $errorOutput = $result->errorOutput() ?: $result->output();
             throw new \RuntimeException("Database dump failed: {$errorOutput}");
         }
@@ -92,17 +91,18 @@ class BackupService
     {
         $paths = config('cuanflow-backup.paths', []);
         $excludePaths = config('cuanflow-backup.exclude_paths', []);
-        $zipFile = $this->tempPath . '/files_' . now()->format('Y-m-d_H-i-s') . '.zip';
+        $zipFile = $this->tempPath.'/files_'.now()->format('Y-m-d_H-i-s').'.zip';
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
 
         if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             throw new \RuntimeException("Cannot create zip file: {$zipFile}");
         }
 
         foreach ($paths as $path) {
-            if (!is_dir($path) && !is_file($path)) {
+            if (! is_dir($path) && ! is_file($path)) {
                 Log::warning("[BackupService] Backup path does not exist: {$path}");
+
                 continue;
             }
 
@@ -111,8 +111,8 @@ class BackupService
 
         $zip->close();
 
-        if (!file_exists($zipFile) || filesize($zipFile) === 0) {
-            throw new \RuntimeException("Files archive is empty or was not created");
+        if (! file_exists($zipFile) || filesize($zipFile) === 0) {
+            throw new \RuntimeException('Files archive is empty or was not created');
         }
 
         Log::info('[BackupService] Files archive created', [
@@ -131,9 +131,9 @@ class BackupService
     public function createFullBackup(): string
     {
         $filename = $this->generateBackupFilename('full');
-        $finalZip = $this->tempPath . '/' . $filename;
+        $finalZip = $this->tempPath.'/'.$filename;
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($finalZip, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             throw new \RuntimeException("Cannot create final zip: {$finalZip}");
         }
@@ -141,7 +141,7 @@ class BackupService
         // Add database dump
         try {
             $dbDump = $this->createDatabaseDump();
-            $zip->addFile($dbDump, 'database/' . basename($dbDump));
+            $zip->addFile($dbDump, 'database/'.basename($dbDump));
         } catch (\Exception $e) {
             Log::error('[BackupService] Database dump failed during full backup', ['error' => $e->getMessage()]);
             throw $e;
@@ -152,7 +152,7 @@ class BackupService
         $excludePaths = config('cuanflow-backup.exclude_paths', []);
 
         foreach ($paths as $path) {
-            if (!is_dir($path) && !is_file($path)) {
+            if (! is_dir($path) && ! is_file($path)) {
                 continue;
             }
             $this->addPathToZip($zip, $path, $excludePaths, 'files/');
@@ -179,20 +179,24 @@ class BackupService
     public function createDatabaseBackup(): string
     {
         $filename = $this->generateBackupFilename('database');
-        $zipFile = $this->tempPath . '/' . $filename;
+        $zipFile = $this->tempPath.'/'.$filename;
 
         $dbDump = $this->createDatabaseDump();
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            if (file_exists($dbDump)) unlink($dbDump);
+            if (file_exists($dbDump)) {
+                unlink($dbDump);
+            }
             throw new \RuntimeException("Cannot create zip: {$zipFile}");
         }
 
         $zip->addFile($dbDump, basename($dbDump));
         $zip->close();
 
-        if (file_exists($dbDump)) unlink($dbDump);
+        if (file_exists($dbDump)) {
+            unlink($dbDump);
+        }
 
         return $zipFile;
     }
@@ -203,18 +207,20 @@ class BackupService
     public function createFilesBackup(): string
     {
         $filename = $this->generateBackupFilename('files');
-        $zipFile = $this->tempPath . '/' . $filename;
+        $zipFile = $this->tempPath.'/'.$filename;
 
         $paths = config('cuanflow-backup.paths', []);
         $excludePaths = config('cuanflow-backup.exclude_paths', []);
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             throw new \RuntimeException("Cannot create zip: {$zipFile}");
         }
 
         foreach ($paths as $path) {
-            if (!is_dir($path) && !is_file($path)) continue;
+            if (! is_dir($path) && ! is_file($path)) {
+                continue;
+            }
             $this->addPathToZip($zip, $path, $excludePaths);
         }
 
@@ -229,8 +235,9 @@ class BackupService
      * Generates a random IV, encrypts the file contents,
      * and prepends the IV to the encrypted output.
      *
-     * @param string $filePath Path to the file to encrypt
+     * @param  string  $filePath  Path to the file to encrypt
      * @return string Path to the encrypted file (.enc extension)
+     *
      * @throws \RuntimeException If encryption fails
      */
     public function encryptFile(string $filePath): string
@@ -252,14 +259,14 @@ class BackupService
         $ivLength = openssl_cipher_iv_length($cipher);
         $iv = openssl_random_pseudo_bytes($ivLength);
 
-        $encryptedPath = $filePath . '.enc';
+        $encryptedPath = $filePath.'.enc';
 
         // Read and encrypt in chunks to handle large files
         $inputHandle = fopen($filePath, 'rb');
         $outputHandle = fopen($encryptedPath, 'wb');
 
-        if (!$inputHandle || !$outputHandle) {
-            throw new \RuntimeException("Cannot open files for encryption");
+        if (! $inputHandle || ! $outputHandle) {
+            throw new \RuntimeException('Cannot open files for encryption');
         }
 
         // Write IV at the beginning of the file
@@ -272,7 +279,7 @@ class BackupService
         if ($encrypted === false) {
             fclose($inputHandle);
             fclose($outputHandle);
-            throw new \RuntimeException('Encryption failed: ' . openssl_error_string());
+            throw new \RuntimeException('Encryption failed: '.openssl_error_string());
         }
 
         fwrite($outputHandle, $encrypted);
@@ -313,7 +320,7 @@ class BackupService
      */
     public function cleanupTempFiles(): void
     {
-        $files = glob($this->tempPath . '/*');
+        $files = glob($this->tempPath.'/*');
 
         foreach ($files as $file) {
             if (is_file($file)) {
@@ -337,7 +344,8 @@ class BackupService
         }
 
         if (is_file($path)) {
-            $zip->addFile($path, $prefix . basename($path));
+            $zip->addFile($path, $prefix.basename($path));
+
             return;
         }
 
@@ -358,9 +366,11 @@ class BackupService
                     break;
                 }
             }
-            if ($excluded) continue;
+            if ($excluded) {
+                continue;
+            }
 
-            $relativePath = $prefix . substr($realItemPath, strlen(realpath($path)) + 1);
+            $relativePath = $prefix.substr($realItemPath, strlen(realpath($path)) + 1);
 
             if ($item->isDir()) {
                 $zip->addEmptyDir($relativePath);

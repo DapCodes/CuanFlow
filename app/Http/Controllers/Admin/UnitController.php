@@ -15,9 +15,9 @@ class UnitController extends Controller
         // Search
         if (request('search')) {
             $search = request('search');
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('abbreviation', 'like', "%{$search}%");
+                    ->orWhere('abbreviation', 'like', "%{$search}%");
             });
         }
 

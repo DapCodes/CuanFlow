@@ -96,7 +96,7 @@ class BlogSeeder extends Seeder
         foreach ($articles as $index => $article) {
             Blog::create([
                 'title' => $article['title'],
-                'slug' => Str::slug($article['title']) . '-' . uniqid(),
+                'slug' => Str::slug($article['title']).'-'.uniqid(),
                 'content' => $article['content'],
                 'category' => $article['category'],
                 'is_published' => true,

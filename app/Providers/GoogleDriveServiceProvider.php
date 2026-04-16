@@ -2,8 +2,13 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use Google\Client;
+use Google\Service\Drive;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\ServiceProvider;
+use League\Flysystem\Filesystem;
+use Masbug\Flysystem\GoogleDriveAdapter;
 
 /**
  * Registers the Google Drive filesystem driver
@@ -17,29 +22,29 @@ class GoogleDriveServiceProvider extends ServiceProvider
             Storage::extend('google', function ($app, $config) {
                 $options = [];
 
-                if (!empty($config['teamDriveId'] ?? null)) {
+                if (! empty($config['teamDriveId'] ?? null)) {
                     $options['teamDriveId'] = $config['teamDriveId'];
                 }
 
-                $client = new \Google\Client();
+                $client = new Client;
                 $client->setClientId($config['clientId']);
                 $client->setClientSecret($config['clientSecret']);
                 $client->refreshToken($config['refreshToken']);
 
-                $service = new \Google\Service\Drive($client);
-                
+                $service = new Drive($client);
+
                 // Add support for Shared Drives (optional for OAuth2 but good to have)
                 $options['supportsAllDrives'] = true;
                 $options['supportsTeamDrives'] = true;
 
-                $adapter = new \Masbug\Flysystem\GoogleDriveAdapter(
+                $adapter = new GoogleDriveAdapter(
                     $service,
                     $config['folder'] ?? null,
                     $options
                 );
 
-                return new \Illuminate\Filesystem\FilesystemAdapter(
-                    new \League\Flysystem\Filesystem($adapter),
+                return new FilesystemAdapter(
+                    new Filesystem($adapter),
                     $adapter,
                     $config
                 );

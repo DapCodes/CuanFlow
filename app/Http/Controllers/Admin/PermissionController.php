@@ -39,7 +39,7 @@ class PermissionController extends Controller implements HasMiddleware
 
         // If searching, only keep categories that have matching permissions
         if (request('search')) {
-            $permissionCategories = $permissionCategories->filter(function($category) {
+            $permissionCategories = $permissionCategories->filter(function ($category) {
                 return $category->permissions->count() > 0;
             });
         }

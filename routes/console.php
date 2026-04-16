@@ -22,7 +22,7 @@ Artisan::command('ai:generate-insights {--outlet_id=}', function (ClaraAiService
         try {
             $claraAi->generateDailyInsights($outlet->id);
             $this->info("✓ Insights generated successfully for {$outlet->name}");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("✗ Failed for {$outlet->name}: {$e->getMessage()}");
         }
     }

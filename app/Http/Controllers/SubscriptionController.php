@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionTier;
+use App\Models\TrialVerificationRequest;
+use App\Models\UserSubscription;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 
@@ -75,7 +77,7 @@ class SubscriptionController extends Controller
     {
         // Check if user already has an ACTIVE or TRIAL subscription
         $activeSubscription = auth()->user()->subscriptions()
-            ->whereIn('status', [\App\Models\UserSubscription::STATUS_ACTIVE, \App\Models\UserSubscription::STATUS_TRIAL])
+            ->whereIn('status', [UserSubscription::STATUS_ACTIVE, UserSubscription::STATUS_TRIAL])
             ->first();
 
         if ($activeSubscription && $activeSubscription->isActive()) {
@@ -83,7 +85,7 @@ class SubscriptionController extends Controller
         }
 
         // Check if this IP address has already used a trial
-        $existingIpTrial = \App\Models\TrialVerificationRequest::where('ip_address', $request->ip())->exists();
+        $existingIpTrial = TrialVerificationRequest::where('ip_address', $request->ip())->exists();
         $hasUsedTrialBefore = $existingIpTrial || auth()->user()->subscriptions()->where('is_trial', true)->exists();
 
         return view('subscription.trial-verification', compact('hasUsedTrialBefore'));
@@ -93,7 +95,7 @@ class SubscriptionController extends Controller
     {
         // Double check for active subscription
         $activeSubscription = auth()->user()->subscriptions()
-            ->whereIn('status', [\App\Models\UserSubscription::STATUS_ACTIVE, \App\Models\UserSubscription::STATUS_TRIAL])
+            ->whereIn('status', [UserSubscription::STATUS_ACTIVE, UserSubscription::STATUS_TRIAL])
             ->first();
 
         if ($activeSubscription && $activeSubscription->isActive()) {
@@ -101,7 +103,7 @@ class SubscriptionController extends Controller
         }
 
         // Double check for IP-based trial (server-side)
-        if (\App\Models\TrialVerificationRequest::where('ip_address', $request->ip())->exists()) {
+        if (TrialVerificationRequest::where('ip_address', $request->ip())->exists()) {
             return back()->with('error', 'Perangkat ini sudah pernah melakukan uji coba.');
         }
 
@@ -148,7 +150,7 @@ class SubscriptionController extends Controller
 
         auth()->user()->subscriptions()->create([
             'tier_id' => $tier->id,
-            'status' => \App\Models\UserSubscription::STATUS_PENDING_VERIFICATION,
+            'status' => UserSubscription::STATUS_PENDING_VERIFICATION,
             'started_at' => now(),
             'is_trial' => true, // Intent is trial
         ]);

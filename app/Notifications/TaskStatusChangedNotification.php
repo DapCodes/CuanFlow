@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notification;
 class TaskStatusChangedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+
     public function __construct(public Task $task) {}
 
     public function via(object $notifiable): array

@@ -6,31 +6,41 @@ use App\Http\Controllers\Admin\AdminLandingPageController;
 use App\Http\Controllers\Admin\AdminLandingSectionController;
 use App\Http\Controllers\Admin\AdminManagementController;
 use App\Http\Controllers\Admin\AdminWithdrawController;
+use App\Http\Controllers\Admin\AdvertisementController;
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\BannedIpController;
+use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\CareerController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CpuMonitoringController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DebtSettingController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\FeatureFlagController;
 use App\Http\Controllers\Admin\LoginHistoryController;
+use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\OutletController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\PermissionCategoryController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\QueueMonitorController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SubscriptionController;
 use App\Http\Controllers\Admin\SubscriptionFeatureController;
+use App\Http\Controllers\Admin\SubscriptionPaymentController;
 use App\Http\Controllers\Admin\SubscriptionPlanController;
 use App\Http\Controllers\Admin\SubscriptionSettingController;
 use App\Http\Controllers\Admin\SubscriptionTierController;
+use App\Http\Controllers\Admin\SystemErrorLogController;
 use App\Http\Controllers\Admin\TaskLabelController;
 use App\Http\Controllers\Admin\TaskStatusController;
+use App\Http\Controllers\Admin\TermAndConditionController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TrialVerificationController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\CpuMonitoringController;
-use App\Http\Controllers\Admin\DebtSettingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -60,21 +70,21 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('outlets/{outlet}/toggle-status', [OutletController::class, 'toggleStatus'])->name('admin.outlets.toggle-status');
 
     // Feature Flags Management
-    Route::get('/features', [\App\Http\Controllers\Admin\FeatureFlagController::class, 'index'])->name('admin.features.index');
-    Route::post('/features/{feature}/toggle', [\App\Http\Controllers\Admin\FeatureFlagController::class, 'toggle'])->name('admin.features.toggle');
+    Route::get('/features', [FeatureFlagController::class, 'index'])->name('admin.features.index');
+    Route::post('/features/{feature}/toggle', [FeatureFlagController::class, 'toggle'])->name('admin.features.toggle');
 
     // Data Master
     Route::resource('roles', RoleController::class)->names('admin.roles');
-    Route::resource('advertisements', \App\Http\Controllers\Admin\AdvertisementController::class)->names('admin.advertisements');
-    Route::post('advertisements/{advertisement}/toggle-status', [\App\Http\Controllers\Admin\AdvertisementController::class, 'toggleStatus'])->name('admin.advertisements.toggle-status');
+    Route::resource('advertisements', AdvertisementController::class)->names('admin.advertisements');
+    Route::post('advertisements/{advertisement}/toggle-status', [AdvertisementController::class, 'toggleStatus'])->name('admin.advertisements.toggle-status');
 
     // Blogs
-    Route::resource('blogs', \App\Http\Controllers\Admin\BlogController::class)->names('admin.blogs');
-    Route::post('blogs/{blog}/toggle-status', [\App\Http\Controllers\Admin\BlogController::class, 'toggleStatus'])->name('admin.blogs.toggle-status');
+    Route::resource('blogs', BlogController::class)->names('admin.blogs');
+    Route::post('blogs/{blog}/toggle-status', [BlogController::class, 'toggleStatus'])->name('admin.blogs.toggle-status');
 
     // Careers
-    Route::resource('careers', \App\Http\Controllers\Admin\CareerController::class)->names('admin.careers');
-    Route::post('careers/{career}/toggle-status', [\App\Http\Controllers\Admin\CareerController::class, 'toggleStatus'])->name('admin.careers.toggle-status');
+    Route::resource('careers', CareerController::class)->names('admin.careers');
+    Route::post('careers/{career}/toggle-status', [CareerController::class, 'toggleStatus'])->name('admin.careers.toggle-status');
     Route::resource('permissions', PermissionController::class)->names('admin.permissions');
     Route::resource('permission-categories', PermissionCategoryController::class)->names('admin.permission-categories');
     Route::resource('task-statuses', TaskStatusController::class)->names('admin.task-statuses');
@@ -153,16 +163,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('trial-requests/{trialRequest}/reject', [TrialVerificationController::class, 'reject'])->name('trial-requests.reject');
 
         // User Subscriptions
-        Route::get('users', [App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('users.index');
-        Route::get('users/search', [App\Http\Controllers\Admin\SubscriptionController::class, 'searchUsers'])->name('users.search');
-        Route::post('users/store', [App\Http\Controllers\Admin\SubscriptionController::class, 'store'])->name('users.store');
-        Route::get('users/{subscription}', [App\Http\Controllers\Admin\SubscriptionController::class, 'show'])->name('users.show');
-        Route::post('users/{subscription}/status', [App\Http\Controllers\Admin\SubscriptionController::class, 'updateStatus'])->name('users.status');
+        Route::get('users', [SubscriptionController::class, 'index'])->name('users.index');
+        Route::get('users/search', [SubscriptionController::class, 'searchUsers'])->name('users.search');
+        Route::post('users/store', [SubscriptionController::class, 'store'])->name('users.store');
+        Route::get('users/{subscription}', [SubscriptionController::class, 'show'])->name('users.show');
+        Route::post('users/{subscription}/status', [SubscriptionController::class, 'updateStatus'])->name('users.status');
 
         // Payment History
-        Route::get('payments', [App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'index'])->name('payments.index');
-        Route::get('payments/{payment}', [App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'show'])->name('payments.show');
-        Route::post('payments/{payment}/approve', [App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'approve'])->name('payments.approve');
+        Route::get('payments', [SubscriptionPaymentController::class, 'index'])->name('payments.index');
+        Route::get('payments/{payment}', [SubscriptionPaymentController::class, 'show'])->name('payments.show');
+        Route::post('payments/{payment}/approve', [SubscriptionPaymentController::class, 'approve'])->name('payments.approve');
     });
 
     // Security - IP Ban & Login Tracking
@@ -182,23 +192,23 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         });
 
         Route::prefix('error-logs')->name('error-logs.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'index'])->name('index');
-            Route::post('/clear', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'clear'])->name('clear');
-            Route::post('/backup', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'backup'])->name('backup');
-            Route::get('/archives', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'archives'])->name('archives');
-            Route::get('/archives/{id}/view', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'viewArchive'])->name('archives.view');
-            Route::get('/archives/{id}/download', [\App\Http\Controllers\Admin\SystemErrorLogController::class, 'downloadArchive'])->name('archives.download');
+            Route::get('/', [SystemErrorLogController::class, 'index'])->name('index');
+            Route::post('/clear', [SystemErrorLogController::class, 'clear'])->name('clear');
+            Route::post('/backup', [SystemErrorLogController::class, 'backup'])->name('backup');
+            Route::get('/archives', [SystemErrorLogController::class, 'archives'])->name('archives');
+            Route::get('/archives/{id}/view', [SystemErrorLogController::class, 'viewArchive'])->name('archives.view');
+            Route::get('/archives/{id}/download', [SystemErrorLogController::class, 'downloadArchive'])->name('archives.download');
         });
 
         Route::prefix('queue')->name('queue.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'index'])->name('index');
-            Route::post('/retry-all', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'retryAll'])->name('retry-all');
-            Route::post('/flush', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'flush'])->name('flush');
-            Route::post('/{id}/retry', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'retry'])->name('retry');
-            Route::delete('/{id}', [\App\Http\Controllers\Admin\QueueMonitorController::class, 'destroy'])->name('destroy');
+            Route::get('/', [QueueMonitorController::class, 'index'])->name('index');
+            Route::post('/retry-all', [QueueMonitorController::class, 'retryAll'])->name('retry-all');
+            Route::post('/flush', [QueueMonitorController::class, 'flush'])->name('flush');
+            Route::post('/{id}/retry', [QueueMonitorController::class, 'retry'])->name('retry');
+            Route::delete('/{id}', [QueueMonitorController::class, 'destroy'])->name('destroy');
         });
     });
-    
+
     // Debt Settings
     Route::prefix('debt-settings')->name('admin.debt-settings.')->group(function () {
         Route::get('/', [DebtSettingController::class, 'index'])->name('index');
@@ -206,17 +216,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     });
 
     // Terms & Conditions Management
-    Route::get('/terms', [App\Http\Controllers\Admin\TermAndConditionController::class, 'edit'])->name('admin.terms.edit');
-    Route::put('/terms', [App\Http\Controllers\Admin\TermAndConditionController::class, 'update'])->name('admin.terms.update');
+    Route::get('/terms', [TermAndConditionController::class, 'edit'])->name('admin.terms.edit');
+    Route::put('/terms', [TermAndConditionController::class, 'update'])->name('admin.terms.update');
 
     // Maintenance Management
     Route::prefix('maintenance')->name('admin.maintenance.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\MaintenanceController::class, 'index'])->name('index');
-        Route::post('/toggle', [\App\Http\Controllers\Admin\MaintenanceController::class, 'toggle'])->name('toggle');
-        Route::get('/history', [\App\Http\Controllers\Admin\MaintenanceController::class, 'history'])->name('history');
-        Route::get('/broadcast', [\App\Http\Controllers\Admin\MaintenanceController::class, 'broadcast'])->name('broadcast');
-        Route::post('/broadcast', [\App\Http\Controllers\Admin\MaintenanceController::class, 'sendBroadcast'])->name('broadcast.send');
-        Route::delete('/session/{sessionId}', [\App\Http\Controllers\Admin\MaintenanceController::class, 'terminateSession'])->name('session.terminate');
+        Route::get('/', [MaintenanceController::class, 'index'])->name('index');
+        Route::post('/toggle', [MaintenanceController::class, 'toggle'])->name('toggle');
+        Route::get('/history', [MaintenanceController::class, 'history'])->name('history');
+        Route::get('/broadcast', [MaintenanceController::class, 'broadcast'])->name('broadcast');
+        Route::post('/broadcast', [MaintenanceController::class, 'sendBroadcast'])->name('broadcast.send');
+        Route::delete('/session/{sessionId}', [MaintenanceController::class, 'terminateSession'])->name('session.terminate');
     });
 
     // CPU Monitoring

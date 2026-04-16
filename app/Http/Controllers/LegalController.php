@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TermsAndCondition;
+
 class LegalController extends Controller
 {
     public function terms()
     {
-        $terms = \App\Models\TermsAndCondition::first();
+        $terms = TermsAndCondition::first();
 
         return view('legal.terms', compact('terms'));
     }

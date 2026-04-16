@@ -7,11 +7,13 @@ use App\Models\CashRegister;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Discount;
+use App\Models\OutletPaymentLink;
 use App\Models\Product;
 use App\Models\ResellerApplication;
 use App\Models\Sale;
 use App\Services\DiscountService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class PointOfSaleController extends Controller
@@ -55,7 +57,7 @@ class PointOfSaleController extends Controller
         $cartSummary = $this->calculateCartSummary($cart);
 
         // Fetch active outlet payment links
-        $outletPaymentLinks = \App\Models\OutletPaymentLink::where('outlet_id', $outletId)
+        $outletPaymentLinks = OutletPaymentLink::where('outlet_id', $outletId)
             ->where('is_active', true)
             ->with(['paymentMethod'])
             ->get();
@@ -924,7 +926,7 @@ class PointOfSaleController extends Controller
             // No auto discount found.
             // Check if we have a voucher applied. If so, don't just clear it blindly.
             if ($currentPlan) {
-                $currentDiscount = \App\Models\Discount::find($currentPlan['discount_id']);
+                $currentDiscount = Discount::find($currentPlan['discount_id']);
                 if ($currentDiscount && $currentDiscount->is_voucher) {
                     // It's a voucher. Re-validate it against new cart state.
                     $recheck = $this->discountService->calculateDiscountPlan(
@@ -1043,7 +1045,7 @@ class PointOfSaleController extends Controller
             try {
                 event(new NewProductionOrder($sale, 'kitchen-bell'));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Pusher error in PointOfSaleController@notifyKitchen: ' . $e->getMessage());
+                Log::error('Pusher error in PointOfSaleController@notifyKitchen: '.$e->getMessage());
             }
 
             return response()->json([

@@ -73,12 +73,12 @@ class ActivityLogController extends Controller
             // We use the existing command but with 0 days to backup everything
             Artisan::call('log:archive', [
                 '--days' => 0,
-                '--user-id' => auth()->id()
+                '--user-id' => auth()->id(),
             ]);
-            
+
             return back()->with('success', 'Log aktivitas berhasil di-backup ke format JSON dan dibersihkan dari database.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal melakukan backup: ' . $e->getMessage());
+            return back()->with('error', 'Gagal melakukan backup: '.$e->getMessage());
         }
     }
 
@@ -125,7 +125,7 @@ class ActivityLogController extends Controller
 
             return view('admin.activity-logs.view-archive', compact('backup', 'json'));
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal membaca file arsip: ' . $e->getMessage());
+            return back()->with('error', 'Gagal membaca file arsip: '.$e->getMessage());
         }
     }
 

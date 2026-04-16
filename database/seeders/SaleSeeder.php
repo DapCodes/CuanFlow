@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\Sale;
@@ -28,13 +29,15 @@ class SaleSeeder extends Seeder
             return;
         }
 
-        $outlet = \App\Models\Outlet::find($targetOutletId);
+        $outlet = Outlet::find($targetOutletId);
         $baseLat = $outlet->latitude ?? -6.2088;
         $baseLng = $outlet->longitude ?? 106.8456;
-        
+
         // Find other employees to make the map sidebar interesting
         $cashierIds = User::role(['kasir', 'produksi'])->where('outlet_id', $targetOutletId)->pluck('id')->toArray();
-        if (empty($cashierIds)) $cashierIds = [$adminId];
+        if (empty($cashierIds)) {
+            $cashierIds = [$adminId];
+        }
 
         DB::transaction(function () use ($products, $targetOutletId, $adminId, $baseLat, $baseLng, $cashierIds) {
             // Create 30-50 historical sales
@@ -43,7 +46,7 @@ class SaleSeeder extends Seeder
             for ($i = 0; $i < $saleCount; $i++) {
                 $daysAgo = rand(0, 5); // Recent sales
                 $saleDate = now()->subDays($daysAgo)->subHours(rand(0, 23))->subMinutes(rand(0, 59));
-                
+
                 // Randomly pick a cashier
                 $currentCashierId = $cashierIds[array_rand($cashierIds)];
 

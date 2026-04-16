@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
-use Illuminate\Http\Request;
 
 class AdvertisementController extends Controller
 {
@@ -19,7 +18,7 @@ class AdvertisementController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Berhasil mengambil semua data advertisement',
-            'data'    => $advertisements
+            'data' => $advertisements,
         ], 200);
     }
 
@@ -30,18 +29,18 @@ class AdvertisementController extends Controller
     {
         $advertisement = Advertisement::find($id);
 
-        if (!$advertisement) {
+        if (! $advertisement) {
             return response()->json([
                 'success' => false,
                 'message' => 'Advertisement tidak ditemukan',
-                'data'    => null
+                'data' => null,
             ], 404);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Berhasil mengambil data advertisement',
-            'data'    => $advertisement
+            'data' => $advertisement,
         ], 200);
     }
 }

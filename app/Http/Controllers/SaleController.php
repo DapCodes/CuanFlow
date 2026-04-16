@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductionOrderRefunded;
 use App\Models\CashRegister;
+use App\Models\Discount;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Sale;
@@ -493,7 +495,7 @@ class SaleController extends Controller
 
                     // Execute Decrements
                     foreach ($usageCounts as $dId => $amount) {
-                        $discount = \App\Models\Discount::find($dId);
+                        $discount = Discount::find($dId);
                         if ($discount) {
                             $discount->decrementUsage((int) $amount);
                         }
@@ -510,9 +512,9 @@ class SaleController extends Controller
             DB::commit();
 
             try {
-                event(new \App\Events\ProductionOrderRefunded($sale));
+                event(new ProductionOrderRefunded($sale));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Pusher error in SaleController@refund: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error('Pusher error in SaleController@refund: '.$e->getMessage());
             }
 
             return response()->json(['success' => true, 'message' => 'Refund berhasil. Stok telah dikembalikan.']);

@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendMaintenanceBroadcast;
 use App\Models\BroadcastMessage;
 use App\Models\Maintenance;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\MaintenanceBroadcastMail;
 use Illuminate\Support\Facades\Queue;
-use App\Jobs\SendMaintenanceBroadcast;
 
 class MaintenanceController extends Controller
 {
@@ -19,8 +17,8 @@ class MaintenanceController extends Controller
     {
         // Get active users (online based on last_seen_at)
         $onlineThreshold = now()->subMinutes(5);
-        
-        $activeUsers = User::role( 'owner') // role selain admin
+
+        $activeUsers = User::role('owner') // role selain admin
             ->where('last_seen_at', '>=', $onlineThreshold)
             ->with('roles')
             ->orderBy('last_seen_at', 'desc')
@@ -31,9 +29,10 @@ class MaintenanceController extends Controller
                     ->where('user_id', $user->id)
                     ->orderBy('last_activity', 'desc')
                     ->first();
-                    
+
                 $user->session_id = $session?->id;
                 $user->ip_address = $session?->ip_address;
+
                 return $user;
             });
 
@@ -51,6 +50,7 @@ class MaintenanceController extends Controller
                 'is_active' => false,
                 'ended_at' => now(),
             ]);
+
             return back()->with('success', 'Maintenance mode dimatikan.');
         }
 
@@ -73,6 +73,7 @@ class MaintenanceController extends Controller
     public function history()
     {
         $history = Maintenance::with('admin')->orderBy('created_at', 'desc')->paginate(10);
+
         return view('admin.maintenance.history', compact('history'));
     }
 
@@ -80,6 +81,7 @@ class MaintenanceController extends Controller
     {
         $owners = User::role('owner')->get();
         $broadcasts = BroadcastMessage::with('admin')->orderBy('created_at', 'desc')->paginate(10);
+
         return view('admin.maintenance.broadcast', compact('owners', 'broadcasts'));
     }
 
@@ -125,6 +127,7 @@ class MaintenanceController extends Controller
     public function terminateSession($sessionId)
     {
         DB::table('sessions')->where('id', $sessionId)->delete();
+
         return back()->with('success', 'Session user berhasil di-terminate.');
     }
 }

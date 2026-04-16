@@ -22,7 +22,7 @@ class ResellerApplication extends Model
 
     public function customer()
     {
-        return $this->belongsTo(\App\Models\Customer::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function outlet()

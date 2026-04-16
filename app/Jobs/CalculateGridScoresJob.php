@@ -22,7 +22,7 @@ class CalculateGridScoresJob implements ShouldQueue
     private bool $withAI;
 
     /**
-     * @param bool $withAI Whether to run AI classification after calculation
+     * @param  bool  $withAI  Whether to run AI classification after calculation
      */
     public function __construct(bool $withAI = true)
     {
@@ -46,6 +46,6 @@ class CalculateGridScoresJob implements ShouldQueue
 
     public function failed(\Throwable $exception): void
     {
-        Log::error("CalculateGridScoresJob: Failed — " . $exception->getMessage());
+        Log::error('CalculateGridScoresJob: Failed — '.$exception->getMessage());
     }
 }

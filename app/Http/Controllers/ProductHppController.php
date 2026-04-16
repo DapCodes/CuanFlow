@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use App\Models\HppCalculation;
-use App\Models\Purchase;
-use App\Models\PurchaseItem;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Models\HppCalculation;
 use App\Models\Product;
 use App\Models\ProductSalesTarget;
 use App\Models\ProductStock;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
 use App\Models\RawMaterial;
 use App\Models\Recipe;
 use App\Models\RecipeItem;
@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class ProductHppController extends Controller
 {
@@ -700,7 +701,7 @@ class ProductHppController extends Controller
             return response('')->header('Content-Type', 'image/png');
         }
 
-        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG;
+        $generator = new BarcodeGeneratorPNG;
 
         // Determine type: EAN-13 if 13 digits, otherwise Code 128
         $type = $generator::TYPE_CODE_128;
@@ -728,7 +729,7 @@ class ProductHppController extends Controller
             return back()->with('error', 'Produk tidak memiliki barcode.');
         }
 
-        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG;
+        $generator = new BarcodeGeneratorPNG;
 
         $type = $generator::TYPE_CODE_128;
         if (strlen($product->barcode) === 13 && ctype_digit($product->barcode)) {
@@ -861,7 +862,7 @@ class ProductHppController extends Controller
                 ->where('outlet_id', Auth::user()->outlet_id)
                 ->where('is_active', true)
                 ->get()
-                ->map(function (\App\Models\RawMaterial $rm) {
+                ->map(function (RawMaterial $rm) {
                     return [
                         'id' => $rm->id,
                         'name' => $rm->name,

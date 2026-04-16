@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\TrialVerificationRequest;
+use App\Models\UserSubscription;
 use App\Services\FeatureAccessService;
 use Closure;
 use Illuminate\Http\Request;
@@ -129,8 +131,8 @@ class CheckSubscription
         }
 
         // Check for rejected trial request if status is cancelled or no_subscription
-        if (in_array($reason, [\App\Services\FeatureAccessService::STATUS_CANCELLED, \App\Services\FeatureAccessService::STATUS_NO_SUBSCRIPTION])) {
-            $rejectedTrial = \App\Models\TrialVerificationRequest::where('user_id', $user->id)
+        if (in_array($reason, [FeatureAccessService::STATUS_CANCELLED, FeatureAccessService::STATUS_NO_SUBSCRIPTION])) {
+            $rejectedTrial = TrialVerificationRequest::where('user_id', $user->id)
                 ->where('status', 'rejected')
                 ->latest()
                 ->first();
@@ -256,9 +258,9 @@ class CheckSubscription
         // Get the latest subscription to check grace period
         $subscription = $user->subscriptions()
             ->whereIn('status', [
-                \App\Models\UserSubscription::STATUS_EXPIRED,
-                \App\Models\UserSubscription::STATUS_ACTIVE,
-                \App\Models\UserSubscription::STATUS_TRIAL,
+                UserSubscription::STATUS_EXPIRED,
+                UserSubscription::STATUS_ACTIVE,
+                UserSubscription::STATUS_TRIAL,
             ])
             ->latest()
             ->first();

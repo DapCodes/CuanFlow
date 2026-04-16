@@ -11,6 +11,7 @@ class DebtSettingController extends Controller
     public function index()
     {
         $lateFeePercentage = Setting::getValue('debt', 'late_fee_percentage', 5);
+
         return view('admin.debt.settings', compact('lateFeePercentage'));
     }
 

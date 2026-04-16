@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\Auth\EmailVerifyController;
 use App\Http\Controllers\Api\Auth\GoogleAuthController;
 use App\Http\Controllers\Api\Auth\LoginController;
@@ -9,9 +10,11 @@ use App\Http\Controllers\Api\Auth\ResendVerificationController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\DebtPaymentApiController;
 use App\Http\Controllers\Api\HeatmapController;
+use App\Http\Controllers\Api\MobileCashFlowController;
 use App\Http\Controllers\Api\OutletApiController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ResellerApplicationApiController;
-use App\Http\Controllers\Api\AdvertisementController;
+use App\Http\Controllers\Api\VoucherClaimController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\TelegramController;
 use Illuminate\Support\Facades\Route;
@@ -30,8 +33,8 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [LogoutController::class, 'logout']);
-        Route::get('/profile', [\App\Http\Controllers\Api\ProfileController::class, 'show']);
-        Route::post('/profile', [\App\Http\Controllers\Api\ProfileController::class, 'update']);
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::post('/profile', [ProfileController::class, 'update']);
         Route::post('/email/verification-notification', [ResendVerificationController::class, 'send'])
             ->middleware('throttle:6,1')
             ->name('api.verification.send');
@@ -54,18 +57,18 @@ Route::prefix('v1')->group(function () {
         Route::post('/debts/{id}/pay', [DebtPaymentApiController::class, 'pay']);
         Route::post('/debts/{id}/midtrans-token', [DebtPaymentApiController::class, 'createMidtransToken']);
 
-        Route::post('/vouchers/claim', [\App\Http\Controllers\Api\VoucherClaimController::class, 'claim']);
-        Route::get('/vouchers/my-vouchers', [\App\Http\Controllers\Api\VoucherClaimController::class, 'myVouchers']);
+        Route::post('/vouchers/claim', [VoucherClaimController::class, 'claim']);
+        Route::get('/vouchers/my-vouchers', [VoucherClaimController::class, 'myVouchers']);
 
         // Mobile Cash Flow
-        Route::apiResource('mobile-cash-flow', \App\Http\Controllers\Api\MobileCashFlowController::class);
+        Route::apiResource('mobile-cash-flow', MobileCashFlowController::class);
 
         // Telegram Account Linking
         Route::get('/telegram/token', [TelegramController::class, 'generateLinkToken']);
     });
 
     // Voucher Claims
-    Route::get('/vouchers/available', [\App\Http\Controllers\Api\VoucherClaimController::class, 'availableVouchers']);
+    Route::get('/vouchers/available', [VoucherClaimController::class, 'availableVouchers']);
 
     Route::get('/outlets', [OutletApiController::class, 'index']);
     Route::get('/outlets/{outlet}', [OutletApiController::class, 'show']);
@@ -100,4 +103,3 @@ Route::prefix('telegram')->group(function () {
     Route::get('/webhook-info', [TelegramController::class, 'getWebhookInfo'])
         ->name('telegram.webhook-info');
 });
-

@@ -27,8 +27,8 @@ class FetchOsmDataJob implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param string     $area       Predefined area name (e.g., 'jakarta')
-     * @param array|null $customBbox Custom bounding box [south, west, north, east]
+     * @param  string  $area  Predefined area name (e.g., 'jakarta')
+     * @param  array|null  $customBbox  Custom bounding box [south, west, north, east]
      */
     public function __construct(string $area = 'jakarta', ?array $customBbox = null)
     {
@@ -46,11 +46,11 @@ class FetchOsmDataJob implements ShouldQueue
             $result = $service->fetchAndStore($this->area);
         }
 
-        Log::info("FetchOsmDataJob: Complete", $result);
+        Log::info('FetchOsmDataJob: Complete', $result);
     }
 
     public function failed(\Throwable $exception): void
     {
-        Log::error("FetchOsmDataJob: Failed — " . $exception->getMessage());
+        Log::error('FetchOsmDataJob: Failed — '.$exception->getMessage());
     }
 }

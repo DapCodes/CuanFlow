@@ -18,9 +18,9 @@ class SubscriptionPlanController extends Controller
         // Search
         if (request('search')) {
             $search = request('search');
-            $query->whereHas('tier', function($q) use ($search) {
+            $query->whereHas('tier', function ($q) use ($search) {
                 $q->where('display_name', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%");
+                    ->orWhere('name', 'like', "%{$search}%");
             });
         }
 
@@ -30,7 +30,7 @@ class SubscriptionPlanController extends Controller
         $stats = [
             'total_plans' => SubscriptionPlan::count(),
             'active_plans' => SubscriptionPlan::where('is_active', true)->count(),
-            'max_discount' => (int)SubscriptionPlan::max('discount_percentage'),
+            'max_discount' => (int) SubscriptionPlan::max('discount_percentage'),
             'avg_price' => round(SubscriptionPlan::avg('price') ?? 0, 0),
         ];
 

@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Customer;
+use Faker\Factory;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CustomerDummySeeder extends Seeder
 {
@@ -11,13 +14,13 @@ class CustomerDummySeeder extends Seeder
      */
     public function run(): void
     {
-        $faker = \Faker\Factory::create('id_ID');
+        $faker = Factory::create('id_ID');
 
         for ($i = 0; $i < 100; $i++) {
             $type = $faker->randomElement(['regular', 'reseller', 'vip']);
 
-            \App\Models\Customer::create([
-                'code' => 'CUST-'.strtoupper(\Illuminate\Support\Str::random(8)),
+            Customer::create([
+                'code' => 'CUST-'.strtoupper(Str::random(8)),
                 'name' => $faker->name,
                 'phone' => $faker->unique()->phoneNumber,
                 'email' => $faker->unique()->email,

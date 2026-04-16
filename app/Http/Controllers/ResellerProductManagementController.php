@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ResellerProduct;
 use App\Models\Customer;
+use App\Models\Product;
+use App\Models\ProductStock;
+use App\Models\ResellerProduct;
+use App\Models\StockMovement;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ResellerProductManagementController extends Controller
 {
@@ -15,13 +20,13 @@ class ResellerProductManagementController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        
+
         // CHECK if user is a reseller
         $customer = Customer::where('email', $user->email)
             ->where('type', 'reseller')
             ->first();
 
-        if (!$customer || !$user->outlet_id) {
+        if (! $customer || ! $user->outlet_id) {
             return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses ke fitur Produk Reseller.');
         }
 
@@ -31,11 +36,11 @@ class ResellerProductManagementController extends Controller
         // Filter search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhereHas('sourceOutlet', function($sq) use ($search) {
-                      $sq->where('name', 'LIKE', "%{$search}%");
-                  });
+                    ->orWhereHas('sourceOutlet', function ($sq) use ($search) {
+                        $sq->where('name', 'LIKE', "%{$search}%");
+                    });
             });
         }
 
@@ -83,6 +88,7 @@ class ResellerProductManagementController extends Controller
     public function show(ResellerProduct $resellerProduct)
     {
         $this->authorizeAccess($resellerProduct);
+
         return view('main.reseller_products.show', compact('resellerProduct'));
     }
 
@@ -92,6 +98,7 @@ class ResellerProductManagementController extends Controller
     public function edit(ResellerProduct $resellerProduct)
     {
         $this->authorizeAccess($resellerProduct);
+
         return view('main.reseller_products.edit', compact('resellerProduct'));
     }
 
@@ -101,7 +108,7 @@ class ResellerProductManagementController extends Controller
     public function update(Request $request, ResellerProduct $resellerProduct)
     {
         $this->authorizeAccess($resellerProduct);
-        
+
         $request->validate([
             'selling_price' => 'required|numeric|min:0',
             'status' => 'required|in:accepted,rejected,pending',
@@ -117,13 +124,13 @@ class ResellerProductManagementController extends Controller
             $sourceOutlet = $resellerProduct->sourceOutlet;
 
             // 1. Automate Supplier creation from Source Outlet
-            $supplier = \App\Models\Supplier::updateOrCreate(
+            $supplier = Supplier::updateOrCreate(
                 [
                     'outlet_id' => $user->outlet_id,
                     'name' => $sourceOutlet->name,
                 ],
                 [
-                    'code' => 'SUP-' . strtoupper(substr($sourceOutlet->name, 0, 3)) . '-' . $sourceOutlet->id,
+                    'code' => 'SUP-'.strtoupper(substr($sourceOutlet->name, 0, 3)).'-'.$sourceOutlet->id,
                     'contact_person' => $sourceOutlet->name,
                     'phone' => $sourceOutlet->phone,
                     'email' => $sourceOutlet->email,
@@ -133,13 +140,13 @@ class ResellerProductManagementController extends Controller
             );
 
             // 2. Automate Product creation
-            $product = \App\Models\Product::create([
+            $product = Product::create([
                 'outlet_id' => $user->outlet_id,
                 'supplier_id' => $supplier->id,
                 'category_id' => $resellerProduct->sourceProduct?->category_id,
                 'unit_id' => $resellerProduct->sourceProduct?->unit_id,
                 'name' => $resellerProduct->name,
-                'code' => 'PROD-RES-' . strtoupper(\Illuminate\Support\Str::random(6)),
+                'code' => 'PROD-RES-'.strtoupper(Str::random(6)),
                 'hpp' => $request->selling_price,
                 'selling_price' => $request->selling_price,
                 'is_stock' => true,
@@ -149,24 +156,24 @@ class ResellerProductManagementController extends Controller
             ]);
 
             // 3. Initialize Product Stock
-            $productStock = \App\Models\ProductStock::create([
+            $productStock = ProductStock::create([
                 'product_id' => $product->id,
                 'outlet_id' => $user->outlet_id,
                 'quantity' => $resellerProduct->stock,
             ]);
 
             // 4. Record Stock Movement
-            \App\Models\StockMovement::create([
+            StockMovement::create([
                 'outlet_id' => $user->outlet_id,
-                'stockable_type' => \App\Models\Product::class,
+                'stockable_type' => Product::class,
                 'stockable_id' => $product->id,
                 'type' => 'in',
                 'quantity' => $resellerProduct->stock,
                 'quantity_before' => 0,
                 'quantity_after' => $resellerProduct->stock,
                 'unit_price' => $resellerProduct->purchase_price,
-                'notes' => 'Penerimaan stok dari Reseller Sync (' . $sourceOutlet->name . ')',
-                'reference_type' => \App\Models\ResellerProduct::class,
+                'notes' => 'Penerimaan stok dari Reseller Sync ('.$sourceOutlet->name.')',
+                'reference_type' => ResellerProduct::class,
                 'reference_id' => $resellerProduct->id,
                 'created_by' => $user->id,
                 'expired_at' => $request->expired_at,
@@ -192,6 +199,7 @@ class ResellerProductManagementController extends Controller
     {
         $this->authorizeAccess($resellerProduct);
         $resellerProduct->delete();
+
         return redirect()->route('reseller-products.index')->with('success', 'Produk berhasil dihapus.');
     }
 

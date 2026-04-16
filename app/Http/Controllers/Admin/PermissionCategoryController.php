@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PermissionCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
 
 class PermissionCategoryController extends Controller
 {
@@ -26,7 +27,7 @@ class PermissionCategoryController extends Controller
         // Stats
         $stats = [
             'total_categories' => PermissionCategory::count(),
-            'total_assigned_permissions' => \Spatie\Permission\Models\Permission::whereNotNull('permission_category_id')->count(),
+            'total_assigned_permissions' => Permission::whereNotNull('permission_category_id')->count(),
             'empty_categories' => PermissionCategory::doesntHave('permissions')->count(),
             'recent' => PermissionCategory::where('created_at', '>=', now()->subDays(7))->count(),
         ];

@@ -49,6 +49,7 @@ class BackupCleanCommand extends Command
 
         if ($backups->isEmpty()) {
             $this->info('📭 No backups found. Nothing to clean.');
+
             return self::SUCCESS;
         }
 
@@ -85,7 +86,7 @@ class BackupCleanCommand extends Command
         $toKeep = $toKeep->unique();
 
         // Determine which backups to delete
-        $toDelete = $backups->filter(fn ($b) => !$toKeep->contains($b->id));
+        $toDelete = $backups->filter(fn ($b) => ! $toKeep->contains($b->id));
 
         // Also include failed backups older than daily retention
         $failedToDelete = BackupLog::where('status', 'failed')
@@ -96,6 +97,7 @@ class BackupCleanCommand extends Command
 
         if ($allToDelete->isEmpty()) {
             $this->info('✨ All backups are within retention policy. Nothing to clean.');
+
             return self::SUCCESS;
         }
 
@@ -109,7 +111,7 @@ class BackupCleanCommand extends Command
         foreach ($allToDelete as $backup) {
             $this->line("  🗑  {$backup->filename} ({$backup->getSizeForHumans()}) - {$backup->created_at->format('Y-m-d H:i')}");
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 // Delete from Google Drive if applicable
                 if ($backup->google_drive_file_id) {
                     try {

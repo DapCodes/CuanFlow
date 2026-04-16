@@ -35,6 +35,6 @@ class BusinessPoint extends Model
     public function scopeWithinBounds($query, float $minLat, float $maxLat, float $minLng, float $maxLng)
     {
         return $query->whereBetween('latitude', [$minLat, $maxLat])
-                     ->whereBetween('longitude', [$minLng, $maxLng]);
+            ->whereBetween('longitude', [$minLng, $maxLng]);
     }
 }

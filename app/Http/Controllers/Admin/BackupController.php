@@ -65,7 +65,7 @@ class BackupController extends Controller
     {
         $type = $request->input('type', 'full');
 
-        if (!in_array($type, ['full', 'database', 'files'])) {
+        if (! in_array($type, ['full', 'database', 'files'])) {
             return back()->with('error', 'Tipe backup tidak valid.');
         }
 
@@ -134,7 +134,7 @@ class BackupController extends Controller
 
                 $downloaded = $this->driveService->download($backup->google_drive_file_id, $tempPath);
 
-                if (!$downloaded) {
+                if (! $downloaded) {
                     return back()->with('error', 'Gagal mengunduh dari Google Drive.');
                 }
 
@@ -181,7 +181,7 @@ class BackupController extends Controller
 
         // Extract the original type from the backup type field
         $type = str_replace('gdrive_', '', $backup->type);
-        if (!in_array($type, ['full', 'database', 'files'])) {
+        if (! in_array($type, ['full', 'database', 'files'])) {
             $type = 'full';
         }
 
@@ -205,6 +205,6 @@ class BackupController extends Controller
             $i++;
         }
 
-        return round($bytes, 2) . ' ' . $units[$i];
+        return round($bytes, 2).' '.$units[$i];
     }
 }

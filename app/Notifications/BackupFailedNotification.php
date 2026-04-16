@@ -33,7 +33,7 @@ class BackupFailedNotification extends Notification
             ->line("Backup tipe **{$this->backupType}** gagal dijalankan.")
             ->line("**Error:** {$this->errorMessage}")
             ->line('Silakan periksa log aplikasi untuk detail lengkap.')
-            ->line("📅 **Waktu:** " . now()->format('d M Y H:i:s'))
+            ->line('📅 **Waktu:** '.now()->format('d M Y H:i:s'))
             ->action('Buka Admin Panel', url('/admin/backups'))
             ->salutation('Salam, Sistem Backup CuanFlow');
     }

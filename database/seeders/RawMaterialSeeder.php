@@ -231,7 +231,7 @@ class RawMaterialSeeder extends Seeder
             });
 
             echo "✓ Seeder bahan baku untuk Outlet ID {$targetOutletId} berhasil dijalankan!\n";
-            echo "Total bahan baku: ".count($rawMaterialRecords)."\n";
+            echo 'Total bahan baku: '.count($rawMaterialRecords)."\n";
         }
     }
 }

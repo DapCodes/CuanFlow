@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class CustomerDiscount extends Model
 {
@@ -42,7 +43,7 @@ class CustomerDiscount extends Model
         $initials = self::getOutletInitials($outlet->name);
 
         do {
-            $random = strtoupper(\Illuminate\Support\Str::random(6));
+            $random = strtoupper(Str::random(6));
             $code = "{$initials}-{$random}";
         } while (self::where('secret_code', $code)->exists());
 

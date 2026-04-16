@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\SubscriptionSetting;
 use App\Models\TrialVerificationRequest;
 use Illuminate\Http\Request;
 
@@ -21,13 +22,13 @@ class TrialVerificationController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('outlet_name', 'like', "%{$search}%")
-                  ->orWhere('business_type', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($qu) use ($search) {
-                      $qu->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                  });
+                    ->orWhere('business_type', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($qu) use ($search) {
+                        $qu->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -74,7 +75,7 @@ class TrialVerificationController extends Controller
         // If user has any subscription, activate it as trial (updates existing data)
         if ($latestSubscription) {
             $latestSubscription->startTrial(
-                \App\Models\SubscriptionSetting::getTrialDays()
+                SubscriptionSetting::getTrialDays()
             );
         } else {
             // Create new trial if absolutely no subscription exists (fallback)
@@ -83,7 +84,7 @@ class TrialVerificationController extends Controller
                 'status' => 'trial',
                 'is_trial' => true,
                 'started_at' => now(),
-                'trial_ends_at' => now()->addDays(\App\Models\SubscriptionSetting::getTrialDays()),
+                'trial_ends_at' => now()->addDays(SubscriptionSetting::getTrialDays()),
             ]);
         }
 

@@ -15,9 +15,9 @@ use App\Http\Controllers\FlowLandingController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\LegalController;
-use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\Main\StockTransferController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OpportunityMapController;
 use App\Http\Controllers\OutletInformationController;
 use App\Http\Controllers\OutletPaymentLinkController;
 use App\Http\Controllers\OutletPolicyController;
@@ -33,18 +33,26 @@ use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RegisterOutletController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ResellerApplicationController;
+use App\Http\Controllers\ResellerProductManagementController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\SaleMapController;
 use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\StockNotificationController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\SubscriptionController;
-use App\Http\Controllers\SaleMapController;
+use App\Http\Controllers\SubscriptionManagementController;
 use App\Http\Controllers\SubscriptionPaymentController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskLabelController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\WithdrawController;
-use App\Http\Controllers\OpportunityMapController;
+use App\Http\Middleware\TriggerInsightOnOnline;
+use App\Models\Blog;
+use App\Models\Career;
+use App\Models\Sale;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // =========================================================================
@@ -56,17 +64,17 @@ Route::get('/', function () {
 });
 
 Route::get('/welcome', function () {
-    $totalUsersCount = \App\Models\User::count();
-    $latestOwners = \App\Models\User::whereHas('roles', function($q) {
-            $q->where('name', 'owner');
-        })
+    $totalUsersCount = User::count();
+    $latestOwners = User::whereHas('roles', function ($q) {
+        $q->where('name', 'owner');
+    })
         ->latest()
         ->take(5)
         ->get();
-        
+
     return view('landingpage.index', [
         'totalUsersCount' => $totalUsersCount,
-        'latestOwners' => $latestOwners
+        'latestOwners' => $latestOwners,
     ]);
 })->name('welcome');
 
@@ -75,23 +83,27 @@ Route::get('/about', function () {
 })->name('about');
 
 Route::get('/career', function () {
-    $careers = \App\Models\Career::where('is_active', true)->orderBy('created_at', 'desc')->get();
+    $careers = Career::where('is_active', true)->orderBy('created_at', 'desc')->get();
+
     return view('landingpage.career', compact('careers'));
 })->name('career');
 
 Route::get('/career/{slug}', function ($slug) {
-    $career = \App\Models\Career::where('slug', $slug)->where('is_active', true)->firstOrFail();
+    $career = Career::where('slug', $slug)->where('is_active', true)->firstOrFail();
+
     return view('landingpage.career-show', compact('career'));
 })->name('career.show');
 
 Route::get('/blog', function () {
-    $blogs = \App\Models\Blog::where('is_published', true)->orderBy('created_at', 'desc')->get();
+    $blogs = Blog::where('is_published', true)->orderBy('created_at', 'desc')->get();
+
     return view('landingpage.blog', compact('blogs'));
 })->name('blog');
 
 Route::get('/blog/{slug}', function ($slug) {
-    $blog = \App\Models\Blog::where('slug', $slug)->where('is_published', true)->firstOrFail();
+    $blog = Blog::where('slug', $slug)->where('is_published', true)->firstOrFail();
     $blog->increment('views'); // Counter increase for views tracking
+
     return view('landingpage.blog-show', compact('blog'));
 })->name('blog.show');
 
@@ -99,12 +111,12 @@ Route::get('/contact', function () {
     return view('landingpage.contact');
 })->name('contact');
 
-Route::get('/run-queue', function (\Illuminate\Http\Request $request) {
+Route::get('/run-queue', function (Request $request) {
     if ($request->key !== 'RAHASIA123') {
         abort(403);
     }
 
-    \Artisan::call('queue:work', [
+    Artisan::call('queue:work', [
         '--stop-when-empty' => true,
         '--tries' => 3,
         '--sleep' => 3,
@@ -179,22 +191,22 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect', '
         })->name('destroy-onboarding-flag');
 
         // Manage Subscription
-        Route::get('/manage', [\App\Http\Controllers\SubscriptionManagementController::class, 'index'])->name('manage');
-        Route::post('/manage/add-duration', [\App\Http\Controllers\SubscriptionManagementController::class, 'addDuration'])->name('manage.add-duration');
-        Route::post('/manage/upgrade', [\App\Http\Controllers\SubscriptionManagementController::class, 'upgrade'])->name('manage.upgrade');
+        Route::get('/manage', [SubscriptionManagementController::class, 'index'])->name('manage');
+        Route::post('/manage/add-duration', [SubscriptionManagementController::class, 'addDuration'])->name('manage.add-duration');
+        Route::post('/manage/upgrade', [SubscriptionManagementController::class, 'upgrade'])->name('manage.upgrade');
     });
 
     // ---------------------------------------------------------------------
     // Dashboard
     // ---------------------------------------------------------------------
     Route::get('/dashboard', [MenuController::class, 'index'])
-        ->middleware([\App\Http\Middleware\TriggerInsightOnOnline::class])
+        ->middleware([TriggerInsightOnOnline::class])
         ->name('dashboard');
 
     // Stock Notifications
-    Route::get('/stock-notifications', [\App\Http\Controllers\StockNotificationController::class, 'index'])->name('stock-notifications.index');
-    Route::post('/stock-notifications/{id}/read', [\App\Http\Controllers\StockNotificationController::class, 'markAsRead'])->name('stock-notifications.read');
-    Route::post('/stock-notifications/read-all', [\App\Http\Controllers\StockNotificationController::class, 'markAllAsRead'])->name('stock-notifications.read-all');
+    Route::get('/stock-notifications', [StockNotificationController::class, 'index'])->name('stock-notifications.index');
+    Route::post('/stock-notifications/{id}/read', [StockNotificationController::class, 'markAsRead'])->name('stock-notifications.read');
+    Route::post('/stock-notifications/read-all', [StockNotificationController::class, 'markAllAsRead'])->name('stock-notifications.read-all');
 
     // ---------------------------------------------------------------------
     // User Profile
@@ -386,7 +398,7 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect', '
     });
     Route::get('/api/sale/{sale}', [SaleController::class, 'showJson'])->name('sale.api.show');
     Route::get('/api/sale/{id}', function ($id) { // Helper route for JSON
-        return response()->json(\App\Models\Sale::with('items')->findOrFail($id));
+        return response()->json(Sale::with('items')->findOrFail($id));
     });
 
     // Receipts
@@ -609,6 +621,6 @@ Route::middleware(['auth', 'verified', 'subscription.check', 'admin.redirect', '
     Route::resource('reseller-applications', ResellerApplicationController::class)->only(['index', 'store', 'update'])->middleware('feature.access:reseller_app');
 
     // Reseller Product Management (New Feature)
-    Route::resource('reseller-products', \App\Http\Controllers\ResellerProductManagementController::class);
+    Route::resource('reseller-products', ResellerProductManagementController::class);
 
 });

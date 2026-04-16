@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\TermsAndCondition;
 use Illuminate\Database\Seeder;
 
 class TermsAndConditionSeeder extends Seeder
@@ -51,8 +52,8 @@ class TermsAndConditionSeeder extends Seeder
             <p>Jika Anda memiliki pertanyaan mengenai Syarat dan Ketentuan ini, silakan hubungi tim dukungan kami melalui pusat bantuan di dalam aplikasi.</p>
         ';
 
-        \App\Models\TermsAndCondition::truncate();
-        \App\Models\TermsAndCondition::create([
+        TermsAndCondition::truncate();
+        TermsAndCondition::create([
             'content' => $content,
         ]);
     }

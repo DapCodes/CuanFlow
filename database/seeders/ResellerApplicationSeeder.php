@@ -2,7 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Customer;
+use App\Models\ResellerApplication;
+use Faker\Factory;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class ResellerApplicationSeeder extends Seeder
 {
@@ -11,15 +15,15 @@ class ResellerApplicationSeeder extends Seeder
      */
     public function run(): void
     {
-        $faker = \Faker\Factory::create('id_ID');
+        $faker = Factory::create('id_ID');
 
         $outletId = 1;
 
         // 1. Create Customers who will be APPROVED RESELLERS
         // validasi: customer dengan type reseller harus punya aplikasi approved
         for ($i = 0; $i < 5; $i++) {
-            $customer = \App\Models\Customer::create([
-                'code' => 'CUST-'.strtoupper(\Illuminate\Support\Str::random(8)),
+            $customer = Customer::create([
+                'code' => 'CUST-'.strtoupper(Str::random(8)),
                 'name' => $faker->name,
                 'phone' => $faker->unique()->phoneNumber,
                 'email' => $faker->unique()->email,
@@ -31,7 +35,7 @@ class ResellerApplicationSeeder extends Seeder
                 'is_active' => true,
             ]);
 
-            \App\Models\ResellerApplication::create([
+            ResellerApplication::create([
                 'customer_id' => $customer->id,
                 'outlet_id' => $outletId,
                 'description' => $faker->paragraph,
@@ -46,8 +50,8 @@ class ResellerApplicationSeeder extends Seeder
         // 2. Create Customers who are PENDING/REJECTED (Type: regular)
         // validasi: customer type regular yg sedang apply (pending/rejected)
         for ($i = 0; $i < 10; $i++) {
-            $customer = \App\Models\Customer::create([
-                'code' => 'CUST-'.strtoupper(\Illuminate\Support\Str::random(8)),
+            $customer = Customer::create([
+                'code' => 'CUST-'.strtoupper(Str::random(8)),
                 'name' => $faker->name,
                 'phone' => $faker->unique()->phoneNumber,
                 'email' => $faker->unique()->email,
@@ -61,7 +65,7 @@ class ResellerApplicationSeeder extends Seeder
 
             $status = $faker->randomElement(['pending', 'rejected']);
 
-            \App\Models\ResellerApplication::create([
+            ResellerApplication::create([
                 'customer_id' => $customer->id,
                 'outlet_id' => $outletId,
                 'description' => $faker->paragraph,

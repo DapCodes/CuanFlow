@@ -37,8 +37,9 @@ class GridCalculationService
             MAX(longitude) as max_lng
         ')->first();
 
-        if (!$bounds->min_lat) {
+        if (! $bounds->min_lat) {
             Log::warning('GridCalculation: No business points found');
+
             return ['grids_created' => 0, 'grids_with_data' => 0];
         }
 
@@ -60,7 +61,7 @@ class GridCalculationService
         // Generate grid centers
         $gridCenters = $this->generateGridCenters($minLat, $maxLat, $minLng, $maxLng);
 
-        Log::info('GridCalculation: Generated ' . count($gridCenters) . ' grid cells');
+        Log::info('GridCalculation: Generated '.count($gridCenters).' grid cells');
 
         // Clear existing grid data for this area
         GridArea::whereBetween('center_lat', [$minLat, $maxLat])
@@ -92,7 +93,7 @@ class GridCalculationService
             GridArea::insert($chunk);
         }
 
-        Log::info("GridCalculation: Complete — {$gridsWithData} grids with data out of " . count($gridCenters));
+        Log::info("GridCalculation: Complete — {$gridsWithData} grids with data out of ".count($gridCenters));
 
         return [
             'grids_created' => count($gridCenters),
@@ -144,9 +145,9 @@ class GridCalculationService
 
         // Get all business points within the bounding box (fast approximate filter)
         $nearbyBusinesses = BusinessPoint::whereBetween('latitude', [
-                $centerLat - $latRange,
-                $centerLat + $latRange,
-            ])
+            $centerLat - $latRange,
+            $centerLat + $latRange,
+        ])
             ->whereBetween('longitude', [
                 $centerLng - $lngRange,
                 $centerLng + $lngRange,

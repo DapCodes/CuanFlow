@@ -218,7 +218,7 @@ class GoogleAuthController extends Controller
             ->first();
 
         if ($existingEmailUser) {
-            return response()->json(['message' => 'Email dari akun Google ini (' . $request->email . ') sudah terdaftar pada pengguna lain.'], 422);
+            return response()->json(['message' => 'Email dari akun Google ini ('.$request->email.') sudah terdaftar pada pengguna lain.'], 422);
         }
 
         try {
@@ -252,6 +252,7 @@ class GoogleAuthController extends Controller
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => 'Gagal menghubungkan akun Google.',
                 'error' => $e->getMessage(),

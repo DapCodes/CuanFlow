@@ -3,25 +3,27 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\TermsAndCondition;
+use Illuminate\Http\Request;
 
 class TermAndConditionController extends Controller
 {
     public function edit()
     {
-        $terms = \App\Models\TermsAndCondition::first();
+        $terms = TermsAndCondition::first();
 
         return view('admin.terms.edit', compact('terms'));
     }
 
-    public function update(\Illuminate\Http\Request $request)
+    public function update(Request $request)
     {
         $request->validate([
             'content' => 'required',
         ]);
 
-        $terms = \App\Models\TermsAndCondition::first();
+        $terms = TermsAndCondition::first();
         if (! $terms) {
-            $terms = new \App\Models\TermsAndCondition;
+            $terms = new TermsAndCondition;
         }
         $terms->content = $request->content;
         $terms->save();

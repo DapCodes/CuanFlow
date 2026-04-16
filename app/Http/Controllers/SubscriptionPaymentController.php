@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PaymentTransaction;
 use App\Models\SubscriptionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -47,7 +48,7 @@ class SubscriptionPaymentController extends Controller
         $total = $amount + $tax;
 
         // Store Transaction
-        \App\Models\PaymentTransaction::create([
+        PaymentTransaction::create([
             'user_id' => $user->id,
             'plan_id' => $plan->id,
             'tier_id' => $plan->tier_id,

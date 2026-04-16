@@ -2,8 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Outlet;
 use App\Models\Supplier;
-use Illuminate\Database\Seeder; // Pastikan model Supplier sudah ada
+use Illuminate\Database\Seeder;
+
+ // Pastikan model Supplier sudah ada
 
 class SupplierSeeder extends Seeder
 {
@@ -111,7 +114,7 @@ class SupplierSeeder extends Seeder
             ],
         ];
 
-        $outlet = \App\Models\Outlet::first();
+        $outlet = Outlet::first();
 
         foreach ($suppliers as $data) {
             Supplier::create(array_merge($data, [

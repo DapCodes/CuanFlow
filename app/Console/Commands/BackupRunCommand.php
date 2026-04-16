@@ -38,8 +38,9 @@ class BackupRunCommand extends Command
         $type = $this->option('type');
         $sync = $this->option('sync');
 
-        if (!in_array($type, ['full', 'database', 'files'])) {
+        if (! in_array($type, ['full', 'database', 'files'])) {
             $this->error("Invalid backup type: {$type}. Use: full, database, or files");
+
             return self::FAILURE;
         }
 
@@ -56,17 +57,19 @@ class BackupRunCommand extends Command
                 );
 
                 $this->info('✅ Backup completed successfully!');
+
                 return self::SUCCESS;
 
             } catch (\Exception $e) {
                 $this->error("❌ Backup failed: {$e->getMessage()}");
+
                 return self::FAILURE;
             }
         }
 
         // Dispatch to queue
         RunBackupJob::dispatch($type);
-        $this->info("✅ Backup job dispatched to queue. Monitor progress in admin panel.");
+        $this->info('✅ Backup job dispatched to queue. Monitor progress in admin panel.');
 
         return self::SUCCESS;
     }

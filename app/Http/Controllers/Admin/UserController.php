@@ -19,9 +19,9 @@ class UserController extends Controller
         // Search
         if (request('search')) {
             $search = request('search');
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -123,7 +123,7 @@ class UserController extends Controller
         ];
 
         if ($request->boolean('is_verified')) {
-            if (!$user->email_verified_at) {
+            if (! $user->email_verified_at) {
                 $data['email_verified_at'] = now();
             }
         } else {

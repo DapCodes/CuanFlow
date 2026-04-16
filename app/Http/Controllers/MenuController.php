@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\AiInsight;
+use App\Models\CashRegister;
+use App\Models\Customer;
 use App\Services\StockNotificationService;
 
 class MenuController extends Controller
@@ -25,7 +27,7 @@ class MenuController extends Controller
 
         // Cek apakah ada sesi POS yang sedang buka
         $isPosOpen = $user->outlet_id
-            ? \App\Models\CashRegister::where('outlet_id', $user->outlet_id)
+            ? CashRegister::where('outlet_id', $user->outlet_id)
                 ->where('user_id', $user->id)
                 ->where('status', 'open')
                 ->exists()
@@ -42,7 +44,7 @@ class MenuController extends Controller
             : collect();
 
         $isReseller = $user->email
-            ? \App\Models\Customer::where('email', $user->email)->where('type', 'reseller')->exists()
+            ? Customer::where('email', $user->email)->where('type', 'reseller')->exists()
             : false;
 
         return view('dashboard', compact('unreadInsights', 'isPosOpen', 'isReseller'));

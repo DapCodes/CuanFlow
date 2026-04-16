@@ -4,10 +4,10 @@ namespace App\Models;
 
 use App\Notifications\ResetPasswordNotification;
 use App\Notifications\VerifyEmailNotification;
+use App\Services\FeatureAccessService;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\ColorPalette;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -241,7 +241,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return true;
         }
 
-        $accessService = app(\App\Services\FeatureAccessService::class);
+        $accessService = app(FeatureAccessService::class);
 
         return $accessService->canAccess($this, $featureName);
     }

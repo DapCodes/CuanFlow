@@ -5,10 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
-use App\Models\Product;
-use App\Models\ProductStock;
 use App\Models\RawMaterial;
 use App\Models\StockMovement;
 use App\Models\Supplier;
@@ -218,13 +217,13 @@ class RawMaterialAndSupplierController extends Controller
             // Product Stats
             $statsProductQuery = clone $productQuery;
             $allProductsForStats = $statsProductQuery->get();
-            
+
             $productStats = [
                 'total' => $allProductsForStats->count(),
                 'active' => $allProductsForStats->where('is_active', true)->count(),
                 'low' => 0,
                 'out' => 0,
-                'expired' => 0, 
+                'expired' => 0,
                 'expiring' => 0,
             ];
 
@@ -268,7 +267,7 @@ class RawMaterialAndSupplierController extends Controller
             }
 
             $products = $productQuery->latest()->paginate(15);
-            $stats = $productStats; 
+            $stats = $productStats;
         }
 
         if ($request->ajax()) {
@@ -873,7 +872,7 @@ class RawMaterialAndSupplierController extends Controller
         $statsQuery = clone $query;
         $total_active = $statsQuery->where('is_active', true)->count();
 
-        $total_items_supplied = (clone $query)->get()->sum(function($s) {
+        $total_items_supplied = (clone $query)->get()->sum(function ($s) {
             return $s->raw_materials_count + $s->products_count;
         });
 
@@ -1062,6 +1061,7 @@ class RawMaterialAndSupplierController extends Controller
                 $validQty += $batch->remaining_quantity;
                 $batchData['days_until_expiry'] = null;
                 $validStocks[] = $batchData;
+
                 continue;
             }
 

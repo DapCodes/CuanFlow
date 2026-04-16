@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CustomerDiscount;
 use App\Models\Discount;
 use App\Services\DiscountService;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ class PosDiscountController extends Controller
         // Find discount candidates
         if ($request->discount_code) {
             // 1. Check Personal Voucher (CustomerDiscount)
-            $customerDiscount = \App\Models\CustomerDiscount::where('secret_code', $request->discount_code)
+            $customerDiscount = CustomerDiscount::where('secret_code', $request->discount_code)
                 ->where('is_used', false)
                 ->first();
 

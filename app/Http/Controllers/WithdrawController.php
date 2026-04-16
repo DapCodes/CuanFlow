@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Mail\WithdrawalRequestMail;
+use App\Models\PaymentMethod;
 use App\Models\Sale;
 use App\Models\Setting;
+use App\Models\User;
 use App\Models\UserWithdrawLock;
 use App\Models\Withdrawal;
 use Illuminate\Http\Request;
@@ -110,7 +112,7 @@ class WithdrawController extends Controller
         $actualBalance = $availableBalance - $pendingWithdrawals;
 
         // Get active payment methods
-        $paymentMethods = \App\Models\PaymentMethod::active()->get();
+        $paymentMethods = PaymentMethod::active()->get();
 
         return view('withdraw.create', compact('availableBalance', 'taxPercent', 'pendingWithdrawals', 'actualBalance', 'paymentMethods'));
     }
@@ -147,7 +149,7 @@ class WithdrawController extends Controller
         }
 
         // Get payment method
-        $pm = \App\Models\PaymentMethod::findOrFail($request->payment_method_id);
+        $pm = PaymentMethod::findOrFail($request->payment_method_id);
 
         // Get tax
         $taxPercent = Setting::getValue('withdraw', 'tax_percent', 0);
@@ -287,7 +289,7 @@ class WithdrawController extends Controller
     private function sendAdminNotification(Withdrawal $withdrawal): void
     {
         // Get admin emails
-        $adminEmails = \App\Models\User::role('admin')->pluck('email')->toArray();
+        $adminEmails = User::role('admin')->pluck('email')->toArray();
 
         if (! empty($adminEmails)) {
             Mail::to($adminEmails)->queue(new WithdrawalRequestMail($withdrawal));

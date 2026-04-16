@@ -167,7 +167,7 @@ class DebtPaymentApiController extends Controller
                         'expense_category_id' => $category->id,
                         'amount' => -$lateFeePart,
                         'expense_date' => now(),
-                        'description' => "Denda Keterlambatan Piutang (API) - " . ($debt->sale->invoice_number ?? 'N/A'),
+                        'description' => 'Denda Keterlambatan Piutang (API) - '.($debt->sale->invoice_number ?? 'N/A'),
                         'type' => 'income',
                         'status' => 'approved',
                         'payment_method' => $validated['payment_method'] === 'qris' ? 'transfer' : $validated['payment_method'],

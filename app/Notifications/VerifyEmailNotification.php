@@ -3,16 +3,17 @@
 namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\VerifyEmail as BaseVerifyEmail;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
 {
     use Queueable;
+
     /**
      * Get the mail representation of the notification.
      */
@@ -20,7 +21,7 @@ class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
-        return (new \Illuminate\Notifications\Messages\MailMessage)
+        return (new MailMessage)
             ->subject('Verifikasi Alamat Email Anda')
             ->greeting('Halo!')
             ->line('Klik tombol di bawah ini untuk memverifikasi alamat email Anda.')

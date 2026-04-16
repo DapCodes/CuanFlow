@@ -3,9 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\LoginLockout;
 use App\Models\User;
+use App\Notifications\WelcomeGoogleUserNotification;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Laravel\Socialite\Facades\Socialite;
+use Spatie\Permission\Models\Role;
 
 class GoogleController extends Controller
 {
@@ -54,9 +61,9 @@ class GoogleController extends Controller
                 if (! $user->google_avatar || $user->google_avatar !== $googleUser->getAvatar()) {
                     $user->google_avatar = $googleUser->getAvatar();
                 }
-                
+
                 // If the app has verified email, we can auto-verify it since Google verified it
-                if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail) {
+                if ($user instanceof MustVerifyEmail) {
                     $user->email_verified_at = now();
                 }
 
@@ -107,7 +114,7 @@ class GoogleController extends Controller
             $user->update(['last_login_at' => now()]);
 
             // Clear lockouts for this IP
-            \App\Models\LoginLockout::where('ip_address', request()->ip())->delete();
+            LoginLockout::where('ip_address', request()->ip())->delete();
 
             // Login the user
             Auth::login($user, true);
@@ -137,7 +144,7 @@ class GoogleController extends Controller
     /**
      * Store the completed profile and register the user.
      */
-    public function storeProfile(\Illuminate\Http\Request $request)
+    public function storeProfile(Request $request)
     {
         if (! session()->has('google_user')) {
             return redirect()->route('login');
@@ -148,7 +155,7 @@ class GoogleController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:15'],
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Password::defaults()],
             'avatar' => ['nullable', 'image', 'max:2048'], // 2MB Max
         ]);
 
@@ -161,7 +168,7 @@ class GoogleController extends Controller
             'name' => $request->name,
             'email' => $googleData['email'],
             'phone' => $request->phone,
-            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'password' => Hash::make($request->password),
             'google_id' => $googleData['google_id'],
             'google_avatar' => $googleData['google_avatar'], // Keep original google avatar url for reference
             'avatar' => $avatarPath, // Store the chosen avatar (file path or google url)
@@ -170,18 +177,18 @@ class GoogleController extends Controller
         ]);
 
         // Assign default role if exists (common in CuanFlow)
-        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+        if (class_exists(Role::class)) {
             $user->assignRole('owner'); // Default role for new registrations
         }
 
         // Send Welcome Notification
-        $user->notify(new \App\Notifications\WelcomeGoogleUserNotification($user->name));
+        $user->notify(new WelcomeGoogleUserNotification($user->name));
 
         // Clear session
         session()->forget('google_user');
 
         // Clear lockouts for this IP
-        \App\Models\LoginLockout::where('ip_address', request()->ip())->delete();
+        LoginLockout::where('ip_address', request()->ip())->delete();
 
         // Login
         Auth::login($user);
@@ -195,7 +202,7 @@ class GoogleController extends Controller
     public function unlink()
     {
         $user = Auth::user();
-        
+
         // Prevent unlink if no password is set (just in case)
         if (empty($user->password)) {
             return redirect()->route('profile.edit', ['tab' => 'security'])

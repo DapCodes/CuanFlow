@@ -15,7 +15,7 @@ class MobileCashFlowController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         $cashFlows = MobileCashFlow::where('user_id', $user->id)
             ->latest('date')
             ->latest('created_at')
@@ -61,7 +61,7 @@ class MobileCashFlowController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Catatan ' . ($validated['type'] == 'income' ? 'pemasukan' : 'pengeluaran') . ' berhasil disimpan.',
+            'message' => 'Catatan '.($validated['type'] == 'income' ? 'pemasukan' : 'pengeluaran').' berhasil disimpan.',
             'data' => $cashFlow,
         ], 201);
     }

@@ -25,7 +25,7 @@ class HeatmapController extends Controller
      */
     public function heatmap(Request $request): JsonResponse
     {
-        $cacheKey = 'heatmap:' . md5($request->getQueryString() ?? 'all');
+        $cacheKey = 'heatmap:'.md5($request->getQueryString() ?? 'all');
         $cacheTtl = 60 * 60; // 60 minutes
 
         $data = Cache::remember($cacheKey, $cacheTtl, function () use ($request) {
@@ -41,16 +41,16 @@ class HeatmapController extends Controller
                 $label = $request->input('label');
                 $query->where(function ($q) use ($label) {
                     $q->where('ai_classification', $label)
-                      ->orWhere(function ($sq) use ($label) {
-                          $sq->whereNull('ai_classification');
-                          if ($label === 'High Potential') {
-                              $sq->where('opportunity_score', '>=', 60);
-                          } elseif ($label === 'Medium') {
-                              $sq->where('opportunity_score', '>=', 30)->where('opportunity_score', '<', 60);
-                          } elseif ($label === 'Low') {
-                              $sq->where('opportunity_score', '<', 30);
-                          }
-                      });
+                        ->orWhere(function ($sq) use ($label) {
+                            $sq->whereNull('ai_classification');
+                            if ($label === 'High Potential') {
+                                $sq->where('opportunity_score', '>=', 60);
+                            } elseif ($label === 'Medium') {
+                                $sq->where('opportunity_score', '>=', 30)->where('opportunity_score', '<', 60);
+                            } elseif ($label === 'Low') {
+                                $sq->where('opportunity_score', '<', 30);
+                            }
+                        });
                 });
             }
 
@@ -139,7 +139,7 @@ class HeatmapController extends Controller
 
         // Search by name
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->input('search') . '%');
+            $query->where('name', 'like', '%'.$request->input('search').'%');
         }
 
         $perPage = min((int) $request->input('per_page', 100), 500);
@@ -165,7 +165,7 @@ class HeatmapController extends Controller
      */
     public function stats(Request $request): JsonResponse
     {
-        $cacheKey = 'heatmap:stats:' . md5($request->getQueryString() ?? 'all');
+        $cacheKey = 'heatmap:stats:'.md5($request->getQueryString() ?? 'all');
         $stats = Cache::remember($cacheKey, 3600, function () use ($request) {
             $gridQuery = GridArea::query();
             $pointQuery = BusinessPoint::query();
@@ -175,10 +175,10 @@ class HeatmapController extends Controller
                 $lat = (float) $request->input('lat');
                 $lng = (float) $request->input('lng');
                 $radius = (float) $request->input('radius', 15);
-                
+
                 $gridQuery->withinRadius($lat, $lng, $radius);
 
-                $haversinePoints = "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))";
+                $haversinePoints = '(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))';
                 $pointQuery->whereRaw("{$haversinePoints} <= ?", [$lat, $lng, $lat, $radius]);
             }
 
@@ -187,17 +187,23 @@ class HeatmapController extends Controller
                 'total_grid_areas' => (clone $gridQuery)->count(),
                 'grids_with_data' => (clone $gridQuery)->where('total_businesses', '>', 0)->count(),
                 'classifications' => [
-                    'high_potential' => (clone $gridQuery)->where(function($q) {
+                    'high_potential' => (clone $gridQuery)->where(function ($q) {
                         $q->where('ai_classification', 'High Potential')
-                          ->orWhere(function($sq) { $sq->whereNull('ai_classification')->where('opportunity_score', '>=', 60); });
+                            ->orWhere(function ($sq) {
+                                $sq->whereNull('ai_classification')->where('opportunity_score', '>=', 60);
+                            });
                     })->count(),
-                    'medium' => (clone $gridQuery)->where(function($q) {
+                    'medium' => (clone $gridQuery)->where(function ($q) {
                         $q->where('ai_classification', 'Medium')
-                          ->orWhere(function($sq) { $sq->whereNull('ai_classification')->where('opportunity_score', '>=', 30)->where('opportunity_score', '<', 60); });
+                            ->orWhere(function ($sq) {
+                                $sq->whereNull('ai_classification')->where('opportunity_score', '>=', 30)->where('opportunity_score', '<', 60);
+                            });
                     })->count(),
-                    'low' => (clone $gridQuery)->where(function($q) {
+                    'low' => (clone $gridQuery)->where(function ($q) {
                         $q->where('ai_classification', 'Low')
-                          ->orWhere(function($sq) { $sq->whereNull('ai_classification')->where('opportunity_score', '<', 30); });
+                            ->orWhere(function ($sq) {
+                                $sq->whereNull('ai_classification')->where('opportunity_score', '<', 30);
+                            });
                     })->count(),
                     'unclassified' => 0, // Now all have a fallback
                 ],
@@ -226,8 +232,13 @@ class HeatmapController extends Controller
      */
     private function fallbackLabel(float $score): string
     {
-        if ($score >= 60) return 'High Potential';
-        if ($score >= 30) return 'Medium';
+        if ($score >= 60) {
+            return 'High Potential';
+        }
+        if ($score >= 30) {
+            return 'Medium';
+        }
+
         return 'Low';
     }
 }

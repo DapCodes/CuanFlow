@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Blog extends Model
 {
@@ -28,7 +29,9 @@ class Blog extends Model
     public function getThumbnailUrlAttribute()
     {
         if ($this->thumbnail) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->thumbnail);
+            return Storage::disk('public')->url($this->thumbnail);
         }
+
         return asset('assets/image/placeholder-image.png');
-    }}
+    }
+}

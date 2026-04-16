@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Advertisement extends Model
 {
@@ -30,8 +31,9 @@ class Advertisement extends Model
     public function getBannerUrlAttribute()
     {
         if ($this->banner) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->banner);
+            return Storage::disk('public')->url($this->banner);
         }
+
         return asset('assets/image/placeholder-image.png');
     }
 }

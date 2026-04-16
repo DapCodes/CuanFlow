@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Outlet;
+use App\Models\Product;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
+ * @extends Factory<Product>
  */
 class ProductFactory extends Factory
 {
@@ -19,8 +22,8 @@ class ProductFactory extends Factory
         return [
             'name' => $this->faker->word,
             'code' => $this->faker->unique()->bothify('PROD-####'),
-            'outlet_id' => \App\Models\Outlet::factory(),
-            'unit_id' => \App\Models\Unit::factory(),
+            'outlet_id' => Outlet::factory(),
+            'unit_id' => Unit::factory(),
             'selling_price' => $this->faker->numberBetween(10000, 100000),
             'hpp' => $this->faker->numberBetween(5000, 9000),
             'is_active' => true,

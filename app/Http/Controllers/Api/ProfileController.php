@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ProfileResource;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
@@ -26,7 +27,7 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = $request->user();
-        /** @var \App\Models\Customer|null $customer */
+        /** @var Customer|null $customer */
         $customer = Customer::where('email', $user->email)->first();
 
         $data = $request->validate([
@@ -43,7 +44,7 @@ class ProfileController extends Controller
         ]);
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             $oldEmail = $user->email;
             $emailChanged = false;
@@ -110,7 +111,7 @@ class ProfileController extends Controller
                 ]);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             if ($emailChanged) {
                 $user->sendEmailVerificationNotification();
@@ -122,7 +123,7 @@ class ProfileController extends Controller
             ]);
 
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
 
             return response()->json([
                 'message' => 'Gagal memperbarui profil.',

@@ -53,7 +53,7 @@ class NewProductionOrder implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         // Use the outlet_id from the sale to broadcast on the correct channel
-        $outletId = \App\Models\Sale::find($this->orderData['sale_id'])?->outlet_id;
+        $outletId = Sale::find($this->orderData['sale_id'])?->outlet_id;
 
         return [
             new Channel('production.outlet.'.$outletId),

@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -68,7 +69,7 @@ class LoginController extends Controller
             try {
                 broadcast(new UserPresenceChanged($user, 'online'));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Pusher broadcast error in LoginController: ' . $e->getMessage());
+                Log::error('Pusher broadcast error in LoginController: '.$e->getMessage());
             }
 
             // Track login history

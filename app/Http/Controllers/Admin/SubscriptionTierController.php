@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Feature;
 use App\Models\SubscriptionTier;
+use App\Models\UserSubscription;
 use Illuminate\Http\Request;
 
 class SubscriptionTierController extends Controller
@@ -17,10 +18,10 @@ class SubscriptionTierController extends Controller
         // Search
         if (request('search')) {
             $search = request('search');
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('display_name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('display_name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -31,7 +32,7 @@ class SubscriptionTierController extends Controller
             'total_tiers' => SubscriptionTier::count(),
             'active_tiers' => SubscriptionTier::where('is_active', true)->count(),
             'inactive_tiers' => SubscriptionTier::where('is_active', false)->count(),
-            'total_subscriptions' => \App\Models\UserSubscription::where('status', 'active')->count(),
+            'total_subscriptions' => UserSubscription::where('status', 'active')->count(),
         ];
 
         return view('admin.subscription.tiers.index', compact('tiers', 'stats'));

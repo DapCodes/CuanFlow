@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\SubscriptionPlan;
+use App\Models\User;
 use App\Models\UserSubscription;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
@@ -24,13 +27,13 @@ class SubscriptionController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->whereHas('user', function($qu) use ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($qu) use ($search) {
                     $qu->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-                })->orWhereHas('tier', function($qt) use ($search) {
+                        ->orWhere('email', 'like', "%{$search}%");
+                })->orWhereHas('tier', function ($qt) use ($search) {
                     $qt->where('display_name', 'like', "%{$search}%")
-                      ->orWhere('name', 'like', "%{$search}%");
+                        ->orWhere('name', 'like', "%{$search}%");
                 });
             });
         }
@@ -47,7 +50,7 @@ class SubscriptionController extends Controller
             'expired' => UserSubscription::where('status', 'expired')->count(),
         ];
 
-        $allPlans = \App\Models\SubscriptionPlan::with('tier')->active()->get();
+        $allPlans = SubscriptionPlan::with('tier')->active()->get();
 
         return view('admin.subscription.index', compact('subscriptions', 'status', 'stats', 'allPlans'));
     }
@@ -80,12 +83,12 @@ class SubscriptionController extends Controller
     public function searchUsers(Request $request)
     {
         $search = $request->query('query');
-        
-        if (!$search) {
+
+        if (! $search) {
             return response()->json([]);
         }
 
-        $users = \App\Models\User::where('name', 'like', "%{$search}%")
+        $users = User::where('name', 'like', "%{$search}%")
             ->orWhere('email', 'like', "%{$search}%")
             ->limit(10)
             ->get(['id', 'name', 'email']);
@@ -100,21 +103,21 @@ class SubscriptionController extends Controller
             'plan_id' => ['required', 'exists:subscription_plans,id'],
         ]);
 
-        $plan = \App\Models\SubscriptionPlan::with('tier')->findOrFail($validated['plan_id']);
-        
-        $startedAt = \Carbon\Carbon::now();
+        $plan = SubscriptionPlan::with('tier')->findOrFail($validated['plan_id']);
+
+        $startedAt = Carbon::now();
         $expiresAt = $plan->calculateExpiryDate($startedAt);
 
         // Cancel existing active subscriptions for this user to avoid conflicts
-        \App\Models\UserSubscription::where('user_id', $validated['user_id'])
-            ->whereIn('status', [\App\Models\UserSubscription::STATUS_ACTIVE, \App\Models\UserSubscription::STATUS_TRIAL])
-            ->update(['status' => \App\Models\UserSubscription::STATUS_CANCELLED]);
+        UserSubscription::where('user_id', $validated['user_id'])
+            ->whereIn('status', [UserSubscription::STATUS_ACTIVE, UserSubscription::STATUS_TRIAL])
+            ->update(['status' => UserSubscription::STATUS_CANCELLED]);
 
-        \App\Models\UserSubscription::create([
+        UserSubscription::create([
             'user_id' => $validated['user_id'],
             'tier_id' => $plan->tier_id,
             'plan_id' => $plan->id,
-            'status' => \App\Models\UserSubscription::STATUS_ACTIVE,
+            'status' => UserSubscription::STATUS_ACTIVE,
             'started_at' => $startedAt,
             'expires_at' => $expiresAt,
             'is_trial' => false,

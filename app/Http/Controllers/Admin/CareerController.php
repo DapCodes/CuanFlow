@@ -20,10 +20,10 @@ class CareerController extends Controller
         $query = Career::query();
 
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('location', 'like', '%' . $request->search . '%')
-                  ->orWhere('type', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('location', 'like', '%'.$request->search.'%')
+                    ->orWhere('type', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -58,7 +58,7 @@ class CareerController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid();
+        $validated['slug'] = Str::slug($validated['title']).'-'.uniqid();
         $validated['is_active'] = $request->has('is_active');
 
         Career::create($validated);
@@ -84,7 +84,7 @@ class CareerController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']) . '-' . uniqid();
+        $validated['slug'] = Str::slug($validated['title']).'-'.uniqid();
         $validated['is_active'] = $request->has('is_active');
 
         $career->update($validated);
@@ -101,7 +101,8 @@ class CareerController extends Controller
 
     public function toggleStatus(Career $career)
     {
-        $career->update(['is_active' => !$career->is_active]);
+        $career->update(['is_active' => ! $career->is_active]);
+
         return back()->with('success', 'Status karir berhasil diubah.');
     }
 }

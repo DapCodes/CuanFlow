@@ -192,7 +192,7 @@ class ClaraAiController extends Controller implements HasMiddleware
 
         try {
             $file = $request->file('image');
-            $filename = 'kalkulaba_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
+            $filename = 'kalkulaba_'.time().'_'.Str::random(8).'.'.$file->getClientOriginalExtension();
             $path = $file->storeAs('public/kalkulaba', $filename);
 
             // Generate base64 for AI vision analysis
@@ -211,7 +211,7 @@ class ClaraAiController extends Controller implements HasMiddleware
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengunggah gambar: ' . $e->getMessage(),
+                'message' => 'Gagal mengunggah gambar: '.$e->getMessage(),
             ], 500);
         }
     }

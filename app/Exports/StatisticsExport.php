@@ -20,6 +20,7 @@ use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
 use PhpOffice\PhpSpreadsheet\Chart\Legend;
 use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
 use PhpOffice\PhpSpreadsheet\Chart\Title;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -200,8 +201,8 @@ class SummarySheet implements FromArray, WithEvents, WithStyles, WithTitle
                 // Center align titles
                 $sheet->getStyle('A2:B5')->applyFromArray([
                     'alignment' => [
-                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                        'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                 ]);
 
@@ -250,10 +251,10 @@ class SummarySheet implements FromArray, WithEvents, WithStyles, WithTitle
 
                 // Align values to right for better number readability
                 $sheet->getStyle('B11:B17')->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT],
                 ]);
                 $sheet->getStyle('B22:B23')->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT],
                 ]);
             },
         ];
@@ -397,7 +398,7 @@ class SalesTrendSheet implements FromArray, WithCharts, WithEvents, WithStyles, 
                 $sheet->mergeCells('A3:C3');
                 $sheet->getStyle('A2:C3')->applyFromArray([
                     'alignment' => [
-                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
                     ],
                 ]);
 
@@ -426,7 +427,7 @@ class SalesTrendSheet implements FromArray, WithCharts, WithEvents, WithStyles, 
 
                 // Right align numbers
                 $sheet->getStyle('B6:C'.$lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Alternating row colors
@@ -572,7 +573,7 @@ class TopProductsSheet implements FromArray, WithCharts, WithEvents, WithStyles,
                 $sheet->mergeCells('A3:D3');
                 $sheet->getStyle('A2:D3')->applyFromArray([
                     'alignment' => [
-                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
                     ],
                 ]);
 
@@ -595,12 +596,12 @@ class TopProductsSheet implements FromArray, WithCharts, WithEvents, WithStyles,
 
                 // Center No column
                 $sheet->getStyle('A5:A'.$lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
 
                 // Right align numbers
                 $sheet->getStyle('C6:D'.$lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Highlight top 3 products
@@ -754,7 +755,7 @@ class PaymentMethodSheet implements FromArray, WithCharts, WithEvents, WithStyle
                 $sheet->mergeCells('A3:C3');
                 $sheet->getStyle('A2:C3')->applyFromArray([
                     'alignment' => [
-                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
                     ],
                 ]);
 
@@ -777,7 +778,7 @@ class PaymentMethodSheet implements FromArray, WithCharts, WithEvents, WithStyle
 
                 // Right align numbers
                 $sheet->getStyle('B6:C'.$lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Alternating row colors
@@ -924,7 +925,7 @@ class HourlySalesSheet implements FromArray, WithCharts, WithEvents, WithStyles,
                 $sheet->mergeCells('A3:C3');
                 $sheet->getStyle('A2:C3')->applyFromArray([
                     'alignment' => [
-                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
                     ],
                 ]);
 
@@ -953,7 +954,7 @@ class HourlySalesSheet implements FromArray, WithCharts, WithEvents, WithStyles,
 
                 // Right align numbers
                 $sheet->getStyle('B6:C22')->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Alternating row colors
@@ -1076,7 +1077,7 @@ class TransactionsSheet implements FromArray, WithEvents, WithStyles, WithTitle
                 $sheet->mergeCells('A3:J3');
                 $sheet->getStyle('A2:J3')->applyFromArray([
                     'alignment' => [
-                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
                     ],
                 ]);
 
@@ -1099,18 +1100,18 @@ class TransactionsSheet implements FromArray, WithEvents, WithStyles, WithTitle
 
                 // Center align specific columns
                 $sheet->getStyle('A5:A'.$lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
                 $sheet->getStyle('D5:D'.$lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
                 $sheet->getStyle('J5:J'.$lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
 
                 // Right align number columns
                 $sheet->getStyle('G6:I'.$lastRow)->applyFromArray([
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT],
                 ]);
 
                 // Alternating row colors for better readability

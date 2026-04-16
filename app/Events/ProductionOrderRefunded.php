@@ -28,7 +28,7 @@ class ProductionOrderRefunded implements ShouldBroadcastNow
 
     public function broadcastOn(): array
     {
-        $outletId = \App\Models\Sale::find($this->orderData['sale_id'])?->outlet_id;
+        $outletId = Sale::find($this->orderData['sale_id'])?->outlet_id;
 
         return [
             new Channel('production.outlet.'.$outletId),

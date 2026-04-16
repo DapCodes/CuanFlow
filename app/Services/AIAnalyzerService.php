@@ -31,6 +31,7 @@ class AIAnalyzerService
 
         if ($grids->isEmpty()) {
             Log::info('AIAnalyzer: No unclassified grids to process');
+
             return ['classified' => 0, 'failed' => 0];
         }
 
@@ -63,7 +64,7 @@ class AIAnalyzerService
      */
     private function classifyBatch($grids): array
     {
-        if (!$this->apiKey) {
+        if (! $this->apiKey) {
             // Fallback: use rule-based classification
             return $this->classifyBatchRuleBased($grids);
         }
@@ -94,11 +95,11 @@ PROMPT;
 
         try {
             $response = Http::withoutVerifying()->withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => 'Bearer '.$this->apiKey,
                 'Content-Type' => 'application/json',
                 'HTTP-Referer' => config('app.url'),
                 'X-Title' => 'CuanFlow Heatmap',
-            ])->timeout(120)->post($this->baseUrl . '/chat/completions', [
+            ])->timeout(120)->post($this->baseUrl.'/chat/completions', [
                 'model' => 'openrouter/free',
                 'messages' => [
                     ['role' => 'system', 'content' => 'You are a business analyst. Respond only in valid JSON arrays.'],
@@ -107,8 +108,9 @@ PROMPT;
                 'max_tokens' => 3000,
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning('AIAnalyzer: API request failed', ['status' => $response->status()]);
+
                 return $this->classifyBatchRuleBased($grids);
             }
 
@@ -116,6 +118,7 @@ PROMPT;
 
             if (isset($data['error'])) {
                 Log::warning('AIAnalyzer: API returned error', ['error' => $data['error']]);
+
                 return $this->classifyBatchRuleBased($grids);
             }
 
@@ -124,7 +127,8 @@ PROMPT;
             return $this->parseAndApplyAIResults($grids, $content);
 
         } catch (\Exception $e) {
-            Log::error('AIAnalyzer: Exception — ' . $e->getMessage());
+            Log::error('AIAnalyzer: Exception — '.$e->getMessage());
+
             return $this->classifyBatchRuleBased($grids);
         }
     }
@@ -138,12 +142,12 @@ PROMPT;
 
         foreach ($grids as $grid) {
             $lines[] = "ID:{$grid->id} | "
-                . "Score:{$grid->opportunity_score} | "
-                . "Businesses:{$grid->total_businesses} | "
-                . "Diversity:{$grid->category_diversity} | "
-                . "Competition:{$grid->competition_score} | "
-                . "Demand:{$grid->demand_score} | "
-                . "Lat:{$grid->center_lat}, Lng:{$grid->center_lng}";
+                ."Score:{$grid->opportunity_score} | "
+                ."Businesses:{$grid->total_businesses} | "
+                ."Diversity:{$grid->category_diversity} | "
+                ."Competition:{$grid->competition_score} | "
+                ."Demand:{$grid->demand_score} | "
+                ."Lat:{$grid->center_lat}, Lng:{$grid->center_lng}";
         }
 
         return implode("\n", $lines);
@@ -165,10 +169,11 @@ PROMPT;
 
         $results = json_decode(trim($jsonContent), true);
 
-        if (!is_array($results)) {
+        if (! is_array($results)) {
             Log::warning('AIAnalyzer: Could not parse AI response as JSON', [
                 'content' => substr($aiContent, 0, 500),
             ]);
+
             return $this->classifyBatchRuleBased($grids);
         }
 

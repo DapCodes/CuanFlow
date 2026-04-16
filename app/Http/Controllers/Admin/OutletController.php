@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Outlet;
+use App\Models\Product;
+use App\Models\Sale;
 
 class OutletController extends Controller
 {
@@ -38,8 +40,8 @@ class OutletController extends Controller
             'total' => Outlet::count(),
             'active' => Outlet::where('is_active', true)->count(),
             'inactive' => Outlet::where('is_active', false)->count(),
-            'total_sales' => \App\Models\Sale::count(),
-            'total_products' => \App\Models\Product::count(),
+            'total_sales' => Sale::count(),
+            'total_products' => Product::count(),
         ];
 
         return view('admin.outlets.index', compact('outlets', 'stats'));

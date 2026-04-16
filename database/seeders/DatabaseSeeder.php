@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -42,11 +44,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Buat Akun Admin
-        $admin = \App\Models\User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@cuanflow.com'],
             [
                 'name' => 'Admin CuanFlow',
-                'password' => \Illuminate\Support\Facades\Hash::make('12345678'),
+                'password' => Hash::make('12345678'),
                 'email_verified_at' => now(),
                 'outlet_id' => null,
                 'phone' => null,

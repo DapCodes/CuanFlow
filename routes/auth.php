@@ -41,8 +41,6 @@ Route::middleware('guest')->group(function () {
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->name('password.email');
 
-
-
     Route::get('auth/google/complete-profile', [GoogleController::class, 'completeProfile'])
         ->name('auth.google.complete');
 

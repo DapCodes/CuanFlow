@@ -51,7 +51,7 @@ class TelegramSetWebhook extends Command
             if ($data['ok'] ?? false) {
                 $this->info('✅ Webhook removed successfully.');
             } else {
-                $this->error('❌ Failed to remove webhook: ' . json_encode($data));
+                $this->error('❌ Failed to remove webhook: '.json_encode($data));
             }
 
             return self::SUCCESS;

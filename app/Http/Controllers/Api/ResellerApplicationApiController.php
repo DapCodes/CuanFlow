@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ResellerApplicationResource;
 use App\Models\Customer;
+use App\Models\Outlet;
 use App\Models\ResellerApplication;
 use Illuminate\Http\Request;
 
@@ -40,7 +41,7 @@ class ResellerApplicationApiController extends Controller
     public function store(Request $request)
     {
         $user = $request->user();
-        /** @var \App\Models\Customer $customer */
+        /** @var Customer $customer */
         $customer = Customer::firstOrCreate(
             ['email' => $user->email],
             [
@@ -64,7 +65,7 @@ class ResellerApplicationApiController extends Controller
         }
 
         // Check if outlet actually accepts reseller applications
-        $outlet = \App\Models\Outlet::find($request->outlet_id);
+        $outlet = Outlet::find($request->outlet_id);
         if (! $outlet || ! $outlet->accepts_reseller) {
             return response()->json([
                 'message' => 'Outlet ini sedang tidak menerima lamaran reseller.',

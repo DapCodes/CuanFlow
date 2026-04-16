@@ -12,12 +12,13 @@ class FeatureFlagController extends Controller
     public function index()
     {
         $features = Feature::orderBy('category')->orderBy('sort_order')->get();
+
         return view('admin.features.index', compact('features'));
     }
 
     public function toggle(Request $request, Feature $feature)
     {
-        $feature->is_active = !$feature->is_active;
+        $feature->is_active = ! $feature->is_active;
         $feature->save();
 
         // Clear the cache for this feature flag

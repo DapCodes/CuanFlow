@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashRegister;
+use App\Models\CustomerDebt;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Sale;
@@ -140,7 +141,7 @@ class FinanceController extends Controller
 
         // Net Income (Saldo Bersih)
         // PIUTANG: Hitung total piutang yang belum dibayar
-        $totalUnpaidDebt = \App\Models\CustomerDebt::where('outlet_id', $outletId)
+        $totalUnpaidDebt = CustomerDebt::where('outlet_id', $outletId)
             ->where('status', '!=', 'paid')
             ->sum('remaining_amount');
 
@@ -362,7 +363,10 @@ class FinanceController extends Controller
             ]);
 
             $message = 'Pemasukan berhasil dicatat';
-            if (!$isOwner) $message .= ' dan menunggu persetujuan (Pending)';
+            if (! $isOwner) {
+                $message .= ' dan menunggu persetujuan (Pending)';
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -419,7 +423,9 @@ class FinanceController extends Controller
             ]);
 
             $message = 'Pengeluaran berhasil dicatat';
-            if (!$isOwner) $message .= ' dan menunggu persetujuan (Pending)';
+            if (! $isOwner) {
+                $message .= ' dan menunggu persetujuan (Pending)';
+            }
 
             return response()->json([
                 'success' => true,
@@ -582,7 +588,9 @@ class FinanceController extends Controller
         ]);
 
         $message = 'Pemasukan berhasil ditambahkan';
-        if (!$isOwner) $message .= ' dan menunggu persetujuan';
+        if (! $isOwner) {
+            $message .= ' dan menunggu persetujuan';
+        }
 
         return redirect()->route('finance.index')->with('success', $message);
     }
@@ -689,7 +697,9 @@ class FinanceController extends Controller
         ]);
 
         $message = 'Pengeluaran berhasil ditambahkan';
-        if (!$isOwner) $message .= ' dan menunggu persetujuan';
+        if (! $isOwner) {
+            $message .= ' dan menunggu persetujuan';
+        }
 
         return redirect()->route('finance.index')->with('success', $message);
     }

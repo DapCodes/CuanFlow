@@ -21,4 +21,5 @@ class Career extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'deadline' => 'date',
-    ];}
+    ];
+}

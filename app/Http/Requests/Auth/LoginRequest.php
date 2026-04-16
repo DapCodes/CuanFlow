@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\LoginLockout;
 use Illuminate\Auth\Events\Lockout;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -22,7 +24,7 @@ class LoginRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -35,7 +37,7 @@ class LoginRequest extends FormRequest
     /**
      * Attempt to authenticate the request's credentials.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function authenticate(): void
     {
@@ -58,12 +60,12 @@ class LoginRequest extends FormRequest
     /**
      * Ensure the login request is not rate limited.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function ensureIsNotRateLimited(): void
     {
         // 1. Check IP-based persistent lockout from database
-        $lockout = \App\Models\LoginLockout::where('ip_address', $this->ip())
+        $lockout = LoginLockout::where('ip_address', $this->ip())
             ->where('locked_until', '>', now())
             ->first();
 
@@ -88,7 +90,7 @@ class LoginRequest extends FormRequest
         $ip = $this->ip();
         $email = $this->string('email');
 
-        $lockout = \App\Models\LoginLockout::firstOrCreate(
+        $lockout = LoginLockout::firstOrCreate(
             ['ip_address' => $ip, 'email' => $email],
             ['attempts' => 0]
         );
@@ -97,11 +99,11 @@ class LoginRequest extends FormRequest
         $lockout->update(['last_attempt_at' => now()]);
 
         // Check total attempts for this IP across all emails
-        $totalIpAttempts = \App\Models\LoginLockout::where('ip_address', $ip)->sum('attempts');
+        $totalIpAttempts = LoginLockout::where('ip_address', $ip)->sum('attempts');
 
         if ($totalIpAttempts >= 5) {
             // Lock for 3 hours
-            \App\Models\LoginLockout::where('ip_address', $ip)->update([
+            LoginLockout::where('ip_address', $ip)->update([
                 'locked_until' => now()->addHours(3),
             ]);
         }
@@ -112,7 +114,7 @@ class LoginRequest extends FormRequest
      */
     protected function clearLockouts(): void
     {
-        \App\Models\LoginLockout::where('ip_address', $this->ip())->delete();
+        LoginLockout::where('ip_address', $this->ip())->delete();
     }
 
     /**

@@ -33,6 +33,7 @@ class FetchOsmData extends Command
                 $bbox = $service->getBoundingBox($name);
                 $this->line("  • {$name} — [{$bbox[0]}, {$bbox[1]}, {$bbox[2]}, {$bbox[3]}]");
             }
+
             return self::SUCCESS;
         }
 
@@ -50,6 +51,7 @@ class FetchOsmData extends Command
             $parts = array_map('floatval', explode(',', $bboxStr));
             if (count($parts) !== 4) {
                 $this->error('Invalid bbox format. Use: --bbox="south,west,north,east"');
+
                 return self::FAILURE;
             }
             $customBbox = $parts;
@@ -66,6 +68,7 @@ class FetchOsmData extends Command
         if ($useQueue) {
             FetchOsmDataJob::dispatch($area, $customBbox);
             $this->info('✅ Job dispatched to queue. Run `php artisan queue:work` to process.');
+
             return self::SUCCESS;
         }
 
@@ -88,7 +91,7 @@ class FetchOsmData extends Command
 
         $this->newLine(2);
 
-        $this->info("✅ Fetch complete!");
+        $this->info('✅ Fetch complete!');
         $this->table(
             ['Metric', 'Value'],
             [

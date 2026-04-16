@@ -11,13 +11,13 @@ class CheckUserActive
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && !auth()->user()->is_active) {
+        if (auth()->check() && ! auth()->user()->is_active) {
             $user = auth()->user();
-            
+
             // Default message for employees/workers
             $message = 'Akun Anda sedang dinonaktifkan. Silakan hubungi Owner Anda.';
 

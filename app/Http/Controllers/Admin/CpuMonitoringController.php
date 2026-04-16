@@ -3,26 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class CpuMonitoringController extends Controller
 {
     /**
      * Display the CPU monitoring page.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function index()
     {
         $stats = $this->getServerStats();
+
         return view('admin.cpu-monitoring.index', compact('stats'));
     }
 
     /**
      * Get aggregated server stats for API response.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function getUsage()
     {
@@ -31,7 +33,7 @@ class CpuMonitoringController extends Controller
 
     /**
      * Get all server statistics.
-     * 
+     *
      * @return array
      */
     private function getServerStats()
@@ -71,8 +73,11 @@ class CpuMonitoringController extends Controller
         if (function_exists('sys_getloadavg')) {
             $load = sys_getloadavg();
             $usage = min(100, (int) ($load[0] * 10)); // Simplified heuristic
-            if ($usage > 5) return $usage;
+            if ($usage > 5) {
+                return $usage;
+            }
         }
+
         return rand(15, 65);
     }
 
@@ -91,6 +96,7 @@ class CpuMonitoringController extends Controller
                     $total = $mem[1];
                     $used = $mem[2];
                     $percent = Math_round(($used / $total) * 100);
+
                     return [
                         'total' => $total, // MB
                         'used' => $used,   // MB
@@ -104,6 +110,7 @@ class CpuMonitoringController extends Controller
         // Fallback for non-linux or failed shell_exec
         $total = 2048; // Assume 2GB for demo
         $used = rand(800, 1500);
+
         return [
             'total' => $total,
             'used' => $used,
@@ -121,7 +128,7 @@ class CpuMonitoringController extends Controller
             $path = base_path();
             $disktotal = @disk_total_space($path) ?: 0;
             $diskfree = @disk_free_space($path) ?: 0;
-            
+
             if ($disktotal > 0) {
                 $diskused = $disktotal - $diskfree;
                 $diskpercent = ($diskused / $disktotal) * 100;
@@ -154,11 +161,15 @@ class CpuMonitoringController extends Controller
             // Method 1: Try reading /proc/uptime
             $str = @file_get_contents('/proc/uptime');
             if ($str !== false) {
-                $num = (float)$str;
-                $secs = fmod($num, 60); $num = (int)($num / 60);
-                $mins = $num % 60; $num = (int)($num / 60);
-                $hours = $num % 24; $num = (int)($num / 24);
+                $num = (float) $str;
+                $secs = fmod($num, 60);
+                $num = (int) ($num / 60);
+                $mins = $num % 60;
+                $num = (int) ($num / 60);
+                $hours = $num % 24;
+                $num = (int) ($num / 24);
                 $days = $num;
+
                 return "$days Hari, $hours Jam, $mins Menit";
             }
 
@@ -171,17 +182,20 @@ class CpuMonitoringController extends Controller
                         ['', ' Hari', ' Hari', ' Jam', ' Jam', ' Menit', ' Menit', ''],
                         trim($uptime)
                     );
+
                     return $uptime;
                 }
             }
         }
-        return "N/A";
+
+        return 'N/A';
     }
 
     private function getDatabaseInfo()
     {
         try {
             $results = DB::select('select version() as version');
+
             return $results[0]->version;
         } catch (\Exception $e) {
             return 'N/A';
@@ -190,11 +204,17 @@ class CpuMonitoringController extends Controller
 
     private function getStatusLabel($percentage)
     {
-        if ($percentage < 50) return 'Normal';
-        if ($percentage < 80) return 'Moderate';
+        if ($percentage < 50) {
+            return 'Normal';
+        }
+        if ($percentage < 80) {
+            return 'Moderate';
+        }
+
         return 'High Load';
     }
 }
-function Math_round($val) {
+function Math_round($val)
+{
     return round($val);
 }

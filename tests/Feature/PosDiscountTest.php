@@ -8,6 +8,8 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Session;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class PosDiscountTest extends TestCase
@@ -28,8 +30,8 @@ class PosDiscountTest extends TestCase
         $this->user = User::factory()->create(['outlet_id' => $this->outlet->id]);
 
         // Setup permission
-        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Karyawan', 'guard_name' => 'web']);
-        $permission = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'akses pos', 'guard_name' => 'web']);
+        $role = Role::firstOrCreate(['name' => 'Karyawan', 'guard_name' => 'web']);
+        $permission = Permission::firstOrCreate(['name' => 'akses pos', 'guard_name' => 'web']);
         $role->givePermissionTo($permission);
         $this->user->assignRole($role);
 

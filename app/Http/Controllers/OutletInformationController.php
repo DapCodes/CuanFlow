@@ -3,21 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Outlet;
+use App\Models\Product;
+use App\Models\RawMaterial;
+use App\Models\Recipe;
+use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
-use App\Models\Supplier;
-use App\Models\RawMaterial;
-use App\Models\Product;
-use App\Models\Recipe;
-use App\Models\RecipeItem;
-use App\Models\AdditionalCost;
-use Illuminate\Support\Facades\DB;
 
 class OutletInformationController extends Controller implements HasMiddleware
 {
@@ -222,7 +219,8 @@ class OutletInformationController extends Controller implements HasMiddleware
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal membuat outlet: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Gagal membuat outlet: '.$e->getMessage())->withInput();
         }
 
         return redirect()->route('outlets.index')

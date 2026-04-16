@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Customer;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,8 +17,8 @@ class ProfileResource extends JsonResource
             'account' => [
                 'id' => $this->id,
                 'outlet_id' => $this->outlet_id,
-                'outlet_ids' => $this->isOwner() 
-                    ? $this->outletsOwned()->pluck('id')->toArray() 
+                'outlet_ids' => $this->isOwner()
+                    ? $this->outletsOwned()->pluck('id')->toArray()
                     : ($this->outlet_id ? [(int) $this->outlet_id] : []),
                 'name' => $this->name,
                 'email' => $this->email,
@@ -31,8 +32,8 @@ class ProfileResource extends JsonResource
                 'telegram_link_token' => $this->telegram_link_token,
                 'telegram_token_expires_at' => optional($this->telegram_token_expires_at)->toISOString(),
                 'telegram_bot_username' => config('services.telegram.bot_username', 'cuanflow_bot'),
-                'telegram_deep_link' => $this->telegram_link_token 
-                    ? "https://t.me/" . config('services.telegram.bot_username', 'cuanflow_bot') . "?start=" . $this->telegram_link_token
+                'telegram_deep_link' => $this->telegram_link_token
+                    ? 'https://t.me/'.config('services.telegram.bot_username', 'cuanflow_bot').'?start='.$this->telegram_link_token
                     : null,
                 'google_id' => $this->google_id,
                 'google_avatar' => $this->google_avatar,
@@ -47,7 +48,7 @@ class ProfileResource extends JsonResource
                 'points' => (int) $customer->points,
                 'total_debt' => (float) $customer->total_debt,
                 'credit_limit' => (float) $customer->credit_limit,
-                'late_fee_percentage' => (float) \App\Models\Setting::getValue('debt', 'late_fee_percentage', 5, $this->outlet_id),
+                'late_fee_percentage' => (float) Setting::getValue('debt', 'late_fee_percentage', 5, $this->outlet_id),
                 'is_overdue' => $customer->unpaidDebts()->where('due_date', '<', now()->toDateTimeString())->exists(),
                 'address' => $customer->address,
                 'birth_date' => $customer->birth_date ? $customer->birth_date->format('Y-m-d') : null,

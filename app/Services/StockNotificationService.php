@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Models\Production;
+use App\Models\PurchaseItem;
 use App\Models\RawMaterial;
 use App\Models\StockNotification;
 use Carbon\Carbon;
@@ -60,7 +62,7 @@ class StockNotificationService
         $soon = Carbon::today()->addDays(7);
 
         // Check Production for batches with expiry dates that still have stock (actual_quantity)
-        $expiringBatches = \App\Models\Production::where('product_id', $product->id)
+        $expiringBatches = Production::where('product_id', $product->id)
             ->where('status', 'completed')
             ->where('is_disposed', false)
             ->whereNotNull('expired_at')
@@ -72,7 +74,7 @@ class StockNotificationService
             $this->createNotification($outletId, $product, 'expiring_soon', "Produk Hampir Kadaluarsa: {$product->name}", "Batch {$batch->batch_number} produk {$product->name} akan kadaluarsa dalam {$days} hari ({$batch->expired_at->format('d M Y')}).", $batch->actual_quantity, null);
         }
 
-        $expiredBatches = \App\Models\Production::where('product_id', $product->id)
+        $expiredBatches = Production::where('product_id', $product->id)
             ->where('status', 'completed')
             ->where('is_disposed', false)
             ->whereNotNull('expired_at')
@@ -119,7 +121,7 @@ class StockNotificationService
         $soon = Carbon::today()->addDays(7);
 
         // Check PurchaseItem for batches with expiry dates
-        $expiringBatches = \App\Models\PurchaseItem::where('raw_material_id', $material->id)
+        $expiringBatches = PurchaseItem::where('raw_material_id', $material->id)
             ->where('remaining_quantity', '>', 0)
             ->whereNotNull('expired_at')
             ->whereBetween('expired_at', [$today, $soon])
@@ -130,7 +132,7 @@ class StockNotificationService
             $this->createNotification($outletId, $material, 'expiring_soon', "Bahan Hampir Kadaluarsa: {$material->name}", "Batch {$batch->batch_number} bahan {$material->name} akan kadaluarsa dalam {$days} hari ({$batch->expired_at->format('d M Y')}).", $batch->remaining_quantity, null);
         }
 
-        $expiredBatches = \App\Models\PurchaseItem::where('raw_material_id', $material->id)
+        $expiredBatches = PurchaseItem::where('raw_material_id', $material->id)
             ->where('remaining_quantity', '>', 0)
             ->whereNotNull('expired_at')
             ->where('expired_at', '<', $today)
@@ -184,7 +186,7 @@ class StockNotificationService
         $userId = auth()->id();
 
         $notifications = StockNotification::where('outlet_id', $outletId)
-            ->where('is_read', false) 
+            ->where('is_read', false)
             ->unreadBy($userId)
             ->with(['readByUsers' => function ($q) {
                 $q->select('users.id', 'users.name', 'avatar');

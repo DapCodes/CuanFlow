@@ -58,10 +58,11 @@ class OsmDataService
 
         if (empty($elements)) {
             Log::warning("OSM Data Fetch: No elements returned for area '{$area}'");
+
             return ['fetched' => 0, 'stored' => 0];
         }
 
-        Log::info("OSM Data Fetch: Got " . count($elements) . " elements from Overpass API");
+        Log::info('OSM Data Fetch: Got '.count($elements).' elements from Overpass API');
 
         $stored = $this->storeElements($elements);
 
@@ -77,7 +78,7 @@ class OsmDataService
     {
         $bbox = [$south, $west, $north, $east];
 
-        Log::info("OSM Data Fetch: Starting for custom bbox", ['bbox' => $bbox]);
+        Log::info('OSM Data Fetch: Starting for custom bbox', ['bbox' => $bbox]);
 
         $elements = $this->queryOverpassApi($bbox);
 
@@ -119,11 +120,12 @@ OVERPASS;
                     'data' => $query,
                 ]);
 
-            if (!$response->successful()) {
-                Log::error("Overpass API error", [
+            if (! $response->successful()) {
+                Log::error('Overpass API error', [
                     'status' => $response->status(),
                     'body' => substr($response->body(), 0, 500),
                 ]);
+
                 return [];
             }
 
@@ -132,7 +134,8 @@ OVERPASS;
             return $data['elements'] ?? [];
 
         } catch (\Exception $e) {
-            Log::error("Overpass API exception: " . $e->getMessage());
+            Log::error('Overpass API exception: '.$e->getMessage());
+
             return [];
         }
     }
@@ -151,14 +154,14 @@ OVERPASS;
             $records = [];
 
             foreach ($chunk as $element) {
-                if (!isset($element['lat'], $element['lon'])) {
+                if (! isset($element['lat'], $element['lon'])) {
                     continue;
                 }
 
                 $tags = $element['tags'] ?? [];
                 $category = $this->extractCategory($tags);
 
-                if (!$category) {
+                if (! $category) {
                     continue;
                 }
 
@@ -174,7 +177,7 @@ OVERPASS;
                 ];
             }
 
-            if (!empty($records)) {
+            if (! empty($records)) {
                 // Use upsert to avoid duplicates based on lat/lng
                 BusinessPoint::insert($records);
                 $stored += count($records);

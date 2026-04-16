@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Outlet;
 use App\Models\Sale;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Services\FeatureAccessService;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class SaleMapController extends Controller
 {
     protected $featureAccess;
 
-    public function __construct(\App\Services\FeatureAccessService $featureAccess)
+    public function __construct(FeatureAccessService $featureAccess)
     {
         $this->featureAccess = $featureAccess;
     }
@@ -29,13 +31,13 @@ class SaleMapController extends Controller
         if ($canMultiOutlet) {
             $ownerId = $user->outlet?->owner_id;
             if ($ownerId) {
-                $accessibleOutlets = \App\Models\Outlet::where('owner_id', $ownerId)->where('is_active', true)->get();
+                $accessibleOutlets = Outlet::where('owner_id', $ownerId)->where('is_active', true)->get();
             }
         }
 
         return view('sales-map.index', [
             'canMultiOutlet' => $canMultiOutlet,
-            'accessibleOutlets' => $accessibleOutlets
+            'accessibleOutlets' => $accessibleOutlets,
         ]);
     }
 
@@ -47,14 +49,14 @@ class SaleMapController extends Controller
         $user = auth()->user();
         $canMultiOutlet = $this->featureAccess->canAccess($user, 'multi_outlet');
         $ownerId = $user->outlet?->owner_id;
-        
+
         // Determine which outlets we are looking at
         $requestedOutletId = $request->input('outlet_id');
         $targetOutletIds = [$user->outlet_id]; // Default to current outlet
 
         if ($canMultiOutlet && $ownerId) {
-            $accessibleOutletIds = \App\Models\Outlet::where('owner_id', $ownerId)->pluck('id')->toArray();
-            
+            $accessibleOutletIds = Outlet::where('owner_id', $ownerId)->pluck('id')->toArray();
+
             if ($requestedOutletId === 'all') {
                 $targetOutletIds = $accessibleOutletIds;
             } elseif ($requestedOutletId && in_array($requestedOutletId, $accessibleOutletIds)) {
@@ -111,17 +113,17 @@ class SaleMapController extends Controller
             ->whereIn('payment_status', ['paid', 'partial', 'pending'])
             ->select('cashier_id', DB::raw('count(*) as total_sales'))
             ->groupBy('cashier_id')
-            ->with(['cashier' => function($q) {
+            ->with(['cashier' => function ($q) {
                 $q->select('id', 'name', 'color_palette_id', 'outlet_id')->with(['colorPalette', 'outlet']);
             }])
             ->get();
-            
+
         $cashiers = $allSalesCashiersQuery->map(function ($stat) {
             $color = '#10b981';
             if ($stat->cashier) {
                 $color = $stat->cashier->getActivePalette()->color_green;
             }
-            
+
             return [
                 'id' => $stat->cashier_id,
                 'name' => $stat->cashier ? $stat->cashier->name : 'Unknown',
@@ -134,7 +136,7 @@ class SaleMapController extends Controller
         // Get the "context" name for the UI
         $contextName = 'Semua Outlet';
         if (count($targetOutletIds) === 1) {
-            $outlet = \App\Models\Outlet::find($targetOutletIds[0]);
+            $outlet = Outlet::find($targetOutletIds[0]);
             $contextName = $outlet ? $outlet->name : 'Outlet';
         }
 
@@ -142,7 +144,7 @@ class SaleMapController extends Controller
             'success' => true,
             'sales' => $sales,
             'cashiers' => $cashiers,
-            'context_name' => $contextName
+            'context_name' => $contextName,
         ]);
     }
 }

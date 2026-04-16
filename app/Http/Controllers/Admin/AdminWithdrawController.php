@@ -9,6 +9,7 @@ use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class AdminWithdrawController extends Controller
 {
@@ -218,7 +219,7 @@ class AdminWithdrawController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             if (isset($proofImage)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($proofImage);
+                Storage::disk('public')->delete($proofImage);
             }
 
             return back()->with('error', 'Gagal memperbarui status: '.$e->getMessage());

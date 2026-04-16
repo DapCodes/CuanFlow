@@ -10,11 +10,11 @@ return new class extends Migration
     public function up(): void
     {
         // Check if user_id column exists
-        $hasUserIdColumn = \DB::select("SHOW COLUMNS FROM reseller_applications LIKE 'user_id'");
+        $hasUserIdColumn = DB::select("SHOW COLUMNS FROM reseller_applications LIKE 'user_id'");
 
         if (! empty($hasUserIdColumn)) {
             // Get all foreign keys for the table
-            $foreignKeys = \DB::select("
+            $foreignKeys = DB::select("
                 SELECT CONSTRAINT_NAME 
                 FROM information_schema.KEY_COLUMN_USAGE 
                 WHERE TABLE_SCHEMA = DATABASE() 
@@ -25,19 +25,19 @@ return new class extends Migration
 
             // Drop foreign key if exists
             foreach ($foreignKeys as $fk) {
-                \DB::statement("ALTER TABLE reseller_applications DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+                DB::statement("ALTER TABLE reseller_applications DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
             }
 
             // Drop the column
-            \DB::statement('ALTER TABLE reseller_applications DROP COLUMN user_id');
+            DB::statement('ALTER TABLE reseller_applications DROP COLUMN user_id');
         }
 
         // Check if customer_id already exists
-        $hasCustomerIdColumn = \DB::select("SHOW COLUMNS FROM reseller_applications LIKE 'customer_id'");
+        $hasCustomerIdColumn = DB::select("SHOW COLUMNS FROM reseller_applications LIKE 'customer_id'");
 
         if (empty($hasCustomerIdColumn)) {
             // Add customer_id column with foreign key
-            \DB::statement('
+            DB::statement('
                 ALTER TABLE reseller_applications 
                 ADD COLUMN customer_id BIGINT UNSIGNED NOT NULL AFTER id,
                 ADD CONSTRAINT reseller_applications_customer_id_foreign 
@@ -51,10 +51,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $hasCustomerIdColumn = \DB::select("SHOW COLUMNS FROM reseller_applications LIKE 'customer_id'");
+        $hasCustomerIdColumn = DB::select("SHOW COLUMNS FROM reseller_applications LIKE 'customer_id'");
 
         if (! empty($hasCustomerIdColumn)) {
-            $foreignKeys = \DB::select("
+            $foreignKeys = DB::select("
                 SELECT CONSTRAINT_NAME 
                 FROM information_schema.KEY_COLUMN_USAGE 
                 WHERE TABLE_SCHEMA = DATABASE() 
@@ -64,16 +64,16 @@ return new class extends Migration
             ");
 
             foreach ($foreignKeys as $fk) {
-                \DB::statement("ALTER TABLE reseller_applications DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+                DB::statement("ALTER TABLE reseller_applications DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
             }
 
-            \DB::statement('ALTER TABLE reseller_applications DROP COLUMN customer_id');
+            DB::statement('ALTER TABLE reseller_applications DROP COLUMN customer_id');
         }
 
-        $hasUserIdColumn = \DB::select("SHOW COLUMNS FROM reseller_applications LIKE 'user_id'");
+        $hasUserIdColumn = DB::select("SHOW COLUMNS FROM reseller_applications LIKE 'user_id'");
 
         if (empty($hasUserIdColumn)) {
-            \DB::statement('
+            DB::statement('
                 ALTER TABLE reseller_applications 
                 ADD COLUMN user_id BIGINT UNSIGNED NOT NULL AFTER id,
                 ADD CONSTRAINT reseller_applications_user_id_foreign 
