@@ -4,8 +4,31 @@
 --}}
 
 @php
-    $itemUrl = $item->url_type === 'route' ? route($item->url_value) : $item->url_value;
+    $routeName = $item->route_name;
+    $routeParams = $item->route_params ?? [];
+    
+    // Safely generate route URL
+    try {
+        if ($routeName && \Route::has($routeName)) {
+            $itemUrl = route($routeName, $routeParams);
+        } else {
+            $itemUrl = '#';
+        }
+    } catch (\Exception $e) {
+        $itemUrl = '#';
+    }
+    
     $iconColor = $item->icon_bg_color ?? '#6366f1';
+    
+    // Icon Logic for different libraries
+    $finalIconClass = $item->icon_value;
+    if ($item->icon_type === 'phosphor' && !str_contains($finalIconClass, 'ph-')) {
+        $finalIconClass = 'ph-bold ' . $finalIconClass;
+    } elseif ($item->icon_type === 'phosphor' && !str_contains($finalIconClass, 'ph-bold')) {
+        $finalIconClass = 'ph-bold ' . $finalIconClass;
+    } elseif ($item->icon_type === 'fontawesome' && !str_contains($finalIconClass, 'fa-')) {
+        $finalIconClass = 'fa-solid ' . $finalIconClass;
+    }
 @endphp
 
 <a href="{{ $itemUrl }}"
@@ -14,9 +37,9 @@
 >
   <div class="ditem-icon" style="background-color: {{ $iconColor }}15; color: {{ $iconColor }};">
     @if($item->icon_type === 'image')
-      <img src="{{ asset($item->icon_value) }}" class="w-6 h-6 object-contain" alt="">
+      <img src="{{ asset($item->icon_value) }}" class="w-7 h-7 object-contain" alt="">
     @else
-      <i class="{{ $item->icon_class }} transition-transform duration-300 group-hover:scale-125"></i>
+      <i class="{{ $finalIconClass }} transition-transform duration-300 group-hover:scale-125"></i>
     @endif
     
     @if($item->is_highlight)

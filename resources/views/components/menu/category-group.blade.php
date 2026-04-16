@@ -15,6 +15,14 @@
         'ai-tools'          => 'ai',
         default             => 'more'
     };
+    
+    // Icon logic for category
+    $catIconClass = $category->icon_value;
+    if ($category->icon_type === 'phosphor' && !str_contains($catIconClass, 'ph-')) {
+        $catIconClass = 'ph-bold ' . $catIconClass;
+    } elseif ($category->icon_type === 'phosphor' && !str_contains($catIconClass, 'ph-bold')) {
+        $catIconClass = 'ph-bold ' . $catIconClass;
+    }
 @endphp
 
 <div class="main-card" onclick="openFolder('{{ $slug }}')">
@@ -22,7 +30,7 @@
     @if($category->icon_type === 'image')
       <img src="{{ asset($category->icon_value) }}" class="w-8 h-8 object-contain" alt="">
     @else
-      <i class="{{ $category->icon_class }}"></i>
+      <i class="{{ $catIconClass }}"></i>
     @endif
   </div>
 
@@ -56,7 +64,7 @@
         @if($category->icon_type === 'image')
           <img src="{{ asset($category->icon_value) }}" class="w-10 h-10" alt="">
         @else
-          <i class="{{ $category->icon_class }}"></i>
+          <i class="{{ $catIconClass }}"></i>
         @endif
       </div>
       <div class="flex-1">

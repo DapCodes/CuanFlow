@@ -764,12 +764,6 @@
     </div>
     <div class="pb-24"></div>
   </div>
-
-  {{-- New Dynamic FAB --}}
-  <a href="{{ route('pos.index') }}" class="fab group">
-    <i class="ph-bold ph-shopping-cart-simple"></i>
-    <!-- <span class="fab-text">Transaksi Baru</span> -->
-  </a>
 </div>
 
 
