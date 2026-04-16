@@ -1253,7 +1253,7 @@ const USER_ID = {{ auth()->id() }};
 const OUTLET_ID = {{ auth()->user()->outlet_id }};
 const STORAGE_KEY = `cuanflow_product_create_form_u${USER_ID}_o${OUTLET_ID}_v1`;
 const DRAFT_TIMESTAMP_KEY = `cuanflow_product_draft_timestamp_u${USER_ID}_o${OUTLET_ID}`;
-let isDraftLoaded = false;
+let isDraftLoaded = !localStorage.getItem(STORAGE_KEY);
 let formHasChanges = false;
 let isNavigatingAway = false;
 let pendingNavigation = null;
@@ -1419,6 +1419,11 @@ document.addEventListener('keydown', function(e) {
 });
 
 function saveFormData() {
+    // Prevent overwriting existing draft if it hasn't been loaded yet
+    if (!isDraftLoaded && localStorage.getItem(STORAGE_KEY)) {
+        return;
+    }
+
     const formData = {};
     const form = document.getElementById('productForm');
     
@@ -1426,7 +1431,11 @@ function saveFormData() {
     const inputs = form.querySelectorAll('input, textarea, select');
     inputs.forEach(input => {
         if (input.name && !input.name.startsWith('recipe_items')) {
-            if (input.type === 'checkbox' || input.type === 'radio') {
+            if (input.type === 'radio') {
+                if (input.checked) {
+                    formData[input.name] = input.value;
+                }
+            } else if (input.type === 'checkbox') {
                 formData[input.name] = input.checked;
             } else if (input.type !== 'file') {
                 formData[input.name] = input.value;
@@ -1469,19 +1478,30 @@ function loadFormData() {
         Object.keys(formData).forEach(key => {
             if (key === 'recipe_items' || key === 'current_step') return;
 
-            const input = form.querySelector(`[name="${key}"]`);
-            if (input) {
-                if (input.type === 'checkbox' || input.type === 'radio') {
-                    input.checked = formData[key];
-                    input.dispatchEvent(new Event('change')); 
-                } else if (input.tagName === 'SELECT') {
-                    if ($(input).hasClass('select2-hidden-accessible')) {
-                        $(input).val(formData[key]).trigger('change');
+            const inputs = form.querySelectorAll(`[name="${key}"]`);
+            if (inputs.length > 0) {
+                const firstInput = inputs[0];
+                if (firstInput.type === 'radio') {
+                    inputs.forEach(radio => {
+                        if (radio.value === formData[key]) {
+                            radio.checked = true;
+                            // Trigger change event to update UI states (like is_stock toggle)
+                            $(radio).trigger('change');
+                        }
+                    });
+                } else if (firstInput.type === 'checkbox') {
+                    firstInput.checked = formData[key];
+                    $(firstInput).trigger('change');
+                } else if (firstInput.tagName === 'SELECT') {
+                    if ($(firstInput).hasClass('select2-hidden-accessible') || $(firstInput).hasClass('select2-init')) {
+                        $(firstInput).val(formData[key]).trigger('change');
                     } else {
-                        input.value = formData[key];
+                        firstInput.value = formData[key];
+                        $(firstInput).trigger('change');
                     }
                 } else {
-                    input.value = formData[key];
+                    firstInput.value = formData[key];
+                    $(firstInput).trigger('change');
                 }
             }
         });
@@ -1504,7 +1524,7 @@ function loadFormData() {
                     const qty = firstItem.querySelector('.quantity-input');
                     const note = firstItem.querySelector('input[name*="[notes]"]');
 
-                    if (select) select.val(firstItemData.raw_material_id).trigger('change');
+                    if (select.length) select.val(firstItemData.raw_material_id).trigger('change');
                     if (qty) qty.value = firstItemData.quantity;
                     if (note) note.value = firstItemData.notes;
                 }
@@ -1553,6 +1573,7 @@ function loadFormData() {
 function clearDraft() {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(DRAFT_TIMESTAMP_KEY);
+    isDraftLoaded = true;
     formHasChanges = false;
 }
 
