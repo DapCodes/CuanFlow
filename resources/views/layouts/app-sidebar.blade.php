@@ -959,23 +959,23 @@
             @if(View::hasSection('breadcrumb'))
             <div x-show="!isFullScreen" class="bg-white border-b border-gray-100 shadow-sm sticky top-[64px] z-30" x-data="{ fastAccessOpen: false }">
                 <div :class="currentLayout === 'sidebar' ? 'px-4 lg:px-8 py-3' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3'">
-                    <div class="flex items-center justify-between">
-                        <!-- Left side -->
-                        <div class="flex items-center min-w-0 flex-1">
+                    <div class="flex items-center justify-between h-8">
+                        <!-- Left side: Breadcrumb / Page Title -->
+                        <div class="flex items-center min-w-0 flex-1 h-full">
                             @if($currentCategory)
-                                <div class="flex items-center gap-2 text-gray-400">
-                                    <div class="hidden sm:flex items-center gap-2">
-                                        <i class="fa-solid {{ $currentCategory->icon_value }} text-xs"></i>
-                                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ $currentCategory->name }}</span>
-                                        <i class="fa-solid fa-chevron-right text-[10px] opacity-30"></i>
+                                <div class="flex items-center h-full">
+                                    <div class="hidden sm:flex items-center gap-2 group cursor-default">
+                                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider group-hover:text-primary-500 transition-colors">{{ $currentCategory->name }}</span>
+                                        <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
                                     </div>
-                                    <span class="text-xs font-black text-emerald-600 truncate">{{ $currentCategoryItem->label }}</span>
+                                    <span class="text-xs sm:text-sm font-black text-gray-900 truncate ml-0 sm:ml-0">{{ $currentCategoryItem->label }}</span>
+                                    <div class="ml-2 w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></div>
                                 </div>
                             @else
-                                <nav class="flex" aria-label="Breadcrumb">
+                                <nav class="flex h-full items-center" aria-label="Breadcrumb">
                                     <ol class="flex items-center space-x-2 text-sm">
                                         <li>
-                                            <a href="{{ route('dashboard') }}" class="nav-link text-gray-400 hover:text-emerald-600 flex items-center transition-colors">
+                                            <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-primary-600 transition-colors">
                                                 <i class="fa-solid fa-house text-xs"></i>
                                             </a>
                                         </li>
@@ -985,12 +985,12 @@
                             @endif
                         </div>
 
-                        <!-- Right: Fast Access Button -->
+                        <!-- Right side: Fast Access Trigger -->
                         @if($currentCategory)
-                        <div class="flex items-center gap-3 ml-4">
+                        <div class="flex items-center h-full ml-4">
                             <button @click="fastAccessOpen = true" 
-                                    class="flex items-center gap-2 px-3 py-2 sm:px-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-emerald-200 transition-all active:scale-95 group">
-                                <i class="fa-solid fa-chevron-left group-hover:-translate-x-1 transition-transform"></i>
+                                    class="inline-flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-primary-600 transition-all active:scale-95 shadow-sm shadow-primary-200 group">
+                                <i class="fa-solid fa-chevron-left text-[10px] group-hover:-translate-x-0.5 transition-transform"></i>
                                 <span class="hidden sm:inline">Akses Cepat</span>
                             </button>
                         </div>
@@ -1026,17 +1026,12 @@
                              class="absolute right-0 inset-y-0 w-full max-w-xs sm:max-w-sm bg-white shadow-2xl flex flex-col border-l border-gray-100">
                             
                             <!-- Header -->
-                            <div class="p-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
-                                <div class="flex items-center gap-3">
-                                    <div class="h-10 w-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-200">
-                                        <i class="fa-solid {{ $currentCategory->icon_value }} text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-black text-gray-900 leading-tight">{{ $currentCategory->name }}</h3>
-                                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Menu Terkait</p>
-                                    </div>
+                            <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-10">
+                                <div>
+                                    <p class="text-[10px] text-primary-500 font-black uppercase tracking-[0.2em] mb-1">Pilihan Menu</p>
+                                    <h3 class="text-lg font-black text-gray-900 leading-tight">{{ $currentCategory->name }}</h3>
                                 </div>
-                                <button @click="fastAccessOpen = false" class="p-2 hover:bg-white rounded-xl transition-colors text-gray-400 hover:text-gray-900 shadow-sm active:scale-95">
+                                <button @click="fastAccessOpen = false" class="h-10 w-10 flex items-center justify-center bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-all active:scale-90 border border-gray-100">
                                     <i class="fa-solid fa-xmark text-lg"></i>
                                 </button>
                             </div>
@@ -1049,27 +1044,27 @@
                                         $url = $item->resolveUrl();
                                     @endphp
                                     <a href="{{ $url }}" 
-                                       class="flex items-center gap-4 p-4 rounded-2xl border transition-all group relative overflow-hidden
+                                       class="flex items-center gap-4 p-4 rounded-xl border transition-all group relative overflow-hidden
                                               {{ $isActive 
-                                                 ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500/10' 
-                                                 : 'bg-white border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/30' }}">
+                                                 ? 'bg-primary-50 border-primary-200 ring-2 ring-primary-500/10' 
+                                                 : 'bg-white border-gray-100 hover:border-primary-200 hover:bg-primary-50/30' }}">
                                         
-                                        <div class="h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-300 flex-shrink-0
-                                                    {{ $isActive ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-gray-50 text-gray-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 border border-gray-100 group-hover:border-emerald-200' }}">
+                                        <div class="h-10 w-10 rounded-lg flex items-center justify-center transition-all duration-300 flex-shrink-0
+                                                    {{ $isActive ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-gray-50 text-gray-400 group-hover:bg-primary-100 group-hover:text-primary-600 border border-gray-100 group-hover:border-primary-200' }}">
                                             <i class="{{ $item->icon_class }} text-lg"></i>
                                         </div>
 
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-bold truncate transition-colors {{ $isActive ? 'text-emerald-700' : 'text-gray-900 group-hover:text-emerald-700' }}">
+                                            <p class="text-sm font-black truncate transition-colors {{ $isActive ? 'text-primary-700' : 'text-gray-900 group-hover:text-primary-700' }}">
                                                 {{ $item->label }}
                                             </p>
                                             <p class="text-[11px] text-gray-500 line-clamp-1 mt-0.5">{{ $item->description }}</p>
                                         </div>
 
                                         @if($isActive)
-                                            <div class="h-2 w-2 rounded-full bg-emerald-600"></div>
+                                            <div class="h-2 w-2 rounded-full bg-primary-600"></div>
                                         @else
-                                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"></i>
+                                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 group-hover:text-primary-400 group-hover:translate-x-1 transition-all"></i>
                                         @endif
                                     </a>
                                 @endforeach
