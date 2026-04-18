@@ -221,10 +221,19 @@
             background: rgba(0, 0, 0, 0.15);
         }
 
-        /* Firefox Support */
-        .custom-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0, 0, 0, 0.05) transparent;
+        /* Fast Access Drawer Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.1);
         }
     </style>
     
@@ -906,21 +915,142 @@
                 </div>
             </header>
 
-            <!-- Breadcrumbs -->
+            <!-- Breadcrumbs & Fast Access -->
+            @php
+                $currentRoute = Route::currentRouteName();
+                $currentCategoryItem = \App\Models\FeatureCategoryItem::where('route_name', $currentRoute)->first();
+                $currentCategory = $currentCategoryItem ? $currentCategoryItem->category : null;
+                $relatedFeatures = $currentCategory ? $currentCategory->featureItems()->active()->get() : collect();
+            @endphp
+
             @if(View::hasSection('breadcrumb'))
-            <div x-show="!isFullScreen" class="bg-white border-b border-gray-100 shadow-sm">
+            <div x-show="!isFullScreen" class="bg-white border-b border-gray-100 shadow-sm sticky top-[64px] z-30" x-data="{ fastAccessOpen: false }">
                 <div :class="currentLayout === 'sidebar' ? 'px-4 lg:px-8 py-3' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3'">
-                    <nav class="flex" aria-label="Breadcrumb">
-                        <ol class="flex items-center space-x-2 text-sm">
-                            <li>
-                                <a href="{{ route('dashboard') }}" class="nav-link text-gray-400 hover:text-emerald-600 flex items-center transition-colors">
-                                    <i class="fa-solid fa-house text-xs"></i>
-                                </a>
-                            </li>
-                            @yield('breadcrumb')
-                        </ol>
-                    </nav>
+                    <div class="flex items-center justify-between">
+                        <!-- Left side -->
+                        <div class="flex items-center min-w-0 flex-1">
+                            @if($currentCategory)
+                                <div class="flex items-center gap-2 text-gray-400">
+                                    <i class="fa-solid {{ $currentCategory->icon_value }} text-xs"></i>
+                                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ $currentCategory->name }}</span>
+                                    <i class="fa-solid fa-chevron-right text-[10px] opacity-30"></i>
+                                    <span class="text-xs font-black text-emerald-600 truncate">{{ $currentCategoryItem->label }}</span>
+                                </div>
+                            @else
+                                <nav class="flex" aria-label="Breadcrumb">
+                                    <ol class="flex items-center space-x-2 text-sm">
+                                        <li>
+                                            <a href="{{ route('dashboard') }}" class="nav-link text-gray-400 hover:text-emerald-600 flex items-center transition-colors">
+                                                <i class="fa-solid fa-house text-xs"></i>
+                                            </a>
+                                        </li>
+                                        @yield('breadcrumb')
+                                    </ol>
+                                </nav>
+                            @endif
+                        </div>
+
+                        <!-- Right: Fast Access Button -->
+                        @if($currentCategory)
+                        <div class="flex items-center gap-3 ml-4">
+                            <button @click="fastAccessOpen = true" 
+                                    class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-emerald-200 transition-all active:scale-95 group">
+                                <i class="fa-solid fa-bolt-lightning animate-pulse group-hover:rotate-12 transition-transform"></i>
+                                <span>Akses Cepat</span>
+                            </button>
+                        </div>
+                        @else
+                            <div class="h-8"></div>
+                        @endif
+                    </div>
                 </div>
+
+                <!-- Fast Access Side Menu (Drawer) -->
+                @if($currentCategory)
+                <template x-teleport="body">
+                    <div x-show="fastAccessOpen" class="fixed inset-0 z-[100]" style="display: none;">
+                        <!-- Backdrop -->
+                        <div x-show="fastAccessOpen" 
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0"
+                             x-transition:enter-end="opacity-100"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100"
+                             x-transition:leave-end="opacity-0"
+                             @click="fastAccessOpen = false"
+                             class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"></div>
+                        
+                        <!-- Panel -->
+                        <div x-show="fastAccessOpen"
+                             x-transition:enter="transition ease-out duration-300 transform"
+                             x-transition:enter-start="translate-x-full"
+                             x-transition:enter-end="translate-x-0"
+                             x-transition:leave="transition ease-in duration-200 transform"
+                             x-transition:leave-start="translate-x-0"
+                             x-transition:leave-end="translate-x-full"
+                             class="absolute right-0 inset-y-0 w-full max-w-xs sm:max-w-sm bg-white shadow-2xl flex flex-col border-l border-gray-100">
+                            
+                            <!-- Header -->
+                            <div class="p-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-10 w-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                                        <i class="fa-solid {{ $currentCategory->icon_value }} text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-black text-gray-900 leading-tight">{{ $currentCategory->name }}</h3>
+                                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Menu Terkait</p>
+                                    </div>
+                                </div>
+                                <button @click="fastAccessOpen = false" class="p-2 hover:bg-white rounded-xl transition-colors text-gray-400 hover:text-gray-900 shadow-sm active:scale-95">
+                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+
+                            <!-- List -->
+                            <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-3">
+                                @foreach($relatedFeatures as $item)
+                                    @php
+                                        $isActive = Route::is($item->route_name);
+                                        $url = $item->resolveUrl();
+                                    @endphp
+                                    <a href="{{ $url }}" 
+                                       class="flex items-center gap-4 p-4 rounded-2xl border transition-all group relative overflow-hidden
+                                              {{ $isActive 
+                                                 ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500/10' 
+                                                 : 'bg-white border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/30' }}">
+                                        
+                                        <div class="h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-300 flex-shrink-0
+                                                    {{ $isActive ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-gray-50 text-gray-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 border border-gray-100 group-hover:border-emerald-200' }}">
+                                            <i class="{{ $item->icon_class }} text-lg"></i>
+                                        </div>
+
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-bold truncate transition-colors {{ $isActive ? 'text-emerald-700' : 'text-gray-900 group-hover:text-emerald-700' }}">
+                                                {{ $item->label }}
+                                            </p>
+                                            <p class="text-[11px] text-gray-500 line-clamp-1 mt-0.5">{{ $item->description }}</p>
+                                        </div>
+
+                                        @if($isActive)
+                                            <div class="h-2 w-2 rounded-full bg-emerald-600"></div>
+                                        @else
+                                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"></i>
+                                        @endif
+                                    </a>
+                                @endforeach
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="p-6 border-t border-gray-50 bg-gray-50/30">
+                                <a href="{{ route('dashboard') }}" class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all shadow-sm group">
+                                    <i class="fa-solid fa-house text-xs group-hover:-translate-y-0.5 transition-transform"></i>
+                                    Beranda Utama
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                @endif
             </div>
             @endif
 
