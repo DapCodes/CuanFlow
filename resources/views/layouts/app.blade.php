@@ -949,9 +949,11 @@
                         <div class="flex items-center min-w-0 flex-1">
                             @if($currentCategory)
                                 <div class="flex items-center gap-2 text-gray-400">
-                                    <i class="fa-solid {{ $currentCategory->icon_value }} text-xs"></i>
-                                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ $currentCategory->name }}</span>
-                                    <i class="fa-solid fa-chevron-right text-[10px] opacity-30"></i>
+                                    <div class="hidden sm:flex items-center gap-2">
+                                        <i class="fa-solid {{ $currentCategory->icon_value }} text-xs"></i>
+                                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ $currentCategory->name }}</span>
+                                        <i class="fa-solid fa-chevron-right text-[10px] opacity-30"></i>
+                                    </div>
                                     <span class="text-xs font-black text-emerald-600 truncate">{{ $currentCategoryItem->label }}</span>
                                 </div>
                             @else
@@ -972,9 +974,9 @@
                         @if($currentCategory)
                         <div class="flex items-center gap-3 ml-4">
                             <button @click="fastAccessOpen = true" 
-                                    class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-emerald-200 transition-all active:scale-95 group">
-                                <i class="fa-solid fa-bolt-lightning animate-pulse group-hover:rotate-12 transition-transform"></i>
-                                <span>Akses Cepat</span>
+                                    class="flex items-center gap-2 px-3 py-2 sm:px-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-emerald-200 transition-all active:scale-95 group">
+                                <i class="fa-solid fa-chevron-left group-hover:-translate-x-1 transition-transform"></i>
+                                <span class="hidden sm:inline">Akses Cepat</span>
                             </button>
                         </div>
                         @else
