@@ -1037,18 +1037,20 @@
 
                             <!-- List -->
                             <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-3">
-                                <!-- Search Trigger (Top of List) -->
-                                <button @click="fastAccessOpen = false; $dispatch('open-search')" 
-                                        class="w-full flex items-center gap-4 p-4 rounded-xl border border-dashed border-gray-200 bg-gray-50/50 hover:bg-primary-50 hover:border-primary-300 transition-all group mb-4">
-                                    <div class="h-10 w-10 rounded-lg flex items-center justify-center bg-white border border-gray-100 group-hover:bg-primary-500 group-hover:text-white transition-all shadow-sm">
-                                        <i class="fa-solid fa-magnifying-glass"></i>
-                                    </div>
-                                    <div class="text-left">
-                                        <p class="text-sm font-black text-gray-700 group-hover:text-primary-700">Cari Cepat...</p>
-                                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Tekan '/' di mana saja</p>
-                                    </div>
-                                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 ml-auto group-hover:text-primary-400"></i>
-                                </button>
+                                @if(!Route::is('dashboard'))
+                                    <!-- Search Trigger (Top of List) -->
+                                    <button @click="fastAccessOpen = false; $dispatch('open-search')" 
+                                            class="w-full flex items-center gap-4 p-4 rounded-xl border border-dashed border-gray-200 bg-gray-50/50 hover:bg-primary-50 hover:border-primary-300 transition-all group mb-4">
+                                        <div class="h-10 w-10 rounded-lg flex items-center justify-center bg-white border border-gray-100 group-hover:bg-primary-500 group-hover:text-white transition-all shadow-sm">
+                                            <i class="fa-solid fa-magnifying-glass"></i>
+                                        </div>
+                                        <div class="text-left">
+                                            <p class="text-sm font-black text-gray-700 group-hover:text-primary-700">Cari Cepat...</p>
+                                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Tekan '/' di mana saja</p>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-right text-[10px] text-gray-300 ml-auto group-hover:text-primary-400"></i>
+                                    </button>
+                                @endif
 
                                 @foreach($relatedFeatures as $item)
                                     @php
@@ -1387,7 +1389,9 @@
             });
         }
     </script>
-    <x-global-search />
+    @if(!Route::is('dashboard'))
+        <x-global-search />
+    @endif
     @stack('scripts')
 </body>
 </html>

@@ -1,9 +1,3 @@
-{{-- 
-    Ultra Premium Global Search Component
-    ─────────────────────────────────────────
-    A spotlight-style full-screen search system.
---}}
-
 <div x-data="globalSearch()" 
      x-show="isOpen" 
      x-transition:enter="transition ease-out duration-300"
