@@ -1,11 +1,30 @@
-{{--
-  Premium Category Card Component
-  ─────────────────────────────────────────
---}}
-
 @php
     $slug = $category->slug;
-    $items = $category->featureItems;
+    $user = auth()->user();
+    
+    // Filter items based on access rules
+    $items = $category->featureItems()->active()->get()->filter(function($item) use ($user, $isPosOpen, $isReseller) {
+        // 1. Subscription & Feature Access Check
+        if ($item->feature_key && !$user->canAccessFeature($item->feature_key)) {
+            return false;
+        }
+
+        // 2. Permission Check
+        if ($item->permission_key && !$user->hasAnyPermission((array)$item->permission_key)) {
+            return false;
+        }
+
+        // 3. Special Conditions
+        if ($item->special_condition) {
+            if ($item->special_condition === 'isReseller' && !$isReseller) return false;
+            if ($item->special_condition === 'isPosOpen' && !$isPosOpen) return false;
+            if ($item->special_condition === 'hasSubscription' && !($user->hasRole('admin') || $user->hasActiveSubscription())) return false;
+            if ($item->special_condition === 'outletInfo' && !$user->outlet_id) return false;
+        }
+
+        return true;
+    });
+    
     $itemCount = $items->count();
 
     $variant = match($slug) {
@@ -78,20 +97,7 @@
 
     <div class="drawer-items">
       @foreach($items as $item)
-          @php
-            $shouldRender = true;
-            $needsFeatureCheck = !empty($item->feature_key);
-          @endphp
-
-          @if($shouldRender)
-            @if($needsFeatureCheck)
-              @canAccessFeature($item->feature_key)
-                @include('components.menu.category-item', ['item' => $item])
-              @endcanAccessFeature
-            @else
-                @include('components.menu.category-item', ['item' => $item])
-            @endif
-          @endif
+          @include('components.menu.category-item', ['item' => $item])
       @endforeach
     </div>
   </div>

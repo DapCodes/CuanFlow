@@ -751,8 +751,24 @@
             $sortedCategories = $categories->sortBy(function($cat) {
                 return $cat->slug === 'ai-tools' ? 7.5 : $cat->sort_order;
             });
+
+            // Filter out categories that have NO accessible items
+            $filteredCategories = $sortedCategories->filter(function($category) use ($user, $isPosOpen, $isReseller) {
+                return $category->featureItems()->active()->get()->contains(function($item) use ($user, $isPosOpen, $isReseller) {
+                    // Same logic as in category-group component
+                    if ($item->feature_key && !$user->canAccessFeature($item->feature_key)) return false;
+                    if ($item->permission_key && !$user->hasAnyPermission((array)$item->permission_key)) return false;
+                    if ($item->special_condition) {
+                        if ($item->special_condition === 'isReseller' && !$isReseller) return false;
+                        if ($item->special_condition === 'isPosOpen' && !$isPosOpen) return false;
+                        if ($item->special_condition === 'hasSubscription' && !($user->hasRole('admin') || $user->hasActiveSubscription())) return false;
+                        if ($item->special_condition === 'outletInfo' && !$user->outlet_id) return false;
+                    }
+                    return true;
+                });
+            });
         @endphp
-        @foreach($sortedCategories as $category)
+        @foreach($filteredCategories as $category)
           @include('components.menu.category-group', [
             'category' => $category,
             'isPosOpen' => $isPosOpen ?? false,
