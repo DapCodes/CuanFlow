@@ -902,10 +902,43 @@
 
             <!-- Breadcrumbs & Fast Access -->
             @php
+                $user = auth()->user();
                 $currentRoute = Route::currentRouteName();
                 $currentCategoryItem = \App\Models\FeatureCategoryItem::where('route_name', $currentRoute)->first();
                 $currentCategory = $currentCategoryItem ? $currentCategoryItem->category : null;
-                $relatedFeatures = $currentCategory ? $currentCategory->featureItems()->active()->get() : collect();
+                
+                // Calculate Context for Special Conditions
+                $isPosOpen = $user->outlet_id 
+                    ? \App\Models\CashRegister::where('outlet_id', $user->outlet_id)->where('user_id', $user->id)->where('status', 'open')->exists() 
+                    : false;
+                $isReseller = $user->email 
+                    ? \App\Models\Customer::where('email', $user->email)->where('type', 'reseller')->exists() 
+                    : false;
+
+                $relatedFeatures = collect();
+                if ($currentCategory) {
+                    $relatedFeatures = $currentCategory->featureItems()->active()->get()->filter(function($item) use ($user, $isPosOpen, $isReseller) {
+                        // 1. Subscription & Feature Access Check
+                        if ($item->feature_key && !$user->canAccessFeature($item->feature_key)) {
+                            return false;
+                        }
+
+                        // 2. Permission Check
+                        if ($item->permission_key && !$user->hasAnyPermission((array)$item->permission_key)) {
+                            return false;
+                        }
+
+                        // 3. Special Conditions
+                        if ($item->special_condition) {
+                            if ($item->special_condition === 'isReseller' && !$isReseller) return false;
+                            if ($item->special_condition === 'isPosOpen' && !$isPosOpen) return false;
+                            if ($item->special_condition === 'hasSubscription' && !($user->hasRole('admin') || $user->hasActiveSubscription())) return false;
+                            if ($item->special_condition === 'outletInfo' && !$user->outlet_id) return false;
+                        }
+
+                        return true;
+                    });
+                }
             @endphp
 
             @if(View::hasSection('breadcrumb'))
