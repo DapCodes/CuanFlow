@@ -948,13 +948,12 @@
                         <!-- Left side: Breadcrumb / Page Title -->
                         <div class="flex items-center min-w-0 flex-1 h-full">
                             @if($currentCategory)
-                                <div class="flex items-center h-full">
-                                    <div class="hidden sm:flex items-center gap-2 group cursor-default">
+                                <div class="flex items-center gap-2.5 h-full">
+                                    <div class="hidden sm:flex items-center gap-2.5 group cursor-default">
                                         <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider group-hover:text-primary-500 transition-colors">{{ $currentCategory->name }}</span>
                                         <i class="fa-solid fa-chevron-right text-[10px] text-gray-300"></i>
                                     </div>
-                                    <span class="text-xs sm:text-sm font-black text-gray-900 truncate ml-0 sm:ml-0">{{ $currentCategoryItem->label }}</span>
-                                    <div class="ml-2 w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></div>
+                                    <span class="text-xs sm:text-sm font-black text-gray-900 truncate">{{ $currentCategoryItem->label }}</span>
                                 </div>
                             @else
                                 <nav class="flex h-full items-center" aria-label="Breadcrumb">
