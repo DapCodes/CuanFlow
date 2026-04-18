@@ -6,29 +6,31 @@
      x-transition:leave="transition ease-in duration-200"
      x-transition:leave-start="opacity-100 backdrop-blur-xl"
      x-transition:leave-end="opacity-0 backdrop-blur-0"
-     class="fixed inset-0 z-[200] flex flex-col items-center justify-start pt-[10vh] px-4 bg-white/95 backdrop-blur-md"
+     class="fixed inset-0 z-[200] flex flex-col items-center justify-start pt-[8vh] px-6 sm:px-12 bg-white/95 backdrop-blur-md"
      @keydown.window.escape="closeSearch()"
      @keydown.window.slash.prevent="openSearch()"
      @open-search.window="openSearch()"
      x-cloak>
     
     <!-- Header: Search Input & Close -->
-    <div class="w-full max-w-3xl transform transition-all duration-300"
+    <div class="w-full max-w-5xl transform transition-all duration-300"
          x-show="isOpen"
          x-transition:enter="transition ease-out duration-500 delay-100"
          x-transition:enter-start="translate-y-10 opacity-0"
          x-transition:enter-end="translate-y-0 opacity-100">
         
-        <div class="flex items-center gap-4 border-b border-gray-100 pb-4">
-            <i class="fa-solid fa-magnifying-glass text-xl text-gray-400"></i>
+        <div class="flex items-center gap-3 border-b border-gray-100 pb-4">
+            <div class="flex-shrink-0">
+                <i class="fa-solid fa-magnifying-glass text-xl text-gray-400"></i>
+            </div>
             <input type="text" 
                    x-ref="searchInput"
                    x-model="query"
                    @input.debounce.300ms="performSearch()"
                    placeholder="Cari menu atau fitur..."
-                   class="flex-1 bg-transparent border-none outline-none text-xl sm:text-2xl font-bold text-gray-900 placeholder-gray-300 focus:ring-0">
+                   class="flex-1 min-w-0 bg-transparent border-none outline-none text-xl sm:text-2xl font-bold text-gray-900 placeholder-gray-300 focus:ring-0">
             <button @click="closeSearch()" 
-                    class="px-2 py-2 text-xs font-bold text-gray-400 hover:text-primary-500 transition-all uppercase tracking-widest">
+                    class="flex-shrink-0 px-2 py-2 text-[11px] font-black text-primary-500 hover:text-primary-700 transition-all uppercase tracking-widest">
                 Tutup
             </button>
         </div>
@@ -90,10 +92,6 @@
         </div>
     </div>
 
-    <!-- Simple Shortcut Hint -->
-    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">
-        Tekan <span class="text-gray-900">ESC</span> untuk membatalkan
-    </div>
 </div>
 
 <script>
